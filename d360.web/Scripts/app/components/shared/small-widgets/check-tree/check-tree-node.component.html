@@ -4,18 +4,18 @@
              tabIndex="0"
              (keydown)="onKeyDown($event)" [attr.aria-posinset]="this.index + 1" [attr.aria-expanded]="this.node.expanded" [attr.aria-selected]="isSelected()">
             <span class="tree-toggler" [ngClass]="'lv'+level" (click)="toggle($event)">
-                <i *ngIf="!isLeaf()" class="tree-toggler fa" [ngClass]="{'fa-caret-right':!node.expanded,'fa-caret-down':node.expanded}"></i>
+                <i *ngIf="!isLeaf()" class="tree-toggler fa" [ngClass]="{'fa-chevron-right':!node.expanded,'fa-chevron-down':node.expanded}"></i>
             </span><div class="p-checkbox">
                 <div class="p-checkbox-box p-component p-corner-all p-state-default" [ngClass]="{'p-disabled': node.selectable === false}">
                     <span class="p-checkbox-icon p-clickable pi"
                           [ngClass]="{'pi-check':isSelected(),'pi-minus':node.partialSelected}"></span>
                 </div>
             </div>
-                <span *ngIf="!tree.getTemplateForNode(node)" class="check-tree-label" title="{{node.label}}">{{node.label}}</span>
-                <span *ngIf="tree.getTemplateForNode(node)">
-                    <ng-container *ngTemplateOutlet="tree.getTemplateForNode(node); context: {$implicit: node}"></ng-container>
-                </span>
-                <span *ngIf="node.count != undefined"  class="d3s-badge">{{node.count}}</span>
+            <span *ngIf="!tree.getTemplateForNode(node)" class="check-tree-label" title="{{node.label}}">{{node.label}}</span>
+            <span *ngIf="tree.getTemplateForNode(node)">
+                <ng-container *ngTemplateOutlet="tree.getTemplateForNode(node); context: {$implicit: node}"></ng-container>
+            </span>
+            <span *ngIf="node.count != undefined" class="check-tree-badge">{{node.count}}</span>
         </div>
         <ul style="display: none;" *ngIf="node.children && node.expanded" [style.display]="node.expanded ? 'block' : 'none'" role="group">
             <d3s-check-treeNode *ngFor="let childNode of node.children;let firstChild=first;let lastChild=last; let index=index; trackBy: tree.nodeTrackBy"

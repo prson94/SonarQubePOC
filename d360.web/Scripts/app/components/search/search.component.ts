@@ -1,28 +1,31 @@
-﻿import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { forkJoin } from "rxjs";
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchStateService } from './search-state.service';
-import { SearchResultsObject, SearchCategories, AdvancedSearchFilter, SearchAggregationFilter } from '../../models/search-result.model';
+import { SearchResultsObject, SearchCategories, AdvancedSearchFilter, SearchAggregationFilter, SearchSelecton } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 import { SecondaryNavService } from '../../services/right-sidebar.service';
+import { DataProfileService } from '../../services/dataprofile.service';
+import { SidePanelButton } from "../../models/side-panel.model";
+
+import { CheckTree } from "../shared/small-widgets/check-tree/check-tree.component";
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
+import { PopupMenuItem } from '../shared/controls/popup-menu/popup-menu.component';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-search',
     templateUrl: './search.component.html',
-    providers: [TypeaheadSearchService],
-    host: {
-        '(window:resize)': 'setResultsHeight()'
-    },
+    providers: [DataProfileService],
+    styleUrls: ["search.component.less"],
 })
 
-export class SearchComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class SearchComponent extends BaseComponent implements OnInit {
     public searchResults: SearchResultsObject;
     public categories: SearchCategories[] = [];
     public searchText: string;
@@ -30,9 +33,40 @@ export class SearchComponent extends BaseComponent implements OnInit, AfterViewI
     public searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
     public advancedFilters: AdvancedSearchFilter[] = [];
 
-    public resultsPerPage: number = 10;
+    public resultsPerPage: number = 25;
     public fromNumber: number = 0;
     public sub: any;
+    public selection: SearchSelecton;
+
+    public sidePanelOpen: boolean = false;
+    public sidePanelLoading: boolean = false;
+    public sidePanelTab: string;
+    public sidePanelStorageKey: string = "searchresults";
+    public hasProfiling: boolean = false;
+    public dataProfile: any;
+
+    public extraButtons: SidePanelButton[] = [new SidePanelButton({
+        label: 'Filters',
+        tooltip: 'Filters',
+        disabledTooltip: null,
+        nothingSelectedMessage: 'Filters not available',
+        notApplicableMessage: 'Filters not available',
+        key: 'filters',
+        icon: 'fa-filter',
+        disabled: false,
+        visible: true,
+        needsSelection: false,
+        panelMenu: [
+            new PopupMenuItem({
+                title: "Expand All",
+                callback: () => this.filterExpandAll()
+            }),
+            new PopupMenuItem({
+                title: "Collapse All",
+                callback: () => this.filterCollapseAll()
+            })
+        ]
+    })];
 
     newFilterOptions: any[] = [
         { field: "Name", value: 'any' },
@@ -40,15 +74,15 @@ export class SearchComponent extends BaseComponent implements OnInit, AfterViewI
         { field: "Tags", value: 'any' }
     ];
 
-    @ViewChild('searchContainer', { static: false }) searchContainer: ElementRef;
     @ViewChild('title', { static: false }) title: ElementRef;
+    @ViewChild('catagoryFilter', { static: false }) catagoryFilter: CheckTree;
 
     constructor(private route: ActivatedRoute,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected secondaryNavService: SecondaryNavService,
         public searchStateService: SearchStateService,
-        private typeaheadSearchService: TypeaheadSearchService) {
+        private dataProfileService: DataProfileService) {
         super();
         this.secondaryNavService = secondaryNavService;
     }
@@ -83,16 +117,43 @@ export class SearchComponent extends BaseComponent implements OnInit, AfterViewI
         });
     }
 
-    ngAfterViewInit() {
-        this.setResultsHeight();
+    resultSelected($event) {
+        this.selection = $event;
+        if (this.selection && this.selection.HasProfiling) {
+            this.sidePanelLoading = true;
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+                (r) => {
+                    if (r && r.items && r.items.length > 0) {
+                        this.dataProfile = r.items[0];
+
+                        forkJoin(
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                        ).subscribe((res) => {
+                            this.dataProfile['matches'] = {
+                                structure: res[0],
+                                data: res[1]
+                            };
+                        });
+                    }
+                    this.sidePanelLoading = false;
+                });
+        } else {
+            this.dataProfile = null;
+        }
     }
 
-    setResultsHeight() {
-        window.setTimeout(() => {
-            if (this.searchContainer && this.searchContainer.nativeElement) {
-                this.searchContainer.nativeElement.style.height = (window.innerHeight - 125) + 'px';
-            }
-        }, 50);
+    get panelApplies(): boolean {
+        if (this.sidePanelTab === "filters") {
+            return true;
+        }
+        if (this.selection == null || (this.sidePanelTab === "detail" && this.selection?.AssetUid !== null)) {
+            return true;
+        }
+        if (this.selection != null && this.sidePanelTab === "dataprofile") {
+            return this.selection.HasProfiling;
+        }
+        return false;
     }
 
     //Advanced filters changed
@@ -105,7 +166,29 @@ export class SearchComponent extends BaseComponent implements OnInit, AfterViewI
         this.doSearch(true);
     }
     public doSearch(resetPage: boolean = false) {
+        this.resultSelected(null);
         this.searchStateService.search(this.searchText, resetPage);
     }
 
+
+    paginate(data) {
+        /*
+            event.page: New page number
+            event.first: Index of first record
+            event.rows: Number of rows to display in new page            
+            event.pageCount: Total number of pages
+        */
+        this.resultSelected(null);
+        this.searchStateService.page(data.first, data.size);
+    }
+
+    public filterClear() {
+        this.catagoryFilter?.clearSelection();
+    }
+    public filterExpandAll() {
+        this.catagoryFilter?.expandAll();
+    }
+    public filterCollapseAll() {
+        this.catagoryFilter?.collapseAll();
+    }
 }

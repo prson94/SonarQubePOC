@@ -16,26 +16,75 @@
             </div>
         </div>
     </div>
-    <div #searchContainer class="search-container">
+    <div class="search-container">
         <div class="search-content">
-            <div class="categories">
-                <div class="scrollpane">
-                    <d3s-check-tree [loading]="(searchStateService.treeLoading | async)"
-                                    [title]="'Filter by Category'"
-                                    [value]="searchStateService.categories | async"
-                                    [(selection)]="searchStateService.selectedFilters"
-                                    (selectionChange)="filterCheckTree($event)"
-                                    [emptyMessage]="'No categories found'">
-                    </d3s-check-tree>
-                </div>
-            </div>
+            <d3s-chips-filter [filterOption]="newFilterOptions" [selectedFilters]="searchStateService.advancedFilters" (applyFlter)="filterChanged($event)" class="filterbar"></d3s-chips-filter>
             <div class="cardlist">
-                <d3s-chips-filter [filterOption]="newFilterOptions" [selectedFilters]="searchStateService.advancedFilters" (applyFlter)="filterChanged($event)"></d3s-chips-filter>
-                <d3s-search-results [from]="fromNumber"
-                                    [loading]="isLoading" [itemsPerPage]="resultsPerPage"
-                                    [results]="searchResults">
-                </d3s-search-results>
+                <div *ngIf="!(searchStateService.loading | async) && (searchStateService.resultCount | async) == 0">
+                    <div class="row">
+                        <div class="tile tile-detail search-nodata">
+                            <header>Your search did not find any results.</header>
+                            <span style="padding-left:15px">Suggestions:</span>
+                            <ul>
+                                <li>Check your spelling</li>
+                                <li>Try broader search criteria</li>
+                                <li>Try a different keyword</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <ng-container *ngIf="!(searchStateService.loading | async)">
+                    <div *ngFor="let result of searchStateService.results | async">
+                        <d3s-search-result-item [result]="result" [selection]="selection" (onSelect)="resultSelected($event)"></d3s-search-result-item>
+                    </div>
+                </ng-container>
+                <d3s-loading [isLoading]="(searchStateService.loading | async)"></d3s-loading>
             </div>
+            <d3s-paginator [page]="searchStateService.pageNumber | async" [rows]="resultsPerPage" [totalRecords]="searchStateService.resultCount | async" (onPageChange)="paginate($event)" [hideLastButton]="true"></d3s-paginator>
+        </div>
+        <div class="tile tile-detail side-panel">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selection"
+                        [panelApplies]="panelApplies"
+                        hasProfiling="true"
+                        hasDetail="true"
+                        [height]="'calc(100vh - 200px)'"
+                        [extraButtons]="extraButtons"
+                        [storageKey]="sidePanelStorageKey">
+                <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
+                    <d3s-loading [isLoading]="true"></d3s-loading>
+                </ng-container>
+                <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'filters'">
+                    <d3s-check-tree #catagoryFilter
+                        [loading]="(searchStateService.treeLoading | async)"
+                        [value]="searchStateService.categories | async"
+                        [(selection)]="searchStateService.selectedFilters"
+                        (selectionChange)="filterCheckTree($event)"
+                        [emptyMessage]="'No categories found'">
+                    </d3s-check-tree>
+                </ng-container>
+                <ng-container *ngIf="sidePanelOpen && selection?.AssetUid != null && !sidePanelLoading">
+                    <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
+                        <data-profile [dataProfile]="dataProfile"></data-profile>
+                    </ng-container>
+                    <ng-container *ngIf="sidePanelTab === 'detail'">
+                        <ig-asset-detail [objectUID]="selection.AssetUid"
+                                         [objectType]="selection.ObjectType"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [paddingLeft]="'11px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                    </ng-container>
+                </ng-container>
+            </side-panel>
+        </div>
     </div>
-</div>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>

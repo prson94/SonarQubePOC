@@ -11,52 +11,36 @@ import { ObjectUtils } from 'primeng/utils';
 
 @Component({
     selector: 'd3s-check-tree',
-    templateUrl: './check-tree.component.html'
+    templateUrl: "./check-tree.component.html",
+    styleUrls: ["check-tree.component.less"],
 })
 export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy, BlockableUI {
-
     @Input() value: CheckTreeNode[];
-
     @Input() selection: any;
 
     @Output() selectionChange: EventEmitter<any> = new EventEmitter();
-
     @Output() onNodeSelect: EventEmitter<any> = new EventEmitter();
-
     @Output() onNodeUnselect: EventEmitter<any> = new EventEmitter();
-
     @Output() onNodeExpand: EventEmitter<any> = new EventEmitter();
-
     @Output() onNodeCollapse: EventEmitter<any> = new EventEmitter();
 
     @Input() style: any;
-
     @Input() styleClass: string;
-
     @Input() metaKeySelection: boolean = true;
-
     @Input() propagateSelectionUp: boolean = true;
-
     @Input() propagateSelectionDown: boolean = true;
 
     @Input() loading: boolean;
-
     @Input() loadingIcon: string = 'pi pi-spinner';
-
     @Input() emptyMessage: string = 'No records found';
 
     @Input() title: string;
-
     @Input() ariaLabel: string;
-
     @Input() ariaLabelledBy: string;
 
     @Input() filter: boolean;
-
     @Input() filterBy: string = 'label';
-
     @Input() filterMode: string = 'lenient';
-
     @Input() filterPlaceholder: string;
 
     @Input() nodeTrackBy: Function = (index: number, item: any) => item;
@@ -64,11 +48,8 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
 
     public templateMap: any;
-
     public nodeTouched: boolean;
-
     public filteredNodes: CheckTreeNode[];
-
     private timeoutId: number;
 
     constructor(public el: ElementRef, @Optional() public dragDropService: TreeDragDropService) { }
@@ -93,6 +74,14 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
         this.templates.forEach((item) => {
             this.templateMap[item.name] = item.template;
         });
+    }
+
+    get styles(): string {
+        let styles: string[] = ["check-tree-container"];
+        if (this.styleClass) {
+            styles.push(this.styleClass);
+        }
+        return styles.join(" ");
     }
 
     onNodeClick(event, node: CheckTreeNode) {
@@ -344,6 +333,27 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     clearSelection() {
         this.selection = [];
         this.selectionChange.emit(this.selection);
+    }
+
+    public expandAll() {
+        let nodes = this.getRootNode();
+        nodes.forEach((n) => {
+            console.log(n.label, n.expanded);
+            this.expandCollapse(n, true);
+        });
+    }
+
+    public collapseAll() {
+        let nodes = this.getRootNode();
+        nodes.forEach((n) => {
+            console.log(n.label, n.expanded);
+            this.expandCollapse(n, false);
+        });
+    }
+
+    private expandCollapse(node: CheckTreeNode, expand: boolean) {
+        node.expanded = expand;
+        node.children?.forEach((c) => this.expandCollapse(c, expand));
     }
 
     private checkPropagation() {

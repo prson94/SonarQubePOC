@@ -9,6 +9,13 @@ export class SearchPathComponent {
     AssetType: string;
 }
 
+export class SearchSelecton {
+    ID: string;
+    AssetUid: string;
+    ObjectType: string;
+    HasProfiling: boolean;
+}
+
 export class SearchResult {
     Name: string;
     DisplayName: string;
@@ -24,7 +31,7 @@ export class SearchResult {
 }
 
 export class SearchFullResult extends SearchResult {
-    ID: number;
+    ID: string;
     Description: string;
     Group: string;
     Name: string;
@@ -37,8 +44,12 @@ export class SearchFullResult extends SearchResult {
     Uid: string;
     Explanation: string;
     Fields: SearchResultFieldDisplay[];
+    Status: string;
+    Object: string;
+    ObjectId: number;
+    HasProfiling: boolean;
+    Scores: AssetScore[];
 }
-
 export class SearchCategories {
     Name: string;
     DisplayName: string;

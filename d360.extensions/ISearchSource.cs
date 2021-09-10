@@ -203,6 +203,10 @@ namespace d360.extensions
 
     public class IndexResult : TypeaheadResult
     {
+        public IndexResult()
+        {
+            Scores = new List<IndexAssetScore>();
+        }
         public string ID { get; set; }
         public string Description { get; set; }
         public string AbsoluteUrl { get; set; }
@@ -213,6 +217,23 @@ namespace d360.extensions
         public float NormalizedScore { get; set; }
         public string Explanation { get; set; }
         public List<IndexFieldDisplay> Fields { get; set; }
+        public string Status { get; set; }
+        public string Object { get; set; }
+        public long ObjectId { get; set; }
+        public bool HasProfiling { get; set; }
+        public List<IndexAssetScore> Scores { get; set; }
+    }
+
+    public class IndexAssetScore
+    {
+        public Guid AssetUid { get; set; }
+        public string EffectiveDate { get; set; }
+        public string EndDate { get; set; }
+        public string Rundate { get; set; }
+        public string ScoreType { get; set; }
+        public decimal Value { get; set; }
+        public int LowerThreshold { get; set; }
+        public int UpperThreshold { get; set; }
     }
 
     public class IndexFieldDisplay

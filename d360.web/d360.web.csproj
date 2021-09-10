@@ -816,7 +816,6 @@
     <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.html" />
     <Content Include="Scripts\app\components\search\hero-search-input.html" />
     <Content Include="Scripts\app\components\search\search-result-item.component.html" />
-    <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\search\search.component.html" />
     <Content Include="Scripts\app\components\shared\asset-detail\asset-detail-category.component.html" />
     <Content Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.html" />
@@ -852,6 +851,8 @@
     <Content Include="angular.json" />
     <Content Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.less" />
     <None Include="Scripts\app\components\rule\rule-results-grid.component.less" />
+    <Content Include="Scripts\app\components\search\search.component.less" />
+    <Content Include="Scripts\app\components\search\search-result-item.component.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -921,6 +922,7 @@
     <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
+    <Content Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
@@ -1334,7 +1336,10 @@
     <Content Include="Scripts\app\components\shared\user\user-list.component.less" />
     <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.less" />
+    <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.less" />
+    <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.less" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.less" />
+    <Content Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1864,7 +1869,6 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\home-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-result-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\search-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search.routes.ts" />
