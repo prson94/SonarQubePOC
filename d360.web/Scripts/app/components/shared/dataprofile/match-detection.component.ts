@@ -64,7 +64,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             FriendlyName: 'Tag',
             Type: new FieldType("Tag"),
             Category: "",           
-            RemovePopulatedOperator: true
+            RemovePopulatedOperator: false
         },
         {
             Name: 'Path',
