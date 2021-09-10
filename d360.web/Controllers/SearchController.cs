@@ -486,15 +486,14 @@ namespace d360.web.Controllers
 
         struct SearchAugment : IEquatable<SearchAugment>
         {
-            public Guid AssetUid { get; set; }
-            public string Status { get; set; }
-            public string Object { get; set; }
-            public long ObjectId { get; set; }
-            public bool HasProfiling { get; set; }
+            public Guid AssetUid;
+            public string Status;
+            public string Object;
+            public long ObjectId;
+            public bool HasProfiling; 
 
             public bool Equals(SearchAugment other)
             {
-                if (ReferenceEquals(this, other)) return true;
                 return AssetUid.Equals(other.AssetUid);
             }
         }

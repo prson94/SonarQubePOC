@@ -345,7 +345,6 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     public collapseAll() {
         let nodes = this.getRootNode();
         nodes.forEach((n) => {
-            console.log(n.label, n.expanded);
             this.expandCollapse(n, false);
         });
     }

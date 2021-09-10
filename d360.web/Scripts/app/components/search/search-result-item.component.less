@@ -48,7 +48,6 @@
       display: inline-flex;
       box-sizing: border-box;
       flex-direction: row;
-      box-sizing: border-box;
       background: white;
       width: 100%;
       height: auto;
@@ -114,7 +113,8 @@
     .search-result-field {
       white-space: nowrap;
 
-      .label, .value,
+      .label,
+      .value,
       .statement {
         max-width: 150px;
         display: inline-block;
@@ -147,7 +147,8 @@
       justify-content: space-between;
     }
 
-    &.title, &.description,
+    &.title,
+    &.description,
     &.tags {
       margin-top: 16px;
     }
@@ -168,6 +169,26 @@
 
     &.description {
       color: @igx-darkblue-xlight;
+    }
+
+    &.tags {
+      ::ng-deep {
+        .tag-list-container {
+          line-height: 1;
+        }
+
+        .link-button {
+          height: 22px;
+          border-radius: 2px;
+          background-color: #dce6ec;
+          margin-right: 9px;
+          padding: 0 8px !important;
+
+          .tag-item-wrapper {
+            color: @igx-blue-light;
+          }
+        }
+      }
     }
 
     .path {
@@ -194,26 +215,6 @@
 
         .assettype {
           color: @igx-darkblue-xlight;
-        }
-      }
-    }
-
-    &.tags {
-      ::ng-deep {
-        .tag-list-container {
-          line-height: 1;
-        }
-
-        .link-button {
-          height: 22px;
-          border-radius: 2px;
-          background-color: #dce6ec;
-          margin-right: 9px;
-          padding: 0 8px !important;
-
-          .tag-item-wrapper {
-            color: @igx-blue-light;
-          }
         }
       }
     }

@@ -100,7 +100,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     navigateLink(newTab: boolean = false) {
         const url = SiteUrlHelpers.convertClassicUrl(this.result.Url);
         if (newTab) {
-            window.open(url, '_blank');
+            window.open(`${url}`, '_blank');
         } else {
             this.router.navigateByUrl(url);
         }
