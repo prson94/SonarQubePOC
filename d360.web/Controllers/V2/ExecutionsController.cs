@@ -30,7 +30,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        IAssetRepository AssetRepository;        
+        IAssetRepository AssetRepository;
         IStorageProvider Storage;
         public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, ISettingsRepository settingsRepository, IStorageProvider storage)
             : base(community, company, settingsRepository)
@@ -62,7 +62,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetExecutions()
         {
-            
+
             var queryParams = Request.GetQueryNameValuePairs();
 
             string isValid = isPageSizeAndNumValid(queryParams);
@@ -210,7 +210,7 @@ namespace d360.web.Controllers.V2
                     )
                 );
             }
-            catch(ArgumentException)
+            catch (ArgumentException)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
             }
@@ -237,6 +237,35 @@ namespace d360.web.Controllers.V2
         /// - COMPLETE_SUCCESS
         /// - COMPLETE_FAILURE
         /// - INFORMATION
+        ///
+        /// 
+        /// 
+        /// ###Configuration###
+        /// Configuration value can be any valid JSON object in format of an Array. Object should be places within Array brackets [].
+        ///
+        /// Configuration value example as KeyValue pairs
+        /// ```
+        ///[
+        ///   {"Framework Version" :"5.4"},
+        ///   {"JDBC Harvester Version":"2.5"},
+        ///   { "Analyze Version":"3.6.8"},
+        ///   { "Flow Name":"MYGRAPH"},
+        ///   { "Metadata Source":"MYCRM"}  
+        ///]
+        /// ```
+        ///
+        /// Configuration value example as nested object 
+        /// ```
+        ///[
+        ///   {"Framework Version" :
+        ///     {
+        ///         "JDBC Harvester Version": { 
+        ///             "Analyze Version":"3.6.8"
+        ///         }
+        ///     }
+        ///   }
+        ///]
+        ///```
         /// </remarks>
 
         /// <param name="model">The status of connector to be add.</param>
@@ -270,8 +299,8 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Component cannot exceed 250 characters.")).ConfigureAwait(false);
             }
 
-  
-            if (!Enum.IsDefined(typeof(ExecutionExternalStatus),model.Status))
+
+            if (!Enum.IsDefined(typeof(ExecutionExternalStatus), model.Status))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION"));
             }
@@ -304,8 +333,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of connector status.", typeof(APIExecutionExternalAPIModelResult)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. By default the results are ordered by CreatedOn desc, then ExternalID if the dates are the same", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedOn desc, then ExternalID if the dates are the same", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_startDate", "Start date to get data for limit result on createdon column.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_endDate", "End date to get data for limit result on createdon column.", DataType = "string", ParameterType = "query", Required = false),
@@ -372,7 +401,7 @@ namespace d360.web.Controllers.V2
                 }
                 _endDate = _tempendDate;
 
-                if (_endDate == DateTime.MaxValue || DateTime.Compare((DateTime)_endDate,SqlDateTimeMin) < 0)
+                if (_endDate == DateTime.MaxValue || DateTime.Compare((DateTime)_endDate, SqlDateTimeMin) < 0)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"End date is not valid.");
                 }
@@ -421,7 +450,7 @@ namespace d360.web.Controllers.V2
             #endregion
 
             try
-            { 
+            {
                 var executions = await AssetRepository.GetConnectorStatusItems(queryParams, _startDate, _endDate, externalId, component, status);
                 if (executions.StatusCode != HttpStatusCode.OK)
                 {
