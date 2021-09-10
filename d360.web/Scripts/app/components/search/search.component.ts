@@ -144,15 +144,15 @@ export class SearchComponent extends BaseComponent implements OnInit {
     }
 
     get panelApplies(): boolean {
+        let ret = false;
         if (this.sidePanelTab === "filters" || this.selection == null) {
-            return true;
+            ret = true;
+        } else if (this.sidePanelTab === "detail") {
+            ret = this.selection?.AssetUid !== null;
+        } else if (this.sidePanelTab === "dataprofile") {
+            ret = this.selection.HasProfiling;
         }
-        if (this.sidePanelTab === "detail") {
-            return this.selection?.AssetUid !== null;
-        }
-        if (this.sidePanelTab === "dataprofile") {
-            return this.selection.HasProfiling;
-        }
+        return ret;
     }
 
     //Advanced filters changed

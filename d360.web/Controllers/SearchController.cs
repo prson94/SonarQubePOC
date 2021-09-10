@@ -486,6 +486,15 @@ namespace d360.web.Controllers
 
         struct SearchAugment : IEquatable<SearchAugment>
         {
+            public SearchAugment(Guid guid, string status, string obj, long objectid, bool profile)
+            {
+                AssetUid = guid;
+                Status = status;
+                Object = obj;
+                ObjectId = objectid;
+                HasProfiling = profile;
+            }
+
             public Guid AssetUid;
             public string Status;
             public string Object;
