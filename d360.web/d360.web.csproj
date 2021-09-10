@@ -771,6 +771,7 @@
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input-group.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.modal-drawer.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.modal.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.multi-input-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.radio-button.component.html" />
@@ -903,6 +904,7 @@
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\helpmenu\helpmenu-list.component.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
+    <Content Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.html" />
     <Content Include="Scripts\app\components\shared\modal\gov-modal.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
@@ -996,6 +998,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input-group.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.modal-drawer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.multi-input-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.radio-button.component.ts" />
@@ -1088,6 +1091,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\asset-score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.ts" />
@@ -1335,6 +1340,7 @@
     <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.less" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.less" />
+    <Content Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
