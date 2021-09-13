@@ -4,7 +4,6 @@ using d360.core.entities;
 using d360.model;
 using d360.web.Models.Attributes;
 using Dapper;
-using Resources;
 using SpreadsheetLight;
 using System;
 using System.Diagnostics;
@@ -19,9 +18,11 @@ using System.Collections.Generic;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.model.helpers;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.entities.Metric;
+using d360.model.helpers.filters;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.V2
 {
@@ -35,7 +36,7 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController : BaseV2ApiController
     {
-        public AuditController(ICommunityContext community, ICompanyContext company) : base(community, company)
+        public AuditController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
 
         }
@@ -102,7 +103,7 @@ namespace d360.web.Controllers.V2
                     new DefaultFilter("field", "A.field", SqlFieldType.Text),
                     new DefaultFilter("newValue", "A.newValue", SqlFieldType.Text),
                     new DefaultFilter("class", "A.class", SqlFieldType.Number),
-                    new DefaultFilter("version", "A.version", SqlFieldType.Number),
+                    new DefaultFilter("version", "isnull(A.version,0)", SqlFieldType.Number),
                     new DefaultFilter("previousValue", "A.previousValue", SqlFieldType.Text)
                 };
 
@@ -127,7 +128,9 @@ namespace d360.web.Controllers.V2
                     !Company.Any<IssueType>(i => i.uid == assetUid) &&
                     !Company.Any<IntersectType>(i => i.uid == assetUid) &&
                     !Company.Any<ResponsibilityType>(i => i.UID == assetUid) &&
-                    !Company.Any<Report>(i => i.uid == assetUid))
+                    !Company.Any<Report>(i => i.uid == assetUid) &&
+                    !Company.Any<MetricAllocation>(i => i.Uid == assetUid) &&
+                    !Company.Any<Predicate>(i => i.UID == assetUid))
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if (assetType == null)
@@ -146,6 +149,12 @@ namespace d360.web.Controllers.V2
                             break;
                         case "GroupType":
                             baseSql = GetBaseAuditQueryObject(SystemObjects.Group, false);
+                            break;
+                        case "MetricAllocation":
+                            baseSql = GetBaseAuditQueryObject(SystemObjects.MetricAllocation, false);
+                            break;
+                        case "Predicate":
+                            baseSql = GetBaseAuditQueryObject(SystemObjects.Predicate, false);
                             break;
                         default:
                             baseSql = GetBaseAuditQueryForAssetTypeUid(assetType?.Class == AssetTypeClass.Reference);
@@ -174,7 +183,19 @@ namespace d360.web.Controllers.V2
 
                 sql += " " + orderBySql + " " + offsetSql;
 
-                var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout);
+                var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
+
+                query.ToList().ForEach(x =>
+                {
+                    if (x.actionObject == "Predicate" && x.field == "Functional Type")
+                    {
+                        x.newValue = getPredicateTypeStringValue(x.newValue);
+                        if (x.previousValue != null)
+                        {
+                            x.previousValue = getPredicateTypeStringValue(x.previousValue);
+                        }
+                    }
+                });
 
                 if (isStreamResponse)
                 {
@@ -258,6 +279,65 @@ namespace d360.web.Controllers.V2
             {
                 result = Company.Query<dynamic>($@"select 'Report' as Object, ID as ObjectId, Name as DisplayValue from Report where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets lists of User, Action and ActionObject values in change log for the asset yuid to use in advanced filter lists
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("filterlists/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetFilterLists(Guid assetUid)
+        {
+            dynamic objectInfo = GetLegacyObjectDetails(assetUid);
+            dynamic result = new System.Dynamic.ExpandoObject();
+            string condition;
+
+            AssetType assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
+            if (assetType?.Class == AssetTypeClass.Reference)
+            {
+                condition = @"(ga.[Object] = @Object and ga.ObjectId = @ObjectId) OR (
+                    ga.[Object] = 'ReferenceItem' and ga.ObjectID in 
+                        (select a.objectid from[dbo].[asset] a
+                        inner join[dbo].[assettype] att on(a.assettypeid = att.id)
+                        where att.[Object] = @Object and att.ObjectId = @ObjectId))";
+            }
+            else if (new List<string> { "ResourceType", "GroupType", "MetricAllocation", "Predicate" }.Contains(objectInfo.Object))
+            {
+                condition = "ga.[Object] = @Object";
+            }
+            else
+            {
+                condition = "ga.[Object] = @Object and ga.ObjectId = @ObjectId";
+            }
+
+            result.resourceName = Company.Query<dynamic>($@"select distinct
+	                CASE WHEN R.State = 3 THEN
+		                R.FirstName + ' ' + R.LastName + ' (deleted)'
+	                ELSE
+		                R.FirstName + ' ' + R.LastName
+	                END as val
+                from reporting.global_audit ga
+                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            result.action = Company.Query<dynamic>($@"select distinct ga.action as val
+                from reporting.global_audit ga
+			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            result.actionObject = Company.Query<dynamic>($@"select distinct
+                case when ga.ActionObject = 'Intersect' then 'Relationship'
+                     when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                     else ga.ActionObject end val
+                from reporting.global_audit ga
+			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
 
             return result;
         }
@@ -428,6 +508,16 @@ namespace d360.web.Controllers.V2
             return document;
         }
 
+        private string getPredicateTypeStringValue(string type)
+        {
+            string predicateType = "";
+            if(Enum.TryParse(type, out PredicateType pType))
+            {
+                predicateType = pType.ToString();
+            }
+            return predicateType;
+        }
+
         private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)
         {
             string querySql = $@"select
@@ -478,36 +568,6 @@ namespace d360.web.Controllers.V2
                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId
 				left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
                 left join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID";
-            }
-
-            if (type.ToString() == "FusionType")
-            {
-                //Gets the Fusion audit for the fusion type
-                querySql += $@" UNION 
-                        select 	                            
-                        ga.*,
-                        case when R.State = {(int)CompanyResourceState.Deleted} then
-                            R.FirstName + ' ' + R.LastName + ' (deleted)'
-                        else
-                            R.FirstName + ' ' + R.LastName
-                        end as ResourceName, 
-                            fa.FieldName as Field, 
-                            fa.Value as NewValue, 
-                            3 as Class,
-                            fa.[Version] as 'Version',	                            
-                        (select top 1 fa_sub.value as 'value'			                            
-                        from reporting.global_fieldaudit fa_sub
-                        inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
-                        where ga_sub.[object] = ga.[object] 
-                            and ga_sub.[objectid] = ga.[objectid] 
-                            and fa_sub.version = (fa.Version -1) 
-                            and fa_sub.fieldname = fa.FieldName 
-                            and fa_sub.fieldtypeid = fa.FieldTypeId 
-                            and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
-                    from reporting.global_audit ga 
-                    left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id ) 
-                    inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'Fusion' 
-                    and ga.ObjectID in ( select Id from Fusion where fusiontypeid = @objId)";
             }
 
             if (type == SystemObjects.ReferenceItemType)
@@ -617,6 +677,10 @@ namespace d360.web.Controllers.V2
                 select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass from dbo.ResponsibilityType where uid = @uid
                 union
                 select uid, name as DisplayName, 'Report' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Report] where uid = @uid
+                union
+                select MA.uid, AT.Name as DisplayName, 'MetricAllocation' as Object, MA.ID as ObjectID, null as AssetTypeClass from metrics.Allocation MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.uid = @uid
+                union
+				select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Predicate] where uid = @uid
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;

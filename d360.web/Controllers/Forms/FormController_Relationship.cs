@@ -33,10 +33,8 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
 
-            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
             var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
+                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
                 .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
                 .ToList();
 
@@ -55,10 +53,8 @@ namespace d360.web.Controllers
             var a = Company.GetById<Predicate>(id);
             var any = Company.Any<IntersectType>(i => i.PredicateID == id);
 
-            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
             var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
+                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
                 .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
                 .ToList();
 
@@ -322,17 +318,10 @@ namespace d360.web.Controllers
 
             #region Resolve Type
 
-            if (type == SystemObjects.FusionAttribute)
-            {
-                objectTypeID = Company.FusionAttributes.Where(x => x.ID == objectId).Single().FusionAttributeTypeID;
-                parentType = "FusionAttributeType";
-            }
-            else
-            {
-                var obj = Company.GetObjectDetail(type.ToString(), objectId);
-                objectTypeID = obj.TypeID;
-                parentType = obj.Type;
-            }
+            var obj = Company.GetObjectDetail(type.ToString(), objectId);
+            objectTypeID = obj.TypeID;
+            parentType = obj.Type;
+            
 
             if (objectTypeID <= 0 || string.IsNullOrEmpty(parentType) || relationshipType == null)
             {
@@ -422,102 +411,7 @@ where		I.ID is null
 ) C";
 
             switch (targetType)
-            {
-                case "FusionAttributeType":
-                    #region
-                    if ((relationshipType.Predicate != null) && (relationshipType.Predicate.Type == PredicateType.FusionMapping))
-                    {
-                        sql = $@"
-select	'FusionAttribute' as [Object], 
-        FA.ID as ObjectID, 
-        A.uid,
-        F.Name + '.' + FA.TextPath as Name
-from	FusionAttribute FA with(nolock)
-		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
-        inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectId = FA.ID 
-where	FA.ID not in (
-					select	1 
-					from	[IntersectDetail]
-					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
-					)
-        {PermissionJoins} 
-        and FA.ID != @id 
-order by F.Name, FA.TextPath";
-                    }
-                    else
-                    {
-                        sql = $@"
-declare @OwnerSourceType varchar(50)
-declare @owners table (ID int)
-
-
-IF @source = 'Intersect'
-BEGIN
-	set @OwnerSourceType = 'Artifact'
-
-	insert into @owners
-		select	A.ID
-		from	[IntersectDetail] N
-				inner join Asset A with(nolock) on N.[Subject] = 'Artifact' and A.objectID = N.SubjectID and N.ID = @id
-				inner join AssetType [AT] with(nolock) on [AT].ID = A.AssetTypeID and [AT].CanOwnFusion = 1
-	insert into @owners
-		select	A.ID
-		from	[IntersectDetail] N
-				inner join Asset A with(nolock) on N.[Object] = 'Artifact' and A.ObjectID = N.ObjectID and N.ID = @id
-				inner join AssetType [AT] with(nolock) on [AT].ID = A.AssetTypeID and [AT].CanOwnFusion = 1
-END
-ELSE
-BEGIN
-	set @OwnerSourceType = @source
-	insert into @owners 
-	Select ID from Asset where [object]=@OwnerSourceType and [objectId]=@id
-END
-
-declare @h table (ID int);
-
-if @OwnerSourceType = 'Artifact'
-	begin
-		with h as	(
-					select	A.ID,
-							PA.ID as ParentID
-					from	Asset A with(nolock)
-							inner join @owners O on O.ID = A.ID
-							cross apply [dbo].[GetParentByAssetID] (A.ID) as PA
-					union all
-					select	AA.ID,
-							PA.ID as ParentID
-					from	Asset AA with(nolock)
-							cross apply [dbo].[GetParentByAssetID] (AA.ID) as PA
-							inner join h as C on C.ParentID =AA.ID
-					)
-		insert into @h
-			select ID from h;
-	end
-
-		insert into @h values (@id)
-        insert into @h select id from @Owners
-
-
-select distinct 'FusionAttribute' as [Object], 
-        FA.ID as ObjectID, 
-        A.uid,
-        F.Name + '.' + FA.TextPath as Name
-from	FusionAttribute FA with(nolock)
-		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
-        inner join FusionOwner FO on FO.FusionID = FA.FusionID
-        inner join @h H on H.ID = FO.ASSETID
-        inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = FA.ID 
-where	FA.ID not in (
-					select	1 
-					from	[IntersectDetail]
-					where	IntersectTypeID = @it and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
-					)
-        and FA.ID != @id 
-        {PermissionJoins} 
-order by 3";
-                    }
-                    break;
-                #endregion
+            {                
                 case "Group":
                 case "GroupType":
                     #region
@@ -665,7 +559,7 @@ order by r.Name";
                     { "PredicateType", predicate?.Type }
                 };
 
-                return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = model, Formatting = Formatting.None };
             }
             catch (Exception ex)
             {
@@ -678,12 +572,11 @@ order by r.Name";
         {
             try
             {
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-                var models = Company.GetPredicateOptions(lineageVersion, subject, subjectID, @object, objectID, predicateID)
+                var models = Company.GetPredicateOptions(subject, subjectID, @object, objectID, predicateID)
                     .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
                     .OrderBy(i => i.label);
 
-                return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = models, Formatting = Formatting.None };
             }
             catch (Exception ex)
             {
@@ -697,16 +590,17 @@ order by r.Name";
             var models = Cardinality.One.GetList()
                 .Select(i => new { title = i.Name, value = i.ID });
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
         [Route("IntersectType_SubjectOptions")]
         public JsonNetResult IntersectType_SubjectOptions()
         {
             var models = Company.GetIntersectTypeOptions()
+                .Where(i => i.Type != "MetricAllocation" && i.Type != "Predicate")
                 .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
         [Route("IntersectType_ObjectOptions"), NonNullableParameters]
@@ -729,7 +623,7 @@ order by r.Name";
                     .Where(i => i.Type != "IntersectType")
                     .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
-                return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = models, Formatting = Formatting.None };
             }
             catch (Exception ex)
             {
@@ -774,9 +668,7 @@ order by r.Name";
                     PredicateID = int.Parse(predicate)
                 };
 
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
-                Company.UpsertIntersectType(model, lineageVersion);
+                Company.UpsertIntersectType(model);
                 var id = model.ID;
 
                 Company.CreateRollupPathChangedExecution(id);
@@ -920,9 +812,7 @@ order by r.Name";
                 model.ObjectID = int.Parse(objectInfo[1]);
                 model.PredicateID = int.Parse(predicate);
 
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
-                Company.UpsertIntersectType(model, lineageVersion);
+                Company.UpsertIntersectType(model);
                 Company.CreateRollupPathChangedExecution(id);
 
                 return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);

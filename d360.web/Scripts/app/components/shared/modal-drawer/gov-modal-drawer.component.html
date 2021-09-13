@@ -1,0 +1,17 @@
+﻿<div #modalWrapper class="modal-drawer-wrapper">
+    <div #modalDrawerBox class="modal-drawer-overlay" tabindex=-1 (keydown)="checkKey($event)" pFocusTrap *ngIf="display">
+        <div #modalDrawerBody class="modal-drawer-body {{additionalClasses}}">
+            <div class="modal-drawer-wrapper">
+                <div class="modal-drawer-header">
+                    <ng-content select="[header]"></ng-content>
+                </div>
+                <div #modalDrawerContent class="modal-drawer-content">
+                    <ng-content select="[content]"></ng-content>
+                </div>
+                <div class="modal-drawer-action-bar">
+                    <ng-content select="[action]"></ng-content>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

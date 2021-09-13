@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.bulkload.GetLoadColumns-v10">
-    <comment>GOV-15193-2</comment>
+  <changeSet author="Pappas" id="Procedure.bulkload.GetLoadColumns-v11">
+    <comment>GOV-10243</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER procedure [bulkload].[GetLoadColumns]
+create or alter procedure [bulkload].[GetLoadColumns]
 	@action varchar(2),
 	@type varchar(50),
 	@id int,
@@ -74,29 +74,6 @@ begin
 
 	if @action = 'P'
 	begin
-		if @type = 'AttributeType'
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-1, 'Owner Type', 1, 1, 0, 1, 1)
-
-			insert into @lookups ([Value], FieldTypeID, [Label])
-				select	[uid],
-						-1,
-						'Glossary: ' + [Name] 
-				from	AssetType T
-				where	T.Object = 'ArtifactType'
-				order by Name
-			
-			insert into @lookups ([Value], FieldTypeID, [Label])
-				select	[uid],
-						-1,
-						'Model: ' + [Name]
-				from	AssetType T
-				where	T.Object = 'TaxonomyType'
-				order by Name
-
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Owner ID', 1, 1, 0, 0, 1)
-		end 
-
 		if @type = 'IntersectType'
 		begin
 			declare @s varchar(50),
@@ -222,11 +199,6 @@ begin
 				from	@levels L 
 						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.Object = @type and FT.ObjectID = @id						
 						left join AssetTypeLevel TTL on TTL.[Level] = L.Value and TTL.AssetTypeID = FT.AssetTypeID
-		end 
-
-		if @type = 'RuleType'
-		begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Threshold', 1, 0, 0, 0, 1)
 		end
 	end 
 	

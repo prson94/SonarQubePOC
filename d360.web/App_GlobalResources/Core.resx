@@ -120,25 +120,7 @@
   <data name="CommentType_Action" xml:space="preserve">
     <value>Open Actions</value>
   </data>
-  <data name="CommentType_DataEvent" xml:space="preserve">
-    <value>Data Event</value>
-  </data>
   <data name="CommentType_Social" xml:space="preserve">
     <value>Comment</value>
-  </data>
-  <data name="CommentType_Task" xml:space="preserve">
-    <value>Task</value>
-  </data>
-  <data name="WorkflowType_CertifyArtifact" xml:space="preserve">
-    <value>Certify Artifact</value>
-  </data>
-  <data name="WorkflowType_ChallengeArtifact" xml:space="preserve">
-    <value>Challenge</value>
-  </data>
-  <data name="WorkflowType_SuggestNewArtifact" xml:space="preserve">
-    <value>Propose New Artifact</value>
-  </data>
-  <data name="WorkflowType_WorkIssue" xml:space="preserve">
-    <value>Actions</value>
   </data>
 </root>

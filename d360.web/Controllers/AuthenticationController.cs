@@ -8,6 +8,8 @@ using d360.core.helpers;
 using d360.extensions.azuregraph;
 using d360.extensions.mail;
 using d360.model;
+using d360.model.DataAccessLayer;
+using d360.web.Filters;
 using d360.web.Extensions;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -45,8 +47,8 @@ namespace d360.web.Controllers
 
         TelemetryClient Telemetry;
 
-        public AuthenticationController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public AuthenticationController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             Telemetry = new TelemetryClient();
             Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
@@ -905,8 +907,8 @@ namespace d360.web.Controllers
         public ActionResult ParseFormsResponse(LoginModel model, string ReturnUrl)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", Community.GetCompanySettings());
-
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+          
             if (!string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.ToUpper() == "/RESET")
             {
                 ReturnUrl = "";
@@ -1016,7 +1018,7 @@ namespace d360.web.Controllers
             }
 
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
             return View("Logout");
 
         }
@@ -1081,7 +1083,7 @@ namespace d360.web.Controllers
         public async Task<ActionResult> Register(Guid? registrationId = null, RegisterStep startStep = RegisterStep.Initial)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary()); 
 
             var model = new RegisterModel { Step = startStep, RegistrationID = registrationId, Accept = false };
             model.IsUsingActiveDirectory = isUsingActiveDirectory();
@@ -1139,8 +1141,8 @@ namespace d360.web.Controllers
         }
 
         private async Task<InvitedUserResult> registerAzureActiveDirectoryGuest(string email, string firstName, string lastName, string title, string url)
-        {
-            var settings = Community.GetCompanySettings();
+        {            
+            var settings = SettingsRepository.GetSettingsAsDictionary();
             var tenantId = settings["AzureADTenant"];     //ad tenant / directory id
             var clientSecret = settings["AzureGraphAPIKey"]; // key for application from azure portal
             var clientId = settings["AzureApplicationId"]; //application id from azure portal
@@ -1160,7 +1162,7 @@ namespace d360.web.Controllers
         {
             model.IsUsingActiveDirectory = isUsingActiveDirectory();
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
 
             if (ModelState.IsValid)
             {
@@ -1815,7 +1817,7 @@ namespace d360.web.Controllers
             }
 
             // now check if we also have the required ad guest info.
-            var settings = Community.GetCompanySettings();
+            var settings = SettingsRepository.GetSettingsAsDictionary();
             var tenantId = settings["AzureADTenant"];     //ad tenant / directory id
             var clientSecret = settings["AzureGraphAPIKey"]; // key for application from azure portal
             var clientId = settings["AzureApplicationId"]; //application id from azure portal
@@ -1877,7 +1879,7 @@ namespace d360.web.Controllers
         public ActionResult Reset()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
             return View("Reset");
         }
 
@@ -1913,7 +1915,7 @@ namespace d360.web.Controllers
                             if (success)
                             {
                                 ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-                                ViewData.Add("Settings", Community.GetCompanySettings());
+                                ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
                                 return View("ResetMessage");
                             }
                         }

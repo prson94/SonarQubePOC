@@ -3,14 +3,12 @@ using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
-using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
-using d360.model.helpers;
+using d360.model.helpers.filters;
 using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer

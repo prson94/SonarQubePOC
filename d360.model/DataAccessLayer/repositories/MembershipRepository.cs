@@ -3,7 +3,6 @@ using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using d360.core.enums;
 using System.Net;
@@ -15,6 +14,7 @@ using d360.core;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using Newtonsoft.Json.Linq;
+using d360.model.helpers.filters;
 using d360.core.helpers;
 
 namespace d360.model.DataAccessLayer
@@ -1385,7 +1385,8 @@ order by	q.SortOrder";
             {
                 {0, @"\b([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})\/?" }, //UID pattern
                 {1, @"^([a-z\/]+)\/(\d+)(\/|[;a-z=]+)(\d+)$" }, // type/typeid/objectid pattern
-                {2, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" } // type/objectid pattern
+                {2, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" }, // type/objectid pattern
+                {3, @"^([a-z\/]+)\/([\d\/]+)\/([id\/]+)\/(\d+)$" } // type/typeid/ID/objectid pattern
             };
             foreach (KeyValuePair<int, string> entry in patterns)
             {
@@ -1408,6 +1409,11 @@ order by	q.SortOrder";
                             string objectType = RoutePrefixToObjectType(regex.Groups[1].ToString());
                             int oId = int.Parse(regex.Groups[2].ToString());
                             asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objectType && a.ObjectID == oId);
+                            break;
+                        case 3: //type/typeid/id/objectid
+                            string objecTType = RoutePrefixToObjectType(regex.Groups[1].Value);
+                            int oID = int.Parse(regex.Groups[4].Value);
+                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objecTType && a.ObjectID == oID);
                             break;
                     }
                 }
@@ -1634,7 +1640,9 @@ order by	q.SortOrder";
 
                 if (!string.IsNullOrEmpty(filterValue))
                 {
-                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, false, true);
+                    var filterDataProvider = new FilterDataProvider(CompanyContext);
+
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false, true);
                     filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFieldIds = new List<int>();

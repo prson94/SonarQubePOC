@@ -8,10 +8,10 @@ import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenu, SiteMenuItem, SiteMenuModel, NavigationState } from '../../../models/site-menu.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
-import { isString, isArray } from 'util';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from "../../../static/string-constants";
+import { ActivatedRoute } from '@angular/router';
 
 declare var CompanySettings;
 
@@ -29,6 +29,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     @Input() menuOpen: boolean;
     @Output() menuChanged = new EventEmitter<boolean>();
 
+    public hideHeader: boolean = false;
+    public hideNav: boolean = false;
     public isAdmin: boolean = false;
     public siteMenu: SiteMenu[] = [];
     public favorites: SiteMenu;
@@ -37,6 +39,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private configMenu: SiteMenu;
     private subSiteNav: any;
     private subFavorites: any;
+    private subParams: any;
 
     private subReloadCounts: any;
     protected countData: any[];
@@ -47,9 +50,16 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
     @ViewChild("menu", { static: false }) menu: ElementRef;
+    isMenuActive: boolean;
+
+    @HostListener('document:click', ['$event'])
+    documentClick(event: MouseEvent) {
+            this.isMenuActive = false;        
+    }
 
     constructor(
         private ref: ChangeDetectorRef,
+        private route: ActivatedRoute,
         private messagesService: MessagesObservableService,
         private stateService: StateService,
         private headerActionsService: HeaderActionsService,
@@ -58,7 +68,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         private favoritesService: FavoritesService
     ) {
         super();
-    }
+    }    
 
     ngAfterContentInit(): void {
         this.checkScroller();
@@ -79,6 +89,24 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.loadFavorites();
         });
+
+        this.subParams = this.route.queryParams.subscribe((params) => {
+            let markForCheck = false;
+            if (params['noheader'] != null) {
+                this.hideHeader = params['noheader'].toLocaleLowerCase() === 'true';
+                markForCheck = true;
+
+            }
+
+            if (params['nonavigation'] != null) {
+                this.hideNav = params['nonavigation'].toLocaleLowerCase() === 'true';
+                markForCheck = true;
+            }
+
+            if (markForCheck) {
+                this.ref.markForCheck();
+            }
+        });
     }
 
 
@@ -97,6 +125,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
         if (this.subFavorites) {
             this.subFavorites.unsubscribe();
+        }
+        if (this.subParams) {
+            this.subParams.unsubscribe();
         }
     }
 
@@ -301,7 +332,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getAllCounts(items, arr: any[]) {        
-        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
+        if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') !== -1) {
             //get count for item
             var id = _.findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
@@ -318,7 +349,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
 
         //check if sub items exist
-        if (isArray(items.Items)) {
+        if (_.isArray(items.Items)) {
             //recursively check sub items
             items.Items.forEach((item) => this.getAllCounts(item, arr));
         }
@@ -338,6 +369,24 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.menuOpen = !this.menuOpen;
         this.menuChanged.emit(this.menuOpen);
     }
+
+    changeActiveMenu($event) {
+        this.isMenuActive = false;
+
+        if ($event) {
+            this.menuRefs.forEach((item) => {
+                if ($event.item.title != item.title) {
+                    if (item.menu)
+                        item.menu.isActiveItem = false;
+                } else {
+                    if (item.menu.NavigationItems && item.menu.NavigationItems.length > 0) {
+                        this.isMenuActive = true;
+                    }
+                }
+            });
+        }        
+        this.ref.detectChanges();
+    }    
 
     buildConfigMenu() {
 
@@ -368,8 +417,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         integrationMenu.Name = "Integration";
         integrationMenu.Items = [];
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, IsHomePage: false, count: null });
-        integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count:null  });
-        if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count: null  });
+        if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push(integrationMenu);
 
@@ -377,23 +426,23 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         securityMenu.Name = "Security";
         securityMenu.Items = [];
 
-        securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
         if (CompanySettings.EnableOrganizations)
-            securityMenu.Items.push({ Name: 'Organizations', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+            securityMenu.Items.push({ Name: 'Organizations', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
-        securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push(securityMenu);
 
-        this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, IsHomePage: false, count:null });
+        this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, IsHomePage: false, count: null });
 
-        this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count:null });
+        this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push({ Name: 'Dashboards', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
                
-        this.adminMenu.NavigationItems.push({ Name: 'Branding', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count:null });
+        this.adminMenu.NavigationItems.push({ Name: 'Branding', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push({ Name: 'Tags', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, IsHomePage: false, count: null });
 

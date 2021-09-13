@@ -1,5 +1,4 @@
-﻿using d360.media.formatters;
-using d360.web.Filters;
+﻿using d360.web.Filters;
 using d360.web.Handlers;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -116,8 +115,7 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
 
             config.AddODataQueryFilter();
             config.EnableCors();
-            config.Formatters.Add(new DictionaryXmlMediaTypeFormatter());
-
+            
             config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new GuidConverter());
             config.Formatters.JsonFormatter.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             config.Formatters.JsonFormatter.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;

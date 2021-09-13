@@ -19,6 +19,7 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     @Input() upperThreshold: number = 90; //90%
 
     @Input() igBadgeStyle: boolean = false;
+    @Input() useMiniBadge: boolean = false;
     @Input() precision: number = 0;
 
     _type: string;
@@ -74,11 +75,13 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     }
 
     getScoreCSSClass(): string {
-        if (this.score.Value <= this.lowerThreshold / 100)
-            return 'score-poor'; //red
-        if (this.score.Value <= this.upperThreshold / 100)
-            return 'score-average'; //yellow
-        return 'score-good'; //green
+        if (this.score.Value <= this.lowerThreshold / 100) {
+            return 'poor'; //red
+        }
+        if (this.score.Value <= this.upperThreshold / 100) {
+            return 'average'; //yellow
+        }
+        return 'good'; //green
     }
 
     private lastCalculatedMessage() {

@@ -1,4 +1,4 @@
-<div *ngIf="showHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}">
+<div *ngIf="showHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}" [style.margin-left]="showNav ? null : '0'">
     <div class="title">
         <span *ngIf="!IsIcon(area.icon)" class="d3s-icon asset-icon"><img [src]="GetURL(area.icon)" /></span>
         <span *ngIf="IsIcon(area.icon)" class="d3s-icon asset-icon">
@@ -7,7 +7,7 @@
         </span>
         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
         <d3s-simple-badge *ngIf="showDataClassification"
-                          [badgeValue]="dataClassification" 
+                          [badgeValue]="dataClassification"
                           [badgeType]="'DataClassification'">
         </d3s-simple-badge>
         <d3s-simple-badge *ngIf="showStatus"
@@ -21,7 +21,7 @@
             <span class="content">{{button.text}}</span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>
         </button>
-        <div class="asset-actions" *ngIf="assetAction && assetAction.isVisible">
+        <div class="asset-actions" [style.width]="assetActionWidth > 0 ? assetActionWidth + 'px' : null" [style.text-align]="'right'" *ngIf="assetAction && assetAction.isVisible">
             <span class="grow"></span>
             <button *ngIf="assetAction.showBack" (click)="assetAction.backCallback()" class="button">
                 <i class="fa fa-arrow-left"></i>Back

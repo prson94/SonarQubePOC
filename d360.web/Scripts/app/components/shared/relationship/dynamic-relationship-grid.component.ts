@@ -198,6 +198,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         params["_includePath"] = true;
         params["_pageSize"] = $event.rows;
         params["_pageNum"] = ($event.first / $event.rows) + 1;
+        params["_listcolorsasjson"] = true;
 
         this.currentParams = JSON.parse(JSON.stringify(params));
 

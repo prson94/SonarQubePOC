@@ -26,12 +26,22 @@ export class ObjectDetailService extends BaseObservableService {
         super(messagesService);
     }
 
+    getObjectDetailByUid(uid: string, objectType: string, useSingleColumn: boolean = false, includeHeader: boolean = false, useAssetDetailColumnDefinition: boolean = false): Observable<any> {
+        return this.http.get(`api/${objectType}/${uid}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}&useAssetDetailColumnDefinition=${useAssetDetailColumnDefinition}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getObjectDetail(
         objectID: number,
         objectType: string,
-        useSingleColumn: boolean = false
+        useSingleColumn: boolean = false,
+        includeHeader: boolean = false,
+        useAssetDetailColumnDefinition: boolean = false
     ): Observable<any> {
-        return this.http.get(`api/${objectType}/${objectID}/detail?useSingleColumn=${useSingleColumn}`)
+        return this.http.get(`api/${objectType}/${objectID}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}&useAssetDetailColumnDefinition=${useAssetDetailColumnDefinition}`)
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))

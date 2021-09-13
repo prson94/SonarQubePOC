@@ -17,6 +17,7 @@ import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ScoreType, ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 
@@ -27,6 +28,8 @@ export class BaseComponent {
 
     readonly resourceTypeUid = '00000001-0000-0000-0000-A00000000011';
     readonly groupTypeUid = '00000001-0000-0000-0000-B00000000012';
+    readonly metricAllocationUid = '00000001-0000-0000-0000-B00000000013';
+    readonly predicateUid = '00000001-0000-0000-0000-B00000000014';
 
     // current object info
     uid: string;
@@ -295,16 +298,22 @@ export class BaseComponent {
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
-                var urlPart = 'ownership';
-                if (this.objectType == 'ReferenceItemType')
-                    urlPart = 'responsibilities';
-
-                this.ownershipSidebar = new SecondaryNavItem(
-                    'Responsibilities',
-                    urlPart,
-                    ['fa-user'],
-                    `/sidebar/${urlPart}/${this.assetID}`, null, 25
-                );
+                if (this.objectType == 'ReferenceItemType') {
+                    this.ownershipSidebar = new SecondaryNavItem(
+                        'Responsibilities',
+                        'responsibilities',
+                        ['fa-user'],
+                        `/sidebar/responsibilities${this.auditContextUrl()}`, null, 25
+                    );
+                }
+                else {
+                    this.ownershipSidebar = new SecondaryNavItem(
+                        'Responsibilities',
+                        'ownership',
+                        ['fa-user'],
+                        `/sidebar/ownership/${this.assetID}`, null, 25
+                    );
+                }
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
@@ -480,6 +489,14 @@ export class BaseComponent {
 
         if (this.objectType === "GroupType") {
             return `/${this.objectType}/${this.groupTypeUid}`;
+        }
+
+        if (this.objectType === "MetricAllocation") {
+            return `/${this.objectType}/${this.metricAllocationUid}`;
+        }
+
+        if (this.objectType === "Predicate") {
+            return `/${this.objectType}/${this.predicateUid}`;
         }
 
         //Tag needs to be part of the URL for the header to behave
@@ -722,6 +739,7 @@ export class BaseComponent {
 
     private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
         //this is fullpage refresh, invalidate key to recreate navigation
+        var checkdisplayvalue = false;
         if (!this.secondaryNavService["isSidebarCreated"]) {
             this.secondaryNavService.invalidateKey();
             return false;
@@ -729,11 +747,22 @@ export class BaseComponent {
 
 
         var currentData = JSON.parse(this.secondaryNavService.getLoadedKey());
+
+        if (loadData.DisplayValue != null) {
+            checkdisplayvalue = true
+        }
+
         if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
             return true;
 
-        if (loadData.AssetUid == currentData.Uid)
-            return true;
+        if (checkdisplayvalue) {
+            if (loadData.AssetUid == currentData.Uid && currentData.DisplayValue == loadData.DisplayValue)
+                return true;
+        }
+        else {
+            if (loadData.AssetUid == currentData.Uid)
+                return true;
+        }
 
         if (loadData.AssetId == currentData.AssetId)
             return true;
@@ -745,12 +774,15 @@ export class BaseComponent {
         this.secondaryNavService.refreshStats();
     }
 
-    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
+    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null, DisplayValue: string = null) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
         data.Class = assetClass;
         if (assetUid != null)
             data.AssetUid = assetUid.toString().toLowerCase();
+
+        if (DisplayValue != null)
+            data.DisplayValue = DisplayValue;
 
         if (objectId) {
             data.ObjectId = objectId;
@@ -794,7 +826,7 @@ export class BaseComponent {
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
 
-            var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
+            var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
             this.secondaryNavService.setLoadedKey(_key);
 
             this.clearSidebar();
@@ -808,13 +840,7 @@ export class BaseComponent {
                     this.preloadedTreeData = r.PreloadData.Data;
                 }
             }
-            var area = "";
-            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows', 'Diagram Assets', 'Connector Labels']
-                .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
-
-            if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
-                area = 'Tags';
-            }
+            let area = this.determineAreaForAdminPage(areaName);
 
             var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName, this.uid);
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
@@ -863,9 +889,38 @@ export class BaseComponent {
         })
     }
 
+    protected determineAreaForAdminPage(areaName: string): string {
+        let area = "";
+
+        area = [
+            StringConstants.Section_BusinessAssets,
+            StringConstants.Section_TechnicalAssets,
+            StringConstants.Section_Artifacts,
+            StringConstants.Section_Models,
+            StringConstants.Section_Policies,
+            StringConstants.Section_Predicates,
+            StringConstants.Section_Relationships,
+            StringConstants.Section_Rules,
+            StringConstants.Section_Scoring,
+            StringConstants.Section_Surveys,
+            StringConstants.Section_Actions,
+            StringConstants.Section_Workflows]
+            .indexOf(areaName) !== -1 ? StringConstants.Area_Configuration : StringConstants.Area_Administration;
+
+        if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
+            area = 'Tags';
+        }
+
+        return area;
+    }
+
     private IsType(objectName: string): boolean {
         if (objectName == 'Tag')
             return true;
+
+        if (objectName == 'MetricAllocation' || objectName == 'Predicate') {
+            return true;
+        }
 
         if (objectName.length <= 4)
             return false;

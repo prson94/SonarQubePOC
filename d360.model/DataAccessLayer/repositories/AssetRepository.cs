@@ -22,6 +22,8 @@ using d360.core.entities.Process;
 using AngleSharp.Text;
 using System.Drawing;
 using System.Threading;
+using d360.model.helpers.filters;
+
 namespace d360.model.DataAccessLayer
 {
     public class AssetRepository : BaseRepository, IAssetRepository
@@ -61,33 +63,9 @@ namespace d360.model.DataAccessLayer
 
             if (Class.HasValue)
             {
-                if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && Class == AssetTypeClass.FusionAttribute)
-                {
-                    optionalJoin = @"inner join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
-                                        inner join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID";
-                    dbArgs.Add("@fusionTypeUid", fusionTypeUid);
-                    condition += " and ATTFusionType.uid = @fusionTypeUid";
-                }
-                else
-                {
-                    var Id = (int)Class;
-                    dbArgs.Add("@Id", Id.ToString());
-                    condition = " and A.[Class]=@Id";
-                }
-            }
-            else if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty)
-            {
-
-
-                optionalJoin += @"left join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
-                                  left join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID 
-                                  left join AssetType ATQFusionType on ATQFusionType.[Object] = 'FusionType' and ATQFusionType.ObjectID = F.FusionTypeID ";
-
-                dbArgs.Add("@class1", (int)AssetTypeClass.FusionAttribute);
-                dbArgs.Add("@fusionTypeUid", fusionTypeUid);
-
-                condition = string.Format(" and A.[Class] = @class1 AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
-
+                var Id = (int)Class;
+                dbArgs.Add("@Id", Id.ToString());
+                condition = " and A.[Class]=@Id";
             }
             var levelsSql = "";
             List<string> whereStatements = new List<string>();
@@ -276,7 +254,6 @@ namespace d360.model.DataAccessLayer
             Guid? parentUid = null;
             bool parentUidPopulated = false;
             var includeRelationships = false;
-            var fusionAttributeWithParent = false;
             var includeSegments = false;
             var includePermissionDetails = false;
             bool includeOnlyListableFields = false;
@@ -299,6 +276,9 @@ namespace d360.model.DataAccessLayer
             bool simpleFilterOwnershipOnSecurityAsset = false;
             bool isForTreeGrid = false;
             bool useTempTableForResults = false;
+            string profilingCheckSql = "";
+            string profilingCheckFields = "";
+            bool includeProfilingCheck = false;
 
             Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -396,6 +376,11 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "isfortreegrid").Value, out isForTreeGrid);
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeprofilingcheck"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includeprofilingcheck").Value, out includeProfilingCheck);
+            }
+
             //check for asset path fields now after include fields have been filtered
             if (fieldTypes.Any(x => x.Type == "Path"))
             {
@@ -422,6 +407,12 @@ namespace d360.model.DataAccessLayer
             //The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
             getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON);
             List<string> countJoins = new List<string>(fieldJoins);
+
+            if (includeProfilingCheck)
+            {
+                profilingCheckSql = $"cross apply (select case when exists (select 1 from AssetDataProfile where AssetID = A.ID) then cast(1 as bit) else cast(0 as bit) end as HasProfiling) Profiling";
+                profilingCheckFields = $"Profiling.HasProfiling as HasProfiling,";
+            }
 
             if (includeRelationships)
             {
@@ -567,7 +558,6 @@ namespace d360.model.DataAccessLayer
                 countJoins.Add(joinCountSql);
             }
 
-
             if (includeRelationships)
             {
                 whereStatements.Add("R.Relationships is not null");
@@ -617,7 +607,7 @@ namespace d360.model.DataAccessLayer
             }
 
             var ownershipFieldTypes = fieldTypes.Where(f => f.Type == "OwnershipLookup").ToList();
-            if(ownershipFieldTypes.Any(f => f.SortOrder > 0))
+            if (ownershipFieldTypes.Any(f => f.SortOrder > 0))
             {
                 includeOwnershipLookup = true;
             }
@@ -768,12 +758,6 @@ namespace d360.model.DataAccessLayer
             }
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
-            if (assetType.Class == AssetTypeClass.FusionAttribute)
-            {
-                if ((await CompanyContext.Database.Connection.QueryFirstOrDefaultAsync<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID }, commandTimeout: ApiTimeout)) > 0)
-                    fusionAttributeWithParent = true;
-            }
-
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_assetuid"))
             {
                 List<Guid> assetUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid")
@@ -865,7 +849,8 @@ namespace d360.model.DataAccessLayer
                     }
                     getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
-                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
+                    var filterDataProvider = new FilterDataProvider(CompanyContext);
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent);
                     filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFields = new List<int>();
@@ -882,7 +867,11 @@ namespace d360.model.DataAccessLayer
                     {
                         var fieldType = allFieldTypes.FirstOrDefault(x => x.ID == fieldTypeId);
 
-                        if (fieldType != null && fieldType.Type == "Path") includeAssetPathInCount = true;
+                        if (fieldType != null && fieldType.Type == "Path")
+                        {
+                            includeSegments = true;
+                            includeAssetPathInCount = true;
+                        }
                     }
 
                     if (includeOnlyListableFields || includeFieldsList.Any())
@@ -918,7 +907,8 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+                    var filterDataProvider = new FilterDataProvider(CompanyContext);
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Relationships);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFields = new List<int>();
                     whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
@@ -1222,8 +1212,6 @@ namespace d360.model.DataAccessLayer
                 select  count(*)
                 from    Asset A 
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
-                {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {string.Join("\n", countJoins)}
                 {hierarchyParentUidSelect}
@@ -1246,25 +1234,23 @@ namespace d360.model.DataAccessLayer
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
                     {(includeColor ? "ACJ.ColorJson as Color," : "")}
+                    {(includeProfilingCheck ? profilingCheckFields : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     KP.KeyPath as [Path]
-                    {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
-                    {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
-                    {(includePermissionDetails ? includePermissionFields : "")}
+                    {(includePermissionDetails ? includePermissionFields : "")} 
                     {hierarchyParentUidCol}
                 {(useTempTableForResults ? " into #results " : "")}
                 from Asset A
                 left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
-                {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {string.Join("\n", fieldJoins)}
                 {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
                 {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
+                {(includeProfilingCheck ? profilingCheckSql : "")}
                 {hierarchyParentUidSelect}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
@@ -1278,7 +1264,7 @@ namespace d360.model.DataAccessLayer
                 model.total = null;
             }
 
-            var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {countSql} {sql} ";
+            var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {countSql} {sql} OPTION(RECOMPILE)";
 
             if (!string.IsNullOrEmpty(selectOwnershipSQL))
             {
@@ -1423,7 +1409,9 @@ namespace d360.model.DataAccessLayer
 
                         if (string.IsNullOrEmpty(orderBy))
                         {
-                            orderBy = fieldTypes.OrderByDescending(x => x.SortOrder).ThenBy(x => x.ID).FirstOrDefault().Name;
+                            orderBy = fieldTypes.Where(x => x.IsListable)
+                                .OrderBy(x => x.SortOrder)
+                                .ThenBy(x => x.ID).FirstOrDefault().Name;
                         }
 
                         results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
@@ -2429,30 +2417,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     #endregion
                     break;
-                case AssetTypeClass.FusionAttribute:
-
-                    int? parentId = parentAssetType?.ObjectID;
-                    int fusionTypeId = model.FusionID.Value;
-
-                    var fusionAttrType = new FusionAttributeType
-                    {
-                        Name = model.Name,
-                        ParentID = parentId,
-                        ScanEnabled = true,
-                        FusionTypeID = fusionTypeId
-                    };
-
-                    CompanyContext.Add(fusionAttrType);
-                    model.ObjectID = fusionAttrType.ID;
-                    model.Object = SystemObjects.FusionAttributeType.ToString();
-
-                    var fatAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    if (fatAssetType != null)
-                    {
-                        fatAssetType.Description = model.Description;
-                        CompanyContext.Update(fatAssetType);
-                    }
-                    break;
                 case AssetTypeClass.Diagram:
                     #region
                     var diagram = new AssetType
@@ -2639,26 +2603,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.Description = model.Description;
                     assetType.CanEditParent = model.CanEditParent;
-
-                    #endregion
-                    break;
-                case AssetTypeClass.FusionAttribute:
-                    #region
-
-                    var fusionAttributeType = CompanyContext.GetById<FusionAttributeType>(model.ObjectID);
-                    if (fusionAttributeType == null)
-                    {
-                        return new Tuple<HttpStatusCode, string, string>(
-                            HttpStatusCode.BadRequest,
-                            $"Wrong {AssetTypeClass.FusionAttribute.ToString()}",
-                            $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided. {AssetTypeErrors.CheckRequest}"
-                        );
-                    }
-
-                    assetType.Description = model.Description;
-
-                    fusionAttributeType.Name = model.Name;
-                    CompanyContext.Update(fusionAttributeType);
 
                     #endregion
                     break;
@@ -3124,6 +3068,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 	                          ,ee.detail
                               ,ee.component
                               ,ee.createdOn
+							  ,ee.Configuration as 'ConfigurationJSON'
                           FROM [api].[ExecutionExternal] ee
                           {whereResultCteSql}
                           {orderBySql}
@@ -3135,6 +3080,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           {whereResultCteSql}
                         ";
             var executions = await CompanyContext.QueryAsync<APIExecutionExternalAPIModel>(sql, parameters, ApiTimeout);
+
+            foreach (var ex in executions)
+            {
+                if (!string.IsNullOrEmpty(ex.ConfigurationJSON))
+                {
+                    ex.Configuration = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(ex.ConfigurationJSON);
+                }
+            }
 
             int? count = null;
             if (includeTotal)
@@ -3192,7 +3145,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             bool reached = false;
             if ((model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset) && model.UseAsTransformation == true)
             {
-                var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
+                var useAsTransformationLimit = CompanyContext.GetSettingValue<int>(Setting.UseAsTransformationLimit);
                 var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
                 if (totalUseAsTransform > useAsTransformationLimit)
                     reached = true;
@@ -3381,8 +3334,6 @@ where	O.RowNum = 1";
             var includedAssetClasses = new List<AssetTypeClass>() {
                 AssetTypeClass.BusinessAsset,
                 AssetTypeClass.Diagram,
-                AssetTypeClass.Fusion,
-                AssetTypeClass.FusionAttribute,
                 AssetTypeClass.Group,
                 AssetTypeClass.Model,
                 AssetTypeClass.Organization,
@@ -3416,13 +3367,10 @@ where	O.RowNum = 1";
 
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, Guid? assetTypeUid = null)
         {
+            bool isATUidPassed = false;
 
-            string assetPermissionWhere = @" and ID NOT IN (select AssetId 
-                        from dbo.UserAssetPermissions(@resourceId,AT.Id) where ((PermissionsBitMask & @p)) = 0
-                        )";
-
-            string assetTypePermissionWhere = @" and AT.ID not in (select AssetTypeID
-                    from dbo.AssetTypesUserCantRead(@ResourceID))";
+            string assetTypePermissionWhere = @" and not exists (select 1
+                    from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = att.ID)";
 
             if (CompanyContext.CurrentResourceIsAdmin)
             {
@@ -3431,12 +3379,52 @@ where	O.RowNum = 1";
 
             if (assetTypeUid.HasValue)
             {
-                assetTypePermissionWhere += " and at.uid = @assetTypeUid";
+                assetTypePermissionWhere += " and att.uid = @assetTypeUid";
+                isATUidPassed = true;
             }
 
-            var countsSQL = $@"select AT.uid, 
+            var countsSQL = $@"
+                            {(isATUidPassed ? "declare @assetTypeUid uniqueidentifier = (select @assetTypeUidPassed);" : "")}
+
+                            drop table if exists #TempAssetpremission;
+                            drop table if exists #TempAssetCount;
+
+                            CREATE TABLE #TempAssetCount(ASSETTYPEID BIGINT,RecordCount BIGINT);
+                            CREATE index idx_TempAssetCount on #TempAssetCount(ASSETTYPEID);
+
+                            select distinct att.id assettypeid,up.assetid
+                            into #TempAssetpremission
+                            from assettype att
+                            cross apply dbo.userassetpermissions(@resourceId,att.id) up
+                            where att.class in @filterClasses and ((up.permissionsbitmask & @p)) = 0
+                            {assetTypePermissionWhere};
+
+                            IF EXISTS(SELECT 1 FROM #TempAssetpremission)
+                            BEGIN
+                                INSERT INTO #TempAssetCount
+                                select Att.ID,count(1) RecordCount
+                                from AssetType Att
+                                inner join Asset A on Att.ID = A.AssetTypeID
+                                where att.class in @filterClasses
+                                {assetTypePermissionWhere}
+                                and NOT EXISTS (select 1 from #TempAssetpremission U
+                                where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
+                                GROUP BY Att.ID
+                            END
+                            ELSE
+                            BEGIN
+                                INSERT INTO #TempAssetCount
+                                select Att.ID ,count(1) RecordCount
+                                from AssetType Att
+                                inner join Asset A on Att.ID = A.AssetTypeID
+                                where att.class in @filterClasses
+                                {assetTypePermissionWhere}
+                                group by Att.ID
+                            END
+
+                            select att.uid, 
 	                        ATParent.uid as parentUid,
-	                        case at.class
+	                        case att.class
 	                         when 1 then 'Business Asset'
 	                         when 8 then 'Technical Asset'
 	                         when 2 then 'Model'
@@ -3444,21 +3432,21 @@ where	O.RowNum = 1";
 	                         when 7 then 'Rule'
                              when 15 then 'Diagram'
 	                        end as class,
-	                        at.name,
-	                        at.description,
-	                        Assets.count as count
-                         from AssetType AT
+	                        att.name,
+	                        att.description,
+	                        isnull(Assets.Recordcount,0) as count
+                         from AssetType att
 						 outer apply (select ATParent.uid from IntersectType IT
 							inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
 							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
-						 where it.ObjectID = AT.ObjectID and it.Object = at.Object
+						 where it.ObjectID = att.ObjectID and it.Object = att.Object
 						 )ATParent
-                         outer apply (select count(*) from Asset where AssetTypeID = AT.ID {assetPermissionWhere})Assets(count)
+                         left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID
                         where
-                         at.Class in @filterClasses
+                         att.Class in @filterClasses
                          {assetTypePermissionWhere}
-                    order by at.name";
-            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUid }, ApiTimeout);
+                    order by att.name";
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
         }
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
@@ -3620,7 +3608,6 @@ select  A.ID as AssetId,
         A.UpdatedOn,
         ACJ.ColorJson as Color,
         {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
-        {(assetType.Class == AssetTypeClass.Rule ? "R.Threshold," : "")}
         KP.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
         {string.Join(",\n", fieldColumns)}
 from    Asset A
@@ -4130,6 +4117,7 @@ where   A.[uid] = @assetUid";
             result.Detail = model.Detail;
             result.Component = model.Component;
             result.CreatedOn = DateTime.UtcNow;
+            result.Configuration = model.Configuration;
 
             var ExecutionExternal = new ApiExecutionsExternal
             {
@@ -4137,7 +4125,8 @@ where   A.[uid] = @assetUid";
                 Status = result.Status,
                 Detail = result.Detail,
                 Component = result.Component,
-                CreatedOn = (System.DateTime)result.CreatedOn
+                CreatedOn = (System.DateTime)result.CreatedOn,
+                Configuration = model.Configuration != null ? JsonConvert.SerializeObject(model.Configuration) : ""
             };
 
             //add new issue record

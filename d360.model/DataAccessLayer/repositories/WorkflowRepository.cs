@@ -11,6 +11,7 @@ using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace d360.model.DataAccessLayer
 {
@@ -395,8 +396,8 @@ namespace d360.model.DataAccessLayer
                                 vs.Fields as FieldsXml,
                                 itemstep.Settings as ItemSettings,
                                 itemstep.Fields as ItemFields,
-                                item.StartedOn,
-                                item.CompletedOn,
+                                itemstep.StartedOn,
+                                itemstep.CompletedOn,
                                 R.uid as StartedByUid,
                                 R1.uid as CompletedByUid
                                 from workflow.[version]  v 
@@ -406,8 +407,8 @@ namespace d360.model.DataAccessLayer
                                 itemstep.StepID = vs.id
                                 inner join [workflow].[Item] item on
                                 item.VersionID =v.id and itemstep.ItemID = item.id
-                                left outer join reporting.Global_Resource R on R.ResourceID = item.StartedBy
-                                left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
+                                left outer join reporting.Global_Resource R on R.ResourceID = itemstep.StartedBy
+                                left outer join reporting.Global_Resource R1 on R1.ResourceID = itemstep.CompletedBy
                                  where item.uid=@uid";
 
             var workflowInstances = await CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs, ApiTimeout);
@@ -874,8 +875,20 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int workflowItemId, string query, int resultCount = 1000)
+        public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int workflowItemId, string query, int resultCount = 100, CancellationToken? cancellationToken = null)
         {
+            if (!string.IsNullOrEmpty(query))
+            {
+                query = query.Replace("%", "[%]");
+                query = query.Replace("[", "[[]");
+                query = query.Replace("_", "[_]");
+            }
+
+            if (cancellationToken == null)
+            {
+                cancellationToken = CancellationToken.None;
+            }
+
             var allowedAssetTypeClasses = new List<AssetTypeClass>
             {
                 AssetTypeClass.BusinessAsset,
@@ -931,18 +944,26 @@ namespace d360.model.DataAccessLayer
                             cross apply dbo.GetAssetTypeTextPathById(AT.ID,' > ') ATP
                             where I.ID = @id and IC.IssueObject is null and {assetTypeClassSql}";
 
-            var assetTypes = await CompanyContext.QueryAsync<int>(assetTypeSql, new { id = workflowItemId });
+            var assetTypes = await CompanyContext.Database.Connection.QueryAsync<int>
+                            (new CommandDefinition(assetTypeSql,
+                              cancellationToken: cancellationToken.Value,
+                              parameters: new { id = workflowItemId }
+                            ));
 
             var sql = $@"select top {resultCount} A.ID, 
-                                graph.GetPathByAssetId(a.ID,' > ','/') as Name, 
+                                T.TextPath as Name, 
                                 A.Object, 
                                 A.ObjectID 
-                        from Asset A
-                        where A.AssetTypeID in ({(assetTypes.Any() ? string.Join(",", assetTypes) : "-1")}) {(string.IsNullOrWhiteSpace(query) ? "" : "and (graph.GetPathByAssetId(a.ID,' > ','/') like @query + '%' or graph.GetPathByAssetId(a.ID,' > ','/') like '%' + @query + '%')")}";
+                        from AssetDetail A
+                        cross apply dbo.GetAssetTextPathById(A.ID, ' > ') T
+                        where A.AssetTypeID in ({(assetTypes.Any() ? string.Join(",", assetTypes) : "-1")}) 
+                        {(string.IsNullOrWhiteSpace(query) ? "" : "and (A.DisplayValue like @query + '%' or A.DisplayValue like '%' + @query + '%')")}
+                        order by A.DisplayValue";
 
-
-            return await CompanyContext.QueryAsync<WorkflowReassignmentAssetApiModel>(sql, new { query });
+            return await CompanyContext.Database.Connection.QueryAsync<WorkflowReassignmentAssetApiModel>
+                        (new CommandDefinition(sql,
+                        cancellationToken: cancellationToken.Value,
+                        parameters: new { query }));
         }
-
     }
 }

@@ -1,6 +1,20 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy, AfterContentInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { FormControl, Validators, FormGroup, ValidatorFn, AbstractControl, FormBuilder } from '@angular/forms';
 
+export class DummyformModel {
+    constructor(
+        public name: string,
+        public number: number
+    ) { }
+}
+
+export class DummyenforceModel {
+    constructor(
+        public name: string,
+        public number: number,
+        public enforce: boolean
+    ) { }
+}
 
 @Component({
     selector: 'gallery-number-field',
@@ -22,8 +36,10 @@ export class GalleryNumberFieldComponent implements OnInit {
     properties: Array<any>;
     sampleUsage: string = '<ig-number-input></ig-number-input>';
     model: DummyformModel = new DummyformModel("name", 0);
+    enforcemodel: DummyenforceModel = new DummyenforceModel("enforcemodel", 0, true);
     form: FormGroup = null;
-
+    demoSize: string = "small";
+    enforceForm: FormGroup = null;
     constructor(private fb: FormBuilder) { }
 
     ngOnInit(): void {
@@ -40,8 +56,10 @@ export class GalleryNumberFieldComponent implements OnInit {
         this.properties.push({ Name: "placeholder", Type: "string", Description: "Placeholder text string for the input control.", Default: "'Optional' or 'Value required' if required = true" });
         this.properties.push({ Name: "max", Type: "Date", Description: "The minimum number allowed", Default: "" });
         this.properties.push({ Name: "min", Type: "Date", Description: "The maximum number allowed", Default: "" });
+        this.properties.push({ Name: "enforceMaxMin", Type: "Boolean", Description: "Whether or not to enforce min/max and provide 'underMin' and 'overMax' validation errors.", Default: "" });
         this.properties.push({ Name: "step", Type: "string", Description: "The amount to increment/decrement the value by", Default: "mm/dd/yy" });
         this.properties.push({ Name: "name", Type: "string", Description: "Name of the input element or form control", Default: "" });
+        this.properties.push({ Name: "igSize", Type: "string", Description: "Size of the input. Options are small(150px), medium(308px), large(624px) and full(100%).", Default: "small" });
         this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
         this.properties.push({ Name: "ariaLabel", Type: "string", Description: "Aria-label attribute is used to define a string that labels the current element.", Default: "" });
         this.properties.push({ Name: "ariaRequired", Type: "string", Description: "The aria-required attribute is used to indicate that user input is required on an element before a form can be submitted", Default: "" });
@@ -63,12 +81,7 @@ export class GalleryNumberFieldComponent implements OnInit {
         console.log(form);
     }
     get diagnostic() { return JSON.stringify(this.model); }
+    get enforcediagnostic() { return JSON.stringify(this.enforcemodel); }
     get JSONERR() { return JSON.stringify(this.form.get('myNumber').errors);}
 }
 
-export class DummyformModel {
-    constructor(
-        public name: string,
-        public number: number
-    ) { }
-}

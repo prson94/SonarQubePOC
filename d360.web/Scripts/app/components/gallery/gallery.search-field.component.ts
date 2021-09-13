@@ -73,7 +73,6 @@ All matches are case insensitive.
         setTimeout(function () {
             child.remove();
         }, 2000);
-        console.log(e, elem);
     }
 
 

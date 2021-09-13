@@ -3,9 +3,9 @@ import * as _ from "lodash";
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import { FieldType, FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
+import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
-import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
+import { AdvancedFilterFieldType, AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldAdvancedCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
@@ -25,6 +25,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     @Input() loadIdentifier: string = "";
     @Input() enableFilterSaving: boolean = true;
     @Input() gridType: string = "List";
+    @Input() fieldsObserver: Observable<AdvancedFilterFieldType[]>
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
@@ -35,7 +36,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     filters: Filters;
     emittedFilters: string;
 
-    fields: FieldTypeAPIModelFieldCondition[] = null;
+    fields: FieldTypeAPIModelFieldAdvancedCondition[] = null;
     operators: OperatorModel[] = [];
 
     conditions: AdvancedFilterFieldConditionCollection;
@@ -155,7 +156,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             this.getRelationshipTypeObs()
         ).subscribe((response) => {
             this.operators = response[0];
-            let res = response[1] as FieldTypeAPIModelField[];
+            let res = response[1] as AdvancedFilterFieldType[];
             this.allocations = response[2];
             this.relationshipTypes = response[3];
 
@@ -223,27 +224,26 @@ export class AdvancedFilteringComponent implements OnChanges {
         }
     }
 
-    private processLoadedData(res: FieldTypeAPIModelField[]) {
-        var tempFields: FieldTypeAPIModelFieldCondition[] = [];
+    private processLoadedData(res: AdvancedFilterFieldType[]) {
+        var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
         res.forEach((f) => {
             if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
-                var fModel = f as FieldTypeAPIModelFieldCondition;
+                var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
                 tempFields.push(fModel);
             }
         });
 
         SystemFields.GetSystemFieldDefinition(this.gridType).forEach((f) => {
-            var fModel = f as FieldTypeAPIModelFieldCondition;
+            var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);
         });
 
         SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-            var fModel = f as FieldTypeAPIModelFieldCondition;
+            var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);
         });
-
 
         tempFields.forEach((f) => {
             f.Operators = [];
@@ -271,6 +271,11 @@ export class AdvancedFilteringComponent implements OnChanges {
                     }
                 }
             });
+        });
+
+        res.filter((r) => r.RemovePopulatedOperator).forEach((r) => {
+            let ft = tempFields.find((t) => t.Name === r.Name);
+            ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
         });
 
         this.fields = tempFields;
@@ -321,7 +326,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         }, 50);
     }
 
-    private updateOperatorsForDateTimeSystemField(f: FieldTypeAPIModelFieldCondition) {
+    private updateOperatorsForDateTimeSystemField(f: FieldTypeAPIModelFieldAdvancedCondition) {
         f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
         f.Operators.forEach((item) => {
             if (item.value === "Equals") {
@@ -443,9 +448,12 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.cdRef.markForCheck();
     }
 
-
     get isAssetType() {
-        return this.loadIdentifier.length === 36 && !this.loadIdentifier.startsWith("RuleResults");
+        if (this.loadIdentifier.length !== 36) {
+            return false;
+        }
+        const regex: RegExp = /^[\da-f\-]{36}$/iu;
+        return regex.test(this.loadIdentifier);
     }
 
     get isRuleResults() {
@@ -467,48 +475,15 @@ export class AdvancedFilteringComponent implements OnChanges {
         return res;
     }
 
-    getFieldsObs(): Observable<FieldTypeAPIModelField[]> {
+    getFieldsObs(): Observable<AdvancedFilterFieldType[]> {
         if (this.isAssetType) {
             return this.fieldsService.getFieldsV2(this.assetTypeUid, null, null);
-        }
-        else if (this.isRuleResults) {
-            var fields: FieldTypeAPIModelField[] = [];
-            fields.push({
-                Name: "EvaluatedAssetClass", FriendlyName: "Asset Class", Type: new FieldType("Lookup"), Category: ""
-            });
-            fields.push({
-                Name: "EvaluatedAssetTypePath", FriendlyName: "Asset Type", Type: new FieldType("Path"), Category: ""
-            });
-            fields.push({
-                Name: "EvaluatedAssetDisplayPath", FriendlyName: "Asset", Type: new FieldType("Path"), Category: ""
-            });
-            fields.push({
-                Name: "RunDate", FriendlyName: "Run Date", Type: new FieldType("DateTime"), Category: ""
-            });
-            fields.push({
-                Name: "EffectiveDate", FriendlyName: "Effective Date", Type: new FieldType("Date"), Category: ""
-            });
-            fields.push({
-                Name: "PassFraction", FriendlyName: "Pass Fraction", Type: new FieldType("Decimal"), Category: ""
-            });
-            fields.push({
-                Name: "PassCount", FriendlyName: "Rows Passed", Type: new FieldType("Number"), Category: ""
-            });
-            fields.push({
-                Name: "FailCount", FriendlyName: "Rows Failed", Type: new FieldType("Number"), Category: ""
-            });
-            fields.push({
-                Name: "TotalCount", FriendlyName: "Total Rows", Type: new FieldType("Number"), Category: ""
-            });
-            fields.push({
-                Name: "Outdated", FriendlyName: "Outdated Rule Result", Type: new FieldType("Boolean"), Category: ""
-            });
-            var staticObs = of(fields);
-            return staticObs;
         }
         else if (this.isComplexField) {
             var definition = this.complexFieldDefinition;
             return this.fieldsService.getComplexFieldFieldTypes(definition.AssetUid, definition.FieldApiName);
+        } else if (typeof this.fieldsObserver === "object") {
+            return this.fieldsObserver;
         }
     }
 
@@ -516,7 +491,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         if (this.isAssetType) {
             return this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid);
         }
-        else if (this.isRuleResults || this.isComplexField) {
+        else {
             var staticObs = of([]);
             return staticObs;
         }
@@ -529,7 +504,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         else if (this.isComplexField) {
             return this.relationshipService.getRelationshipTypesForComplexField(this.complexFieldDefinition.AssetUid, this.complexFieldDefinition.FieldApiName);
         }
-        else if (this.isRuleResults) {
+        else {
             var staticObs = of([]);
             return staticObs;
         }

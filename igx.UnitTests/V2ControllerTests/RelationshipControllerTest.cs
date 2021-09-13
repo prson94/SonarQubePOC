@@ -23,7 +23,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public RelationshipControllerTest()
         {
-            this.relationshipsController = new RelationshipsController(GetCommunity(), GetCompany(), GetQueue(), GetStorage(), GetRelationshipRepository(), GetFieldsRepository(), GetAssetRepository())
+            this.relationshipsController = new RelationshipsController(GetCommunity(), GetCompany(), GetQueue(), GetStorage(), GetRelationshipRepository(), GetFieldsRepository(), GetAssetRepository(), GetSettingsRepository())
             {
                 Request = new HttpRequestMessage()
                 {

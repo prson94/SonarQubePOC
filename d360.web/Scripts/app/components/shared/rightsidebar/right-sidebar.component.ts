@@ -1,5 +1,5 @@
 import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
-import { Router, NavigationEnd, NavigationStart } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart, ActivatedRoute } from '@angular/router';
 import { Event as NavigationEvent } from "@angular/router";
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { SecondaryNavItem, DynamicButton, AssetAction } from '../../../models/secondaryNav.model';
@@ -42,6 +42,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     homeUrlChangeSub: Subscription;
     statsSub: Subscription;
     updateSub: Subscription;
+    paramsSub: Subscription;
 
     items: SecondaryNavItem[];
     buttons: DynamicButton[];
@@ -67,6 +68,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showCertify = false;
     showHeader: boolean = false;
     showSurvey: boolean = false;
+    showNav: boolean = true;
     showSurveyPopup: boolean = false;
     showScrollButtons: boolean = false;
     disableScrollLeft: boolean = false;
@@ -75,6 +77,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     assetAction: AssetAction;
     dataClassification: string;
     showDataClassification: boolean = false;
+    assetActionWidth: number = 0;
 
     //keep record of previous url, sometimes we dont need to clear all items (ie. asset -> asset audit page)
     private previousUrl: string = '';
@@ -87,7 +90,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
         private settingsService: CompanySettingsService,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ) {
         router.events
             .pipe(
@@ -122,6 +126,20 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                         }
                     }
                 });
+    }
+
+    ngOnInit(): void {
+        this.paramsSub = this.route.queryParams.subscribe((params) => {
+            let markForCheck = false;
+            if (params['nonavigation'] != null) {
+                this.showNav = params['nonavigation'].toLocaleLowerCase() !== 'true';
+                markForCheck = true;
+            }
+
+            if (markForCheck) {
+                this.ref.markForCheck();
+            }
+        });
     }
 
     ngAfterViewInit(): void {
@@ -293,6 +311,19 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             if (this.assetAction && this.assetAction.type == "CONNECTORLABEL") {
                 this.showOnlyMainTab = true;
             }
+            if (this.assetAction && this.assetAction.type == "TAG") {
+                var AssetActionwidthCalc = 0;
+                if (this.assetAction.showBack) {
+                    AssetActionwidthCalc = AssetActionwidthCalc + 110;
+                }
+                if (this.assetAction.showDelete) {
+                    AssetActionwidthCalc = AssetActionwidthCalc + 110;
+                }
+                if (this.assetAction.showEdit) {
+                    AssetActionwidthCalc = AssetActionwidthCalc + 110;
+                }
+                this.assetActionWidth = AssetActionwidthCalc;
+            }
         });
 
         this.assetActionClearSub = this.secondaryNavService.assetActionClear$.subscribe(
@@ -449,6 +480,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         }
         if (this.statsSub) {
             this.statsSub.unsubscribe();
+        }
+        if (this.paramsSub) {
+            this.paramsSub.unsubscribe();
         }
     }
 

@@ -10,15 +10,6 @@ using System.Web.Mvc;
 
 namespace d360.web.Models
 {
-    [DataContract(Name = "artifacts", Namespace = constants.NAMESPACE)]
-    public class ArtifactModelRequestList : List<ArtifactModelRequest> { }
-
-    [DataContract(Name = "artifact", Namespace = constants.NAMESPACE)]
-    [Serializable]
-    public class ArtifactModelRequest : Dictionary<string, object> { }
-
-
-
     public class CountModel
     {
         public string Name { get; set; }
@@ -37,8 +28,26 @@ namespace d360.web.Models
             rows = new List<DetailReadOnlyRowModel>();
         }
 
+        public int ObjectID { get; set; }
+        public string Object { get; set; }
+        public int ObjectTypeID { get; set; }
+        public string ObjectType { get; set; }
+        public string AssetName { get; set; }
+        public string AssetTypeName { get; set; }
+
+        public List<dynamic> Scores { get; set; }
         public int columns { get; set; }
         public List<DetailReadOnlyRowModel> rows { get; set; }
+    }
+
+    public class LookupDataReadOnlyModel
+    {
+        public int FieldTypeId { get; set; }
+        public long Value { get; set; }
+        public long AssetId { get; set; }
+        public string Url { get; set; }
+        public string ColorJson { get; set; }
+        public string DisplayText { get; set; }
     }
 
     public class DetailReadOnlyRowModel
@@ -56,7 +65,7 @@ namespace d360.web.Models
 
         public string Category { get; set; }
     }
-    
+
     public class FieldLoader
     {
         public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server = null, bool ignoreFieldIfNull = true)

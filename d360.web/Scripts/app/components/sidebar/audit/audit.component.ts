@@ -1,20 +1,24 @@
-﻿import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
 
-import {BaseComponent} from '../../shared/base.component';
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {AuditService} from '../../../services/audit.service';
-import {Audit, AuditApiFilters} from '../../../models/audit.model';
-import {SortOrder} from '../../../models/enums.model';
-import {GridFilterExpression} from '../../../models/grid-definition.model';
+import { BaseComponent } from '../../shared/base.component';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { AuditService } from '../../../services/audit.service';
+import { Audit, AuditApiFilters, AuditFilterLists } from '../../../models/audit.model';
+import { SortOrder } from '../../../models/enums.model';
+import { GridColumn, GridFilterExpression } from '../../../models/grid-definition.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
-import { AdvancedFiltersHelper } from '../../../static/advanced-filter-helpers';
+import { FieldType } from "../../../models/fieldtype-api.model";
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIParameters, LookupValuesAPIModel } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import { Observable, ReplaySubject } from "rxjs";
+import { map, shareReplay } from "rxjs/operators";
 
 @Component({
     selector: 'd3s-audit',
     providers: [AuditService],
     templateUrl: './audit.component.html',
+    styleUrls: ["./audit.component.less"],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -30,6 +34,15 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
 
+    filterFields$: Observable<AdvancedFilterFieldType[]>;
+    private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
+
+    advancedFilter: string = "";
+    isFiltersReady: boolean = false;
+    columns: GridColumn[] = [];
+    lookupColumns: string[] = ["resourceName", "action", "actionObject"];
+    isExportInProgress: boolean = false;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -41,9 +54,27 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         super();
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
+
+        this.columns = [];
+        this.columns.push({ text: "User", datafield: "resourceName", columnWidth: 150, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Date", datafield: "date", columnWidth: 200, fieldType: "DateTime", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Action", datafield: "action", columnWidth: 100, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Field", datafield: "field", columnWidth: 200, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "New Value", datafield: "newValue", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Previous Value", datafield: "previousValue", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Object", datafield: "actionObject", columnWidth: 130, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Type", datafield: "actionObjectTypeName", columnWidth: 130, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Item", datafield: "actionObjectName", columnWidth: 100, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Audit Description", datafield: "actionDescription", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: "Revision", datafield: "version", columnWidth: 100, fieldType: "Number", type: "", cellsformat: "", description: "" });
+
+        this.filterFields$ = this.filterFieldsSubject.asObservable();
     }
 
     ngOnInit() {
+        this.isFiltersReady = false;
+
+
         this.sub = this
             .route
             .params
@@ -56,6 +87,9 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     this.objectID = res.ObjectId;
                     this.objectType = res.Object;
 
+                    if (this.objectName === "MetricAllocation") {
+                        this.objectName = "Score Definition";
+                    }
                     let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 
                     //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
@@ -67,6 +101,8 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     if (reloadNav)
                         this.buildSecondaryNavigationForObject(objectID, this.objectType);
                 });
+
+                this.setAdvancedFilters();
             });
     }
 
@@ -76,14 +112,17 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         }
     }
 
-    private getData() {
+    getData() {
         this.isLoading = true;
+        if (!this.isFiltersReady) {
+            return;
+        }
         this
             .auditService
             .getAuditData(this.uid, this.getParams())
             .subscribe(result => {
                 this.isLoading = false;
-                result.items.forEach(function (object) {
+                result.items.forEach((object) => {
                     if ((object.actionObject == "ArtifactType" && object.class == 1) || (object.actionObject == "Artifact" && object.class == 1)) {
                         object.actionObject = "Business Asset";
                         if (object.actionDescription.includes("Artifact")) {
@@ -106,24 +145,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     public loadAuditsLazy(event: LazyLoadEvent) {
-        //event.first = First row offset
-        //event.rows = Number of rows per page
-        //event.sortField = Field name to sort with
-        //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
-        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value        
-        this.filters.splice(0, this.filters.length);
-
-        for (var key in event.filters) {
-            const filter = event.filters[key];
-            let gridFilter = new GridFilterExpression();
-
-            gridFilter.condition = "CONTAINS";
-            gridFilter.field = key;
-            gridFilter.value = filter.value;
-
-            this.filters.push(gridFilter);
-        }
-
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
@@ -163,18 +184,73 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         else {
             delete params['_direction'];
         }
-        if (this.filters && this.filters.length > 0) {
-            let expressions: string[] = [];
-            this.filters.forEach(f => {
-                let apiName = f.field;
-                let val = AdvancedFiltersHelper.escapeString(f.value)
-                expressions.push(`${apiName} ct '${val}'`);
-            });
-            params._filter = expressions.join(' and ');
-        }
-        else {
+        if (this.advancedFilter === "") {
             delete params['_filter'];
+        } else {
+            params._filter = this.advancedFilter;
         }
+
         return params;
+    }
+
+    public getFieldNames(): string[] {
+        return this.columns.map((c) => c.datafield);
+    }
+
+    public getLoadIdentifier() {
+        return "changelog-" + this.uid.toLowerCase();
+    }
+
+    public onFiltersLoaded() {
+        this.isFiltersReady = true;
+        this.getData();
+    }
+    advancedFiltersChanged($event: Filters) {
+        this.advancedFilter = $event?.filter ?? "";
+        this.getData();
+    }
+    public canExportRecords() {
+        return true;
+    }
+
+    private filterLists$: Observable<AuditFilterLists>;
+
+    public getFilterLists(): Observable<AuditFilterLists> {
+        if (!this.filterLists$) {
+            this.filterLists$ = this.auditService.getFilterLists(this.uid).pipe(shareReplay(1));
+        }
+        return this.filterLists$;
+    }
+
+    public getLookupValues(field: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+        return this.getFilterLists().pipe(
+            map((lists) => {
+                const values = lists[`${field}`].filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+                return {
+                    items: values,
+                    count: values.length
+                };
+            })
+        );
+    }
+
+    public setAdvancedFilters():void {
+        let fields: AdvancedFilterFieldType[] = [];
+
+        this.columns.forEach((c) => {
+            let field: AdvancedFilterFieldType = {
+                Name: c.datafield,
+                FriendlyName: c.text,
+                Type: this.lookupColumns.indexOf(c.datafield) !== -1 ? new FieldType("Lookup") : new FieldType(c.fieldType),
+                Category: "",
+                RemovePopulatedOperator: ["newValue", "previousValue"].indexOf(c.datafield) === -1
+            };
+            if (this.lookupColumns.indexOf(c.datafield) !== -1) {
+                field.ValueLoader = this.getLookupValues.bind(this, c.datafield);
+            }
+            fields.push(field);
+        });
+        this.filterFieldsSubject.next(fields);
+        this.filterFieldsSubject.complete();
     }
 }

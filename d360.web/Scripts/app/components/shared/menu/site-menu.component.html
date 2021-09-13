@@ -1,63 +1,75 @@
-<ul #menu 
-    (scroll)="onElementScroll($event)"
-    [class.left-side-nav-open]="menuOpen"
-    [class.left-side-nav]='!menuOpen'>
-    <d3s-site-menu-category [expanded]="menuOpen"
-                            [title]="'Home'"
-                            [url]="'home'"
-                            (clearSearchesEvent)="clearSearches($event)"
-                            [rootIconName]="'fa-home'"></d3s-site-menu-category>
-    <d3s-site-menu-category *ngIf="favorites"
-                            [expanded]="menuOpen"
-                            [title]="'Favorites'"
-                            showClearButton="true"
-                            (clearClick)="clearFavorites()"
-                            (clearSearchesEvent)="clearSearches($event)"
-                            [menu]="favorites"
-                            rootIconName="fa-star"></d3s-site-menu-category>
-    <ng-template ngFor
-                 let-menu
-                 [ngForOf]="siteMenu">
-        <d3s-site-menu-category *ngIf="menu.ShouldDisplay"
-                                [expanded]="menuOpen"
-                                [url]="menu.ngUrl"
-                                [title]="menu.Title"
-                                [rootIconName]="menu.Icon"
-                                (clearSearchesEvent)="clearSearches($event)"
-                                [imageUrl]="menu.FullURL"
-                                [menu]="menu"
-                                [countData]="countData"></d3s-site-menu-category>
-    </ng-template>
-    <d3s-site-menu-category *ngIf="isAdmin"
-                            [expanded]="menuOpen"
-                            [title]="'Configuration'"
-                            rootIconName="fa-sliders"
-                            (clearSearchesEvent)="clearSearches($event)"
-                            [menu]="configMenu"></d3s-site-menu-category>
-    <d3s-site-menu-category *ngIf="isAdmin"
-                            [expanded]="menuOpen"
-                            [title]="'Administration'"
-                            (clearSearchesEvent)="clearSearches($event)"
-                            rootIconName="fa-cog"
-                            [menu]="adminMenu"></d3s-site-menu-category>
-</ul>
-<div class="toggle-container" [ngClass]="{'open ': menuOpen}">
-    <div [ngClass]="{'open ': menuOpen}"
-         class="menu-toggle"
-         title="Toggle full width navigation"
-         (click)="toggleMenu();">
-        <i class="fa fa-arrow-circle-left"
-           [class.rotate-right]="!menuOpen"
-           [class.rotate-left]="menuOpen"></i>
+<ng-container *ngIf="hideNav == false">
+    <div [ngClass]="isMenuActive ? 'menu-active-overlay': ''">
+        <ul #menu
+            (scroll)="onElementScroll($event)"
+            [style.margin-top]="(hideHeader == true ? '0' : null)"
+            [class.left-side-nav-open]="menuOpen"
+            [class.left-side-nav]='!menuOpen'>
+            <d3s-site-menu-category [expanded]="menuOpen"
+                                    [title]="'Home'"
+                                    [url]="'home'"
+                                    (clearSearchesEvent)="clearSearches($event)"
+                                    [rootIconName]="'fa-home'"
+                                    (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
+            <d3s-site-menu-category *ngIf="favorites"
+                                    [expanded]="menuOpen"
+                                    [title]="'Favorites'"
+                                    showClearButton="true"
+                                    (clearClick)="clearFavorites()"
+                                    (clearSearchesEvent)="clearSearches($event)"
+                                    [menu]="favorites"
+                                    rootIconName="fa-star"
+                                    (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
+            <ng-template ngFor
+                         let-menu
+                         [ngForOf]="siteMenu">
+                <d3s-site-menu-category *ngIf="menu.ShouldDisplay"
+                                        [expanded]="menuOpen"
+                                        [url]="menu.ngUrl"
+                                        [title]="menu.Title"
+                                        [rootIconName]="menu.Icon"
+                                        (clearSearchesEvent)="clearSearches($event)"
+                                        [imageUrl]="menu.FullURL"
+                                        [menu]="menu"
+                                        [countData]="countData"
+                                        [isActive]="menu.isActiveItem"
+                                        (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
+            </ng-template>
+            <d3s-site-menu-category *ngIf="isAdmin"
+                                    [expanded]="menuOpen"
+                                    [title]="'Configuration'"
+                                    rootIconName="fa-sliders"
+                                    (clearSearchesEvent)="clearSearches($event)"
+                                    [menu]="configMenu"
+                                    [isActive]="configMenu.isActiveItem"
+                                    (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
+            <d3s-site-menu-category *ngIf="isAdmin"
+                                    [expanded]="menuOpen"
+                                    [title]="'Administration'"
+                                    (clearSearchesEvent)="clearSearches($event)"
+                                    rootIconName="fa-cog"
+                                    [menu]="adminMenu"
+                                    [isActive]="adminMenu.isActiveItem"
+                                    (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
+        </ul>
+        <div class="toggle-container" [ngClass]="{'open ': menuOpen}">
+            <div [ngClass]="{'open ': menuOpen}"
+                 class="menu-toggle"
+                 title="Toggle full width navigation"
+                 (click)="toggleMenu();">
+                <i class="fa fa-arrow-circle-left"
+                   [class.rotate-right]="!menuOpen"
+                   [class.rotate-left]="menuOpen"></i>
+            </div>
+            <div *ngIf="isScrollerVisable"
+                 [ngClass]="{'open ': menuOpen}"
+                 class="menu-toggle scroll"
+                 title="{{scrollTitle}}"
+                 (click)="doScroll()">
+                <i class="fa fa-arrow-circle-down"
+                   [class.rotate-scoll-up]="scrollingUp"
+                   [class.rotate-scoll-down]="!scrollingUp"></i>
+            </div>
+        </div>
     </div>
-    <div *ngIf="isScrollerVisable"
-         [ngClass]="{'open ': menuOpen}"
-         class="menu-toggle scroll"
-         title="{{scrollTitle}}"
-         (click)="doScroll()">
-        <i class="fa fa-arrow-circle-down"
-           [class.rotate-scoll-up]="scrollingUp"
-           [class.rotate-scoll-down]="!scrollingUp"></i>
-    </div>
-</div>
-
+</ng-container>

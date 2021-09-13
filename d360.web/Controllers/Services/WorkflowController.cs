@@ -33,6 +33,7 @@ using d360.core.enums;
 using System.Web.Http.Description;
 using System.Xml.Serialization;
 using d360.core.helpers;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.Services
 {
@@ -42,8 +43,8 @@ namespace d360.web.Controllers.Services
 
         #region DI
 
-        public WorkflowController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public WorkflowController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
         }
 
@@ -911,8 +912,8 @@ order by wi.StartedOn desc";
 
 
 
-            //replace any tokens in hte description            
-            desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), Company.CurrentCompanyDomain, itemStep, true);
+            //replace any tokens in the description            
+            desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), Company.CurrentCompanyDomain, itemStep, true, false, false);
 
             //parse the xml to get the form info
 

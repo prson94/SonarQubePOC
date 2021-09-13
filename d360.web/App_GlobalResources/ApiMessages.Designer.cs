@@ -115,6 +115,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot delete a default help entry.
+        /// </summary>
+        internal static string ErrorDeletingDefaultHelpItem {
+            get {
+                return ResourceManager.GetString("ErrorDeletingDefaultHelpItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have submitted an invalid or empty data set. Please check your request and submit again..
         /// </summary>
         internal static string ErrorInvalidDatasetMessage {
@@ -138,6 +147,66 @@ namespace Resources {
         internal static string ForbiddenUserNotAuthorizedMessage {
             get {
                 return ResourceManager.GetString("ForbiddenUserNotAuthorizedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name cannot be empty..
+        /// </summary>
+        internal static string InvalidHelpName {
+            get {
+                return ResourceManager.GetString("InvalidHelpName", resourceCulture);
+              }
+        }
+        /// <summary>
+        ///   Looks up a localized string similar to AssetUid {0} is invalid.
+        /// </summary>
+        internal static string InvalidAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name cannot be more than 500 characters..
+        /// </summary>
+        internal static string InvalidHelpNameLength {
+            get {
+                return ResourceManager.GetString("InvalidHelpNameLength", resourceCulture);
+            }
+        }
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter &apos;_direction&apos;. Allowed values are &apos;desc&apos; and &apos;asc&apos;..
+        /// </summary>
+        internal static string InvalidDirection {
+            get {
+                return ResourceManager.GetString("InvalidDirection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Url cannot be empty..
+        /// </summary>
+        internal static string InvalidHelpUrl {
+            get {
+                return ResourceManager.GetString("InvalidHelpUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Url cannot be more than 2000 characters.
+        /// </summary>
+        internal static string InvalidHelpUrlLength {
+            get {
+                return ResourceManager.GetString("InvalidHelpUrlLength", resourceCulture);
+            }
+        }
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid _includeTotal provided.
+        /// </summary>
+        internal static string InvalidIncludeTotal {
+            get {
+                return ResourceManager.GetString("InvalidIncludeTotal", resourceCulture);
             }
         }
         

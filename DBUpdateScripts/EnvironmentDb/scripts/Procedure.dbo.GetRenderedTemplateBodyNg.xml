@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetRenderedTemplateBodyNg-v3">
-  <comment>GOV-13546</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetRenderedTemplateBodyNg-v4">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -62,19 +62,6 @@ BEGIN
 			and C_D.ObjectID = @ID;
 
 	
-	if @Type = 'FusionAttribute'
-	begin		
-		select 
-			@typeID = fa.fusionattributetypeid,
-			@n = fa.name,
-			@t = fat.Name,
-			@link = dbo.GenerateAssetUrl(a.ID) 
-		from fusionattribute fa 
-		inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = fa.ID
-			inner join fusionattributetype fat on (fa.fusionattributetypeid = fat.id) 
-		where fa.id = @ID
-	end
-
 	if @n is not null
 	begin
 		if @link is null
@@ -98,30 +85,6 @@ BEGIN
 	if @Action = 'LookupPreview'
 	begin
 		set @html = '{Items}'
-
-		if @Type = 'FusionAttribute'
-		begin
-			
-			declare @fusionAttributeItemsHtml nvarchar(max)
-
-			set @fusionAttributeItemsHtml = '<div style="height: 200px; overflow-y: scroll"><table class="hoverable bordered striped" style="width:100%"><thead>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '<th style="margin-right: 15px">Name</th>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</thead><tbody>'
-
-			select		
-						@fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '<tr>' 
-											+ '<td>' + Name + '</td>'
-											+ '</tr>'
-			from		FusionAttribute
-			where		ParentID = @ID
-			order by	Name asc
-
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</tbody>'
-			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</table></div>'
-
-			insert into @tbl values ('Items', @fusionAttributeItemsHtml)
-			
-		end;
 
 		if @Type = 'ReferenceItemType' OR @Type = 'ReferenceItem'
 		begin
@@ -470,10 +433,7 @@ BEGIN
 
 	if @TemplateType = 'Tooltip'
 	begin
-		select	@html = TemplateBody
-		from	TooltipTemplate
-		where	Name = @Type
-				and [Action] = @Action
+		set @html = null;
 	end
 
 	

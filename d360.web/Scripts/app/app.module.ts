@@ -48,14 +48,14 @@ export function localeInitializer(localeId: string) {
                     .then(module => {
                         console.log(`Govern locale is set to [${localeId}]`);
                         registerLocaleData(module.default);
-                        resolve();
+                        resolve('');
                     }).catch(() => {
                         if (localeId.indexOf('-') !== -1) {
                             import(`@angular/common/locales/${localeId.split('-')[0]}.js`)
                                 .then(module => {
                                     console.log(`Govern locale is set to [${localeId.split('-')[0]}]`);
                                     registerLocaleData(module.default);
-                                    resolve();
+                                    resolve('');
                                 }, reject);
 
                         }

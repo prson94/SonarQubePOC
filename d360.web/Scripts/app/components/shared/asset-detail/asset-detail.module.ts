@@ -22,6 +22,7 @@ import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
 import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-list.component";
 import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
+import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.module";
 
 
 @NgModule({
@@ -41,7 +42,8 @@ import { SearchFieldModule } from "../controls/search-field/search-field.compone
         SharedGridPagingInfoModule,
         OwnershipListModule,
         AdvancedFiltersModule,
-        SearchFieldModule
+        SearchFieldModule,
+        ScoreBadgeModule
     ],
     declarations: [
         AssetDetailFieldComponent,

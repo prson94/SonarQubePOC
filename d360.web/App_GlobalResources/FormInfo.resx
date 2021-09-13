@@ -117,248 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Add_AnalyticType_Directions" xml:space="preserve">
-    <value>Add an analytic type to start tracking scores on different items thorughout the system.  This analytic type can later be allocated to different types of items.</value>
-  </data>
-  <data name="Add_AnalyticType_Title" xml:space="preserve">
-    <value>Add Analytic Type</value>
-  </data>
-  <data name="Add_ArtifactType_Directions" xml:space="preserve">
-    <value>Add an artifact type using the form below.</value>
-  </data>
-  <data name="Add_ArtifactType_Title" xml:space="preserve">
-    <value>Add Artifact Type</value>
-  </data>
   <data name="Add_Asset_Type_Directions" xml:space="preserve">
     <value>Modify this {0} type using the form below.</value>
   </data>
   <data name="Add_Asset_Type_Title" xml:space="preserve">
     <value>Add {0} Type</value>
   </data>
-  <data name="Add_AttributeTypeCategory_Title" xml:space="preserve">
-    <value>Add Attribute Category</value>
-  </data>
-  <data name="Add_AttributeType_Directions" xml:space="preserve">
-    <value>Add an attribute group using the form below.</value>
-  </data>
-  <data name="Add_AttributeType_Title" xml:space="preserve">
-    <value>Add Attribute Group</value>
-  </data>
-  <data name="Add_FieldType_Confirmation" xml:space="preserve">
-    <value>Field type successfully added.</value>
-  </data>
-  <data name="Add_FieldType_Title" xml:space="preserve">
-    <value>Add Definition Attribute</value>
-  </data>
-  <data name="Add_Generic_Title" xml:space="preserve">
-    <value>Add {0}</value>
-  </data>
-  <data name="Add_LoadTypeRule_Directions" xml:space="preserve">
-    <value>Add a rule to perform when a spreadsheet with the associated layout is uploaded.  A promotion rule promotes the specified fields to a particular type of object.  A Relation rule identifies the underlying object from two selected spreadsheet fields and relates them together.</value>
-  </data>
-  <data name="Add_LoadTypeRule_Title" xml:space="preserve">
-    <value>Add Load Type Rule</value>
-  </data>
-  <data name="Add_Policy_Directions" xml:space="preserve">
-    <value>Add a policy to the {0} hierarchy.</value>
-  </data>
-  <data name="Add_Policy_Title" xml:space="preserve">
-    <value>Add Policy to {0}</value>
-  </data>
-  <data name="Add_PowerBI_Credentials_Directions" xml:space="preserve">
-    <value>Specify the credentials to be used for Power BI Direct Query type queries.</value>
-  </data>
-  <data name="Add_PowerBI_Credentials_Title" xml:space="preserve">
-    <value>Add Credentials for Power BI Queries</value>
-  </data>
-  <data name="Add_QuestionType_Directions" xml:space="preserve">
-    <value>You can add a response type to a survey question.  This response type is available to all surveys, when defining a question.</value>
-  </data>
-  <data name="Add_RelationshipType_Directions" xml:space="preserve">
-    <value>When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</value>
-  </data>
-  <data name="Add_ReportTile_Confirmation" xml:space="preserve">
-    <value>Report tile successfully created.</value>
-  </data>
-  <data name="Add_Report_Directions" xml:space="preserve">
-    <value>Add a report to the list of reports, which can then be exposed in other areas of this system.</value>
-  </data>
-  <data name="Add_Report_Title" xml:space="preserve">
-    <value>Add Report</value>
-  </data>
-  <data name="Add_ResponsibilityTransformation_Directions" xml:space="preserve">
-    <value>Use the form below to add a transformation comment to the current source.</value>
-  </data>
-  <data name="Add_ResponsibilityTransformation_Title" xml:space="preserve">
-    <value>Add Responsibility Transformation</value>
-  </data>
-  <data name="Add_ResponsibilityTypeClaims_Directions" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Add_ResponsibilityTypeClaims_Title" xml:space="preserve">
-    <value>Add Claims to Responsibility Type</value>
-  </data>
-  <data name="Add_Rule_Dimension_Directions" xml:space="preserve">
-    <value>Add a data quality dimension that can be used to classify new or existing rules.</value>
-  </data>
-  <data name="Add_Rule_Dimension_Title" xml:space="preserve">
-    <value>Add Rule Data Quality Dimension</value>
-  </data>
-  <data name="Add_Rule_Directions" xml:space="preserve">
-    <value>Add a rule to track events against.</value>
-  </data>
-  <data name="Add_Rule_Title" xml:space="preserve">
-    <value>Add Rule</value>
-  </data>
-  <data name="Add_SourceTargetMapping_Directions" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Add_SourceTargetMapping_Title" xml:space="preserve">
-    <value>Define a Source to Target Mapping</value>
-  </data>
-  <data name="Allocate_Workflow_Challenge_Description" xml:space="preserve">
-    <value>Specify users of which role can respond to a challenge of Artifacts of the selected type.  Artifact Types which do not have roles specified which can respond to a challenge will allow all responsibilities associated with that Artifact to reply to a challenge.  If no owners exist administrator users will be able to respond to the challenge.</value>
-  </data>
-  <data name="Allocate_Workflow_Confirmation" xml:space="preserve">
-    <value>{0} workflow successfully allocated.</value>
-  </data>
-  <data name="Allocate_Workflow_Description" xml:space="preserve">
-    <value>Allocating a workflow to this type will activate workflow when items of this type trigger an even associated with the workflow, such as certifications, updates, etc.</value>
-  </data>
-  <data name="Allocate_Workflow_Title" xml:space="preserve">
-    <value>Allocate Workflow</value>
-  </data>
   <data name="ArtifactType" xml:space="preserve">
     <value>Business</value>
-  </data>
-  <data name="AttributeTypeCategory_Directions" xml:space="preserve">
-    <value>A category can group different types of attributes together into more meaningful sets of of similar information.</value>
-  </data>
-  <data name="DeAllocate_Workflow_Confirmation" xml:space="preserve">
-    <value>Workflow successfully de-allocated.</value>
-  </data>
-  <data name="DeAllocate_Workflow_Title" xml:space="preserve">
-    <value>De-allocate Workflow</value>
-  </data>
-  <data name="Delete_Attribute_Description" xml:space="preserve">
-    <value>Removing this attribute may affect the score of the item it is tagged to.</value>
-  </data>
-  <data name="Delete_Error_Rule_Exist" xml:space="preserve">
-    <value>You cannot delete the selected dimension, there are existing rules which reference this dimension.  Please change the existing rules which reference this dimension before deleting it.</value>
-  </data>
-  <data name="Delete_FieldType_Confirmation" xml:space="preserve">
-    <value>Definition attribute successfully removed.</value>
-  </data>
-  <data name="Delete_Generic_Title" xml:space="preserve">
-    <value>Are you sure you want to remove {0}?</value>
-  </data>
-  <data name="Delete_Generic_Undone" xml:space="preserve">
-    <value>You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>
-  </data>
-  <data name="Delete_ReportTile_Confirmation" xml:space="preserve">
-    <value>Report tile successfully deleted.</value>
-  </data>
-  <data name="Edit_ArtifactType_Directions" xml:space="preserve">
-    <value>Modify this artifact type using the form below.</value>
-  </data>
-  <data name="Edit_ArtifactType_Title" xml:space="preserve">
-    <value>Edit Artifact Type</value>
   </data>
   <data name="Edit_Asset_Type_Title" xml:space="preserve">
     <value>Modify {0} Type</value>
   </data>
-  <data name="Edit_AttributeTypeCategory_Title" xml:space="preserve">
-    <value>Edit Category</value>
-  </data>
-  <data name="Edit_AttributeType_Directions" xml:space="preserve">
-    <value>Modify your attribute group using the form below.</value>
-  </data>
-  <data name="Edit_AttributeType_Title" xml:space="preserve">
-    <value>Edit Attribute Group</value>
-  </data>
-  <data name="Edit_Attribute_Description" xml:space="preserve">
-    <value>Updating this attribute may affect the score of the item it is tagged to.</value>
-  </data>
-  <data name="Edit_FieldType_Confirmation" xml:space="preserve">
-    <value>Field type successfully updated.</value>
-  </data>
-  <data name="Edit_FieldType_Title" xml:space="preserve">
-    <value>Edit Definition Attribute</value>
-  </data>
-  <data name="Edit_Generic_Title" xml:space="preserve">
-    <value>Edit {0}</value>
-  </data>
-  <data name="Edit_LoadTypeRule_Directions" xml:space="preserve">
-    <value>Edit a rule to perform when a spreadsheet with the associated layout is uploaded.  A promotion rule promotes the specified fields to a particular type of object.  A Relation rule identifies the underlying object from two selected spreadsheet fields and relates them together.</value>
-  </data>
-  <data name="Edit_LoadTypeRule_Title" xml:space="preserve">
-    <value>Edit Load Type Rule</value>
-  </data>
-  <data name="Edit_Policy_Directions" xml:space="preserve">
-    <value>Use the form below to update the information related to this type.</value>
-  </data>
-  <data name="Edit_Policy_Title" xml:space="preserve">
-    <value>Edit Type</value>
-  </data>
-  <data name="Edit_QuestionType_Directions" xml:space="preserve">
-    <value>You may update a response type if it is not yet assigned to a question that was already answered.</value>
-  </data>
-  <data name="Edit_RelationshipType_Directions" xml:space="preserve">
-    <value>When updating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</value>
-  </data>
-  <data name="Edit_ReportTile_Confirmation" xml:space="preserve">
-    <value>Report tile successfully updated.</value>
-  </data>
-  <data name="Edit_Report_Directions" xml:space="preserve">
-    <value>Edit the settings for this report and the components that make it up.</value>
-  </data>
-  <data name="Edit_Report_Title" xml:space="preserve">
-    <value>Edit Report</value>
-  </data>
-  <data name="Edit_ResponsibilityTransformation_Directions" xml:space="preserve">
-    <value>Use the form below to edit the transformation comment for the current source.</value>
-  </data>
-  <data name="Edit_ResponsibilityTransformation_Title" xml:space="preserve">
-    <value>Edit Responsibility Transformation</value>
-  </data>
-  <data name="Edit_ResponsibilityTypeClaims_Directions" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Edit_ResponsibilityTypeClaims_Title" xml:space="preserve">
-    <value>Edit Claims for Responsibility Type</value>
-  </data>
-  <data name="Edit_Rule_Dimension_Directions" xml:space="preserve">
-    <value>Edit an existing data quality dimension that can be used to classify new or existing rules.</value>
-  </data>
-  <data name="Edit_Rule_Dimension_Title" xml:space="preserve">
-    <value>Edit Rule Data Quality Dimension</value>
-  </data>
-  <data name="Edit_Rule_Directions" xml:space="preserve">
-    <value>Use the form below to update the information related to this rule.</value>
-  </data>
-  <data name="Edit_Rule_Title" xml:space="preserve">
-    <value>Edit Rule</value>
-  </data>
-  <data name="Edit_Workflow_Allocation_Confirmation" xml:space="preserve">
-    <value>Workflow allocation successfully updated.</value>
-  </data>
-  <data name="Edit_Workflow_Allocation_Title" xml:space="preserve">
-    <value>Edit Allocated Workflow</value>
-  </data>
-  <data name="FieldType_Error_Used" xml:space="preserve">
-    <value>This field type is in use and cannot be removed.</value>
-  </data>
-  <data name="FieldType_List_Error_Multiple_Items_Used" xml:space="preserve">
-    <value>You cannot change the List to Single Item, there are existing attributes based on it.</value>
-  </data>
   <data name="FusionAttributeType" xml:space="preserve">
     <value>Fusion Attribute</value>
-  </data>
-  <data name="FusionAttributeType_Remove" xml:space="preserve">
-    <value>You may not remove this fusion attribute type as there are existing attributes based on it.</value>
-  </data>
-  <data name="FusionType_Remove" xml:space="preserve">
-    <value>You may not remove this fusion type as there are existing attribute types based on it.</value>
   </data>
   <data name="InUse_Error_Delete" xml:space="preserve">
     <value>The relationship type you are trying to delete has established relationships.  Please delete these prior to deleting the relationship type.</value>
@@ -384,34 +156,16 @@
   <data name="PolicyType" xml:space="preserve">
     <value>Policy</value>
   </data>
-  <data name="PolicyTypeLevel_Remove" xml:space="preserve">
-    <value>Removing this level will alter the level name of all policies at this level.</value>
-  </data>
-  <data name="PolicyType_Remove" xml:space="preserve">
-    <value>Removing this top-level policy type will permanently remove all policies under it, as well as any relationships that these policies participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>
-  </data>
-  <data name="Policy_Error_Delete_ExistingRulesPresent" xml:space="preserve">
-    <value>You may not remove this policy as there are existing rules assigned to it.</value>
-  </data>
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
     <value>The Responsibility Then Filter value is required</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
     <value>Invalid Field type in When filters for this asset type.</value>
   </data>
-  <data name="SynonymType_Remove" xml:space="preserve">
-    <value>Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>
-  </data>
   <data name="TaxonomyType" xml:space="preserve">
     <value>Model</value>
   </data>
-  <data name="TaxonomyType_Remove" xml:space="preserve">
-    <value>Removing this top-level information model will permanently remove all models under it, as well as any relationships that these models participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>
-  </data>
   <data name="Taxonomy_ChangeParent_Warning" xml:space="preserve">
     <value>Altering a model's parent could potentially have a significant impact on ownership throughout the system.</value>
-  </data>
-  <data name="Workflow_Certification_Request_Error" xml:space="preserve">
-    <value>No proper responsibilities assigned to this item in order to act on this certification request.</value>
   </data>
 </root>

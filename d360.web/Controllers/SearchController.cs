@@ -26,8 +26,8 @@ namespace d360.web.Controllers
             ICommunityContext community,
             ICompanyContext company,
             ISearchSource searchSource,
-            IAssetRepository repository)
-            : base(community, company)
+            IAssetRepository repository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             SearchSource = searchSource;
             AssetRepository = repository;
@@ -377,11 +377,9 @@ namespace d360.web.Controllers
             };
             if (Company.CurrentResourceIsAdmin)
             {
-                if (Community.GetCompanySettings().TryGetValue("HideData3SixtyUsers", out string val))
-                {
-                    limits.HideData3SixtyUsers = bool.Parse(val);
-                }
-            } else
+                limits.HideData3SixtyUsers = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+            } 
+            else
             {
                 limits.AggregationFilters.Add(
                     new AggregationFilter

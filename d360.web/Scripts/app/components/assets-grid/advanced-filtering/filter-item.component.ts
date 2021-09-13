@@ -1,9 +1,8 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnDestroy, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
-import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
 import { OperatorModel } from "../../../models/operator.model";
-import { AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields } from "./advanced-filtering.models";
+import { FieldTypeAPIModelFieldAdvancedCondition, AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields, LookupValuesAPIParameters, LookupValuesAPIModel } from "./advanced-filtering.models";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { TagService } from "../../../services/tag.service";
@@ -19,12 +18,12 @@ import { AssetService } from "../../../services/asset.service";
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService, AssetTypeService, TagService, AssetService]
 })
-export class FilterItemComponent implements OnInit, OnChanges {
+export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     @Input() assetTypeUid: string = "";
     @Input() loadIdentifier: string = "";
     @Input() gridType: string = "List";
     @Input() condition: AdvancedFilterFieldCondition;
-    @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
+    @Input() fields: FieldTypeAPIModelFieldAdvancedCondition[] = null;
     @Input() operators: OperatorModel[] = [];
     @Input() relationshipTypes: RelationshipType[] = [];
 
@@ -34,7 +33,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     lazyLoadSubscription: Subscription;
 
-    currentField: FieldTypeAPIModelFieldCondition;
+    currentField: FieldTypeAPIModelFieldAdvancedCondition;
 
     allFieldsDropdown: SelectItemGroup[] = [];
 
@@ -109,16 +108,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
     ngOnInit() {
         this.allFieldsDropdown = [];
 
+        if (this.fields && this.fields.length > 0) {
+            let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
+            this.allFieldsDropdown.push(assetFieldGroup);
+
+            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
+        }
+
         if (this.isAssetType) {
-            if (this.fields && this.fields.length > 0) {
-                let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
-                this.allFieldsDropdown.push(assetFieldGroup);
-
-                this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-                    assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-                });
-            }
-
             var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType);
             if (systemFields.length > 0) {
                 let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
@@ -138,21 +137,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
             }
         }
+    }
 
-        if (this.isRuleResults) {
-            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
-            this.allFieldsDropdown.push(assetFieldGroup);
-            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-            });
-        }
-        if (this.isComplexField) {
-            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
-            this.allFieldsDropdown.push(assetFieldGroup);
-            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-            });
-        }
+    ngOnDestroy() {
+        this.stopUpdateDynamicWidths();
     }
 
     filterTable($event: any) {
@@ -226,6 +214,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
         var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
         selectionElement.style.removeProperty("top");
         selectionElement.style.removeProperty("left");
+        let fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
+        fieldSelectionElement.style.removeProperty("left");
     }
 
     updateDynamicWidths() {
@@ -233,7 +223,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             var html = this.elRef.nativeElement as HTMLElement;
             var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
             if (scrollWrapper) {
-                let width = 500;
+                let width = 500 + 60;
 
                 var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
 
@@ -243,11 +233,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     let distanceFromRight = window.outerWidth - html.getBoundingClientRect().left;
                     if (distanceFromRight < width) {
                         let diff = Math.abs(width - distanceFromRight);
-                        selectionElement.style.left = (html.getBoundingClientRect().left - diff - 50) + "px";
+                        selectionElement.style.left = (html.getBoundingClientRect().left - diff) + "px";
+                    } else {
+                        selectionElement.style.removeProperty("left");
                     }
                 }
             }
-
         }
         catch (ex) {
             console.warn(ex);
@@ -262,6 +253,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
             if (selectionElement) {
                 selectionElement.style.top = topPosition + "px";
+            }
+
+            const fieldSelectionLeftOffset = window.innerWidth - html.getBoundingClientRect().left - 350;
+            let fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
+            if (fieldSelectionElement) {
+                if (fieldSelectionLeftOffset < 0) {
+                    fieldSelectionElement.style.left = fieldSelectionLeftOffset + "px";
+                } else {
+                    fieldSelectionElement.style.removeProperty("left");
+                }
             }
         }
         catch (ex) {
@@ -340,11 +341,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             ft.Operators[1].label = "does not contain";
         }
 
-        if (this.isRuleResults) {
-            if (ft.Name !== "EvaluatedAssetClass") {
-                ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
-            }
-        }
 
         if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
             ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
@@ -384,11 +380,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
             if (fieldDropdown) {
                 setTimeout(() => {
                     fieldDropdown.click();
-                });
+                }, 50);
             }
         }
         else {
             this.isSelectingValue = true;
+            this.startUpdateDynamicWidths();
         }
         this.updateFocus();
     }
@@ -409,6 +406,21 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 }
             }
         }, 25);
+    }
+
+    interval;
+
+    stopUpdateDynamicWidths() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.removePositionStyling();
+            this.interval = null;
+        }
+    }
+    startUpdateDynamicWidths() {
+        if (!this.interval) {
+            this.interval = setInterval(() => this.updateDynamicWidths(), 20);
+        }
     }
 
     onFieldSelected($event) {
@@ -475,6 +487,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         //if null, this method is not called from ui
         if ((event && event.type !== "load") && !this.condition.isNew) {
             this.isSelectingValue = true;
+            this.startUpdateDynamicWidths();
         }
         this.condition.isNew = false;
 
@@ -492,16 +505,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateFocus();
     }
 
-    interval;
     loadListLazy(event: LazyLoadEvent) {
 
-        if (this.interval) {
-            clearInterval(this.interval);
-        }
-
-        this.interval = setInterval(() => this.updateDynamicWidths(), 20);
-
-        var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
+        var params: LookupValuesAPIParameters = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
@@ -555,44 +561,48 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.doesNeedValue = this.needsValue();
     }
 
-    loadLookupValues(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
+    private checkIfLoadLookupValues(params: LookupValuesAPIParameters): boolean {
+        let ret = true;
+        if (this.currentField.Values?.length > 0 && !params.filter) {
+            ret = this.currentField.Values.slice(+params.skip, +params.skip + +params.take).some((x) => !x);
+        }
+        return ret;
+    }
+
+    loadLookupValues(params: LookupValuesAPIParameters) {
+        if (!this.checkIfLoadLookupValues(params)) {
+            return;
         }
 
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
-        var fieldTypeUid = this.currentField.AssetTypeUid;
+        var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
 
-        if (!fieldTypeUid) {
-            fieldTypeUid = "00000000-0000-0000-0000-000000000000";
+        let lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
+
+        this.lazyLoadSubscription = lookupMethod.subscribe((res) => this.consumeLoadedLookupValues(res, params));
+    }
+
+    private consumeLoadedLookupValues(res: LookupValuesAPIModel, params: LookupValuesAPIParameters) {
+        if (!this.currentField.Values || this.currentField.Values.length === 0) {
+            this.currentField.Values = Array.from({ length: res.count });
         }
 
-        this.lazyLoadSubscription = this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
-            .subscribe((res) => {
-                if (!this.currentField.Values || this.currentField.Values.length === 0) {
-                    this.currentField.Values = Array.from({ length: res.count });
-                }
+        let loadedData = [];
 
-                let loadedData = [];
+        res.items.forEach((str) => {
+            loadedData.push({ title: str, value: str });
+        });
 
-                res.items.forEach((str) => {
-                    loadedData.push({ title: str, value: str });
-                });
+        Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
-                Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+        this.currentField.Values = [...this.currentField.Values];
 
-                this.currentField.Values = [...this.currentField.Values];
+        this.isLookupValuesLoading = false;
 
-                this.isLookupValuesLoading = false;
-
-                this.cdRef.markForCheck();
-            });
+        this.cdRef.markForCheck();
     }
 
     loadLookupValuesForComplexFields(params: any) {
@@ -811,6 +821,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         this.resetLookupValues();
+        this.stopUpdateDynamicWidths();
 
         this.onChange.emit();
     }
@@ -837,6 +848,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.condition.value = this.rollbackValue1;
             this.condition.value2 = this.rollbackValue2;
         }
+        this.stopUpdateDynamicWidths();
 
         this.isSelectingValue = false;
 
@@ -1067,12 +1079,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (type === "Number") {
-            this.numberMax = 2147483647;
-            this.numberMin = -2147483648;
+            this.numberMax = this.currentField.Type.Number?.Validation?.MaximumValue ?? 2147483647;
+            this.numberMin = this.currentField.Type.Number?.Validation?.MinimumValue ?? -2147483648;
         }
         if (type === "Decimal") {
-            this.numberMax = 9223372036854775807;
-            this.numberMin = -9223372036854775808;
+            this.numberMax = this.currentField.Type.Decimal?.Validation?.MaximumValue ?? 9223372036854775807;
+            this.numberMin = this.currentField.Type.Decimal?.Validation?.MinimumValue ?? -9223372036854775808;
         }
         if (type === "Number" || type === "Decimal" || type === "Score") {
 
@@ -1142,12 +1154,23 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.doesNeedValue) {
             return false;
         }
-        if (this.currentInputType && this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
-            return this.isEmpty(this.condition.value) || this.isEmpty(this.condition.value2);
+        if (this.currentInputType) {
+            const checkValue2: boolean = (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input");
+            const checkMinMax: boolean = this.currentInputType.indexOf("number") !== -1;
+            if (checkValue2 && this.isEmpty(this.condition.value2)) {
+                return true;
+            }
+            if (this.isEmpty(this.condition.value)) {
+                return true;
+            }
+            if (checkValue2 && checkMinMax && this.isOutsideMinMax(this.condition.value2)) {
+                return true;
+            }
+            if (checkMinMax && this.isOutsideMinMax(this.condition.value)) {
+                return true;
+            }
         }
-        else {
-            return this.isEmpty(this.condition.value);
-        }
+        return this.isEmpty(this.condition.value);
     }
 
     isEmpty(value: any): boolean {
@@ -1159,6 +1182,21 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         return false;
+    }
+
+    isOutsideMinMax(value: any): boolean {
+        if (value && !Array.isArray(value)) {
+            return this.isUnderMin(+value) || this.isOverMax(+value);
+        }
+        return null;
+    }
+
+    private isOverMax(value: number): boolean {
+        return typeof this.numberMax !== "undefined" && value > +this.numberMax;
+    }
+
+    private isUnderMin(value: number): boolean {
+        return typeof this.numberMin !== "undefined" && value < +this.numberMin;
     }
 
     @HostListener("document:click", ["$event"])
@@ -1184,6 +1222,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         else {
             if (!el.parentElement) {
                 return false;
+            }
+            const datepickerEl = document.querySelector("div.p-datepicker.p-component");
+            if (datepickerEl && datepickerEl.contains(el)) {
+                return true;
             }
 
             return this.isInBodyElement(el.parentElement);
@@ -1258,7 +1300,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     getFieldsDropdownClass(): string {
-        if (this.isRuleResults || this.isComplexField) {
+        if (this.allFieldsDropdown.length <= 1) {
             return "ig-dropdown-hide-groups";
         }
         else {

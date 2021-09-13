@@ -5,12 +5,32 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Rules_All-v1">
+  <changeSet author="Pappas" id="View.reporting.Rules_All-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+ CREATE OR ALTER VIEW [reporting].[Rules_All] AS
+	SELECT	A.ID AS AssetID, 
+			A.ObjectID AS ID, 
+			A.DisplayValue AS Name, 
+			A.TypeID AS RuleTypeID, 
+			A.TypeName AS RuleType, 
+			'-1' as RuleDimensionID, 
+			'' as RuleDimensionName, 
+			1 as Threshold, 
+			'' as Status, 
+			A.CreatedOn, 
+			A.CreatedBy, 
+			A.UpdatedOn, 
+			A.UpdatedBy
+	FROM  	dbo.AssetDetail AS A 
+			INNER JOIN dbo.[Rule] AS R ON R.ID = A.ObjectID AND A.AssetTypeClass = 7 AND A.State = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
  CREATE OR ALTER VIEW [reporting].[Rules_All] AS
 	SELECT	A.ID AS AssetID, 
 			A.ObjectID AS ID, 
@@ -27,11 +47,6 @@
 			A.UpdatedBy
 	FROM  	dbo.AssetDetail AS A 
 			INNER JOIN dbo.[Rule] AS R ON R.ID = A.ObjectID AND A.AssetTypeClass = 7 AND A.State = 1
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

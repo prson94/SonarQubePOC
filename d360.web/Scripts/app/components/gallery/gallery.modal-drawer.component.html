@@ -1,0 +1,133 @@
+﻿<div class="tile tile-detail">
+    <header>Modal Drawer component</header>
+    <div class="gallery-section">
+        <p>Govern modal UI component.</p>
+        <p>The modal component opens as a dialog on the right side of window</p>
+        <p>The modal can always be dismissed by pressing the ESC button.</p>
+        <p>
+            Modal content is defined using 3 content templates: <strong>header</strong>,<strong>content</strong>,<strong>action</strong>.
+        </p>
+        <p>Styles for each template can be redifined using classes : modal-drawer-header, modal-drawer-content, modal-drawer-action-bar</p>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code><pre>{{sampleUsage}}</pre></code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Modal Drawer Example</header>
+    <div class="gallery-section">
+        <button igButton label="Open Modal Drawer" (click)="isVisible = true" tabindex="3"></button><br />
+        <d3s-modal-drawer [title]="'Title'"
+                          [isVisible]="isVisible"
+                          (onClose)="isVisible=false">
+
+            <ng-container header>Report Governance Issue</ng-container>
+            <ng-container content>
+                Modal Drawer test case with property groups
+                <ig-property-group title="Form" [expanded]="true" [showHeaderLine]="false" [shouldBePadded]="false">
+                    <div inputs>
+                        <label style="margin-top:0px;">2 radio buttons</label>
+                        <p-radioButton igRadioButton name="groupName" value="Of Course!" label="Yes"></p-radioButton><br />
+                        <p-radioButton igRadioButton name="groupName" value="Of Course!" label="No"></p-radioButton>
+                        <br />
+                        <label>Text area 1</label>
+                        <textarea igTextArea></textarea>
+                        <label>Text area 2</label>
+                        <textarea igTextArea></textarea>
+                        <label>Text area 3</label>
+                        <textarea igTextArea></textarea>
+                        <label>Text area 4</label>
+                        <textarea igTextArea></textarea>
+
+                    </div>
+                </ig-property-group>
+                <ig-property-group title="Collapse / Expand for content overflow" [expanded]="true" [showHeaderLine]="false" [shouldBePadded]="false">
+                    <div inputs>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris dolor lacus, laoreet vitae leo at, pharetra hendrerit turpis. Maecenas pellentesque massa ac libero pellentesque maximus. Nam euismod facilisis orci id pharetra. Maecenas nec leo eu nunc aliquam varius ac non magna. Cras malesuada, urna at molestie molestie, mi est auctor ante, sed pretium lectus orci nec arcu. Pellentesque gravida purus in lectus pulvinar, eget rhoncus velit dapibus. Donec a mi at urna finibus pretium. Nulla consequat mi at tortor viverra, ac consectetur lacus scelerisque. Phasellus nunc lectus, vestibulum sit amet blandit vel, pulvinar at leo. Vestibulum nec cursus nibh, sit amet cursus odio.
+
+                        Maecenas commodo elit at tellus placerat posuere. Sed gravida, erat a aliquet pellentesque, sem lacus sollicitudin sem, eu interdum lectus justo vel nisi. Mauris venenatis fringilla enim, posuere ultricies arcu viverra in. Suspendisse odio est, lacinia non nisi vel, rutrum iaculis arcu. Vestibulum eget cursus enim. Interdum et malesuada fames ac ante ipsum primis in faucibus. Phasellus nec lacus pellentesque, ultricies velit ut, molestie erat. Sed porttitor ipsum non augue consequat, vel luctus libero semper. Nunc posuere eleifend odio at pretium.
+
+                        Pellentesque tincidunt fringilla felis, quis tincidunt sem pharetra at. Integer justo diam, sagittis a elementum quis, volutpat nec arcu. Cras fringilla, orci eget pellentesque posuere, diam mi tristique orci, vestibulum sagittis est elit sed quam. Nulla vitae ligula vitae leo rhoncus commodo. In et finibus urna. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Fusce aliquet quam a felis sagittis suscipit. Suspendisse lectus lacus, ultricies sed blandit sit amet, dapibus id ex. Aliquam odio felis, eleifend non ante eget, efficitur ultrices elit. Sed fermentum sagittis lobortis. Nullam justo mi, imperdiet non sem at, luctus malesuada nibh.
+
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla venenatis elementum tortor, ac dapibus justo tempor et. Fusce luctus, diam et ultricies mollis, massa purus volutpat mauris, in sagittis nisl lectus et sapien. Vivamus tristique ante non nisl vestibulum, eget bibendum ligula bibendum. Phasellus scelerisque urna vel lobortis pellentesque. Curabitur tincidunt lorem nec purus accumsan, suscipit suscipit sem dapibus. Duis velit turpis, efficitur id sem sed, accumsan finibus ex.
+                    </div>
+                </ig-property-group>
+            </ng-container>
+            <ng-container action>
+                <button class="button" (click)="isVisible=false">
+                    Cancel
+                </button>
+                <span class="grow"></span>
+                <button class="button primary">
+                    Confirm
+                </button>
+            </ng-container>
+        </d3s-modal-drawer>
+        <br /><br />
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Modal + Modal Drawer Example</header>
+    <div class="gallery-section">
+
+        <button igButton label="Open Modal" (click)="isModalVisible = true" tabindex="3"></button><br />
+        <d3s-modal [title]="'Simple Modal'"
+                   [isVisible]="isModalVisible"
+                   (onClose)="isModalVisible = false">
+            <div class="content">
+                <button igButton label="Open Modal Drawer" (click)="isModalDrawer2Visible = true" tabindex="3"></button><br />
+
+                <d3s-modal-drawer [title]="'Title'"
+                                  [appendToBody]="true"
+                                  [isVisible]="isModalDrawer2Visible"
+                                  (onClose)="isModalDrawer2Visible=false">
+
+                    <ng-container header>
+                        Modal Drawer Header Template
+                    </ng-container>
+                    <ng-container content>
+                        Modal Drawer Content Template
+                    </ng-container>
+                    <ng-container action>
+                        <button class="button" (click)="isVisible=false">
+                            Cancel
+                        </button>
+                        <span class="grow"></span>
+                        <button class="button primary">
+                            Confirm
+                        </button>
+                    </ng-container>
+                </d3s-modal-drawer>
+            </div>
+        </d3s-modal>
+
+
+        <br /><br />
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

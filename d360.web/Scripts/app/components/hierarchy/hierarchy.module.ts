@@ -36,6 +36,10 @@ import { TableModule } from 'primeng/table';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
+import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
+import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
+import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
+import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 
 @NgModule({
     imports: [
@@ -71,6 +75,10 @@ import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advance
         SharedDynamicGridEditorModule,
         SharedAssetEditorsModule,
         TilesModule,
+        AssetDetailModule,
+        DataProfileModule,
+        SidePanelModule,
+        PopupMenuModule,
 
         AdvancedFiltersModule,
         SearchFieldModule

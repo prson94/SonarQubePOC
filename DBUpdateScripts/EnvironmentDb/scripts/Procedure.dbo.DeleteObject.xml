@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v13">
-    <comment>GOV-13613</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v14">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -232,24 +232,6 @@ create or alter procedure [dbo].[DeleteObject]
 
 			  delete	FieldType
 			  where	ID = @ObjectID;
-		  end;
-
-		  if @Object = 'Fusion'
-		  begin
-			  insert into #items (ID, Object, ObjectID)
-				  select	A.ID, A.Object, A.ObjectID
-				  from	FusionAttribute F
-						  inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = F.ID
-						  inner join #items I on I.ObjectID = F.FusionID;
-		  end;
-
-		  if @Object = 'FusionType'
-		  begin
-			  insert into #types (ID, Object, ObjectID)
-				  select	A.ID, A.Object, A.ObjectID
-				  from	FusionAttributeType F
-						  inner join AssetType A on A.Object = 'FusionAttributeType' and A.ObjectID = F.ID
-						  inner join #types I on I.ObjectID = F.FusionTypeID;
 		  end;
 
 		  if @Object = 'Intersect'
@@ -478,36 +460,6 @@ create or alter procedure [dbo].[DeleteObject]
 				  from	[AssetType] O
 						  inner join #types I on I.ID = O.ID;
 
-				  if @Object = 'FusionAttributeType'
-				  begin
-					  delete	O
-					  from	FusionAttribute O
-							  inner join FusionAttributeType F on F.ID = O.FusionAttributeTypeID
-							  inner join #types I on I.ObjectID = F.ID;
-
-					  delete	O
-					  from	FusionAttributeType O
-							  inner join #types I on I.ObjectID = O.ID;
-				  end;
-				  if @Object = 'FusionType'
-				  begin
-					  delete	O
-					  from	FusionAttribute O
-							  inner join FusionAttributeType F on F.ID = O.FusionAttributeTypeID
-							  inner join #types I on I.Object = 'FusionAttributeType' and I.ObjectID = F.ID;
-
-					  delete	O
-					  from	FusionAttributeType O
-							  inner join #types I on I.Object = 'FusionType' and I.ObjectID = O.FusionTypeID;
-
-					  delete	O
-					  from	Fusion O
-							  inner join #types I on I.Object = 'FusionType' and I.ObjectID = O.FusionTypeID;
-					
-					  delete	O
-					  from	FusionType O
-							  inner join #types I on I.Object = 'FusionType' and I.ObjectID = O.ID;
-				  end;
 				  if @Object = 'RuleType'
 				  begin
 					  delete	O 
@@ -569,25 +521,6 @@ create or alter procedure [dbo].[DeleteObject]
 				  from		[Asset] A
 							inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
 				
-				  if @Object = 'Fusion'
-				  begin
-					  delete	O
-					  from	FusionAttribute O
-							  inner join Fusion F on F.ID = O.FusionID
-							  inner join #items I on I.Object = @Object and I.ObjectID = F.ID;
-					
-					  delete	O
-					  from	Fusion O
-							  inner join #items I on I.Object = @Object and I.ObjectID = O.ID;
-				  end;
-
-				  if @Object = 'FusionAttribute'
-				  begin
-					  delete	O
-					  from	FusionAttribute O
-							  inner join #items I on I.ObjectID = O.ID;
-				  end;
-
 				  if @Object = 'Rule'
 				  begin
 					  delete	O 
@@ -1233,35 +1166,43 @@ create or alter procedure [dbo].[DeleteObject]
 						  inner join #types I on I.ID = A.AssetTypeID;
 
 				  delete	O
-				  from		[metrics].[Allocation] O
-							inner join AssetType A on A.Object = @Object and A.Uid = O.AssetTypeUid
-							inner join #types I on I.ObjectID = A.ObjectID;
+				  from		AssetTypeLevel O
+							inner join #types I on I.ID = O.AssetTypeID;
+
+				  delete	O
+				  from		graph.AssetNode O
+							inner join #types I on I.ID = O.AssetTypeID;
+
+				delete	T
+				from	[metrics].[ScoreItem] T
+						inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+						inner join metrics.Score S on S.Uid = L.ScoreUid
+						inner join Asset O on O.Uid = S.AssetUid
+						inner join #types I on I.ID = O.AssetTypeID;
+
+				delete	T
+				from	[metrics].[ScoreItem] T
+						inner join [metrics].[AssetVersion] MV on MV.Uid = T.AssetVersionUid
+						inner join [metrics].[Asset] MA on MA.Uid = MV.AssetUid
+						inner join [metrics].Allocation A on A.Uid = MA.AllocationUid
+						inner join AssetType AST on AST.Uid = A.AssetTypeUid
+						inner join #types I on I.ID = AST.ID;
+
+				delete	T
+				from	[metrics].[Score] T
+						inner join Asset O on O.Uid = T.AssetUid
+						inner join #types I on I.ID = O.AssetTypeID;
+
+				delete	O
+				from	[metrics].[Allocation] O
+						inner join AssetType A on A.Object = @Object and A.Uid = O.AssetTypeUid
+						inner join #types I on I.ObjectID = A.ObjectID;
 
 				  delete	O
 				  from		[metrics].[Asset] O
 							inner join metrics.Allocation Al on Al.Uid = O.AllocationUid
 							inner join AssetType A on A.Object = @Object and A.Uid = Al.AssetTypeUid
 							inner join #types I on I.ObjectID = A.ObjectID;
-
-				  delete	O
-				  from	AssetTypeLevel O
-						  inner join #types I on I.ID = O.AssetTypeID;
-
-				  delete	O
-				  from	graph.AssetNode O
-						  inner join #types I on I.ID = O.AssetTypeID;
-
-					delete	T
-					from	[metrics].[ScoreItem] T
-							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
-							inner join metrics.Score S on S.Uid = L.ScoreUid
-							inner join Asset O on O.Uid = S.AssetUid
-							inner join #types I on I.ID = O.AssetTypeID;
-
-					delete	T
-					from	[metrics].[Score] T
-							inner join Asset O on O.Uid = T.AssetUid
-							inner join #types I on I.ID = O.AssetTypeID;		
 
 				  delete	O
 				  from	[Asset] O
@@ -1394,16 +1335,16 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  delete	O
 			  from	CommentRelation O
-					  inner join #items I on O.ObjectType = I.Object and I.ObjectID =  O.ObjectID;
+					  inner join #items I on O.AssetID = I.ID;
 
 			  delete	V
 			  from	CommentVote V
 					  inner join Comment O on O.ID = V.CommentID
-					  inner join #items I on O.OwnerObjectType = I.Object and I.ObjectID = O.OwnerObjectID;
+					  inner join #items I on O.AssetID = I.ID;
 
 			  delete	O
 			  from	Comment O
-					  inner join #items I on O.OwnerObjectType = I.Object and I.ObjectID = O.OwnerObjectID;
+					  inner join #items I on O.AssetID = I.ID;
 		  end;
  
 		  if @ClearSiteNav = 1

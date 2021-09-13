@@ -1,8 +1,9 @@
 import { debounceTime } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { GridColumn, GridField, GridFilterExpression, GridFilterColumn } from '../../../models/grid-definition.model';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../../services/permissions.service';
 import { ResourcesService } from '../../../services/resources.service';
@@ -10,17 +11,22 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
-import { SubscriptionLike as ISubscription } from 'rxjs';
+import { forkJoin, Observable, ReplaySubject, SubscriptionLike as ISubscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, SimpleChange, OnDestroy, ViewChild, OnInit } from '@angular/core';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { ResourceApiModel } from '../../../models/resource.model';
+import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import { isEqual } from "lodash";
+import { of } from 'rxjs';
 
 @Component({
-    selector: 'd3s-user-list',
-    providers: [GridDefinitionService, PermissionsService, ResourcesService, CompanySettingsService],
-    templateUrl: 'user-list.component.html',
+    selector: "d3s-user-list",
+    providers: [GridDefinitionService, FieldsObservableService, PermissionsService, ResourcesService, CompanySettingsService],
+    templateUrl: "user-list.component.html",
+    styleUrls: ["user-list.component.less"],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -36,13 +42,17 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     columns: GridColumn[] = [];
     fields: GridField[] = [];
 
+    filterFields$: Observable<AdvancedFilterFieldType[]>;
+    private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
+
     showDelete: boolean = false;
     showEditor: boolean = false;
     showResetPwd: boolean = false;
 
     allowPasswordReset: boolean = false;
-    Isexportinprogress: boolean = false;
+    isExportInProgress: boolean = false;
     simpleFilter: string = "";
+    advancedFilter: string = "";
 
     totalRecords: number;
     rowsPerPage: number = 10;
@@ -50,9 +60,11 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     currentPageNumber: number = 0;
     sortField: string = undefined;
     sortOrder: SortOrder = SortOrder.None;
-    filters: GridFilterExpression[] = [];
+    previousEvent: LazyLoadEvent;
     columnWidth: number = 0;
     columnWidthOwnedItems: number = 0;
+
+    private statusValues: string[] = ["Active", "Inactive"];
 
     get globalFilterFields(): string[] {
         let f = this.columns.map(c => c.datafield);
@@ -66,6 +78,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     constructor(
         private router: Router,        
         private gridDefinitionService: GridDefinitionService,
+        private fieldsService: FieldsObservableService,
         protected messagesService: MessagesObservableService,
         private permissionsService: PermissionsService,
         private resourcesService: ResourcesService,
@@ -75,6 +88,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         private changeDetectorRef: ChangeDetectorRef) {
         super();
         this.setObjectInfo('ResourceType', 1);
+        this.filterFields$ = this.filterFieldsSubject.asObservable();
     }
 
     ngOnInit() {
@@ -102,10 +116,10 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
     public export() {
         var filename = this.IsCommunityUserResposibility === true ? `Filtered List of ${this.UserListHeading} ${new Date().toDateString()}.xlsx` : "Users.xlsx";
-        this.Isexportinprogress = true;
+        this.isExportInProgress = true;
         this.resourcesService.exportResources(this.getParams(), filename).subscribe(
             (res) => {
-                this.Isexportinprogress = false;
+                this.isExportInProgress = false;
                 this.changeDetectorRef.markForCheck();
             }
         );
@@ -115,7 +129,6 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
         this.getFieldsDefinition();
 
-
         this.companySettingsService.getAuthenticationModel().subscribe(res => {
             if (res.model == 'forms') {
                 this.allowPasswordReset = true;
@@ -123,24 +136,75 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         });
     }
 
+    getLoadIdentifier() {
+        return "User" + (this.IsCommunityUserResposibility ? "Community" : "");
+    }
+
     getFieldsDefinition() {
         let params = { IsCommunityUserResposibility: this.IsCommunityUserResposibility };
 
-        this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType, null, null, params).subscribe(
-            (result) => {
-                this.columns = result.Columns;
-                this.fields = result.Fields;
-                if (this.IsCommunityUserResposibility && this.columns && this.columns.length > 2) {
-                    this.columnWidth = 200;
-                    this.columnWidthOwnedItems = 120;
-                }
-                else {
-                    this.columnWidth = 0;
-                    this.columnWidthOwnedItems = 0;
-                }
-                this.getData();
+        forkJoin(
+            this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType, null, null, params),
+            this.fieldsService.getFieldsV2(this.resourceTypeUid, null, null)
+        ).subscribe((forkResult) => {
+            const result = forkResult[0];
+            const customFields = forkResult[1] ?? [];
+
+            this.columns = result.Columns;
+            this.fields = result.Fields;
+            if (this.IsCommunityUserResposibility && this.columns && this.columns.length > 2) {
+                this.columnWidth = 200;
+                this.columnWidthOwnedItems = 120;
             }
-        );
+            else {
+                this.columnWidth = 0;
+                this.columnWidthOwnedItems = 0;
+            }
+            this.setAdvancedFilterFields(result.Columns, customFields);
+        });
+    }
+
+    public getStatusFilterValues(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+        const values = this.statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+        return of({
+            items: values,
+            count: values.length
+        });
+    }
+
+    setAdvancedFilterFields(columns: GridColumn[], customFields: FieldTypeAPIModelField[]) {
+        let output: AdvancedFilterFieldType[] = columns.map((c) => {
+            const apiName = this.getApiName(c.datafield);
+            if (c.datafield === "State") {
+                return {
+                    Name: apiName,
+                    FriendlyName: c.text,
+                    Type: new FieldType("Lookup"),
+                    Category: "",
+                    ValueLoader: this.getStatusFilterValues.bind(this),
+                    RemovePopulatedOperator: true
+                }
+            } else if (customFields.findIndex((o) => o.Name === apiName) !== -1) {
+                return customFields.find((o) => o.Name === apiName) as AdvancedFilterFieldType;
+            } else {
+                return {
+                    Name: apiName,
+                    FriendlyName: c.text,
+                    Type: new FieldType(c.fieldType),
+                    Category: "",
+                    RemovePopulatedOperator: ["FirstName", "LastName", "Email"].indexOf(c.datafield) !== -1
+                }
+            }
+        });
+
+        customFields.forEach((c) => {
+            if (!this.IsCommunityUserResposibility && output.findIndex((o) => o.Name === c.Name) === -1) {
+                output.push(c as AdvancedFilterFieldType);
+            }
+        });
+
+        this.filterFieldsSubject.next(output);
+        this.filterFieldsSubject.complete();
     }
 
     getData() {
@@ -191,28 +255,9 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             delete params['_simpleFilter'];
         }
 
-        if (this.filters.length > 0) {
-            let expressions: string[] = [];
-            let filterColumns: GridFilterColumn[] = [];
-            this.columns.forEach(f => {
-                var gfc = new GridFilterColumn();
-                gfc.apiName = this.getApiName(f.datafield);
-                gfc.fieldType = f['fieldType'];
-                gfc.datafield = f.datafield;
-                filterColumns.push(gfc);
-            });
-            this.filters.forEach(f => {
-                expressions.push(f.getAsV2ApiFilter(filterColumns));
-            });
-
-            if (expressions.length > 0) {
-                params._filter = `(${expressions.join(' and ')}) and ${baseFilter}`;
-            }
-            else {
-                params._filter = baseFilter;
-            }
-        }
-        else {
+        if (this.advancedFilter.length > 0) {
+            params._filter = `(${this.advancedFilter}) and ${baseFilter}`;
+        } else {
             params._filter = baseFilter;
         }
 
@@ -235,30 +280,16 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     public lazyLoadUsers(event: LazyLoadEvent) {
+        //if its the same filter then no need to load same data 
+        if (isEqual(event, this.previousEvent)) {
+            return;
+        }
+        this.previousEvent = event;
         //event.first = First row offset
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value      
-
-        this.filters.splice(0, this.filters.length);
-        this.simpleFilter = "";
-        for (var key in event.filters) {
-            var filter = event.filters[key];
-            if (key == "global" && this.showSimpleFilter) {
-                this.simpleFilter = filter.value;
-                this.filters.splice(0, this.filters.length);
-                break;
-            } else if (key == "global") {
-                continue;
-            }
-
-            var gridFilter = new GridFilterExpression();
-            gridFilter.condition = "CONTAINS"
-            gridFilter.field = key;
-            gridFilter.value = filter.value;
-            this.filters.push(gridFilter);
-        }
 
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
@@ -370,5 +401,13 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         else {
             return null;
         }
+    }
+
+    advancedFiltersChanged($event: Filters) {
+        this.advancedFilter = $event.filter;
+        this.getData();
+    }
+    onFiltersLoaded() {
+        this.getData();
     }
 };

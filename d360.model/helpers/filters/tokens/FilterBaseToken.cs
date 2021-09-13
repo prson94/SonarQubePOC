@@ -1,0 +1,338 @@
+﻿using d360.core;
+using d360.core.entities;
+using d360.model.helpers.filters.program;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+
+namespace d360.model.helpers.filters
+{
+    public abstract class FilterBaseToken
+    {
+        protected IFilterDataProvider dataProvider;
+        protected bool isLookupField { get; set; }
+
+        protected int parameterIdx { get; set; }
+        protected string field { get; set; }
+        public string @operator { get; set; }
+        protected object value { get; set; }
+        public bool IsNullValue { get; set; }
+        protected string fieldColumn { get; set; }
+        protected StringBuilder stringBuilder = new StringBuilder();
+        protected Dictionary<string, object> sqlParamsRef;
+
+        protected FieldType fieldType { get; set; }
+        protected DefaultFilter defaultFilter { get; set; }
+
+        public string CurrentFieldType
+        {
+            get
+            {
+                return defaultFilter == null ? fieldType.Type.ToLower(CultureInfo.InvariantCulture) : defaultFilter.SqlFieldType.ToString().ToLower(CultureInfo.InvariantCulture);
+            }
+        }
+
+        public string Field
+        {
+            get
+            {
+                return field;
+            }
+        }
+
+        public string ValueAsString
+        {
+            get
+            {
+                return value.ToString();
+            }
+        }
+
+        public string EscapedValueAsString
+        {
+            get
+            {
+                return value.ToString().Replace("'", "''");
+            }
+        }
+
+        public bool ConvertToNvarChar
+        {
+            get
+            {
+                return (@operator == "ct" || @operator == "nct") && CurrentFieldType.Contains("date");
+            }
+        }
+
+        protected void AppendNullOperatorForNotOperators(string fieldName)
+        {
+            if (this.@operator == "ne" || this.@operator == "nct")
+            {
+                stringBuilder.Insert(0, "(");
+                stringBuilder.Append(" or ");
+                stringBuilder.Append(fieldName);
+                stringBuilder.Append(" is null");
+                stringBuilder.Append(")");
+            }
+        }
+
+        protected void UpdateTokenValueForType(bool skipLookupCheck = false)
+        {
+            if (@operator == "ct" || @operator == "nct")
+            {
+                bool isStartWith = value.ToString().Last() == '*';
+                bool isEndWith = value.ToString().First() == '*';
+                bool isBoth = (isStartWith && isEndWith) || (!isStartWith && !isEndWith);
+
+                if (isBoth)
+                {
+                    value = $"%{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}%";
+                }
+                else
+                {
+                    //Wildcard will be present from request
+                    value = $"{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}";
+                }
+            }
+
+            string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
+
+            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
+            {
+                if (fieldType.LookupObjectID == null)
+                {
+                    throw new FilterExpressionParserException("Lookup field type is missing LookupObjectID value!");
+                }
+                this.isLookupField = true;
+                if (skipLookupCheck)
+                {
+                    if (@operator == "eq")
+                    {
+                        @operator = "ct";
+                        this.value = "%" + this.value + "%";
+                    }
+
+                    if (@operator == "ne")
+                    {
+                        @operator = "nct";
+                        this.value = "%" + this.value + "%";
+                    }
+                }
+                else
+                {
+                    LoadLookupSql();
+                }
+            }
+
+            if (!this.isLookupField && fieldType.Type != DataType.Color.ToString())
+            {
+                var fieldSql = GetColumnValueSyntax(fieldType.ID);
+
+                if (this.ConvertToNvarChar)
+                {
+                    fieldSql = $"CONVERT(VARCHAR,{fieldSql},120)";
+                }
+
+                if (this.fieldType.Type == "Score")
+                {
+                    fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
+                }
+
+                stringBuilder.Append(fieldSql);
+                stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
+                stringBuilder.Append($"@filter_{parameterIdx}");
+
+                this.AppendNullOperatorForNotOperators(fieldSql);
+            }
+
+            if (fieldType.Type == DataType.Color.ToString())
+            {
+                if (@operator == "eq")
+                {
+                    @operator = "ct";
+                    value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
+                }
+
+                if (@operator == "ne")
+                {
+                    @operator = "nct";
+                    value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
+                }
+
+                this.field = "ISNULL(ACJ.ColorJson,'')";
+            }
+
+            if (sqlParamsRef != null)
+            {
+                sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+            }
+
+        }
+
+        protected void LoadLookupSql()
+        {
+            bool isFieldFromRel = this.dataProvider.IsFieldFromRelationship(fieldType.ID);
+
+            string type = fieldType.Type;
+            int fieldTypeId = fieldType.ID;
+            int fieldTypeIdForLookupValue = fieldType.ID;
+            string lookupObjectType = fieldType.LookupObjectType;
+            int lookupObjectId = fieldType.LookupObjectID.HasValue ? fieldType.LookupObjectID.Value : 0;
+            string defaultValue = fieldType.DefaultValue;
+            bool allowAllValue = fieldType.AllowAllValue;
+            string valueQueryPart = "Value";
+
+            //handle field from relationship list values
+            if (isFieldFromRel)
+            {
+                var lookupFieldType = this.dataProvider.GetFieldTypeById(fieldType.LookupObjectFieldTypeID);
+                fieldTypeIdForLookupValue = lookupFieldType.ID;
+                lookupObjectType = lookupFieldType.LookupObjectType;
+                lookupObjectId = lookupFieldType.LookupObjectID.HasValue ? lookupFieldType.LookupObjectID.Value : 0;
+                defaultValue = lookupFieldType.DefaultValue;
+                allowAllValue = lookupFieldType.AllowAllValue;
+                valueQueryPart = "FormattedValue";
+            }
+
+            if (type == "Lookup")
+            {
+                if (@operator == "ct")
+                {
+                    stringBuilder.Append($"F{fieldTypeId}.FormattedValue like @filter_{parameterIdx}");
+                }
+                else
+                {
+
+                    int lookupValue = this.dataProvider.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
+                    if (lookupValue <= 0)
+                    {
+                        throw new FilterExpressionParserException($"Invalid lookup value '{value}' for field '{field}'");
+                    }
+
+                    if (!isFieldFromRel)
+                    {
+                        value = lookupValue.ToString();
+                    }
+
+
+                    string condition = "in";
+                    if (@operator == "ne")
+                    {
+                        condition = "not in";
+                    }
+                    var basicSqlExpression = string.Empty;
+
+                    if (!string.IsNullOrEmpty(defaultValue))
+                    {
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx}),','))";
+                        sqlParamsRef.Add($"@defLookupValue{parameterIdx}", defaultValue);
+                    }
+                    else
+                    {
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldTypeId}.{valueQueryPart},','))";
+                    }
+
+                    if (allowAllValue)
+                    {
+                        basicSqlExpression = $"(F{fieldTypeId}.{valueQueryPart} = '0' or {basicSqlExpression})";
+                    }
+                    stringBuilder.Append(basicSqlExpression);
+
+                }
+            }
+
+            if (type == "Relationship")
+            {
+                string condition = "exists";
+                if (@operator == "ne")
+                {
+                    condition = "not exists";
+                }
+
+                var whereStatement = $@"{condition}
+                                    (select id from intersectdetail where intersecttypeid = {lookupObjectId} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx}
+                                    union select id from IntersectDetail where intersecttypeid = {lookupObjectId} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
+
+                stringBuilder.Append(whereStatement);
+            }
+        }
+
+
+        protected string GetColumnValueSyntax(int fieldTypeId)
+        {
+            if (fieldType.Type == "Path")
+            {
+                return $"Node.DisplayPath";
+            }
+            else if (fieldType.Type == "Counter")
+            {
+                return $"F{fieldType.ID}.FormattedValue";
+            }
+            else
+            {
+                if (fieldColumn == null || fieldColumn.LastIndexOf(" as ", StringComparison.InvariantCulture) <= 0)
+                {
+                    return $"F{fieldTypeId}.FormattedValue";
+                }
+                return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as ", StringComparison.InvariantCulture));
+            }
+        }
+
+        protected IFieldValueValidator GetValueValidator()
+        {
+            string ft = defaultFilter == null ? fieldType.Type : defaultFilter.SqlFieldType.ToString();
+            switch (ft.ToLowerInvariant())
+            {
+                case "number":
+                case "counter":
+                    return new NumberFieldValidator();
+                case "decimal":
+                    return new DecimalFieldValidator();
+                case "boolean":
+                    return new BooleanFieldValidator();
+                case "date":
+                case "datetime":
+                    if (defaultFilter != null && (defaultFilter.ApiName == "CreatedOn" || defaultFilter.ApiName == "UpdatedOn"))
+                    {
+                        return new SystemDateFieldValidator();
+                    }
+                    return new DateFieldValidator();
+                case "assettypeclass":
+                    return new AssetTypeClassFieldValidator();
+                default:
+                    return new TextFieldValidator();
+            }
+        }
+    }
+
+    public enum FilterExpressionParseType
+    {
+        CustomFields,
+        Relationships,
+        RuleResults,
+        RelationshipCustomFields,
+        CommunityResposibilityResource,
+        ComplexLookupField
+    }
+
+    public enum SqlFieldType
+    {
+        Text, Boolean, Number, Decimal, Date, DateTime, Guid, AssetTypeClass, Xml
+    }
+
+    public class DefaultFilter
+    {
+        public string ApiName { get; set; }
+        public string SqlExpression { get; set; }
+        public SqlFieldType SqlFieldType { get; set; }
+
+        public DefaultFilter(string apiName, string sqlExpression, SqlFieldType sqlFieldType)
+        {
+            this.ApiName = apiName;
+            this.SqlExpression = sqlExpression;
+            this.SqlFieldType = sqlFieldType;
+        }
+    }
+}

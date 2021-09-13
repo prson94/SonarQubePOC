@@ -1,18 +1,42 @@
 ﻿import { DatePipe } from "@angular/common";
 import * as _ from "lodash";
 import { SelectItem } from "primeng/api";
+import { Observable } from "rxjs/internal/Observable";
+import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
 import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
 import { Operator } from "../../../models/operator.model";
 import { RelationshipType } from "../../../models/relationship.model";
 
-export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
+export interface LookupValuesAPIParameters {
+    skip?: number;
+    take?: number;
+    filter?: string;
+}
+
+export class LookupValuesAPIModel {
+    count: number;
+    items: string[];
+}
+
+export class AdvancedFilterFieldType extends FieldTypeAPIModelField {
+    RemovePopulatedOperator?: boolean = false;
+    ValueLoader?(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel>;
+}
+
+type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<T>
+
+export class FieldTypeAPIModelFieldAdvancedCondition extends FieldTypeAPIModelFieldCondition {
     Values: SelectItem[];
     Operators: SelectItem[];
+    ValueLoader?(params: any): Observable<LookupValuesAPIModel>;
 
     IsOwnerField?: boolean = false;
-    IsSystemField?: boolean = false;
-    IsRelationship?: boolean = false;
+
+    constructor(data: WithOptional<FieldTypeAPIModelFieldAdvancedCondition, "AssetTypeUid" | "ValueLoader" | "IsOwnerField" | "IsSystemField" | "IsRelationship">) {
+        super();
+        Object.assign(this, data);
+    }
 }
 
 export class AdvancedFilterFieldCondition {
@@ -619,10 +643,10 @@ export class SystemFields {
     public static OwnedByFieldCode: string = "$OwnedBy";
     public static RelationshipFieldCode: string = "$Related";
 
-    public static GetSystemFieldDefinition(gridType: string): FieldTypeAPIModelFieldCondition[] {
-        var fields: FieldTypeAPIModelFieldCondition[] = [];
+    public static GetSystemFieldDefinition(gridType: string): FieldTypeAPIModelFieldAdvancedCondition[] {
+        var fields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
 
-        fields.push({
+        fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
             Category: "System Fields",
             FriendlyName: "Date Created",
             Name: "CreatedOn",
@@ -630,10 +654,10 @@ export class SystemFields {
             Operators: [],
             Values: [],
             IsSystemField: true
-        });
+        }));
 
 
-        fields.push({
+        fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
             Category: "System Fields",
             FriendlyName: "Date Last Modified",
             Name: "UpdatedOn",
@@ -641,9 +665,9 @@ export class SystemFields {
             Operators: [],
             Values: [],
             IsSystemField: true
-        });
+        }));
 
-        var owner: FieldTypeAPIModelFieldCondition = {
+        fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
             Category: "System Fields",
             FriendlyName: "Owned By",
             Name: this.OwnedByFieldCode,
@@ -652,11 +676,10 @@ export class SystemFields {
             Values: [],
             IsOwnerField: true,
             IsSystemField: true
-        };
-        fields.push(owner);
+        }));
 
         if (gridType === "Tree") {
-            var level: FieldTypeAPIModelFieldCondition = {
+            fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
                 Category: "System Fields",
                 FriendlyName: "Level",
                 Name: "[Level]",
@@ -664,15 +687,14 @@ export class SystemFields {
                 Operators: [],
                 Values: [],
                 IsSystemField: true
-            };
-            fields.push(level);
+            }));
         }
 
         return fields;
     }
 
-    public static GetRelationshipDefinition(relTypes: RelationshipType[], assetType: string): FieldTypeAPIModelFieldCondition[] {
-        var fields: FieldTypeAPIModelFieldCondition[] = [];
+    public static GetRelationshipDefinition(relTypes: RelationshipType[], assetType: string): FieldTypeAPIModelFieldAdvancedCondition[] {
+        var fields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
 
         relTypes.forEach((r) => {
             try {
@@ -692,7 +714,7 @@ export class SystemFields {
 
                 typeName = typeName.split("/").join("<i class='slim-fa fa fa-chevron-right'></i>");
 
-                var field = {
+                var field = new FieldTypeAPIModelFieldAdvancedCondition({
                     Category: "Relationships",
                     FriendlyName: `${predicate} ${typeName}`,
                     Name: r.Uid + "|" + sideUid,
@@ -700,7 +722,7 @@ export class SystemFields {
                     Operators: [],
                     Values: [],
                     IsRelationship: true
-                };
+                });
                 field["predicate"] = predicate;
 
                 fields.push(field);

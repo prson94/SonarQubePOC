@@ -131,8 +131,8 @@ namespace d360.web.Controllers.V2
         IMetricsRepository MetricsRepository;
         IScoringRepository ScoringRepository;
 
-        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             QueueSource = queueSource;
             this.ScoringRepository = scoringRepository;
@@ -699,7 +699,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetMetricFieldsByAssetType(Guid assetTypeUid)
+        public IHttpActionResult GetMetricFieldsByAssetType(Guid assetTypeUid)
         {
             try
             {
@@ -1452,6 +1452,11 @@ namespace d360.web.Controllers.V2
 
             var execution = getApiExecution(1);
             var responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution));
+            if (responseList == null)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error removing rule results", ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+
             var responseModel = responseList.FirstOrDefault();
             if (responseModel != null)
             {

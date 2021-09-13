@@ -68,7 +68,7 @@ export class WorkflowMonitorService extends BaseObservableService {
 
         this.http.get(uri, { responseType: 'blob' }).subscribe(data => {
             console.log(data);
-            this.downloadFile(data, name);
+            this.downloadFile(data, '');
         });
     }
 

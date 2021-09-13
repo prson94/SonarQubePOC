@@ -59,8 +59,8 @@ namespace d360.web.Controllers.V2
         IFieldsRepository fieldsRepository;
 
         public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
-            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository)
-            : base(community, company)
+            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -134,7 +134,7 @@ namespace d360.web.Controllers.V2
                 Guid? fusionTypeGuid = Guid.Empty;
                 if (!string.IsNullOrEmpty(FusionTypeUID))
                 {
-                    if (Class == null || Class == AssetTypeClass.FusionAttribute)
+                    if (Class == null)
                     {
                         fusionTypeGuid = Guid.Parse(FusionTypeUID);
                     }
@@ -230,6 +230,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeProfilingCheck", "Include a check for whether or not the asset has Data Profiling.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid, CancellationToken cancellationToken)
         {
@@ -248,7 +249,7 @@ namespace d360.web.Controllers.V2
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"));
+                var validator = new AssetTypeValidator(this.Company);
                 var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -557,8 +558,8 @@ namespace d360.web.Controllers.V2
                     model.Class = AssetTypeClass.BusinessAsset;
                 }
 
-                var governanceRoleReferenceListUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), governanceRoleReferenceListUid);
+                var governanceRoleReferenceListUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+                var validator = new AssetTypeValidator(this.Company, governanceRoleReferenceListUid);
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -614,7 +615,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.ObjectID > 0)
                 {
-                    if (model.Class != AssetTypeClass.FusionAttribute && model.Class != AssetTypeClass.Reference)
+                    if ( model.Class != AssetTypeClass.Reference)
                     {
                         var nameFieldType = new FieldType
                         {
@@ -779,7 +780,8 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid"));
+                var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+                var validator = new AssetTypeValidator(this.Company, govRoleUid);
 
                 if (model.Class == AssetTypeClass.Glossary)
                 {
@@ -903,7 +905,7 @@ namespace d360.web.Controllers.V2
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                if (assets.Any(x => x.Uid != null && x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule || assetType.Class == AssetTypeClass.FusionAttribute))
+                if (assets.Any(x => x.Uid != null && x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID parameter is not supported for {assetType.Class.GetDisplayName()} Asset Type."));
                 }
@@ -1386,9 +1388,10 @@ namespace d360.web.Controllers.V2
                     List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
 
                     var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
-                    var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                    var filterDataProvider = new FilterDataProvider(this.Company);
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
                     filterExpressionParser.LoadFieldTypes(fields, null);
-                    filters = filterExpressionParser.ParseAsFiltersDataTable(filter);
+                    filters = filterExpressionParser.Parse(filter, out _, out _);
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
@@ -1582,6 +1585,10 @@ namespace d360.web.Controllers.V2
                                 fileName += " List";
                             }
                         }
+
+                        //remove Color column from export
+                        Columns = Columns.Where(c => c.columntype != "color" && c.datafield != "Color").ToList();
+                        Fields = Fields.Where(f => f.type != "color" && f.name != "Color").ToList();
                     }
 
                     var document = new SLDocument();
@@ -2001,10 +2008,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
+                var governanceRole = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
                 foreach (var asset in assetTypes)
                 {
-                    if (governanceRole == asset.Uid.ToString())
+                    if (governanceRole == asset.Uid)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID {asset.Uid} is a reference list and is configured as the Governance Role and cannot be deleted."));
                 }
 
@@ -2070,9 +2077,9 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
+                var governanceRole = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
-                if (governanceRole == assetType.Uid.ToString())
+                if (governanceRole == assetType.Uid)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID {assetType.Uid} is a reference list and is configured as the Governance Role and cannot be deleted."));
 
                 if (assetType == null)

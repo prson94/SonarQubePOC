@@ -16,22 +16,18 @@ namespace d360.model
         DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
         DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }        
         DbSet<CompanyResource> CompanyResources { get; set; }
-        DbSet<CompanySetting> CompanySettings { get; set; }
         CompanySsoModel CurrentCompanySsoModel { get; set; }
         DbSet<DatabaseServer> DatabaseServers { get; set; }
         DbSet<DomainCertificate> DomainCertificates { get; set; }
-        DbSet<DomainSetting> DomainSettings { get; set; }                
-        DbSet<GenericCommand> GenericCommands { get; set; }        
+        DbSet<DomainSetting> DomainSettings { get; set; }                        
         DbSet<Resource> Resources { get; set; }
-        DbSet<Setting> Settings { get; set; }
 
         new bool Add<T>(T item) where T : BaseObject;
         bool ChangePassword(int resourceID, string oldPassword, string newPassword);        
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
         string GetCompanyConnectionString(bool skipCacheCheck = false);
-        Dictionary<string, string> GetCompanySettings();
-        T GetCompanySettingByKey<T>(string key);
+        string GetPrimaryUrlPrefix();
         Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses();
         Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken);
         Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state);        

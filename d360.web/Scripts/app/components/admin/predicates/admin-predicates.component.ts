@@ -109,6 +109,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
         this.theDeleteCallback = this.deletePredicate.bind(this);        
         this.areaName = StringConstants.Section_Predicates;
         this.setCommonItems();        
+        this.buildSecondaryNavigationForObject(0, 'Predicate');
     }
 
     ngOnInit() {

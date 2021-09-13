@@ -54,12 +54,27 @@
             <div class="value-selector">
                 <ng-container *ngIf="doesNeedValue">
                     <input *ngIf="currentInputType === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required maxlength="{{maxNumberOfFilterCharacters}}" />
-                    <ig-number-input *ngIf="currentInputType === 'number'" igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" [enforceMaxMin]="true"></ig-number-input>
+
+                    <ng-container *ngIf="currentInputType === 'number'">
+                        <ig-number-input igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" #condval="ngModel"></ig-number-input>
+                        <div *ngIf="condval.invalid && (condval.dirty || condval.touched)">
+                            <div *ngIf="condval.errors.underMin" class="ig-text-required">Please enter a value of {{condval.errors.underMin.min}} or higher</div>
+                            <div *ngIf="condval.errors.overMax" class="ig-text-required">Please enter a value of {{condval.errors.overMax.max}} or lower</div>
+                        </div>
+                    </ng-container>
 
                     <ng-container *ngIf="currentInputType === 'multi-number'">
-                        <ig-number-input igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" [enforceMaxMin]="true"></ig-number-input>
+                        <ig-number-input igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" #condval="ngModel"></ig-number-input>
+                        <div *ngIf="condval.invalid && (condval.dirty || condval.touched)">
+                            <div *ngIf="condval.errors.underMin" class="ig-text-required">Please enter a value of {{condval.errors.underMin.min}} or higher</div>
+                            <div *ngIf="condval.errors.overMax" class="ig-text-required">Please enter a value of {{condval.errors.overMax.max}} or lower</div>
+                        </div>
                         <div class="value-separator">and</div>
-                        <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true" [min]="numberMin" [max]="numberMax" [enforceMaxMin]="true"></ig-number-input>
+                        <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true" [min]="numberMin" [max]="numberMax"  #condvaltwo="ngModel"></ig-number-input>
+                        <div *ngIf="condvaltwo.invalid && (condvaltwo.dirty || condvaltwo.touched)">
+                            <div *ngIf="condvaltwo.errors.underMin" class="ig-text-required">Please enter a value of {{condvaltwo.errors.underMin.min}} or higher</div>
+                            <div *ngIf="condvaltwo.errors.overMax" class="ig-text-required">Please enter a value of {{condvaltwo.errors.overMax.max}} or lower</div>
+                        </div>
                     </ng-container>
 
                     <ig-date *ngIf="currentInputType === 'date'" [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
@@ -187,8 +202,8 @@
 
 
                     <ng-container *ngIf="currentInputType === 'color-picker'">
-                        <ig-color-picker igSize="full" 
-                                         [colors]="defaultColorOptions" 
+                        <ig-color-picker igSize="full"
+                                         [colors]="defaultColorOptions"
                                          [(ngModel)]="condition.value"
                                          [invalidOptions]="['Custom']">
                         </ig-color-picker>

@@ -1008,10 +1008,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution();
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1051,10 +1048,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution();
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1117,10 +1111,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution(apiExecutionUid);
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql, 
@@ -1199,10 +1190,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
                 var execution = createScoreExecution(apiExecutionUid);
 
-                if (Connection.State != ConnectionState.Open)
-                {
-                    Connection.Open();
-                }
+                Connection.OpenIfClosed().Wait();
 
                 int rowsImpacted = Connection.Execute(
                     sql,
@@ -1224,7 +1212,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
             }
         }
 
-        public void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId)
+        public void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId, int timeout)
         {
             if (isScoreAllocationPresentForIntersectType(intersectTypeId))
             {
@@ -1267,23 +1255,30 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 		            for json path, WITHOUT_ARRAY_WRAPPER
 		            ) as Payload,
 		            0 as [State]
-	        from	api.ExecutionRelationship ER
-			        inner join [Intersect] R on R.ID = ER.IntersectID 
+	        from	(
+        				SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
+				        FROM api.ExecutionRelationship ER
+			            inner join [Intersect] R on R.ID = ER.IntersectID 
 					        and ER.ExecutionID = @apiExecutionUid 
 					        and ER.Success = 1
-			        inner join IntersectType T on T.ID = R.IntersectTypeID 
+			            inner join Asset A on (A.Object = R.Subject and A.ObjectID = R.SubjectID)
+					    UNION ALL
+				        SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
+				        FROM api.ExecutionRelationship ER
+			            inner join [Intersect] R on R.ID = ER.IntersectID 
+					        and ER.ExecutionID = @apiExecutionUid 
+					        and ER.Success = 1
+			            inner join Asset A on (A.Object = R.Object and A.ObjectID = R.ObjectID)
+        			) S
+			        inner join IntersectType T on T.ID = S.IntersectTypeID 
 			        inner join [Predicate] P on P.ID = T.PredicateID 
-			        inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
 			        inner join AssetType ST on ST.ID = S.AssetTypeID
             ) J 
      where J.Payload like '%Measures%';";
 
                 var execution = createScoreExecution(apiExecutionUid);
 
-                if (Connection.State != ConnectionState.Open)
-                {
-                    Connection.Open();
-                }
+                Connection.OpenIfClosed().Wait();
 
                 int rowsImpacted = Connection.Execute(
                     sql,
@@ -1292,7 +1287,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                         apiExecutionUid,
                         execution.ID,
                         changeType = (int)ScoreQueueChangeType.AssetMeasures
-                    });
+                    }, commandTimeout: timeout);
 
                 if (rowsImpacted > 0)
                 {
@@ -1359,10 +1354,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                         itemsTable.Rows.Add(itemRow);
                     }
 
-                    if (Connection.State != ConnectionState.Open)
-                    {
-                        Connection.Open();
-                    }
+                    Connection.OpenIfClosed().Wait();
 
                     Connection.Execute(@"
 drop table if exists #ExecutionItem;
@@ -1399,7 +1391,7 @@ when not matched then
     insert (ExecutionID, ChangeType, RowNumber, State, Payload) 
     values (S.ExecutionID, S.ChangeType, S.RowNumber, 0, S.Payload);
 
-truncate table #ExecutionItem;", transaction: trans);
+truncate table #ExecutionItem;", transaction: trans, commandTimeout: timeout);
 
                         trans.Commit();
                     }
@@ -1438,10 +1430,7 @@ truncate table #ExecutionItem;", transaction: trans);
             var execution = createScoreExecution();
             var changeType = (int)ScoreQueueChangeType.AssetMeasures;
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             string sql = "declare @ef date = cast(getutcdate() as date), @numberOfResults int = 0;";
 
@@ -1551,10 +1540,7 @@ from    (
         ) J 
 where   J.Payload like '%Measures%';";
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsAffected = Connection.Execute(sql, new { ExecutionId = execution.Uid, execution.ID, metricAssetVersionUid, changeType }, commandTimeout: 1200);
 
@@ -1642,10 +1628,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution();
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1723,10 +1706,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 			and ChangeType = @previousChangeType
 			and [State] = 1";
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1792,10 +1772,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
                 var execution = createScoreExecution();
 
-                if (Connection.State != ConnectionState.Open)
-                {
-                    Connection.Open();
-                }
+                Connection.OpenIfClosed().Wait();
 
                 int rowsImpacted = Connection.Execute(
                     sql,
@@ -1861,10 +1838,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
         {
             try
             {
-                if (cnn.State != ConnectionState.Open)
-                {
-                    cnn.Open();
-                }
+                cnn.OpenIfClosed().Wait();
                 cnn.Execute("update metrics.Execution set PercentComplete = 1, CompletedOn = getutcdate(), UpdatedOn = getutcdate() where ID = @executionId", new { executionId });
             }
             catch
@@ -1978,8 +1952,7 @@ from	metrics.AssetVersion V
                 AssetVersionRollupPathUid = assetVersionRollupPathUid
             };
 
-            if (Connection.State != ConnectionState.Open)
-                Connection.Open();
+            Connection.OpenIfClosed().Wait();
 
             var dqQueryDetails = Connection.QueryMultiple(
                 "metrics.BuildDataQualityMeasureQuery @queryType, @assetVersionRollupPathUid",
@@ -2133,10 +2106,9 @@ from	metrics.AssetVersion V
                 args.Add(p.ParameterName, p.Value, p.DbType);
             }
 
-            if (Connection.State != ConnectionState.Open)
-                Connection.Open();
+            Connection.OpenIfClosed().Wait();
 
-            var list = Connection.Query<DataQualityMeasureQueryResultModel>(query.Sql, args).ToList();
+            var list = Connection.Query<DataQualityMeasureQueryResultModel>(query.Sql, args, commandTimeout: 600).ToList();
 
             return list;
         }
@@ -2150,8 +2122,7 @@ from	metrics.AssetVersion V
                 args.Add(p.ParameterName, p.Value, p.DbType);
             }
 
-            if (Connection.State != ConnectionState.Open)
-                Connection.Open();
+            Connection.OpenIfClosed().Wait();
 
             var list = Connection.Query<AssetMeasureModel>(query.Sql, args, commandTimeout: 600)
                 .ToList()

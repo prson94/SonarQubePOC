@@ -50,8 +50,7 @@ namespace d360.web.Controllers.V2
         IFieldsRepository FieldsRepository;
         IAssetRepository AssetRepository;
 
-        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage, IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage, IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -262,10 +261,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
                 var types = PredicateType.DataLineage.GetAsList()
-                    .Where(i => i.LineageVersionsSupported.Contains(lineageVersion) && !i.Obsolete)
+                    .Where(i => !i.Obsolete)
                     .Select(i => new PredicateTypeApiViewModel
                     {
                         Type = i.ID,
@@ -1079,7 +1076,7 @@ namespace d360.web.Controllers.V2
         /// Takes a given set of relationships and inserts/updates them. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
-        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid. Uid is optional.</param>
         /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1160,7 +1157,7 @@ namespace d360.web.Controllers.V2
         /// Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
-        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid. Uid is optional.</param>
         /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -1690,24 +1687,20 @@ create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject 
 		                coalesce(P.Name,'') as 'Predicate.Name',
 		                coalesce(P.Inverse,'') as 'Predicate.Inverse',
 		                S.Uid as 'Subject.Uid',		
-		                coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name) as 'Subject.Name',
+		                coalesce(SP.[Path], S.Name) as 'Subject.Name',
 		                coalesce(S.Class, 0) as 'Subject.Class',
 		                I.SubjectCardinality as 'Subject.Cardinality',
 		                O.Uid as 'Object.Uid',
-		                coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name)  as 'Object.Name',
+		                coalesce(OP.[Path], O.Name)  as 'Object.Name',
 		                coalesce(O.Class, 0) as 'Object.Class',
 		                I.ObjectCardinality as 'Object.Cardinality'
                 from	IntersectType I
 		                left join [Predicate] P on P.ID = I.PredicateID
 
 		                left join AssetType S on (S.Object = I.Subject and S.ObjectID = I.SubjectID)
-                        left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
-                        left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
                         outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
 		
 		                left join AssetType O on (O.Object = I.Object and O.ObjectID = I.ObjectID)
-                        left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
-                        left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
                         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
                         where I.Uid in @uids
                         for json path";

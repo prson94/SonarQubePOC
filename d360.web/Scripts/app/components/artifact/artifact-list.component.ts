@@ -13,26 +13,40 @@ import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
+import { DataProfileService } from '../../services/dataprofile.service';
+
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-artifact-list',
     templateUrl: './artifact-list.component.html',
-    providers: [ArtifactTypeService],
+    providers: [ArtifactTypeService, DataProfileService],
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
 
-    private gridObject: AssetGridObject;
-    private artifactType: ArtifactType;
-    private artifactTypeHierarchy: ArtifactType[];
-    private sub: any;
-    private currentAreaNameSubscription: any;
-    private navigationItemsSubs: Subscription[] = [];
-    private currentAreaName: string;
+    gridObject: AssetGridObject;
+    artifactType: ArtifactType;
+    artifactTypeHierarchy: ArtifactType[];
+    sub: any;
+    currentAreaNameSubscription: any;
+    navigationItemsSubs: Subscription[] = [];
+    currentAreaName: string;
 
+    selection: any = null;
+    showEditor: boolean = false;
+    sidePanelOpen: boolean = false;
+    sidePanelLoading: boolean = false;
+    sidePanelTab: string;
+    sidePanelStorageKey: string;
+    hasProfiling: boolean = false;
+    gridLoading: boolean = true;
+    definitionLoaded: boolean = false;
+    dataProfile: any;
+    
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -40,6 +54,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
+        private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService) {
         super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
     }
@@ -48,6 +63,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
 
+            
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
@@ -63,6 +79,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         folderName = '#Technical';
                         this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                     }
+
+                    this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
 
                     this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -138,6 +156,40 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                     this.navigationItemsSubs.push(breadCrumbsSub);
                 });
 
+    }
+
+    selectAsset(event: any) {
+        this.selection = event;
+
+        if (this.selection && this.selection.HasProfiling) {
+            this.sidePanelLoading = true;
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+                (r) => {
+                    if (r && r.items && r.items.length > 0) {
+                        this.dataProfile = r.items[0];
+
+                        forkJoin(
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                        ).subscribe((res) => {
+                            this.dataProfile['matches'] = {
+                                structure: res[0],
+                                data: res[1]
+                            };
+                        });
+                    }
+                    this.sidePanelLoading = false;
+                }); 
+        }
+    }
+
+    get panelApplies(): boolean {
+        if (this.selection == null || this.sidePanelTab === 'detail') {
+            return true;
+        }
+        if (this.selection != null && this.sidePanelTab === 'dataprofile') {
+            return this.selection.HasProfiling;
+        }
     }
 
     ngOnDestroy() {

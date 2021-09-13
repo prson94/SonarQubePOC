@@ -17,6 +17,7 @@ namespace d360.model.workflow
         private static string TIMEOUT_VALUE = "Timeout";
         private static string BODY_VALUE = "Body";
         private static string STATUS_CODE_VALUE = "StatusCode";
+        private static string LOOKUPFIELDSPASSEDBYVALUE_VALUE = "lookupFieldsPassedByValue";
 
         public string Method { get; set; }
 
@@ -25,7 +26,7 @@ namespace d360.model.workflow
         public int StatusCode { get; set; }
         public string Body { get; set; }
         public List<WorkflowHttpRequestHeader> Headers { get; set; }
-
+        public bool LookupFieldsPassedByValue { get; set; }
         public Uri FormattedUrl { get; set; }
 
 
@@ -35,6 +36,7 @@ namespace d360.model.workflow
             var headers = new List<WorkflowHttpRequestHeader>();
             int timeout = 90;
             int statusCode = 0;
+            bool lookupFieldsPassedByValue = false;
 
             if (xml.Element(METHOD_VALUE) != null)
             {
@@ -58,6 +60,12 @@ namespace d360.model.workflow
 
             model.Timeout = timeout;
 
+            if (xml.Element(LOOKUPFIELDSPASSEDBYVALUE_VALUE) != null)
+            {
+                bool.TryParse(xml.Element(LOOKUPFIELDSPASSEDBYVALUE_VALUE).Value, out lookupFieldsPassedByValue);
+            }
+
+            model.LookupFieldsPassedByValue = lookupFieldsPassedByValue;
 
             if (xml.Element(STATUS_CODE_VALUE) != null)
             {

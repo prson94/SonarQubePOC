@@ -20,7 +20,7 @@ using Newtonsoft.Json.Linq;
 using System.Data.SqlClient;
 using System.Data;
 using d360.core.entities.Membership;
-using d360.model.helpers;
+using d360.model.helpers.filters;
 
 namespace d360.model
 {
@@ -60,12 +60,7 @@ namespace d360.model
         DbSet<FieldType> FieldTypes { get; set; }
         DbSet<FieldWithRelation> FieldWithRelations { get; set; }
         DbSet<FollowDetail> FollowDetails { get; set; }
-        DbSet<Follow> Follows { get; set; }        
-        DbSet<FusionAttribute> FusionAttributes { get; set; }
-        DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
-        DbSet<FusionExecution> FusionExecutions { get; set; }        
-        DbSet<Fusion> FusionTypeConfigurations { get; set; }
-        DbSet<FusionType> FusionTypes { get; set; }
+        DbSet<Follow> Follows { get; set; }                        
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
         DbSet<GraphFilter> GraphFilters { get; set; }
         DbSet<Group> Groups { get; set; }
@@ -187,7 +182,7 @@ namespace d360.model
         string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
         string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null, List<AssetTypeClass> limitToClasses = null);
-        List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
+        List<Predicate> GetPredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
         IEnumerable<dynamic> GetLoadColumnDetails(int id);
         BulkLoadGetLoadColumnsModel GetLoadColumns(string action, string type, int id, bool includeLookupValues);
         BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues);
@@ -234,8 +229,8 @@ namespace d360.model
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
         Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
-        Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true);
-        Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
+        Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false);
+        Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue);
         Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
@@ -257,7 +252,7 @@ namespace d360.model
         bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy);
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
-        IntersectType UpsertIntersectType(IntersectType model, int lineageVersion);
+        IntersectType UpsertIntersectType(IntersectType model);
         Database Database { get; }
         DbEntityEntry Entry(object entity);
 
@@ -354,7 +349,7 @@ namespace d360.model
         /// <summary>
         /// A Score Engine method that is called when relationships are added to Govern.
         /// </summary>
-        void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId);
+        void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId, int timeout);
 
         /// <summary>
         /// A Score Engine method that is called when a measure is updated in Govern, and a notification is sent to the Score Engine to determine what needs to be recalculated.
@@ -433,6 +428,40 @@ namespace d360.model
         /// <param name="responsibility">The responsibility type.</param>
         /// <returns>A list of AssetMeasureModel items to send to the scoring engine.</returns>
         List<AssetMeasureModel> GetMeasureModelsBasedOnResponsibilityAllocation(AssetType assetType, ResponsibilityType responsibility);
+
+        #endregion
+
+        #region Environment Settings
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        void DeleteSetting(Setting setting);
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        SettingInfo GetSetting(Setting setting);
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        T GetSettingValue<T>(Setting setting);
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        List<SettingInfo> GetSettings();
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        Dictionary<string, string> GetSettingsAsDictionary();
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        void UpsertSetting(Setting setting, string value);
 
         #endregion
     }

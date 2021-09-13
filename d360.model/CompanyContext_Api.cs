@@ -202,40 +202,6 @@ insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldV
                 new { executionID }, commandTimeout: timeout);
             }
 
-            if (at.Class == AssetTypeClass.FusionAttribute)
-            {
-                Connection.Execute($@"
-insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
-	select	A.ExecutionID,
-            A.ItemNumber,
-			'Name',
-			R.Name,
-			0,
-			R.Name,
-			1
-	from	[api].[ExecutionAsset] A
-            inner join FusionAttribute R on A.Object = 'FusionAttribute' and R.ID = A.ObjectID
-			left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Name'
-	where	A.ExecutionID = @executionID 
-            and F.ItemNumber is null;",
-                new { executionID }, commandTimeout: timeout);
-
-                Connection.Execute($@"
-insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
-	select	A.ExecutionID,
-            A.ItemNumber,
-			'FusionID',
-			R.FusionID,
-			0,
-			R.FusionID,
-			1
-	from	[api].[ExecutionAsset] A
-            inner join FusionAttribute R on A.Object = 'FusionAttribute' and R.ID = A.ObjectID
-			left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
-	where	A.ExecutionID = @executionID 
-            and F.ItemNumber is null;",
-                new { executionID }, commandTimeout: timeout);
-            }
         }
 
         private void LogAssetErrors(Guid executionID, int timeout = 3600)
@@ -464,37 +430,6 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
-        private void LogErrorsWhereChildFusionConfigDifferentFromParent(Guid executionID, int timeout = 3600)
-        {
-            Connection.Execute($@"
-update	E
-set		E.Message = 'Unable to add or update child asset as the fusion configuration does not match it''s parent''s configuration.',
-		E.Success = 0
-from	api.ExecutionAsset E
-		inner join FusionAttribute P on P.ID = E.ParentObjectID and E.ParentObject = 'FusionAttribute'
-		inner join {ApiExecutionFieldTable} C on C.ExecutionID = E.ExecutionID and C.FieldName = 'FusionID' and C.FieldValue <> P.FusionID
-where	E.ExecutionID = @executionID;",
-            new { executionID }, commandTimeout: timeout);
-        }
-
-        private void LogInvalidFusionIDFields(Guid executionID, int timeout = 3600)
-        {
-            Connection.Execute($@"
-update	E
-set		E.Message = 'Invalid FusionID value for this Asset type',
-		E.Success = 0
-from	api.ExecutionAsset E
-	where E.ExecutionID = @executionID and not exists(select F.ID from {ApiExecutionFieldTable} EF
-	inner join api.ExecutionAsset EA on EF.ExecutionID = EA.ExecutionID
-	inner join FusionAttributeType FAT on FAT.ID = EA.ObjectTypeID
-	inner join FusionType FT on FT.ID = FAT.FusionTypeID
-	inner join Fusion F on F.FusionTypeID = FT.ID
-	where EA.ObjectType = 'FusionAttributeType' 
-	and EF.ExecutionID = @executionID
-	and EF.FieldName = 'fusionid'
-	and F.ID = EF.FieldValue)",
-            new { executionID }, commandTimeout: timeout);
-        }
 
         private void LogCounterFieldErrors(Guid executionId, int timeout = 3600)
         {
@@ -1309,17 +1244,6 @@ where T.ExecutionId = @executionid;
 ", new { executionID }, commandTimeout: timeout, transaction: trans);
         }
 
-        private void ResolveRuleTypeLookupValues(Guid executionID, int timeout = 3600)
-        {
-            Connection.Execute($@"
-                        update  T 
-                        set     T.Success = 0,
-                                T.Message = coalesce(T.Message, '') + 'Rule asset contains an invalid threshold; '
-                        from    api.ExecutionAsset T
-                                inner join {ApiExecutionFieldTable} S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Threshold' and ISNUMERIC(S.FieldValue) = 0;
-                        ", new { executionID }, commandTimeout: timeout);
-        }
-
         private void ResolveColorValues(Guid executionID, int timeout = 3600)
         {
             Connection.Execute($@"
@@ -1553,14 +1477,6 @@ where T.ExecutionId = @executionid;
                                 success = false;
                                 errorMessages.Add($"{fieldName} is not a valid field");
                                 break;
-                        }
-                    }
-                    else if (ot == "RuleType")
-                    {
-                        if (fieldName != "Threshold" && fieldName != "Status" && fieldName != "Dimension")
-                        {
-                            success = false;
-                            errorMessages.Add($"{fieldName} is not a valid field");
                         }
                     }
                     else
@@ -1874,26 +1790,22 @@ select	I.Id,
 	coalesce(SI.Uid, S.Uid) as 'Subject.Uid',
 	case 
 		when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
-		else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
+		else coalesce(SP.[Path], S.Name)
 	end as 'Subject.Name',
 	coalesce(S.Class, 0) as 'Subject.Class',
 	I.SubjectCardinality as 'Subject.Cardinality',
 	O.Uid as 'Object.Uid',
-	coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name)  as 'Object.Name',
+	coalesce(OP.[Path], O.Name)  as 'Object.Name',
 	coalesce(O.Class, 0) as 'Object.Class',
 	I.ObjectCardinality as 'Object.Cardinality'
 from	IntersectType I
 	left join [Predicate] P on P.ID = I.PredicateID
 
 	left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
-    left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
-    left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
     outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
 
 	left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
 	left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
-    left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
-    left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
     outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
 {whereClause} for json path";
 
@@ -2126,114 +2038,7 @@ where	T.ExecutionID = @ExecutionID
                                 {
                                     try
                                     {
-                                        if (at.Object == "FusionType")
-                                        {
-                                            var fusion = import.First();
-                                            sw.Restart();
-                                            var data = Connection.Query<dynamic>($@"
-                                                    drop table if exists #forDelete
-
-                                                create table #forDelete (ID int, Type varchar(50))
-                                                create nonclustered index cix_forDelete on #forDelete (Type, ID)
-                                                create nonclustered index cix_forDeleteID on #forDelete (ID)
-
-                                                declare @result table (Status bit, Message varchar(255))
-                                                                                                        
-                                                declare @fusionId int = (select ObjectID from api.ExecutionDeletedAsset
-                                                    where ExecutionID = @ExecutionID AND Object = 'Fusion')
-                                                    
-                                                insert into #forDelete values(@fusionId, 'Fusion')
-                                                    
-                                                insert into #forDelete select ID,'Asset' as Type from Asset where Object = 'Fusion' and ObjectID = @fusionId
-                                                    
-                                                insert into #forDelete
-                                                select ID as ID,'FusionAttribute' as Type from FusionAttribute where FusionID = @fusionId
-                                                    
-                                                    insert into #forDelete
-                                                    	select I.ID, 'Intersect' as Type
-                                                    	from [Intersect] I where I.[Object] = 'FusionAttribute'
-                                                        and exists (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = I.[ObjectID])
-                                                    
-                                                insert into #forDelete
-                                                    select I.ID, 'Intersect' as Type
-                                                    from [Intersect] I where I.[Subject] = 'FusionAttribute'
-                                                    and exists (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = I.[SubjectID])
-                                                    
-                                                insert into #forDelete
-                                                    select F.ID, 'Field' as Type
-                                                    from Field F where F.ObjectType = 'FusionAttribute'
-                                                    and exists (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = F.ObjectID)
-                                                    
-                                                declare @itemCount int = (select count(*) from #forDelete)
-                                                    
-                                                declare @goodForDeletion bit = 0
-                                                if @itemCount > 2 and @isCascade = 0
-                                                    insert into @result values(0,'Fusion configuration cannot be deleted. Use Cascade=`true` to delete Fusion configuration and its children!')
-                                                else if (select count(*) from #forDelete where Type = 'Asset') != 1
-                                                    insert into @result values(0,'Asset not found!')
-                                                else if (select count(*) from #forDelete where Type = 'Fusion') != 1
-                                                    insert into @result values(0,'Asset is not found!')
-                                                else 
-                                                    set @goodForDeletion = 1
-                                                    
-                                                if @goodForDeletion = 1
-                                                begin	
-                                                    delete F
-                                                    	from Field F
-                                                    	inner join #forDelete FD on FD.Type = 'Field' and F.ID = FD.ID
-                                                    	
-                                                    delete I
-                                                    	from [Intersect] I
-                                                    	inner join #forDelete FD on FD.Type = 'Intersect' and I.ID = FD.ID
-                                                    	
-                                                    delete FA 
-                                                    	from [FusionAttribute] FA
-                                                    	inner join #forDelete FD on FD.Type = 'FusionAttribute' and FA.ID = FD.ID
-                                                    	
-                                                    delete A 
-                                                    	from Asset A
-                                                    	inner join #forDelete FD on FD.Type = 'Asset' and A.ID = FD.ID
-                                                    	
-                                                    delete F 
-                                                    	from Fusion F
-                                                    	inner join #forDelete FD on FD.Type = 'Fusion' and F.ID = FD.ID
-                                                    
-                                                    insert into @result values(1,'Success')
-                                                end
-                                                select * from @result",
-                                                new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
-
-                                            AddMeasurement(metrics, $"Fusion type delete assets >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
-
-                                            bool IsDeleted = false;
-                                            if (bool.TryParse(data.Status.ToString(), out IsDeleted))
-                                            {
-                                                if (!IsDeleted)
-                                                {
-                                                    Connection.Execute(
-                                                        $"update S set S.Success = 0, S.Message = '{data.Message.ToString()}' from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
-                                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                    runCompleted = true;
-                                                    trans.Commit();
-                                                    continue;
-                                                }
-                                                else
-                                                {
-                                                    Connection.Execute(
-                                                        $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
-                                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                    runCompleted = true;
-                                                    trans.Commit();
-                                                    continue;
-                                                }
-                                            }
-                                            AddMeasurement(metrics, $"update delete status for Fusion type delete assets>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
-
-                                        }
-                                        else
-                                        {
+                                        
                                             #region Cascade Behaviour
 
                                             // Parent/Child Relationships
@@ -2978,7 +2783,6 @@ drop table if exists #temprestable2;",
 
                                             trans.Commit();
                                             runCompleted = true;
-                                        }
                                     }
                                     catch (Exception ex)
                                     {
@@ -3916,16 +3720,6 @@ where	T.ExecutionID = @ExecutionID
                                     		from	IssueTypeRelation T
                                     				where T.AssetTypeID = @AssetTypeId;
 
-                                            delete	T
-                                    		from	Fusion T
-                                    				inner join FusionType A on A.ID = T.FusionTypeID
-                                    				where @Object = 'FusionType' and @ObjectId = A.ID;
-
-                                    		delete	T
-                                    		from	FusionAttribute T
-                                    				inner join FusionType A on A.ID = T.FusionAttributeTypeID
-                                    				where @Object = 'FusionAttributeType' and @ObjectId = A.ID;
-          
                                     		delete	T
                                     		from	[Rule] T
                                     				inner join RuleType A on A.ID = T.RuleTypeID
@@ -3936,14 +3730,7 @@ where	T.ExecutionID = @ExecutionID
                                     		from	AssetType T
                                     				where @Object = 'ArtifactType' and T.ID = @AssetTypeId;
                                     			                                    			
-                                            delete	A
-                                    		from	FusionType A
-                                    				where @Object = 'FusionType' and @ObjectId = A.ID;
-
-                                            delete	A
-                                    		from	FusionAttributeType A
-                                    				where @Object = 'FusionAttributeType' and @ObjectId = A.ID;
-                                    			
+                                   			
                                             delete T
                                     		from	AssetType T
                                     				where @Object = 'PolicyType' and @AssetTypeId = T.ID;
@@ -4539,7 +4326,7 @@ where   ExecutionID = @ExecutionID
 
             try
             {
-                enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+                enableJsonAttributes = GetSettingValue<bool>(Setting.EnableJsonAttribute);
             }
             catch { }
 
@@ -4685,22 +4472,7 @@ where   ExecutionID = @ExecutionID
                             parentObjectID = it.SubjectID;
                             intersectTypeUid = it.uid;
                             intersectTypeID = it.ID;
-                        }
-                        else
-                        {
-                            if (at.Object == "FusionAttributeType")
-                            {
-                                var fusionAttributeType = GetById<FusionAttributeType>(at.ObjectID);
-                                if (fusionAttributeType != null)
-                                {
-                                    if (fusionAttributeType.ParentID.HasValue)
-                                    {
-                                        parentObject = "FusionAttributeType";
-                                        parentObjectID = fusionAttributeType.ParentID;
-                                    }
-                                }
-                            }
-                        }
+                        }                        
                     }
                     AddMeasurement(metrics, "Get predicateType.HasValue", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
@@ -4754,34 +4526,6 @@ where   ExecutionID = @ExecutionID
                                     {
                                         errorMessage = "Asset is missing a required Code field value";
                                     }
-                                }
-                            }
-
-                            if (success && at.Object == "RuleType")
-                            {
-                                // Check to ensure Threshold is present.
-                                success = model.Fields.ContainsKey("Threshold");
-                                if (!success)
-                                {
-                                    errorMessage = "Asset is missing a required Threshold field value";
-                                }
-                                else if (decimal.TryParse(model.Fields["Threshold"], out decimal threshold)) //Check threshold is a number
-                                {
-                                    if (!(threshold > 0 && threshold <= 1)) //check threshold is between 0 and 1
-                                    {
-                                        errorMessage = "Threshold value must be between 0 and 1";
-                                        success = false;
-                                    }
-                                    else if (decimal.Round(threshold, 3) != threshold) //check threshold has a max of 3 decimal places
-                                    {
-                                        errorMessage = "Threshold value cannot exceed 3 decimal places.";
-                                        success = false;
-                                    }
-                                }
-                                else
-                                {
-                                    errorMessage = "Threshold value is not a valid number";
-                                    success = false;
                                 }
                             }
 
@@ -4959,13 +4703,6 @@ where   ExecutionID = @ExecutionID
                         }
                     }
 
-                    if (at.Class == AssetTypeClass.Rule)
-                    {
-                        ResolveRuleTypeLookupValues(execution.ExecutionID, timeout);
-                        AddMeasurement(metrics, "ResolveRuleTypeLookupValues", sw.ElapsedMilliseconds, ++step);
-                        sw.Restart();
-                    }
-
                     if (hasLookupFieldTypes)
                     {
                         LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
@@ -5020,12 +4757,6 @@ where   ExecutionID = @ExecutionID
 
                     #region Generate proposed key hash and compare against existing data.
 
-
-                    if (at.Object == "FusionAttributeType")
-                    {
-                        LogErrorsWhereChildFusionConfigDifferentFromParent(execution.ExecutionID);
-                        LogInvalidFusionIDFields(execution.ExecutionID);
-                    }
 
                     CalculateProposedKeyHashes(at, execution.ExecutionID, timeout, intersectTypeID, fieldTable: ApiExecutionFieldTable);
                     AddMeasurement(metrics, "CalculateProposedKeyHashes", sw.ElapsedMilliseconds, ++step);
@@ -5121,93 +4852,6 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                 {
                                     switch (at.Class)
                                     {
-                                        case AssetTypeClass.FusionAttribute:
-                                            #region
-                                            if (isInsert)
-                                            {
-                                                Connection.Execute($@"
-create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
-CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
-
-merge   FusionAttribute as T
-using   (
-        select  A.ParentObjectID,
-                A.ItemNumber,
-                F.FieldValue as FusionID,
-                N.FieldValue as Name,
-                FS.FieldValue as SourceID
-        from    api.ExecutionAsset A
-                inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
-                inner join {ApiExecutionFieldTable} N on N.ExecutionID = A.ExecutionID and N.ItemNumber = A.ItemNumber and N.FieldName = 'Name'
-                left join {ApiExecutionFieldTable} FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
-        where   A.ExecutionID = @ExecutionID
-                and A.Success is null
-                and A.ItemNumber between @beginItemNumber and @endItemNumber
-        ) S
-on      (T.FusionAttributeTypeID = @ObjectID and T.SourceID = @NonExistentUid)
-when    not matched then
-insert  (FusionAttributeTypeID, ParentID, Name, FusionID, SourceID)
-values  (@ObjectID, S.ParentObjectID, S.Name, S.FusionID, S.SourceID)
-output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
-
-update  T
-set     T.Object = 'FusionAttribute',
-        T.ObjectID = S.ID,
-        T.IsNew = 1
-from    api.ExecutionAsset T
-        inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-
-{updateAssetInfoOnExecutionRecordsSql}
-
-{insertGraphAssetNode}",
-                                            new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                AddMeasurement(metrics, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                            }
-                                            else
-                                            {
-                                                Connection.Execute($@"
-update	T
-set		T.Name = N.FieldValue
-from	FusionAttribute T
-		inner join api.ExecutionAsset S on S.ObjectID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
-        inner join {ApiExecutionFieldTable} N on N.ExecutionID = S.ExecutionID and N.ItemNumber = S.ItemNumber and N.FieldName = 'Name';
-
-update	api.ExecutionAsset
-set		IsNew = 0
-where	{executionAssetWhereSql};",
-                                                new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                AddMeasurement(metrics, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> Names {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                            }
-
-                                            #region Recalculate the text paths
-                                            sw.Restart();
-                                            Connection.Execute($@"
-WITH hierarchy (RootID, ID, ParentID, ItemPath) AS
-(
-	SELECT	ID,
-			ID, 
-			ParentID,
-			cast(name as nvarchar(2500))
-	FROM	FusionAttribute F
-			inner join api.ExecutionAsset S on S.ObjectID = F.ID and {executionAssetWhereSql}
-	UNION ALL
-	SELECT	c.RootID,
-			p.ID, 
-			p.ParentID,
-			cast(p.name + '.' +  c.ItemPath as nvarchar(2500))
-	FROM	hierarchy c
-			inner join FusionAttribute p ON p.ID = c.parentid
-)
-update	T
-set		T.TextPath = cte.ItemPath
-from	FusionAttribute T
-		inner join hierarchy cte on cte.RootID = T.ID and cte.ParentID is null option (MAXRECURSION 10);",
-                                            new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                            AddMeasurement(metrics, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> Textpaths {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                            #endregion
-
-                                            break;
-                                        #endregion
                                         case AssetTypeClass.Policy:
                                         case AssetTypeClass.BusinessAsset:
                                         case AssetTypeClass.TechnicalAsset:
@@ -5293,10 +4937,8 @@ CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResu
 merge   [Rule] as T
 using   (
         select  A.ItemNumber,
-                T.FieldValue as Threshold,
                 CR.LookupValue as Color
         from    api.ExecutionAsset A
-                inner join {ApiExecutionFieldTable} T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
                 left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
         where   A.ExecutionID = @ExecutionID
                 and A.Success is null
@@ -5304,8 +4946,8 @@ using   (
         ) S
 on      (1 = 0)
 when    not matched then
-insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-values  (@ObjectID, S.Threshold, @R, @D, @R, @D, S.Color)
+insert  (RuleTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+values  (@ObjectID, @R, @D, @R, @D, S.Color)
 output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
 update  T
@@ -5327,14 +4969,11 @@ from    api.ExecutionAsset T
                                             {
                                                 Connection.Execute($@"
 update	T
-set		
-        T.Threshold = case when FD.FieldValue is not null then FD.FieldValue else T.Threshold end,
-        T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
+set		T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
         T.UpdatedBy = @R,
 		T.UpdatedOn = @D
 from	[Rule] T
 		inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-        left join {ApiExecutionFieldTable} FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold'
         left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
 update	api.ExecutionAsset
@@ -5700,6 +5339,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             bool checkSemanticRelation = false;
             bool relationshipTypeHasFieldTypes = false;
             bool relationshipTypeHasLookupFieldTypes = false;
+            bool IsUidPassed = false;
             Dictionary<string, double> metrics = new Dictionary<string, double>();
             var step = 0;
 
@@ -5724,6 +5364,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             var tooLongOwners = import.Where(x => !string.IsNullOrEmpty(x.Owner) && x.Owner.Length > 100).ToList();
+            var uidDupes = import.Where(i => i.Uid != Guid.Empty && i.Uid != null).GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
 
             if (executionItemDupes.Any())
             {
@@ -5737,7 +5378,13 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
-            else if (!executionItemDupes.Any() && !tooLongOwners.Any())
+            else if (uidDupes.Any())
+            {
+                string message = string.Format(Messages.Error_Duplicate_Relationship_Uid, string.Join(", ", uidDupes.Select(i => i.Uid)));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+                results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (!executionItemDupes.Any() && !tooLongOwners.Any() && !uidDupes.Any())
             {
                 var sw = Stopwatch.StartNew();
                 try
@@ -5765,6 +5412,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     table.Columns.Add("ObjectUid", typeof(Guid));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
                     table.Columns.Add("Owner", typeof(string));
+                    table.Columns.Add("uid", typeof(Guid));
 
                     var errorTable = new DataTable();
                     errorTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -5814,6 +5462,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 row["ObjectUid"] = model.ObjectAssetUid;
                                 row["Owner"] = model.Owner;
                                 if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                                if (model.Uid != Guid.Empty)
+                                {
+                                    row["uid"] = model.Uid;
+                                    IsUidPassed = true;
+                                }
                                 table.Rows.Add(row);
                             }
                             else
@@ -5860,6 +5513,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
                         bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
                         bulkCopy.ColumnMappings.Add("Owner", "Owner");
+                        bulkCopy.ColumnMappings.Add("uid", "uid");
 
                         bulkCopy.WriteToServer(table);
                     }
@@ -5945,6 +5599,101 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     }
                     #endregion
 
+                    if (IsUidPassed)
+                    { 
+                        #region Validate Relationship Uid
+                        Connection.Execute(@"
+                            declare @it int;
+
+                            select	@it = ID
+                            from	IntersectType
+                            where	[uid] = @uid
+
+                            drop table if exists #tempdupuid;
+
+                            select I.IntersectTypeID,
+                            T.SubjectUid Ex_SubjectUid,T.ObjectUid Ex_ObjectUid, S.Uid Int_SubjectUid,
+                            O.Uid Int_ObjectUid
+                            into #tempdupuid
+                            from api.ExecutionRelationship T
+                            inner join [Intersect] I on I.Uid = T.Uid
+		                    left join Asset S on S.[object] = I.[Subject] and S.[objectId] = I.[SubjectId]
+		                    left join Asset O on O.[object] = I.[object] and O.[objectId] = I.[objectId]
+                            where   T.ExecutionId = @ExecutionID and T.Uid is not null;
+
+                            create index idx_tempdupuid on #tempdupuid(IntersectTypeID);
+
+                            
+                            if exists (select 1 from #tempdupuid where IntersectTypeID != @it)
+                               begin
+                                    update	T
+                                    set		T.Message = coalesce(T.Message + '; ', '') + 'Batch failed due to relationship uid is already specified with different relationship type.',
+		                                    T.Success = 0
+                                    from	api.ExecutionRelationship T
+		                            where   T.ExecutionId = @ExecutionID
+                            end
+
+                            if exists (select 1 from #tempdupuid where IntersectTypeID = @it and (Ex_SubjectUid != Int_SubjectUid or Ex_ObjectUid != Int_ObjectUid))
+                               begin
+                                    update	T
+                                    set		T.Message = coalesce(T.Message + '; ', '') + 'Batch failed due to passed relationship uid match. But SubjectUid and ObjectUid not match.',
+		                                    T.Success = 0
+                                    from	api.ExecutionRelationship T
+		                            where   T.ExecutionId = @ExecutionID
+                            end
+                        ",
+                        new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
+                        AddMeasurement(metrics, "Log Validate Relationship Uid", sw.ElapsedMilliseconds, ++step);
+                        #endregion
+
+                        #region Validate Relationship Uid - Add
+                        Connection.Execute(@"
+                            declare @st varchar(50),
+	                            @stid int,
+	                            @ot varchar(50),
+	                            @otid int,
+	                            @it int
+
+
+                            select	@st = Subject,
+	                            @stid = SubjectID,
+	                            @ot = Object,
+	                            @otid = ObjectID,
+	                            @it = ID
+                            from	IntersectType
+                            where	[uid] = @uid
+
+                            drop table if exists #tempNewuid;
+                            
+                            select T.uid
+                            into #tempNewuid
+                            from api.ExecutionRelationship T
+                            left outer join [Intersect] I on T.uid = I.uid
+                            where  T.ExecutionId = @ExecutionID and T.Uid is not null and I.Id is null;
+
+                            create index idx_tempNewuid on #tempNewuid(uid);
+
+                            if exists ( select 1
+                                        from	api.ExecutionRelationship T
+                                        inner join #tempNewuid N on T.uid = N.uid
+		                                left join AssetWithType S on S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
+		                                left join AssetWithType O on O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
+                                        left join IntersectType IT on IT.uid = @uid
+                                        left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object
+                                        where   T.ExecutionId = @ExecutionID and I.id is not null
+                                      )
+                               begin
+                                    update	T
+                                    set		T.Message = coalesce(T.Message + '; ', '') + 'Batch failed due to unique relationship uid passed. But subjectuid and objectuid exist for relationship type.',
+		                                    T.Success = 0
+                                    from	api.ExecutionRelationship T
+		                            where   T.ExecutionId = @ExecutionID
+                            end
+                        ",
+                        new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
+                        AddMeasurement(metrics, "Log Validate Relationship Uid - Add", sw.ElapsedMilliseconds, ++step);
+                        #endregion
+                    }
                     #region Validate subjects/objects
                     sw.Restart();
                     Connection.Execute(@"
@@ -5954,6 +5703,7 @@ declare @st varchar(50),
 	@otid int,
 	@it int
 
+
 select	@st = Subject,
 	@stid = SubjectID,
 	@ot = Object,
@@ -5961,6 +5711,20 @@ select	@st = Subject,
 	@it = ID
 from	IntersectType
 where	[uid] = @uid
+
+
+update	T
+set	T.Subject = I.Object,
+	T.SubjectID = I.ObjectID,
+	T.Object = I.Object,
+	T.ObjectID = I.ObjectID,
+    T.IsNew = CASE
+                WHEN I.Id is null THEN 1
+                ELSE 0
+                END
+from	api.ExecutionRelationship T
+        inner join [Intersect] I on abs(I.IntersectTypeId) =  @it and I.Uid = T.Uid
+    where T.ExecutionID = @ExecutionID and T.Uid Is not null;
 
 update	T
 set		T.Subject = S.Object,
@@ -5976,7 +5740,7 @@ from	api.ExecutionRelationship T
 		left join AssetWithType O on O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
         left join IntersectType IT on IT.uid = @uid
         left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object
-    where T.ExecutionID = @ExecutionID;
+    where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1);
 
 if @st = 'ReferenceItemType' and @stid = 0
 begin
@@ -6118,7 +5882,7 @@ from	api.ExecutionRelationship T
 			                outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 	                where	(
 			                (P.AssetID = A.ID) 
-			                or P.AssetID is null
+			                or P.AssetTypeID is null
 			                )
 			                and (
 				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
@@ -6139,7 +5903,7 @@ from	api.ExecutionRelationship T
 			                outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 	                where	(
 			                (P.AssetID = A.ID) 
-			                or P.AssetID is null
+			                or P.AssetTypeID is null
 			                )
 			                and (
 				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
@@ -6241,8 +6005,8 @@ end",
 			    T.UpdatedOn = getutcdate(),
                 T.Owner = coalesce(S.Owner,T.Owner)
     when not matched by target then
-	    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
-	    values  (@rtID, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
+	    insert  (uid,IntersectTypeID, Subject, SubjectID, Object, ObjectID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+	    values  (isnull(S.Uid,newid()),@rtID, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
     output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update	T
@@ -6339,7 +6103,7 @@ end",
 
                     // Send score recalculation notifications.
                     sw.Restart();
-                    CreateImportRelationshipsExecution(execution.ExecutionID, rt.ID);
+                    CreateImportRelationshipsExecution(execution.ExecutionID, rt.ID, timeout);
                     AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                 }
             }
@@ -7574,22 +7338,12 @@ where	T.ExecutionID = @ExecutionID
 
                     #region Log data errors
 
-                    int lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
                     var allowedFunctionalTypes = PredicateType.DataLineage.GetAsList()
                         .Where(p =>
-                            p.AllowEditFromPredicateEditor &&
-                            p.LineageVersionsSupported.Contains(lineageVersion)
+                            p.AllowEditFromPredicateEditor
                             ).ToList();
                     var allowedTypeIdList = string.Join(", ", allowedFunctionalTypes.Select(p => (int)p.ID));
                     var allowedTypeNameList = string.Join(", ", allowedFunctionalTypes.Select(p => p.ID.ToString().Replace("'", "''")));
-
-                    var differentLineageVersionFunctionalTypes = PredicateType.DataLineage
-                        .GetAsList()
-                        .Where(p => !p.LineageVersionsSupported.Contains(lineageVersion))
-                        .Select(p => (int)p.ID)
-                        .ToList();
-                    if (differentLineageVersionFunctionalTypes.Count == 0) differentLineageVersionFunctionalTypes.Add(-1);
-                    var differentLineageVersionIdList = string.Join(", ", differentLineageVersionFunctionalTypes);
 
                     var checkSQL = $@"
 update	api.ExecutionPredicate 
@@ -7640,12 +7394,7 @@ where	ExecutionID = @ExecutionID and (Inverse is null or TRIM(Inverse) = '');
 update	api.ExecutionPredicate
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {allowedTypeNameList}'
-where	ExecutionID = @ExecutionID and [Type] not in ({allowedTypeIdList}) and [Type] not in ({differentLineageVersionIdList})
-
-update	api.ExecutionPredicate
-set		Success = 0,
-		[Message] = coalesce([Message] + '; ', '') + 'Your current version of lineage does not support using this predicates of this type.'
-where	ExecutionID = @ExecutionID and [Type] in ({differentLineageVersionIdList});";
+where	ExecutionID = @ExecutionID and [Type] not in ({allowedTypeIdList});";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
 
@@ -7708,10 +7457,11 @@ where	ExecutionID = @ExecutionID and [Type] in ({differentLineageVersionIdList})
 										update  
 											set P.Name = S.Name,
 											P.Inverse = S.Inverse,
-											P.Type = S.Type
+											P.Type = S.Type,
+                                            P.UpdatedBy = {CurrentResourceID}
                                         when not matched then
-	                                        insert (Uid, Name, Inverse, Type, IsSystem)
-	                                        values (S.Uid, S.Name,S.Inverse, S.Type, 0)
+	                                        insert (Uid, Name, Inverse, Type, IsSystem,CreatedBy,UpdatedBy)
+	                                        values (S.Uid, S.Name,S.Inverse, S.Type, 0, {CurrentResourceID},{CurrentResourceID})
 	                                    output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                         update EP
@@ -8086,62 +7836,7 @@ where	ExecutionID = @ExecutionID and (Name is null or Name = '');
                                 inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
 
 
-            if (at.Object == "FusionAttributeType")
-            {
-                Connection.Execute($@"
-{keyTableTempCreation}
-
-update  A
-set     A.ProposedKey = utility.GetHash(
-                        cast(@ID as nvarchar) + '|' + 
-                        FC.FieldValue + '|' + 
-                        COALESCE(
-                            FS.FieldValue, 
-                            COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + FN.FieldValue + coalesce('|'+DF.DynamicProposedKey,'')
-                        )
-                    )
-from	{assetTable} A
-    inner join {fieldTable} FC on FC.ExecutionID = A.ExecutionID and FC.ItemNumber = A.ItemNumber and FC.FieldName = 'FusionID'
-    inner join {fieldTable} FN on FN.ExecutionID = A.ExecutionID and FN.ItemNumber = A.ItemNumber and FN.FieldName = 'Name'
-    left join {fieldTable} FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
-    outer apply (
-        select		DF.ItemNumber,
-                    STRING_AGG(coalesce(DF.LookupValue, DF.FieldValue, DFT.DefaultValue), '|') within group (order by DFT.ColumnOrder asc, DFT.Name asc) as DynamicProposedKey
-        from		{fieldTable} DF
-                    inner join FieldType DFT on DFT.ID = DF.FieldTypeID and DFT.IsPartOfKey = 1 and DF.ExecutionID = A.ExecutionID and DF.ItemNumber = A.ItemNumber
-        group by    DF.ItemNumber
-    ) DF
-where	A.ExecutionID = @ExecutionID;
-
-insert into #Keys WITH(TABLOCK)
-select	A.ID,
-        utility.GetHash(
-            cast(@ID as nvarchar) + '|' + 
-            cast(O.FusionID as nvarchar) + '|' + 
-            COALESCE(
-                O.SourceID, 
-                COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')
-            )
-        ) as ActiveKey
-from	Asset A 
-        inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
-        left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
-        left join (
-            select		A.ID,
-                        STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-            from		Asset A 
-                        inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-                        left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-            where	    A.AssetTypeID = @ID
-            group by    A.ID
-        ) DF on DF.ID = A.ID
-where	A.AssetTypeID = @ID;
-
-{keyComparisonUpdateStatement}",
-                new { executionID, at.ID }, commandTimeout: timeout, transaction: trans);
-
-            }
-            else if (at.Object == "ReferenceItemType")
+            if (at.Object == "ReferenceItemType")
             {
                 Connection.Execute($@"
 update  T
@@ -8168,7 +7863,105 @@ where	    A.AssetTypeID = @ID;
             }
             else
             {
-                var activeKeySql = $@"
+                if (parentIntersectTypeId.HasValue)
+                {
+                    string CreateFieldTempData = $@"
+	drop table if exists #Keys;
+	CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
+                        KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
+
+	insert into #Keys WITH(TABLOCK)
+	select		A.ID, P.UID as ParentAssetUID, Null, Null
+	from		Asset A 
+			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID	
+	where		A.AssetTypeID = @ID;
+
+    create clustered index idx_key_assetid on #keys(AssetID);
+
+	if (select count(1) from fieldtype ft 
+		inner join assettype att on att.id = ft.AssetTypeID 
+		where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID and ft.DefaultValue is null 
+		and replace(replace(att.DisplayFormat,'}}',''),'{{','') = ft.Name) = 1
+        and (select count(1) from fieldtype ft 
+		inner join assettype att on att.id = ft.AssetTypeID 
+		where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID) = 1
+
+		begin
+			-- display value is the key field and its the only key field and required...	
+			update T
+			set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + ADV.DisplayValue
+			from 
+				#Keys T		
+				inner join AssetDisplayValue ADV on ADV.AssetID = T.AssetID
+		end
+	else if (select count(1) from fieldtype where IsPartOfKey = 1 and Assettypeid = @ID) = 1
+		begin
+			--only key field and required
+			
+			select @fieldtypeid = id,
+				   @DefaultValue = DefaultValue
+			from fieldtype
+			where assettypeid = @id and IsPartOfKey = 1;
+			
+			update T
+			set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(F.Value, F.FormattedValue, @DefaultValue)
+			from #Keys T
+			left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
+
+		end
+	else
+		begin
+			-- multiple key fields need to agg all the values
+			drop table if exists #KeysField;
+			CREATE TABLE #KeysField (AssetID bigint,FormattedValue nvarchar(max));
+			
+			insert into #KeysField WITH(TABLOCK)
+			select A.AssetID,STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) FormattedValue
+			from #Keys A
+			inner join FieldType FT on FT.AssetTypeID = @ID and FT.IsPartOfKey = 1
+			left join Field F on FT.ID = F.FieldTypeID and A.AssetID = F.AssetID  
+			group by A.AssetID;
+
+			CREATE NONCLUSTERED INDEX CIX_KeysFieldKeys ON #KeysField ( AssetID ASC );
+			
+			update T
+			set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + KF.FormattedValue
+			from #Keys T
+			inner join #KeysField KF on T.AssetID = KF.AssetID;
+
+			drop table if exists #KeysField;
+		end
+
+	    update #Keys set ActiveKey = utility.GetHash(KeyValue);
+
+ 	    CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+                    
+                    string SqlStmt = $@"
+    Declare @fieldtypeid int =-1;
+	declare @DefaultValue nvarchar(max);
+
+    update  T
+    set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
+    from    {assetTable} T
+	    inner join	(
+				    select		A.ItemNumber,
+							    COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+				    from		{assetTable} A
+							    inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+							    inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+				    where		A.ExecutionID = @ExecutionID
+				    group by	A.ItemNumber, A.ParentUid
+				    ) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
+
+    {CreateFieldTempData}
+
+    {keyComparisonUpdateStatement}";
+                    Connection.Execute(SqlStmt, new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
+                }
+                else
+                {
+                    var activeKeySql = $@"
 select		A.ID,
 		utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
 from		Asset A 
@@ -8178,21 +7971,7 @@ from		Asset A
 where	    A.AssetTypeID = @ID
 group by    A.ID;";
 
-                if (parentIntersectTypeId.HasValue)
-                {
-                    activeKeySql = $@"
-select		A.ID,
-		utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
-from		Asset A 
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-		left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-		inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-		left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-where		A.AssetTypeID = @ID
-group by	A.ID, P.Uid";
-                }
-
-                Connection.Execute($@"
+                    Connection.Execute($@"
 update  T
 set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
 from    {assetTable} T
@@ -8212,9 +7991,9 @@ insert into #Keys WITH(TABLOCK)
 {activeKeySql} 
 
 {keyComparisonUpdateStatement}",
-                new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
+                    new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
+                }
             }
-
         }
 
         public List<AssetMeasureModel> GetAssetMeasuresFromRuleResults(List<Guid> ruleResultUids)
@@ -8371,7 +8150,7 @@ insert into #Items
 	from	#Raw
 	where	EvaluatedAssetTypeUid = AllocationAssetTypeUid;
 
-select * from #Items", transaction: trans).ToList();
+select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
             }
 
             var structuredMeasures = rawMeasures
@@ -8999,7 +8778,8 @@ select * from #Items", transaction: trans).ToList();
                         results.AddRange(
                             Query<DataQualityDeleteResponseModel>(
                                 $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
-                                new { execution.ExecutionID }
+                                new { execution.ExecutionID }, 
+                                timeout
                             )
                         );
                     }
@@ -9288,148 +9068,139 @@ select * from #Items", transaction: trans).ToList();
 
                 if (generalChecksCompleted)
                 {
-                    int loopSize = 250;
-                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
-                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
-                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    var executionDeleteAssetResults = Query<ExecutionDeletedAssetResult>(
+                        $"select * from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber > {currentLocation.HighestItemNumberProcessed} order by ItemNumber asc", execution, timeout
+                        ).ToList();
 
-                    var querySuffix = $"DAR.Success is null and DAR.ExecutionID = @ExecutionID and DAR.ItemNumber between @beginItemNumber and @endItemNumber";
+                    List<AssetMeasureModel> assetMeasures = new List<AssetMeasureModel>();
 
-                    var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";
-
-                    string ruleResultWhereClause = $@"from AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR 
-where 
-DAR.ExecutionID = @executionID 
-and DAR.Success is null 
-
-and Match (AN -(ARE)-> AR) 
-and (
-    (DAR.Uid is null or DAR.Uid ='00000000-0000-0000-0000-000000000000') 
-    or AR.Uid = DAR.Uid
-    )
-and (
-        (DAR.OwningAssetUid is null or DAR.OwningAssetUid ='00000000-0000-0000-0000-000000000000') 
-        or AR.Uid in    (
-                        select  AR1.Uid
-                        from    AssetResult AR1, assetResultedge ARE1, graph.AssetNode AN1					
-			            where   Match (AN1 -(ARE1)-> AR1)
-				                and AN1.Uid = DAR.owningAssetUid
-				                and ARE1.Class = {(int)ResultRelationClass.Owns}
-		                )
-	) 
-and (
-        (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')  
-        or AR.Uid in    (
-			            select  AR2.Uid
-			            from    AssetResult AR2, assetResultedge ARE2, graph.AssetNode AN2					
-			            where   Match (AN2 -(ARE2)-> AR2)
-				                and AN2.Uid = DAR.evaluatedAssetUid
-				                and ARE2.Class = {(int)ResultRelationClass.EvaluatedBy}
-		                )
-    ) 
-and (
-        (
-            (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')
-		)
-		or  (DAR.EvaluatedAssetUid is not null and ARE.class =  {(int)ResultRelationClass.EvaluatedBy})
-	) 
-and (DAR.EffectiveDateStart is null or DAR.EffectiveDateStart <= AR.EffectiveDate) 
-and (DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd >= AR.EffectiveDate) 
-and (DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart) 
-and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
-
-                    string deleteAssetResultSQL = $@"
-    create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
-    CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
-
-    merge into AssetResultEdge DARE 
-    using   (
-        select  ARE.$from_id as from_id,
-                ARE.$to_id as to_id, 
-                AR.Uid, 
-                ARE.Class, 
-                DAR.itemnumber, 
-                DAR.ExecutionItemUid
-        {ruleResultWhereClause} 
-                and DAR.ItemNumber between @beginItemNumber and @endItemNumber  
-        ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
-    WHEN MATCHED THEN DELETE 
-    output R.uid, R.class, R.itemnumber, R.ExecutionItemUid, $action into #ObjectDeleteAssetEdge;
-
-    merge into AssetResult AR
-    using   (
-	    select  AR1.uid
-	    from    AssetResult AR1
-	            INNER JOIN #ObjectDeleteAssetEdge MAE ON AR1.UID=MAE.Uid
-	            left join assetResultEdge ARE on ARE.$to_id = AR1.$node_id
-	    where   ARE.$to_id is null
-	    ) R on R.Uid = AR.Uid
-    WHEN MATCHED THEN DELETE;
-
-    {updateOnSuccess}";
-
-                    // Find out which items we need to update scores for.
-                    var ruleResultUids = Query<Guid>($@"select distinct AR.Uid {ruleResultWhereClause}", new { execution.ExecutionID }).ToList();
-                    List<AssetMeasureModel> assetMeasures = null;
-                    if (ruleResultUids.Count > 0)
+                    executionDeleteAssetResults.ForEach(dr =>
                     {
-                        assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-                    }
-
-                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
-                    {
-                        bool runCompleted = false;
-                        int retryCount = 0;
-                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        if (!dr.Success.HasValue)
                         {
-                            using (var trans = Connection.BeginTransaction())
+                            List<string> wheres = new List<string>();
+
+                            if (dr.Uid != Guid.Empty)
                             {
-
-                                try
+                                wheres.Add("AR.Uid = @Uid");
+                            }
+                            else
+                            {
+                                if (dr.OwningAssetUid != Guid.Empty)
                                 {
-                                    Connection.Execute(deleteAssetResultSQL, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                    trans.Commit();
-                                    runCompleted = true;
-
+                                    wheres.Add($@"AR.Uid in (select r.Uid from AssetResult r, assetResultedge e, graph.AssetNode n where match(n-(e)->r) and n.Uid = @OwningAssetUid and e.Class = { (int)ResultRelationClass.Owns})");
                                 }
-                                catch (Exception ex)
+                                if (dr.EvaluatedAssetUid != Guid.Empty)
                                 {
-                                    try
-                                    {
-                                        if (trans != null)
-                                        {
-                                            trans.Rollback();
-                                        }
-                                    }
-                                    catch
-                                    {
-                                    }
-
-                                    retryCount++;
-
-                                    if (retryCount > API_V2_RETRY_LIMIT)
-                                    {
-                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeleteAssetResult", ex.GetFullExceptionData(false), timeout);
-                                    }
+                                    wheres.Add($@"AR.Uid in (select r.Uid from AssetResult r, assetResultedge e, graph.AssetNode n where match(n-(e)->r) and n.Uid = @EvaluatedAssetUid and e.Class = { (int)ResultRelationClass.EvaluatedBy})");
+                                }
+                                if (dr.EffectiveDateStart.HasValue)
+                                {
+                                    wheres.Add("AR.EffectiveDate >= @EffectiveDateStart");
+                                }
+                                if (dr.EffectiveDateEnd.HasValue)
+                                {
+                                    wheres.Add("AR.EffectiveDate <= @EffectiveDateEnd");
+                                }
+                                if (dr.RunDateStart.HasValue)
+                                {
+                                    wheres.Add("AR.RunDate >= @RunDateStart");
+                                }
+                                if (dr.RunDateEnd.HasValue)
+                                {
+                                    wheres.Add("AR.RunDate <= @RunDateEnd");
                                 }
                             }
+                            
+                            string ruleResultWhereClause = "from AssetResult AR ";
+                            if (wheres.Count > 0)
+                            {
+                                ruleResultWhereClause += "where " + string.Join(" and ", wheres);
+                            }
+
+                            string deleteAssetResultSQL = $@"
+    create table #uids ([uid] uniqueidentifier);
+    CREATE NONCLUSTERED INDEX IX_Tempuids_Uid ON #uids ( Uid ASC );
+    
+    insert into #uids (Uid)
+        select  distinct AR.Uid {ruleResultWhereClause};
+
+    delete  T
+    from    AssetResultEdge T
+            inner join AssetResult R on R.$node_id = T.$to_id
+            inner join #uids S on S.Uid = R.Uid;
+
+    delete  T
+    from    AssetResult T
+            inner join #uids S on S.Uid = T.Uid;
+
+    update  T 
+    set     T.Success = iif(C.[Count] = 0, 1, 0) 
+    from    api.ExecutionDeleteAssetResult T 
+            inner join #uids S on 1=1
+            cross apply (
+                select  count(1) as [Count]
+                from    AssetResult
+                where   Uid = S.Uid
+            ) C
+    where   T.Success is null 
+            and T.ExecutionID = @ExecutionID 
+            and T.ItemNumber = @ItemNumber";
+
+                            // Find out which items we need to update scores for. Do this first!
+                            var ruleResultUids = Query<Guid>($@"select distinct AR.Uid {ruleResultWhereClause}", dr, timeout).ToList();
+                            
+                            if (ruleResultUids.Count > 0)
+                            {
+                                assetMeasures.AddRange(GetAssetMeasuresFromRuleResults(ruleResultUids));
+                            }
+
+                            // Now perform the delete.
+                            try
+                            {
+                                Connection.Execute(deleteAssetResultSQL, dr, commandTimeout: timeout);
+                                dr.Success = true;
+                                dr.Message = "Successfully removed results in this range.";
+                            }
+                            catch (Exception ex)
+                            {
+                                dr.Success = false;
+                                dr.Message = ex.GetFullExceptionData(false);
+                            }
+                            results.Add(new DataQualityDeleteResponseModel { ExecutionItemUid = dr.ExecutionItemUid, Message = dr.Message, Success = dr.Success ?? false });
                         }
-
-                        results.AddRange(
-                            Query<DataQualityDeleteResponseModel>(
-                                $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
-                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
-                                )
-                            );
-
-                        beginItemNumber += loopSize;
-                        endItemNumber += loopSize;
-                    }
+                    });
 
                     // Now that results are deleted, send the score events to re-process scores for impacted assets.
-                    if (assetMeasures != null)
+                    if (assetMeasures.Count > 0)
                     {
-                        CreateMeasureChangedResultExecution(assetMeasures, execution.ExecutionID);
+                        var newAssetMeasures = new List<AssetMeasureModel>();
+
+                        // Filter through and see if there are any duplicates based on the possible dupe logic above.
+                        while (assetMeasures.Count > 0)
+                        {
+                            var existingAssetMeasure = assetMeasures.First();
+
+                            var newAssetMeasure = newAssetMeasures.FirstOrDefault(n => n.AssetUid == existingAssetMeasure.AssetUid && n.EffectiveDate == existingAssetMeasure.EffectiveDate);
+                            if (newAssetMeasure != null)
+                            {
+                                existingAssetMeasure.Measures.ForEach(e => {
+                                    if (!newAssetMeasure.Measures.Any(n => n.MetricAssetVersionUid == e.MetricAssetVersionUid))
+                                    {
+                                        newAssetMeasure.Measures.Add(e);
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                newAssetMeasures.Add(existingAssetMeasure.CloneThis());
+                            }
+
+                            assetMeasures.RemoveAt(0);
+                        }
+
+                        // Send to queue.
+                        CreateMeasureChangedResultExecution(newAssetMeasures, execution.ExecutionID);
                     }
                 }
             }
@@ -11117,6 +10888,17 @@ EG.GroupUid
                             left Join
                             Asset A on EDP.AssetUid = A.Uid
                         where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        update	EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Profiling data can only be associated with Business or Technical Asset types'
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            inner Join
+                            Asset A on EDP.AssetUid = A.Uid
+                            inner join 
+                            AssetType AST on A.AssetTypeId = AST.ID
+                        where	ExecutionID = @ExecutionID and AST.Class not in (1, 8);
 
                         update	EDP
                         set		Success = 0,

@@ -148,13 +148,10 @@ namespace d360.web.Controllers
                 //delete any power bi reports
                 if (model.ReportType == "powerbi" && !string.IsNullOrEmpty(model.PowerBIDatasetID))
                 {
-                    var companySettings = Community.GetCompanySettings();
+                    var companySettings = SettingsRepository.GetSettings();
 
-                    var groupId = string.Empty;
-                    var clientId = string.Empty;
-
-                    companySettings.TryGetValue("PowerBIClientId", out clientId);
-                    companySettings.TryGetValue("PowerBIGroupId", out groupId);
+                    var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
+                    var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
 
                     if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
                         throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
@@ -197,12 +194,9 @@ namespace d360.web.Controllers
                 if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pwd))
                     throw new Exception("Please specify a valid username and password.");
 
-                var companySettings = Community.GetCompanySettings();
-                var groupId = string.Empty;
-                var clientId = string.Empty;
-
-                companySettings.TryGetValue("PowerBIClientId", out clientId);
-                companySettings.TryGetValue("PowerBIGroupId", out groupId);
+                var companySettings = SettingsRepository.GetSettings();
+                var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
+                var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
 
                 if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
                     throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
@@ -375,20 +369,7 @@ namespace d360.web.Controllers
             {
                 var groupName = $"D3S{Company.CurrentCompanyID}";
                 var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
-
-                var workspaceSetting = Community.Filter<CompanySetting>(i => i.SettingID == 56 && i.CompanyID == Company.CurrentCompanyID).FirstOrDefault();
-
-                if (workspaceSetting == null)
-                {
-                    Community.Add<CompanySetting>(new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 56, Value = res.Id.ToString() });
-                }
-                else
-                {
-                    workspaceSetting.Value = res.Id.ToString();
-
-                    Community.Update<CompanySetting>(workspaceSetting);
-                }
-
+                SettingsRepository.UpsertSetting(core.enums.Setting.PowerBIGroupId, res.Id.ToString());
                 return res.Id.ToString();
             }
 
@@ -397,12 +378,9 @@ namespace d360.web.Controllers
 
         private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
         {
-            var companySettings = Community.GetCompanySettings();
-            var groupId = string.Empty;
-            var clientId = string.Empty;
-
-            companySettings.TryGetValue("PowerBIClientId", out clientId);
-            companySettings.TryGetValue("PowerBIGroupId", out groupId);
+            var companySettings = SettingsRepository.GetSettings();
+            var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
+            var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
 
             if (string.IsNullOrEmpty(clientId))
                 throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");

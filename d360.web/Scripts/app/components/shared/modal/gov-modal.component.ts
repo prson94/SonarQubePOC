@@ -53,9 +53,10 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
 
     checkKey(event: KeyboardEvent) {
         if (event.keyCode) {
-            if (event.keyCode == 27) {
-                if (!event.defaultPrevented)
+            if (event.keyCode === 27) {
+                if (!event.defaultPrevented) {
                     this.closePopUp();
+                }
             }
         }
     }
