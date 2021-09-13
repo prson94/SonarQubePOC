@@ -369,7 +369,10 @@ namespace d360.web.Controllers
                                             trans.Rollback();
                                         }
                                     }
-                                    catch { }
+                                    catch 
+                                    {
+                                        // Do nothing.
+                                    }
 
                                     var properties = new Dictionary<string, string>
                                         {
@@ -829,9 +832,11 @@ namespace d360.web.Controllers
                         case "surname":
                             lastName = prop.Value.ToString();
                             break;
-                        //case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
-                        //    groups = prop.Values?.Select(v => v.Data.ToString())?.ToList();
-                        //    break;
+                        case "groups":
+                        case "securityGroups":
+                        case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
+                            groups = prop.Value.ToString().Split(',',';').ToList();
+                            break;
                         default:
                             customClaims.Add(prop.Type, prop.Value.ToString());
                             break;
@@ -963,13 +968,6 @@ namespace d360.web.Controllers
                             extra: authenticationSettings.GetStructuredExtraParameters());
 
                         return Redirect(url);
-                        //var client = new HttpClient();
-                        //client.RevokeTokenAsync(new TokenRevocationRequest
-                        //{
-                        //    ClientId = authenticationSettings.clientId,
-                        //    ClientSecret = authenticationSettings.clientSecret,
-                        //    Token = idToken
-                        //});
                     }
                     break;
                 case AuthenticationType.Saml:
