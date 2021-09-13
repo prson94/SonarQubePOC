@@ -2903,55 +2903,26 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
 
             var sql = $@"
-                    drop table if exists #results
-					SELECT Ex.[ExecutionID]
+                        SELECT Ex.[ExecutionID]
                               ,GR.[uid] as ResourceUid
 	                          ,CONCAT(GR.[FirstName],' ', GR.[LastName]) as [Resource]
                               ,[Total]
                               ,[Processed]
                               ,[Error]
-							  ,cast(null as nvarchar(max)) as ErrorMessage
+	                          ,coalesce(ERR.[Message],ex.errormessage) as ErrorMessage
                               ,[ProcessingStartedOn] 
                               ,[StartedOn] 
                               ,[CompletedOn]
                               ,[Method]
                               ,[Route]
                               ,[Fields]
-						  into #results
                           FROM [api].[Execution] Ex
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID  
+                          LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID] 
                           {orderBySql}
                           {offsetSql}
-
-						   update T
-						   set ErrorMessage = (
-							select string_agg(COALESCE(ERR.[Message],RelErr.[Message],ResTypeErr.message,AssTypeDelErr.message,AssResErr.Message,ScoreErr.message, DelAssTypeErr.message,AssetDataProfileErr.Message, UserErr.[Message],RelTypeErr.Message, RelDel.[Message],PredErr.[Message], AssErr.[Message], DelPredErr.[Message], DelGroupErr.[Message], DelRelTypeErr.[Message], AssDelErr.[Message], RelErrErr.Message,exe.errormessage),',') as ErrorMessage
-								from api.Execution exe
-								  left join [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionAsset] AssErr on AssErr.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionDeletedAsset] AssDelErr on AssDelErr.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionDeletedAssetType] AssTypeDelErr on AssTypeDelErr.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionRelationship] RelErr on RelErr.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionAssetDataProfile] AssetDataProfileErr on AssetDataProfileErr.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionRelationshipType] RelTypeErr on RelTypeErr.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionRelationshipError] RelErrErr on RelErrErr.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionDeletedRelationship] RelDel on RelDel.[ExecutionID] = exe.[ExecutionID] 
-									left join [api].[ExecutionUser] UserErr on UserErr.[ExecutionID] = exe.[ExecutionID]
-									left join [api].[ExecutionPredicate] PredErr on PredErr.[ExecutionID] = exe.[ExecutionID]  
-									left join [api].[ExecutionDeletedPredicate] DelPredErr on DelPredErr.[ExecutionID] = exe.[ExecutionID]  
-									left join [api].[ExecutionDeletedGroup] DelGroupErr on DelGroupErr.[ExecutionID] = exe.[ExecutionID]  
-									left join [api].[ExecutionDeletedRelationshipType] DelRelTypeErr on DelRelTypeErr.[ExecutionID] = exe.[ExecutionID]
-									left join [api].[ExecutionDeletedAssetType] DelAssTypeErr on DelAssTypeErr.[ExecutionID] = exe.[ExecutionID]
-									left join [api].[ExecutionAssetResult] AssResErr on AssResErr.[ExecutionID] = exe.[ExecutionID]
-									left join [api].[ExecutionScore] ScoreErr on ScoreErr.[ExecutionID] = exe.[ExecutionID]
-									left join [api].[ExecutionResponsibilityType] ResTypeErr on ResTypeErr.[ExecutionID] = exe.[ExecutionID]
-									where exe.ExecutionID = t.ExecutionID
-						   )
-						   from #results T
-						   where T.Error <> 0
-
-						   select * from #results
                         ";
+
             var countSQL = $@"
                         SELECT count(*)
                           FROM [api].[Execution] Ex
