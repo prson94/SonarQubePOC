@@ -1,13 +1,12 @@
 ﻿using d360.core;
 using d360.core.enums;
-using d360.extensions.caching;
+using d360.model;
+using d360.utils.company;
 using d360.web.caching;
 using d360.web.Extensions;
 using Dapper;
-using IdentityModel;
 using IdentityModel.Client;
 using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin;
 using Newtonsoft.Json;
 using System;
@@ -16,12 +15,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace d360.web
@@ -382,18 +377,21 @@ from	Resource R
             // not in cache query community
             if (string.IsNullOrEmpty(cnName))
             {
-                using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                var connectionString = CompanyConnectionUtils.GetCompanyConnectionString(companyId);
+                using (var cnn = new SqlConnection(connectionString))
                 {
                     cnn.Open();
-                    cnName = (await cnn.QueryAsync<string>(@"select coalesce(C.Value, S.DefaultValue) as Value
-from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @cId
-where S.ID = 54", new { cId = companyId })).FirstOrDefault();
+                    cnName = (await cnn.QueryAsync<string>(@"select Value from Setting where ID = @s", new { @s = (int)Setting.JwtAuthority })).FirstOrDefault();
+                    if (string.IsNullOrEmpty(cnName))
+                    {
+                        cnName = Setting.JwtAuthority.AsInfoModel().DefaultValue;
+                    }
                 }
 
-                //stick in cache
+                // Stick in cache
                 if (cache != null)
                 {
-                    cache.SetItem<string>(key, cnName);
+                    cache.SetItem(key, cnName);
                 }
             }
 

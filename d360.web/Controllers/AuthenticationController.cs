@@ -9,7 +9,6 @@ using d360.extensions.azuregraph;
 using d360.extensions.mail;
 using d360.model;
 using d360.model.DataAccessLayer;
-using d360.web.Filters;
 using d360.web.Extensions;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -297,17 +296,8 @@ namespace d360.web.Controllers
 
                 if (resource.ID > 0)
                 {
-                    var settings = Community.GetCompanySettings();
-                    var sessionLengthMinutes = FormsAuthentication.Timeout.TotalMinutes;
-                    var sessionDurationString = settings["SessionTimeout"];
+                    var sessionLengthMinutes = SettingsRepository.GetSettingValue<double>(Setting.SessionTimeout);
 
-                    if (!string.IsNullOrEmpty(sessionDurationString))
-                    {
-                        if (!double.TryParse(sessionDurationString, out sessionLengthMinutes))
-                        {
-                            sessionLengthMinutes = FormsAuthentication.Timeout.TotalMinutes;
-                        }
-                    }
                     // Create a login context for the asserted identity.
 
                     #region Process Group claims
@@ -603,7 +593,7 @@ namespace d360.web.Controllers
                     return new RedirectResult(url);
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-                    ViewData.Add("Settings", Community.GetCompanySettings());
+                    ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
                     return View();
             }
         }
@@ -804,15 +794,9 @@ namespace d360.web.Controllers
 
             try
             {
-                //var userInfo = await client.GetUserInfoAsync(new UserInfoRequest
-                //{
-                //    Address = $"{baseUri}/userinfo",
-                //    Token = response.AccessToken
-                //});
-                foreach(var prop in accessToken.Claims)
-                //foreach (Newtonsoft.Json.Linq.JProperty prop in userInfo.Json.Properties())
+                foreach (var prop in accessToken.Claims)
                 {
-                    switch (prop.Type) //prop.Name
+                    switch (prop.Type)
                     {
                         case "amr":
                         case "aud":
@@ -952,7 +936,7 @@ namespace d360.web.Controllers
         public ActionResult LogoutCallback()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
             return View("Logout");
         }
 

@@ -1431,6 +1431,10 @@
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj">
+      <Project>{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}</Project>
+      <Name>d360.utils.company</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
@@ -2117,7 +2121,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://mpappas.eng.data3sixty.local/</IISUrl>
+          <IISUrl>http://integration.eng.data3sixty.local/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
