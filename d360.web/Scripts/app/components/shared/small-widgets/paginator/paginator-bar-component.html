@@ -1,0 +1,26 @@
+﻿<div class="paging-bar">
+    <span class="items">Showing {{(page * itemsPerPage) + 1}} to {{GetToDisplayValue()}} of {{totalRecords}} items</span>
+    <span class="grow"></span>
+    <div *ngIf="totalRecords > itemsPerPage" class="pages">
+        <span [ngClass]="{'disabled' : isFirstPage(), 'angle' : isAngle()}" (click)="changePageToFirst($event)" [innerHTML]="labelFirst"></span>
+        <span [ngClass]="{'disabled' : isFirstPage(), 'angle' : isAngle()}" (click)="changePageToPrev($event)" [innerHTML]="labelPrevious"></span>
+        <span [ngClass]="{selected: page == (cpage - 1)}" *ngFor="let cpage of pageOptions" (click)="onPageLinkClick(cpage - 1)">{{cpage}}</span>
+        <span [ngClass]="{'disabled' : isLastPage(), 'angle' : isAngle()}" (click)="changePageToNext($event)" [innerHTML]="labelNext"></span>
+        <span [ngClass]="{'disabled' : isLastPage(), 'angle' : isAngle()}" (click)="changePageToLast($event)" [innerHTML]="labelLast" *ngIf="!hideLastButton"></span>
+        <span *ngIf="!hideSettings" class="popup-container">
+            <i class="fa fa-cog"></i>
+            <div class="popup-menu popup">
+                <ul>
+                    <li class="label"><span class="col1"></span><span>Items Per Page</span></li>
+                    <li *ngFor="let item of itemsPerPageOptions" (click)="changePageNumber(item)">
+                        <span class="col1">
+                            <i *ngIf="item == itemsPerPage" class="fa fa-check"></i>
+                        </span>
+                        <span>{{item}}</span>
+                        <span class="col3"></span>
+                    </li>
+                </ul>
+            </div>
+        </span>
+    </div>
+</div>

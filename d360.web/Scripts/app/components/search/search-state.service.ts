@@ -107,7 +107,7 @@ export class SearchStateService extends BaseObservableService {
         this._query = new SearchQuery({
             Term: "",
             From: 0,
-            Size: 10,
+            Size: 25,
             AggregationFilters: [],
             FieldFilters: [],
             Aggregations: []

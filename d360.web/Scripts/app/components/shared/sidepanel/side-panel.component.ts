@@ -1,5 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, SimpleChanges } from '@angular/core';
 import { SidePanelButton } from '../../../models/side-panel.model';
+import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
 
 @Component({
@@ -28,7 +29,11 @@ export class SidePanelComponent extends BaseComponent {
     @Input() storageKey: string = null;
     readonly storageKeyPrefix: string = 'side_panel_';
 
+    @Input() extraButtons: SidePanelButton[] = [];
+
     buttons: SidePanelButton[] = [];
+
+    public panelMenu: PopupMenuItem[] = [];
 
     readonly minWidth = '400px';
     readonly maxWidth = '400px';
@@ -120,22 +125,24 @@ export class SidePanelComponent extends BaseComponent {
     private initButtons() {
         this.buttons = [];
 
+        this.extraButtons.forEach((b) => this.buttons.push(b));
+
         if (this.hasDetail) {
-            this.buttons.push({
+            this.buttons.push(new SidePanelButton({
                 label: 'Information',
                 tooltip: 'Information',
                 disabledTooltip: null,
                 nothingSelectedMessage: 'Select an item from the list to display its properties',
-                notApplicableMessage: 'Select an item from the list to display its properties',
+                notApplicableMessage: 'Information data is not available for the selected item',
                 key: 'detail',
                 icon: 'fa-info-circle',
                 disabled: false,
                 visible: true
-            });
+            }));
         }
 
         if (this.hasProfiling) {
-            this.buttons.push({
+            this.buttons.push(new SidePanelButton({
                 label: 'Profiling',
                 tooltip: 'Profiling',
                 disabledTooltip: 'Profiling data is not available for the selected item',
@@ -145,11 +152,12 @@ export class SidePanelComponent extends BaseComponent {
                 icon: 'fa-bar-chart',
                 disabled: this.disableProfiling,
                 visible: true
-            });
+            }));
         }
 
         if (this.buttonCount > 0) {
             this.selectedPanel = this.buttons[0].key;
+            this.panelMenu = this.buttons[0].panelMenu;
             this.selectedPanelChange.emit(this.buttons[0].key);
         }
     }
@@ -158,6 +166,7 @@ export class SidePanelComponent extends BaseComponent {
         if (!b.disabled) {
             if (this.selectedPanel !== b.key) {
                 this.selectedPanel = b.key;
+                this.panelMenu = b.panelMenu;
                 this.selectedPanelChange.emit(b.key);
             }
             this.buttonClick.emit(b.key);

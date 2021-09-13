@@ -1,15 +1,10 @@
-﻿import { Component, Input, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, HostListener, ViewChild, ElementRef } from '@angular/core';
+﻿import { Component, Input, Output, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, ViewChild, ElementRef, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { SearchFullResult, SearchDetail, SearchResultFieldDisplay, SearchPathComponent } from '../../models/search-result.model';
+import { SearchFullResult, SearchResultFieldDisplay, SearchSelecton } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
-import { ObjectStatistics } from '../../models/object-statistics.model';
-import { TagService } from '../../services/tag.service';
-import { Tag, TagItem } from '../../models/tag.model';
-import { ObjectStatisticsService } from '../../services/object-statistics.service';
-import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { DatePipe } from '@angular/common';
 
@@ -18,24 +13,22 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-search-result-item',
     templateUrl: './search-result-item.component.html',
+    styleUrls: ["search-result-item.component.less"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ShoppingCartService, ObjectStatisticsService, DatePipe],
+    providers: [ShoppingCartService, DatePipe],
     host: { '(window:resize)': 'checkSize()' }
 })
 
 export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
-    private lastCalculatedDate: number;
+    @Input() selection: SearchSelecton;
+
+    @Output() onSelect = new EventEmitter();
+
     showStatus: boolean = false;
     showPath: boolean = false;
-    private status: string;
-    private path: string;
-    showShoppingCart = false;
-    private obj: string;
-    private objID: number;
-    searchDetails: SearchDetail;
-    private formattedPath: string;
-    private displayInfopopup: boolean = false;
+
+    menuitems: any[] = [{ title: "Open" }, { title: "Open in New Tab" }];
 
     showScrollButtons: boolean = false;
     disableScrollLeft: boolean = false;
@@ -45,18 +38,36 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @ViewChild('cardmenubutton', { static: false }) cardmenubuttonRef: ElementRef;
     @ViewChild('fieldScroller', { static: false }) fieldScroller: ElementRef;
     
-    @HostListener('document:click', ['$event.target'])
-    public hostclick(targetElement) {
-        if (this.cardmenuRef != undefined && this.cardmenuRef.visible == true && targetElement.closest('.kebabmenu') == null) {
-            if (!this.cardmenubuttonRef.nativeElement.contains(targetElement)) {
-                this.cardmenuRef.hide();
-            }
+    constructor(private router: Router,
+        private shoppingCartService: ShoppingCartService,
+        private messagesService: MessagesObservableService,
+        private ref: ChangeDetectorRef,
+        private datePipe: DatePipe) {
+        super();
+    }
+
+    ngOnInit() {
+        if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() === "true") {
+            this.menuitems.push({ title: "Add to Cart" });
+        }
+
+        this.loadDetails();
+        //Need to wait for ViewChildren, but can't use AfterOnInit
+        setTimeout(() => {
+            this.checkSize();
+        });
+    }
+
+    private loadDetails() {
+        if (this.result.Status) {
+            this.showStatus = true;
         }
     }
 
     parseTagResult(tags: any[]) {
         return tags.map((tag) => { return { uid: tag.Uid, Value: tag.Value }; });
     }
+
     get type() {
         if (this.result) {
             switch (this.result.Group) {
@@ -70,73 +81,30 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         }
     }
 
-    constructor(private router: Router,
-        private shoppingCartService: ShoppingCartService,
-        private messagesService: MessagesObservableService,
-        private objectStatisticsService: ObjectStatisticsService,
-        private ref: ChangeDetectorRef,
-        private datePipe: DatePipe) {
-        super();
-    }
-
-    ngOnInit() {
-        if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true')
-            this.showShoppingCart = true;
-
-        this.loadDetails();
-        //Need to wait for ViewChildren, but can't use AfterOnInit
-        setTimeout(() => {
-            this.checkSize();
-        });
-    }
-
-    private loadDetails() {
-        if (this.result.Uid) {
-            this.objectStatisticsService.getSearchDetails(this.result.Uid).subscribe(
-                (result) => {
-                    this.searchDetails = result;
-                    if (this.searchDetails && this.searchDetails?.AssetDetail.Status) {
-                        this.status = this.searchDetails.AssetDetail.Status;
-                        this.showStatus = true;
-                    } else {
-                        this.showStatus = false;
-                    }
-                    this.ref.markForCheck();
-                }
-            );  
-        }
-    }
-
     showBadges(): boolean {
-        return this.showStatus || (this.searchDetails && this.searchDetails.Scores.length > 0)
+        return this.showStatus || this.result.Scores.length > 0;
     }
 
-    showInfo() {
-        this.displayInfopopup = true;
-    }
+    clickMenuItem(event: any) {
+        const key = event.value.toLowerCase();
 
-    getCardMenuItems(): MenuItem[] {
-        var menu: MenuItem[] = [
-            { label: 'More Information', command: (event) => { this.showInfo() } },
-        ];
-        if (this.result.Uid && CompanySettings.LineageVersion == 3 && ['Reference', 'Resource', 'Group', 'Grammatic type', 'Fusion'].indexOf(this.result.Group) == -1) {
-            menu.push({
-                label: 'View Diagram',
-                command: (event) => { this.navigateVisualization(); }
-            });
+        if (key === "open") {
+            this.navigateLink();
+        } else if (key === "open in new tab") {
+            this.navigateLink(true);
+        } else if (key === "add to cart") {
+            this.add();
         }
-        if (this.showShoppingCart && ['Synonym', 'Grammatic type'].indexOf(this.result.Group) == -1) {
-            menu.push({
-                label: '',
-                icon: 'fa fa-cart-plus',
-                command: (event) => { this.add(); }
-            });
-        }
-        return menu;
     }
 
-    navigateLink() {
-        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
+    navigateLink(newTab: boolean = false) {
+        const url = SiteUrlHelpers.convertClassicUrl(this.result.Url);
+        if (newTab) {
+            // eslint-disable-next-line
+            window.open(url, "_blank");
+        } else {
+            this.router.navigateByUrl(url);
+        }
     }
 
     private navigateVisualization() {
@@ -151,21 +119,24 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             .subscribe(r => this.showMessageForResult(this.messagesService, r));
     }
 
-    getDataForPreview() {
-        return {
-            DisplayName: this.result.DisplayName,
-            TypeName: this.result.Type,
-            Description: this.result.Description,
-            AssetID: this.result.ID,
-            UID: this.result.Uid
-        }
-    }
-
     formatPathAsString(): string {
         if (this.result.Group && this.result.AssetPath) {
             return this.result.Group +' > ' + this.result.AssetPath.map(p => p.Key.join(' / ') + ' (' + p.AssetType + ')').join(' > ');
         }
         return '';
+    }
+
+    selectThis() {
+        this.onSelect.emit({
+            ID: this.result.ID,
+            AssetUid: this.result.Uid,
+            ObjectType: this.result.Object,
+            HasProfiling: this.result.HasProfiling
+        });
+    }
+
+    isSelected(): boolean {
+        return this.selection?.ID === this.result.ID;
     }
 
     /**

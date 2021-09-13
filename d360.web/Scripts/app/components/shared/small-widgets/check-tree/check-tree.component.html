@@ -1,9 +1,9 @@
-﻿<div class="check-tree-header">
+﻿<div *ngIf="title" class="check-tree-header">
     <h2 [innerHTML]="title"></h2><span *ngIf="showClearSelection()" class="clear-tree" (click)="clearSelection()">Clear filter</span>
 </div>
 <d3s-loading [isLoading]="loading"></d3s-loading>
 
-<div *ngIf="!loading" [ngStyle]="style" [class]="styleClass">
+<div *ngIf="!loading" [ngStyle]="style" [class]="styles">
     <div *ngIf="filter" class="p-tree-filter-container">
         <input #filter type="text" autocomplete="off" class="p-tree-filter p-inputtext p-component p-state-default p-corner-all" [attr.placeholder]="filterPlaceholder"
                (keydown.enter)="$event.preventDefault()" (input)="onFilter($event)">

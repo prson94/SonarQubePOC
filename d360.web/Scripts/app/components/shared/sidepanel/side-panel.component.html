@@ -9,6 +9,11 @@
             <div class="panel-header">
                 <span class="header-label">{{panelLabel}}</span>
                 <div class="side-panel-button-container">
+                    <ng-container *ngIf="panelMenu.length > 0">
+                        <ig-popup-menu [items]="panelMenu" #panelkebab></ig-popup-menu>
+                        <button igButton icon="fa-ellipsis-v" (click)="panelkebab.toggle($event)" class="side-panel-button"></button>
+                        <div class="side-panel-button-spacer"></div>
+                    </ng-container>
                     <ng-container *ngIf="buttonCount > 1">
                         <button *ngFor="let b of visibleButtons" igButton [icon]="b.icon" (click)="clickButton(b)" [tooltip]="getButtonTooltip(b)" class="side-panel-button" [class.selected]="selectedPanel === b.key" [disabled]="b.disabled"></button>
                         <div class="side-panel-button-spacer"></div>
@@ -19,7 +24,7 @@
         </div>
         <div class="side-panel-content" [style.height]="height">
             <ng-content></ng-content>
-            <ng-container *ngIf="expanded && selectedItem == null">
+            <ng-container *ngIf="expanded && selectedItem == null && panelButton?.needsSelection">
                 <div class="side-panel-empty-overlay">
                     <div class="content">
                         <div class="icon-holder">

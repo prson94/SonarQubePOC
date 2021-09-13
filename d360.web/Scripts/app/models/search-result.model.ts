@@ -9,6 +9,13 @@ export class SearchPathComponent {
     AssetType: string;
 }
 
+export class SearchSelecton {
+    ID: string;
+    AssetUid: string;
+    ObjectType: string;
+    HasProfiling: boolean;
+}
+
 export class SearchResult {
     Name: string;
     DisplayName: string;
@@ -23,8 +30,20 @@ export class SearchResult {
     Tags: SearchResultTags[];
 }
 
+export class AssetScore {
+    AssetUid: string;
+    EffectiveDate: string;
+    EndDate: string;
+    Value: number;
+    ScoreType: string;
+    ShortName: string;
+    RunDate: string;
+    LowerThreshold: number;
+    UpperThreshold: number;
+}
+
 export class SearchFullResult extends SearchResult {
-    ID: number;
+    ID: string;
     Description: string;
     Group: string;
     Name: string;
@@ -37,8 +56,12 @@ export class SearchFullResult extends SearchResult {
     Uid: string;
     Explanation: string;
     Fields: SearchResultFieldDisplay[];
+    Status: string;
+    Object: string;
+    ObjectId: number;
+    HasProfiling: boolean;
+    Scores: AssetScore[];
 }
-
 export class SearchCategories {
     Name: string;
     DisplayName: string;
@@ -139,18 +162,6 @@ export class SearchAssetDetail {
     Object: string;
     ObjectId: number;
     Id: number;
-}
-
-export class AssetScore {
-    AssetUid: string;
-    EffectiveDate: string;
-    EndDate: string;
-    Value: number;
-    ScoreType: string;
-    ShortName: string;
-    RunDate: string;
-    LowerThreshold: number;
-    UpperThreshold: number;
 }
 
 export class SearchDetail {

@@ -598,6 +598,10 @@ export class PopupMenuItem {
 
     itemID: number;
     parent: PopupMenuItem;
+
+    constructor(data: Partial<PopupMenuItem>) {
+        Object.assign(this, data);
+    }
 }
 
 export class PopupMenuItemBadge {

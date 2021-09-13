@@ -1,40 +1,17 @@
 ﻿
 import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, AfterViewInit, OnChanges, SimpleChange, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
 import * as _ from 'lodash';
-import { Paginator } from 'primeng/paginator'
-import { totalmem } from 'os';
+
+export enum LABEL_STYLE {
+    ANGLE = "angle",
+    WORD = "word"
+}
 
 @Component({
     selector: 'd3s-paginator',
-    template: `<div class="paging-bar">
-                    <span class="items">Showing {{(page * itemsPerPage) + 1}} to {{GetToDisplayValue()}} of {{totalRecords}} items</span>
-                    <span class="grow"></span>
-                    <div *ngIf="totalRecords > itemsPerPage" class="pages">
-                        <span [ngClass]="{'disabled' : isFirstPage()}" (click)="changePageToFirst($event)">First</span>
-                        <span [ngClass]="{'disabled' : isFirstPage()}" (click)="changePageToPrev($event)">Previous</span>
-                        <span [ngClass]="{selected: page == (cpage - 1)}" *ngFor="let cpage of pageOptions" (click)="onPageLinkClick(cpage - 1)">{{cpage}}</span>
-                        <span [ngClass]="{'disabled' : isLastPage()}" (click)="changePageToNext($event)">Next</span>
-                        <span *ngIf="!hideLastButton" [ngClass]="{'disabled' : isLastPage()}" (click)="changePageToLast($event)">Last</span>
-                        <span class="popup-container">
-                            <i class="fa fa-cog"></i>
-                            <div class="popup-menu popup">
-                            <ul>
-                                <li class="label"><span class="col1"></span><span>Items Per Page</span></li>
-                                <li *ngFor="let item of itemsPerPageOptions"(click)="changePageNumber(item)">
-                                    <span class="col1"> 
-                                        <i *ngIf="item == itemsPerPage" class="fa fa-check"></i>
-                                    </span>
-                                    <span>{{item}}</span>
-                                    <span class="col3"></span>
-                                </li>
-                            </ul>
-                        </div>
-                        </span>
-                    </div>
-                </div>
-			  `,
+    templateUrl: "./paginator-bar-component.html",
+    styleUrls: ["paginator-bar-component.less"],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -43,10 +20,12 @@ export class PaginatorComponent implements OnChanges, OnInit {
     @Input() page: number;
     @Input() totalRecords: number;
     @Input() percentage: number;
+    @Input() labelStyle: LABEL_STYLE = LABEL_STYLE.ANGLE;
     @Input() hideLastButton: boolean = false;
+    @Input() hideSettings: boolean = true;
     @Output() onPageChange = new EventEmitter();
     itemsPerPageOptions = [10, 25, 50, 100];
-    itemsPerPage: number = 10;
+    itemsPerPage: number = 25;
     pageOptions = [1];
     visableNumbers: number = 5;
     constructor(
@@ -61,9 +40,26 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     ngOnInit(): void {
-        this.itemsPerPage = 10;
+        this.itemsPerPage = 25;
         this.page = 0;
         this.CheckVisableNumbers();
+    }
+
+    public isAngle(): boolean {
+        return this.labelStyle === LABEL_STYLE.ANGLE;
+    }
+
+    get labelFirst() {
+        return this.isAngle() ? "&laquo;" : "First";
+    }
+    get labelLast() {
+        return this.isAngle() ? "&raquo;" : "Last";
+    }
+    get labelPrevious() {
+        return this.isAngle() ? "&lsaquo;" : "Previous";
+    }
+    get labelNext() {
+        return this.isAngle() ? "&rsaquo;" : "Next";
     }
 
     changePageNumber(newItemsPerPage: number) {
@@ -142,8 +138,8 @@ export class PaginatorComponent implements OnChanges, OnInit {
         let step = 2; // Current page +- step
         let paging = [];      
 
-        //end pagination at CurrentPage+2 or total pages, whichever is smallest
-        let end = Math.min(currentPage + step, totalPages);
+        //end pagination at CurrentPage+2 or total pages, whichever is smallest, but up to step*2 + 1 options
+        let end = Math.min(Math.max(currentPage + step, 1 + 2 * step), totalPages);
         //start pagination at CurrentPage-2 or end-4, whichever is smallest, but no lower than 1
         let start = Math.max(Math.min(currentPage - step, end - 2 * step), 1);
 
