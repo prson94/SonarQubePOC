@@ -2909,7 +2909,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                               ,[Total]
                               ,[Processed]
                               ,[Error]
-	                          ,ERR.[Message] as ErrorMessage
+	                          ,coalesce(ERR.[Message],ex.errormessage) as ErrorMessage
                               ,[ProcessingStartedOn] 
                               ,[StartedOn] 
                               ,[CompletedOn]
@@ -2922,6 +2922,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           {orderBySql}
                           {offsetSql}
                         ";
+
             var countSQL = $@"
                         SELECT count(*)
                           FROM [api].[Execution] Ex
