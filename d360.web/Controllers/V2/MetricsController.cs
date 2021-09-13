@@ -1092,7 +1092,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
                 }
                 else
                 {
