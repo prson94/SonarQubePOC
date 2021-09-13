@@ -25,6 +25,7 @@ namespace d360.extensions
 
         Task CreateTopicMessageAsync(EventInfo e);
         Task CreateTopicMessageAsync(string topicName, EventInfo e);
+        Task CreateScheduledTopicMessageAsync(EventInfo e, DateTimeOffset delay);
         Task CreateTopicMessageAsync<T>(string topicName, T e);
 
         void CreateTopicMessages(List<EventInfo> events);

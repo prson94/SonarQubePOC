@@ -87,6 +87,7 @@ namespace d360.model.workflow
 
             if (root != null)
             {
+
                 if(root.Element(RESPONSIBILITY_TYPE_ID) != null)
                 {
                     int.TryParse(root.Element(RESPONSIBILITY_TYPE_ID).Value, out responsibilityTypeID);
@@ -192,7 +193,7 @@ namespace d360.model.workflow
                 FieldUpdateSettings = fieldUpdateSettings,
                 RelationshipUpdateSettings = relationshipUpdateSettings,
                 HttpRequestSettings = httpRequestSettings,
-                HttpResponseSettings = httpResponseSettings
+                HttpResponseSettings = httpResponseSettings,
             };
         }
     }

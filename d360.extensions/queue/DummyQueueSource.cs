@@ -57,6 +57,19 @@ namespace d360.extensions.queue
             await CreateTopicMessageAsync("events", e);            
         }
 
+        public async Task CreateScheduledTopicMessageAsync(EventInfo e, DateTimeOffset delay)
+        {
+            var topicName = "events";
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new ServiceBusMessage(new BinaryData(eBytes));
+            bm.MessageId = Guid.NewGuid().ToString();
+
+            var client = new ServiceBusClient(EventServiceBusConnectionString);
+            var sender = client.CreateSender(topicName);
+            await sender.ScheduleMessageAsync(bm, delay);
+        }
+
         public async Task CreateTopicMessageAsync(string topicName, EventInfo e)
         {
             var eString = JsonConvert.SerializeObject(e);
