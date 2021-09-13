@@ -948,6 +948,9 @@ namespace d360.web.Controllers.V2
             string _filter = null;
             string _simpleFilter = null;
 
+            var isRequestAnExport = Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || 
+                Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase);
+
             #region Model Validation
             if (queryParams.Any(q => q.Key == "_owningAssetUid"))
             {
@@ -1078,23 +1081,32 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-            string isValid = isPageSizeAndNumValid(queryParams);
-
-            if (!string.IsNullOrEmpty(isValid))
+            if (isRequestAnExport)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                _pageNum = 1;
+                _pageSize = SettingsRepository.GetSettingValue<int>(Setting.MaxExcelExportRows);
             }
             else
-            {
-                if (queryParams.Any(q => q.Key == "_pageNum"))
+            { 
+                string isValid = isPageSizeAndNumValid(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
                 {
-                    _pageNum = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
-                if (queryParams.Any(q => q.Key == "_pageSize"))
+                else
                 {
-                    _pageSize = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value);
-                }
+                    if (queryParams.Any(q => q.Key == "_pageNum"))
+                    {
+                        _pageNum = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value);
+                    }
+                    if (queryParams.Any(q => q.Key == "_pageSize"))
+                    {
+                        _pageSize = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value);
+                    }
+                }            
             }
+
             #endregion
 
             try
@@ -1103,7 +1115,7 @@ namespace d360.web.Controllers.V2
 
                 dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate, _filter, _simpleFilter)).ConfigureAwait(false);
 
-                if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
+                if (isRequestAnExport)
                 {
                     SLDocument document = new SLDocument();
                     bool isExport = false;
