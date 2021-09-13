@@ -82,8 +82,8 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("EvaluatedAssetClass ne 'BusinessAsset'", "(E.Class <> @filter_1 or E.Class is null)")]
 
         [InlineData("EvaluatedAssetTypePath ct 'Column'", "P.Path like @filter_1")]
-        [InlineData("EvaluatedAssetPath eq 'dbo'", "E.Segments.exist('/path/segment[.=sql:variable(\"@filter_1\")]') = 1")]
-        [InlineData("EvaluatedAssetDisplayPath eq 'dbo'", "E.Segments.exist('/path/segment[.=sql:variable(\"@filter_1\")]') = 1")]
+        [InlineData("EvaluatedAssetPath eq 'dbo'", "E.Segments.exist('/path/segment[lower-case(.)=sql:variable(\"@filter_1\")]') = 1")]
+        [InlineData("EvaluatedAssetDisplayPath eq 'dbo'", "E.Segments.exist('/path/segment[lower-case(.)=sql:variable(\"@filter_1\")]') = 1")]
 
         [InlineData("EffectiveDate eq '02-10-2020'", "R.EffectiveDate = @filter_1")]
         [InlineData("EffectiveDate lt '02-10-2020'", "R.EffectiveDate < @filter_1")]

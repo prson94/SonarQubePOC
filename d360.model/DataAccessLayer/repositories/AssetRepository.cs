@@ -63,9 +63,9 @@ namespace d360.model.DataAccessLayer
 
             if (Class.HasValue)
             {
-                    var Id = (int)Class;
-                    dbArgs.Add("@Id", Id.ToString());
-                    condition = " and A.[Class]=@Id";
+                var Id = (int)Class;
+                dbArgs.Add("@Id", Id.ToString());
+                condition = " and A.[Class]=@Id";
             }
             var levelsSql = "";
             List<string> whereStatements = new List<string>();
@@ -607,7 +607,7 @@ namespace d360.model.DataAccessLayer
             }
 
             var ownershipFieldTypes = fieldTypes.Where(f => f.Type == "OwnershipLookup").ToList();
-            if(ownershipFieldTypes.Any(f => f.SortOrder > 0))
+            if (ownershipFieldTypes.Any(f => f.SortOrder > 0))
             {
                 includeOwnershipLookup = true;
             }
@@ -1409,7 +1409,7 @@ namespace d360.model.DataAccessLayer
 
                         if (string.IsNullOrEmpty(orderBy))
                         {
-                            orderBy = fieldTypes.Where(x=> x.IsListable)
+                            orderBy = fieldTypes.Where(x => x.IsListable)
                                 .OrderBy(x => x.SortOrder)
                                 .ThenBy(x => x.ID).FirstOrDefault().Name;
                         }
@@ -2416,7 +2416,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     }
 
                     #endregion
-                    break;                
+                    break;
                 case AssetTypeClass.Diagram:
                     #region
                     var diagram = new AssetType
@@ -2605,7 +2605,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
-                    break;                
+                    break;
             }
 
             var parentType = SystemObjectHelper.GetSystemObjects(model.Class).ToString();
@@ -3069,6 +3069,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 	                          ,ee.detail
                               ,ee.component
                               ,ee.createdOn
+							  ,ee.Configuration as 'ConfigurationJSON'
                           FROM [api].[ExecutionExternal] ee
                           {whereResultCteSql}
                           {orderBySql}
@@ -3080,6 +3081,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           {whereResultCteSql}
                         ";
             var executions = await CompanyContext.QueryAsync<APIExecutionExternalAPIModel>(sql, parameters, ApiTimeout);
+
+            foreach (var ex in executions)
+            {
+                if (!string.IsNullOrEmpty(ex.ConfigurationJSON))
+                {
+                    ex.Configuration = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(ex.ConfigurationJSON);
+                }
+            }
 
             int? count = null;
             if (includeTotal)
@@ -4109,6 +4118,7 @@ where   A.[uid] = @assetUid";
             result.Detail = model.Detail;
             result.Component = model.Component;
             result.CreatedOn = DateTime.UtcNow;
+            result.Configuration = model.Configuration;
 
             var ExecutionExternal = new ApiExecutionsExternal
             {
@@ -4116,7 +4126,8 @@ where   A.[uid] = @assetUid";
                 Status = result.Status,
                 Detail = result.Detail,
                 Component = result.Component,
-                CreatedOn = (System.DateTime)result.CreatedOn
+                CreatedOn = (System.DateTime)result.CreatedOn,
+                Configuration = model.Configuration != null ? JsonConvert.SerializeObject(model.Configuration) : ""
             };
 
             //add new issue record

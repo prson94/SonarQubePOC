@@ -98,14 +98,14 @@ namespace d360.model.helpers.filters
                             for (int i = 0; i < values.Count; i++)
                             {
                                 values[i] = values[i].Trim();
-                                segmentFilterList.Add("{0}" + $".exist('/path/segment[{i + 1}][.=sql:variable(\"{pName}_{i}\")]') = {resultValue}");
+                                segmentFilterList.Add("{0}" + $".exist('/path/segment[{i + 1}][lower-case(.)=sql:variable(\"{pName}_{i}\")]') = {resultValue}");
                                 sqlParamsRef.Add($"{pName}_{i}", values[i]);
                             }
                             formattedSql = string.Join(" and ", segmentFilterList);
                         }
                         else
                         {
-                            formattedSql = "{0}.exist('/path/segment[.=sql:variable(\"{1}\")]') = " + resultValue;
+                            formattedSql = "{0}.exist('/path/segment[lower-case(.)=sql:variable(\"{1}\")]') = " + resultValue;
                         }
                         break;
                 }
