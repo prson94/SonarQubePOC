@@ -7968,8 +7968,27 @@ from		Asset A
 		inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 		left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
         left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = F.AssetId
-where	    A.AssetTypeID = @ID
+where	    A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1
 group by    A.ID;";
+
+                    var hasKeyChanged = $@"
+declare @hasUpdatedKeyFields bit = 0
+if exists (
+    select top 1 T.AssetID from {assetTable} T
+	inner join (select ea.ItemNumber,utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+				from {assetTable} ea
+				inner join asset a on a.id = ea.AssetID
+				inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+				left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+				left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = F.AssetId
+				where ea.ExecutionID = @executionid
+				group by	ea.ItemNumber
+				) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
+    where T.ProposedKey <> S.ActiveKey
+)
+set @hasUpdatedKeyFields = 1 
+else
+set @hasUpdatedKeyFields = 0";
 
                     Connection.Execute($@"
 update  T
@@ -7986,6 +8005,8 @@ from    {assetTable} T
 				) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
 {keyTableTempCreation}
+
+{hasKeyChanged}
 
 insert into #Keys WITH(TABLOCK)
 {activeKeySql} 
