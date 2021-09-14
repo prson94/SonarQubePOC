@@ -115,7 +115,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     getData() {
-        console.log("getData", this.uid);
         this.isLoading = true;
         if (!this.isFiltersReady) {
             return;
