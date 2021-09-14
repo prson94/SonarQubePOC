@@ -1410,11 +1410,23 @@ namespace d360.model.DataAccessLayer
                         if (string.IsNullOrEmpty(orderBy))
                         {
                             orderBy = fieldTypes.Where(x => x.IsListable)
-                                .OrderBy(x => x.SortOrder)
+                                .OrderByDescending(x => x.SortOrder)
                                 .ThenBy(x => x.ID).FirstOrDefault().Name;
                         }
-
-                        results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
+                        try
+                        {
+                            results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
+                        }
+                        catch(ArgumentException ex)
+                        {
+                            //If dynamic object for property orderBy does not implement IComparable (i.e. JObject,JArray), use string comparison
+                            results.Sort((x, y) =>
+                            {
+                                var value1 = ((IDictionary<string, object>)x)[orderBy].ToString();
+                                var value2 = ((IDictionary<string, object>)y)[orderBy].ToString();
+                                return value1.CompareTo(value2);
+                            });
+                        }
 
                         if (direction == "DESC")
                         {
