@@ -9340,6 +9340,11 @@ select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
                                 rowError += "Cannot use When conditions when ApplyToType value is set to true.";
                             }
 
+                            if (model.ApplyToType == false && (model.Definition.When == null || model.Definition?.When?.Count == 0))
+                            {
+                                rowError += Messages.Error_Responsibility_ApplyToType_False;
+                            }
+
                             model.Definition.Then.ForEach(th =>
                             {
                                 if (th.AssigneeTypeUid == null || th.AssigneeTypeUid == Guid.Empty)

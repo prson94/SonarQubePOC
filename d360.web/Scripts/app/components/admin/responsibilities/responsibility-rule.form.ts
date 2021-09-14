@@ -380,6 +380,19 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return null;
     }
 
+    private isValid(): boolean {
+        if (!this.model.ApplyToType) {
+            if (this.model.StructuredDefinition.When.length == 0) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        else {
+            return true;
+        }
+    }
     cancel(): void {
         this.onCancel.emit(null);
     }

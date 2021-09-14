@@ -196,6 +196,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &gt;The responsibility at lease one when filter required when ApplyToType is false..
+        /// </summary>
+        public static string Responsibility_When_Filter_Required_Based_ApplyToType_Value {
+            get {
+                return ResourceManager.GetString("Responsibility_When_Filter_Required_Based_ApplyToType_Value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Responsibility When Filter value is required..
+        /// </summary>
+        public static string Responsibility_When_Filter_Value_Required {
+            get {
+                return ResourceManager.GetString("Responsibility_When_Filter_Value_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Altering a model&apos;s parent could potentially have a significant impact on ownership throughout the system..
         /// </summary>
         public static string Taxonomy_ChangeParent_Warning {

@@ -820,6 +820,25 @@ order by	case
                 {
                     throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
                 }
+
+
+                if (model.StructuredDefinition?.When?.Where(x => x.Value == null).Count() > 0)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Value_Required);
+                }
+
+                if (!model.ApplyToType)
+                {
+                    if (model.StructuredDefinition?.When == null)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Required_Based_ApplyToType_Value);
+                    }
+                    else if (model.StructuredDefinition?.When?.Count == 0)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Value_Required);
+                    }
+                }
+
                 if (model.StructuredDefinition?.When != null)
                 {
                     var allowedFieldTypeIds = Company.FieldTypes.Where(x => x.Object == model.Object && x.ObjectID == model.ObjectID).Select(x => x.ID).ToList();
@@ -876,6 +895,23 @@ order by	case
                 if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
                 {
                     throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
+                }
+
+                if (model.StructuredDefinition?.When?.Where(x => x.Value == null).Count() > 0)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Value_Required);
+                }
+
+                if (!model.ApplyToType)
+                {
+                    if (model.StructuredDefinition?.When == null)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Required_Based_ApplyToType_Value);
+                    }
+                    else if (model.StructuredDefinition?.When?.Count == 0)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Value_Required);
+                    }
                 }
 
                 model.UpdatedOn = DateTime.UtcNow;
