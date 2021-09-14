@@ -461,13 +461,88 @@ AS
   </changeSet>
 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterDelete-v3.3">
-    <comment>GOV-14347</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterDelete-v3.4">
+    <comment>GOV-15755</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Field_AfterDelete]
+   ON  [dbo].[Field]
+   AFTER DELETE
+AS 
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+	
+	drop table if exists #tempdeleted;
+	drop table if exists #tempdeletedUQ;
+	drop table if exists #tempdeletedUQFields;
+
+	select ObjectID,
+			ObjectType,
+			fieldtypeid,
+			AssetID,
+			UpdatedBy
+	into #tempdeleted 
+	from deleted;
+
+	create index idx_tempdeleted on #tempdeleted(ObjectID,ObjectType);
+
+	select distinct
+			ObjectID,
+			ObjectType,
+			AssetID
+	into #tempdeletedUQ
+	from #tempdeleted;
+
+	select distinct
+			ObjectID,
+			ObjectType,
+			UpdatedBy
+	into #tempdeletedUQFields
+	from #tempdeleted;
+
+	create index idx_tempdeletedUQFields on #tempdeletedUQFields(ObjectID,ObjectType);
+
+    -- audit field delete
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+				select	'Delete', 
+						d.ObjectType, 
+						d.ObjectID,
+						(select 	
+							'Delete' as Action,
+							i2.ObjectType as ActionObject,
+							i2.ObjectID as ActionObjectID,
+							coalesce(i2.UpdatedBy, 0) as ResourceID,
+							  (
+								select 
+								(select 
+									d3.FieldTypeID,
+									coalesce(ft.FriendlyName, '<deleted field type>') as [Name], 
+									'' as [Value]
+								from #tempdeleted d3 
+									left join fieldtype ft on d3.fieldtypeid = ft.id 
+								where d3.ObjectID = d.ObjectID
+								   for xml path('Field'), TYPE
+								)
+								for xml path('FieldInfo'), TYPE
+								)
+						from 
+							#tempdeletedUQFields i2 
+						where i2.ObjectID = d.ObjectID and i2.ObjectType = d.ObjectType
+						group by ObjectType, ObjectID, UpdatedBy
+						for xml path('fields'))
+						,
+						coalesce(d.AssetID,0) as [AssetID]
+				from #tempdeletedUQ d;		
+END
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Field_AfterDelete]
    ON  [dbo].[Field]
    AFTER DELETE
@@ -508,11 +583,8 @@ BEGIN
 						,
 						coalesce(d.AssetID,0) as [AssetID]
 				from deleted d;		
-END
-]]>
-    </sql>
-    <rollback>
-      <![CDATA[	]]>
+END	  
+	  ]]>
     </rollback>
   </changeSet>
 
