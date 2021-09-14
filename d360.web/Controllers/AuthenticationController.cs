@@ -832,10 +832,16 @@ namespace d360.web.Controllers
                         case "surname":
                             lastName = prop.Value.ToString();
                             break;
+                        case "group":
                         case "groups":
                         case "securityGroups":
                         case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
-                            groups = prop.Value.ToString().Split(',',';').ToList();
+                            //groups = prop.Values?.Select(v => v.Data.ToString())?.ToList();
+                            if (groups == null)
+                            {
+                                groups = new List<string>();
+                            }
+                            groups.Add(prop.Value.ToString());
                             break;
                         default:
                             customClaims.Add(prop.Type, prop.Value.ToString());

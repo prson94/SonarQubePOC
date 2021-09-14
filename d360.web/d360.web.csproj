@@ -2121,7 +2121,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://integration.eng.data3sixty.local/</IISUrl>
+          <IISUrl>http://mpappas.eng.data3sixty.local/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
