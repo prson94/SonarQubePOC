@@ -836,7 +836,6 @@ namespace d360.web.Controllers
                         case "groups":
                         case "securityGroups":
                         case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
-                            //groups = prop.Values?.Select(v => v.Data.ToString())?.ToList();
                             if (groups == null)
                             {
                                 groups = new List<string>();
