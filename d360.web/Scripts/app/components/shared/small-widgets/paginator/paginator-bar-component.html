@@ -1,5 +1,5 @@
 ﻿<div class="paging-bar">
-    <span class="items">Showing {{(page * itemsPerPage) + 1}} to {{GetToDisplayValue()}} of {{totalRecords}} items</span>
+    <span class="items">Showing {{fromDisplayValue}} to {{toDisplayValue}} of {{totalRecords}} items</span>
     <span class="grow"></span>
     <div *ngIf="totalRecords > itemsPerPage" class="pages">
         <span [ngClass]="{'disabled' : isFirstPage(), 'angle' : isAngle()}" (click)="changePageToFirst($event)" [innerHTML]="labelFirst"></span>

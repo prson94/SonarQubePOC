@@ -150,12 +150,15 @@ export class PaginatorComponent implements OnChanges, OnInit {
         this.pageOptions = paging;
     }
 
-    GetToDisplayValue() {
-        if (this.totalRecords <= this.itemsPerPage)
+    get fromDisplayValue() {
+        return Math.min((this.page * this.itemsPerPage) + 1, this.totalRecords);
+    }
+
+    get toDisplayValue() {
+        if (this.totalRecords <= this.itemsPerPage) {
             return this.totalRecords;
-        else if ((this.page * this.itemsPerPage) + this.itemsPerPage >= this.totalRecords)
-            return this.totalRecords;
-        else 
-            return (this.page * this.itemsPerPage) + this.itemsPerPage;
+        } else {
+            return Math.min((this.page * this.itemsPerPage) + this.itemsPerPage, this.totalRecords);
+        }
     }
 }
