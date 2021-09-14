@@ -7835,6 +7835,18 @@ where	ExecutionID = @ExecutionID and (Name is null or Name = '');
                         from    {assetTable} T 
                                 inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
 
+            var shouldCheckHashStatement = $@"
+                        declare @hasUpdatedKeyFields bit = 0
+                        if exists (
+                            select a.AssetID, f.FieldValue, fl.FormattedValue from {assetTable} A
+                             inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+                             inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+                             left join Field fl on fl.AssetId = a.assetid and fl.fieldtypeid = ft.id
+                            where A.executionid = @executionid and (f.fieldvalue <> fl.formattedvalue or fl.id is null)
+                        )
+                        set @hasUpdatedKeyFields = 1 
+                        else
+                        set @hasUpdatedKeyFields = 0";
 
             if (at.Object == "ReferenceItemType")
             {
@@ -7870,12 +7882,14 @@ where	    A.AssetTypeID = @ID;
 	CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
                         KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
 
+    {shouldCheckHashStatement}
+
 	insert into #Keys WITH(TABLOCK)
 	select		A.ID, P.UID as ParentAssetUID, Null, Null
 	from		Asset A 
 			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID	
-	where		A.AssetTypeID = @ID;
+	where		A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1;
 
     create clustered index idx_key_assetid on #keys(AssetID);
 
@@ -7971,25 +7985,6 @@ from		Asset A
 where	    A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1
 group by    A.ID;";
 
-                    var hasKeyChanged = $@"
-declare @hasUpdatedKeyFields bit = 0
-if exists (
-    select top 1 T.AssetID from {assetTable} T
-	inner join (select ea.ItemNumber,utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
-				from {assetTable} ea
-				inner join asset a on a.id = ea.AssetID
-				inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-				left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-				left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = F.AssetId
-				where ea.ExecutionID = @executionid
-				group by	ea.ItemNumber
-				) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
-    where T.ProposedKey <> S.ActiveKey
-)
-set @hasUpdatedKeyFields = 1 
-else
-set @hasUpdatedKeyFields = 0";
-
                     Connection.Execute($@"
 update  T
 set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
@@ -8006,7 +8001,7 @@ from    {assetTable} T
 
 {keyTableTempCreation}
 
-{hasKeyChanged}
+{shouldCheckHashStatement}
 
 insert into #Keys WITH(TABLOCK)
 {activeKeySql} 
