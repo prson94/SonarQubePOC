@@ -74,6 +74,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     defaultColorOptions: any[] = [];
 
+    private previousFilter: string = "";
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -563,7 +565,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     private checkIfLoadLookupValues(params: LookupValuesAPIParameters): boolean {
         let ret = true;
-        if (this.currentField.Values?.length > 0 && !params.filter) {
+        const filterchange = params.filter !== this.previousFilter;
+        this.previousFilter = params.filter;
+        if (this.currentField.Values?.length > 0 && !params.filter && !filterchange) {
             ret = this.currentField.Values.slice(+params.skip, +params.skip + +params.take).some((x) => !x);
         }
         return ret;
