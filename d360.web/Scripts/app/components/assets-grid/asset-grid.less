@@ -41,10 +41,32 @@
   padding-left: 10px;
 }
 
-p-table td > a:hover {
-  text-decoration: underline;
+p-table {
+  td {
+    > a:hover {
+      text-decoration: underline;
 
-  span {
-    text-decoration: underline;
+      span {
+        text-decoration: underline;
+      }
+    }
+
+    &.asset-grid-tools {
+      vertical-align: top;
+      text-align: right;
+      padding: 1px;
+
+      button {
+        background: transparent;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.07);
+        }
+
+        &:active {
+          background: rgba(0, 0, 0, 0.14);
+        }
+      }
+    }
   }
 }
