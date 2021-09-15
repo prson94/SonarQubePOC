@@ -753,9 +753,9 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 select FT.[Name], FT.ScoreType, A.LowerThreshold, A.UpperThreshold  from FieldType FT
                 inner join AssetType T on T.Id = FT.AssetTypeID
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
-                where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = type.ToString(), id }).ToList();
+                where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
 
-            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = type.ToString(), id }).SingleOrDefault();
+            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new {type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault();
 
             switch (type)
             {
