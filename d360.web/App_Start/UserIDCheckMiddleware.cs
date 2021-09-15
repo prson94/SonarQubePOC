@@ -16,6 +16,8 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -330,9 +332,12 @@ from	Resource R
                 return null;
             }
 
-            var discoCache = new DiscoveryCache(authority);
+            var clientFactory = HttpClientFactory.Create(new HttpClientHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            });
+            var discoCache = new DiscoveryCache(authority, () => clientFactory, new DiscoveryPolicy { ValidateIssuerName = jwtDiscoveryValidateIssuerName });
             var disco = await discoCache.GetAsync();
-            disco.Policy.ValidateIssuerName = jwtDiscoveryValidateIssuerName;
 
             if (disco == null)
             {
