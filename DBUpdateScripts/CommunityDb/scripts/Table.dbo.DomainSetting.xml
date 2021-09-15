@@ -1,0 +1,71 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="sDooley" id="Table.dbo.DomainSetting-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'DomainSetting')
+BEGIN
+	CREATE TABLE [dbo].[DomainSetting](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[IdpSsoEndpoint] [varchar](1000) NOT NULL,
+		[IdpSloEndpoint] [varchar](1000) NOT NULL,
+		[IdpDomainCertificateID] [int] NULL,
+		[SpDomainCertificateID] [int] NULL,
+		[HashAlgorithmType] [int] NOT NULL,
+		[SignInitialSSORequest] [bit] constraint DF_DomainSetting_SignInitialSSORequest default(0) NOT NULL,
+		[AuthenticationSettings] [varchar](4000) constraint DF_DomainSetting_AuthenticationSettings default('{}') NOT NULL,
+		CONSTRAINT [PK_DomainSetting] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DomainSetting' and COLUMN_NAME = 'AuthenticationSettings')
+begin
+	ALTER TABLE dbo.DomainSetting add AuthenticationSettings varchar(4000) constraint DF_DomainSetting_AuthenticationSettings default('{}') not null
+end
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Constraint.dbo.DomainSetting-FKs-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists(select * from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS where CONSTRAINT_NAME = 'FK_DomainSetting_IdpDomainCertificate')
+begin
+	ALTER TABLE [dbo].[DomainSetting]  WITH CHECK ADD  CONSTRAINT [FK_DomainSetting_IdpDomainCertificate] FOREIGN KEY([IdpDomainCertificateID]) REFERENCES [dbo].[DomainCertificate] ([ID]);
+	ALTER TABLE [dbo].[DomainSetting] CHECK CONSTRAINT [FK_DomainSetting_IdpDomainCertificate];
+end
+
+if not exists(select * from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS where CONSTRAINT_NAME = 'FK_DomainSetting_SpDomainCertificate')
+begin
+	ALTER TABLE [dbo].[DomainSetting]  WITH CHECK ADD  CONSTRAINT [FK_DomainSetting_SpDomainCertificate] FOREIGN KEY([SpDomainCertificateID]) REFERENCES [dbo].[DomainCertificate] ([ID]);
+	ALTER TABLE [dbo].[DomainSetting] CHECK CONSTRAINT [FK_DomainSetting_SpDomainCertificate];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists(select * from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS where CONSTRAINT_NAME = 'FK_DomainSetting_IdpDomainCertificate')
+begin
+	ALTER TABLE [dbo].[DomainSetting] DROP CONSTRAINT [FK_DomainSetting_IdpDomainCertificate];
+end
+
+if exists(select * from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS where CONSTRAINT_NAME = 'FK_DomainSetting_SpDomainCertificate')
+begin
+	ALTER TABLE [dbo].[DomainSetting] DROP CONSTRAINT [FK_DomainSetting_SpDomainCertificate]
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
