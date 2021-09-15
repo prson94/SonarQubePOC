@@ -738,6 +738,7 @@ namespace d360.web.Controllers
             {
                 DisableCommunityPosting = settings.GetValue<bool>(Setting.DisableCommunityPosting),
                 DisableIssueManagement = settings.GetValue<bool>(Setting.DisableIssueManagement),
+                EnableOrganizations = settings.GetValue<bool>(Setting.EnableOrganizations),
                 EnableShoppingCart = settings.GetValue<bool>(Setting.EnableShoppingCart),
                 DefaultRoute = settings.GetValue(Setting.DefaultRoute),
                 EnableSearchExactMatch = settings.GetValue<bool>(Setting.SearchExactMatch),

@@ -559,7 +559,10 @@ namespace d360.web.Controllers.V2
                 }
 
                 var governanceRoleReferenceListUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
-                var validator = new AssetTypeValidator(this.Company, governanceRoleReferenceListUid);
+                var EnableOrganizations = SettingsRepository.GetSettingValue<bool>(Setting.EnableOrganizations);
+
+
+                var validator = new AssetTypeValidator(this.Company, governanceRoleReferenceListUid, EnableOrganizations);
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -781,7 +784,8 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
-                var validator = new AssetTypeValidator(this.Company, govRoleUid);
+                var EnableOrganizations = SettingsRepository.GetSettingValue<bool>(Setting.EnableOrganizations);
+                var validator = new AssetTypeValidator(this.Company, govRoleUid, EnableOrganizations);
 
                 if (model.Class == AssetTypeClass.Glossary)
                 {
@@ -895,6 +899,14 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
                 }
+
+                var EnableOrganizations = SettingsRepository.GetSettingValue<bool>(Setting.EnableOrganizations);
+
+                if (assetType.Class == AssetTypeClass.Organization && !EnableOrganizations)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.UnsupportedAssetClass}"));
+                }
+
 
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
