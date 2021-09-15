@@ -370,7 +370,7 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
             }            
 
-            var sql = BuildMatchAssetsSQL(assetUid, similarType, queryParams, dbArgs, onlyTotal, false);
+            var sql = BuildMatchAssetsSQL(assetUid, similarType, queryParams, dbArgs, onlyTotal);
 
             if (onlyTotal)
             {
@@ -396,9 +396,8 @@ namespace d360.model.DataAccessLayer
         public async Task<IEnumerable<DataProfileExportModel>> GetMatchedAssetsForExport(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var dbArgs = new DynamicParameters();
-            //var results = new List<DataProfileExportModel>();
 
-            var sql = BuildMatchAssetsSQL(assetUid, similarType, queryParams, dbArgs, false, true);
+            var sql = BuildMatchAssetsSQL(assetUid, similarType, queryParams, dbArgs, isExport: true);
             return await CompanyContext.QueryAsync<DataProfileExportModel>(sql, dbArgs, ApiTimeout);
         }
 

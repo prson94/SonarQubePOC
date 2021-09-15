@@ -519,14 +519,14 @@ namespace d360.web.Controllers.V2
             {                
                 var queryParams = Request.GetQueryNameValuePairs();
 
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
                 var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
 
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
                     return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
                 }                
-
-                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
                 HttpResponseMessage response;
 
@@ -538,7 +538,7 @@ namespace d360.web.Controllers.V2
                     int pageSize = Company.ParsePageSize(queryParams, 200000);
                     var assetPath = AssetRepository.GetAssetPath(assetUid);
 
-                    SLDocument document = CreateResponseDocumentForExport(results.ToList(), assetUid, pageNum, pageSize);
+                    SLDocument document = CreateResponseDocumentForExport(results.ToList(), pageNum, pageSize);
                     var stream = new MemoryStream();
                     document.SaveAs(stream);
                     byte[] bytes = stream.ToArray();
@@ -560,7 +560,7 @@ namespace d360.web.Controllers.V2
                     response = Request.CreateResponse(HttpStatusCode.OK, results);
                 }
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -843,7 +843,7 @@ namespace d360.web.Controllers.V2
         /// Create the Excel document for export
         /// </summary>
         /// <returns>A spreadsheet populated with the details of the data profile results</returns>
-        private SLDocument CreateResponseDocumentForExport(List<DataProfileExportModel> dataProfiles, Guid assetUid, int pageNum, int pageSize)
+        private SLDocument CreateResponseDocumentForExport(List<DataProfileExportModel> dataProfiles, int pageNum, int pageSize)
         {           
             SLDocument doc = new SLDocument();
             const string assetSheetName = "Assets";

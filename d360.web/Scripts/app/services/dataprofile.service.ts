@@ -77,7 +77,7 @@ export class DataProfileService extends BaseObservableService {
         this.
             http
             .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe(data => {
+            .subscribe((data) => {
                 let filename = `Filtered ${assetName} ${matchType.toLowerCase() === 'data' ? "Duplicate" : "Similiar"} Fields List`;
                 this.downloadFile(data, filename);
                 if (callback) {
