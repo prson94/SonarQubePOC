@@ -171,16 +171,39 @@ namespace d360.model
         {
             string val;
 
+            int length = 5;
             var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            var stringChars = new char[5];
-            var random = new Random();
 
-            for (int i = 0; i < stringChars.Length; i++)
+            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
             {
-                stringChars[i] = chars[random.Next(chars.Length)];
-            }
+                byte[] data = new byte[length];
+                byte[] buffer = null;
+                int maxRandom = byte.MaxValue - ((byte.MaxValue + 1) % chars.Length);
 
-            val = new String(stringChars);
+                crypto.GetBytes(data);
+
+                char[] result = new char[length];
+
+                for (int i = 0; i < length; i++)
+                {
+                    byte value = data[i];
+
+                    while (value > maxRandom)
+                    {
+                        if (buffer == null)
+                        {
+                            buffer = new byte[1];
+                        }
+
+                        crypto.GetBytes(buffer);
+                        value = buffer[0];
+                    }
+
+                    result[i] = chars[value % chars.Length];
+                }
+
+                val = new string(result);
+            }
 
             return val;
         }
