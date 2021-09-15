@@ -22,7 +22,7 @@ namespace d360.core.validators
         List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary, AssetTypeClass.Diagram };
         string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
         private Guid? _governanceRoleUid = null;
-        private bool IsEnableOrganizations = false;
+        private readonly bool IsEnableOrganizations;
 
         ICompanyContext CompanyContext;
         public AssetTypeValidator(ICompanyContext companyContext, Guid? govRoleUid = null, bool EnableOrganizations = false)
