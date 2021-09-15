@@ -133,6 +133,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Width of columns (in pixels) used to lay out fields on the asset Definition panel..
+        /// </summary>
+        internal static string AssetDefinitionColumnWidth_Desc {
+            get {
+                return ResourceManager.GetString("AssetDefinitionColumnWidth_Desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Definition Column Width.
+        /// </summary>
+        internal static string AssetDefinitionColumnWidth_Name {
+            get {
+                return ResourceManager.GetString("AssetDefinitionColumnWidth_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The name of the Azure Active directory tenant..
         /// </summary>
         internal static string AzureADTenant_Desc {
