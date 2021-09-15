@@ -23,6 +23,7 @@ using System.IO;
 using System.Xml.Serialization;
 using d360.core.entities.Metric;
 using System.Globalization;
+using System.Net;
 
 namespace d360.model
 {
@@ -983,7 +984,13 @@ namespace d360.model
             var prefix = Community.GetPrimaryUrlPrefix();
 
             HttpRequestMessage request = new HttpRequestMessage();
-            using (HttpClient client = new HttpClient())
+
+            HttpClientHandler handler = new HttpClientHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            };
+
+            using (HttpClient client = new HttpClient(handler))
             {
 
                 switch (requestSettings.Method.ToUpper())
