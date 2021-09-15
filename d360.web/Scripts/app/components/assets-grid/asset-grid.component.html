@@ -149,11 +149,9 @@
                                style="margin: 0 10px 0 5px"></i>
                         </div>
                     </td>
-                    <td>
+                    <td class="asset-grid-tools">
                         <div>
-                            <a (click)="selectRow(item); linkMenu.toggle($event)" style="padding: 0 14px 0 14px; color: #333">
-                                <i class="fa fa-ellipsis-v"></i>
-                            </a>
+                            <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                             <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
                         </div>
                     </td>
