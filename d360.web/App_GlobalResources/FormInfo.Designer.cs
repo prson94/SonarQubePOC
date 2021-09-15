@@ -196,7 +196,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &gt;The responsibility at lease one when filter required when ApplyToType is false..
+        ///   Looks up a localized string similar to At least one When filter required if Applies To Entire Type is unchecked..
         /// </summary>
         public static string Responsibility_When_Filter_Required_Based_ApplyToType_Value {
             get {

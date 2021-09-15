@@ -382,7 +382,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     private isValid(): boolean {
         if (!this.model.ApplyToType) {
-            if (this.model.StructuredDefinition.When.length == 0) {
+            if (this.model.StructuredDefinition.When.length === 0) {
                 return false;
             }
             else {
