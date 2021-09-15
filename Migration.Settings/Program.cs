@@ -27,6 +27,7 @@ namespace Migration.Settings
 select  C.CompanyID, s.ID, c.Value 
 from    Setting s 
         inner join CompanySetting c on c.SettingID = s.ID and ( (c.Value <> s.DefaultValue) or (c.Value is null and s.DefaultValue is not null) or (c.Value is not null and s.DefaultValue is null) ) and c.SettingID not in (66,68,70)
+        inner join Company e on e.ID = c.CompanyID and e.EnvironmentLevel in (0,1,2,3)
 order by c.CompanyID").ToList();
 
                 SqlConnection env = null;
