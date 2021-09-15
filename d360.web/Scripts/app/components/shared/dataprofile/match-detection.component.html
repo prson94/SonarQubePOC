@@ -31,6 +31,18 @@
                             </ig-search-field>
                         </div>
                         <advanced-filtering [loadIdentifier]="getLoadIdentifier('data')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('data')" (onChange)="advancedFiltersChanged($event, 'data')"></advanced-filtering>
+                        <div class="grid-action-buttons">
+                            <div pTooltip="{{(canExportRecords(duplicatesDataTotalCount) ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                                 tooltipPosition="left"
+                                 tooltipStyleClass="ig-tooltip">
+                                <button igButton
+                                        [disabled]="!canExportRecords(duplicatesDataTotalCount) || isExportInProgress"
+                                        icon="fa-download"
+                                        [loading]="isExportInProgress"
+                                        (click)="export('data')">
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <p-table #dtDupli
                              [metaKeySelection]="true"
@@ -108,6 +120,18 @@
                             </ig-search-field>
                         </div>
                         <advanced-filtering [loadIdentifier]="getLoadIdentifier('similar')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('similar')" (onChange)="advancedFiltersChanged($event, 'similar')"></advanced-filtering>
+                        <div class="grid-action-buttons">
+                            <div pTooltip="{{(canExportRecords(similarDataTotalCount) ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                                 tooltipPosition="left"
+                                 tooltipStyleClass="ig-tooltip">
+                                <button igButton
+                                        [disabled]="!canExportRecords(similarDataTotalCount) || isExportInProgress"
+                                        icon="fa-download"
+                                        [loading]="isExportInProgress"
+                                        (click)="export('similar')">
+                                </button>
+                            </div>
+                        </div>
                     </div>                        
                     <p-table #dtSimi [metaKeySelection]="true"
                              selectionMode="single"

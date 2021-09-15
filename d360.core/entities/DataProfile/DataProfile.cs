@@ -309,6 +309,20 @@ namespace d360.core.entities
         public IEnumerable<AssetDataProfileByTypeQualifierModel> items { get; set; }
     }
 
+    public class DataProfileExportModel
+    {
+        public Guid AssetUid { get; set; }
+        public long AssetID { get; set; }
+        public string AssetTags { get; set; }
+        public string AssetPath { get; set; }
+        public string AssetTypePath { get; set; }
+        public string MatchedAssetTags { get; set; }
+        public string MatchedAssetPath { get; set; }
+        public string MatchedAssetTypePath { get; set; }
+        public Guid MatchedAssetUid { get; set; }
+        public long MatchedAssetID { get; set; }
+    }
+
     public class ValidateSampleAttribute : ValidationAttribute
     {
         public ValidateSampleAttribute(int maxlength)

@@ -55,6 +55,37 @@ export class DataProfileService extends BaseObservableService {
             );
     }
 
+    public exportMatches(assetUid: string, matchType: string, simpleFilter: string = '', advancedFilter: string = "", assetName: string, callback: Function = null) {
+
+        let pageNum: number = 1;
+        let pageSize: number = 200000;
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': "application/octet-stream" }), responseType: 'blob'
+        };
+
+        let url: string = `/api/v2/dataprofiles/${assetUid}/similar/${matchType}?_pageSize=${pageSize}&_pageNum=${pageNum}&_includeTotal=false`;
+
+        if (simpleFilter) {
+            url += `&_simpleFilter=${simpleFilter}`;
+        }
+
+        if (advancedFilter) {
+            url += `&_filter=${advancedFilter}`;
+        }
+
+        this.
+            http
+            .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+            .subscribe(data => {
+                let filename = `Filtered ${assetName} ${matchType.toLowerCase() === 'data' ? "Duplicate" : "Similiar"} Fields List`;
+                this.downloadFile(data, filename);
+                if (callback) {
+                    callback();
+                }
+            });
+    }
+
     public getMatchesByMatchType(assetUid: string, matchType: string, pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = ""): Observable<any> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -75,5 +106,22 @@ export class DataProfileService extends BaseObservableService {
                 map((response) => <any>response),
                 catchError((err) => this.handleError(err, true))
             );
+    }
+
+    downloadFile(data: Blob, name: string) {
+
+        var filename = `${name} _${new Date().toDateString()}_.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data);
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 }

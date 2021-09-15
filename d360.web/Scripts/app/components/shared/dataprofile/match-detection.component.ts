@@ -46,8 +46,12 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     similarRowsPerPage: number = 10;
     similarCurrentPageNumber: number = 0;
 
+    isExportInProgress = false;
+
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
+
+    name: string;
 
     menuItems = [
         {
@@ -97,8 +101,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     private loadData() {
         this.assetService.getAsset(this.assetUid)
             .subscribe((res) => {
-                var path = res.Path as string;
-
+                var path = res.Path as string;                
+                this.name = res.Name;
                 this.assetPathText = "Showing matches for " + path.split("].[").join(`&nbsp;&nbsp;<i class='fa fa-angle-right'></i>&nbsp;&nbsp;`)
                     .replace("[", "").replace("]", "");
             });
@@ -196,5 +200,25 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }
     onFiltersLoaded(type: string) {        
         this.getData(type);        
+    }
+
+    canExportRecords(recordCount: number) {
+        return recordCount <= this.maxExportRows;
+    }
+
+    export(matchType: string) {
+        this.isExportInProgress = true;
+        if (matchType === "similar") {
+            this.dataProfileService.exportMatches(
+                this.assetUid, "Structure", this.similarSimpleFilter, this.similarAdvancedFilter, this.name,
+                () => { this.isExportInProgress = false; }
+            );
+        } else if (matchType === "data"){
+            this.dataProfileService.exportMatches(
+                this.assetUid, "Data", this.duplicatesSimpleFilter, this.duplicateAdvancedFilter, this.name,
+                () => { this.isExportInProgress = false; }
+            );
+        }
+
     }
 }   
