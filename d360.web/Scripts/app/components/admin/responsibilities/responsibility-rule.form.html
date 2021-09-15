@@ -239,7 +239,7 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px">
-                    <button pButton type="submit" [disabled]="!ruleEditor.form.valid" label="Save"></button>
+                    <button pButton type="submit" [disabled]="!ruleEditor.form.valid || !isValid()" label="Save"></button>
                     <button pButton type="button" label="Cancel" (click)="cancel()"></button>
                 </div>
             </div>
