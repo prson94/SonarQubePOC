@@ -259,29 +259,11 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     onKeyDown(event: KeyboardEvent) {
-        if (this.cardmenu.isVisible) {
-            return;
-        }
-
-        const resultElement = this.elementRef.nativeElement.parentElement;
-        let neighbor = null;
-
-        switch (event.key) {
-            case "ArrowDown":
-                neighbor = resultElement.nextElementSibling;
-                event.preventDefault();
-                break;
-            case "ArrowUp":
-                neighbor = resultElement.previousElementSibling;
-                event.preventDefault();
-                break;
-
-            default:
-                break;
-        }
-
-        if (neighbor) {
-            neighbor.children[0].children[0].focus();
+        if (!this.cardmenu.isVisible && ["ArrowDown", "ArrowUp"].indexOf(event.key) !== -1) {
+            event.preventDefault();
+            const resultElement = this.elementRef.nativeElement.parentElement;
+            const neighbor: HTMLDivElement = (event.key === "ArrowDown") ? resultElement.nextElementSibling : resultElement.previousElementSibling;
+            neighbor?.querySelector<HTMLDivElement>(".card-res")?.focus();
         }
     }
 };
