@@ -13,6 +13,7 @@ using d360.core.queue;
 using d360.extensions;
 using d360.core.enums;
 using d360.model.helpers.filters;
+using d360.core.resources;
 
 namespace d360.model.DataAccessLayer
 {
@@ -419,11 +420,11 @@ namespace d360.model.DataAccessLayer
 
             if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
             {
-                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Type Qualifier Parameter is invalid.");
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, CommonErrors.BadRequest, string.Format(CommonErrors.InvalidParameter, "typeQualifier"));
             }
             if (minConfidence <= 0 || minConfidence > 1)
             {
-                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Min Confidence Parameter is invalid.");
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, CommonErrors.BadRequest, string.Format(CommonErrors.InvalidParameter, "minConfidence"));
             }
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
