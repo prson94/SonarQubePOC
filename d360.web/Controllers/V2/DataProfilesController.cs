@@ -538,14 +538,14 @@ namespace d360.web.Controllers.V2
                     int pageSize = Company.ParsePageSize(queryParams, 200000);
                     var assetPath = AssetRepository.GetAssetPath(assetUid);
 
-                    SLDocument document = CreateResponseDocumentForExport(results.ToList(), pageNum, pageSize);
+                    SLDocument document = CreateResponseDocumentForExport(results.ToList(), similarType, pageNum, pageSize);
                     var stream = new MemoryStream();
                     document.SaveAs(stream);
                     byte[] bytes = stream.ToArray();
                     var filename = $"Filtered {assetPath.Result[0].Key[0]} {{0}} Fields List _{DateTime.Now:ddd MMM dd yyyy}_.xlsx";
                    
                     if (similarType.Equals("data", StringComparison.InvariantCultureIgnoreCase)){
-                        filename = string.Format(filename, "Duplicate");
+                        filename = string.Format(DataProfileAPIMessages.MatchedAssetExportFileName, assetPath.Result[0].Key[0], "Duplicate", DateTime.Now.ToString("ddd MMM dd yyyy"));
                     }
                     else
                     {
@@ -659,7 +659,7 @@ namespace d360.web.Controllers.V2
 
                     if (!allowedValues.Contains(directionFilter))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidDirection)).ConfigureAwait(false);
                     }
                 }
 
@@ -670,17 +670,17 @@ namespace d360.web.Controllers.V2
 
                     if (!allowedValues.Contains(directionFilter))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.OrderInvalid)).ConfigureAwait(false);
                     }
                 }
 
                 if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Type Qualifier Parameter is invalid")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.TypeQualifierInvalid)).ConfigureAwait(false);
                 }
                 if (minConfidence <= 0 || minConfidence > 1)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Min Confidence Parameter is invalid")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.MinConfidenceInvalid)).ConfigureAwait(false);
                 }
 
                 var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams).ConfigureAwait(false);
@@ -694,7 +694,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
             }            
         }
 
@@ -843,11 +843,21 @@ namespace d360.web.Controllers.V2
         /// Create the Excel document for export
         /// </summary>
         /// <returns>A spreadsheet populated with the details of the data profile results</returns>
-        private SLDocument CreateResponseDocumentForExport(List<DataProfileExportModel> dataProfiles, int pageNum, int pageSize)
-        {           
+        private SLDocument CreateResponseDocumentForExport(List<DataProfileExportModel> dataProfiles, string similarType, int pageNum, int pageSize)
+        {                                  
             SLDocument doc = new SLDocument();
-            const string assetSheetName = "Assets";
-            const string apiSheetName = "Api Info";
+            string assetSheetName = DataProfileAPIMessages.AssetSheetName;
+            string apiSheetName = DataProfileAPIMessages.ApiSheetName;
+            string matchType;
+
+            if (similarType.Equals("data", StringComparison.InvariantCultureIgnoreCase))
+            {
+                matchType = DataProfileAPIMessages.Duplicate;
+            }
+            else
+            {
+                matchType = DataProfileAPIMessages.Similar;
+            }
 
             doc.RenameWorksheet(SLDocument.DefaultFirstSheetName, assetSheetName);
 
@@ -867,20 +877,20 @@ namespace d360.web.Controllers.V2
             int index = 1;
             int rowNumber = 1;
 
-            doc.SetCellValue(rowNumber, index++, "Name");
-            doc.SetCellValue(rowNumber, index++, "Tags");
-            doc.SetCellValue(rowNumber, index++, "Asset Path");
-            doc.SetCellValue(rowNumber, index++, "Asset Type Path");
-            doc.SetCellValue(rowNumber, index++, "Duplicate Field Name");
-            doc.SetCellValue(rowNumber, index++, "Duplicate Field Tags");
-            doc.SetCellValue(rowNumber, index++, "Duplicate Field Asset Path");
-            doc.SetCellValue(rowNumber, index++, "Duplicate Field Asset Type Path");
-            doc.SetCellValue(rowNumber, index++, "Asset UID");
-            doc.SetCellValue(rowNumber, index++, "Asset ID");
-            doc.SetCellValue(rowNumber, index++, "Url");
-            doc.SetCellValue(rowNumber, index++, "Duplicate Field Asset UID");
-            doc.SetCellValue(rowNumber, index++, "Duplicate Field Asset ID");
-            doc.SetCellValue(rowNumber, index++, "Duplicate Field Url");
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.NameColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.TagsColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetPathColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetTypePathColumn);
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetNameColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetTagsColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetPathColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetTypePathColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetUidColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetIdColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetUrlColumn);
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetUidColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetIdColumn, matchType));
+            doc.SetCellValue(rowNumber, index, string.Format(DataProfileAPIMessages.MatchedAssetUrlColumn, matchType));
 
             #endregion
             #region Body
@@ -901,7 +911,7 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, $"asset/{row.AssetUid}");
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetUid.ToString());
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetID);
-                doc.SetCellValue(rowNumber, index++, $"asset/{row.MatchedAssetUid}");
+                doc.SetCellValue(rowNumber, index, $"asset/{row.MatchedAssetUid}");
             }
             doc.AutoFitColumn(1, 14);
             #endregion

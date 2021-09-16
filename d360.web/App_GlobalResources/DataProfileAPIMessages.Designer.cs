@@ -61,6 +61,78 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Api Info.
+        /// </summary>
+        internal static string ApiSheetName {
+            get {
+                return ResourceManager.GetString("ApiSheetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset ID.
+        /// </summary>
+        internal static string AssetIdColumn {
+            get {
+                return ResourceManager.GetString("AssetIdColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Path.
+        /// </summary>
+        internal static string AssetPathColumn {
+            get {
+                return ResourceManager.GetString("AssetPathColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assets.
+        /// </summary>
+        internal static string AssetSheetName {
+            get {
+                return ResourceManager.GetString("AssetSheetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Type Path.
+        /// </summary>
+        internal static string AssetTypePathColumn {
+            get {
+                return ResourceManager.GetString("AssetTypePathColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset UID.
+        /// </summary>
+        internal static string AssetUidColumn {
+            get {
+                return ResourceManager.GetString("AssetUidColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Url.
+        /// </summary>
+        internal static string AssetUrlColumn {
+            get {
+                return ResourceManager.GetString("AssetUrlColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate.
+        /// </summary>
+        internal static string Duplicate {
+            get {
+                return ResourceManager.GetString("Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;path&apos; and &apos;tags&apos;..
         /// </summary>
         internal static string InvalidOrder {
@@ -79,6 +151,96 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filtered {0} {1} Fields List _{2}_.xlsx.
+        /// </summary>
+        internal static string MatchedAssetExportFileName {
+            get {
+                return ResourceManager.GetString("MatchedAssetExportFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Asset ID.
+        /// </summary>
+        internal static string MatchedAssetIdColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetIdColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Name.
+        /// </summary>
+        internal static string MatchedAssetNameColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetNameColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Asset Path.
+        /// </summary>
+        internal static string MatchedAssetPathColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetPathColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Tags.
+        /// </summary>
+        internal static string MatchedAssetTagsColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetTagsColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Asset Type Path.
+        /// </summary>
+        internal static string MatchedAssetTypePathColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetTypePathColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Asset UID.
+        /// </summary>
+        internal static string MatchedAssetUidColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetUidColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Url.
+        /// </summary>
+        internal static string MatchedAssetUrlColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetUrlColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Min Confidence Parameter is invalid.
+        /// </summary>
+        internal static string MinConfidenceInvalid {
+            get {
+                return ResourceManager.GetString("MinConfidenceInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string NameColumn {
+            get {
+                return ResourceManager.GetString("NameColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} signature not found for AssetUid {1}.
         /// </summary>
         internal static string NoSimilarTypeForAssetUid {
@@ -88,11 +250,47 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;confidence&apos; and &apos;path&apos;..
+        /// </summary>
+        internal static string OrderInvalid {
+            get {
+                return ResourceManager.GetString("OrderInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to similarType is a required field..
         /// </summary>
         internal static string RequiredSimilarType {
             get {
                 return ResourceManager.GetString("RequiredSimilarType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Similar.
+        /// </summary>
+        internal static string Similar {
+            get {
+                return ResourceManager.GetString("Similar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tags.
+        /// </summary>
+        internal static string TagsColumn {
+            get {
+                return ResourceManager.GetString("TagsColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type Qualifier Parameter is invalid.
+        /// </summary>
+        internal static string TypeQualifierInvalid {
+            get {
+                return ResourceManager.GetString("TypeQualifierInvalid", resourceCulture);
             }
         }
     }
