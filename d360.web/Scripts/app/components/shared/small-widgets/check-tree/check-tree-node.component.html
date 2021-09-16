@@ -11,7 +11,7 @@
                           [ngClass]="{'pi-check':isSelected(),'pi-minus':node.partialSelected}"></span>
                 </div>
             </div>
-            <span *ngIf="!tree.getTemplateForNode(node)" class="check-tree-label" title="{{node.label}}">{{node.label}}</span>
+            <span *ngIf="!tree.getTemplateForNode(node)" class="check-tree-label" [ngClass]="'lv'+level" title="{{node.label}}">{{node.label}}</span>
             <span *ngIf="tree.getTemplateForNode(node)">
                 <ng-container *ngTemplateOutlet="tree.getTemplateForNode(node); context: {$implicit: node}"></ng-container>
             </span>

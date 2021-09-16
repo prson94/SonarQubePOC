@@ -1,4 +1,10 @@
-﻿<div class="card-res" (click)="selectThis()" [ngClass]="{'selected': isSelected()}">
+﻿<div class="card-res"
+     tabindex="0"
+     (touchend)="onTouchEnd()"
+     (click)="onClick()"
+     (keydown)="onKeyDown($event)"
+     (focus)="onFocus()"
+     [ngClass]="{'selected': isSelected}">
     <div class="card-row title-row">
         <div *ngIf="result?.Icon" class="d3s-icon asset-icon"><i class="fa {{result?.Icon}}"></i></div>
         <div *ngIf="result?.ImageUrl" class="d3s-icon asset-icon"><img [src]="result.ImageUrl" /></div>

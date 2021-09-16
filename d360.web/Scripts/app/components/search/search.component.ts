@@ -38,7 +38,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public sub: any;
     public selection: SearchSelecton;
 
-    public sidePanelOpen: boolean = false;
+    public sidePanelOpen: boolean = true;
     public sidePanelLoading: boolean = false;
     public sidePanelTab: string;
     public sidePanelStorageKey: string = "searchresults";

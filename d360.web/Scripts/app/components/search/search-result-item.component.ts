@@ -1,12 +1,12 @@
-﻿import { Component, Input, Output, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, ViewChild, ElementRef, EventEmitter } from '@angular/core';
+﻿import { Component, Input, Output, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, ViewChild, ElementRef, EventEmitter, Inject, forwardRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchFullResult, SearchResultFieldDisplay, SearchSelecton } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
-import { Menu } from 'primeng/menu';
 import { DatePipe } from '@angular/common';
+import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
 
 declare var CompanySettings;
 
@@ -34,14 +34,14 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     disableScrollLeft: boolean = false;
     disableScrollRight: boolean = false;
 
-    @ViewChild('cardmenu', { static: false }) cardmenuRef: Menu;
-    @ViewChild('cardmenubutton', { static: false }) cardmenubuttonRef: ElementRef;
+    @ViewChild('cardmenu', { static: false }) cardmenu: PopupMenu;
     @ViewChild('fieldScroller', { static: false }) fieldScroller: ElementRef;
     
     constructor(private router: Router,
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
         private ref: ChangeDetectorRef,
+        private elementRef: ElementRef,
         private datePipe: DatePipe) {
         super();
     }
@@ -126,16 +126,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         return '';
     }
 
-    selectThis() {
-        this.onSelect.emit({
-            ID: this.result.ID,
-            AssetUid: this.result.Uid,
-            ObjectType: this.result.Object,
-            HasProfiling: this.result.HasProfiling
-        });
-    }
-
-    isSelected(): boolean {
+    get isSelected(): boolean {
         return this.selection?.ID === this.result.ID;
     }
 
@@ -245,5 +236,52 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         };
 
         let id = window.setInterval(move, 5);
+    }
+
+    /* events */
+    onClick() {
+        this.elementRef.nativeElement.children[0].focus();
+    }
+
+    onTouchEnd() {
+        this.elementRef.nativeElement.children[0].focus();
+    }
+
+    onFocus() {
+        if (!this.isSelected) {
+            this.onSelect.emit({
+                ID: this.result.ID,
+                AssetUid: this.result.Uid,
+                ObjectType: this.result.Object,
+                HasProfiling: this.result.HasProfiling
+            });
+        }
+    }
+
+    onKeyDown(event: KeyboardEvent) {
+        if (this.cardmenu.isVisible) {
+            return;
+        }
+
+        const resultElement = this.elementRef.nativeElement.parentElement;
+        let neighbor = null;
+
+        switch (event.key) {
+            case "ArrowDown":
+                neighbor = resultElement.nextElementSibling;
+                event.preventDefault();
+                break;
+            case "ArrowUp":
+                neighbor = resultElement.previousElementSibling;
+                event.preventDefault();
+                break;
+
+            default:
+                break;
+        }
+
+        if (neighbor) {
+            neighbor.children[0].children[0].focus();
+        }
     }
 };
