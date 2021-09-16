@@ -159,6 +159,74 @@ namespace d360.model
 
         #endregion
 
+        #region OpenId Logic
+
+        public DbSet<OpenIdRequest> OpenIdRequests { get; set; }
+
+        /// <summary>
+        /// Used to generate a state or nonce value.
+        /// </summary>
+        /// <returns></returns>
+        public string GenerateOpenIdRequestValue()
+        {
+            string val;
+
+            int length = 5;
+            var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
+            {
+                byte[] data = new byte[length];
+                byte[] buffer = null;
+                int maxRandom = byte.MaxValue - ((byte.MaxValue + 1) % chars.Length);
+
+                crypto.GetBytes(data);
+
+                char[] result = new char[length];
+
+                for (int i = 0; i < length; i++)
+                {
+                    byte value = data[i];
+
+                    while (value > maxRandom)
+                    {
+                        if (buffer == null)
+                        {
+                            buffer = new byte[1];
+                        }
+
+                        crypto.GetBytes(buffer);
+                        value = buffer[0];
+                    }
+
+                    result[i] = chars[value % chars.Length];
+                }
+
+                val = new string(result);
+            }
+
+            return val;
+        }
+
+        public OpenIdRequest GetOpenIdRequest(string state)
+        {
+            return OpenIdRequests.SingleOrDefault(o => o.State == state);
+        }
+
+        public void RemoveOpenIdRequest(OpenIdRequest request)
+        {
+            OpenIdRequests.Remove(request);
+            SaveChanges();
+        }
+
+        public void SetOpenIdRequest(OpenIdRequest request)
+        {
+            OpenIdRequests.Add(request);
+            SaveChanges();
+        }
+
+        #endregion
+
         public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses()
         {
             int timeoutInHours = 18;
@@ -267,6 +335,7 @@ namespace d360.model
                                 cds.DomainSetting.IdpDomainCertificate,
                                 cds.DomainSetting.SpDomainCertificate,
                                 cds.DomainSetting.SignInitialSSORequest,
+                                cds.DomainSetting.AuthenticationSettings,
                                 c.Status
                             }
                             ).SingleOrDefault();
@@ -278,6 +347,7 @@ namespace d360.model
                     CurrentCompanySsoModel.IdpSsoEndpoint = model.IdpSsoEndpoint;
                     CurrentCompanySsoModel.HashAlgorithmType = model.HashAlgorithmType;
                     CurrentCompanySsoModel.SignInitialSSORequest = model.SignInitialSSORequest;
+                    CurrentCompanySsoModel.AuthenticationSettings = model.AuthenticationSettings;
                     CurrentCompanySsoModel.IsCompanyActive = model.Status != null && model.Status.ToLower() == "active" ? true : false;
 
                     if (model.IdpDomainCertificate != null)
@@ -292,7 +362,7 @@ namespace d360.model
                     }
                 }
 
-                Caching.SetItemInListByID<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain, CurrentCompanySsoModel);
+                Caching.SetItemInListByID(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain, CurrentCompanySsoModel);
             }
         }
 

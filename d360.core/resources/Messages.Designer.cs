@@ -205,6 +205,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Must use When conditions when ApplyToType value is set to false..
+        /// </summary>
+        public static string Error_Responsibility_ApplyToType_False {
+            get {
+                return ResourceManager.GetString("Error_Responsibility_ApplyToType_False", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are existing assignments based on this responsibility type. Please remove those assignments first before continuing..
         /// </summary>
         public static string Error_ResponsibilityType_ExistingResponsibilities {

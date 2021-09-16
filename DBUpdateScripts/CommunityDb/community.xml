@@ -102,5 +102,6 @@
   <include file="scripts/GOV-15441.xml"/>  <!-- Rename tables dbo.GenericCommand-->
 	<!-- Tables -->
   <include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
+  <include file="scripts/Table.dbo.DomainSetting.xml"/>
 </databaseChangeLog>
 

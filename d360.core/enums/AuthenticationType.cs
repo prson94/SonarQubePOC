@@ -3,6 +3,7 @@
     public enum AuthenticationType
     {
         Forms = 1,
-        SSO = 2
+        Saml = 2,
+        OpenId = 3
     }
 }
