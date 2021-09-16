@@ -239,7 +239,7 @@ namespace d360.extensions.search
             {
                 long assetCount = CreatePendingDBLog(assetClass, null);
                 UpdateDBLog(assetClass, null, SearchJobStatus.Processing);
-                IndexObjectType("Intersect", true);
+                IndexObjectType("Intersect");
                 IndexObjectType("Synonym", false);
             }
             else {
