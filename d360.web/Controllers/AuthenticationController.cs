@@ -861,6 +861,17 @@ namespace d360.web.Controllers
 
             #endregion
 
+            string redirectUrl = openIdRequest.RedirectUrl;
+            try
+            {
+                Community.RemoveOpenIdRequest(openIdRequest);
+            }
+            catch (Exception ex)
+            {
+                this.SendException(ex, new Dictionary<string, string> { { "State", openIdRequest.State } });
+            }
+            
+
             try
             {
                 var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
@@ -891,8 +902,8 @@ namespace d360.web.Controllers
                 };
 
                 return parseUserInfoAndLogin(userName, firstName, lastName, 
-                    groups, customClaims, 
-                    openIdRequest.RedirectUrl, addOpenIdTokenToContext);
+                    groups, customClaims,
+                    redirectUrl, addOpenIdTokenToContext);
             }
             catch (Exception ex)
             {
