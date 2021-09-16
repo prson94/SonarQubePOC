@@ -762,7 +762,7 @@ namespace d360.web.Controllers.V2
                                 break;
                         }
                     }
-                };
+                }
 
                 Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
                 string isValid = isPageSizeAndNumValid(pageParams);
