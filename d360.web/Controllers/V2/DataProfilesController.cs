@@ -13,12 +13,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using SpreadsheetLight;
 
 namespace d360.web.Controllers.V2
 {
@@ -497,7 +499,7 @@ namespace d360.web.Controllers.V2
             HttpGet,            
             Route("{assetUid:Guid}/similar/{similarType}/"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfilesMatchingAssetsApiViewModel)),
-            SwaggerProduces("application/json"),
+            SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that a record could not be found based on the supplied Uid, possibly due to an incorrectly formatted identifier (uid) or when a data profile record does not exist for the supplied asset.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
@@ -517,16 +519,48 @@ namespace d360.web.Controllers.V2
             {                
                 var queryParams = Request.GetQueryNameValuePairs();
 
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
                 var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
 
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
                     return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
+                }                
+
+                HttpResponseMessage response;
+
+                if (isStreamResponse)
+                {
+                    var results = await DataProfiles.GetMatchedAssetsForExport(assetUid, similarType, queryParams).ConfigureAwait(false);
+
+                    int pageNum = Company.ParsePageNumber(queryParams, 1);
+                    int pageSize = Company.ParsePageSize(queryParams, 200000);
+                    var assetPath = AssetRepository.GetAssetPath(assetUid);
+
+                    SLDocument document = CreateResponseDocumentForExport(results.ToList(), similarType, pageNum, pageSize);
+                    var stream = new MemoryStream();
+                    document.SaveAs(stream);
+                    byte[] bytes = stream.ToArray();
+                    var filename = $"Filtered {assetPath.Result[0].Key[0]} {{0}} Fields List _{DateTime.Now:ddd MMM dd yyyy}_.xlsx";
+                   
+                    if (similarType.Equals("data", StringComparison.InvariantCultureIgnoreCase)){
+                        filename = string.Format(DataProfileAPIMessages.MatchedAssetExportFileName, assetPath.Result[0].Key[0], "Duplicate", DateTime.Now.ToString("ddd MMM dd yyyy"));
+                    }
+                    else
+                    {
+                        filename = string.Format(filename, "Similar");
+                    }
+
+                    response = createFileResponseMessage(HttpStatusCode.OK, filename, bytes);                    
+                }
+                else
+                {
+                    var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams).ConfigureAwait(false);
+                    response = Request.CreateResponse(HttpStatusCode.OK, results);
                 }
 
-                var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams).ConfigureAwait(false);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -625,7 +659,7 @@ namespace d360.web.Controllers.V2
 
                     if (!allowedValues.Contains(directionFilter))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidDirection)).ConfigureAwait(false);
                     }
                 }
 
@@ -636,17 +670,17 @@ namespace d360.web.Controllers.V2
 
                     if (!allowedValues.Contains(directionFilter))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.OrderInvalid)).ConfigureAwait(false);
                     }
                 }
 
                 if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Type Qualifier Parameter is invalid")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.TypeQualifierInvalid)).ConfigureAwait(false);
                 }
                 if (minConfidence <= 0 || minConfidence > 1)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Min Confidence Parameter is invalid")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.MinConfidenceInvalid)).ConfigureAwait(false);
                 }
 
                 var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams).ConfigureAwait(false);
@@ -660,7 +694,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
             }            
         }
 
@@ -733,7 +767,7 @@ namespace d360.web.Controllers.V2
 
         private WorkHttpStatus ValidateMatchAssetGetParameters(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
         {            
-            var asset = AssetRepository.GetAssetByUID(assetUid);
+            var asset = AssetRepository.GetAssetByUID(assetUid);            
 
             if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
             {
@@ -803,6 +837,86 @@ namespace d360.web.Controllers.V2
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+        }
+
+        /// <summary>
+        /// Create the Excel document for export
+        /// </summary>
+        /// <returns>A spreadsheet populated with the details of the data profile results</returns>
+        private SLDocument CreateResponseDocumentForExport(List<DataProfileExportModel> dataProfiles, string similarType, int pageNum, int pageSize)
+        {                                  
+            SLDocument doc = new SLDocument();
+            string assetSheetName = DataProfileAPIMessages.AssetSheetName;
+            string apiSheetName = DataProfileAPIMessages.ApiSheetName;
+            string matchType;
+
+            if (similarType.Equals("data", StringComparison.InvariantCultureIgnoreCase))
+            {
+                matchType = DataProfileAPIMessages.Duplicate;
+            }
+            else
+            {
+                matchType = DataProfileAPIMessages.Similar;
+            }
+
+            doc.RenameWorksheet(SLDocument.DefaultFirstSheetName, assetSheetName);
+
+            doc.AddWorksheet(apiSheetName);
+            doc.SelectWorksheet(apiSheetName);
+
+            doc.SetCellValue(1, 1, "pageSize");
+            doc.SetCellValue(1, 2, pageSize);
+            doc.SetCellValue(2, 1, "pageNum");
+            doc.SetCellValue(2, 2, pageNum);
+
+            doc.SelectWorksheet(assetSheetName);
+
+            #region Create the list sheet
+
+            #region Header
+            int index = 1;
+            int rowNumber = 1;
+
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.NameColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.TagsColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetPathColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetTypePathColumn);
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetNameColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetTagsColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetPathColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetTypePathColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetUidColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetIdColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetUrlColumn);
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetUidColumn, matchType));
+            doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetIdColumn, matchType));
+            doc.SetCellValue(rowNumber, index, string.Format(DataProfileAPIMessages.MatchedAssetUrlColumn, matchType));
+
+            #endregion
+            #region Body
+            foreach (var row in dataProfiles)
+            {
+                index = 1;
+                rowNumber++;
+                doc.SetCellValue(rowNumber, index++, row.AssetPath.Split('>')[0]);
+                doc.SetCellValue(rowNumber, index++, row.AssetTags);
+                doc.SetCellValue(rowNumber, index++, row.AssetPath);
+                doc.SetCellValue(rowNumber, index++, row.AssetTypePath);
+                doc.SetCellValue(rowNumber, index++, row.MatchedAssetPath.Split('>')[0]);
+                doc.SetCellValue(rowNumber, index++, row.MatchedAssetTags);
+                doc.SetCellValue(rowNumber, index++, row.MatchedAssetPath);
+                doc.SetCellValue(rowNumber, index++, row.MatchedAssetTypePath);                
+                doc.SetCellValue(rowNumber, index++, row.AssetUid.ToString());
+                doc.SetCellValue(rowNumber, index++, row.AssetID);
+                doc.SetCellValue(rowNumber, index++, $"asset/{row.AssetUid}");
+                doc.SetCellValue(rowNumber, index++, row.MatchedAssetUid.ToString());
+                doc.SetCellValue(rowNumber, index++, row.MatchedAssetID);
+                doc.SetCellValue(rowNumber, index, $"asset/{row.MatchedAssetUid}");
+            }
+            doc.AutoFitColumn(1, 14);
+            #endregion
+            #endregion
+            return doc;
         }
     }
 }

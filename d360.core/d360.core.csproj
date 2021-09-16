@@ -25,6 +25,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="resources\CommonErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CommonErrors.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\CommonNames.Designer.cs">
       <DependentUpon>CommonNames.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -81,6 +86,10 @@
     <EmbeddedResource Update="resources\AssetTypeErrors.resx">
       <LastGenOutput>AssetTypeErrors.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\CommonErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>CommonErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\CommonNames.resx">
       <LastGenOutput>CommonNames.Designer.cs</LastGenOutput>
