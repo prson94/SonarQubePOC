@@ -389,7 +389,14 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.isSelectingValue = true;
             this.startUpdateDynamicWidths();
         }
+        this.reloadNonLazyLoadValues();
         this.updateFocus();
+    }
+
+    reloadNonLazyLoadValues() {
+        if (this.condition.fieldType === "Tag") {
+            this.loadTagValues();
+        }
     }
 
     updateFocus() {
@@ -429,7 +436,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.isSelectingCurrentField = false;
         this.relationshipFieldIntersectTypeUid = "";
         this.hasSelectAllCheckbox = false;
-
 
         var type = this.getFieldType(this.condition);
         if (this.fields.filter((x) => x.Name === this.condition.field).length !== 0) {
@@ -508,7 +514,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadListLazy(event: LazyLoadEvent) {
-
         var params: LookupValuesAPIParameters = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
         var type = this.getFieldType(this.condition);
         if (type.Type) {
@@ -647,7 +652,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadTagValues() {
-        if (!this.currentField.Values) {
+        let loadValues: boolean = !this.currentField.Values || this.currentField.Values.length === 0;
+        if (loadValues) {
             this.isLookupValuesLoading = true;
 
             this.tagService.getTagsList(true).subscribe((res) => {
