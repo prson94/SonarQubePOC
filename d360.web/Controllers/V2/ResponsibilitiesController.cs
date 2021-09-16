@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Web.Http.Description;
 using d360.core.enums;
 using d360.core.queue;
+using d360.core.resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -701,10 +702,10 @@ namespace d360.web.Controllers.V2
                 var queryParams = Request.GetQueryNameValuePairs();
 
 
-                var responsibilityUidFilter = "";
-                var assigneeUidFilter = "";
-                var assetUidFilter = "";
-                var assetTypeUidFilter = "";
+                Guid responsibilityUidFilter = Guid.Empty;
+                Guid assigneeUidFilter = Guid.Empty;
+                Guid assetUidFilter = Guid.Empty;
+                Guid assetTypeUidFilter = Guid.Empty;
                 string pageSize = "5";
                 string pageNum = "1";
                 int _pageSize;
@@ -712,7 +713,7 @@ namespace d360.web.Controllers.V2
                 var timeout = 300;
 
 
-                queryParams.ToList().ForEach(q =>
+                foreach (var q in queryParams.ToList())
                 {
                     var key = q.Key.ToLower();
 
@@ -727,16 +728,28 @@ namespace d360.web.Controllers.V2
                                 pageNum = q.Value;
                                 break;
                             case "_responsibilitytypeuid":
-                                responsibilityUidFilter = q.Value;
+                                if (!Guid.TryParse(q.Value, out responsibilityUidFilter))
+                                {
+                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, "_responsibilitytypeuid"));
+                                }
                                 break;
                             case "_assigneeuid":
-                                assigneeUidFilter = q.Value;
+                                if (!Guid.TryParse(q.Value, out assigneeUidFilter))
+                                {
+                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, "_assigneeuid"));
+                                }
                                 break;
                             case "_assettypeuid":
-                                assetTypeUidFilter = q.Value;
+                                if (!Guid.TryParse(q.Value, out assetTypeUidFilter))
+                                {
+                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, "_assettypeuid"));
+                                }
                                 break;
                             case "_assetuid":
-                                assetUidFilter = q.Value;
+                                if (!Guid.TryParse(q.Value, out assetUidFilter))
+                                {
+                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, "_assetuid"));
+                                }
                                 break;
                             case "_timeout":
                                 if (int.TryParse(q.Value, out timeout))
@@ -749,7 +762,7 @@ namespace d360.web.Controllers.V2
                                 break;
                         }
                     }
-                });
+                }
 
                 Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
                 string isValid = isPageSizeAndNumValid(pageParams);
@@ -761,9 +774,9 @@ namespace d360.web.Controllers.V2
 
                 //validation dont allow assigneeuid filter across entire universe
 
-                if (!string.IsNullOrEmpty(assigneeUidFilter) && string.IsNullOrEmpty(assetTypeUidFilter) && string.IsNullOrEmpty(assetUidFilter))
+                if (assigneeUidFilter != Guid.Empty && assetTypeUidFilter == Guid.Empty && assetUidFilter == Guid.Empty)
                 {
-                    return ReturnApiError(HttpStatusCode.InternalServerError, "In order to use the _assigneeuid filter the _assetTypeUid or _assetUid filter must also be specified.");
+                    return ReturnApiError(HttpStatusCode.BadRequest, "In order to use the _assigneeuid filter the _assetTypeUid or _assetUid filter must also be specified.");
                 }
 
                 int.TryParse(pageSize, out _pageSize);
@@ -843,7 +856,7 @@ namespace d360.web.Controllers.V2
 
                 }
 
-                var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Where(x=> x.Uid.HasValue).Select(x => x.Uid) }).ToList();
+                var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
                 if (existingUids.Any())
                 {
                     errorMessage = $"Non Unique Responsibility Uids: {string.Join(", ", existingUids.Select(i => i.ToString()))}. Identifiers must be unique within a table.";
@@ -1310,14 +1323,14 @@ namespace d360.web.Controllers.V2
 
                 ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
 
-                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully deleted")).ConfigureAwait(false);                
+                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully deleted")).ConfigureAwait(false);
 
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage)).ConfigureAwait(false);                
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1382,7 +1395,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'.")).ConfigureAwait(false);
                 }
 
-                var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x=> x.Uid.HasValue).Select(x => x.Uid) }).ToList();
+                var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
                 if (existingUids.Any())
                 {
                     errorMessage = $"Non Unique Responsibility Rule Uids: {string.Join(", ", existingUids.Select(i => i.ToString()))}. Identifiers must be unique within a table.";
@@ -1540,7 +1553,7 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
             }
-            
+
         }
 
     }

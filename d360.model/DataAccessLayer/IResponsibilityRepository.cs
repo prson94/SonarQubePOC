@@ -10,7 +10,7 @@ namespace d360.model.DataAccessLayer
 {
     public interface IResponsibilityRepository
     {
-        Task<AssetResponsibilitiesApiModel> GetResponsibilities(IEnumerable<KeyValuePair<string, string>> queryParams, string responsibilityUidFilter, string assigneeUidFilter, string assetUidFilter, string assetTypeUidFilter, int pageSize, int pageNum, int timeout);
+        Task<AssetResponsibilitiesApiModel> GetResponsibilities(IEnumerable<KeyValuePair<string, string>> queryParams, Guid responsibilityUidFilter, Guid assigneeUidFilter, Guid assetUidFilter, Guid assetTypeUidFilter, int pageSize, int pageNum, int timeout);
         Task<IEnumerable<OwnershipApiModel>> GetOwnership(Guid assetUid);
         Task<bool> HasOwnership(Guid assetUid);
         Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid);
