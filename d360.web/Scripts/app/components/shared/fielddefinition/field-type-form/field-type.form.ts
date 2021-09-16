@@ -67,7 +67,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() showDescription: boolean = true;
     @Input() enableAllowMultipleValues: boolean = true;
     @Input() showAddToSearch: boolean = false;
+
     @Input() showDisplayInColumn: boolean = false;
+    @Input() hasDisplayInColumn: boolean = false;
 
     @Input() actionTypeUid: string;
     @Input() assetTypeUid: string;
@@ -354,7 +356,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         let observables: Array<Observable<any>> = [];
         this.showDescription = true;
         this.enableAllowMultipleValues = true;
-        this.showDisplayInColumn = true;
+        this.hasDisplayInColumn = true;
 
         if (value == null) {
             this.currentType = "Empty";
@@ -413,7 +415,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
                 break;
             case 'reflistrelationship':
-                this.showDisplayInColumn = false;
+                this.hasDisplayInColumn = false;
                 try {
                     if (this.model.cardinalRelationship && (this.lookups.Field_CardinalReferenceRelationships.length > 0)
                         && (this.lookups.Field_CardinalReferenceRelationships.find(x => x.value == this.model.cardinalRelationship))) {
@@ -428,7 +430,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'complexrelationlookup':
                 this.showDescription = false;
-                this.showDisplayInColumn = false;
+                this.hasDisplayInColumn = false;
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
                     let r = new FieldTypeRelationItemEditorModel();
 
@@ -447,7 +449,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.showIsEditable = false;
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
-                this.showDisplayInColumn = false;
+                this.hasDisplayInColumn = false;
                 break;
             case "ownershiplookup":
                 this.showDescription = false;
@@ -456,7 +458,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'computedownershiplookup':
             case 'json':
             case 'jsonelement':
-                this.showDisplayInColumn = false;
+                this.hasDisplayInColumn = false;
             case 'path':
                 this.showDescription = false;
                 break;
