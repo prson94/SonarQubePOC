@@ -368,7 +368,7 @@ AS
 				from	Field TF
 				inner join #TempFormattedValue TFV on TF.FieldTypeID = TFV.FieldTypeID
 				cross apply string_split(TF.value,',')Vals
-				where Vals.Value = TFV.Value;				
+				where try_cast(Vals.Value as bigint) = TFV.Value;				
 			end
       INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
         select	'Update', 
