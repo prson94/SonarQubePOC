@@ -95,6 +95,8 @@ namespace d360.extensions.search
             {
                 case "Reference":
                     return (int)AssetTypeClass.ReferenceItemType;
+                case "Synonym":
+                    return (int)AssetTypeClass.Predicate;
                 default:
                     if(Enum.TryParse(category, out AssetTypeClass assetTypeClass))
                     {
@@ -231,42 +233,53 @@ namespace d360.extensions.search
             {
                 _context.Open();
             }
-            _source.ClearIndex(_companyID, assetClass.ToString());
-            bool processByAssetType = false;
-            int assettypeclass = (int)assetClass;
 
-            long assetCount = CreatePendingDBLog(assetClass, null);
-
-            if(processByAssetType)
+            //Class "Predicate" is overloaded to be used for synonyms and intersects
+            if (assetClass == AssetTypeClass.Predicate)
             {
-                UpdateDBLog(assetClass, null, SearchJobStatus.ProcessingAsType);
-                List<Guid> assetTypes = _context.Query<Guid>("SELECT at.uid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.assettypeid = at.id) AND at.class =  @assettypeclass", new { assettypeclass }).ToList();
-                assetTypes.ForEach(t => CreatePendingDBLog(assetClass, t));
-
-                assetTypes.ForEach(t =>
-                {
-                    try
-                    {
-                        IndexAssetType(t, false);
-                    }
-                    catch (PagedQueryException e)
-                    {
-                        _messages.Add($"Failed to index AssetType {t}: {e.Message}");
-                    }
-                    catch (Exception e)
-                    {
-                        _messages.Add($"Exception caught indexing AssetType {t}: {e.Message}");
-                    }
-                });
-            }
-            else
-            {
+                long assetCount = CreatePendingDBLog(assetClass, null);
                 UpdateDBLog(assetClass, null, SearchJobStatus.Processing);
-                IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
-                _source.AddToIndex(models);
+                IndexObjectType("Intersect");
+                IndexObjectType("Synonym", false);
+            }
+            else {
+                _source.ClearIndex(_companyID, assetClass.ToString());
+                bool processByAssetType = false;
+                int assettypeclass = (int)assetClass;
+
+                long assetCount = CreatePendingDBLog(assetClass, null);
+
+                if (processByAssetType)
+                {
+                    UpdateDBLog(assetClass, null, SearchJobStatus.ProcessingAsType);
+                    List<Guid> assetTypes = _context.Query<Guid>("SELECT at.uid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.assettypeid = at.id) AND at.class =  @assettypeclass", new { assettypeclass }).ToList();
+                    assetTypes.ForEach(t => CreatePendingDBLog(assetClass, t));
+
+                    assetTypes.ForEach(t =>
+                    {
+                        try
+                        {
+                            IndexAssetType(t, false);
+                        }
+                        catch (PagedQueryException e)
+                        {
+                            _messages.Add($"Failed to index AssetType {t}: {e.Message}");
+                        }
+                        catch (Exception e)
+                        {
+                            _messages.Add($"Exception caught indexing AssetType {t}: {e.Message}");
+                        }
+                    });
+                }
+                else
+                {
+                    UpdateDBLog(assetClass, null, SearchJobStatus.Processing);
+                    IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
+                    _source.AddToIndex(models);
+                }
             }
 
-            if(_messages.Any())
+            if (_messages.Any())
             {
                 string exceptionMessage = string.Join(Environment.NewLine, _messages);
                 UpdateDBLog(assetClass, null, SearchJobStatus.Error, exceptionMessage);
@@ -332,10 +345,27 @@ namespace d360.extensions.search
             _context.Execute("DELETE FROM [queue].[Search] WHERE LastUpdate <= DATEADD(DAY, -30, GETUTCDATE())");
 
             //Insert record with count
-            _context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
+            if (assetClass == AssetTypeClass.Predicate)
+            {
+                //Class "Predicate" is overloaded to be used for synonyms and intersects
+                _context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
+                    SELECT @assetClass, @assetTypeUid, @status, sum(cnt) from (
+                        select count(*) * 2 as cnt
+                        from [dbo].[intersect] I
+                        inner join IntersectType T on T.ID = I.IntersectTypeID
+                        inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+                        union all
+                        select count(*) as cnt
+                        from [dbo].[nym]
+                    ) A", param);
+            }
+            else
+            {
+                _context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
                     SELECT @assetClass, @assetTypeUid, @status, count(1)
                     FROM [dbo].[asset] a INNER JOIN  [dbo].[assettype] at ON a.assettypeid = at.id
                     where at.class = @assetClass" + (assetTypeUid == null ? "" : " and at.uid = @assetTypeUid"), param);
+            }
 
             if(assetTypeUid == null)
             {
@@ -663,7 +693,8 @@ namespace d360.extensions.search
                 ObjectAdv.DisplayValue as 'SynonymFor', 
                 I.Object as 'SynonymForObject', 
                 I.ObjectID as 'SynonymForObjectID',
-                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', 
+                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url',
+                ObjectAsset.uid as Uid,
                 ArtType.Name as 'SynonymForObjectType',
                 P.Name as 'PredicateName' 
             from [intersect] I 
@@ -687,6 +718,7 @@ namespace d360.extensions.search
                 I.Subject as 'SynonymForObject', 
                 I.SubjectID as 'SynonymForObjectID', 
                 dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', 
+                ObjectAsset.uid as Uid,
                 ArtType.Name as 'SynonymForObjectType', 
                 P.Name as 'PredicateName'
             from [intersect] I
@@ -708,6 +740,7 @@ namespace d360.extensions.search
                             AssetType = "Synonym",
                             ItemUniqueID = $"intersect|{o.ID}|{o.Direction}",
                             RelativeUrl = o.Url,
+                            Uid = o.Uid,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Synonym },
                                 { "NymType", o.PredicateName },
@@ -731,6 +764,7 @@ namespace d360.extensions.search
 	                        ,s.[Object] as 'SynonymForObject'
 	                        ,s.[ObjectID] as 'SynonymForObjectID'
 	                        ,dbo.GenerateAssetUrl(a.ID) as 'Url'
+                            ,a.uid as Uid
 	                        ,t.Name as 'SynonymForObjectType'	
                             ,p.Name as 'PredicateName'    
                             ,s.ID as 'ID'                
@@ -750,6 +784,7 @@ namespace d360.extensions.search
                             AssetType = "Synonym",
                             ItemUniqueID = $"custom|{o.ID}",
                             RelativeUrl = o.Url,
+                            Uid = o.Uid,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Synonym },
                                 { "NymType", o.PredicateName },
