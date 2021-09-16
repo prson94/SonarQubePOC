@@ -186,4 +186,7 @@
   <data name="Error_Duplicate_Relationship_Uid" xml:space="preserve">
     <value>Duplicate Relationship Uid identifiers : {0}. Identifiers must be unique within a batch.</value>
   </data>
+  <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
+    <value>Parameter '{0}' has invalid GUID value</value>
+  </data>
 </root>

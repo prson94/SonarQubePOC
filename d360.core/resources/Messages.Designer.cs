@@ -187,6 +187,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; has invalid GUID value.
+        /// </summary>
+        public static string Error_Parameter_InvalidUidValue {
+            get {
+                return ResourceManager.GetString("Error_Parameter_InvalidUidValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to One or more responsibilities are assigned to the group your are trying to remove. You must first remove these responsibilities before continuing..
         /// </summary>
         public static string Error_ResponsibilitiesAssignedToGroup {
