@@ -146,8 +146,13 @@ namespace d360.web.Controllers
             types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
 
             List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
+            
+            //Overload "Predicate" class as a representation for synonyms
+            classes.Add(new IndexableType { Name = "Synonym", Class = (int)AssetTypeClass.Predicate, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.Predicate.ToString() });
 
             classes.AddRange(types);
+
+            //Reclassify Reference/ReferenceItemType
             classes.Where((c) => c.Class == 9).ToList().ForEach((c) => c.Class = 14);
 
             return Json(classes, JsonRequestBehavior.AllowGet);
