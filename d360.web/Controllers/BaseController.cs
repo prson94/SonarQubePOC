@@ -170,11 +170,11 @@ namespace d360.web.Controllers
             { 
                 if (ex.Message.ToLower().Contains("invalid filter expression"))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, $"Invalid filter expression used.{ex.Message.Replace("Invalid filter expression:", "")}");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, $"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}");
                 }
                 else if (ex.Message.ToLower().Contains("conversion failed when converting from"))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, "Invalid filter expression used. Please check your filter values and their data types.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, ApiMessages.InvalidFilterExpressionUsedMessage);
                 }
                 else
                 {

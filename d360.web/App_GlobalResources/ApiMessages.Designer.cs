@@ -61,11 +61,47 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset Not found.
+        /// </summary>
+        internal static string AssetNotfound {
+            get {
+                return ResourceManager.GetString("AssetNotfound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The asset type for this asset could not be found.
+        /// </summary>
+        internal static string AssetTypeNotFoundForAsset {
+            get {
+                return ResourceManager.GetString("AssetTypeNotFoundForAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Uid does not match the Asset Type provided..
+        /// </summary>
+        internal static string AssetValidateWithAssetType {
+            get {
+                return ResourceManager.GetString("AssetValidateWithAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bad Request.
         /// </summary>
         internal static string BadRequest {
             get {
                 return ResourceManager.GetString("BadRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have passed an empty or invalid set of criteria..
+        /// </summary>
+        internal static string EmptyInvalidParameterSet {
+            get {
+                return ResourceManager.GetString("EmptyInvalidParameterSet", resourceCulture);
             }
         }
         
@@ -133,6 +169,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filter not found..
+        /// </summary>
+        internal static string FilterNotFound {
+            get {
+                return ResourceManager.GetString("FilterNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filter not owned by user..
+        /// </summary>
+        internal static string FilterNotOwned {
+            get {
+                return ResourceManager.GetString("FilterNotOwned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filter removed..
+        /// </summary>
+        internal static string FilterRemove {
+            get {
+                return ResourceManager.GetString("FilterRemove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         internal static string Forbidden {
@@ -151,14 +214,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name cannot be empty..
-        /// </summary>
-        internal static string InvalidHelpName {
-            get {
-                return ResourceManager.GetString("InvalidHelpName", resourceCulture);
-              }
-        }
-        /// <summary>
         ///   Looks up a localized string similar to AssetUid {0} is invalid.
         /// </summary>
         internal static string InvalidAssetUid {
@@ -168,19 +223,65 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name cannot be more than 500 characters..
-        /// </summary>
-        internal static string InvalidHelpNameLength {
-            get {
-                return ResourceManager.GetString("InvalidHelpNameLength", resourceCulture);
-            }
-        }
-        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter &apos;_direction&apos;. Allowed values are &apos;desc&apos; and &apos;asc&apos;..
         /// </summary>
         internal static string InvalidDirection {
             get {
                 return ResourceManager.GetString("InvalidDirection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid filter expression:.
+        /// </summary>
+        internal static string InvalidFilterExpression {
+            get {
+                return ResourceManager.GetString("InvalidFilterExpression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid filter expression used..
+        /// </summary>
+        internal static string InvalidFilterExpressionUsed {
+            get {
+                return ResourceManager.GetString("InvalidFilterExpressionUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid filter expression used. Please check your filter values and their data types..
+        /// </summary>
+        internal static string InvalidFilterExpressionUsedMessage {
+            get {
+                return ResourceManager.GetString("InvalidFilterExpressionUsedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid GUID {0}..
+        /// </summary>
+        internal static string InvalidGuid {
+            get {
+                return ResourceManager.GetString("InvalidGuid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name cannot be empty..
+        /// </summary>
+        internal static string InvalidHelpName {
+            get {
+                return ResourceManager.GetString("InvalidHelpName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name cannot be more than 500 characters..
+        /// </summary>
+        internal static string InvalidHelpNameLength {
+            get {
+                return ResourceManager.GetString("InvalidHelpNameLength", resourceCulture);
             }
         }
         
@@ -201,12 +302,22 @@ namespace Resources {
                 return ResourceManager.GetString("InvalidHelpUrlLength", resourceCulture);
             }
         }
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid _includeTotal provided.
         /// </summary>
         internal static string InvalidIncludeTotal {
             get {
                 return ResourceManager.GetString("InvalidIncludeTotal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid {0} value provided. Number is too large..
+        /// </summary>
+        internal static string InvalidNumberTooLarge {
+            get {
+                return ResourceManager.GetString("InvalidNumberTooLarge", resourceCulture);
             }
         }
         
@@ -229,6 +340,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid {0} value provided..
+        /// </summary>
+        internal static string InvalidValueMessage {
+            get {
+                return ResourceManager.GetString("InvalidValueMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid {0} value provided. Value must be greater than 0..
+        /// </summary>
+        internal static string MinLengthCheckGTZero {
+            get {
+                return ResourceManager.GetString("MinLengthCheckGTZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not Found.
         /// </summary>
         internal static string NotFound {
@@ -238,11 +367,56 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid {0} value provided. Must be a numeric value..
+        /// </summary>
+        internal static string NumberValueMessage {
+            get {
+                return ResourceManager.GetString("NumberValueMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pageNum.
+        /// </summary>
+        internal static string PageNumString {
+            get {
+                return ResourceManager.GetString("PageNumString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pageSize.
+        /// </summary>
+        internal static string PageSizeString {
+            get {
+                return ResourceManager.GetString("PageSizeString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save failed.
+        /// </summary>
+        internal static string SaveFailedMessage {
+            get {
+                return ResourceManager.GetString("SaveFailedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Success.
         /// </summary>
         internal static string Success {
             get {
                 return ResourceManager.GetString("Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type not found for UID.
+        /// </summary>
+        internal static string UIDNotFoundObjectAndObjectType {
+            get {
+                return ResourceManager.GetString("UIDNotFoundObjectAndObjectType", resourceCulture);
             }
         }
         

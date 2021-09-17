@@ -19,6 +19,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -529,7 +530,7 @@ order by Name";
                     { "Endpoint Method", "BrowserController.GetUserAssetBrowserFilters" },
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -557,14 +558,14 @@ order by Name";
                 }
                 else
                 {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Save failed", Success = false, Uid = Guid.Empty }));
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = ApiMessages.SaveFailedMessage, Success = false, Uid = Guid.Empty }));
                 }
 
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
             }
         }
 
@@ -592,12 +593,12 @@ order by Name";
 
                 if (orig == null)
                 {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Filter not found."));
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.FilterNotFound));
                 }
 
                 if (orig.OwnedBy != Company.CurrentResourceID)
                 {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "Filter not owned by user."));
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, ApiMessages.FilterNotOwned));
                 }
 
                 orig.Name = model.Name;
@@ -611,7 +612,7 @@ order by Name";
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
             }
         }
 
@@ -638,22 +639,22 @@ order by Name";
 
                 if (model == null)
                 {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Filter not found."));
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.FilterNotFound));
                 }
 
                 if (model.OwnedBy != Company.CurrentResourceID)
                 {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "Filter not owned by user."));
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, ApiMessages.FilterNotOwned));
                 }
 
                 GraphFilterRepository.DeleteGraphFilter(model);
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Filter removed.", Success = true, Uid = Guid.Empty }));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = ApiMessages.FilterRemove, Success = true, Uid = Guid.Empty }));
 
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
             }
         }
 
@@ -677,21 +678,21 @@ order by Name";
         {
             if (uid == null)
             {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified"));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetUid));
             }
 
             var asset = (await Company.QueryAsync<Asset>("select * from Asset where uid = @uid", new { uid })).FirstOrDefault();
 
             if (asset == null)
             {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "The asset for this uid could not be found"));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString())));
             }
 
             var assetType = (await Company.QueryAsync<AssetType>("select * from AssetType where id = @assetTypeID", new { asset.AssetTypeID })).FirstOrDefault();
 
             if (assetType == null)
             {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "The asset type for this asset could not be found"));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.AssetTypeNotFoundForAsset));
             }
 
 

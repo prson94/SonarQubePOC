@@ -123,6 +123,9 @@
   <data name="ActionCreatedMsg" xml:space="preserve">
     <value>Action Created</value>
   </data>
+  <data name="ActionTypeNotFound" xml:space="preserve">
+    <value>Action Type Not Found</value>
+  </data>
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
     <value>Action Type with Uid {0} could not be found.</value>
   </data>
@@ -153,6 +156,12 @@
   <data name="AssetUidIsNotValid" xml:space="preserve">
     <value>{0} is not a valid Asset Uid.</value>
   </data>
+  <data name="CascadeDeleteActionType" xml:space="preserve">
+    <value>Action Type has associated actions. Enable on cascade request to delete.</value>
+  </data>
+  <data name="ChildRecordExistsIssueType" xml:space="preserve">
+    <value>The selected action type ({0}) has associated actions, and therefore cannot be deleted.</value>
+  </data>
   <data name="DeleteAllocationSuccessful" xml:space="preserve">
     <value>Allocation Deleted Successfully.</value>
   </data>
@@ -168,7 +177,49 @@
   <data name="InvalidAssetUid" xml:space="preserve">
     <value>Invalid AssetUid provided.</value>
   </data>
+  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
+    <value>Limit To Active Workflows value provided is not valid.</value>
+  </data>
+  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
+    <value>{0} is an invalid responsibilityTypeUid for {1}.</value>
+  </data>
+  <data name="NameMaxLength250Char" xml:space="preserve">
+    <value>Name provided must be less then 250 characters in length.</value>
+  </data>
+  <data name="NameNotEmptyAndRequired" xml:space="preserve">
+    <value>Empty string provided for Name. Cannot be empty.</value>
+  </data>
+  <data name="NameNotNull" xml:space="preserve">
+    <value>Name is a required field.</value>
+  </data>
   <data name="NoMatchingAllocation" xml:space="preserve">
     <value>No Matching Allocation for '{0}' on Action Type '{1}'</value>
+  </data>
+  <data name="OrderByFieldNotFound" xml:space="preserve">
+    <value>Order By Field Not Found</value>
+  </data>
+  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
+    <value>The field you specified for sorting ({0}) could not be found.</value>
+  </data>
+  <data name="ResourceUidNotFound" xml:space="preserve">
+    <value>Resource Uid provided does not exist.</value>
+  </data>
+  <data name="ResourceUidNotValid" xml:space="preserve">
+    <value>Resource Uid provided is invalid.</value>
+  </data>
+  <data name="UidNotEmptyAndRequired" xml:space="preserve">
+    <value>A Valid Uid is required.</value>
+  </data>
+  <data name="UidNotValid" xml:space="preserve">
+    <value>The Uid provided is invalid.</value>
+  </data>
+  <data name="UniqueAllocation" xml:space="preserve">
+    <value>Allocation already exists.</value>
+  </data>
+  <data name="UniqueNameWorkflowAction" xml:space="preserve">
+    <value>Name must be unique. Workflow action already exists with this name</value>
+  </data>
+  <data name="UniqueUid" xml:space="preserve">
+    <value>Uid provided already in use.</value>
   </data>
 </root>

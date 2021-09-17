@@ -79,6 +79,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action Type Not Found.
+        /// </summary>
+        internal static string ActionTypeNotFound {
+            get {
+                return ResourceManager.GetString("ActionTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Action Type with Uid {0} could not be found..
         /// </summary>
         internal static string ActionTypeUidIsNotValid {
@@ -169,6 +178,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action Type has associated actions. Enable on cascade request to delete..
+        /// </summary>
+        internal static string CascadeDeleteActionType {
+            get {
+                return ResourceManager.GetString("CascadeDeleteActionType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The selected action type ({0}) has associated actions, and therefore cannot be deleted..
+        /// </summary>
+        internal static string ChildRecordExistsIssueType {
+            get {
+                return ResourceManager.GetString("ChildRecordExistsIssueType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Allocation Deleted Successfully..
         /// </summary>
         internal static string DeleteAllocationSuccessful {
@@ -214,11 +241,137 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Limit To Active Workflows value provided is not valid..
+        /// </summary>
+        internal static string InvalidLimitActiveWorkflow {
+            get {
+                return ResourceManager.GetString("InvalidLimitActiveWorkflow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is an invalid responsibilityTypeUid for {1}..
+        /// </summary>
+        internal static string InvalidReponsibilityTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidReponsibilityTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name provided must be less then 250 characters in length..
+        /// </summary>
+        internal static string NameMaxLength250Char {
+            get {
+                return ResourceManager.GetString("NameMaxLength250Char", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty string provided for Name. Cannot be empty..
+        /// </summary>
+        internal static string NameNotEmptyAndRequired {
+            get {
+                return ResourceManager.GetString("NameNotEmptyAndRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name is a required field..
+        /// </summary>
+        internal static string NameNotNull {
+            get {
+                return ResourceManager.GetString("NameNotNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No Matching Allocation for &apos;{0}&apos; on Action Type &apos;{1}&apos;.
         /// </summary>
         internal static string NoMatchingAllocation {
             get {
                 return ResourceManager.GetString("NoMatchingAllocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Order By Field Not Found.
+        /// </summary>
+        internal static string OrderByFieldNotFound {
+            get {
+                return ResourceManager.GetString("OrderByFieldNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field you specified for sorting ({0}) could not be found..
+        /// </summary>
+        internal static string OrderByFieldNotFoundMessage {
+            get {
+                return ResourceManager.GetString("OrderByFieldNotFoundMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resource Uid provided does not exist..
+        /// </summary>
+        internal static string ResourceUidNotFound {
+            get {
+                return ResourceManager.GetString("ResourceUidNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resource Uid provided is invalid..
+        /// </summary>
+        internal static string ResourceUidNotValid {
+            get {
+                return ResourceManager.GetString("ResourceUidNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A Valid Uid is required..
+        /// </summary>
+        internal static string UidNotEmptyAndRequired {
+            get {
+                return ResourceManager.GetString("UidNotEmptyAndRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Uid provided is invalid..
+        /// </summary>
+        internal static string UidNotValid {
+            get {
+                return ResourceManager.GetString("UidNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allocation already exists..
+        /// </summary>
+        internal static string UniqueAllocation {
+            get {
+                return ResourceManager.GetString("UniqueAllocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name must be unique. Workflow action already exists with this name.
+        /// </summary>
+        internal static string UniqueNameWorkflowAction {
+            get {
+                return ResourceManager.GetString("UniqueNameWorkflowAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uid provided already in use..
+        /// </summary>
+        internal static string UniqueUid {
+            get {
+                return ResourceManager.GetString("UniqueUid", resourceCulture);
             }
         }
     }
