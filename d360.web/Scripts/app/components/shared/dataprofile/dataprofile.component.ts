@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID } from '@angular/core';
+﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter } from '@angular/core';
 
 import { BaseComponent } from '../base.component';
 
@@ -12,6 +12,8 @@ import * as Highcharts from 'highcharts';
 
 export class DataProfileComponent extends BaseComponent implements OnInit, OnChanges, AfterViewInit {
     @Input() dataProfile: any;
+    @Input() isModal: boolean = false;
+    @Output() linkClicked = new EventEmitter();
 
     private sampleCountPercentage: number;
     private nullBlankCountTotal: number;
@@ -54,6 +56,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     sampleDistributionChart: Highcharts.Chart;
     sampleChartXLabel: string = '';
 
+    matchAssetUid: string = "";
 
     ngOnInit() { 
         this.initialize();
@@ -78,6 +81,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         this.distinctCount = this.dataProfile.cardinality ?? 0;
         this.invalidCount = this.dataProfile.outlierCount ?? 0;
 
+        this.matchAssetUid = this.dataProfile.assetUid;
         this.sortSamples();
 
         this.sampleBarChart = this.getSampleBarChart();
@@ -240,6 +244,16 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         let descStr: string = type === 'duplicates' ? 'same type and matching data' : 'same type but different data';
         return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate.`;
     }
+
+    matchDetectionLinkClicked(type: string) {        
+        if (!this.isModal) {
+            this.isMatchDetectionPopupVisible = true;
+            this.matchAssetUid = this.dataProfile.assetUid;
+            this.matchType = type;
+        } else {
+            this.linkClicked.emit({ assetUid: this.dataProfile.assetUid, matchType: type });
+        }       
+    }    
 
     public renderSampleDistributionChart() {
 
@@ -620,7 +634,16 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             this.sampleDistributionChart.destroy();
         }
 
-        this.sampleDistributionChart = Highcharts.chart('sampleChart', chartOptions, includeStatsWidget ? renderStatsWidget : null);
+        this.sampleDistributionChart = Highcharts.chart('sampleChart'+ (this.isModal ? 'Modal': ''), chartOptions, includeStatsWidget ? renderStatsWidget : null);
+    }
 
+    handleLinkClicked(event: any) {
+        this.matchAssetUid = event.assetUid;
+        this.matchType = event.matchType;
+    }
+
+    matchDetectionClosed() {
+        this.isMatchDetectionPopupVisible = false;
+        this.matchAssetUid = this.dataProfile.assetUid;
     }
 }

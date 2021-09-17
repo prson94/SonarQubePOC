@@ -6,7 +6,6 @@ import { ButtonModule } from 'primeng/button';
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { SidePanelComponent } from "./side-panel.component";
-import { DataProfileModule } from "../dataprofile/dataprofile.module";
 
 @NgModule({
     imports: [        
@@ -15,7 +14,6 @@ import { DataProfileModule } from "../dataprofile/dataprofile.module";
         ButtonModule,
         PopupMenuModule,
         DirectivesModule,
-        DataProfileModule
     ],
     declarations: [
         SidePanelComponent,        

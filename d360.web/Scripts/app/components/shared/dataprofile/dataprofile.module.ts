@@ -16,6 +16,9 @@ import { SearchFieldModule } from "../controls/search-field/search-field.compone
 import { FormsModule } from "@angular/forms";
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
+import { SidePanelModule } from "../sidepanel/side-panel.module";
+import { CoreModule } from "../core.module";
+import { AssetDetailModule } from "../asset-detail/asset-detail.module";
 
 
 @NgModule({
@@ -33,7 +36,10 @@ import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/adva
         PopupMenuModule,
         SearchFieldModule,
         TagViewModule,
-        AdvancedFiltersModule
+        AdvancedFiltersModule,
+        SidePanelModule,
+        CoreModule,
+        AssetDetailModule
     ],
     declarations: [
         DataProfileComponent,

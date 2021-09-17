@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
 import { Observable, ReplaySubject } from 'rxjs';
 import { FieldType } from '../../../models/fieldtype-api.model';
+import { forkJoin } from 'rxjs';
 import { AssetService } from '../../../services/asset.service';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -19,12 +20,14 @@ import { BaseComponent } from '../base.component';
 
 export class MatchDetectionComponent extends BaseComponent implements OnChanges {
     @Input() isVisible: boolean = false;
-    @Input() showDuplicates: boolean = true;
-    @Input() showSimilar: boolean = true;
+    showDuplicates: boolean = true;
+    showSimilar: boolean = true;
 
     @Input() assetUid: string = '';
     @Input() matchType: string = '';
-    @Output() onClose = new EventEmitter();
+    @Input() isParentModal: boolean = false;
+    @Output() sidePanelLinkClicked  = new EventEmitter();    
+    @Output() onClose = new EventEmitter();    
 
     assetPathText: string = '';
 
@@ -47,6 +50,13 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     similarCurrentPageNumber: number = 0;
 
     isExportInProgress = false;
+
+    selection: any = null;
+    sidePanelOpen: boolean = false;
+    sidePanelLoading: boolean = false;
+    sidePanelTab: string;
+    sidePanelStorageKey: string;
+    dataProfile: any;
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -85,15 +95,23 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         private cdRef: ChangeDetectorRef,
         private router: Router      
     ) {
-        super();
+        super();        
 
-        this.filterFields$ = this.filterFieldsSubject.asObservable();     
+        this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);
         this.filterFieldsSubject.complete();
     }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.assetUid && changes.assetUid.currentValue !== changes.assetUid.previousValue) {
+            this.selection = null;
+            this.duplicatesSelection = null;
+            this.similarSelection = null;
+            this.dataProfile = null;
+            this.showDuplicates = true;
+            this.showSimilar = true;
+            this.duplicatesDataLoading = true;
+            this.similarDataLoading = true;
             this.loadData();
         }
     }
@@ -113,9 +131,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.lazyLoadDuplicates(e);
         }
         else {
-            this.lazyLoadSimiliar(e);
-        }
-
+            this.lazyLoadSimiliar(e);            
+        }        
     }
 
     lazyLoadDuplicates(e: LazyLoadEvent) {
@@ -136,7 +153,6 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         this.similarCurrentPageNumber = (e.first / e.rows) + 1;
 
         localStorage.setItem("similar-rows", e.rows.toString());
-
 
         this.getData('similar');
     }
@@ -175,15 +191,17 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 .subscribe((res) => {
                     this.duplicatesDataTotalCount = +res.total;
                     this.duplicatesData = res.items;
+                    this.showDuplicates = this.duplicatesDataTotalCount > 0;
                     this.duplicatesDataLoading = false;
                     this.cdRef.markForCheck();
-                });
+                });            
         } else if (type.toLowerCase() === "similar") {
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Structure", this.similarCurrentPageNumber, this.similarRowsPerPage, this.similarSimpleFilter, this.similarAdvancedFilter)
                 .subscribe((res) => {
                     this.similarData = res.items;
                     this.similarDataTotalCount = +res.total;
-                    this.similarDataLoading = false;
+                    this.showSimilar = this.similarDataTotalCount > 0;
+                    this.similarDataLoading = false;                    
                     this.cdRef.markForCheck();
                 });
         }                
@@ -218,7 +236,54 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 this.assetUid, "Data", this.duplicatesSimpleFilter, this.duplicateAdvancedFilter, this.name,
                 () => { this.isExportInProgress = false; }
             );
+        }       
+    }   
+
+    selectMatch(event: any) {
+        let selectedAssets = event;
+
+        if (selectedAssets && selectedAssets.length == 1) {
+            this.selection = selectedAssets[0];
+            this.sidePanelLoading = true;
+            this.dataProfileService.getDataProfiles(this.selection.uid).subscribe(
+                (r) => {
+                    if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                        this.dataProfile = r.items[0];
+
+                        forkJoin(
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                        ).subscribe((res) => {
+                            this.dataProfile['matches'] = {
+                                structure: res[0],
+                                data: res[1]
+                            };
+                        });
+                    }
+                    this.sidePanelLoading = false;
+                });
+        } else {
+            this.selection = null;
+            this.sidePanelLoading = false;
         }
 
+        this.cdRef.markForCheck();
     }
-}   
+
+    private changeMatchAsset(event: any) {
+        if (event.assetUid != this.assetUid) {
+            this.similarAdvancedFilter = '';
+            this.duplicateAdvancedFilter = '';
+        }
+        this.sidePanelLinkClicked.emit({ assetUid: event.assetUid, matchType: event.matchType });
+    }
+
+    get panelApplies(): boolean {
+        if (this.selection == null || this.sidePanelTab === 'detail') {
+            return true;
+        }
+        if (this.selection != null && this.sidePanelTab === 'dataprofile') {
+            return true;
+        }
+    }   
+}
