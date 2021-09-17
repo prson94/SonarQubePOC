@@ -639,6 +639,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     }
                     this.buildScoreAllocationThresholds();
                 }
+                else {
+                    this.treeNodeArray = [];
+                }
 
                 this.isLoading = false;
             });
