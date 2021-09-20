@@ -1117,6 +1117,7 @@
     <Content Include="Scripts\app\components\shared\header\header-profile.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.ts" />
     <Content Include="Scripts\app\components\shared\menu\site-menu-category.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-back-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu.service.ts" />

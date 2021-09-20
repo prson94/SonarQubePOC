@@ -31,6 +31,7 @@ import { TypeaheadSearchModule } from '../search/typeahead-search.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { CoreModule } from "../../shared/core.module";
 import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module';
+import { HeaderBackButtonComponent } from './header-back-button.component';
 
 
 @NgModule({
@@ -68,7 +69,8 @@ import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module
         HeaderShoppingCartComponent,
         HeaderHomePageComponent,
         HeaderProfileComponent,
-        HeaderMiniMenuComponent
+        HeaderMiniMenuComponent,
+        HeaderBackButtonComponent,
     ],
     exports: [
         HeaderComponent
