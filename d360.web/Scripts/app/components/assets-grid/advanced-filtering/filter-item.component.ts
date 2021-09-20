@@ -474,6 +474,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             if (type.Type.Score && !this.condition.value) {
                 this.condition.value = "poor";
             }
+
+            if (type.Type.Tag) {
+                this.loadTagValues();
+            }
         }
         else {
             if (this.condition.field === SystemFields.OwnedByFieldCode) {
