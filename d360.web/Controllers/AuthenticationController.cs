@@ -803,7 +803,7 @@ namespace d360.web.Controllers
             {
                 foreach (var prop in combinedClaims)
                 {
-                    switch (prop.Type.ToString().ToLower())
+                    switch (prop.Type.ToLower())
                     {
                         case "amr":
                         case "aud":
