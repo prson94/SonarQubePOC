@@ -883,7 +883,7 @@ namespace d360.model
                         break;
                     case WorkflowActivityType.Form:
                         // send form notification to owners
-                        isStepCompleted = await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
+                        await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
                         break;
                     case WorkflowActivityType.StatusChange:
                         // deprecated, just set to true and move on
