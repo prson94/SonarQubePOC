@@ -2038,15 +2038,15 @@ where	T.ExecutionID = @ExecutionID
                                 {
                                     try
                                     {
-                                        
-                                            #region Cascade Behaviour
 
-                                            // Parent/Child Relationships
-                                            if (predicateType.HasValue)
-                                            {
-                                                sw.Restart();
+                                        #region Cascade Behaviour
 
-                                                Connection.Execute($@" 
+                                        // Parent/Child Relationships
+                                        if (predicateType.HasValue)
+                                        {
+                                            sw.Restart();
+
+                                            Connection.Execute($@" 
         if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
             truncate TABLE #ExecutionDeletedAsset
         else
@@ -2128,14 +2128,14 @@ where	T.ExecutionID = @ExecutionID
 			    and S.[Cascade] = 0;
 
         drop table if exists #tempChildTable;", new { execution.ExecutionID, predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                            }
+                                        }
 
-                                            AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
+                                        AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
 
 
-                                            // Workflows
-                                            Connection.Execute($@" 
+                                        // Workflows
+                                        Connection.Execute($@" 
         if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
             truncate TABLE #ExecutionDeletedAsset
         else
@@ -2196,16 +2196,16 @@ where	T.ExecutionID = @ExecutionID
 
         drop table if exists #tempworkflow;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+
+                                        #endregion
+
+                                        // Get the hierarchy items we also need to remove
+                                        if (predicateType.HasValue)
+                                        {
                                             sw.Restart();
-
-                                            #endregion
-
-                                            // Get the hierarchy items we also need to remove
-                                            if (predicateType.HasValue)
-                                            {
-                                                sw.Restart();
-                                                Connection.Execute($@"
+                                            Connection.Execute($@"
 with h as (
 	select	S.ExecutionID,
 			S.ItemNumber,
@@ -2247,16 +2247,16 @@ insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID
     where   IntersectID is not null 
             and [Level] > 0 
             and not exists (select 1 from api.ExecutionDeletedAsset ed where ed.ExecutionID = @ExecutionID and ed.Uid = h.Uid)",
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                                AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                                sw.Restart();
+                                            AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
 
-                                            }
+                                        }
 
-                                            #region Delete workflow items
+                                        #region Delete workflow items
 
-                                            Connection.Execute($@"
+                                        Connection.Execute($@"
 declare @count bigint = 0;
 
 create table #w (ItemID int);
@@ -2309,14 +2309,14 @@ begin
     from [workflow].[Item] wi
     where	exists (Select 1 from #w S where S.ItemID = wi.ID);
 end;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                            AddMeasurement(metrics, $"Delete workflow items>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
+                                        AddMeasurement(metrics, $"Delete workflow items>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
 
-                                            #endregion
+                                        #endregion
 
-                                            #region De-index queue / Audit
+                                        #region De-index queue / Audit
 
-                                            Connection.Execute($@"
+                                        Connection.Execute($@"
 INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
 	select	distinct 
             'ObjectIndex', 'D',	S.Object, S.ObjectID, S.AssetID 
@@ -2338,29 +2338,29 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 			'This asset has been removed.' 
 	from	AssetDetail O
 			inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix} and S.Object is not null and S.ObjectID is not null;",
-                                            new { execution.ExecutionID, r = CurrentResourceID, dt, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                            AddMeasurement(metrics, $"De-index queue / Audit>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
+                                        new { execution.ExecutionID, r = CurrentResourceID, dt, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        AddMeasurement(metrics, $"De-index queue / Audit>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
 
-                                            #endregion
+                                        #endregion
 
-                                            #region Cross-references
+                                        #region Cross-references
 
-                                            Connection.Execute($@"
+                                        Connection.Execute($@"
 delete	T
 from	AssetCrossReference T
 		inner join api.ExecutionDeletedAsset S on S.[Uid] = T.[Uid] and {querySuffix};",
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                            AddMeasurement(metrics, $"remove from Asset Cross-references>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        AddMeasurement(metrics, $"remove from Asset Cross-references>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
 
-                                            #endregion
+                                        #endregion
 
-                                            #region Process diagram
-                                            if (canHaveProcess)
-                                            {
-                                                Connection.Execute(
-                                                $@"
+                                        #region Process diagram
+                                        if (canHaveProcess)
+                                        {
+                                            Connection.Execute(
+                                            $@"
                         drop table if exists #delAssets
                         create table #delAssets(
 	                        uid uniqueidentifier,
@@ -2399,16 +2399,16 @@ from	AssetCrossReference T
 
                         delete from graph.AssetNode where uid in (select uid from #delAssets) and Class = 15
 ",
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                AddMeasurement(metrics, $"remove process assets>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                                sw.Restart();
-                                            }
-                                            #endregion
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            AddMeasurement(metrics, $"remove process assets>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
+                                        }
+                                        #endregion
 
-                                            #region Remove default value settings from FieldTypes
+                                        #region Remove default value settings from FieldTypes
 
-                                            Connection.Execute(
-                                                $@"
+                                        Connection.Execute(
+                                            $@"
 drop table if exists #tempassetobject;
 
 create table #tempassetobject (id [bigint] IDENTITY(1,1) NOT NULL, Object varchar(50), ObjectID int);
@@ -2432,14 +2432,14 @@ from	dbo.FieldType T
         inner join #tempassetobject S on S.Object = T.LookupObjectType and S.ObjectID = T.DefaultValue and T.LookupObjectType is not null and T.DefaultValue is not null and T.[Type] = 'Lookup';
 
 drop table if exists #tempassetobject;",
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            #endregion
+                                        #endregion
 
-                                            #region Asset table
+                                        #region Asset table
 
-                                            Connection.Execute(
-                                                $@"
+                                        Connection.Execute(
+                                            $@"
 declare @totalcount bigint = 0,
         @runcount bigint = 0,
         @struncount bigint = 0,
@@ -2518,42 +2518,42 @@ from	dbo.AssetResult T
 
 drop table if exists #tempassetid; 
 drop table if exists #tempruleresults;",
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                            AddMeasurement(metrics, $"remove from asset table>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        AddMeasurement(metrics, $"remove from asset table>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
 
-                                            #endregion
+                                        #endregion
 
-                                            #region Legacy table
+                                        #region Legacy table
 
-                                            var legacyTable = "";
-                                            switch (at.Object)
-                                            {
-                                                case "FusionAttributeType":
-                                                    legacyTable = "FusionAttribute";
-                                                    break;
-                                                case "RuleType":
-                                                    legacyTable = "[Rule]";
-                                                    break;
-                                            }
+                                        var legacyTable = "";
+                                        switch (at.Object)
+                                        {
+                                            case "FusionAttributeType":
+                                                legacyTable = "FusionAttribute";
+                                                break;
+                                            case "RuleType":
+                                                legacyTable = "[Rule]";
+                                                break;
+                                        }
 
-                                            if (!string.IsNullOrEmpty(legacyTable))
-                                            {
-                                                Connection.Execute(
-                                                    $@"delete t
+                                        if (!string.IsNullOrEmpty(legacyTable))
+                                        {
+                                            Connection.Execute(
+                                                $@"delete t
                                                     from {legacyTable} t
                                                     where exists (select 1 from api.ExecutionDeletedAsset S where t.ID = s.ObjectID and {querySuffix})",
-                                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                                AddMeasurement(metrics, $"remove from {legacyTable} table >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                                sw.Restart();
-                                            }
+                                            AddMeasurement(metrics, $"remove from {legacyTable} table >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
+                                        }
 
-                                            #endregion
+                                        #endregion
 
-                                            #region Delete Intersects
+                                        #region Delete Intersects
 
-                                            Connection.Execute($@"
+                                        Connection.Execute($@"
 declare @totalcount bigint = 0,
     @runcount bigint = 0,
     @struncount bigint = 0,
@@ -2629,15 +2629,15 @@ declare @totalcount bigint = 0,
 
     drop table if exists #tempexecdelass;
     drop table if exists #tempintersect;",
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, predicateType = predicateType.HasValue ? 1 : 0 }, transaction: trans, commandTimeout: timeout);
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber, predicateType = predicateType.HasValue ? 1 : 0 }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"remove from Intersect-(IntersectID, subject/subjectid and object/objectid) >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
-                                            #endregion
+                                        AddMeasurement(metrics, $"remove from Intersect-(IntersectID, subject/subjectid and object/objectid) >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                        #endregion
 
-                                            #region Delete Social tables
+                                        #region Delete Social tables
 
-                                            Connection.Execute($@"
+                                        Connection.Execute($@"
 delete	T
 from	CommentRelation T
 		inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
@@ -2658,15 +2658,15 @@ from	Favorite T
 delete	T
 from	Follow T
 		inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"remove from social tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
-                                            #endregion
+                                        AddMeasurement(metrics, $"remove from social tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                        #endregion
 
-                                            #region Delete subsidiary tables
+                                        #region Delete subsidiary tables
 
-                                            Connection.Execute($@"
+                                        Connection.Execute($@"
 declare @totalcount bigint = 0,
     @runcount bigint = 0,
     @struncount bigint = 0,
@@ -2706,12 +2706,12 @@ declare @totalcount bigint = 0,
     end;
 
     drop table if exists #tempfieldid;",
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"remove from subsidiary tables field>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
+                                        AddMeasurement(metrics, $"remove from subsidiary tables field>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
 
-                                            Connection.Execute($@"
+                                        Connection.Execute($@"
                                         delete	T
 from	Issue T
 		inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};
@@ -2719,15 +2719,15 @@ from	Issue T
 delete	T
 from	Nym T
 		inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"remove from subsidiary tables issue/nym>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
-                                            #endregion
+                                        AddMeasurement(metrics, $"remove from subsidiary tables issue/nym>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                        #endregion
 
-                                            #region Delete owner tables
+                                        #region Delete owner tables
 
-                                            Connection.Execute($@"
+                                        Connection.Execute($@"
 declare @count bigint = 0;
 
 drop table if exists #temprestable;
@@ -2767,22 +2767,22 @@ begin
 		    where exists (select 1 from #temprestable2 S where S.RuleID = T.RuleID and S.AssetID = T.AssetID);
 end;
 drop table if exists #temprestable2;",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                        AddMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                        #endregion
+
+                                        // Update success flag
+                                        Connection.Execute(
+                                            $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
-                                            #endregion
+                                        AddMeasurement(metrics, $"Update status flag >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
 
-                                            // Update success flag
-                                            Connection.Execute(
-                                                $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-                                            AddMeasurement(metrics, $"Update status flag >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
-
-                                            trans.Commit();
-                                            runCompleted = true;
+                                        trans.Commit();
+                                        runCompleted = true;
                                     }
                                     catch (Exception ex)
                                     {
@@ -2963,22 +2963,15 @@ drop table if exists #temprestable2;",
 
                         #endregion
 
-                        #region Resolve asset types based on UIDs
-
-                        Connection.Execute(@"
+                        string resolveAssetTypesSQL = @"
 update	T
 set		T.Object = S.Object, 
         T.ObjectID = S.ObjectID, 
         T.AssetTypeID = S.ID
 from	api.ExecutionDeletedAssetType T
-		inner join AssetType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID;",
-                    new { execution.ExecutionID }, commandTimeout: timeout);
+		inner join AssetType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID;";
 
-                        #endregion
-
-                        #region Log lookup errors
-
-                        Connection.Execute($@"
+                        string logLookupErrorSQL = $@"
 update	api.ExecutionDeletedAssetType
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset type when you are attempting to delete it'
@@ -2987,14 +2980,9 @@ where	ExecutionID = @ExecutionID and ([Uid] is null or [Uid] = CAST(CAST(0 AS BI
 update	api.ExecutionDeletedAssetType
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
-where	ExecutionID = @ExecutionID and AssetTypeID is null;",
-                        new { execution.ExecutionID }, commandTimeout: timeout);
+where	ExecutionID = @ExecutionID and AssetTypeID is null;";
 
-                        #endregion
-
-                        #region Log cascade errors
-
-                        Connection.Execute($@"
+                        string logCascadeErrorSQL = $@"
 update	T
 set		T.Success = 0,
 		T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(A.AssetCount as nvarchar) + ' asset(s) present for this type.'
@@ -3047,7 +3035,11 @@ from    api.ExecutionDeletedAssetType T
 		cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
 where	T.ExecutionID = @ExecutionID
         and T.[Cascade] = 0
-        and ARE.ResultCount > 0;",
+        and ARE.ResultCount > 0;";
+
+                        #region Log cascade errors
+
+                        Connection.Execute($@"{resolveAssetTypesSQL} {logLookupErrorSQL} {logCascadeErrorSQL}",
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
@@ -3085,13 +3077,13 @@ where	T.ExecutionID = @ExecutionID
                             int itemNumber = 1;
                             try
                             {
-
+                                List<AssetTypeDeleteObject> assetTypes;
                                 //Create list of asset types for deletion + their children
                                 using (var trans = Connection.BeginTransaction())
                                 {
                                     try
                                     {
-                                        BuildDeletionTree(execution, timeout, itemNumber, trans);
+                                        assetTypes = BuildDeletionTree(execution, timeout, itemNumber, trans);
 
                                         trans.Commit();
 
@@ -3118,16 +3110,6 @@ where	T.ExecutionID = @ExecutionID
                                     }
                                 }
 
-                                var assetTypes = Connection.Query<AssetTypeDeleteObject>(
-                                    @"select D.uid, 
-                                    T.Class,
-                                    D.ObjectId, 
-                                    D.Object,
-                                    D.AssetTypeId,
-                                    isnull(D.HierarchyLevel,0) as Level,
-                                    D.ItemNumber 
-                                    from api.ExecutionDeletedAssetType D inner join AssetType T on T.ID = D.AssetTypeId
-                                    where D.executionid = @executionUid and D.success is null", new { executionUid = execution.ExecutionID }).ToList();
 
                                 //Delete hierarchy by hierarchy and start from highest level (children)
                                 var hierarchies = assetTypes.GroupBy(x => x.ItemNumber).ToList();
@@ -3766,9 +3748,9 @@ where	T.ExecutionID = @ExecutionID
                                 ", new { assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
         }
 
-        private void BuildDeletionTree(ApiExecution execution, int timeout, int itemNumber, SqlTransaction trans)
+        private List<AssetTypeDeleteObject> BuildDeletionTree(ApiExecution execution, int timeout, int itemNumber, SqlTransaction trans)
         {
-            Connection.Execute(@";with h as (
+            return Connection.Query<AssetTypeDeleteObject>(@";with h as (
 			select	D.ExecutionID,
 					D.ItemNumber,
 					D.AssetTypeID,
@@ -3819,12 +3801,22 @@ where	T.ExecutionID = @ExecutionID
 					A.ID
 			from	Asset A
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid;
+
+           select D.uid, 
+                                    T.Class,
+                                    D.ObjectId, 
+                                    D.Object,
+                                    D.AssetTypeId,
+                                    isnull(D.HierarchyLevel,0) as Level,
+                                    D.ItemNumber 
+                                    from api.ExecutionDeletedAssetType D inner join AssetType T on T.ID = D.AssetTypeId
+                                    where D.executionid = @executionUid and D.success is null
 	", new
             {
                 executionUid = execution.ExecutionID,
                 itemNumber,
                 resource = CurrentResourceID
-            }, transaction: trans, commandTimeout: timeout);
+            }, transaction: trans, commandTimeout: timeout).ToList();
         }
 
         public List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600)
@@ -4472,7 +4464,7 @@ where   ExecutionID = @ExecutionID
                             parentObjectID = it.SubjectID;
                             intersectTypeUid = it.uid;
                             intersectTypeID = it.ID;
-                        }                        
+                        }
                     }
                     AddMeasurement(metrics, "Get predicateType.HasValue", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
@@ -5135,7 +5127,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     #endregion
                                     sw.Restart();
-                                    var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert,hasLookupFieldTypes);
+                                    var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert, hasLookupFieldTypes);
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     sw.Restart();
 
@@ -5600,7 +5592,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     #endregion
 
                     if (IsUidPassed)
-                    { 
+                    {
                         #region Validate Relationship Uid
                         Connection.Execute(@"
                             declare @it int;
@@ -7950,7 +7942,7 @@ where	    A.AssetTypeID = @ID;
 	    update #Keys set ActiveKey = utility.GetHash(KeyValue);
 
  	    CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
-                    
+
                     string SqlStmt = $@"
     Declare @fieldtypeid int =-1;
 	declare @DefaultValue nvarchar(max);
@@ -8016,9 +8008,9 @@ insert into #Keys WITH(TABLOCK)
         {
             var ruleResults = new DataTable();
             ruleResults.Columns.Add("RuleResultUid", typeof(Guid));
-            
-            foreach(var r in ruleResultUids.Distinct()) 
-            { 
+
+            foreach (var r in ruleResultUids.Distinct())
+            {
                 var dr = ruleResults.NewRow();
                 dr["RuleResultUid"] = r;
                 ruleResults.Rows.Add(dr);
@@ -8794,7 +8786,7 @@ select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
                         results.AddRange(
                             Query<DataQualityDeleteResponseModel>(
                                 $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
-                                new { execution.ExecutionID }, 
+                                new { execution.ExecutionID },
                                 timeout
                             )
                         );
@@ -9127,7 +9119,7 @@ select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
                                     wheres.Add("AR.RunDate <= @RunDateEnd");
                                 }
                             }
-                            
+
                             string ruleResultWhereClause = "from AssetResult AR ";
                             if (wheres.Count > 0)
                             {
@@ -9165,7 +9157,7 @@ select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
 
                             // Find out which items we need to update scores for. Do this first!
                             var ruleResultUids = Query<Guid>($@"select distinct AR.Uid {ruleResultWhereClause}", dr, timeout).ToList();
-                            
+
                             if (ruleResultUids.Count > 0)
                             {
                                 assetMeasures.AddRange(GetAssetMeasuresFromRuleResults(ruleResultUids));
@@ -9200,7 +9192,8 @@ select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
                             var newAssetMeasure = newAssetMeasures.FirstOrDefault(n => n.AssetUid == existingAssetMeasure.AssetUid && n.EffectiveDate == existingAssetMeasure.EffectiveDate);
                             if (newAssetMeasure != null)
                             {
-                                existingAssetMeasure.Measures.ForEach(e => {
+                                existingAssetMeasure.Measures.ForEach(e =>
+                                {
                                     if (!newAssetMeasure.Measures.Any(n => n.MetricAssetVersionUid == e.MetricAssetVersionUid))
                                     {
                                         newAssetMeasure.Measures.Add(e);
@@ -11126,7 +11119,7 @@ EG.GroupUid
                                         OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
 
                                             Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID";
-                
+
                     var insertSampleSQL = $@"
                                         insert into AssetDataProfileSample 
                                                     ([AssetDataProfileID]
@@ -11164,12 +11157,12 @@ EG.GroupUid
 
                         while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
                         {
-                            
+
                             using (var trans = Connection.BeginTransaction())
                             {
                                 #region Load valid items into table
                                 try
-                                {                                   
+                                {
                                     Connection.Execute(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                     #endregion
@@ -11235,7 +11228,7 @@ EG.GroupUid
             {
                 Connection.Close();
             }
-                
+
             return results;
         }
 
@@ -11334,7 +11327,7 @@ EG.GroupUid
                         row["SecurityAssetUid"] = item.AssignedUid;
                         row["Context"] = item.Description;
 
-                        ResponsibilityTypeRelationOverrideTable.Rows.Add(row);                        
+                        ResponsibilityTypeRelationOverrideTable.Rows.Add(row);
 
                         itemNumber++;
                     }
@@ -11382,7 +11375,7 @@ EG.GroupUid
                                 }
                             }
                             catch { }
-                            
+
                             throw ex;
                         }
 
