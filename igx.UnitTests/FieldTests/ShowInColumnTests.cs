@@ -247,8 +247,90 @@ namespace igx.UnitTests.FieldsHelperTests
             Assert.True(model.rows[0].FirstColumnFields.Count == 2);
             Assert.True(model.rows[1].FirstColumnFields.Count == 1);
             Assert.True(model.rows[2].FirstColumnFields.Count == 2);
-            
+
         }
 
+        [Fact]
+        public void TestWithCategories()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { Category = "C1", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = "C1", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = "C2", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = "C2", DisplayInColumn = true });
+
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols();
+
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 2);
+
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 2);
+        }
+
+        [Fact]
+        public void TestWithCategories3()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { Category = "C1", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = "C1", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = null, DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = "C2", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = "C2", DisplayInColumn = true });
+
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols();
+
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 2);
+
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 3);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[4].Row == 3);
+            Assert.True(fcMapper.FieldColumnMappings[4].Col == 2);
+        }
+
+        [Fact]
+        public void TestWithCategories3_WithFalse()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { Category = "C1", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = "C1", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = null, DisplayInColumn = false });
+            fcmap.Add(new FieldColumnMapping() { Category = "C2", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Category = "C2", DisplayInColumn = true });
+
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols();
+
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 2);
+
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 3);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[4].Row == 3);
+            Assert.True(fcMapper.FieldColumnMappings[4].Col == 2);
+        }
     }
 }
