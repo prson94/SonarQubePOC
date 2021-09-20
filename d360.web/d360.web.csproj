@@ -903,7 +903,6 @@
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\multiselect-grid.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
-    <Content Include="Scripts\app\components\shared\header\header-back-button.component.html" />
     <Content Include="Scripts\app\components\shared\helpmenu\helpmenu-list.component.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.html" />
