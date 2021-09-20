@@ -49,6 +49,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     private validCount: number;
     private distinctCount: number;
     private invalidCount: number;
+    private showDuplicates: boolean = true;
+    private showSimilar: boolean = true;
 
     isMatchDetectionPopupVisible: boolean = false;
     matchType: string = "";
@@ -92,7 +94,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
 
         this.checkVisibility();
 
-        this.setMinAndMaxText();
+        this.setMinAndMaxText();        
     }
 
     private showSidePanel() {
@@ -246,12 +248,16 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     }
 
     matchDetectionLinkClicked(type: string) {        
+        if (this.dataProfile.matches != null) {
+            this.showDuplicates = this.dataProfile.matches.data > 0;
+            this.showSimilar = this.dataProfile.matches.structure > 0;
+        }
         if (!this.isModal) {
             this.isMatchDetectionPopupVisible = true;
             this.matchAssetUid = this.dataProfile.assetUid;
             this.matchType = type;
-        } else {
-            this.linkClicked.emit({ assetUid: this.dataProfile.assetUid, matchType: type });
+        } else {           
+            this.linkClicked.emit({ assetUid: this.dataProfile.assetUid, matchType: type, showDuplicates: this.showDuplicates, showSimilar: this.showSimilar });
         }       
     }    
 
@@ -640,6 +646,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     handleLinkClicked(event: any) {
         this.matchAssetUid = event.assetUid;
         this.matchType = event.matchType;
+        this.showDuplicates = event.showDuplicates;
+        this.showSimilar = event.showSimilar;
     }
 
     matchDetectionClosed() {
