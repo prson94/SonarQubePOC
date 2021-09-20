@@ -728,25 +728,25 @@ namespace d360.web.Controllers.V2
                                 pageNum = q.Value;
                                 break;
                             case "_responsibilitytypeuid":
-                                if (!Guid.TryParse(q.Value, out responsibilityUidFilter))
+                                if (!Guid.TryParse(q.Value, out responsibilityUidFilter) || responsibilityUidFilter == Guid.Empty)
                                 {
                                     return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, "_responsibilitytypeuid"));
                                 }
                                 break;
                             case "_assigneeuid":
-                                if (!Guid.TryParse(q.Value, out assigneeUidFilter))
+                                if (!Guid.TryParse(q.Value, out assigneeUidFilter) || assigneeUidFilter == Guid.Empty)
                                 {
                                     return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, "_assigneeuid"));
                                 }
                                 break;
                             case "_assettypeuid":
-                                if (!Guid.TryParse(q.Value, out assetTypeUidFilter))
+                                if (!Guid.TryParse(q.Value, out assetTypeUidFilter) || assetTypeUidFilter == Guid.Empty)
                                 {
                                     return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, "_assettypeuid"));
                                 }
                                 break;
                             case "_assetuid":
-                                if (!Guid.TryParse(q.Value, out assetUidFilter))
+                                if (!Guid.TryParse(q.Value, out assetUidFilter) || assetUidFilter == Guid.Empty)
                                 {
                                     return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, "_assetuid"));
                                 }
