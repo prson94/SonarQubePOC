@@ -262,7 +262,7 @@ namespace d360.web.Controllers.V2
                 }
                 if (long.TryParse(_pageSize, out pageSize))
                 {
-                    if (pageSize > 200000)
+                    if (pageSize > Company.GetSettingValue<int>(Setting.MaxExcelExportRows))
                     {
                         return "Invalid pageSize value provided. Number is too large";
                     }

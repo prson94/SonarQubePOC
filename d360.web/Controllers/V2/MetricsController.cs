@@ -1081,6 +1081,14 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+            }
+
             if (isRequestAnExport)
             {
                 _pageNum = 1;
@@ -1088,23 +1096,14 @@ namespace d360.web.Controllers.V2
             }
             else
             { 
-                string isValid = isPageSizeAndNumValid(queryParams);
-
-                if (!string.IsNullOrEmpty(isValid))
+                if (queryParams.Any(q => q.Key == "_pageNum"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+                    _pageNum = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value);
                 }
-                else
+                if (queryParams.Any(q => q.Key == "_pageSize"))
                 {
-                    if (queryParams.Any(q => q.Key == "_pageNum"))
-                    {
-                        _pageNum = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value);
-                    }
-                    if (queryParams.Any(q => q.Key == "_pageSize"))
-                    {
-                        _pageSize = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value);
-                    }
-                }            
+                    _pageSize = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value);
+                }
             }
 
             #endregion

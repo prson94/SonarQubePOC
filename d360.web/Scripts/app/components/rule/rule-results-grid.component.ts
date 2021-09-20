@@ -13,11 +13,13 @@ import { AdvancedFilterFieldType, Filters } from '../assets-grid/advanced-filter
 import { ActivatedRoute } from '@angular/router';
 import { FieldType } from "../../models/fieldtype-api.model";
 import { Observable, of } from "rxjs";
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
     selector: 'd3s-rule-results-grid',
     templateUrl: './rule-results-grid.component.html',
-    providers: [RulesService],
+    providers: [RulesService, CompanySettingsService],
     styleUrls: ['rule-results-grid.component.less']
 })
 
@@ -53,8 +55,14 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
 
     getRuleResultsSub: Subscription;
 
-    constructor(private ruleService: RulesService,
-        private route: ActivatedRoute
+    ruleResultsExportTooltip: string = "Export to Excel";
+    ruleResultsExportEnabled: boolean = true;
+    ruleResultsExportLimit: number = 0;
+
+    constructor(
+        private ruleService: RulesService,
+        private route: ActivatedRoute,
+        private settings: CompanySettingsService
     ) {
         super();
 
@@ -92,29 +100,44 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
             }
         }
 
-        this.isLoading = true;
-        if (this.getRuleResultsSub) {
-            this.getRuleResultsSub.unsubscribe();
-        }
-        this.getRuleResultsSub = this.ruleService
-            .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters?.filter)
-            .pipe(debounceTime(300))
-            .subscribe(res => {
-                this.results = res;
-                if (this.results != null) {
-                    this.totalRecords = this.results.total;
-                    this.items = this.results.items;
-                    this.items.forEach((item) => {
-                        var date = new Date(item.RunDate as string);
-                        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-                        item.RunDate = date;
-                    });
-                    this.isLoading = false;
+        this.settings.getSettings()
+            .subscribe(data => {
+                this.ruleResultsExportLimit = data.MaxExcelExportRows;
+                console.log(this.ruleResultsExportLimit);
+
+                this.isLoading = true;
+                if (this.getRuleResultsSub) {
+                    this.getRuleResultsSub.unsubscribe();
                 }
-            },
-                err => {
-                    this.isLoading = false;
-                });
+                this.getRuleResultsSub = this.ruleService
+                    .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters?.filter)
+                    .pipe(debounceTime(300))
+                    .subscribe(res => {
+                        this.results = res;
+                        if (this.results != null) {
+                            this.totalRecords = this.results.total;
+                            if (this.totalRecords > this.ruleResultsExportLimit) {
+                                this.ruleResultsExportTooltip = `Number of items is greater than ${this.ruleResultsExportLimit}.`;
+                                this.ruleResultsExportEnabled = false;
+                            }
+                            else {
+                                this.ruleResultsExportTooltip = "Export to Excel";
+                                this.ruleResultsExportEnabled = true;
+                            }
+                            this.items = this.results.items;
+                            this.items.forEach((item) => {
+                                var date = new Date(item.RunDate as string);
+                                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                                item.RunDate = date;
+                            });
+                            this.isLoading = false;
+                        }
+                    },
+                        err => {
+                            this.isLoading = false;
+                        }
+                    );
+            });
     }
 
     loadRuleResultsLazy(event: LazyLoadEvent) {
