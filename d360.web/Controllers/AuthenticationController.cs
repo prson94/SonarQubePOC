@@ -803,7 +803,7 @@ namespace d360.web.Controllers
             {
                 foreach (var prop in combinedClaims)
                 {
-                    switch (prop.Type)
+                    switch (prop.Type.ToLower())
                     {
                         case "amr":
                         case "aud":
@@ -836,11 +836,11 @@ namespace d360.web.Controllers
                         case "surname":
                             lastName = prop.Value.ToString();
                             break;
-                        case "infogixGroup":
-                        case "infogixGroups":
+                        case "infogixgroup":
+                        case "infogixgroups":
                         case "group":
                         case "groups":
-                        case "securityGroups":
+                        case "securitygroups":
                         case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
                             if (groups == null)
                             {
