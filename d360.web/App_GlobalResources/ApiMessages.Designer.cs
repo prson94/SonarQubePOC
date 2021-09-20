@@ -61,6 +61,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to API Entity Not Found.
+        /// </summary>
+        internal static string ApiEntryNotFound {
+            get {
+                return ResourceManager.GetString("ApiEntryNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset Not found.
         /// </summary>
         internal static string AssetNotfound {
@@ -93,6 +102,15 @@ namespace Resources {
         internal static string BadRequest {
             get {
                 return ResourceManager.GetString("BadRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset cross reference already exists..
+        /// </summary>
+        internal static string CrossRefExists {
+            get {
+                return ResourceManager.GetString("CrossRefExists", resourceCulture);
             }
         }
         
@@ -165,6 +183,33 @@ namespace Resources {
         internal static string ErrorInvalidDatasetMessage {
             get {
                 return ResourceManager.GetString("ErrorInvalidDatasetMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execution unique identifier not found..
+        /// </summary>
+        internal static string ExecutionIDNotFound {
+            get {
+                return ResourceManager.GetString("ExecutionIDNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Now processing request. Please check back with this ExecutionID for status..
+        /// </summary>
+        internal static string ExecutionIDStatus {
+            get {
+                return ResourceManager.GetString("ExecutionIDStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field Type Not Found.
+        /// </summary>
+        internal static string FieldTypeNotFound {
+            get {
+                return ResourceManager.GetString("FieldTypeNotFound", resourceCulture);
             }
         }
         
@@ -390,6 +435,15 @@ namespace Resources {
         internal static string PageSizeString {
             get {
                 return ResourceManager.GetString("PageSizeString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rule ID not found.
+        /// </summary>
+        internal static string RuleIDNotFound {
+            get {
+                return ResourceManager.GetString("RuleIDNotFound", resourceCulture);
             }
         }
         

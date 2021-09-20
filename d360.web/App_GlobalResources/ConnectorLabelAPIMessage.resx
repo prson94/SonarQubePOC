@@ -117,148 +117,52 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BadRequest" xml:space="preserve">
-    <value>Bad Request</value>
+  <data name="ConsolidateSucessfully" xml:space="preserve">
+    <value>Connector labels consolidated successfully</value>
   </data>
-  <data name="EndpointGettingMeasureHistoryHeading" xml:space="preserve">
-    <value>Error getting measure history</value>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} is not valid uid!</value>
   </data>
-  <data name="EndpointNotAuthorizedHeading" xml:space="preserve">
-    <value>Not authorized</value>
+  <data name="ErrorConsolidateLabel" xml:space="preserve">
+    <value>Error while consolidating connector labels</value>
   </data>
-  <data name="EndpointNotAuthorizedMessage" xml:space="preserve">
-    <value>You are not authorized to perform this action.</value>
+  <data name="ErrorCreateLabel" xml:space="preserve">
+    <value>Error while creating connector label</value>
   </data>
-  <data name="EndpointRecalculatingMeasureScoreItemsHeading" xml:space="preserve">
-    <value>Error recalculating measure score items</value>
+  <data name="ErrorDeleteLabel" xml:space="preserve">
+    <value>Error removing connector label, </value>
   </data>
-  <data name="ErrorAddingScoreResultsHeading" xml:space="preserve">
-    <value>Error adding score results</value>
+  <data name="ErrorGetLabels" xml:space="preserve">
+    <value>Error while fetching connector labels</value>
   </data>
-  <data name="ErrorDeletingDefaultHelpItem" xml:space="preserve">
-    <value>Cannot delete a default help entry</value>
+  <data name="ErrorUpdateLabel" xml:space="preserve">
+    <value>Error updating connector label</value>
   </data>
-  <data name="ErrorInvalidDatasetMessage" xml:space="preserve">
-    <value>You have submitted an invalid or empty data set. Please check your request and submit again.</value>
+  <data name="LabelAlreadyExists" xml:space="preserve">
+    <value>Invalid connector label specified [same connector label already exists].</value>
   </data>
-  <data name="Forbidden" xml:space="preserve">
-    <value>Forbidden</value>
+  <data name="LabelMax40Char" xml:space="preserve">
+    <value>Maximum length of label is 40 characters.</value>
   </data>
-  <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
-    <value>Forbidden user is not an administrator.</value>
+  <data name="LabelNotFound" xml:space="preserve">
+    <value>Connector label not found.</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>AssetUid {0} is invalid</value>
+  <data name="LabelRemoved" xml:space="preserve">
+    <value>Connector label removed.</value>
   </data>
-  <data name="InvalidDirection" xml:space="preserve">
-    <value>Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.</value>
+  <data name="LabelRemoveSucess" xml:space="preserve">
+    <value>Connector label successfully removed.</value>
   </data>
-  <data name="InvalidIncludeTotal" xml:space="preserve">
-    <value>Invalid _includeTotal provided</value>
+  <data name="LabelValieNotEmpty" xml:space="preserve">
+    <value>Label value cannot be empty.</value>
   </data>
-  <data name="InvalidHelpName" xml:space="preserve">
-    <value>Name cannot be empty.</value>
+  <data name="UidNotFound" xml:space="preserve">
+    <value>Connector label with UID '{labelUid}' does not exist!</value>
   </data>
-  <data name="InvalidHelpNameLength" xml:space="preserve">
-    <value>Name cannot be more than 500 characters.</value>
+  <data name="UidNotValid" xml:space="preserve">
+    <value>Invalid connector label UID passed in the request</value>
   </data>
-  <data name="InvalidHelpUrl" xml:space="preserve">
-    <value>Url cannot be empty.</value>
-  </data>
-  <data name="InvalidHelpUrlLength" xml:space="preserve">
-    <value>Url cannot be more than 2000 characters</value>
-  </data>
-  <data name="InvalidRequest" xml:space="preserve">
-    <value>Invalid Request</value>
-  </data>
-  <data name="InvalidScoreType" xml:space="preserve">
-    <value>Invalid score type provided, please provide a valid score type.</value>
-  </data>
-  <data name="NotFound" xml:space="preserve">
-    <value>Not Found</value>
-  </data>
-  <data name="Success" xml:space="preserve">
-    <value>Success</value>
-  </data>
-  <data name="UnknownError" xml:space="preserve">
-    <value>Unknown Error</value>
-  </data>
-  <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
-    <value>An unknown error occurred and has been logged for further investigation. Please try your request again later.</value>
-  </data>
-  <data name="InvalidFilterExpression" xml:space="preserve">
-    <value>Invalid filter expression:</value>
-  </data>
-  <data name="InvalidFilterExpressionUsed" xml:space="preserve">
-    <value>Invalid filter expression used.</value>
-  </data>
-  <data name="InvalidFilterExpressionUsedMessage" xml:space="preserve">
-    <value>Invalid filter expression used. Please check your filter values and their data types.</value>
-  </data>
-  <data name="AssetNotfound" xml:space="preserve">
-    <value>Asset Not found</value>
-  </data>
-  <data name="AssetTypeNotFoundForAsset" xml:space="preserve">
-    <value>The asset type for this asset could not be found</value>
-  </data>
-  <data name="AssetValidateWithAssetType" xml:space="preserve">
-    <value>Asset Uid does not match the Asset Type provided.</value>
-  </data>
-  <data name="EmptyInvalidParameterSet" xml:space="preserve">
-    <value>You have passed an empty or invalid set of criteria.</value>
-  </data>
-  <data name="FilterNotFound" xml:space="preserve">
-    <value>Filter not found.</value>
-  </data>
-  <data name="FilterNotOwned" xml:space="preserve">
-    <value>Filter not owned by user.</value>
-  </data>
-  <data name="FilterRemove" xml:space="preserve">
-    <value>Filter removed.</value>
-  </data>
-  <data name="InvalidGuid" xml:space="preserve">
-    <value>Invalid GUID {0}.</value>
-  </data>
-  <data name="InvalidNumberTooLarge" xml:space="preserve">
-    <value>Invalid {0} value provided. Number is too large.</value>
-  </data>
-  <data name="InvalidValueMessage" xml:space="preserve">
-    <value>Invalid {0} value provided.</value>
-  </data>
-  <data name="MinLengthCheckGTZero" xml:space="preserve">
-    <value>Invalid {0} value provided. Value must be greater than 0.</value>
-  </data>
-  <data name="NumberValueMessage" xml:space="preserve">
-    <value>Invalid {0} value provided. Must be a numeric value.</value>
-  </data>
-  <data name="PageNumString" xml:space="preserve">
-    <value>pageNum</value>
-  </data>
-  <data name="PageSizeString" xml:space="preserve">
-    <value>pageSize</value>
-  </data>
-  <data name="SaveFailedMessage" xml:space="preserve">
-    <value>Save failed</value>
-  </data>
-  <data name="UIDNotFoundObjectAndObjectType" xml:space="preserve">
-    <value>Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type not found for UID</value>
-  </data>
-  <data name="ApiEntryNotFound" xml:space="preserve">
-    <value>API Entity Not Found</value>
-  </data>
-  <data name="CrossRefExists" xml:space="preserve">
-    <value>Asset cross reference already exists.</value>
-  </data>
-  <data name="ExecutionIDNotFound" xml:space="preserve">
-    <value>Execution unique identifier not found.</value>
-  </data>
-  <data name="ExecutionIDStatus" xml:space="preserve">
-    <value>Now processing request. Please check back with this ExecutionID for status.</value>
-  </data>
-  <data name="FieldTypeNotFound" xml:space="preserve">
-    <value>Field Type Not Found</value>
-  </data>
-  <data name="RuleIDNotFound" xml:space="preserve">
-    <value>Rule ID not found</value>
+  <data name="UnableIncludeParentinChildLabels" xml:space="preserve">
+    <value>Parent connector label should not be included in children connector labels!</value>
   </data>
 </root>
