@@ -20,8 +20,8 @@ import { BaseComponent } from '../base.component';
 
 export class MatchDetectionComponent extends BaseComponent implements OnChanges {
     @Input() isVisible: boolean = false;
-    showDuplicates: boolean = true;
-    showSimilar: boolean = true;
+    @Input() showDuplicates: boolean = true;
+    @Input() showSimilar: boolean = true;
 
     @Input() assetUid: string = '';
     @Input() matchType: string = '';
@@ -108,8 +108,6 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.duplicatesSelection = null;
             this.similarSelection = null;
             this.dataProfile = null;
-            this.showDuplicates = true;
-            this.showSimilar = true;
             this.duplicatesDataLoading = true;
             this.similarDataLoading = true;
             this.loadData();
@@ -190,8 +188,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Data", this.duplicateCurrentPageNumber, this.duplicateRowsPerPage, this.duplicatesSimpleFilter, this.duplicateAdvancedFilter)
                 .subscribe((res) => {
                     this.duplicatesDataTotalCount = +res.total;
-                    this.duplicatesData = res.items;
-                    this.showDuplicates = this.duplicatesDataTotalCount > 0;
+                    this.duplicatesData = res.items;                    
                     this.duplicatesDataLoading = false;
                     this.cdRef.markForCheck();
                 });            
@@ -199,8 +196,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Structure", this.similarCurrentPageNumber, this.similarRowsPerPage, this.similarSimpleFilter, this.similarAdvancedFilter)
                 .subscribe((res) => {
                     this.similarData = res.items;
-                    this.similarDataTotalCount = +res.total;
-                    this.showSimilar = this.similarDataTotalCount > 0;
+                    this.similarDataTotalCount = +res.total;                    
                     this.similarDataLoading = false;                    
                     this.cdRef.markForCheck();
                 });
@@ -275,7 +271,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.similarAdvancedFilter = '';
             this.duplicateAdvancedFilter = '';
         }
-        this.sidePanelLinkClicked.emit({ assetUid: event.assetUid, matchType: event.matchType });
+        this.sidePanelLinkClicked.emit({ assetUid: event.assetUid, matchType: event.matchType, showDuplicates: event.showDuplicates, showSimilar: event.showSimilar });
     }
 
     get panelApplies(): boolean {
