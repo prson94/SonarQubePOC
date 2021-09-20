@@ -27,7 +27,7 @@
                     <td><div *ngIf="item.isEditable">{{item.Url}}</div></td>
                     <td>
                         <ng-container>
-                            <button type="button" class="ig-button-dark" icon="{{getVisibilityIcon(item.visibilty)}}" igButton (click)="menu.toggle($event)" [pTooltip]="'Visibility Options'" tooltipPosition="top"></button>
+                            <button type="button" class="ig-button-dark" icon="{{getVisibilityIcon(item.visibilty)}}" igButton (click)="menu.toggle($event)" pTooltip="Visibility Options" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                             <ig-popup-menu (onSelect)="changeVisibility($event,item)" [items]="visibilityItems()" #menu [tabIndex]="10"></ig-popup-menu>
                         </ng-container>
                     </td>
