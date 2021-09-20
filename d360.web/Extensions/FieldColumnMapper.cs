@@ -30,13 +30,20 @@ namespace d360.web.Extensions
             int row = 1;
             int col = 1;
             bool currentDisplayState = false;
-            foreach (var item in _fieldColumnMappings)
+            string lastCategory = null;
+            foreach (var item in _fieldColumnMappings.OrderBy(x => x.Category))
             {
+                if (lastCategory == null)
+                {
+                    lastCategory = item.Category ?? "";
+                }
+                string currentCategory = item.Category ?? "";
                 bool displayInColumn = item.DisplayInColumn.HasValue && item.DisplayInColumn.Value == true;
 
-                if (displayInColumn != currentDisplayState || displayInColumn == false)
+                if (displayInColumn != currentDisplayState || displayInColumn == false || lastCategory != currentCategory)
                 {
                     row = _fieldColumnMappings.Max(x => x.Row) + 1;
+                    col = 1;
                 }
 
                 if (!displayInColumn)
@@ -52,6 +59,7 @@ namespace d360.web.Extensions
                 }
 
                 currentDisplayState = displayInColumn;
+                lastCategory = currentCategory;
             }
         }
 
@@ -59,13 +67,13 @@ namespace d360.web.Extensions
         {
             foreach (var drow in dynamicRows)
             {
-                var row = _fieldColumnMappings.FirstOrDefault(x => x.Name == drow.FirstColumnFields.FirstOrDefault().FieldName).Row;
+                var row = _fieldColumnMappings.FirstOrDefault(x => x.Name == drow.FirstColumnFields.FirstOrDefault().FieldName && x.Category == drow.Category).Row;
                 drow.FirstColumnFields.ForEach(x => x.Row = row);
             }
 
             foreach (var drow in dynamicRows)
             {
-                var row = _fieldColumnMappings.FirstOrDefault(x => x.Name == drow.FirstColumnFields.FirstOrDefault().FieldName).Row;
+                var row = _fieldColumnMappings.FirstOrDefault(x => x.Name == drow.FirstColumnFields.FirstOrDefault().FieldName && x.Category == drow.Category).Row;
 
                 var refModel = _model.rows.FirstOrDefault(x => x.FirstColumnFields.FirstOrDefault().Row == row);
                 if (refModel == null)
@@ -83,6 +91,7 @@ namespace d360.web.Extensions
     public class FieldColumnMapping
     {
         public string Name { get; set; }
+        public string Category { get; set; }
         public bool? DisplayInColumn { get; set; }
         public int Row { get; set; }
         public int Col { get; set; }

@@ -2403,7 +2403,7 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
             if (useAssetDetailColumnDefinition)
             {
                 var fieldColumnMappings = (await Company.QueryAsync<FieldColumnMapping>(@"
-                select ft.Name, DisplayInColumn from asset a
+                select ft.Name, DisplayInColumn, Category from asset a
                 inner join fieldtype ft on ft.assettypeid = a.assettypeid
                 where a.object = @type and a.objectid = @objectid
                 and ft.isdisplayable = 1
