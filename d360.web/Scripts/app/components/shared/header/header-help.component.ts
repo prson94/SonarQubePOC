@@ -15,7 +15,7 @@ declare var VersionNumber: string;
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
                     <div class="header-button"><i class="fa fa-question-circle"></i></div>
                     <div class="header-help search-child header-profile-panel">
-                       <ul>       
+                       <ul class="header-help-dropdown">      
                             <ng-container *ngFor="let i of items">
                                     <li *ngIf="i.visibilty == 1 && i.Url != 'about'" class="header-item" pTooltip="{{i.Description}} "tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text" ><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
                                     <li *ngIf="i.visibilty == 2 && isAdmin && i.Url != 'about'" class="header-item" pTooltip="{{i.Description}} "tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
