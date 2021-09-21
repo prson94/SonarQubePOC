@@ -30,6 +30,7 @@ export class SidePanelComponent extends BaseComponent {
     readonly storageKeyPrefix: string = 'side_panel_';
 
     @Input() extraButtons: SidePanelButton[] = [];
+    @Input() multipleItemsSelected: boolean = false;
 
     buttons: SidePanelButton[] = [];
 
@@ -134,6 +135,7 @@ export class SidePanelComponent extends BaseComponent {
                 disabledTooltip: null,
                 nothingSelectedMessage: 'Select an item from the list to display its properties',
                 notApplicableMessage: 'Information data is not available for the selected item',
+                multipleSelectedMessage: 'Select a single item to display it’s properties',
                 key: 'detail',
                 icon: 'fa-info-circle',
                 disabled: false,
@@ -148,6 +150,7 @@ export class SidePanelComponent extends BaseComponent {
                 disabledTooltip: 'Profiling data is not available for the selected item',
                 nothingSelectedMessage: 'Select an item from the list to display its profiling data',
                 notApplicableMessage: 'Profiling data is not available for the selected item',
+                multipleSelectedMessage: 'Select a single item to display it’s profiling information',
                 key: 'dataprofile',
                 icon: 'fa-bar-chart',
                 disabled: this.disableProfiling,
