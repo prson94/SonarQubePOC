@@ -1776,7 +1776,6 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "Total Rows");
             doc.SetCellValue(rowNumber, index++, "Rows Passed");
             doc.SetCellValue(rowNumber, index++, "Rows Failed");
-            doc.SetCellValue(rowNumber, index++, "Passed");
             doc.SetCellValue(rowNumber, index++, "Rule Result UID");
 
             #endregion
@@ -1794,7 +1793,6 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
-                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString() : "");
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
             }
             doc.AutoFitColumn(1, 11);
