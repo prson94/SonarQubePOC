@@ -1006,7 +1006,7 @@ namespace d360.web.Controllers.V2
             if (queryParams.Any(q => q.Key == "_order"))
             {
                 _order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value;
-                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EvaluatedAssetPath", "EvaluatedAssetClass", "EffectiveDate", "EvaluatedAssetTypePath", "RunDate", "Passcount", "FailCount", "Passed", "PassFraction", "TotalCount" };
+                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EvaluatedAssetPath", "EvaluatedAssetClass", "EffectiveDate", "EvaluatedAssetTypePath", "RunDate", "Passcount", "FailCount", "PassFraction", "TotalCount" };
                 if (_orderColumns.FindIndex(x => x.Equals(_order, StringComparison.InvariantCultureIgnoreCase)) == -1)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_order value '{_order}' is not valid. Value must be one of the following: {string.Join(",", _orderColumns.ToArray())}.");
@@ -1723,7 +1723,6 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "PassCount");
             doc.SetCellValue(rowNumber, index++, "FailCount");
             doc.SetCellValue(rowNumber, index++, "PassFraction");
-            doc.SetCellValue(rowNumber, index++, "Passed");
 
             #endregion
             #region Body
@@ -1743,7 +1742,6 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
-                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString() : "");
             }
             doc.AutoFitColumn(1, 13);
             #endregion

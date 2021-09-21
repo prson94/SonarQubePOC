@@ -154,7 +154,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     }
 
     doExport() {
-        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, true, this.ruleId, this.simpleTextFilter, this.newAdvancedFilters?.filter);
+        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.totalRecords, this.sortField, this.sortOrder, true, this.ruleId, this.simpleTextFilter, this.newAdvancedFilters?.filter);
     }
 
     formatPath(s: string) {
