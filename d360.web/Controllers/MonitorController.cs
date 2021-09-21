@@ -151,7 +151,7 @@ namespace d360.web.Controllers
                         break;
                     case "Asset":
                         dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
-                        typeClause.Add($@"coalesce(IntersectName.Name,wia.AssetName) Like @{ff.FieldName}{count}");
+                        typeClause.Add($@"coalesce(wiis.AssetName,IntersectName.Name,wia.AssetName) Like @{ff.FieldName}{count}");
                         break;
                     case "TypeName":
                         dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
@@ -238,7 +238,7 @@ namespace d360.web.Controllers
 
 
             var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
-		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid,IntersectName.Name,wia.AssetName";
+		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid,IntersectName.Name,wia.AssetName, wiis.AssetName";
 
             var fromSql = @"		from [workflow].[type] wt 
                                 inner join [workflow].[version] wv on (wt.id = wv.typeid) 
@@ -254,6 +254,7 @@ namespace d360.web.Controllers
                                 left  join [dbo].[intersect] inter on (wi.[object]='Intersect' and inter.id=wi.[objectId])
                                 outer apply dbo.GetIntersectTypeNames(inter.IntersectTypeId) ITypeName
 								left join [workflow].[ItemAsset] wia on wia.WorkFlowItemId = wi.id
+								left join [workflow].[ItemIssue] wiis on wiis.WorkFlowItemId = wi.id
 								outer apply (select utility.deriveintersectname(wi.objectid))IntersectName(Name)
 ";
             var sql = $@"
@@ -282,7 +283,7 @@ namespace d360.web.Controllers
                             end as 'Type',                    
                          coalesce(assettype.Name, it.Name,ITypeName.Name) as TypeName,                    
                          case when wi.[object] = 'Intersect' then coalesce(IntersectName.Name,'(unknown relationship)')   
-                         else coalesce(wia.AssetName,'(unknown)') end as 'Asset',                     
+                         else coalesce(wiis.AssetName,wia.AssetName,'(unknown)') end as 'Asset',                     
                          gr.firstName + ' ' + gr.lastName as 'Initiator' ,                    
                          wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',
                         case when   wi.CompletedOn is null then    'Pending'            
