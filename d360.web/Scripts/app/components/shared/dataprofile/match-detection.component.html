@@ -224,7 +224,8 @@
                         [hasProfiling]="true"
                         hasDetail="true"
                         [storageKey]="sidePanelStorageKey"
-                        [height]="'calc(100vh - 220px)'">
+                        [height]="'calc(100vh - 220px)'"
+                        [multipleItemsSelected] ="multipleItemsSelected">
                 <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
                 </ng-container>

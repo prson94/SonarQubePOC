@@ -24,7 +24,7 @@
         </div>
         <div class="side-panel-content" [style.height]="height">
             <ng-content></ng-content>
-            <ng-container *ngIf="expanded && selectedItem == null && panelButton?.needsSelection">
+            <ng-container *ngIf="expanded && selectedItem == null && panelButton?.needsSelection && !multipleItemsSelected">
                 <div class="side-panel-empty-overlay">
                     <div class="content">
                         <div class="icon-holder">
@@ -41,6 +41,16 @@
                             <i [class]="'fa ' + panelButton?.icon"></i>
                         </div>
                         <span>{{panelButton?.notApplicableMessage}}</span>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="expanded && panelButton?.needsSelection && multipleItemsSelected">
+                <div class="side-panel-empty-overlay">
+                    <div class="content">
+                        <div class="icon-holder">
+                            <i [class]="'fa ' + panelButton?.icon"></i>
+                        </div>
+                        <span>{{panelButton?.multipleSelectedMessage}}</span>
                     </div>
                 </div>
             </ng-container>

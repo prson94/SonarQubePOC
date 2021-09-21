@@ -58,6 +58,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     sidePanelStorageKey: string;
     dataProfile: any;
 
+    multipleItemsSelected: boolean = false;
+
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 
@@ -237,7 +239,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     selectMatch(event: any) {
         let selectedAssets = event;
-
+        this.multipleItemsSelected = false;
         if (selectedAssets && selectedAssets.length == 1) {
             this.selection = selectedAssets[0];
             this.sidePanelLoading = true;
@@ -260,6 +262,9 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 });
         } else {
             this.selection = null;
+            if (selectedAssets && selectedAssets.length > 1) {
+                this.multipleItemsSelected = true;
+            }
             this.sidePanelLoading = false;
         }
 
