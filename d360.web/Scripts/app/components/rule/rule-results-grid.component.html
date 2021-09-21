@@ -14,11 +14,12 @@
     </div>
     <advanced-filtering [loadIdentifier]="'RuleResults_' + ruleUid" (onLoad)="onFiltersLoaded()" [fieldsObserver]="getFieldsObs()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     <div class="grid-action-buttons">
-        <div pTooltip="Export to Excel"
+        <div [pTooltip]="ruleResultsExportTooltip"
              tooltipPosition="left"
              tooltipStyleClass="ig-tooltip">
             <button igButton
                     icon="fa-download"
+                    [disabled]="!ruleResultsExportEnabled"
                     (click)="doExport()">
             </button>
         </div>
