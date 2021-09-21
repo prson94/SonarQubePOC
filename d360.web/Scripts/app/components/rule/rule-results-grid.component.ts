@@ -101,9 +101,8 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
         }
 
         this.settings.getSettings()
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.ruleResultsExportLimit = data.MaxExcelExportRows;
-                console.log(this.ruleResultsExportLimit);
 
                 this.isLoading = true;
                 if (this.getRuleResultsSub) {
@@ -112,7 +111,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
                 this.getRuleResultsSub = this.ruleService
                     .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters?.filter)
                     .pipe(debounceTime(300))
-                    .subscribe(res => {
+                    .subscribe((res) => {
                         this.results = res;
                         if (this.results != null) {
                             this.totalRecords = this.results.total;
