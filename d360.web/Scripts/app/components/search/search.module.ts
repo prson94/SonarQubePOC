@@ -34,6 +34,7 @@ import { MenuModule } from 'primeng/menu';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 
+import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
 import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
 import { SearchStateService } from './search-state.service';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
@@ -77,6 +78,7 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
         TypeaheadSearchModule,
         ExplainWidgetModule,
         IgBadgeModule,
+        AdvancedFiltersModule,
         AssetPathWidgetModule,
         SidePanelModule,
         AssetDetailModule,

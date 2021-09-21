@@ -95,15 +95,29 @@ export class SearchAggregationFilter {
     Values: string[];
     public constructor(init?: Partial<SearchAggregationFilter>) {
         Object.assign(this, init);
-    }}
+    }
+}
+
+export enum SearchConnector {
+    And,
+    Or
+}
+
+export enum SearchOperator {
+    Contains,
+    NotContains
+}
 
 export class SearchFieldFilter {
     Field: string;
-    Phrase: string;
+    Values: string[];
     MatchWords: boolean = false;
+    Connector: SearchConnector = SearchConnector.Or;
+    Operator: SearchOperator = SearchOperator.Contains;
     public constructor(init?: Partial<SearchFieldFilter>) {
         Object.assign(this, init);
-    }}
+    }
+}
 
 export class SearchQuery {
     Term: string;
@@ -112,6 +126,7 @@ export class SearchQuery {
     AggregationFilters: SearchAggregationFilter[];
     FieldFilters: SearchFieldFilter[];
     Aggregations: string[];
+    SearchConnector: SearchConnector = SearchConnector.And;
     public constructor(init?: Partial<SearchQuery>) {
         Object.assign(this, init);
     }
@@ -134,7 +149,8 @@ export class SearchState {
     From: number;
     SearchTypes: string[];
     CheckTreeKeys: SearchCheckTreeVal[];
-    AdvancedFilters: AdvancedSearchFilter[];
+    AdvancedFilters: SearchFieldFilter[];
+    SearchConnector: SearchConnector;
     Querytime: Date;
     public constructor(init?: Partial<SearchState>) {
         Object.assign(this, init);

@@ -44,6 +44,7 @@ export class AdvancedFilterFieldCondition {
     operator: Operator;
     value: any;
     value2: any;
+    exact: boolean = false;
 
     friendlyFieldName: string = "";
     markForDeletion: boolean = false;

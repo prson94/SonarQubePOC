@@ -25,7 +25,8 @@ export class AdvancedFilteringComponent implements OnChanges {
     @Input() loadIdentifier: string = "";
     @Input() enableFilterSaving: boolean = true;
     @Input() gridType: string = "List";
-    @Input() fieldsObserver: Observable<AdvancedFilterFieldType[]>
+    @Input() fieldsObserver: Observable<AdvancedFilterFieldType[]>;
+    @Input() externalStorage: string;
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
@@ -283,7 +284,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.cdRef.markForCheck();
 
         let loadedFilters: AdvancedFilterFieldCondition[] = [];
-        if (this.enableFilterSaving) {
+        if (this.enableFilterSaving || this.isGlobalSearch) {
             loadedFilters = this.loadFilters();
         }
 
@@ -343,7 +344,9 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private saveFilters() {
-        localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions));
+        if (this.enableFilterSaving) {
+            localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions));
+        }
     }
 
     private getStorageFilters(): AdvancedFilterFieldConditionCollection {
@@ -365,6 +368,26 @@ export class AdvancedFilteringComponent implements OnChanges {
         return null;
     }
 
+    private getGlobalSearchFilters(): AdvancedFilterFieldConditionCollection {
+        let state: AdvancedFilterFieldConditionCollection;
+        try {
+            if (this.externalStorage) {
+                let parsedState: AdvancedFilterFieldConditionCollection = JSON.parse(this.externalStorage);
+                if (parsedState !== null) {
+                    parsedState.filters.forEach((f) => {
+                        const field = this.fields.find((x) => x.Name === f.field);
+                        f.type = field;
+                        f.friendlyFieldName = field.FriendlyName;
+                    });
+                    state = parsedState;
+                }
+            }
+        } catch (ex) {
+            console.warn("Error parsing externaly stored filter");
+        }
+        return state;
+    }
+
     private clearFiltersStorage() {
         localStorage.removeItem(this.getLocalStorageKey());
     }
@@ -373,7 +396,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         try {
             this.conditions = new AdvancedFilterFieldConditionCollection();
             let loadedFilters: AdvancedFilterFieldCondition[] = [];
-            var savedState = this.getStorageFilters();
+            var savedState = this.isGlobalSearch ? this.getGlobalSearchFilters() : this.getStorageFilters();
             if (!savedState && !savedState.filters) {
                 return [];
             }
@@ -463,6 +486,10 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     get isComplexField() {
         return this.loadIdentifier.startsWith("ComplexField");
+    }
+
+    get isGlobalSearch() {
+        return this.loadIdentifier.startsWith("GlobalSearch")
     }
 
     get complexFieldDefinition(): ComplexFieldDefinition {
