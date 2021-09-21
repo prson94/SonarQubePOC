@@ -34,7 +34,7 @@ END
 		</sql>
 		<rollback>
 			<![CDATA[	
-drop view if exists [workflow].[ItemAsset]
+drop view if exists [workflow].[ItemIssue]
 			]]>
 		</rollback>
 	</changeSet>
