@@ -1299,7 +1299,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     get isGlobalSearch() {
-        return this.loadIdentifier.startsWith("GlobalSearch")
+        return this.loadIdentifier.startsWith("GlobalSearch");
     }
 
     get complexFieldDefinition(): ComplexFieldDefinition {

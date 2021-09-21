@@ -1239,12 +1239,12 @@ namespace d360.extensions.search
 
             foreach (FieldFilter fieldFilter in queryRequest.FieldFilters)
             {
-                QueryContainer qry = new QueryContainer();
+                QueryContainer qry;
                 if(fieldFilter.Values == null || fieldFilter.Values.Length == 0)
                 {
                     continue;
                 }
-                string[] values = fieldFilter.Values.Select(v => EscapeSpecialCharacters(v).ToLower()).ToArray();
+                string[] values = fieldFilter.Values.Select(v => EscapeSpecialCharacters(v).ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
                 if (fieldFilter.Field == "Tags")
                 {
                     Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");

@@ -383,6 +383,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 }
             }
         } catch (ex) {
+            // eslint-disable-next-line no-console
             console.warn("Error parsing externaly stored filter");
         }
         return state;
@@ -489,7 +490,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     get isGlobalSearch() {
-        return this.loadIdentifier.startsWith("GlobalSearch")
+        return this.loadIdentifier.startsWith("GlobalSearch");
     }
 
     get complexFieldDefinition(): ComplexFieldDefinition {

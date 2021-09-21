@@ -207,15 +207,20 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
     public getSavedFilters(): string {
         let state: AdvancedFilterFieldConditionCollection = new AdvancedFilterFieldConditionCollection();
-        state.connector = this.searchStateService.connector === SearchConnector.Or ? " or " : " and ";
+        state.connector = ` ${this.parseConnectorToString(this.searchStateService.connector)} `;
         state.filters = this.searchStateService.advancedFilters.map((af) => {
             const op: any = af.Operator === SearchOperator.NotContains ? Operator[Operator.NotEquals] : Operator[Operator.Equals];
             let condition: AdvancedFilterFieldCondition = new AdvancedFilterFieldCondition(this.datePipe);
             condition.field = af.Field;
             condition.exact = af.MatchWords;
-            condition.value = af.Field === "Tags" ? af.Values.map((v) => { return { title: v, value: v } }) : af.Values[0];
-            condition.fieldType = af.Field === "Tags" ? "Tag" : "Text";
-            condition.connectingOperator = af.Connector === SearchConnector.And ? "and" : "or";
+            if (af.Field === "Tags") {
+                condition.value = af.Values.map((v) => { return { title: v, value: v }; });
+                condition.fieldType = "Tag";
+            } else {
+                condition.value = af.Values[0];
+                condition.fieldType = "Text";
+            }
+            condition.connectingOperator = this.parseConnectorToString(af.Connector);
             condition.operator = op;
             condition.isRelationship = false;
             condition.markForDeletion = false;
@@ -233,9 +238,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
     }
 
     private parseOperator(op: string): SearchOperator {
-        if (Operator[op] === Operator.Equals) {
+        if (Operator[`${op}`] === Operator.Equals) {
             return SearchOperator.Contains;
-        } else if (Operator[op] === Operator.NotEquals) {
+        } else if (Operator[`${op}`] === Operator.NotEquals) {
             return SearchOperator.NotContains;
         } else {
             return null;
@@ -253,6 +258,15 @@ export class SearchComponent extends BaseComponent implements OnInit {
         }
     }
 
+    private parseConnectorToString(conn: SearchConnector): string {
+        if (conn === SearchConnector.And) {
+            return "and";
+        } else if (conn === SearchConnector.Or) {
+            return "or";
+        }
+        return "";
+    }
+
     public advancedFiltersChanged($event) {
         if (this.advancedFiltersLoaded) {
             const flts: SearchFieldFilter[] = this.advancedFilter.conditions.filters
@@ -264,7 +278,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
                         MatchWords: f.exact,
                         Operator: this.parseOperator(f.operator + ""),
                         Connector: this.parseConnector(f.connectingOperator)
-                    }
+                    };
                 });
             this.searchStateService.advancedFilters = flts;
             this.searchStateService.connector = this.parseConnector(this.advancedFilter.conditions.connector);
