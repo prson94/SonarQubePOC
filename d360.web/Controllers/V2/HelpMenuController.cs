@@ -40,6 +40,7 @@ namespace d360.web.Controllers.V2
            HttpGet,
            MapToApiVersion("2.0"),
            Route(""),
+           ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetHelpMenuItems()
         {
