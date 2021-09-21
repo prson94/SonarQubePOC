@@ -86,6 +86,8 @@ namespace igx.UnitTests
             var issuesMock = CreateDbSetMock<Issue>(issues);
             mock.Setup(x => x.Issues).Returns(issuesMock.Object);
 
+            mock.Setup(x => x.GetSettingValue<int>(Setting.MaxExcelExportRows)).Returns(50000);
+
             mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
 
