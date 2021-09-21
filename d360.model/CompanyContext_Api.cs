@@ -5714,8 +5714,8 @@ where	[uid] = @uid
 
 
 update	T
-set	T.Subject = I.Subject,
-	T.SubjectID = I.SubjectID,
+set	T.Subject = I.Object,
+	T.SubjectID = I.ObjectID,
 	T.Object = I.Object,
 	T.ObjectID = I.ObjectID,
     T.IsNew = CASE
