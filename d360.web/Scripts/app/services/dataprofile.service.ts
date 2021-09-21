@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpClientJsonpModule } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpClientJsonpModule, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, throwError } from "rxjs";
 import { catchError, map, debounceTime } from "rxjs/operators";
 
@@ -104,7 +104,7 @@ export class DataProfileService extends BaseObservableService {
             .get(url, httpOptions)
             .pipe(
                 map((response) => <any>response),
-                catchError((err) => this.handleError(err, true))
+                catchError((err) => err instanceof HttpErrorResponse && err.status === 404 ? null : this.handleError(err))
             );
     }
 
