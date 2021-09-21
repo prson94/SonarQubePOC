@@ -68,7 +68,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             this.fieldValue = null;
 
         if (this.useApiName && this.column['fieldType'] == 'Link' && this.fieldValue) {
-            var delimiterIdx = (this.fieldValue as string).indexOf('|'); console.log('here', delimiterIdx);
+            var delimiterIdx = (this.fieldValue as string).indexOf('|');
             if (delimiterIdx > -1) {
                 var name = (this.fieldValue as string).substring(0, delimiterIdx);
                 var href = (this.fieldValue as string).substring(delimiterIdx + 1);
