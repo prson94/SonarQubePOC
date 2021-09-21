@@ -178,7 +178,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connector label with UID &apos;{labelUid}&apos; does not exist!.
+        ///   Looks up a localized string similar to Connector label with UID &apos;{0}&apos; does not exist!.
         /// </summary>
         internal static string UidNotFound {
             get {

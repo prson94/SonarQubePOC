@@ -61,6 +61,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Access Denied.
+        /// </summary>
+        internal static string AccessDenied {
+            get {
+                return ResourceManager.GetString("AccessDenied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to API Entity Not Found.
         /// </summary>
         internal static string ApiEntryNotFound {
@@ -79,11 +88,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No asset found for asset type {0}.
+        /// </summary>
+        internal static string AssetNotFoundForAssetType {
+            get {
+                return ResourceManager.GetString("AssetNotFoundForAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The asset type for this asset could not be found.
         /// </summary>
         internal static string AssetTypeNotFoundForAsset {
             get {
                 return ResourceManager.GetString("AssetTypeNotFoundForAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AssetType does not support Export Template..
+        /// </summary>
+        internal static string AssetTypeNotSupportExport {
+            get {
+                return ResourceManager.GetString("AssetTypeNotSupportExport", resourceCulture);
             }
         }
         
@@ -106,6 +133,60 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You do not have permissions to change fields on this type..
+        /// </summary>
+        internal static string ChangeFieldNotAllowed {
+            get {
+                return ResourceManager.GetString("ChangeFieldNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component cannot exceed 250 characters..
+        /// </summary>
+        internal static string ComponentMaxSize250 {
+            get {
+                return ResourceManager.GetString("ComponentMaxSize250", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component is not valid..
+        /// </summary>
+        internal static string ComponentNotValid {
+            get {
+                return ResourceManager.GetString("ComponentNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Conflict.
+        /// </summary>
+        internal static string Conflict {
+            get {
+                return ResourceManager.GetString("Conflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connetor status with externalId {0} could not be found..
+        /// </summary>
+        internal static string ConnectorStatusNotFound {
+            get {
+                return ResourceManager.GetString("ConnectorStatusNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Counter Initial Value must be higher that asset count ({0}).
+        /// </summary>
+        internal static string CounterInitialValueHigherCurrentValue {
+            get {
+                return ResourceManager.GetString("CounterInitialValueHigherCurrentValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset cross reference already exists..
         /// </summary>
         internal static string CrossRefExists {
@@ -115,11 +196,47 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Provided value does not match the expected data type for this setting.
+        /// </summary>
+        internal static string DataTypeValueNotMatched {
+            get {
+                return ResourceManager.GetString("DataTypeValueNotMatched", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fields Name, GovernanceRole and StepNo cannot be delete from Diagram Asset Type..
+        /// </summary>
+        internal static string DiagramAssetTypeSystemFieldValidation {
+            get {
+                return ResourceManager.GetString("DiagramAssetTypeSystemFieldValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Same User UID appears multiple times..
+        /// </summary>
+        internal static string DuplicateUserUidProvided {
+            get {
+                return ResourceManager.GetString("DuplicateUserUidProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have passed an empty or invalid set of criteria..
         /// </summary>
         internal static string EmptyInvalidParameterSet {
             get {
                 return ResourceManager.GetString("EmptyInvalidParameterSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to End value {0} is not a valid IP Address.
+        /// </summary>
+        internal static string EndIPAddressNotValid {
+            get {
+                return ResourceManager.GetString("EndIPAddressNotValid", resourceCulture);
             }
         }
         
@@ -169,6 +286,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error while add status of a connector endpoint.
+        /// </summary>
+        internal static string ErrorConnectorStatus {
+            get {
+                return ResourceManager.GetString("ErrorConnectorStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error Creating Template.
+        /// </summary>
+        internal static string ErrorCreateTemplate {
+            get {
+                return ResourceManager.GetString("ErrorCreateTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot delete a default help entry.
         /// </summary>
         internal static string ErrorDeletingDefaultHelpItem {
@@ -178,11 +313,65 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error while opening file..
+        /// </summary>
+        internal static string ErrorFileOpen {
+            get {
+                return ResourceManager.GetString("ErrorFileOpen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filter expression parse error.
+        /// </summary>
+        internal static string ErrorFilterExpressionParse {
+            get {
+                return ResourceManager.GetString("ErrorFilterExpressionParse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have submitted an invalid or empty data set. Please check your request and submit again..
         /// </summary>
         internal static string ErrorInvalidDatasetMessage {
             get {
                 return ResourceManager.GetString("ErrorInvalidDatasetMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not cast score type value {0} to a valid score type.
+        /// </summary>
+        internal static string ErrorScoreCasting {
+            get {
+                return ResourceManager.GetString("ErrorScoreCasting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error Updating Template.
+        /// </summary>
+        internal static string ErrorUpdateTemplate {
+            get {
+                return ResourceManager.GetString("ErrorUpdateTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execution with UID {0} has been cancelled successfully..
+        /// </summary>
+        internal static string ExecutionCancel {
+            get {
+                return ResourceManager.GetString("ExecutionCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execution job was canceled by user..
+        /// </summary>
+        internal static string ExecutionCancelByUser {
+            get {
+                return ResourceManager.GetString("ExecutionCancelByUser", resourceCulture);
             }
         }
         
@@ -205,11 +394,137 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Execution with UID {0} has been already canceled..
+        /// </summary>
+        internal static string ExecutionUIDCancelled {
+            get {
+                return ResourceManager.GetString("ExecutionUIDCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execution with UID {0} has finished and cannot be canceled..
+        /// </summary>
+        internal static string ExecutionUIDFinishedCanNotCancel {
+            get {
+                return ResourceManager.GetString("ExecutionUIDFinishedCanNotCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execution with UID {0} is not a batch job and cannot be canceled..
+        /// </summary>
+        internal static string ExecutionUIDNotBatchJobCanNotCancel {
+            get {
+                return ResourceManager.GetString("ExecutionUIDNotBatchJobCanNotCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execution with UID {0} does not exist..
+        /// </summary>
+        internal static string ExecutionUIDNotExist {
+            get {
+                return ResourceManager.GetString("ExecutionUIDNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execution unique identifier not found..
+        /// </summary>
+        internal static string ExecutionUIDNotFound {
+            get {
+                return ResourceManager.GetString("ExecutionUIDNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execution with UID {0} has started and cannot be canceled..
+        /// </summary>
+        internal static string ExecutionUIDStartedCanNotCancel {
+            get {
+                return ResourceManager.GetString("ExecutionUIDStartedCanNotCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Something went wrong while canceling Execution..
+        /// </summary>
+        internal static string ExecutionWrongWhenCancel {
+            get {
+                return ResourceManager.GetString("ExecutionWrongWhenCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Existing items in system.
+        /// </summary>
+        internal static string ExistItemInSystem {
+            get {
+                return ResourceManager.GetString("ExistItemInSystem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A valid ExportViewType is required..
+        /// </summary>
+        internal static string ExportViewMessage {
+            get {
+                return ResourceManager.GetString("ExportViewMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field moved successfully..
+        /// </summary>
+        internal static string FieldMovedSuccessfully {
+            get {
+                return ResourceManager.GetString("FieldMovedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field type error.
+        /// </summary>
+        internal static string FieldTypeError {
+            get {
+                return ResourceManager.GetString("FieldTypeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field Type Not Found.
         /// </summary>
         internal static string FieldTypeNotFound {
             get {
                 return ResourceManager.GetString("FieldTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This field type is in use in a responsibility rule and the rule needs to be deleted first..
+        /// </summary>
+        internal static string FieldUseInResponsibilityRule {
+            get {
+                return ResourceManager.GetString("FieldUseInResponsibilityRule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field &apos;{0}&apos; is not valid for Asset Type specified..
+        /// </summary>
+        internal static string FieldValidateWithAssetType {
+            get {
+                return ResourceManager.GetString("FieldValidateWithAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File Successfully uploaded.
+        /// </summary>
+        internal static string FileUploadMessage {
+            get {
+                return ResourceManager.GetString("FileUploadMessage", resourceCulture);
             }
         }
         
@@ -259,6 +574,42 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Group UID provided is an active directory group and cannot be managed manually..
+        /// </summary>
+        internal static string GroupIsAcitveDirectorNotManageManually {
+            get {
+                return ResourceManager.GetString("GroupIsAcitveDirectorNotManageManually", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group UID provided is not a valid group UID. Group does not exist..
+        /// </summary>
+        internal static string GroupUidNotExists {
+            get {
+                return ResourceManager.GetString("GroupUidNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internal Server Error.
+        /// </summary>
+        internal static string InternalServerError {
+            get {
+                return ResourceManager.GetString("InternalServerError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Asset Type ID.Provide Valid Asset Type ID..
+        /// </summary>
+        internal static string InvalidAssetTypeID {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AssetUid {0} is invalid.
         /// </summary>
         internal static string InvalidAssetUid {
@@ -268,11 +619,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Provided value is not a valid boolean.
+        /// </summary>
+        internal static string InvalidBoolean {
+            get {
+                return ResourceManager.GetString("InvalidBoolean", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter &apos;_direction&apos;. Allowed values are &apos;desc&apos; and &apos;asc&apos;..
         /// </summary>
         internal static string InvalidDirection {
             get {
                 return ResourceManager.GetString("InvalidDirection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to externalId {0} is not a valid Uid.
+        /// </summary>
+        internal static string InvalidExternalID {
+            get {
+                return ResourceManager.GetString("InvalidExternalID", resourceCulture);
             }
         }
         
@@ -358,11 +727,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Provided value is not a valid number.
+        /// </summary>
+        internal static string InvalidNumber {
+            get {
+                return ResourceManager.GetString("InvalidNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid {0} value provided. Number is too large..
         /// </summary>
         internal static string InvalidNumberTooLarge {
             get {
                 return ResourceManager.GetString("InvalidNumberTooLarge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Parameter.
+        /// </summary>
+        internal static string InvalidParameter {
+            get {
+                return ResourceManager.GetString("InvalidParameter", resourceCulture);
             }
         }
         
@@ -376,11 +763,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid _resourceuid provided!.
+        /// </summary>
+        internal static string InvalidResourceuid {
+            get {
+                return ResourceManager.GetString("InvalidResourceuid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid score type provided, please provide a valid score type..
         /// </summary>
         internal static string InvalidScoreType {
             get {
                 return ResourceManager.GetString("InvalidScoreType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One or more user UIDs passed in are not a user..
+        /// </summary>
+        internal static string InvalidUserUids {
+            get {
+                return ResourceManager.GetString("InvalidUserUids", resourceCulture);
             }
         }
         
@@ -394,6 +799,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid _order provided!.
+        /// </summary>
+        internal static string Invalid_Order {
+            get {
+                return ResourceManager.GetString("Invalid_Order", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are existing items in your environment. You may not perform a Replace action until those items are removed..
+        /// </summary>
+        internal static string ItemExistsNotReplaceMessage {
+            get {
+                return ResourceManager.GetString("ItemExistsNotReplaceMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have not provided a valid JSON structure for this request..
+        /// </summary>
+        internal static string JSONValidMessage {
+            get {
+                return ResourceManager.GetString("JSONValidMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid {0} value provided. Value must be greater than 0..
         /// </summary>
         internal static string MinLengthCheckGTZero {
@@ -403,11 +835,47 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to One or more IP Addresses is missing a value.
+        /// </summary>
+        internal static string MissingIPAddressValue {
+            get {
+                return ResourceManager.GetString("MissingIPAddressValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model does not contain a valid existing export template style..
+        /// </summary>
+        internal static string ModelExportTemplateStyleNotFound {
+            get {
+                return ResourceManager.GetString("ModelExportTemplateStyleNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not Found.
         /// </summary>
         internal static string NotFound {
             get {
                 return ResourceManager.GetString("NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No assetTypeUid or actionTypeUid or relationshipTypeUid provided.
+        /// </summary>
+        internal static string NotValidAssetActionRelationTypeProvided {
+            get {
+                return ResourceManager.GetString("NotValidAssetActionRelationTypeProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No user UIDs provided..
+        /// </summary>
+        internal static string NoUserUIDProvided {
+            get {
+                return ResourceManager.GetString("NoUserUIDProvided", resourceCulture);
             }
         }
         
@@ -439,6 +907,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You do not have permissions to remove fields on this type..
+        /// </summary>
+        internal static string RemoveFieldNotAllowed {
+            get {
+                return ResourceManager.GetString("RemoveFieldNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rule ID not found.
         /// </summary>
         internal static string RuleIDNotFound {
@@ -457,11 +934,191 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Setting with this id not found.
+        /// </summary>
+        internal static string SettingIDNotFound {
+            get {
+                return ResourceManager.GetString("SettingIDNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value passed for _settingId is not valid.
+        /// </summary>
+        internal static string SettingIDNotValid {
+            get {
+                return ResourceManager.GetString("SettingIDNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This setting is locked and cannot be updated.
+        /// </summary>
+        internal static string SettingLocked {
+            get {
+                return ResourceManager.GetString("SettingLocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exactly one value must be provided based on the setting&apos;s data type.
+        /// </summary>
+        internal static string SettingValueProvided {
+            get {
+                return ResourceManager.GetString("SettingValueProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start value {0} is not a valid IP Address.
+        /// </summary>
+        internal static string StartIPAddressNotValid {
+            get {
+                return ResourceManager.GetString("StartIPAddressNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION.
+        /// </summary>
+        internal static string StatusInvalid {
+            get {
+                return ResourceManager.GetString("StatusInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status parameter value is required..
+        /// </summary>
+        internal static string StatusRequied {
+            get {
+                return ResourceManager.GetString("StatusRequied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Syles successfully updated..
+        /// </summary>
+        internal static string StyleUpdated {
+            get {
+                return ResourceManager.GetString("StyleUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Success.
         /// </summary>
         internal static string Success {
             get {
                 return ResourceManager.GetString("Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} successfully added..
+        /// </summary>
+        internal static string SuccessfullyAdded {
+            get {
+                return ResourceManager.GetString("SuccessfullyAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} successfully updated..
+        /// </summary>
+        internal static string SucessfullyUpdated {
+            get {
+                return ResourceManager.GetString("SucessfullyUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error Creating Template.
+        /// </summary>
+        internal static string TemplateCreatingError {
+            get {
+                return ResourceManager.GetString("TemplateCreatingError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template Deleted..
+        /// </summary>
+        internal static string TemplateDeleted {
+            get {
+                return ResourceManager.GetString("TemplateDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error Deleting Template.
+        /// </summary>
+        internal static string TemplateDeletedError {
+            get {
+                return ResourceManager.GetString("TemplateDeletedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error encountered while deleteing template {0}..
+        /// </summary>
+        internal static string TemplateDeletedErrorMessage {
+            get {
+                return ResourceManager.GetString("TemplateDeletedErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template Deleted Successfully..
+        /// </summary>
+        internal static string TemplateDeletedMessage {
+            get {
+                return ResourceManager.GetString("TemplateDeletedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A Template file type must be .xls or .xlsx..
+        /// </summary>
+        internal static string TemplateFileTypeValidate {
+            get {
+                return ResourceManager.GetString("TemplateFileTypeValidate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template named &apos;{0}&apos; already exists for Asset Type &apos;{1}&apos;..
+        /// </summary>
+        internal static string TemplateNameDuplicate {
+            get {
+                return ResourceManager.GetString("TemplateNameDuplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template not found..
+        /// </summary>
+        internal static string TemplateNotFound {
+            get {
+                return ResourceManager.GetString("TemplateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No Templates found for the UID provided..
+        /// </summary>
+        internal static string TemplateNotFoundMessage {
+            get {
+                return ResourceManager.GetString("TemplateNotFoundMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export Template Style not found to update..
+        /// </summary>
+        internal static string TemplateNotFoundUpdate {
+            get {
+                return ResourceManager.GetString("TemplateNotFoundUpdate", resourceCulture);
             }
         }
         
@@ -489,6 +1146,24 @@ namespace Resources {
         internal static string UnknownErrorInvestigatingMessage {
             get {
                 return ResourceManager.GetString("UnknownErrorInvestigatingMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Used in Responsibility Rules.
+        /// </summary>
+        internal static string UsedinResponsibilityRules {
+            get {
+                return ResourceManager.GetString("UsedinResponsibilityRules", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User {0} is already a member of this group.
+        /// </summary>
+        internal static string UserAlreadyMemberOfGroup {
+            get {
+                return ResourceManager.GetString("UserAlreadyMemberOfGroup", resourceCulture);
             }
         }
     }

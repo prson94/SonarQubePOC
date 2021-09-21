@@ -61,11 +61,56 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The asset class {0} does not support data profiling. Profiling data can only be associated with Business or Technical Asset types..
+        /// </summary>
+        internal static string AssetClassNotSupportDataProfile {
+            get {
+                return ResourceManager.GetString("AssetClassNotSupportDataProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Elements in bottomK cannot be Empty strings.
+        /// </summary>
+        internal static string BottomKNotEmpty {
+            get {
+                return ResourceManager.GetString("BottomKNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid _endDate provided.
+        /// </summary>
+        internal static string InvalidEndDate {
+            get {
+                return ResourceManager.GetString("InvalidEndDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid _includeChildAssets provided.
+        /// </summary>
+        internal static string InvalidInclChildAssets {
+            get {
+                return ResourceManager.GetString("InvalidInclChildAssets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;path&apos; and &apos;tags&apos;..
         /// </summary>
         internal static string InvalidOrder {
             get {
                 return ResourceManager.GetString("InvalidOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;confidence&apos; and &apos;path&apos;..
+        /// </summary>
+        internal static string InvalidOrderConfidencePath {
+            get {
+                return ResourceManager.GetString("InvalidOrderConfidencePath", resourceCulture);
             }
         }
         
@@ -79,6 +124,42 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid _startDate provided.
+        /// </summary>
+        internal static string InvalidStartDate {
+            get {
+                return ResourceManager.GetString("InvalidStartDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint.&quot;.
+        /// </summary>
+        internal static string MaxDataProfieldDelete {
+            get {
+                return ResourceManager.GetString("MaxDataProfieldDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You may only provide a maximum of {0} Data Profile records in this request. Please call the BATCH API to submit more than {1} items..
+        /// </summary>
+        internal static string MaxDataProfieldRequest {
+            get {
+                return ResourceManager.GetString("MaxDataProfieldRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Min Confidence Parameter is invalid.
+        /// </summary>
+        internal static string MinConfidenceParaInvalid {
+            get {
+                return ResourceManager.GetString("MinConfidenceParaInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} signature not found for AssetUid {1}.
         /// </summary>
         internal static string NoSimilarTypeForAssetUid {
@@ -88,11 +169,56 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Record already exists for AssetUid {0} and ProfileSetDate {1}.
+        /// </summary>
+        internal static string ProfileSetDateExists {
+            get {
+                return ResourceManager.GetString("ProfileSetDateExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Record does not exist for AssetUid {0} and ProfileSetDate {1}.
+        /// </summary>
+        internal static string ProfileSetDateNotExists {
+            get {
+                return ResourceManager.GetString("ProfileSetDateNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to similarType is a required field..
         /// </summary>
         internal static string RequiredSimilarType {
             get {
                 return ResourceManager.GetString("RequiredSimilarType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start Date must be before the end date.
+        /// </summary>
+        internal static string StartEndDateValidation {
+            get {
+                return ResourceManager.GetString("StartEndDateValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Elements in topK cannot be Empty strings.
+        /// </summary>
+        internal static string TopKNotEmpty {
+            get {
+                return ResourceManager.GetString("TopKNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type Qualifier Parameter is invalid.
+        /// </summary>
+        internal static string TypeParameterInvalid {
+            get {
+                return ResourceManager.GetString("TypeParameterInvalid", resourceCulture);
             }
         }
     }

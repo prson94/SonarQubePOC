@@ -313,6 +313,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Relationship Type with Uid {0} could not be found..
+        /// </summary>
+        internal static string RelationShipTypeUidNotFound {
+            get {
+                return ResourceManager.GetString("RelationShipTypeUidNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resource Uid provided does not exist..
         /// </summary>
         internal static string ResourceUidNotFound {

@@ -117,16 +117,58 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AssetClassNotSupportDataProfile" xml:space="preserve">
+    <value>The asset class {0} does not support data profiling. Profiling data can only be associated with Business or Technical Asset types.</value>
+  </data>
+  <data name="BottomKNotEmpty" xml:space="preserve">
+    <value>Elements in bottomK cannot be Empty strings</value>
+  </data>
+  <data name="InvalidEndDate" xml:space="preserve">
+    <value>Invalid _endDate provided</value>
+  </data>
+  <data name="InvalidInclChildAssets" xml:space="preserve">
+    <value>Invalid _includeChildAssets provided</value>
+  </data>
   <data name="InvalidOrder" xml:space="preserve">
     <value>Invalid value for parameter '_order'. Allowed values are 'path' and 'tags'.</value>
+  </data>
+  <data name="InvalidOrderConfidencePath" xml:space="preserve">
+    <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
   </data>
   <data name="InvalidSimilarType" xml:space="preserve">
     <value>'{0}' is an invalid similar type.</value>
   </data>
+  <data name="InvalidStartDate" xml:space="preserve">
+    <value>Invalid _startDate provided</value>
+  </data>
+  <data name="MaxDataProfieldDelete" xml:space="preserve">
+    <value>You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint."</value>
+  </data>
+  <data name="MaxDataProfieldRequest" xml:space="preserve">
+    <value>You may only provide a maximum of {0} Data Profile records in this request. Please call the BATCH API to submit more than {1} items.</value>
+  </data>
+  <data name="MinConfidenceParaInvalid" xml:space="preserve">
+    <value>Min Confidence Parameter is invalid</value>
+  </data>
   <data name="NoSimilarTypeForAssetUid" xml:space="preserve">
     <value>{0} signature not found for AssetUid {1}</value>
   </data>
+  <data name="ProfileSetDateExists" xml:space="preserve">
+    <value>Record already exists for AssetUid {0} and ProfileSetDate {1}</value>
+  </data>
+  <data name="ProfileSetDateNotExists" xml:space="preserve">
+    <value>Record does not exist for AssetUid {0} and ProfileSetDate {1}</value>
+  </data>
   <data name="RequiredSimilarType" xml:space="preserve">
     <value>similarType is a required field.</value>
+  </data>
+  <data name="StartEndDateValidation" xml:space="preserve">
+    <value>Start Date must be before the end date</value>
+  </data>
+  <data name="TopKNotEmpty" xml:space="preserve">
+    <value>Elements in topK cannot be Empty strings</value>
+  </data>
+  <data name="TypeParameterInvalid" xml:space="preserve">
+    <value>Type Qualifier Parameter is invalid</value>
   </data>
 </root>

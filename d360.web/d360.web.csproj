@@ -25,11 +25,10 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>
-    </IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
-    <IISExpressUseClassicPipelineMode />
+    <IISExpressSSLPort>44338</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
+    <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -362,6 +361,16 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\CommentsAPIMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CommentsAPIMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\ConnectorLabelAPIMessage.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ConnectorLabelAPIMessage.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\Core.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -756,6 +765,14 @@
     <Content Include="App_GlobalResources\DataProfileAPIMessages.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>DataProfileAPIMessages.Designer.cs</LastGenOutput>
+    </Content>
+    <Content Include="App_GlobalResources\CommentsAPIMessages.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>CommentsAPIMessages.designer.cs</LastGenOutput>
+    </Content>
+    <Content Include="App_GlobalResources\ConnectorLabelAPIMessage.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ConnectorLabelAPIMessage.Designer.cs</LastGenOutput>
     </Content>
     <EmbeddedResource Include="Content\Swagger\index.html" />
     <EmbeddedResource Include="Content\Swagger\swagger.css">
@@ -2125,7 +2142,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://integration.eng.data3sixty.local/</IISUrl>
+          <IISUrl>http://pgupta.eng.data3sixty.local/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

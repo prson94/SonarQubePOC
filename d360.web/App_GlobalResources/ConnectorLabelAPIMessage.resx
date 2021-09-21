@@ -157,7 +157,7 @@
     <value>Label value cannot be empty.</value>
   </data>
   <data name="UidNotFound" xml:space="preserve">
-    <value>Connector label with UID '{labelUid}' does not exist!</value>
+    <value>Connector label with UID '{0}' does not exist!</value>
   </data>
   <data name="UidNotValid" xml:space="preserve">
     <value>Invalid connector label UID passed in the request</value>
