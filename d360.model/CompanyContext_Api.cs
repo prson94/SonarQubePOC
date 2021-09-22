@@ -4555,7 +4555,7 @@ where   ExecutionID = @ExecutionID
 
                                 errorTable.Rows.Add(errorRow);
 
-                                results.Add(new DatabaseBulkAssetResult { IsNew = false, ItemNumber = i, Message = errorMessage, Success = false });
+                                results.Add(new DatabaseBulkAssetResult { IsNew = false, ItemNumber = i, ExecutionItemUid = model.ExecutionItemUid, Message = errorMessage, Success = false });
                             }
                         }
 
