@@ -72,7 +72,10 @@ export class RulesService extends BaseObservableService {
 
         if (isExport) {
             // get Friendly name export
-            uri += "&_isFriendlyNameExport=true&_pageNum=1&_pageSize=20000&_includeDuplicateFlag=True";
+            if (!pageSize) {
+                pageSize = 20000;
+            }
+            uri += `&_isFriendlyNameExport=true&_pageNum=1&_pageSize=${pageSize}&_includeDuplicateFlag=True`;
 
             this.getRule(ruleId)
                 .subscribe(result => {
