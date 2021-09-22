@@ -422,6 +422,7 @@
 	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
 	<include file="scripts/Function.utility.GetIntersectTypesByType.xml"/>
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
+  <include file="scripts/Function.utility.GetPredicateFunctionalTypeValue.xml"/>
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>
 
 	<!-- Procedures (object-based naming) -->

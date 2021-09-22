@@ -1,0 +1,48 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="sDooley" id="Function.utility.GetPredicateFunctionalTypeValue-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [utility].[GetPredicateFunctionalTypeValue]
+(
+	@ID int
+)
+RETURNS nvarchar(max)
+AS
+BEGIN
+	if @ID is not null
+	begin
+		if @ID = 1		begin		return 	'Simple Data Lineage'	end				
+		if @ID = 2		begin		return 	'Evaluation'	end
+		if @ID = 3		begin		return 	'Inter-type Hierarchy'	end	
+		if @ID = 4		begin		return 	'Intra-type Hierarchy'	end		
+		if @ID = 6		begin		return 	'Grammatic Association'	end
+		if @ID = 7		begin		return 	'Simple'	end				
+		if @ID = 9		begin		return 	'See Also'	end	
+		if @ID = 12		begin		return 	'Transformation'	end	
+		if @ID = 13		begin		return 	'Business To Technical'	end
+		if @ID = 14		begin		return 	'Semantic Relation'	end				
+		if @ID = 15		begin		return 	'Diagram'	end			
+		if @ID = 16		begin		return 	'Diagram Use'	end	
+		if @ID = 17		begin		return 	'Diagram Reference'	end	
+	end
+	return ''
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP FUNCTION IF EXISTS [utility].[GetPredicateFunctionalTypeValue]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
