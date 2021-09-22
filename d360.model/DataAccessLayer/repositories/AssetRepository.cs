@@ -2978,7 +2978,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
         public async Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string component, string status)
         {
-            string orderDirection = "asc";
+            string orderDirection = "desc";
             var includeTotal = true;
             string orderBySql = "";
             string offsetSql = "";
@@ -3037,7 +3037,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         StatusCode = HttpStatusCode.BadRequest
                     };
                 }
-                orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+                orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "desc";
             }
 
             if (!queryParams.Any(p => p.Key == "_order"))
