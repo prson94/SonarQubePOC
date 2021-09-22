@@ -896,7 +896,7 @@ namespace d360.model
                         break;
                     case WorkflowActivityType.FieldChange:
                         // change the specified field and mark the step complete
-                        UpdateItemField(itemStep, objectInfo, stepSettings);
+                        await UpdateItemField(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.RelationshipChange:
@@ -1350,21 +1350,21 @@ namespace d360.model
             }
         }
 
-        private void UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
+        private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
         {
-            // check if the field exists
+            //check if the field exists
             var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
             //validate list field value
             if (fieldType.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(val))
             {
                 var lookupValues = val.Split(',').Select(x => int.Parse(x)).ToList();
-                var value = Query<int>(@"select value
+                var value = (await QueryAsync<int>(@"select value
                   from[dbo].[FieldLookupValue]
                   where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and [Value] in @lookupValues",
 
                 new { obj = fieldType.LookupObjectType, objId = fieldType.LookupObjectID, f = fieldType.ID, lookupValues })
-                    .ToList();
+                    ).ToList();
 
                 if (value.Count == 0)
                 {
@@ -1380,51 +1380,59 @@ namespace d360.model
                 }
             }
 
+            //use SQL here instead of EF to avoid triggering further workflows
             if (field == null && !string.IsNullOrEmpty(val))
             {
-                //insert
-                var newField = new Field
-                {
-                    Value = val,
-                    FieldTypeID = fieldType.ID,
-                    ObjectID = objectId,
-                    ObjectType = objectType.ToString(),
-                    UpdatedBy = CurrentResourceID
-                };
-
-                if (isAssetEdited)
-                {
-                    newField.AssetID = asset.ID;
-                }
-                Fields.Add(newField);
+                await Database.Connection.ExecuteAsync("insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], UpdatedBy) values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @updatedBy)"
+                    , new 
+                    {
+                        value = val,
+                        fieldTypeID = fieldType.ID,
+                        assetID = isAssetEdited ? asset.ID : (long?)null,
+                        objectId,
+                        objectType = objectType.ToString(),
+                        updatedBy = CurrentResourceID
+                    });
             }
             else if (field != null)
             {
+                var updateValue = val;
+
                 if (item.AppendValue)
                 {
                     var oldValues = field.Value?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
                     var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
                     newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
-                    field.Value = string.Join(",", newValues);
-                    field.UpdatedOn = DateTime.UtcNow;
-                    field.UpdatedBy = CurrentResourceID;
-                }
-                else
-                {
-                    //update
-                    field.Value = val;
-                    field.UpdatedOn = DateTime.UtcNow;
-                    field.UpdatedBy = CurrentResourceID;
+                    updateValue = string.Join(",", newValues);
+
                 }
 
-                //Remove the field from db if field value is null or empty 
-                if (string.IsNullOrEmpty(field.Value))
+                //remove the field from db if field value is null or empty 
+                if (string.IsNullOrEmpty(updateValue))
                 {
-                    Fields.Remove(field);
+                    await Database.Connection.ExecuteAsync("delete from Field where FieldTypeID = @fieldTypeID and ObjectType = @objectType and ObjectID = @objectId"
+                    , new
+                    {
+                        fieldTypeID = field.FieldTypeID,
+                        objectType = field.ObjectType,
+                        objectId = field.ObjectID
+                    });
+                }
+                else //update
+                {
+                    await Database.Connection.ExecuteAsync("update Field set[Value] = @value, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and ObjectType = @objectType and ObjectID = @objectId"
+                    , new
+                    {
+                        value = updateValue,
+                        updatedBy = CurrentResourceID,
+                        fieldTypeID = field.FieldTypeID,
+                        objectType = field.ObjectType,
+                        objectId = field.ObjectID
+                    });
                 }
             }
         }
-        private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
+        private async Task UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
             if (!settings.FieldUpdateSettings.Any()) return;
             var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
@@ -1462,18 +1470,18 @@ namespace d360.model
                     //delete the value
                     var sql = "delete field where objectid = @id and objecttype = @objectType and fieldtypeid = @fieldTypeId";
 
-                    Database.Connection.Execute(sql, new { id = objectId, objectType = objectType.ToString(), fieldTypeId = item.FieldID });
+                    await Database.Connection.ExecuteAsync(sql, new { id = objectId, objectType = objectType.ToString(), fieldTypeId = item.FieldID });
 
                 }
                 else if (item.CurrentDate)
                 {
                     var val = DateTime.UtcNow.Date.ToShortDateString();
-                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                    await UpdateField(objectId, objectType, fieldType, item, val);
                 }
                 else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
                 {
                     var val = item.Value;
-                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                    await UpdateField(objectId, objectType, fieldType, item, val);
                 }
                 //if the value is a form value get it
                 else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
@@ -1486,7 +1494,7 @@ namespace d360.model
                         {
                             val = tempDate.Date.ToShortDateString();
                         }
-                        this.UpdateField(objectId, objectType, fieldType, item, val);
+                        await UpdateField(objectId, objectType, fieldType, item, val);
                     }
                 }
                 //Get the value from action form (Issue)
@@ -1517,12 +1525,12 @@ namespace d360.model
 
                         }
                     }
-                    this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+                    await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
                 else if (item.UseOutputValue)
                 {
                     var val = GetOutputFieldValue(item.FormStepID, itemStep.ItemID, item.FormField);
-                    UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+                    await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
             }
 
@@ -1531,15 +1539,15 @@ namespace d360.model
                 CreateWorkflowItemFieldUpdateExecution(assetType, asset); // Send scoring updates
             }
 
-            SaveChanges();
+            await SaveChangesAsync();
 
             if (asset != null)
             {
-                Database.Connection.Execute("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = CurrentResourceID, id = asset.ID });
+                await Database.Connection.ExecuteAsync("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = CurrentResourceID, id = asset.ID });
             }
 
             //update asset table to trigger audit                    
-            Database.Connection.Execute(
+            await Database.Connection.ExecuteAsync(
                      "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
                      new
                      {
