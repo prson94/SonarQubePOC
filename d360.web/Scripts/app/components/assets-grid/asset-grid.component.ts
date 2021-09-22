@@ -118,6 +118,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     statusHasColor: boolean;
 
     isDebugMode: boolean = false;
+    initialLoadInterval: any;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -162,12 +163,16 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     onFiltersLoaded() {
         this.areFiltersLoaded = true;
+        this.showAssetListPage();
         this.changeDetectorRef.markForCheck();
     }
 
     showAssetListPage() {
         this.isDefinitionLoaded = true;
         this.isDefinitionLoadedChange.emit(true);
+        if (this.initialLoadInterval) {
+            clearInterval(this.initialLoadInterval);
+        }
         this.changeDetectorRef.markForCheck();
     }
 
@@ -278,7 +283,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     }
                 }
 
-                setTimeout(() => this.showAssetListPage(), 3000);
+                this.initialLoadInterval = setTimeout(() => this.showAssetListPage(), 3000);
                 this.changeDetectorRef.markForCheck();
             }
         );
@@ -417,7 +422,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                         }
                     }
 
-                });     
+                });
 
                 if (!selectedItemStillExists) {
                     if (this.items && this.items.length > 0) {
@@ -653,7 +658,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     private onDelete(item) {
-        this.deleteName = item['Path'].slice(1,-1);
+        this.deleteName = item['Path'].slice(1, -1);
         this.selected = item;
         this.showDelete = true;
         this.changeDetectorRef.markForCheck();
