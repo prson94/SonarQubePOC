@@ -496,16 +496,6 @@ namespace d360.web.Controllers.V2
             return document;
         }
 
-        private string getPredicateTypeStringValue(string type)
-        {
-            string predicateType = "";
-            if(Enum.TryParse(type, out PredicateType pType))
-            {
-                predicateType = pType.ToString();
-            }
-            return predicateType;
-        }
-
         private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)
         {
             string querySql = $@"select
