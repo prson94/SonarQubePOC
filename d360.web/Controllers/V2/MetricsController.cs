@@ -1081,8 +1081,7 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-
-            string isValid = isPageSizeAndNumValid(queryParams);
+            string isValid = isPageSizeAndNumValid(queryParams, isRequestAnExport);
 
             if (!string.IsNullOrEmpty(isValid))
             {
