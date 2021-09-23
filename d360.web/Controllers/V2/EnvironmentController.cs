@@ -79,7 +79,10 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
                 }
 
-                if (model == null) return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+                if (model == null)
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+                }
 
                 var readyToActivate = await Community.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active);
                 if (readyToActivate.StatusCode == HttpStatusCode.OK)

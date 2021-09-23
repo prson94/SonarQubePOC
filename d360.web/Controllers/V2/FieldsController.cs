@@ -1198,7 +1198,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    throw new Exception(ApiMessages.NotValidAssetActionRelationTypeProvided);
+                    throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
                 }
                 AssetType refitem = null;
                 if (Guid.TryParse(uid, out Guid refitemGuid))

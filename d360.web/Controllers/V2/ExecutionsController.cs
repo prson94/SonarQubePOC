@@ -121,7 +121,7 @@ namespace d360.web.Controllers.V2
 
                 if (execution.State == core.enums.State.Deleted)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDCancelled, executionID.ToString())));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDCancelled, executionID.ToString()))).ConfigureAwait(false);
                 }
 
                 if (execution.CompletedOn != null)
@@ -363,7 +363,7 @@ namespace d360.web.Controllers.V2
 
             if (!string.IsNullOrEmpty(isValid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
             }
 
 
