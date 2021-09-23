@@ -43,6 +43,5 @@ namespace igx.UnitTests.ModelExtensionTests
             Assert.True(!res.ResponsibilityType.HasValue, "FieldTypeOwnershipLookupDefinition ResponsibilityType should be null");
             Assert.True(!res.ResponsibilityTypeUid.HasValue, "FieldTypeOwnershipLookupDefinition ResponsibilityTypeUid should be null");
         }
-
     }
 }
