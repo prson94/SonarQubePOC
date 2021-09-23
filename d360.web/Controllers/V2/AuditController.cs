@@ -42,7 +42,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// A dictionary of Action Object with the DB value as key, and the display value as value
-        private Dictionary<string, string> ActionObjectDictionary = new Dictionary<string, string> {
+        private readonly Dictionary<string, string> ActionObjectDictionary = new Dictionary<string, string> {
             { "Intersect", "Relationship" },
             { "IntersectType", "RelationshipType" },
             { "Taxonomy" , "Model" },
@@ -126,7 +126,7 @@ namespace d360.web.Controllers.V2
                 foreach(KeyValuePair<string, string> kp in queryParams)
                 {
                     string currentValue = kp.Value;
-                    if(kp.Key.ToLower() == "_filter" && currentValue.Contains("actionObject"))
+                    if(kp.Key.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "_filter" && currentValue.Contains("actionObject"))
                     {
                         List<string> operators = new List<string>
                         {
