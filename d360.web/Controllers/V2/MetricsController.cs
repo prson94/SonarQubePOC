@@ -511,14 +511,14 @@ namespace d360.web.Controllers.V2
 
                 var results = await MetricsRepository.GetMetricPathOptionsBy(assetType.ID, scoreType);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
         }
 
@@ -613,14 +613,14 @@ namespace d360.web.Controllers.V2
                 }
 
                 var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
         }
 
@@ -667,7 +667,7 @@ namespace d360.web.Controllers.V2
                     var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
                     if (!DateTime.TryParse(value, out effectiveDate))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", MetricsApiMessages.InvalidEffectiveDate));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", MetricsApiMessages.InvalidEffectiveDate)).ConfigureAwait(false);
                     }
                 }
                 else
@@ -677,14 +677,14 @@ namespace d360.web.Controllers.V2
 
                 var result = MetricsRepository.GetMetricHierarchyByAsset(_allocationUid, _assetUid, effectiveDate);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
         }
 
@@ -1086,7 +1086,7 @@ namespace d360.web.Controllers.V2
 
             if (!string.IsNullOrEmpty(isValid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
             }
 
             if (isRequestAnExport)
@@ -1202,7 +1202,7 @@ namespace d360.web.Controllers.V2
 
             var execution = getApiExecution(request.Count);
 
-            responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(request, execution));
+            responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(request, execution)).ConfigureAwait(false);
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
         }
 
@@ -1462,7 +1462,7 @@ namespace d360.web.Controllers.V2
             #endregion
 
             var execution = getApiExecution(1);
-            var responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution));
+            var responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution)).ConfigureAwait(false);
             if (responseList == null)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, MetricsApiMessages.ErrorRuleResult, ApiMessages.UnknownErrorInvestigatingMessage);
@@ -1517,7 +1517,7 @@ namespace d360.web.Controllers.V2
 
             var execution = getApiExecution(request.Count);
 
-            responseList = await Task.FromResult(MetricsRepository.UpdateDataQualityResult(request, execution));
+            responseList = await Task.FromResult(MetricsRepository.UpdateDataQualityResult(request, execution)).ConfigureAwait(false);
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
         }
 
@@ -1567,7 +1567,7 @@ namespace d360.web.Controllers.V2
 
                 if (request == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(request.Count);
@@ -1583,7 +1583,7 @@ namespace d360.web.Controllers.V2
                                 Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
                             });
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1593,7 +1593,7 @@ namespace d360.web.Controllers.V2
                     { "requestCount", $"{((request != null) ? request.Count : 0)}" }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1616,7 +1616,7 @@ namespace d360.web.Controllers.V2
             {
                 var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
                 if (assetDetail == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString())));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
 
                 var allocation = Company.Filter<MetricAllocation>(al =>
                   al.AssetTypeUid == assetDetail.AssetTypeUid &&
@@ -1683,7 +1683,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, ex.Message));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, ex.Message)).ConfigureAwait(false);
 
             }
 

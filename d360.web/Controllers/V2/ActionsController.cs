@@ -341,7 +341,7 @@ for json path";
                     { "model", JsonConvert.SerializeObject(model) }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -468,12 +468,12 @@ for json path";
 
                     if (!validUid)
                     {
-                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, ActionApiMessages.ResourceUidNotFound));
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, ActionApiMessages.ResourceUidNotFound)).ConfigureAwait(false);
                     }
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.ResourceUidNotValid));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
                 }
             }
 
@@ -483,7 +483,7 @@ for json path";
             {
                 if (!bool.TryParse(limitToActiveWorkflowsParam.Value, out _))
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidLimitActiveWorkflow));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidLimitActiveWorkflow)).ConfigureAwait(false);
                 }
             }
 

@@ -229,7 +229,7 @@ namespace d360.web.Controllers.V2
                     typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
 
                     if (typeIdentifierInfoModel == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value.ToString())));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value.ToString()))).ConfigureAwait(false);
                 }
 
                 if (model.RelationshipTypeUid.HasValue)
@@ -238,7 +238,7 @@ namespace d360.web.Controllers.V2
                     typeIdentifierInfoModel = relationshipTypeIdentifierInfoModel = relationshipTypeIdentifierInfoModels.SingleOrDefault();
 
                     if (typeIdentifierInfoModel == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, model.AssetTypeUid.Value.ToString())));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, model.AssetTypeUid.Value.ToString()))).ConfigureAwait(false);
                 }
 
                 #endregion
@@ -327,12 +327,12 @@ namespace d360.web.Controllers.V2
 
                 #endregion
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully updated.", Success = true, Uid = typeIdentifierInfoModel.Uid })));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully updated.", Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
             }
             catch (RestApiException ex)
             {
                 errorMessage = ex.GetFullExceptionData(false);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -341,7 +341,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
 
         }
@@ -462,12 +462,12 @@ namespace d360.web.Controllers.V2
 
                 #endregion
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully removed.", Success = true, Uid = typeIdentifierInfoModel.Uid })));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully removed.", Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
             }
             catch (RestApiException ex)
             {
                 errorMessage = ex.GetFullExceptionData(false);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -947,7 +947,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    throw new Exception(string.Format(ApiMessages.InvalidValueMessage, identifier));
+                    throw new ArgumentNullException(string.Format(ApiMessages.InvalidValueMessage, identifier));
                 }
 
                 switch (type)
@@ -1040,7 +1040,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    throw new Exception(ApiMessages.NotValidAssetActionRelationTypeProvided);
+                    throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
                 }
 
                 var intersectType = Company.Filter<IntersectType>(x => x.uid == intersectTypeUid).SingleOrDefault();
