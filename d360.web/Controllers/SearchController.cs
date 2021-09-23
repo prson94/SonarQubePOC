@@ -279,7 +279,7 @@ namespace d360.web.Controllers
 
                 var menuItems = Company.Query<dynamic>(sql, new
                 {
-                    uids = results.Where(r => r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
+                    uids = results.Where(r => r.AssetTypeUid != null && r.MissingIcon()).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
                             "dbo.UidTable",
                             new List<string>() { "Uid" })
                 });
