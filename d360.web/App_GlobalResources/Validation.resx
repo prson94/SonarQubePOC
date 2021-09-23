@@ -138,4 +138,10 @@
   <data name="Password_Requirements" xml:space="preserve">
     <value>be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number</value>
   </data>
+  <data name="DecimalPlaceValidation" xml:space="preserve">
+    <value>{0) must be a decimal greater than {1} and less than or equal to {2}.</value>
+  </data>
+  <data name="MaxLevelForMeasure" xml:space="preserve">
+    <value>Maximum number of levels for measures is {0}.</value>
+  </data>
 </root>

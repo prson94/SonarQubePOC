@@ -393,6 +393,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>FormInfo.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\MetricsApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MetricsApiMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\Validation.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -774,6 +779,10 @@
     <Content Include="App_GlobalResources\ConnectorLabelAPIMessage.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>ConnectorLabelAPIMessage.Designer.cs</LastGenOutput>
+    </Content>
+    <Content Include="App_GlobalResources\MetricsApiMessages.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>MetricsApiMessages.Designer.cs</LastGenOutput>
     </Content>
     <EmbeddedResource Include="Content\Swagger\index.html" />
     <EmbeddedResource Include="Content\Swagger\swagger.css">

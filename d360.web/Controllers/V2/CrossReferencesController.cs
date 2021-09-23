@@ -189,19 +189,19 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             }
             //validate the model input
             if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.ExternalID) || string.IsNullOrEmpty(model.Type))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ErrorInvalidDatasetMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
             }
 
             //check if the item already exists   
             bool exists = await crossReferencesRepository.XrefExists(model);
             if (exists)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict,ApiMessages.CrossRefExists));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Asset cross reference already exists."));
             }
 
             //create the new record
@@ -209,7 +209,7 @@ namespace d360.web.Controllers.V2
 
             if (res <= 0)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, ApiMessages.CrossRefExists));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Asset cross reference already exists."));
             }
 
             return model;
@@ -281,12 +281,12 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> Put(Guid uid, string dataSource, string type, string externalId, AssetCrossReference model)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             //validate the model input
             if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type) || string.IsNullOrEmpty(externalId))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ErrorInvalidDatasetMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields."));
             }
 
             //create the new record
@@ -320,12 +320,12 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> Put(Guid uid, AssetCrossReference model)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             //validate the model input
             if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.Type) || string.IsNullOrEmpty(model.ExternalID))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ErrorInvalidDatasetMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields."));
             }
 
             //create the new record
@@ -386,14 +386,14 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> DeleteByDataSource(string dataSource, string type)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ErrorInvalidDatasetMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type."));
             }
 
-            
+
             //deletes the new record
             int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, type, GetTimeoutFromQueryString());
 
@@ -420,12 +420,12 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ErrorInvalidDatasetMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter type."));
             }
 
 
@@ -454,11 +454,11 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> DeleteByDataSource(string dataSource)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             if (string.IsNullOrEmpty(dataSource))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ErrorInvalidDatasetMessage));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter dataSource."));
             }
 
             //deletes the new record

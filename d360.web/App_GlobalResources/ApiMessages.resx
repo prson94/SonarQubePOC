@@ -183,9 +183,6 @@
   <data name="UnknownError" xml:space="preserve">
     <value>Unknown Error</value>
   </data>
-  <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
-    <value>An unknown error occurred and has been logged for further investigation. Please try your request again later.</value>
-  </data>
   <data name="InvalidFilterExpression" xml:space="preserve">
     <value>Invalid filter expression:</value>
   </data>
@@ -485,5 +482,77 @@
   </data>
   <data name="UserAlreadyMemberOfGroup" xml:space="preserve">
     <value>User {0} is already a member of this group</value>
+  </data>
+  <data name="AlreadyWatch" xml:space="preserve">
+    <value>You are already watching {0}</value>
+  </data>
+  <data name="CurrentWatch" xml:space="preserve">
+    <value>You are currently watching '{0}' via it's parent, '{1}'.</value>
+  </data>
+  <data name="CurrentWatchNotUnwatchIndividually" xml:space="preserve">
+    <value>You are currently watching this item's parent, '{0}'.  You can not unwatch this item individually.</value>
+  </data>
+  <data name="ImageSize2048" xml:space="preserve">
+    <value>Invalid request, invalid size specified for image. Value must be less then 2048 or greater than 0</value>
+  </data>
+  <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
+    <value>Invalid apiKey or apiSecret for currentUser</value>
+  </data>
+  <data name="InvalidOrgTypeUid" xml:space="preserve">
+    <value>Invalid organizationTypeUid provided</value>
+  </data>
+  <data name="InvalidOrgUid" xml:space="preserve">
+    <value>Invalid Organization Uid provided</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>Invalid user information</value>
+  </data>
+  <data name="IsChangePwdReqAuthOtherThanForm" xml:space="preserve">
+    <value>IsChangePasswordReqeust set to true, Not allowed for authentication type other than Forms</value>
+  </data>
+  <data name="IsChangePwdReqCurrentUser" xml:space="preserve">
+    <value>IsChangePasswordReqeust set to true only for current user</value>
+  </data>
+  <data name="IsChangePwdReqOneReq" xml:space="preserve">
+    <value>Only one request accepted for IsChangePasswordReqeust set to true.</value>
+  </data>
+  <data name="NameMissingInGroupPayload" xml:space="preserve">
+    <value>Name is missing in one or more of the groups in the payload. Name must be provided.</value>
+  </data>
+  <data name="NoGroupRequest" xml:space="preserve">
+    <value>No Groups provided in request</value>
+  </data>
+  <data name="NotCurrentWatch" xml:space="preserve">
+    <value>You are not currently watching '{0}'.</value>
+  </data>
+  <data name="NoUserRequest" xml:space="preserve">
+    <value>No users provided in request.</value>
+  </data>
+  <data name="OneMoreUidExists" xml:space="preserve">
+    <value>One or more of the Uids specified already exists.</value>
+  </data>
+  <data name="PrimayOwnerOfGroupNotDelete" xml:space="preserve">
+    <value>Cannot delete Primary Owner of group.</value>
+  </data>
+  <data name="RequiredFieldError" xml:space="preserve">
+    <value>{0} is a required field.</value>
+  </data>
+  <data name="ResourceGroupNotExists" xml:space="preserve">
+    <value>Resource / Group doesn't exist</value>
+  </data>
+  <data name="Userremoved" xml:space="preserve">
+    <value>User removed.</value>
+  </data>
+  <data name="UserremovedMessage" xml:space="preserve">
+    <value>User removed from group.</value>
+  </data>
+  <data name="YouAreWatching" xml:space="preserve">
+    <value>You are {0} watching {1}.</value>
+  </data>
+  <data name="FieldNotAllowedForAssetType" xml:space="preserve">
+    <value>You are not allowed to retrieve the fields for this asset type.</value>
+  </data>
+  <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
+    <value>An unknown error occurred and has been logged for further investigation. Please try your request again later.</value>
   </data>
 </root>
