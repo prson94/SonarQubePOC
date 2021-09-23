@@ -268,7 +268,7 @@ namespace d360.web.Controllers.V2
                 //make sure no tag with the same name exists
                 if (ConnectorLabelRepository.DoesLabelExists(model.Value))
                 {
-                    throw new NullReferenceException(ConnectorLabelAPIMessage.LabelAlreadyExists);
+                    throw new ArgumentNullException(ConnectorLabelAPIMessage.LabelAlreadyExists);
                 }
 
 
@@ -318,12 +318,12 @@ namespace d360.web.Controllers.V2
 
                 if (existingLabel == null)
                 {
-                    throw new NullReferenceException(string.Format(ConnectorLabelAPIMessage.UidNotFound, labelUid.ToString()));
+                    throw new ArgumentNullException(string.Format(ConnectorLabelAPIMessage.UidNotFound, labelUid.ToString()));
                 }
 
                 if (ConnectorLabelRepository.DoesLabelExists(labelUid, model))
                 {
-                    throw new Exception(ConnectorLabelAPIMessage.LabelAlreadyExists);
+                    throw new ArgumentNullException(ConnectorLabelAPIMessage.LabelAlreadyExists);
                 }
 
                 result = ConnectorLabelRepository.UpdateConnectorLabel(labelUid, model, existingLabel);
