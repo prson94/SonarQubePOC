@@ -529,7 +529,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    throw new Exception(ApiMessages.NotValidAssetActionRelationTypeProvided);
+                    throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
                 }
 
                 var lists = await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList");
@@ -1310,7 +1310,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    throw new Exception(ApiMessages.NotValidAssetActionRelationTypeProvided);
+                    throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
                 }
 
                 //AssetTypes that can have filtered Lookups
