@@ -3,7 +3,7 @@
     <div class="header-description">
         <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
              [innerHtml]="gridObject.Description | safeHtml"
-             class="tile-descriptionn"></div>
+             class="tile-description"></div>
         <span *ngIf="gridObject && gridObject.Description"
               aria-hidden="true"
               title="Details"
