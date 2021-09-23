@@ -34,6 +34,7 @@ namespace d360.web.Controllers.V2
                 return Company.ApiTimeout;
             }
         }
+        
         protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[Object]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
         {
             fieldTypes.ForEach(f =>
@@ -247,7 +248,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        public string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams, bool validateForExport = false)
         {
             var parameters = queryParams.ToList();
             long pageSize = 0;
@@ -262,7 +263,8 @@ namespace d360.web.Controllers.V2
                 }
                 if (long.TryParse(_pageSize, out pageSize))
                 {
-                    if (pageSize > Company.GetSettingValue<int>(Setting.MaxExcelExportRows))
+                    int maxRows = validateForExport ? Company.GetSettingValue<int>(Setting.MaxExcelExportRows) : 200000;
+                    if (pageSize > maxRows)
                     {
                         return "Invalid pageSize value provided. Number is too large";
                     }
