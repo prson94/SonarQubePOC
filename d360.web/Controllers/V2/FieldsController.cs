@@ -781,7 +781,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    throw new Exception(ApiMessages.NotValidAssetActionRelationTypeProvided);
+                    throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
                 }
 
                 List<dynamic> filteredLookupItems = null;
