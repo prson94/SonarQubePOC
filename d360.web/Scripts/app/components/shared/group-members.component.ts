@@ -61,7 +61,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
             (g) => {
                 if (g.length > 0) {
                     this.groupUid = g[0].uid;
-                    this.groupService.getGroupResourceList(this.groupUid).subscribe(
+                    this.groupService.getGroupResourceList(this.groupUid, this.maxExportRows).subscribe(
                         d => {
                             if (d != undefined)
                                 this.groupItems = d.items;
@@ -75,7 +75,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
                 }
             })
         if (this.groupUid != undefined) {
-            this.groupService.getGroupResourceList(this.groupUid).subscribe(
+            this.groupService.getGroupResourceList(this.groupUid, this.maxExportRows).subscribe(
                 d => {
                     if (d != undefined) {
                         this.groupItems = d.items;

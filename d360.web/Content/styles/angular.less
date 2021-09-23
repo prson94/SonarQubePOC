@@ -110,6 +110,20 @@ nav.top {
         color: #000;
     }
 
+    .header-back-button {
+        color: @ig-white;
+        background: transparent;
+        margin: 4px 0 4px 3px;
+
+        &:hover {
+            background: rgba(255,255,255,.2);
+        }
+
+        &:active {
+            background: rgba(255,255,255,.4);
+        }
+    }
+
     a.photo img {
         vertical-align: middle;
         border-radius: 20px;
@@ -1571,6 +1585,19 @@ a.breadcrumb {
         padding: 5px;
     }
 }
+
+.header-help-dropdown {
+    max-height: 500px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.header-help-dropdown::-webkit-scrollbar {
+    /* WebKit hide scrollbar */
+    width: 0px !important;
+    height: 0px !important;
+}
+
 /* end header search*/
 .grid-simple-filter {
     margin-bottom: 10px !important;

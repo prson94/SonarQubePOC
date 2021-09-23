@@ -867,7 +867,7 @@
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
     <Content Include="Scripts\app\components\rule\rule-results-grid.component.html" />
-    <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.css" />
+    <None Include="Scripts\app\components\search\explain-widget\explain-widget.component.less" />
     <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.html" />
     <Content Include="Scripts\app\components\search\hero-search-input.html" />
     <Content Include="Scripts\app\components\search\search-result-item.component.html" />
@@ -1144,6 +1144,7 @@
     <Content Include="Scripts\app\components\shared\header\header-profile.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.ts" />
     <Content Include="Scripts\app\components\shared\menu\site-menu-category.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-back-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu.service.ts" />

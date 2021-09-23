@@ -35,7 +35,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     ];
 
     private baseVisibilityItems: any[] = [
-        { title: "Visible" },
+        { title: "Visible", hasCheckbox: true, isChecked: true },
         { title: "Visible to Admins Only" },
         { title: "Hidden" },
     ];

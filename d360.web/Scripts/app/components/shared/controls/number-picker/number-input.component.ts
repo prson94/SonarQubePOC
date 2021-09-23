@@ -101,7 +101,9 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
 
     validate(control: AbstractControl): ValidationErrors {
         let result: any = null;
-        if (this.isOverMax()) {
+        if (isNaN(parseInt(control.value))) {
+            result = null;
+        } else if (this.isOverMax()) {
             result = {
                 overMax: {
                     actual: +this.value,

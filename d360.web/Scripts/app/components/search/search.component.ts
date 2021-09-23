@@ -38,7 +38,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public sub: any;
     public selection: SearchSelecton;
 
-    public sidePanelOpen: boolean = false;
+    public sidePanelOpen: boolean = true;
     public sidePanelLoading: boolean = false;
     public sidePanelTab: string;
     public sidePanelStorageKey: string = "searchresults";
@@ -51,6 +51,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         disabledTooltip: null,
         nothingSelectedMessage: 'Filters not available',
         notApplicableMessage: 'Filters not available',
+        multipleSelectedMessage: 'Filters not available',
         key: 'filters',
         icon: 'fa-filter',
         disabled: false,

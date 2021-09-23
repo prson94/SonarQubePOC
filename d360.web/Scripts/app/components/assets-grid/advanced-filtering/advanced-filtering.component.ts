@@ -313,9 +313,9 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         loadedFilters.filter((f) => f !== null).forEach((f) => {
             this.conditions.filters.push(f);
-        });
+        });        
 
-        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
+        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));        
         this.visible = true;
 
         this.onItemChange();
@@ -371,6 +371,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     private loadFilters(): AdvancedFilterFieldCondition[] {
         try {
+            this.conditions = new AdvancedFilterFieldConditionCollection();
             let loadedFilters: AdvancedFilterFieldCondition[] = [];
             var savedState = this.getStorageFilters();
             if (!savedState && !savedState.filters) {

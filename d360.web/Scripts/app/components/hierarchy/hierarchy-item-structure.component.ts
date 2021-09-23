@@ -631,11 +631,18 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams, true).subscribe((result) => {
                 this.totalRecords += result.total;
                 this.hierarchy = result.items;
-                this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
-                if (this.treeNodeArray.length > 0) {
-                    this.selectAsset(this.treeNodeArray[0]);
+
+                if (this.hierarchy.length !== 0) {
+                    this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+                    if (this.treeNodeArray.length > 0) {
+                        this.selectAsset(this.treeNodeArray[0]);
+                    }
+                    this.buildScoreAllocationThresholds();
                 }
-                this.buildScoreAllocationThresholds();
+                else {
+                    this.treeNodeArray = [];
+                }
+
                 this.isLoading = false;
             });
         }

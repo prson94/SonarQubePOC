@@ -186,18 +186,6 @@ namespace d360.web.Controllers.V2
 
                 var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
 
-                query.ToList().ForEach(x =>
-                {
-                    if (x.actionObject == "Predicate" && x.field == "Functional Type")
-                    {
-                        x.newValue = getPredicateTypeStringValue(x.newValue);
-                        if (x.previousValue != null)
-                        {
-                            x.previousValue = getPredicateTypeStringValue(x.previousValue);
-                        }
-                    }
-                });
-
                 if (isStreamResponse)
                 {
                     string fileName = assetUid.ToString() + " Audit Data";
@@ -507,16 +495,6 @@ namespace d360.web.Controllers.V2
 
 
             return document;
-        }
-
-        private string getPredicateTypeStringValue(string type)
-        {
-            string predicateType = "";
-            if(Enum.TryParse(type, out PredicateType pType))
-            {
-                predicateType = pType.ToString();
-            }
-            return predicateType;
         }
 
         private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)

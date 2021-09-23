@@ -356,7 +356,14 @@ export class SearchStateService extends BaseObservableService {
                 tree.push(v);
             }
         });
-        return tree;
+        const root: CheckTreeNode[] = [{
+            key: "root",
+            label: "Category",
+            type: "root",
+            expanded: true,
+            children: tree
+        }];
+        return root;
     }
 
     /**

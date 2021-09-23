@@ -587,7 +587,7 @@ namespace d360.web.Controllers
                     var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId, 
                         responseType: "code", 
-                        scope: "openid profile email", //infogix
+                        scope: "openid profile email infogix", //infogix
                         callbackUri, 
                         state, 
                         nonce, 
@@ -778,7 +778,7 @@ namespace d360.web.Controllers
 
             var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
-
+            
             var accessToken = handler.ReadJwtToken(response.AccessToken);
 
             var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
@@ -789,17 +789,21 @@ namespace d360.web.Controllers
 
             #region Claims processing
 
+            var combinedClaims = new List<System.Security.Claims.Claim>();
             var customClaims = new Dictionary<string, string>();
             string userName = null;
             string firstName = null;
             string lastName = null;
             List<string> groups = new List<string>();
 
+            combinedClaims.AddRange(token.Claims); // ID token claims.
+            combinedClaims.AddRange(accessToken.Claims.Except(token.Claims)); // Access token claims.
+
             try
             {
-                foreach (var prop in accessToken.Claims)
+                foreach (var prop in combinedClaims)
                 {
-                    switch (prop.Type)
+                    switch (prop.Type.ToLower())
                     {
                         case "amr":
                         case "aud":
@@ -832,9 +836,11 @@ namespace d360.web.Controllers
                         case "surname":
                             lastName = prop.Value.ToString();
                             break;
+                        case "infogixgroup":
+                        case "infogixgroups":
                         case "group":
                         case "groups":
-                        case "securityGroups":
+                        case "securitygroups":
                         case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
                             if (groups == null)
                             {
@@ -854,6 +860,17 @@ namespace d360.web.Controllers
             }
 
             #endregion
+
+            string redirectUrl = openIdRequest.RedirectUrl;
+            try
+            {
+                Community.RemoveOpenIdRequest(openIdRequest);
+            }
+            catch (Exception ex)
+            {
+                this.SendException(ex, new Dictionary<string, string> { { "State", openIdRequest.State } });
+            }
+            
 
             try
             {
@@ -885,8 +902,8 @@ namespace d360.web.Controllers
                 };
 
                 return parseUserInfoAndLogin(userName, firstName, lastName, 
-                    groups, customClaims, 
-                    openIdRequest.RedirectUrl, addOpenIdTokenToContext);
+                    groups, customClaims,
+                    redirectUrl, addOpenIdTokenToContext);
             }
             catch (Exception ex)
             {

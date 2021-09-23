@@ -7,7 +7,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
     selector: 'd3s-header',
     template: ` <div class="navbar-fixed header-container" *ngIf="hideHeader == false">
                     <nav class="top">  
-                        <div class="logo" routerLink="/home"> <img [src]="imageSource" alt="logo"> </div>                                 
+                        <div class="logo" routerLink="/home"> <img [src]="imageSource" alt="logo"> </div>   
+                        <d3s-header-back-button *ngIf="showBackButton"></d3s-header-back-button>
                         <d3s-header-breadcrumb [controlWidth]="controlWidth"></d3s-header-breadcrumb>                                          
                         <d3s-header-actions class="header-action" (controlWidthChange)="controlWidth = $event"></d3s-header-actions>
                     </nav>
@@ -20,6 +21,7 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
     public controlWidth: number = 0;
     imageSource: string = '/Content/images/govern-small-white.svg';
     hideHeader: boolean = false;
+    showBackButton: boolean = false;
     subParams: any;
 
     constructor(private router: Router,
@@ -38,6 +40,9 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
         this.subParams = this.route.queryParams.subscribe((params) => {
             if (params['noheader'] != null) {
                 this.hideHeader = params['noheader'].toLocaleLowerCase() === 'true';
+            }
+            if (params['embeddednavigation'] != null) {
+                this.showBackButton = params['embeddednavigation'].toLocaleLowerCase() === 'true';
             }
         });
     }   

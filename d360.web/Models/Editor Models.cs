@@ -98,6 +98,7 @@ namespace d360.web.Models
         public bool SetIconToDefault { get; set; }
         public string CurrentCompanyIconPath { get; set; }
         public bool EnableShoppingCart { get; set; }
+        public bool EnableOrganizations { get; set; }
         public string DefaultRoute { get; set; }
         public bool EnableSearchExactMatch { get; set; }
 

@@ -8,6 +8,7 @@ export class SidePanelButton {
     disabledTooltip: string;
     nothingSelectedMessage: string;
     notApplicableMessage: string;
+    multipleSelectedMessage: string = "";
     key: string;
     icon: string;
     disabled: boolean = false;

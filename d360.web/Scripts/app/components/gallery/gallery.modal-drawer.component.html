@@ -61,7 +61,7 @@
                     Cancel
                 </button>
                 <span class="grow"></span>
-                <button class="button primary">
+                <button class="button primary" (click)="isVisible=false">
                     Confirm
                 </button>
             </ng-container>
@@ -93,11 +93,11 @@
                         Modal Drawer Content Template
                     </ng-container>
                     <ng-container action>
-                        <button class="button" (click)="isVisible=false">
+                        <button class="button" (click)="isModalDrawer2Visible=false">
                             Cancel
                         </button>
                         <span class="grow"></span>
-                        <button class="button primary">
+                        <button class="button primary" (click)="isModalDrawer2Visible=false">
                             Confirm
                         </button>
                     </ng-container>

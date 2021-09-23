@@ -30,7 +30,7 @@ namespace d360.model.DataAccessLayer
             this.QueueSource = queueSource;
         }
 
-        public async Task<AssetResponsibilitiesApiModel> GetResponsibilities(IEnumerable<KeyValuePair<string, string>> queryParams, string responsibilityUidFilter, string assigneeUidFilter, string assetUidFilter, string assetTypeUidFilter, int pageSize, int pageNum, int timeout)
+        public async Task<AssetResponsibilitiesApiModel> GetResponsibilities(IEnumerable<KeyValuePair<string, string>> queryParams, Guid responsibilityUidFilter, Guid assigneeUidFilter, Guid assetUidFilter, Guid assetTypeUidFilter, int pageSize, int pageNum, int timeout)
         {
             //get the assetids based on the input parameters
             var res = await getOwnershipAssets(queryParams, assetUidFilter, assetTypeUidFilter, responsibilityUidFilter, assigneeUidFilter, pageSize, pageNum, timeout);
@@ -247,7 +247,7 @@ namespace d360.model.DataAccessLayer
                             ", ApiTimeout);
         }
 
-        private async Task<IEnumerable<ResponsibilityApiModel>> getOwnershipForGivenAssets(IEnumerable<long> assetIDList, string responsibilityUidFilter, string assigneeUidFilter, int timeout = 300)
+        private async Task<IEnumerable<ResponsibilityApiModel>> getOwnershipForGivenAssets(IEnumerable<long> assetIDList, Guid responsibilityUidFilter, Guid assigneeUidFilter, int timeout = 300)
         {
             if (assetIDList == null) return null;
             var responsibilityFilterCriteria = "";
@@ -256,14 +256,14 @@ namespace d360.model.DataAccessLayer
             var permissionsCriteria = "";
             DynamicParameters dbArgs = new DynamicParameters();
 
-            if (!string.IsNullOrEmpty(assigneeUidFilter))
+            if (assigneeUidFilter != Guid.Empty)
             {
                 assigneeFilterCriteria = $" and s.[uid] = @assigneeUidFilter";
                 overrideAssigneeFilterCriteria = $" and a.[uid] = @assigneeUidFilter";
                 dbArgs.Add("assigneeUidFilter", assigneeUidFilter);
             }
 
-            if (!string.IsNullOrEmpty(responsibilityUidFilter))
+            if (responsibilityUidFilter != Guid.Empty)
             {
                 responsibilityFilterCriteria = $" and rt.[uid] = @responsibilityTypeUid";
                 dbArgs.Add("responsibilityTypeUid", responsibilityUidFilter);
@@ -369,7 +369,7 @@ namespace d360.model.DataAccessLayer
             return (await Company.Database.Connection.QueryAsync<ResponsibilityApiModel>(sql, dbArgs, null, timeout));
         }
 
-        private async Task<AssetResponsibilitiesApiModel> getOwnershipAssets(IEnumerable<KeyValuePair<string, string>> queryParams, string assetUid, string assetTypeUid, string responsibilityUidFilter, string assigneeUidFilter, int pageSize, int pageNum, int timeout = 300)
+        private async Task<AssetResponsibilitiesApiModel> getOwnershipAssets(IEnumerable<KeyValuePair<string, string>> queryParams, Guid assetUid, Guid assetTypeUid, Guid responsibilityUidFilter, Guid assigneeUidFilter, int pageSize, int pageNum, int timeout = 300)
         {
             var res = new AssetResponsibilitiesApiModel();
             DynamicParameters dbArgs = new DynamicParameters();
@@ -382,25 +382,25 @@ namespace d360.model.DataAccessLayer
             List<string> assetQueryFilters = new List<string>();
             List<string> responsibilityQueryFilters = new List<string>();
 
-            if (!string.IsNullOrEmpty(assetUid))
+            if (assetUid != Guid.Empty)
             {
                 assetQueryFilters.Add($"a.uid = @assetUid");
                 dbArgs.Add("@assetUid", assetUid);
             }
 
-            if (!string.IsNullOrEmpty(assetTypeUid))
+            if (assetTypeUid != Guid.Empty)
             {
                 assetQueryFilters.Add($"att.uid = @assettypeUid");
                 dbArgs.Add("@assettypeUid", assetTypeUid);
             }
 
-            if (!string.IsNullOrEmpty(responsibilityUidFilter))
+            if (responsibilityUidFilter != Guid.Empty)
             {
                 responsibilityQueryFilters.Add($"rt.uid = @respUid");
                 dbArgs.Add("@respUid", responsibilityUidFilter);
             }
 
-            if (!string.IsNullOrEmpty(assigneeUidFilter))
+            if (assigneeUidFilter != Guid.Empty)
             {
                 var assigneeSql = "select a.[Object] as Obj, a.[Objectid] from asset a where a.uid = @assigneeUid";
                 var detail = Company.Database.Connection.QueryFirstOrDefault<dynamic>(assigneeSql, new { assigneeUid = assigneeUidFilter });

@@ -6,7 +6,8 @@ declare var CompanySettings;
 @Component({
     selector: 'ig-asset-detail-category',
     templateUrl: './asset-detail-category.component.html',
-    styles: [`.category-column { display:inline-grid; margin-right:40px;max-height: 300px; overflow-x: hidden;padding-bottom: 4px; }`]
+    styles: [`.category-column { display:inline-grid; margin-right:40px;max-height: 300px; overflow-x: hidden;padding-bottom: 4px; }
+              .category-column .ig-label { word-break: break-word; }`]
 })
 
 export class AssetDetailCategoryComponent {

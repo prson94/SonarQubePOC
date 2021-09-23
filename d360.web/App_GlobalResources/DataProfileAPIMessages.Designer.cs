@@ -61,38 +61,74 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The asset class {0} does not support data profiling. Profiling data can only be associated with Business or Technical Asset types..
+        ///   Looks up a localized string similar to Api Info.
         /// </summary>
-        internal static string AssetClassNotSupportDataProfile {
+        internal static string ApiSheetName {
             get {
-                return ResourceManager.GetString("AssetClassNotSupportDataProfile", resourceCulture);
+                return ResourceManager.GetString("ApiSheetName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Elements in bottomK cannot be Empty strings.
+        ///   Looks up a localized string similar to Asset ID.
         /// </summary>
-        internal static string BottomKNotEmpty {
+        internal static string AssetIdColumn {
             get {
-                return ResourceManager.GetString("BottomKNotEmpty", resourceCulture);
+                return ResourceManager.GetString("AssetIdColumn", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _endDate provided.
+        ///   Looks up a localized string similar to Asset Path.
         /// </summary>
-        internal static string InvalidEndDate {
+        internal static string AssetPathColumn {
             get {
-                return ResourceManager.GetString("InvalidEndDate", resourceCulture);
+                return ResourceManager.GetString("AssetPathColumn", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _includeChildAssets provided.
+        ///   Looks up a localized string similar to Assets.
         /// </summary>
-        internal static string InvalidInclChildAssets {
+        internal static string AssetSheetName {
             get {
-                return ResourceManager.GetString("InvalidInclChildAssets", resourceCulture);
+                return ResourceManager.GetString("AssetSheetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Type Path.
+        /// </summary>
+        internal static string AssetTypePathColumn {
+            get {
+                return ResourceManager.GetString("AssetTypePathColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset UID.
+        /// </summary>
+        internal static string AssetUidColumn {
+            get {
+                return ResourceManager.GetString("AssetUidColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Url.
+        /// </summary>
+        internal static string AssetUrlColumn {
+            get {
+                return ResourceManager.GetString("AssetUrlColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate.
+        /// </summary>
+        internal static string Duplicate {
+            get {
+                return ResourceManager.GetString("Duplicate", resourceCulture);
             }
         }
         
@@ -124,38 +160,92 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _startDate provided.
+        ///   Looks up a localized string similar to Filtered {0} {1} Fields List _{2}_.xlsx.
         /// </summary>
-        internal static string InvalidStartDate {
+        internal static string MatchedAssetExportFileName {
             get {
-                return ResourceManager.GetString("InvalidStartDate", resourceCulture);
+                return ResourceManager.GetString("MatchedAssetExportFileName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint.&quot;.
+        ///   Looks up a localized string similar to {0} Field Asset ID.
         /// </summary>
-        internal static string MaxDataProfieldDelete {
+        internal static string MatchedAssetIdColumn {
             get {
-                return ResourceManager.GetString("MaxDataProfieldDelete", resourceCulture);
+                return ResourceManager.GetString("MatchedAssetIdColumn", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may only provide a maximum of {0} Data Profile records in this request. Please call the BATCH API to submit more than {1} items..
+        ///   Looks up a localized string similar to {0} Field Name.
         /// </summary>
-        internal static string MaxDataProfieldRequest {
+        internal static string MatchedAssetNameColumn {
             get {
-                return ResourceManager.GetString("MaxDataProfieldRequest", resourceCulture);
+                return ResourceManager.GetString("MatchedAssetNameColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Asset Path.
+        /// </summary>
+        internal static string MatchedAssetPathColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetPathColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Tags.
+        /// </summary>
+        internal static string MatchedAssetTagsColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetTagsColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Asset Type Path.
+        /// </summary>
+        internal static string MatchedAssetTypePathColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetTypePathColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Asset UID.
+        /// </summary>
+        internal static string MatchedAssetUidColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetUidColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Field Url.
+        /// </summary>
+        internal static string MatchedAssetUrlColumn {
+            get {
+                return ResourceManager.GetString("MatchedAssetUrlColumn", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Min Confidence Parameter is invalid.
         /// </summary>
-        internal static string MinConfidenceParaInvalid {
+        internal static string MinConfidenceInvalid {
             get {
-                return ResourceManager.GetString("MinConfidenceParaInvalid", resourceCulture);
+                return ResourceManager.GetString("MinConfidenceInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string NameColumn {
+            get {
+                return ResourceManager.GetString("NameColumn", resourceCulture);
             }
         }
         
@@ -169,20 +259,11 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Record already exists for AssetUid {0} and ProfileSetDate {1}.
+        ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;confidence&apos; and &apos;path&apos;..
         /// </summary>
-        internal static string ProfileSetDateExists {
+        internal static string OrderInvalid {
             get {
-                return ResourceManager.GetString("ProfileSetDateExists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Record does not exist for AssetUid {0} and ProfileSetDate {1}.
-        /// </summary>
-        internal static string ProfileSetDateNotExists {
-            get {
-                return ResourceManager.GetString("ProfileSetDateNotExists", resourceCulture);
+                return ResourceManager.GetString("OrderInvalid", resourceCulture);
             }
         }
         
@@ -196,29 +277,29 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Start Date must be before the end date.
+        ///   Looks up a localized string similar to Similar.
         /// </summary>
-        internal static string StartEndDateValidation {
+        internal static string Similar {
             get {
-                return ResourceManager.GetString("StartEndDateValidation", resourceCulture);
+                return ResourceManager.GetString("Similar", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Elements in topK cannot be Empty strings.
+        ///   Looks up a localized string similar to Tags.
         /// </summary>
-        internal static string TopKNotEmpty {
+        internal static string TagsColumn {
             get {
-                return ResourceManager.GetString("TopKNotEmpty", resourceCulture);
+                return ResourceManager.GetString("TagsColumn", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Type Qualifier Parameter is invalid.
         /// </summary>
-        internal static string TypeParameterInvalid {
+        internal static string TypeQualifierInvalid {
             get {
-                return ResourceManager.GetString("TypeParameterInvalid", resourceCulture);
+                return ResourceManager.GetString("TypeQualifierInvalid", resourceCulture);
             }
         }
     }

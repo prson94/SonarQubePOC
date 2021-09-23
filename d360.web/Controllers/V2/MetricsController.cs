@@ -1006,7 +1006,7 @@ namespace d360.web.Controllers.V2
             if (queryParams.Any(q => q.Key == "_order"))
             {
                 _order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value;
-                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EvaluatedAssetPath", "EvaluatedAssetClass", "EffectiveDate", "EvaluatedAssetTypePath", "RunDate", "Passcount", "FailCount", "Passed", "PassFraction", "TotalCount" };
+                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EvaluatedAssetPath", "EvaluatedAssetClass", "EffectiveDate", "EvaluatedAssetTypePath", "RunDate", "Passcount", "FailCount", "PassFraction", "TotalCount" };
                 if (_orderColumns.FindIndex(x => x.Equals(_order, StringComparison.InvariantCultureIgnoreCase)) == -1)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.CustomOrderMessage, "_order", _order, string.Join(",", _orderColumns.ToArray())));
@@ -1081,6 +1081,14 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+            }
+
             if (isRequestAnExport)
             {
                 _pageNum = 1;
@@ -1088,23 +1096,14 @@ namespace d360.web.Controllers.V2
             }
             else
             { 
-                string isValid = isPageSizeAndNumValid(queryParams);
-
-                if (!string.IsNullOrEmpty(isValid))
+                if (queryParams.Any(q => q.Key == "_pageNum"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+                    _pageNum = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value);
                 }
-                else
+                if (queryParams.Any(q => q.Key == "_pageSize"))
                 {
-                    if (queryParams.Any(q => q.Key == "_pageNum"))
-                    {
-                        _pageNum = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value);
-                    }
-                    if (queryParams.Any(q => q.Key == "_pageSize"))
-                    {
-                        _pageSize = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value);
-                    }
-                }            
+                    _pageSize = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value);
+                }
             }
 
             #endregion
@@ -1724,7 +1723,6 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "PassCount");
             doc.SetCellValue(rowNumber, index++, "FailCount");
             doc.SetCellValue(rowNumber, index++, "PassFraction");
-            doc.SetCellValue(rowNumber, index++, "Passed");
 
             #endregion
             #region Body
@@ -1744,7 +1742,6 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
-                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString() : "");
             }
             doc.AutoFitColumn(1, 13);
             #endregion
@@ -1776,7 +1773,6 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "Total Rows");
             doc.SetCellValue(rowNumber, index++, "Rows Passed");
             doc.SetCellValue(rowNumber, index++, "Rows Failed");
-            doc.SetCellValue(rowNumber, index++, "Passed");
             doc.SetCellValue(rowNumber, index++, "Rule Result UID");
 
             #endregion
@@ -1794,7 +1790,6 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
-                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString() : "");
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
             }
             doc.AutoFitColumn(1, 11);

@@ -22,7 +22,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
     @Input() percentage: number;
     @Input() labelStyle: LABEL_STYLE = LABEL_STYLE.ANGLE;
     @Input() hideLastButton: boolean = false;
-    @Input() hideSettings: boolean = true;
+    @Input() hideSettings: boolean = false;
     @Output() onPageChange = new EventEmitter();
     itemsPerPageOptions = [10, 25, 50, 100];
     itemsPerPage: number = 25;

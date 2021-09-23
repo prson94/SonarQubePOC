@@ -133,9 +133,10 @@ namespace igx.jobs.indexer
             }
             else if (!string.IsNullOrEmpty(reindex.Category))
             {
-                if (SearchIndexer.IsIndexable(reindex.Category))
+                if (SearchIndexer.IsIndexable(reindex.Category) || reindex.Category == AssetTypeClass.Predicate.ToString())
                 {
-                    LogReindexStart(reindex.Category, reindex.CompanyID);
+                    string cat = reindex.Category == AssetTypeClass.Predicate.ToString() ? "Synonym" : reindex.Category;
+                    LogReindexStart(cat, reindex.CompanyID);
 
                     AssetTypeClassInfo info = AssetTypeClassExtensions.GetAsList(AssetTypeClass.Generic).Where(c => c.Value == reindex.Category).FirstOrDefault();
                     if (info != null)
@@ -146,7 +147,7 @@ namespace igx.jobs.indexer
                     {
                         //Synonyms and Intersects are the same category
                         indexer.IndexObjectType("Intersect", true);
-                        indexer.IndexObjectType("Synonym");
+                        indexer.IndexObjectType("Synonym", false);
                     }
                     LogReindexEnd(reindex.Category, reindex.CompanyID);
 
@@ -200,21 +201,10 @@ namespace igx.jobs.indexer
 
             });
 
-
-            LogReindexStart("Artifact Synonyms", CompanyID);
+            LogReindexStart("Synonyms", CompanyID);
             try
             {
-                indexer.IndexObjectType("Intersect", false);
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex, CompanyID);
-            }
-
-            LogReindexStart("Custom Synonyms", CompanyID);
-            try
-            {
-                indexer.IndexObjectType("Synonym", false);
+                indexer.IndexAssetClass(AssetTypeClass.Predicate);
             }
             catch (Exception ex)
             {

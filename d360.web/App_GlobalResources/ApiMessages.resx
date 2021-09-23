@@ -555,4 +555,7 @@
   <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
     <value>An unknown error occurred and has been logged for further investigation. Please try your request again later.</value>
   </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Internal Server Error</value>
+  </data>
 </root>

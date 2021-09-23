@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID } from '@angular/core';
+﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter } from '@angular/core';
 
 import { BaseComponent } from '../base.component';
 
@@ -12,6 +12,8 @@ import * as Highcharts from 'highcharts';
 
 export class DataProfileComponent extends BaseComponent implements OnInit, OnChanges, AfterViewInit {
     @Input() dataProfile: any;
+    @Input() isModal: boolean = false;
+    @Output() linkClicked = new EventEmitter();
 
     private sampleCountPercentage: number;
     private nullBlankCountTotal: number;
@@ -47,6 +49,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     private validCount: number;
     private distinctCount: number;
     private invalidCount: number;
+    private showDuplicates: boolean = true;
+    private showSimilar: boolean = true;
 
     isMatchDetectionPopupVisible: boolean = false;
     matchType: string = "";
@@ -54,6 +58,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     sampleDistributionChart: Highcharts.Chart;
     sampleChartXLabel: string = '';
 
+    matchAssetUid: string = "";
 
     ngOnInit() { 
         this.initialize();
@@ -78,6 +83,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         this.distinctCount = this.dataProfile.cardinality ?? 0;
         this.invalidCount = this.dataProfile.outlierCount ?? 0;
 
+        this.matchAssetUid = this.dataProfile.assetUid;
         this.sortSamples();
 
         this.sampleBarChart = this.getSampleBarChart();
@@ -88,7 +94,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
 
         this.checkVisibility();
 
-        this.setMinAndMaxText();
+        this.setMinAndMaxText();        
     }
 
     private showSidePanel() {
@@ -240,6 +246,20 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         let descStr: string = type === 'duplicates' ? 'same type and matching data' : 'same type but different data';
         return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate.`;
     }
+
+    matchDetectionLinkClicked(type: string) {        
+        if (this.dataProfile.matches != null) {
+            this.showDuplicates = this.dataProfile.matches.data > 0;
+            this.showSimilar = this.dataProfile.matches.structure > 0;
+        }
+        if (!this.isModal) {
+            this.isMatchDetectionPopupVisible = true;
+            this.matchAssetUid = this.dataProfile.assetUid;
+            this.matchType = type;
+        } else {           
+            this.linkClicked.emit({ assetUid: this.dataProfile.assetUid, matchType: type, showDuplicates: this.showDuplicates, showSimilar: this.showSimilar });
+        }       
+    }    
 
     public renderSampleDistributionChart() {
 
@@ -620,7 +640,18 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             this.sampleDistributionChart.destroy();
         }
 
-        this.sampleDistributionChart = Highcharts.chart('sampleChart', chartOptions, includeStatsWidget ? renderStatsWidget : null);
+        this.sampleDistributionChart = Highcharts.chart('sampleChart'+ (this.isModal ? 'Modal': ''), chartOptions, includeStatsWidget ? renderStatsWidget : null);
+    }
 
+    handleLinkClicked(event: any) {
+        this.matchAssetUid = event.assetUid;
+        this.matchType = event.matchType;
+        this.showDuplicates = event.showDuplicates;
+        this.showSimilar = event.showSimilar;
+    }
+
+    matchDetectionClosed() {
+        this.isMatchDetectionPopupVisible = false;
+        this.matchAssetUid = this.dataProfile.assetUid;
     }
 }

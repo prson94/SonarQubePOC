@@ -103,5 +103,6 @@
 	<!-- Tables -->
   <include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
   <include file="scripts/Table.dbo.DomainSetting.xml"/>
+  <include file="scripts/Table.dbo.OpenIdRequest.xml"/>
 </databaseChangeLog>
 
