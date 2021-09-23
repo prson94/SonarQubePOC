@@ -41,6 +41,15 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// A dictionary of Action Object with the DB value as key, and the display value as value
+        private readonly Dictionary<string, string> ActionObjectDictionary = new Dictionary<string, string> {
+            { "Intersect", "Relationship" },
+            { "IntersectType", "RelationshipType" },
+            { "Taxonomy" , "Model" },
+            { "TaxonomyType" , "ModelType" },
+            { "ResponsibilityTypeRelationOverrideItem" , "Responsibility Type Relation Override Item" },
+        };
+
         /// <summary>
         /// Retrieves audit data for the given asset unique identifier.
         /// </summary>
@@ -111,9 +120,33 @@ namespace d360.web.Controllers.V2
                 var orderDirection = Company.ParseOrderDirection(queryParams, "desc");
                 orderBySql = $" order by {orderColumn} {orderDirection} ";
 
+                //some actionObject values are translated using ActionObjectDictionary, so incoming filters for actionObject
+                //must have the values translated back
+                List<KeyValuePair<string, string>> modifiedQueryParams = new List<KeyValuePair<string, string>>();
+                foreach(KeyValuePair<string, string> kp in queryParams)
+                {
+                    string currentValue = kp.Value;
+                    if(kp.Key.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "_filter" && currentValue.Contains("actionObject"))
+                    {
+                        List<string> operators = new List<string>
+                        {
+                            "eq",
+                            "ne"
+                        };
+                        Dictionary<string, string> lookups = ActionObjectDictionary.ToDictionary(d => d.Value, d => d.Key);
+                        lookups.Add("Business Asset", "Artifact");
+                        lookups.Add("Technical Asset", "Artifact");
+
+                        currentValue = lookups.SelectMany(l => operators, (l, o) => new { l, o })
+                            .ToDictionary(s => $"actionObject {s.o} '{s.l.Key}'", s=> $"actionObject {s.o} '{s.l.Value}'")
+                            .Aggregate(currentValue, (current, value) => current.Replace(value.Key, value.Value));
+                    }
+                    modifiedQueryParams.Add(new KeyValuePair<string, string> ( kp.Key, currentValue));
+                }
+
                 DynamicParameters advFilterArgs = null;
                 List<string> advFilterStatements = null;
-                Company.ParseAdvancedFilterQueryParameter(queryParams, fieldList, out advFilterArgs, out advFilterStatements);
+                Company.ParseAdvancedFilterQueryParameter(modifiedQueryParams, fieldList, out advFilterArgs, out advFilterStatements);
                 if (advFilterArgs != null && advFilterStatements != null)
                 {
                     dbArgs.AddDynamicParams(advFilterArgs);
@@ -184,6 +217,25 @@ namespace d360.web.Controllers.V2
                 sql += " " + orderBySql + " " + offsetSql;
 
                 var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
+
+                //Translate actionObject values
+                query.ForEach(r => {
+                    if (new[] { "Artifact", "ArtifactType" }.Contains(r.actionObject))
+                    {
+                        if (r.@class == 1)
+                        {
+                            r.actionObject = "Business Asset";
+                            r.actionDescription = r.actionDescription.Replace("Artifact", "Business Asset");
+                        } else if (r.@class == 8)
+                        {
+                            r.actionObject = "Technical Asset";
+                            r.actionDescription = r.actionDescription.Replace("Artifact", "Technical Asset");
+                        }
+                    } else if (ActionObjectDictionary.ContainsKey(r.actionObject))
+                    {
+                        r.actionObject = ActionObjectDictionary[r.actionObject];
+                    }
+                });
 
                 if (isStreamResponse)
                 {
@@ -294,7 +346,7 @@ namespace d360.web.Controllers.V2
                 condition = @"(ga.[Object] = @Object and ga.ObjectId = @ObjectId) OR (
                     ga.[Object] = 'ReferenceItem' and ga.ObjectID in 
                         (select a.objectid from[dbo].[asset] a
-                        inner join[dbo].[assettype] att on(a.assettypeid = att.id)
+                        inner join [dbo].[assettype] att on(a.assettypeid = att.id)
                         where att.[Object] = @Object and att.ObjectId = @ObjectId))";
             }
             else if (new List<string> { "ResourceType", "GroupType", "MetricAllocation", "Predicate" }.Contains(objectInfo.Object))
@@ -321,11 +373,16 @@ namespace d360.web.Controllers.V2
 			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
 
             result.actionObject = Company.Query<dynamic>($@"select distinct
-                case when ga.ActionObject = 'Intersect' then 'Relationship'
-                     when ga.ActionObject = 'IntersectType' then 'RelationshipType'
-                     else ga.ActionObject end val
+                case when ga.ActionObject like 'Artifact%' and coalesce(at.class, att.class) = 1 then 'Business Asset'
+                when ga.ActionObject like 'Artifact%' and coalesce(at.class, att.class) = 8 then 'Technical Asset'
+                else  ga.ActionObject end val
                 from reporting.global_audit ga
-			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+                left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+				left join Asset A on A.Object = ga.Object and A.ObjectID = ga.ObjectID
+				left join AssetType ATT on A.AssetTypeID = att.id
+                where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => {
+                    return (ActionObjectDictionary.ContainsKey(x.val)) ? ActionObjectDictionary[x.val] : x.val;
+                }).ToList();
 
             return result;
         }

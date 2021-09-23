@@ -124,22 +124,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             .getAuditData(this.uid, this.getParams())
             .subscribe(result => {
                 this.isLoading = false;
-                result.items.forEach((object) => {
-                    if ((object.actionObject == "ArtifactType" && object.class == 1) || (object.actionObject == "Artifact" && object.class == 1)) {
-                        object.actionObject = "Business Asset";
-                        if (object.actionDescription.includes("Artifact")) {
-                            object.actionDescription = object.actionDescription.replace("ArtifactType", "Business Asset");
-                            object.actionDescription = object.actionDescription.replace("Artifact", "Business Asset");
-                        }
-                    }
-                    if ((object.actionObject == "ArtifactType" && object.class == 8) || (object.actionObject == "Artifact" && object.class == 8)) {
-                        object.actionObject = "Technical Asset";
-                        if (object.actionDescription.includes("Artifact")) {
-                            object.actionDescription = object.actionDescription.replace("ArtifactType", "Technical Asset");
-                            object.actionDescription = object.actionDescription.replace("Artifact", "Technical Asset");
-                        }
-                    }
-                });
                 this.audits = <Audit[]>result.items;
                 this.totalRecords = result.total;
                 this.changeDetectorRef.markForCheck();
