@@ -105,7 +105,7 @@ namespace d360.web.Controllers.V2
 
                 if (!Company.CurrentResourceIsAdmin && !showResources && IsCurrentUser == false)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
                 }
 
                 string finalSql = "";
@@ -1787,7 +1787,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
                 if (followDetail != null && !followDetail.HardFollow)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.CurrentWatchNotUnwatchIndividually, parentName)));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.CurrentWatchNotUnwatchIndividually, parentName))).ConfigureAwait(false);
                 }
             }
 

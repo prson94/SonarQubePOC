@@ -555,7 +555,13 @@
   <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
     <value>An unknown error occurred and has been logged for further investigation. Please try your request again later.</value>
   </data>
-  <data name="InternalServerError" xml:space="preserve">
-    <value>Internal Server Error</value>
+  <data name="InvalidEndDate" xml:space="preserve">
+    <value>Invalid _endDate provided</value>
+  </data>
+  <data name="InvalidStartDate" xml:space="preserve">
+    <value>Invalid _startDate provided</value>
+  </data>
+  <data name="StartEndDateValidation" xml:space="preserve">
+    <value>Start Date must be before the end date</value>
   </data>
 </root>

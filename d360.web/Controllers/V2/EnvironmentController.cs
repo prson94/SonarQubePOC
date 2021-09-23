@@ -541,7 +541,7 @@ namespace d360.web.Controllers.V2
                             if (!DateTime.TryParse(q.Value, out startDate))
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage = DataProfileAPIMessages.InvalidStartDate;
+                                errorMessage = ApiMessages.InvalidStartDate;
                             }
                             else
                             {
@@ -556,7 +556,7 @@ namespace d360.web.Controllers.V2
                             if (!DateTime.TryParse(q.Value, out endDate))
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage = DataProfileAPIMessages.InvalidEndDate;
+                                errorMessage = ApiMessages.InvalidEndDate;
                             }
                             else
                             {

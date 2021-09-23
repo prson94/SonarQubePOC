@@ -1421,7 +1421,7 @@ for json path";
 
                 if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ActionApiMessages.UniqueAllocation));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ActionApiMessages.UniqueAllocation)).ConfigureAwait(false);
                 }                
 
                 if (model.responsibilityTypeUid.Count() > 0)
@@ -1432,7 +1432,7 @@ for json path";
                     {
                         if(!responsibilityTypes.Any(rt => rt.uid == uid))
                         {
-                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name)));
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name))).ConfigureAwait(false);
                         }
                     }
                 }

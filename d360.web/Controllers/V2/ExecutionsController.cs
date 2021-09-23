@@ -382,13 +382,13 @@ namespace d360.web.Controllers.V2
                 DateTime _tempstartDate;
                 if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_startDate").Value, out _tempstartDate))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter,DataProfileAPIMessages.InvalidStartDate );
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidStartDate );
                 }
                 _startDate = _tempstartDate;
 
                 if (_startDate == DateTime.MinValue || DateTime.Compare((DateTime)_startDate, SqlDateTimeMin) < 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, DataProfileAPIMessages.InvalidStartDate);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidStartDate);
                 }
             }
 
@@ -397,18 +397,18 @@ namespace d360.web.Controllers.V2
                 DateTime _tempendDate;
                 if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_endDate").Value, out _tempendDate))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, DataProfileAPIMessages.InvalidEndDate);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidEndDate);
                 }
                 _endDate = _tempendDate;
 
                 if (_endDate == DateTime.MaxValue || DateTime.Compare((DateTime)_endDate, SqlDateTimeMin) < 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, DataProfileAPIMessages.InvalidEndDate);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidEndDate);
                 }
 
                 if (_startDate != null && DateTime.Compare((DateTime)_endDate, (DateTime)_startDate) < 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, DataProfileAPIMessages.StartEndDateValidation);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.StartEndDateValidation);
                 }
             }
 

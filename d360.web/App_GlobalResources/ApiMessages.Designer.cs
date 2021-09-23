@@ -691,6 +691,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid _endDate provided.
+        /// </summary>
+        internal static string InvalidEndDate {
+            get {
+                return ResourceManager.GetString("InvalidEndDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to externalId {0} is not a valid Uid.
         /// </summary>
         internal static string InvalidExternalID {
@@ -849,6 +858,15 @@ namespace Resources {
         internal static string InvalidScoreType {
             get {
                 return ResourceManager.GetString("InvalidScoreType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid _startDate provided.
+        /// </summary>
+        internal static string InvalidStartDate {
+            get {
+                return ResourceManager.GetString("InvalidStartDate", resourceCulture);
             }
         }
         
@@ -1146,6 +1164,15 @@ namespace Resources {
         internal static string SettingValueProvided {
             get {
                 return ResourceManager.GetString("SettingValueProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start Date must be before the end date.
+        /// </summary>
+        internal static string StartEndDateValidation {
+            get {
+                return ResourceManager.GetString("StartEndDateValidation", resourceCulture);
             }
         }
         
