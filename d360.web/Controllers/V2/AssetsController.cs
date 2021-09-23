@@ -618,7 +618,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.ObjectID > 0)
                 {
-                    if ( model.Class != AssetTypeClass.Reference)
+                    if (model.Class != AssetTypeClass.Reference)
                     {
                         var nameFieldType = new FieldType
                         {
@@ -1466,6 +1466,72 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+
+                List<dynamic> Values = new List<dynamic>();
+
+                if (fieldType.Type == "ComplexRelationLookup")
+                {
+                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                    var definition = ftl.ParseComplexLookupDefinition();
+
+                    var mappings = definition.GetFriendlyNamesMapping();
+
+                    //select distinct
+                    //dbo.GenerateAssetUrl(H1.ID) as [H1_Url],
+                    //dbo.GenerateAssetUrl(H2.ID) as [H2_Url],
+                    //H1.Uid as [H1_Uid],
+                    //H2.Uid as [H2_Uid],
+                    //H1_F26641.FormattedValue as [H1_26641],
+                    //H2_F354.FormattedValue as [H2_354]
+                    //from graph.AssetNode H1
+                    //inner join graph.AssetEdge R1 on R1.$to_id = H1.$node_id and R1.IntersectTypeID = 585
+                    //inner join graph.AssetNode A1 on A1.$node_id = R1.$from_id and A1.ID = @assetId
+                    //inner join graph.AssetNodeDisplayPath H1P on H1P.ID = H1.ID
+                    //inner join graph.AssetEdge R2 on R2.$to_id = H1.$node_id and R2.IntersectTypeID = 565
+                    //inner join graph.AssetNode H2 on H2.$node_id = R2.$from_id
+                    //inner join graph.AssetNodeDisplayPath H2P on H2P.ID = H2.ID
+                    //left join FieldDetail H1_F26641 on H1_F26641.FieldTypeID = 26641 and H1_F26641.AssetID = H1.ID and H1_F26641.FormattedValue <> ''
+                    //left join FieldDetail H2_F354 on H2_F354.FieldTypeID = 354 and H2_F354.AssetID = H2.ID and H2_F354.FormattedValue <> ''
+                    //order by 1
+                    //offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only
+
+                    List<string> joins = new List<string>();
+                    List<string> selects = new List<string>();
+                    int idx = 1;
+                    foreach (var rel in definition.Relations)
+                    {
+                        selects.Add($"dbo.GenerateAssetUrl(H{idx}.ID) as [H{idx}_Url]");
+                        selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
+
+                        joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
+                        joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                        joins.Add($"inner join graph.AssetNodeDisplayPath H{idx}P on H{idx}P.ID = H{idx}.ID");
+                        idx++;
+                    }
+
+                    foreach (var f in definition.Fields)
+                    {
+                        string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
+
+                        selects.Add($"{fieldSelector}.FormattedValue as [H{f.RelationIndex + 1}_{f.FieldTypeID}]");
+
+                        joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                    }
+
+                    var sql = $@"select distinct 
+                                {(string.Join(",", selects))}
+                                from graph.AssetNode H1
+                                {(string.Join("\n", joins))}
+                                 order by 1
+                                 offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+
+
+                    Values = (await Company.QueryAsync<dynamic>(sql, new { pageNum, pageSize, assetUid })).ToList();
+                }
+
+
+
+
                 var dbArgs = new DynamicParameters();
 
                 dbArgs.Add("object", asset.Object, DbType.AnsiString, size: 50);
@@ -1488,10 +1554,9 @@ namespace d360.web.Controllers.V2
                 var Columns = reader.Read<GridColumn>().ToList();
                 var Fields = reader.Read<GridField>().ToList();
 
-                List<dynamic> Values = new List<dynamic>();
                 try
                 {
-                    Values = reader.Read<dynamic>().ToList();
+                    //Values = reader.Read<dynamic>().ToList();
                 }
                 catch (Exception ex)
                 {
