@@ -41,8 +41,8 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
             if (params['noheader'] != null) {
                 this.hideHeader = params['noheader'].toLocaleLowerCase() === 'true';
             }
-            if (params['embeddednavigation'] != null) {
-                this.showBackButton = params['embeddednavigation'].toLocaleLowerCase() === 'true';
+            if (params['showbackbutton'] != null) {
+                this.showBackButton = params['showbackbutton'].toLocaleLowerCase() === 'true';
             }
         });
     }   
