@@ -35,8 +35,10 @@ export class StateService {
     public artifactTypeFilters: ArtifactTypeFilters;
     public workflowItemFilters: WorkflowItemFilters;
     private siteMenuRequiresReloadSource = new Subject<boolean>();
+    private recalculateTagSizeSource = new Subject();
 
     siteMenuRequiresReload$ = this.siteMenuRequiresReloadSource.asObservable();
+    recalculateTagSize$ = this.recalculateTagSizeSource.asObservable();
 
     public resetArtifactTypeFilterIfRequired(artifactTypeId: number) {
         if (this.artifactTypeFilters.artifactTypeId != artifactTypeId) {            
@@ -50,6 +52,10 @@ export class StateService {
     }
     reloadLeftNavMenu() {
         this.siteMenuRequiresReloadSource.next(true);
+    }
+
+    public recalculateTagSize() {
+        this.recalculateTagSizeSource.next();
     }
 
 }
