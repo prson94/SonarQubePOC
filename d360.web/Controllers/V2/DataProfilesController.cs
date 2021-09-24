@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using SpreadsheetLight;
+using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -561,6 +562,11 @@ namespace d360.web.Controllers.V2
                 }
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+            }
+            catch (FilterExpressionParserException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage));
             }
             catch (Exception ex)
             {

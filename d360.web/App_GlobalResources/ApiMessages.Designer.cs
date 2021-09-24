@@ -133,6 +133,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filter expression parse error.
+        /// </summary>
+        internal static string FilterExpressionParseError {
+            get {
+                return ResourceManager.GetString("FilterExpressionParseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         internal static string Forbidden {
