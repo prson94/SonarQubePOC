@@ -111,16 +111,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.loadData();
         }
         if ((changes.isVisible && changes.isVisible.currentValue === true) && (changes.matchType && changes.matchType.currentValue !== changes.matchType.previousValue)) {
-            if (this.matchType === "data") {
-                this.duplicatesSelection = this.duplicatesData.slice(0, 1);
-                this.selectMatch(this.duplicatesSelection);
-                this.similarSelection = null;
-            }
-            if (this.matchType === "similar") {
-                this.similarSelection = this.similarData.slice(0, 1);
-                this.selectMatch(this.similarSelection);
-                this.duplicatesSelection = null;
-            }
+            this.setSelectedMatch();
         }        
     }    
 
@@ -198,12 +189,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 .subscribe((res) => {
                     this.duplicatesDataTotalCount = +res.total;
                     this.duplicatesData = res.items;                    
-                    this.duplicatesDataLoading = false;   
-                    if (this.matchType === "data") {
-                        this.duplicatesSelection = this.duplicatesData.slice(0, 1);
-                        this.selectMatch(this.duplicatesSelection);
-                        this.similarSelection = null;
-                    }
+                    this.duplicatesDataLoading = false;      
+                    this.setSelectedMatch();  
                     this.cdRef.markForCheck();
                 });            
         } else if (type.toLowerCase() === "similar") {
@@ -212,13 +199,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 .subscribe((res) => {
                     this.similarData = res.items;
                     this.similarDataTotalCount = +res.total;                    
-                    this.similarDataLoading = false;             
-                    if (this.matchType === "similar") {
-                        this.similarSelection = this.similarData.slice(0, 1);
-                        this.selectMatch(this.similarSelection);
-                        this.duplicatesSelection = null;                        
-                    }
-                    
+                    this.similarDataLoading = false;       
+                    this.setSelectedMatch();                    
                     this.cdRef.markForCheck();
                 });
         }        
@@ -306,4 +288,18 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             return true;
         }
     }   
+
+    private setSelectedMatch() {
+        if (this.matchType === "data") {
+            this.duplicatesSelection = this.duplicatesData.slice(0, 1);
+            this.selectMatch(this.duplicatesSelection);
+            this.similarSelection = null;
+        }
+        if (this.matchType === "similar") {
+            this.similarSelection = this.similarData.slice(0, 1);
+            this.selectMatch(this.similarSelection);
+            this.duplicatesSelection = null;
+        }
+    }
+
 }
