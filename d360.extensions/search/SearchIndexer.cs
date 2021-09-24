@@ -297,7 +297,7 @@ namespace d360.extensions.search
 
         }
 
-        public void IndexObjectType(string ObjectType, bool clearIndex = true)
+        private void IndexObjectType(string ObjectType, bool clearIndex = true)
         {
             if (clearIndex)
             {
