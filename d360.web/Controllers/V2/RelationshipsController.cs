@@ -1132,6 +1132,17 @@ namespace d360.web.Controllers.V2
                     execution.Error = results.Count(i => !i.Success);
                     execution.CompletedOn = DateTime.UtcNow;
                     Company.Update(execution);
+
+                    // Quick sync of graph.
+                    try
+                    {
+                        Company.SynchronizeExecutionRelationshipWithGraph(execution.ExecutionID);
+                    }
+                    catch
+                    {
+                        // Do nothing, as graph topic will eventually synch.
+                    }
+
                 }
                 catch (Exception ex)
                 {
@@ -1430,6 +1441,16 @@ namespace d360.web.Controllers.V2
                 execution.Error = results.Count(i => !i.Success);
                 execution.CompletedOn = DateTime.UtcNow;
                 Company.Update(execution);
+
+                // Quick sync of graph.
+                try
+                {
+                    Company.SynchronizeExecutionRelationshipWithGraph(execution.ExecutionID);
+                }
+                catch
+                {
+                    // Do nothing, as graph topic will eventually sync.
+                }
             }
             catch (Exception ex)
             {
