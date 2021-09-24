@@ -168,7 +168,7 @@ export class SidePanelComponent extends BaseComponent {
         }
 
         if (this.buttonCount > 0) {
-            this.selectedPanel = this.buttons[0].key;
+            this.selectedPanel = this.selectedPanel ? this.selectedPanel : this.buttons[0].key;
             this.panelMenu = this.buttons[0].panelMenu;
             this.selectedPanelChange.emit(this.buttons[0].key);
         }
