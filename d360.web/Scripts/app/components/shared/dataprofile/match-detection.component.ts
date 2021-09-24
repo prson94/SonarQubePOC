@@ -52,9 +52,9 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     isExportInProgress = false;
 
     selection: any = null;
-    sidePanelOpen: boolean = false;
+    sidePanelOpen: boolean = true;
     sidePanelLoading: boolean = false;
-    sidePanelTab: string;
+    sidePanelTab: string = 'dataprofile';
     sidePanelStorageKey: string;
     dataProfile: any;
 
@@ -104,15 +104,16 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         this.filterFieldsSubject.complete();
     }
 
-    ngOnChanges(changes: SimpleChanges) {
+    ngOnChanges(changes: SimpleChanges) {        
         if (changes.assetUid && changes.assetUid.currentValue !== changes.assetUid.previousValue) {
-            this.selection = null;
-            this.duplicatesSelection = null;
-            this.similarSelection = null;
+            this.selection = null;           
             this.dataProfile = null;
             this.loadData();
         }
-    }
+        if ((changes.isVisible && changes.isVisible.currentValue === true) && (changes.matchType && changes.matchType.currentValue !== changes.matchType.previousValue)) {
+            this.setSelectedMatch();
+        }        
+    }    
 
     private loadData() {
         this.assetService.getAsset(this.assetUid)
@@ -181,14 +182,15 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         return "MatchDetection" + type + this.assetUid;
     }
 
-    getData(type: string) {
+    getData(type: string) {        
         if (type.toLowerCase() === "data") {
             this.duplicatesDataLoading = true;
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Data", this.duplicateCurrentPageNumber, this.duplicateRowsPerPage, this.duplicatesSimpleFilter, this.duplicateAdvancedFilter)
                 .subscribe((res) => {
                     this.duplicatesDataTotalCount = +res.total;
                     this.duplicatesData = res.items;                    
-                    this.duplicatesDataLoading = false;
+                    this.duplicatesDataLoading = false;      
+                    this.setSelectedMatch();  
                     this.cdRef.markForCheck();
                 });            
         } else if (type.toLowerCase() === "similar") {
@@ -197,22 +199,23 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 .subscribe((res) => {
                     this.similarData = res.items;
                     this.similarDataTotalCount = +res.total;                    
-                    this.similarDataLoading = false;                    
+                    this.similarDataLoading = false;       
+                    this.setSelectedMatch();                    
                     this.cdRef.markForCheck();
                 });
-        }                
+        }        
     }
 
     advancedFiltersChanged($event: Filters, type: string) {
         if (type === 'data') {            
-            this.duplicateAdvancedFilter = $event.filter;            
+            this.duplicateAdvancedFilter = $event.filter;
             this.getData(type);
-        } else if(type === 'similar')  {
+        } else if (type === 'similar') {
             this.similarAdvancedFilter = $event.filter;
             this.getData(type);
         }                  
     }
-    onFiltersLoaded(type: string) {        
+    onFiltersLoaded(type: string) {
         this.getData(type);        
     }
 
@@ -285,4 +288,18 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             return true;
         }
     }   
+
+    private setSelectedMatch() {
+        if (this.matchType === "data") {
+            this.duplicatesSelection = this.duplicatesData.slice(0, 1);
+            this.selectMatch(this.duplicatesSelection);
+            this.similarSelection = null;
+        }
+        if (this.matchType === "similar") {
+            this.similarSelection = this.similarData.slice(0, 1);
+            this.selectMatch(this.similarSelection);
+            this.duplicatesSelection = null;
+        }
+    }
+
 }
