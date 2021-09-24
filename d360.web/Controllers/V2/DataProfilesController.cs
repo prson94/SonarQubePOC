@@ -566,7 +566,7 @@ namespace d360.web.Controllers.V2
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
