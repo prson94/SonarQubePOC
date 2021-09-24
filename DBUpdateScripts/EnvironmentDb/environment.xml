@@ -477,6 +477,7 @@
 	<include file="scripts/Procedure.graph.AssetBrowser_OwnershipCounts.xml"/>
 	<include file="scripts/Procedure.graph.PopulatePathsForAssetType.xml"/>
 	<include file="scripts/Procedure.graph.SynchronizeAssetExecution.xml"/>
+	<include file="scripts/Procedure.graph.SynchronizeRelationshipExecution.xml"/>
 	<include file="scripts/Procedure.graph.SynchronizeTables.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetEdge.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetNode.xml"/>
