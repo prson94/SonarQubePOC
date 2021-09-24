@@ -105,8 +105,8 @@ END
 	</rollback>
   </changeSet> 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v9">
-    <comment>GOV-15295</comment>
+  <changeSet author="tduric" id="Table.dbo.Field-Field_AfterUpsert-v10">
+    <comment>GOV-15877</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -119,7 +119,7 @@ AS
 	SET NOCOUNT ON;
 
 	-- formatted value logic only needs to run in cases where value is not null
-	if exists( select 1 from inserted where [value] is not null)
+	if exists( select 1 from inserted where [value] is not null or [formattedvalue] is not null)
 	begin
 
 		UPDATE	T
@@ -372,7 +372,7 @@ AS
 									f.FormattedValue as [Value] 
 								from field f 
 									inner join fieldtype ft on f.fieldtypeid = ft.id 
-								where f.objectid = i.objectid for xml path('Field'), TYPE
+								where f.objectid = i.objectid and f.objecttype = i.objecttype for xml path('Field'), TYPE
 								)
 								for xml path('FieldInfo'), TYPE
 								)
@@ -406,7 +406,7 @@ AS
 									f.FormattedValue as [Value] 
 								from field f 
 									inner join fieldtype ft on f.fieldtypeid = ft.id 
-								where f.objectid = i.objectid for xml path('Field'), TYPE
+								where f.objectid = i.objectid and f.objecttype = i.objecttype  for xml path('Field'), TYPE
 								)
 								for xml path('FieldInfo'), TYPE
 								)
@@ -440,7 +440,7 @@ AS
 									f.FormattedValue as [Value] 
 								from field f 
 									inner join fieldtype ft on f.fieldtypeid = ft.id 
-								where f.objectid = i.objectid for xml path('Field'), TYPE
+								where f.objectid = i.objectid and f.objecttype = i.objecttype  for xml path('Field'), TYPE
 								)
 								for xml path('FieldInfo'), TYPE
 								)
