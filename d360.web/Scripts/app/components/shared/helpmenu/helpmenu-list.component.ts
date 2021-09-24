@@ -34,10 +34,20 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         { title: "Delete" },
     ];
 
-    private baseVisibilityItems: any[] = [
-        { title: "Visible", hasCheckbox: true, isChecked: true },
-        { title: "Visible to Admins Only" },
-        { title: "Hidden" },
+    private visibleVisibilityItems: any[] = [
+        { title: "Visible", hasSelectedBox: true,  isSelected: true },
+        { title: "Visible to Admins Only", hasSelectedBox: true, isSelected: false },
+        { title: "Hidden", hasSelectedBox: true, isSelected: false },
+    ];
+    private adminVisibilityItems: any[] = [
+        { title: "Visible", hasSelectedBox: true, isSelected: false },
+        { title: "Visible to Admins Only", hasSelectedBox: true, isSelected: true },
+        { title: "Hidden", hasSelectedBox: true, isSelected: false },
+    ];
+    private hiddenVisibilityItems: any[] = [
+        { title: "Visible", hasSelectedBox: true, isSelected: false },
+        { title: "Visible to Admins Only", hasSelectedBox: true, isSelected: false },
+        { title: "Hidden", hasSelectedBox: true, isSelected: true },
     ];
 
     private upMenuItems: any[] = [
@@ -62,8 +72,6 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         this.helpMenuService.getHelpMenuItems()
             .subscribe((r) => {
                 this.items = r;
-                //this.items.sort((a, b) => (a.ID < b.ID ? 1 : -1));
-                //this.newID = this.items[0].ID + 1;
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
                 this.itemsChange.emit(this.items);
                 this.deletedRecordsChange.emit(this.deletedRecords);
@@ -225,8 +233,16 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         }
     }
 
-    visibilityItems(): any[] {
-        return this.baseVisibilityItems;
+    visibilityItems(item: any): any[] {
+        if (item.visibilty === 1) {
+            return this.visibleVisibilityItems;
+        }
+        else if (item.visibilty === 2) {
+            return this.adminVisibilityItems;
+        }
+        else {
+            return this.hiddenVisibilityItems;
+        }
     }
 
     clickMenu(e: any, item: any) {
