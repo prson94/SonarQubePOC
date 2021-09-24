@@ -378,6 +378,18 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             this.toggle();
             this.reset();
         }
+        else if (item.hasSelectedBox) {
+            if (item.isSelected) {
+                return;
+            }
+            else if (!item.isSelected) {
+                this.items.forEach((x) => {
+                    x.isSelected = false;
+                });
+                item.isSelected = true;
+                this.onSelect.emit({ value: item.title, isSelected: item.isSelected, event: $event });
+            }
+        }
         else {
             if (this.allowAllUnchecked === false) {
                 var checkBoxes = this.items.filter((x) => x.hasCheckbox === true && x.isChecked === true);
@@ -449,6 +461,9 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
     hasCheckboxes(items: PopupMenuItem[]) {
         return items.some(x => x.hasCheckbox == true);
+    }
+    hasSelectedboxes(items: PopupMenuItem[]) {
+        return items.some(x => x.hasSelectedBox == true);
     }
     hasShortcuts(items: PopupMenuItem[]) {
         return items.some(x => x.keys && x.keys.length > 0);
@@ -583,7 +598,9 @@ export class PopupMenuItem {
     default: boolean = false;
     isLabel: boolean = false;
     hasCheckbox: boolean = false;
+    hasSelectedBox: boolean = false;
     isChecked: boolean = null;
+    isSelected: boolean = null;
     keys: number[] = [];
     keysMac: number[] = [];
     badge: PopupMenuItemBadge;
