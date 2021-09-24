@@ -387,7 +387,11 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.isTooltipLoaded = false;
         this.tagService.getTagTooltip(tag.uid, this.assetUID, tag.Value)
             .subscribe(t => {
-                this.tagTooltip = t[0];
+                if (t.length > 0) {
+                    this.tagTooltip = t[0];
+                } else {
+                    this.tagTooltip = new TagType();
+                }
 
                 this.tags.forEach(x => {
                     if (x.Value == tag.Value) {
