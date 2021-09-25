@@ -19,7 +19,9 @@ namespace d360.extensions
     public class FieldFilter
     {
         public string Field { get; set; }
-        public string Phrase { get; set; }
+        public string[] Values { get; set; }
+        public SearchConnector Connector { get; set; } = SearchConnector.Or;
+        public SearchOperator Operator { get; set; } = SearchOperator.Contains;
         public bool MatchWords { get; set; } = false;
     }
 
@@ -85,7 +87,7 @@ namespace d360.extensions
         public List<AggregationFilter> AggregationFilters { get; set; }
         public List<FieldFilter> FieldFilters { get; set; }
         public List<string> Aggregations { get; set; }
-        SearchConnector SearchConnector { get; set; } = SearchConnector.And;
+        public SearchConnector SearchConnector { get; set; } = SearchConnector.And;
         public bool Explain { get; set; } = false;
         public List<FieldBoost> FieldBoosters { get; set; }
     }
@@ -245,6 +247,12 @@ namespace d360.extensions
         public string Suffix { get; set; }
         public string Value { get; set; }
         public bool Empty { get; set; }
+    }
+
+    public enum SearchOperator
+    {
+        Contains,
+        NotContains
     }
 
     public enum SearchConnector

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.api.ExecutionDeletedAsset-v1">
+  <changeSet author="TDuric" id="Table.api.ExecutionDeletedAsset-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -25,6 +25,7 @@ BEGIN
 		[FromHierarchy] [bit] CONSTRAINT [DF_ApiExecutionDeletedAsset_FromHierarchy] DEFAULT (0) NOT NULL,
 		[Message] [nvarchar](2500) NULL,
 		[Success] [bit] NULL,
+		[Level] [int] NULL,
 		[Cascade] [bit] CONSTRAINT [DF_ApiExecutionDeletedAsset_Cascade] DEFAULT (1) NOT NULL,
 		CONSTRAINT [PK_ApiExecutionDeletedAsset] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [Uid] ASC )
 	)
@@ -49,6 +50,11 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionDeletedAss
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ApiExecutionDeletedAsset_Success] ON [api].[ExecutionDeletedAsset] ( [ExecutionID] DESC, [Success] ASC ) INCLUDE([ItemNumber])
 END
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionDeletedAsset' and COLUMN_NAME = 'Level')
+begin
+	alter table [api].[ExecutionDeletedAsset] add [Level] int null
+end
 		]]>
     </sql>
 	<rollback>

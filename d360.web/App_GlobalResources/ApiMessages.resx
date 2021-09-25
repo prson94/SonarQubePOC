@@ -564,4 +564,7 @@
   <data name="StartEndDateValidation" xml:space="preserve">
     <value>Start Date must be before the end date</value>
   </data>
+  <data name="FilterExpressionParseError" xml:space="preserve">
+    <value>Filter expression parse error</value>
+  </data>
 </root>

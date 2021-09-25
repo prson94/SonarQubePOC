@@ -368,6 +368,16 @@ namespace Resources {
         
         /// <summary>
         ///   Looks up a localized string similar to Could not cast score type value {0} to a valid score type.
+        ///   Looks up a localized string similar to Filter expression parse error.
+        /// </summary>
+        internal static string FilterExpressionParseError {
+            get {
+                return ResourceManager.GetString("FilterExpressionParseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         internal static string ErrorScoreCasting {
             get {

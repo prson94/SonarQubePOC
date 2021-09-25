@@ -1,0 +1,135 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.graph.SynchronizeAssetExecution-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [graph].[SynchronizeAssetExecution]
+	@executionUid uniqueidentifier
+as
+begin
+	set nocount on;
+	declare @method varchar(7) = '';
+
+	select @method = upper(Method) from api.Execution where ExecutionID = @executionUid;
+
+	if (@method = 'POST' OR @method = 'PUT') and exists(select 1 from api.ExecutionAsset where ExecutionID = @executionUid)
+	begin
+		drop table if exists #assets;
+		create table #assets (ID bigint, Uid uniqueidentifier, Object varchar(50), ObjectID int, AssetTypeID int, AssetTypeUid uniqueidentifier, [State] int, UpdatedOn datetime, Class int);
+
+		insert into #assets
+			select	A.ID,
+					A.Uid,
+					A.Object,
+					A.ObjectID,
+					T.ID,
+					T.Uid,
+					A.[State],
+					coalesce(A.UpdatedOn, A.CreatedOn, getutcdate()),
+					T.Class
+			from	Asset A
+					inner join api.ExecutionAsset E on E.ExecutionID = @executionUid and E.AssetID = A.ID and E.AssetID is not null and E.Success = 1
+					inner join AssetType T on T.ID = A.AssetTypeID;
+
+		merge	graph.AssetNode T
+		using	#assets S 
+		on		(S.ID = T.ID)
+		when	matched and (T.UpdatedOn < S.UpdatedOn OR T.[Class] <> S.[Class]) then 
+		update 
+		set		T.[State] = S.[State],
+				T.[UpdatedOn] = S.[UpdatedOn],
+				T.AssetTypeID = S.AssetTypeID,
+				T.AssetTypeUid = S.AssetTypeUid,
+				T.[Class] = S.[Class]
+		when	not matched by target then 
+		insert	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn, Class) 
+		values	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn, S.Class);
+
+
+		--remove old relationships
+		delete	graph.AssetEdge 
+		where	ID in (
+			select	E.ID
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode O
+			where	match(S-(E)->O)
+					and (
+						S.ID in (select ID from #assets) 
+						or O.ID in (select ID from #assets) 
+					)
+		);
+
+		merge	graph.AssetEdge T
+		using	(
+				select	SG.$node_id as from_id,
+						OG.$node_id as to_id,
+						I.IntersectID as ID,
+						I.[Uid],
+						I.IntersectTypeID,
+						I.IntersectTypeUid,
+						I.PredicateID,
+						I.PredicateUid,
+						I.PredicateType,
+						'<props/>' as Properties,
+						I.[State],
+						coalesce(RI.UpdatedOn, RI.CreatedOn, getutcdate()) as UpdatedOn
+				from	PredicateIntersect I
+						inner join [Intersect] RI on RI.ID = I.IntersectID
+						inner join #assets SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+						inner join Asset OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+						inner join graph.AssetNode SG on SG.ID = SA.ID
+						inner join graph.AssetNode OG on OG.ID = OA.ID
+				union
+				select	SG.$node_id as from_id,
+						OG.$node_id as to_id,
+						I.IntersectID as ID,
+						I.[Uid],
+						I.IntersectTypeID,
+						I.IntersectTypeUid,
+						I.PredicateID,
+						I.PredicateUid,
+						I.PredicateType,
+						'<props/>' as Properties,
+						I.[State],
+						coalesce(RI.UpdatedOn, RI.CreatedOn, getutcdate()) as UpdatedOn
+				from	PredicateIntersect I
+						inner join [Intersect] RI on RI.ID = I.IntersectID
+						inner join Asset SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+						inner join #assets OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+						inner join graph.AssetNode SG on SG.ID = SA.ID
+						inner join graph.AssetNode OG on OG.ID = OA.ID
+				) S on (S.ID = T.ID and S.from_id = T.$from_id and S.to_id = T.$to_id)
+		when	matched and (T.UpdatedOn < S.UpdatedOn) then 
+		update	
+		set		T.IntersectTypeID = S.IntersectTypeID,
+				T.IntersectTypeUid = S.IntersectTypeUid,
+				T.PredicateID = S.PredicateID,
+				T.PredicateUid = S.PredicateUid,
+				T.PredicateType = S.PredicateType,
+				T.[State] = S.[State]
+		when	not matched by target then 
+		insert	($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn) 
+		values	(from_id, to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn);
+
+		exec [graph].[UpdateGraphTableHierarchyBy] @executionUid, null, null
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop procedure if exists [graph].[SynchronizeAssetExecution]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

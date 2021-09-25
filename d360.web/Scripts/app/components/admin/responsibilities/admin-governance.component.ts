@@ -48,6 +48,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     load(): void {
         this.responsibilityTypeService.getAdminResponsibilityTypes()
             .subscribe((data) => {
+                this.secondaryNavService.clearItems();
                 this.responsibilityTypeItems = data;
                 this.selectedRow = this.responsibilityTypeItems[0];
                 this.selectedItemChange();

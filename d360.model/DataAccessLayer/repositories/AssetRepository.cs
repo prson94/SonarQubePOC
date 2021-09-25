@@ -46,14 +46,17 @@ namespace d360.model.DataAccessLayer
         {
             return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
         }
+        
         public Asset GetAssetByUID(Guid assetUid)
         {
             return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
         }
+        
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
+        
         public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? fusionTypeUid, Guid? assetTypeUid)
         {
             var dbArgs = new DynamicParameters();
@@ -2087,7 +2090,6 @@ namespace d360.model.DataAccessLayer
             return parentUids;
         }
 
-
         private string extractColorNameFromJSON(string jsonString)
         {
             if (!string.IsNullOrEmpty(jsonString))
@@ -2213,6 +2215,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return returnModel;
         }
+
         public dynamic GetFieldTypes(Guid assetTypeUid)
         {
             var assetTypeID = 0;
@@ -2235,6 +2238,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 i.Name
             }).ToList();
         }
+        
         public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
         {
             CompanyContext.Add(execution);
@@ -2249,6 +2253,16 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 execution.Error = results.Count(i => !i.Success);
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
+
+                // Quick sync of graph.
+                try
+                {
+                    CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
+                }
+                catch
+                {
+                    // Do nothing, as graph topic will eventually synch.
+                }
             }
             catch (Exception ex)
             {
@@ -2260,6 +2274,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return results;
         }
+        
         public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey)
         {
             var parentType = SystemObjects.ArtifactType;
@@ -2479,6 +2494,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
+        
         public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
         {
             CompanyContext.Add(execution);
@@ -2493,6 +2509,16 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 execution.Error = results.Count(i => !i.Success);
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
+
+                // Quick sync of graph.
+                try
+                {
+                    CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
+                }
+                catch
+                {
+                    // Do nothing, as graph topic will eventually synch.
+                }
             }
             catch (Exception ex)
             {
@@ -2504,6 +2530,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return results;
         }
+        
         public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
         {
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
@@ -2767,7 +2794,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
-
         public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
@@ -2837,6 +2863,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();
         }
+        
         public AssetType GetArtifactTypeByID(int artifactTypeId)
         {
             return CompanyContext.Filter<AssetType>(i => i.Object.Equals("ArtifactType") && i.ObjectID == artifactTypeId).SingleOrDefault();
@@ -3339,7 +3366,6 @@ where	O.RowNum = 1";
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow }, ApiTimeout);
         }
 
-
         public async Task<AssetsCountModel> GetAssetsCounts()
         {
             var results = new AssetsCountModel();
@@ -3584,7 +3610,6 @@ where	O.RowNum = 1";
             }
             return errors;
         }
-
 
         public async Task<dynamic> GetAssetSingle(Guid assetUid)
         {
@@ -3956,7 +3981,6 @@ where   A.[uid] = @assetUid";
 
             return new AssetWatchers { total = count, items = items };
         }
-
 
         public async Task<WatchedAssetTypeDetailModel> GetWatchedAssetDetails(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {

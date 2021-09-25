@@ -18,7 +18,16 @@
     </div>
     <div class="search-container">
         <div class="search-content">
-            <d3s-chips-filter [filterOption]="newFilterOptions" [selectedFilters]="searchStateService.advancedFilters" (applyFlter)="filterChanged($event)" class="filterbar"></d3s-chips-filter>
+            <div class="filterbar">
+                <advanced-filtering #advancedFilter
+                                    [loadIdentifier]="'GlobalSearch'"
+                                    [fieldsObserver]="filterFields$"
+                                    [externalStorage]="getSavedFilters()"
+                                    [enableFilterSaving]="false"
+                                    (onLoad)="onFiltersLoaded()"
+                                    (onChange)="advancedFiltersChanged($event)">
+                </advanced-filtering>
+            </div>
             <div class="cardlist">
                 <div *ngIf="!(searchStateService.loading | async) && (searchStateService.resultCount | async) == 0">
                     <div class="row">
