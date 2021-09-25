@@ -1469,12 +1469,29 @@ namespace d360.web.Controllers.V2
 
                 List<dynamic> Values = new List<dynamic>();
 
+                var dbArgs = new DynamicParameters();
+
+                dbArgs.Add("object", asset.Object, DbType.AnsiString, size: 50);
+                dbArgs.Add("objectId", asset.ObjectID);
+                dbArgs.Add("fieldTypeId", fieldType.ID);
+                dbArgs.Add("resourceId", Company.CurrentResourceID);
+                dbArgs.Add("pageSize", pageSize);
+                dbArgs.Add("pageNum", pageNum);
+                dbArgs.Add("simpleFilter", simpleFilter);
+                dbArgs.Add("orderBy", orderBy);
+                dbArgs.Add("orderDirection", direction);
+                dbArgs.Add("useUidUrls", returnuseUidUrls);
+                dbArgs.Add("filters", filters);
+
+                dbArgs.Add("assetUid", assetUid);
+
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
                     var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var definition = ftl.ParseComplexLookupDefinition();
 
                     var mappings = definition.GetFriendlyNamesMapping();
+                    List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
 
                     //select distinct
                     //dbo.GenerateAssetUrl(H1.ID) as [H1_Url],
@@ -1511,11 +1528,67 @@ namespace d360.web.Controllers.V2
 
                     foreach (var f in definition.Fields)
                     {
-                        string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
+                        var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
 
-                        selects.Add($"{fieldSelector}.FormattedValue as [H{f.RelationIndex + 1}_{f.FieldTypeID}]");
+                        if (ft == null && f.FieldTypeName.StartsWith("Related Item."))
+                        {
+                            var index = f.RelationIndex + 1;
 
-                        joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                            selects.Add($@" H{index}_AH{f.FieldTypeID}.Uid AS [H{index}_H{f.FieldTypeID}_Uid],
+                                            H{index}_AH{f.FieldTypeID}_DV.DisplayValue AS [H{index}_H{f.FieldTypeID}_DisplayValue],
+                                            H{index}_RH{f.FieldTypeID}.IntersectTypeUid AS [H{index}_H{f.FieldTypeID}_IntersectTypeUid]");
+
+                            joins.Add($@"LEFT JOIN graph.AssetEdge H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.$to_id = H{index}.$node_id AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}
+                                         LEFT JOIN graph.AssetNode H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.$node_id = H{index}_R{f.FieldTypeID}.$from_id
+                                         LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
+                        }
+                        else if (f.FieldTypeID != 0)
+                        {
+                            string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
+                            string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
+
+                            switch (ft.Type.ToLowerInvariant())
+                            {
+                                case "boolean":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS bit) AS [{fieldAlias}]");
+                                    break;
+                                case "number":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
+                                    break;
+                                case "decimal":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal) AS [{fieldAlias}]");
+                                    break;
+                                case "date":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS date) AS [{fieldAlias}]");
+                                    break;
+                                case "datetime":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS datetime) AS [{fieldAlias}]");
+                                    break;
+                                case "counter":
+                                    string cnt_prefix = "cntprefix_" + ft.ID;
+                                    dbArgs.Add(cnt_prefix, ft.CounterPrefix);
+                                    selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
+                                    break;
+                                default:
+                                    selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");
+                                    break;
+                            }
+
+                            if (ft.Type != "Counter")
+                            {
+                                joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                            }
+                            else
+                            {
+                                joins.Add($@"OUTER apply
+                              (SELECT top 1 [Value] AS FormattedValue
+                               FROM dbo.FieldCounterValue
+                               WHERE AssetId = H{f.RelationIndex + 1}.ID
+                                 AND FieldTypeId = {ft.ID}){fieldSelector}");
+                            }
+                        }
+
+
                     }
 
                     var sql = $@"select distinct 
@@ -1526,25 +1599,9 @@ namespace d360.web.Controllers.V2
                                  offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
 
-                    Values = (await Company.QueryAsync<dynamic>(sql, new { pageNum, pageSize, assetUid })).ToList();
+                    Values = (await Company.QueryAsync<dynamic>(sql, dbArgs)).ToList();
                 }
 
-
-
-
-                var dbArgs = new DynamicParameters();
-
-                dbArgs.Add("object", asset.Object, DbType.AnsiString, size: 50);
-                dbArgs.Add("objectId", asset.ObjectID);
-                dbArgs.Add("fieldTypeId", fieldType.ID);
-                dbArgs.Add("resourceId", Company.CurrentResourceID);
-                dbArgs.Add("pageSize", pageSize);
-                dbArgs.Add("pageNum", pageNum);
-                dbArgs.Add("simpleFilter", simpleFilter);
-                dbArgs.Add("orderBy", orderBy);
-                dbArgs.Add("orderDirection", direction);
-                dbArgs.Add("useUidUrls", returnuseUidUrls);
-                dbArgs.Add("filters", filters);
 
                 var reader = await Company.QueryMultipleAsync(
                         "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
