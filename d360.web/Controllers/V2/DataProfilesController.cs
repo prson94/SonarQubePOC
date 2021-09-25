@@ -701,7 +701,7 @@ namespace d360.web.Controllers.V2
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
-            }            
+            }
         }
 
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
@@ -751,8 +751,8 @@ namespace d360.web.Controllers.V2
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record does not exist for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
                 }
-                
-                if(model.topK !=null && model.topK.Any(x=> x.Trim() == string.Empty))
+
+                if (model.topK !=null && model.topK.Any(x=> x.Trim() == string.Empty))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in topK cannot be Empty strings");
                 }

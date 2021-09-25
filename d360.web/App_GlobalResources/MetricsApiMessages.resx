@@ -117,99 +117,85 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ApiSheetName" xml:space="preserve">
-    <value>Api Info</value>
+  <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
+    <value>ConditionFieldTypeName must not be empty.</value>
   </data>
-  <data name="AssetIdColumn" xml:space="preserve">
-    <value>Asset ID</value>
-    <comment>Used for data profile match export</comment>
+  <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
+    <value>ConditionIntersectTypeUid must be valid.</value>
   </data>
-  <data name="AssetPathColumn" xml:space="preserve">
-    <value>Asset Path</value>
-    <comment>Used for data profile match export</comment>
+  <data name="ConditionNotEmpty" xml:space="preserve">
+    <value>You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.</value>
   </data>
-  <data name="AssetSheetName" xml:space="preserve">
-    <value>Assets</value>
+  <data name="ConditionValueMaxChar250" xml:space="preserve">
+    <value>Condition Value must not be longer than 250 characters.</value>
   </data>
-  <data name="AssetTypePathColumn" xml:space="preserve">
-    <value>Asset Type Path</value>
-    <comment>Used for data profile match export</comment>
+  <data name="CustomAtLeastOneProvided" xml:space="preserve">
+    <value>At least one of the following MUST be provided: {0}.</value>
   </data>
-  <data name="AssetUidColumn" xml:space="preserve">
-    <value>Asset UID</value>
-    <comment>Used for data profile match export</comment>
+  <data name="CustomNotValid" xml:space="preserve">
+    <value>{0} {1} is not a valid.</value>
   </data>
-  <data name="AssetUrlColumn" xml:space="preserve">
-    <value>Url</value>
-    <comment>Used for data profile match export</comment>
+  <data name="CustomOrderMessage" xml:space="preserve">
+    <value>{0} value '{1}' is not valid. Value must be one of the following: {2}.</value>
   </data>
-  <data name="Duplicate" xml:space="preserve">
-    <value>Duplicate</value>
+  <data name="CustomRequiredParameter" xml:space="preserve">
+    <value>{0} is a required parameter</value>
   </data>
-  <data name="InvalidOrder" xml:space="preserve">
-    <value>Invalid value for parameter '_order'. Allowed values are 'path' and 'tags'.</value>
+  <data name="CustomStartEndDateMessage" xml:space="preserve">
+    <value>{0} must be after {1}.</value>
   </data>
-  <data name="InvalidOrderConfidencePath" xml:space="preserve">
-    <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
+  <data name="CustomUidNotFound" xml:space="preserve">
+    <value>{0} with Uid {1} could not be found.</value>
   </data>
-  <data name="InvalidSimilarType" xml:space="preserve">
-    <value>'{0}' is an invalid similar type.</value>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} {1} is not a valid Uid</value>
   </data>
-  <data name="MatchedAssetExportFileName" xml:space="preserve">
-    <value>Filtered {0} {1} Fields List _{2}_.xlsx</value>
+  <data name="ErrorRuleResult" xml:space="preserve">
+    <value>Error removing rule results</value>
   </data>
-  <data name="MatchedAssetIdColumn" xml:space="preserve">
-    <value>{0} Field Asset ID</value>
-    <comment>Used for data profile match export</comment>
+  <data name="EvalAssetInvalid" xml:space="preserve">
+    <value>Evaluated Asset Invalid</value>
   </data>
-  <data name="MatchedAssetNameColumn" xml:space="preserve">
-    <value>{0} Field Name</value>
-    <comment>Used for data profile match export</comment>
+  <data name="EvalAssetNotFound" xml:space="preserve">
+    <value>Evaluated Asset not found</value>
   </data>
-  <data name="MatchedAssetPathColumn" xml:space="preserve">
-    <value>{0} Field Asset Path</value>
-    <comment>Used for data profile match export</comment>
+  <data name="GroupConditionNotFound" xml:space="preserve">
+    <value>Groups should not have conditions.</value>
   </data>
-  <data name="MatchedAssetTagsColumn" xml:space="preserve">
-    <value>{0} Field Tags</value>
-    <comment>Used for data profile match export</comment>
+  <data name="InvalidDate" xml:space="preserve">
+    <value>The value {0} is not a valid date.</value>
   </data>
-  <data name="MatchedAssetTypePathColumn" xml:space="preserve">
-    <value>{0} Field Asset Type Path</value>
-    <comment>Used for data profile match export</comment>
+  <data name="InvalidDateYear" xml:space="preserve">
+    <value>The value {0} is not a valid date. The year must be between 1900 and the current year.</value>
   </data>
-  <data name="MatchedAssetUidColumn" xml:space="preserve">
-    <value>{0} Field Asset UID</value>
-    <comment>Used for data profile match export</comment>
+  <data name="InvalidEffectiveDate" xml:space="preserve">
+    <value>Invalid Effective date provided!</value>
   </data>
-  <data name="MatchedAssetUrlColumn" xml:space="preserve">
-    <value>{0} Field Url</value>
-    <comment>Used for data profile match export</comment>
+  <data name="IsGroupTrueParentMetric" xml:space="preserve">
+    <value>Parent metric must have 'IsGroup' value set to True.</value>
   </data>
-  <data name="MinConfidenceInvalid" xml:space="preserve">
-    <value>Min Confidence Parameter is invalid</value>
+  <data name="MetricNotFound" xml:space="preserve">
+    <value>Metric not found.</value>
   </data>
-  <data name="NameColumn" xml:space="preserve">
-    <value>Name</value>
-    <comment>Used for data profile match export</comment>
+  <data name="MetricRemoveMessage" xml:space="preserve">
+    <value>Metric successfully removed.</value>
   </data>
-  <data name="NoSimilarTypeForAssetUid" xml:space="preserve">
-    <value>{0} signature not found for AssetUid {1}</value>
+  <data name="MetricRemoveNotAllowed" xml:space="preserve">
+    <value>You are not allowed to remove this metric.</value>
   </data>
-  <data name="OrderInvalid" xml:space="preserve">
-    <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
+  <data name="MetricUidNotFound" xml:space="preserve">
+    <value>Metric with Uid of {0} not found.</value>
   </data>
-  <data name="RequiredSimilarType" xml:space="preserve">
-    <value>similarType is a required field.</value>
+  <data name="NoAllocationAssetTypeScoreType" xml:space="preserve">
+    <value>There is no allocation for specified Asset Type UID and Score Type.</value>
   </data>
-  <data name="Similar" xml:space="preserve">
-    <value>Similar</value>
+  <data name="ParentMetricNotFound" xml:space="preserve">
+    <value>Parent metric not found.</value>
   </data>
-  <data name="TagsColumn" xml:space="preserve">
-    <value>Tags</value>
-    <comment>Used for data profile match export</comment>
+  <data name="ScoreAllocationCorrespondingAssetNotFound" xml:space="preserve">
+    <value>Score Allocation corresponding to asset with identifier of {0} could not be found.</value>
   </data>
-  <data name="TypeQualifierInvalid" xml:space="preserve">
-    <value>Type Qualifier Parameter is invalid</value>
+  <data name="UseSingleCondition" xml:space="preserve">
+    <value>You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition</value>
   </data>
 </root>

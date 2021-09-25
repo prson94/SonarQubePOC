@@ -59,7 +59,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
 
             var queryParams = Request.GetQueryNameValuePairs();
 
@@ -87,7 +87,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
             }
 
             var result = await crossReferencesRepository.GetByAssetUid(assetUid);
@@ -114,7 +114,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetByTypeID(string type, string externalId)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
 
             var result = await crossReferencesRepository.GetCrossReferenceByTypeId(type, externalId);
 
@@ -138,7 +138,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetByType(string type)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
 
             var result = await crossReferencesRepository.GetCrossReferenceByType(type);
 
@@ -162,7 +162,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetByDataSource(string dataSource)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
 
             var result = await crossReferencesRepository.GetCrossReferenceByDataSource(dataSource);
 
@@ -236,7 +236,7 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
 
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
 
 
 
@@ -253,7 +253,7 @@ namespace d360.web.Controllers.V2
                 {
                     { "Endpoint Method", prefix }
                 });
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
            
         }
@@ -354,7 +354,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> DeleteByUid(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
 
 
             //deletes the new record
@@ -393,7 +393,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type."));
             }
 
-            
+
             //deletes the new record
             int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, type, GetTimeoutFromQueryString());
 
@@ -490,7 +490,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PostBatchCrossReferenceAsync(List<AssetCrossReference> crossReferences)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add asset cross reference")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
 
             var prefix = "CrossReferences.PostBatchCrossReferenceAsync => ";
             var errorMessage = "";
@@ -503,7 +503,7 @@ namespace d360.web.Controllers.V2
 
                 if (crossReferences == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(crossReferences.Count);
@@ -515,7 +515,7 @@ namespace d360.web.Controllers.V2
                                 new ApiExecutionRecievedResponse
                                 {
                                     ExecutionID = executionInfo.ExecutionID,
-                                    Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                    Message = ApiMessages.ExecutionIDStatus,
                                     Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/crossreferences/executions/{executionInfo.ExecutionID}/status"
                                 });
 
@@ -529,7 +529,7 @@ namespace d360.web.Controllers.V2
                    { "CrossReferencesCount", $"{((crossReferences != null) ? crossReferences.Count : 0)}" }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -556,7 +556,7 @@ namespace d360.web.Controllers.V2
 
                 if (execution == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionIDNotFound)).ConfigureAwait(false);
                 }
 
                 var bulkResult = crossReferencesRepository.GetExecutionStatus(execution);
@@ -568,7 +568,7 @@ namespace d360.web.Controllers.V2
             }
             catch (ArgumentException)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionIDNotFound)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -579,7 +579,7 @@ namespace d360.web.Controllers.V2
                     { "ExecutionID", executionID.ToString() }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
 
         }
@@ -638,7 +638,7 @@ namespace d360.web.Controllers.V2
                 var ruleUid = assetRepository.GetRuleUIDFromRuleID(id);
                 if (ruleUid == Guid.Empty)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Rule ID not found");
+                    return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.RuleIDNotFound);
                 }
 
                 return ResponseMessage(
@@ -651,7 +651,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return errorMessageResponse(HttpStatusCode.InternalServerError,"Bad Request", errorMessage);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.BadRequest, errorMessage);
             }
         }
 

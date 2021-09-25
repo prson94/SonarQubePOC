@@ -49,7 +49,11 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                if (!Company.CurrentResourceIsAdmin) return ReturnApiError(HttpStatusCode.Forbidden, "User not authorized to perfom this action");
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+                }
+
                 var currentStatusList = await Community.GetRebuildJobStatuses();
                 var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
                 currentStatusList.ForEach(i =>
@@ -70,8 +74,15 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                if (!Company.CurrentResourceIsAdmin) return ReturnApiError(HttpStatusCode.Forbidden, "User not authorized to perfom this action");
-                if (model == null) return ReturnApiError(HttpStatusCode.BadRequest, "No valid request present.");
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+                }
+
+                if (model == null)
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+                }
 
                 var readyToActivate = await Community.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active);
                 if (readyToActivate.StatusCode == HttpStatusCode.OK)
@@ -110,7 +121,7 @@ namespace d360.web.Controllers.V2
             //only admins can access this route
             if (!Company.CurrentResourceIsAdmin)
             {
-                return ReturnApiError(HttpStatusCode.Forbidden, "User not authorized to perfom this action");
+                return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
 
@@ -131,7 +142,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return ReturnApiError(HttpStatusCode.Forbidden, "You do not have permissions to update this.");
+                return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
 
             //delete the old css file
             try
@@ -154,7 +165,7 @@ namespace d360.web.Controllers.V2
             }
             catch { }
 
-            return Request.CreateResponse(HttpStatusCode.OK, "Syles successfully updated.");
+            return Request.CreateResponse(HttpStatusCode.OK, ApiMessages.StyleUpdated);
         }
 
 
@@ -172,7 +183,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return ReturnApiError(HttpStatusCode.Forbidden, "User not authorized to perfom this action");
+                return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
             var queryParams = Request.GetQueryNameValuePairs();
@@ -181,7 +192,7 @@ namespace d360.web.Controllers.V2
             if (!string.IsNullOrEmpty(_settingId))
             {
                 if (!int.TryParse(_settingId, out int val) || val <= 0)
-                    return ReturnApiError(HttpStatusCode.BadRequest, "Value passed for _settingId is not valid");
+                    return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.SettingIDNotValid);
                 else
                     settingId = val;
             }
@@ -196,7 +207,7 @@ namespace d360.web.Controllers.V2
                 
                 if (settingId.HasValue && settings.Count() == 0)
                 {
-                    return ReturnApiError(HttpStatusCode.NotFound, "Setting with this id not found");
+                    return ReturnApiError(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
                 }
 
                 var response = settings.Select(s => new CompanySettingApiModel(s, s.Value));
@@ -222,29 +233,29 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return ReturnApiError(HttpStatusCode.Forbidden, "User not authorized to perfom this action");
+                return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
             if (model == null)
-                return ReturnApiError(HttpStatusCode.BadRequest, "Invalid model");
+                return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 
             try
             {
                 var setting = Setting.ActionMessage.GetAsList().SingleOrDefault(s => (int)s.ID == model.SettingID);
 
                 if (setting == null)
-                    return ReturnApiError(HttpStatusCode.NotFound, "Setting with this id not found");
+                    return ReturnApiError(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
 
                 if (setting.Locked)
-                    return ReturnApiError(HttpStatusCode.Forbidden, "This setting is locked and cannot be updated");
+                    return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.SettingLocked);
 
                 if (!model.HasExactlyOneValue)
-                    return ReturnApiError(HttpStatusCode.BadRequest, "Exactly one value must be provided based on the setting's data type");
+                    return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.SettingValueProvided);
 
                 bool clearSetting = false;
                 string value = "";
 
-                string valueErrorMessage = "Provided value does not match the expected data type for this setting";
+                string valueErrorMessage = ApiMessages.DataTypeValueNotMatched;
                 switch (setting.Type)
                 {
                     case SettingType.Number:
@@ -265,7 +276,7 @@ namespace d360.web.Controllers.V2
                             }
                             else
                             {
-                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid number");
+                                return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.InvalidNumber);
                             }
                         }
                         break;
@@ -287,7 +298,7 @@ namespace d360.web.Controllers.V2
                             }
                             else
                             {
-                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid boolean");
+                                return ReturnApiError(HttpStatusCode.BadRequest,ApiMessages.InvalidBoolean);
                             }
                         }
 
@@ -310,11 +321,11 @@ namespace d360.web.Controllers.V2
                             foreach (var ip in model.IpAddressSetting.Value)
                             {
                                 if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
-                                    return ReturnApiError(HttpStatusCode.BadRequest, "One or more IP Addresses is missing a value");
+                                    return ReturnApiError(HttpStatusCode.BadRequest,ApiMessages.MissingIPAddressValue);
                                 if (!IPAddress.TryParse(ip.Start, out IPAddress _))
-                                    return ReturnApiError(HttpStatusCode.BadRequest, $"Start value {ip.Start} is not a valid IP Address");
+                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(ApiMessages.StartIPAddressNotValid, ip.Start));
                                 if (!IPAddress.TryParse(ip.End, out IPAddress _))
-                                    return ReturnApiError(HttpStatusCode.BadRequest, $"End value {ip.End} is not a valid IP Address");
+                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(ApiMessages.EndIPAddressNotValid, ip.End));
 
                                 xml.Add(new XElement("ip",
                                     new XElement("name", ip.Name),
@@ -443,7 +454,7 @@ namespace d360.web.Controllers.V2
                 string isValid = isPageSizeAndNumValid(queryParams);
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
 
@@ -481,7 +492,7 @@ namespace d360.web.Controllers.V2
                     var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                     if (!allowedDirections.Contains(order.Trim().ToLower()))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(), $"Invalid _direction provided!")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(),ApiMessages.InvalidDirection)).ConfigureAwait(false);
                     }
 
                     orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
@@ -510,7 +521,7 @@ namespace d360.web.Controllers.V2
                             else
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage = $"Invalid _order provided!";
+                                errorMessage =ApiMessages.Invalid_Order;
                             }
                         }
                         else if (key == "_pagenum")
@@ -541,7 +552,7 @@ namespace d360.web.Controllers.V2
                             if (!DateTime.TryParse(q.Value, out startDate))
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage = $"Invalid _startDate provided!";
+                                errorMessage = ApiMessages.InvalidStartDate;
                             }
                             else
                             {
@@ -556,7 +567,7 @@ namespace d360.web.Controllers.V2
                             if (!DateTime.TryParse(q.Value, out endDate))
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage = $"Invalid _endDate provided!";
+                                errorMessage = ApiMessages.InvalidEndDate;
                             }
                             else
                             {
@@ -577,13 +588,13 @@ namespace d360.web.Controllers.V2
                                 else
                                 {
                                     code = HttpStatusCode.BadRequest;
-                                    errorMessage = $"Invalid _resourceuid provided!";
+                                    errorMessage = ApiMessages.InvalidResourceuid;
                                 }
                             }
                             else
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage = $"Invalid _resourceuid provided!";
+                                errorMessage = ApiMessages.InvalidResourceuid;
                             }
                         }
                         else if (key == "_assetuid")
@@ -599,13 +610,13 @@ namespace d360.web.Controllers.V2
                                 else
                                 {
                                     code = HttpStatusCode.BadRequest;
-                                    errorMessage = $"Invalid _assetuid provided!";
+                                    errorMessage = string.Format(ApiMessages.InvalidAssetUid, q.Value);
                                 }
                             }
                             else
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage = $"Invalid _assetuid provided!";
+                                errorMessage = string.Format(ApiMessages.InvalidAssetUid, q.Value);
                             }
                         }
                         else if (key == "_assettypeuid")
@@ -621,13 +632,13 @@ namespace d360.web.Controllers.V2
                                 else
                                 {
                                     code = HttpStatusCode.BadRequest;
-                                    errorMessage = $"Invalid _assettypeuid provided!";
+                                    errorMessage = string.Format(ActionApiMessages.AssetTypeNotFound, q.Value);
                                 }
                             }
                             else
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage = $"Invalid _assettypeuid provided!";
+                                errorMessage = string.Format(ActionApiMessages.AssetTypeNotFound, q.Value);
                             }
                         }
                     }
@@ -719,7 +730,7 @@ namespace d360.web.Controllers.V2
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() { {"Endpoint Method", "Environment.GetUsageDetails => "} });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -820,7 +831,7 @@ namespace d360.web.Controllers.V2
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetLicensingDetails => " } });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
     }

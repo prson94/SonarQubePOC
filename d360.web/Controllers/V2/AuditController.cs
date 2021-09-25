@@ -23,6 +23,7 @@ using d360.core.exceptions;
 using d360.core.entities.Metric;
 using d360.model.helpers.filters;
 using d360.model.DataAccessLayer;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -92,7 +93,7 @@ namespace d360.web.Controllers.V2
                 string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 List<DefaultFilter> fieldList = new List<DefaultFilter>
@@ -168,7 +169,7 @@ namespace d360.web.Controllers.V2
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if (assetType == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type not found for UID")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.UIDNotFoundObjectAndObjectType)).ConfigureAwait(false);
                     }
                     isAssetType = true;
                 }
@@ -913,22 +914,22 @@ select
                 var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
                 if (_pageSize.Length > 10)
                 {
-                    return "Invalid pageSize value provided.";
+                    return string.Format(ApiMessages.InvalidValueMessage, ApiMessages.PageSizeString);
                 }
                 if (long.TryParse(_pageSize, out pageSize))
                 {
                     if (pageSize > pageSizeLimit)
                     {
-                        return "Invalid pageSize value provided. Number is too large";
+                        return string.Format(ApiMessages.InvalidNumberTooLarge, ApiMessages.PageSizeString);
                     }
                     if (pageSize <= 0)
                     {
-                        return "Invalid pageSize value provided. Value must be greater than 0";
+                        return string.Format(ApiMessages.MinLengthCheckGTZero, ApiMessages.PageSizeString);
                     }
                 }
                 else
                 {
-                    return "Invalid pageSize value provided. Must be a numeric value";
+                    return string.Format(ApiMessages.NumberValueMessage, ApiMessages.PageSizeString);
                 }
             }
 
@@ -937,22 +938,22 @@ select
                 var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
                 if (_pageNum.Length > 10)
                 {
-                    return "Invalid pageNum value provided.";
+                    return string.Format(ApiMessages.InvalidValueMessage, ApiMessages.PageNumString);
                 }
                 if (long.TryParse(_pageNum, out pageNum))
                 {
                     if (pageNum > 100000)
                     {
-                        return "Invalid pageNum value provided. Number is too large";
+                        return string.Format(ApiMessages.InvalidNumberTooLarge, ApiMessages.PageNumString);
                     }
                     if (pageNum <= 0)
                     {
-                        return "Invalid pageNum value provided. Value must be greater than 0";
+                        return string.Format(ApiMessages.MinLengthCheckGTZero, ApiMessages.PageNumString);
                     }
                 }
                 else
                 {
-                    return "Invalid pageNum value provided. Must be a numeric value.";
+                    return string.Format(ApiMessages.NumberValueMessage, ApiMessages.PageNumString);
                 }
             }
 

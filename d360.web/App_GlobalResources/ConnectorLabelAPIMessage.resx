@@ -117,99 +117,52 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ApiSheetName" xml:space="preserve">
-    <value>Api Info</value>
+  <data name="ConsolidateSucessfully" xml:space="preserve">
+    <value>Connector labels consolidated successfully</value>
   </data>
-  <data name="AssetIdColumn" xml:space="preserve">
-    <value>Asset ID</value>
-    <comment>Used for data profile match export</comment>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} is not valid uid!</value>
   </data>
-  <data name="AssetPathColumn" xml:space="preserve">
-    <value>Asset Path</value>
-    <comment>Used for data profile match export</comment>
+  <data name="ErrorConsolidateLabel" xml:space="preserve">
+    <value>Error while consolidating connector labels</value>
   </data>
-  <data name="AssetSheetName" xml:space="preserve">
-    <value>Assets</value>
+  <data name="ErrorCreateLabel" xml:space="preserve">
+    <value>Error while creating connector label</value>
   </data>
-  <data name="AssetTypePathColumn" xml:space="preserve">
-    <value>Asset Type Path</value>
-    <comment>Used for data profile match export</comment>
+  <data name="ErrorDeleteLabel" xml:space="preserve">
+    <value>Error removing connector label, </value>
   </data>
-  <data name="AssetUidColumn" xml:space="preserve">
-    <value>Asset UID</value>
-    <comment>Used for data profile match export</comment>
+  <data name="ErrorGetLabels" xml:space="preserve">
+    <value>Error while fetching connector labels</value>
   </data>
-  <data name="AssetUrlColumn" xml:space="preserve">
-    <value>Url</value>
-    <comment>Used for data profile match export</comment>
+  <data name="ErrorUpdateLabel" xml:space="preserve">
+    <value>Error updating connector label</value>
   </data>
-  <data name="Duplicate" xml:space="preserve">
-    <value>Duplicate</value>
+  <data name="LabelAlreadyExists" xml:space="preserve">
+    <value>Invalid connector label specified [same connector label already exists].</value>
   </data>
-  <data name="InvalidOrder" xml:space="preserve">
-    <value>Invalid value for parameter '_order'. Allowed values are 'path' and 'tags'.</value>
+  <data name="LabelMax40Char" xml:space="preserve">
+    <value>Maximum length of label is 40 characters.</value>
   </data>
-  <data name="InvalidOrderConfidencePath" xml:space="preserve">
-    <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
+  <data name="LabelNotFound" xml:space="preserve">
+    <value>Connector label not found.</value>
   </data>
-  <data name="InvalidSimilarType" xml:space="preserve">
-    <value>'{0}' is an invalid similar type.</value>
+  <data name="LabelRemoved" xml:space="preserve">
+    <value>Connector label removed.</value>
   </data>
-  <data name="MatchedAssetExportFileName" xml:space="preserve">
-    <value>Filtered {0} {1} Fields List _{2}_.xlsx</value>
+  <data name="LabelRemoveSucess" xml:space="preserve">
+    <value>Connector label successfully removed.</value>
   </data>
-  <data name="MatchedAssetIdColumn" xml:space="preserve">
-    <value>{0} Field Asset ID</value>
-    <comment>Used for data profile match export</comment>
+  <data name="LabelValieNotEmpty" xml:space="preserve">
+    <value>Label value cannot be empty.</value>
   </data>
-  <data name="MatchedAssetNameColumn" xml:space="preserve">
-    <value>{0} Field Name</value>
-    <comment>Used for data profile match export</comment>
+  <data name="UidNotFound" xml:space="preserve">
+    <value>Connector label with UID '{0}' does not exist!</value>
   </data>
-  <data name="MatchedAssetPathColumn" xml:space="preserve">
-    <value>{0} Field Asset Path</value>
-    <comment>Used for data profile match export</comment>
+  <data name="UidNotValid" xml:space="preserve">
+    <value>Invalid connector label UID passed in the request</value>
   </data>
-  <data name="MatchedAssetTagsColumn" xml:space="preserve">
-    <value>{0} Field Tags</value>
-    <comment>Used for data profile match export</comment>
-  </data>
-  <data name="MatchedAssetTypePathColumn" xml:space="preserve">
-    <value>{0} Field Asset Type Path</value>
-    <comment>Used for data profile match export</comment>
-  </data>
-  <data name="MatchedAssetUidColumn" xml:space="preserve">
-    <value>{0} Field Asset UID</value>
-    <comment>Used for data profile match export</comment>
-  </data>
-  <data name="MatchedAssetUrlColumn" xml:space="preserve">
-    <value>{0} Field Url</value>
-    <comment>Used for data profile match export</comment>
-  </data>
-  <data name="MinConfidenceInvalid" xml:space="preserve">
-    <value>Min Confidence Parameter is invalid</value>
-  </data>
-  <data name="NameColumn" xml:space="preserve">
-    <value>Name</value>
-    <comment>Used for data profile match export</comment>
-  </data>
-  <data name="NoSimilarTypeForAssetUid" xml:space="preserve">
-    <value>{0} signature not found for AssetUid {1}</value>
-  </data>
-  <data name="OrderInvalid" xml:space="preserve">
-    <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
-  </data>
-  <data name="RequiredSimilarType" xml:space="preserve">
-    <value>similarType is a required field.</value>
-  </data>
-  <data name="Similar" xml:space="preserve">
-    <value>Similar</value>
-  </data>
-  <data name="TagsColumn" xml:space="preserve">
-    <value>Tags</value>
-    <comment>Used for data profile match export</comment>
-  </data>
-  <data name="TypeQualifierInvalid" xml:space="preserve">
-    <value>Type Qualifier Parameter is invalid</value>
+  <data name="UnableIncludeParentinChildLabels" xml:space="preserve">
+    <value>Parent connector label should not be included in children connector labels!</value>
   </data>
 </root>

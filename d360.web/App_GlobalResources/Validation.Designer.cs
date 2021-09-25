@@ -61,6 +61,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0) must be a decimal greater than {1} and less than or equal to {2}..
+        /// </summary>
+        public static string DecimalPlaceValidation {
+            get {
+                return ResourceManager.GetString("DecimalPlaceValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} must be between {1} and {2} characters in length..
         /// </summary>
         public static string Length_Tokenized {
@@ -75,6 +84,15 @@ namespace Resources {
         public static string MaxLength_Tokenized {
             get {
                 return ResourceManager.GetString("MaxLength_Tokenized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum number of levels for measures is {0}..
+        /// </summary>
+        public static string MaxLevelForMeasure {
+            get {
+                return ResourceManager.GetString("MaxLevelForMeasure", resourceCulture);
             }
         }
         
