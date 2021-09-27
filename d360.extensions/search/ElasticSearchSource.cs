@@ -1247,32 +1247,44 @@ namespace d360.extensions.search
                 string[] values = fieldFilter.Values.Select(v => EscapeSpecialCharacters(v).ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
                 if (fieldFilter.Field == "Tags")
                 {
+                    string path = D3S_FIELD_PREFIX + "Tags";
                     Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
 
-                    IEnumerable<QueryContainer> terms = values.Select(v => {
-                        QueryContainer q = new TermQuery
-                        {
-                            Field = fldTag,
-                            Value = v
-                        };
-                        return q;
-                    });
-
-                    BoolQuery bq = new BoolQuery();
                     if (fieldFilter.Connector == SearchConnector.And)
                     {
-                        bq.Must = terms;
+                        qry = new BoolQuery
+                        {
+                            Must = values.Select(v => {
+                                QueryContainer q = new NestedQuery {
+                                    Path = path,
+                                    Query = new TermQuery
+                                    {
+                                        Field = fldTag,
+                                        Value = v
+                                    }
+                                };
+                                return q;
+                            })
+                        };
                     } else
                     {
-                        bq.Should = terms;
-                        bq.MinimumShouldMatch = 1;
+                        qry = new NestedQuery
+                        {
+                            Path = path,
+                            Query = new BoolQuery
+                            {
+                                Should = values.Select(v => {
+                                    QueryContainer q = new TermQuery
+                                    {
+                                        Field = fldTag,
+                                        Value = v
+                                    };
+                                    return q;
+                                }),
+                                MinimumShouldMatch = 1
+                            }
+                        };
                     }
-
-                    qry = new NestedQuery
-                    {
-                        Path = D3S_FIELD_PREFIX + "Tags",
-                        Query = bq
-                    };
                 } else
                 {
                     Nest.Field fld = new Nest.Field(DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
