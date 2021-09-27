@@ -209,7 +209,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         let state: AdvancedFilterFieldConditionCollection = new AdvancedFilterFieldConditionCollection();
         state.connector = ` ${this.parseConnectorToString(this.searchStateService.connector)} `;
         state.filters = this.searchStateService.advancedFilters.map((af) => {
-            const op: any = af.Operator === SearchOperator.NotContains ? Operator[Operator.NotEquals] : Operator[Operator.Equals];
+            const op: any = af.Operator === SearchOperator.NotContains ? Operator[Operator.NotContains] : Operator[Operator.Contains];
             let condition: AdvancedFilterFieldCondition = new AdvancedFilterFieldCondition(this.datePipe);
             condition.field = af.Field;
             condition.exact = af.MatchWords;
@@ -238,9 +238,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
     }
 
     private parseOperator(op: string): SearchOperator {
-        if (Operator[`${op}`] === Operator.Equals) {
+        if (Operator[`${op}`] === Operator.Contains) {
             return SearchOperator.Contains;
-        } else if (Operator[`${op}`] === Operator.NotEquals) {
+        } else if (Operator[`${op}`] === Operator.NotContains) {
             return SearchOperator.NotContains;
         } else {
             return null;
