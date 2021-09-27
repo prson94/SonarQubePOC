@@ -1394,7 +1394,6 @@
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.less" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.less" />
-    <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.less" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.less" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.less" />

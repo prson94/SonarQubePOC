@@ -13,7 +13,6 @@ import { BaseComponent } from '../base.component';
 @Component({
     selector: 'match-detection',
     templateUrl: './match-detection.component.html',
-    styleUrls: ['match-detection.less'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [AssetService, DataProfileService]
 })
