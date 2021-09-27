@@ -289,9 +289,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     getOperators(item: AdvancedFilterFieldCondition) {
         let options: SelectItem[] = [];
-        if (this.condition.field === SystemFields.OwnedByFieldCode || this.isGlobalSearch) {
+        if (this.condition.field === SystemFields.OwnedByFieldCode) {
             options.push({ label: "contains", value: "Equals" });
             options.push({ label: "does not contain", value: "NotEquals" });
+            return options;
+        } else if (this.isGlobalSearch) {
+            options.push({ label: "contains", value: "Contains" });
+            options.push({ label: "does not contain", value: "NotContains" });
             return options;
         }
 
