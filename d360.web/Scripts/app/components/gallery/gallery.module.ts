@@ -68,7 +68,7 @@ import { GalleryInputGroupComponent } from './gallery.input-group.component';
 import { GalleryModalComponent } from "./gallery.modal.component";
 import { GalleryModalDrawerComponent } from './gallery.modal-drawer.component';
 import { ModalDrawerModule } from '../shared/modal-drawer/gov-modal-drawer.module';
-import { SidePanelModule } from '../shared/sidepanel/side-panel.module'
+import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 
 @NgModule({
     imports: [
