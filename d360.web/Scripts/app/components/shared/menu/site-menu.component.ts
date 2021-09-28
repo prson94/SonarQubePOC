@@ -29,7 +29,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     @Input() menuOpen: boolean;
     @Output() menuChanged = new EventEmitter<boolean>();
 
-    public hideHeader: boolean = false;
     public hideNav: boolean = false;
     public isAdmin: boolean = false;
     public siteMenu: SiteMenu[] = [];
@@ -92,11 +91,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.subParams = this.route.queryParams.subscribe((params) => {
             let markForCheck = false;
-            if (params['noheader'] != null) {
-                this.hideHeader = params['noheader'].toLocaleLowerCase() === 'true';
-                markForCheck = true;
-
-            }
 
             if (params['nonavigation'] != null) {
                 this.hideNav = params['nonavigation'].toLocaleLowerCase() === 'true';
