@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace d360.web.Utilities
 {
-    public class InternationalizationUtilities
+    public static class InternationalizationUtilities
     {
 
         /// <summary>
@@ -56,10 +56,14 @@ namespace d360.web.Utilities
                 culture = Request.UserLanguages[0];
             }
             else
+            {
                 culture = (culture ?? "").ToLower();
+            }
 
             if (!string.IsNullOrEmpty(uiCulture))
+            {
                 setUiCulture = true;
+            }
 
             if (!string.IsNullOrEmpty(culture) && !string.IsNullOrEmpty(allowedLocales))
             {
@@ -75,7 +79,9 @@ namespace d360.web.Utilities
                             // Always create writable CultureInfo
                             Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentCulture.Clone() as CultureInfo;
                             if (setUiCulture)
+                            {
                                 Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentUICulture.Clone() as CultureInfo;
+                            }
 
                             return;
                         }
@@ -84,17 +90,23 @@ namespace d360.web.Utilities
             }
 
             if (string.IsNullOrEmpty(culture))
+            {
                 culture = CultureInfo.InstalledUICulture.IetfLanguageTag;
+            }
 
             if (string.IsNullOrEmpty(uiCulture))
+            {
                 uiCulture = culture;
+            }
 
             try
             {
                 CultureInfo Culture = new CultureInfo(culture);
 
                 if (currencySymbol != null && currencySymbol != "")
+                {
                     Culture.NumberFormat.CurrencySymbol = currencySymbol;
+                }
 
                 if (setCulture)
                 {
