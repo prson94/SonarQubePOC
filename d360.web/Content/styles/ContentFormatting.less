@@ -304,11 +304,56 @@ button.WhiteButton {
     overflow:auto;
 }
 
+
 .modal-with-side-panel {
   display: flex;
 
   .modal-dialog-main-panel {
     flex: 1;
+
+    .title {
+      padding-top: 24px;
+      font-size: 18px;
+      color: #202020;
+      font-weight: 600;
+    }
+
+    .grayed-text {
+      color: @d3s-gray-3;
+      padding: 8px 0 24px 0;
+    }
+
+    .scrollable-content {
+      overflow-y: auto;
+      overflow-x: hidden;
+      max-height: calc(100vh - 306px);
+      margin-left: -4px;
+      padding-left: 4px;
+    }
+
+    .search-bar {
+      display: inline-flex;
+      width: 100%;
+      padding: 8px 16px 16px 0;
+
+      .grid-action-buttons {
+        div {
+          display: inline-block;
+        }
+
+        button {
+          margin-left: 8px;
+        }
+      }
+
+      .simple-search {
+        width: 200px;
+      }
+    }
+
+    .p-datatable {
+      padding-right: 16px;
+    }
   }
 
   .side-panel {
