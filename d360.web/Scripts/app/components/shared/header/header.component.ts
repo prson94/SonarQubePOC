@@ -5,7 +5,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-header',
-    template: ` <div class="navbar-fixed header-container" *ngIf="hideHeader == false">
+    template: ` <div class="navbar-fixed header-container">
                     <nav class="top">  
                         <div class="logo" routerLink="/home"> <img [src]="imageSource" alt="logo"> </div>   
                         <d3s-header-back-button *ngIf="showBackButton"></d3s-header-back-button>
@@ -20,7 +20,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy {
     public controlWidth: number = 0;
     imageSource: string = '/Content/images/govern-small-white.svg';
-    hideHeader: boolean = false;
     showBackButton: boolean = false;
     subParams: any;
 
@@ -38,9 +37,6 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
             });
 
         this.subParams = this.route.queryParams.subscribe((params) => {
-            if (params['noheader'] != null) {
-                this.hideHeader = params['noheader'].toLocaleLowerCase() === 'true';
-            }
             if (params['showbackbutton'] != null) {
                 this.showBackButton = params['showbackbutton'].toLocaleLowerCase() === 'true';
             }
