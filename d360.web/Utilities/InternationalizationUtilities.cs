@@ -119,7 +119,10 @@ namespace d360.web.Utilities
                     Thread.CurrentThread.CurrentUICulture = UICulture;
                 }
             }
-            catch { }
+            catch
+            {
+                //surpress exception
+            }
         }
     }
 }
