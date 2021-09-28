@@ -137,10 +137,17 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         var currentFilters = JSON.stringify(this.filters);
 
+        if (this.isGlobalSearch) {
+            const exatcs: string[] = this.conditions.filters.filter((f) => f.exact).map((f) => f.field);
+            if (exatcs.length > 0) {
+                currentFilters += ` and exact(${exatcs.join(",")})`;
+            }
+        }
+
         if (currentFilters !== this.emittedFilters) {
             this.onChange.emit(this.filters);
             this.saveFilters();
-            this.emittedFilters = JSON.stringify(this.filters);
+            this.emittedFilters = currentFilters;
         }
     }
 
