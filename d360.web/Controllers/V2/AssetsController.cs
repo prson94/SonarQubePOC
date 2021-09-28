@@ -1334,6 +1334,9 @@ namespace d360.web.Controllers.V2
                 string direction = string.Empty;
                 string filters = string.Empty;
 
+                List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
+                FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
                     if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "usefriendlynames").Value.Trim().ToLower(), out useFriendlyNames))
@@ -1382,14 +1385,6 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                //to be removed with new filtering UI component
-                //current(sprint 5/2021) filtering uses contains on all fields, so we need to avoid value checks on numbers, decimals etc...
-                bool handleFiltersAsString = false;
-                if (qparams.Any(x => x.Key.ToLower() == "handlefiltersasstring"))
-                {
-                    bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "handlefiltersasstring").Value, out handleFiltersAsString);
-                }
-
                 if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
                 {
                     simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
@@ -1397,8 +1392,6 @@ namespace d360.web.Controllers.V2
 
                 if (qparams.Any(x => x.Key.ToLower() == "filter"))
                 {
-                    List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
-
                     var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
                     var filterDataProvider = new FilterDataProvider(this.Company);
                     var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
@@ -1445,7 +1438,6 @@ namespace d360.web.Controllers.V2
 
                     if (fieldType.Type == "ComplexRelationLookup")
                     {
-                        var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                         var definition = ftl.ParseComplexLookupDefinition();
 
                         var mappings = definition.GetFriendlyNamesMapping();
@@ -1468,12 +1460,10 @@ namespace d360.web.Controllers.V2
 
 
                 List<dynamic> Values = new List<dynamic>();
-
+                List<GridColumn> Columns = new List<GridColumn>();
+                List<GridField> Fields = new List<GridField>();
                 var dbArgs = new DynamicParameters();
 
-                dbArgs.Add("object", asset.Object, DbType.AnsiString, size: 50);
-                dbArgs.Add("objectId", asset.ObjectID);
-                dbArgs.Add("fieldTypeId", fieldType.ID);
                 dbArgs.Add("resourceId", Company.CurrentResourceID);
                 dbArgs.Add("pageSize", pageSize);
                 dbArgs.Add("pageNum", pageNum);
@@ -1487,129 +1477,86 @@ namespace d360.web.Controllers.V2
 
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
-                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var definition = ftl.ParseComplexLookupDefinition();
+                    var maps = definition.GetFieldMapings();
+                    string sql = definition.GetComplexRelationLookupSQL(dbArgs, fields);
 
-                    var mappings = definition.GetFriendlyNamesMapping();
-                    List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
-
-                    //select distinct
-                    //dbo.GenerateAssetUrl(H1.ID) as [H1_Url],
-                    //dbo.GenerateAssetUrl(H2.ID) as [H2_Url],
-                    //H1.Uid as [H1_Uid],
-                    //H2.Uid as [H2_Uid],
-                    //H1_F26641.FormattedValue as [H1_26641],
-                    //H2_F354.FormattedValue as [H2_354]
-                    //from graph.AssetNode H1
-                    //inner join graph.AssetEdge R1 on R1.$to_id = H1.$node_id and R1.IntersectTypeID = 585
-                    //inner join graph.AssetNode A1 on A1.$node_id = R1.$from_id and A1.ID = @assetId
-                    //inner join graph.AssetNodeDisplayPath H1P on H1P.ID = H1.ID
-                    //inner join graph.AssetEdge R2 on R2.$to_id = H1.$node_id and R2.IntersectTypeID = 565
-                    //inner join graph.AssetNode H2 on H2.$node_id = R2.$from_id
-                    //inner join graph.AssetNodeDisplayPath H2P on H2P.ID = H2.ID
-                    //left join FieldDetail H1_F26641 on H1_F26641.FieldTypeID = 26641 and H1_F26641.AssetID = H1.ID and H1_F26641.FormattedValue <> ''
-                    //left join FieldDetail H2_F354 on H2_F354.FieldTypeID = 354 and H2_F354.AssetID = H2.ID and H2_F354.FormattedValue <> ''
-                    //order by 1
-                    //offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only
-
-                    List<string> joins = new List<string>();
-                    List<string> selects = new List<string>();
-                    int idx = 1;
-                    foreach (var rel in definition.Relations)
+                    int currentRel = 1;
+                    foreach (var f in definition.Fields.Where(x => x.Show == true).OrderBy(x => x.DisplayOrder))
                     {
-                        selects.Add($"dbo.GenerateAssetUrl(H{idx}.ID) as [H{idx}_Url]");
-                        selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
 
-                        joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
-                        joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
-                        joins.Add($"inner join graph.AssetNodeDisplayPath H{idx}P on H{idx}P.ID = H{idx}.ID");
-                        idx++;
-                    }
-
-                    foreach (var f in definition.Fields)
-                    {
-                        var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
-
-                        if (ft == null && f.FieldTypeName.StartsWith("Related Item."))
+                        var gColumn = new GridColumn { text = f.FieldTypeName };
+                        var gField = new GridField { type = "text" };
+                        if (!f.FieldTypeName.StartsWith("Related Item."))
                         {
-                            var index = f.RelationIndex + 1;
-
-                            selects.Add($@" H{index}_AH{f.FieldTypeID}.Uid AS [H{index}_H{f.FieldTypeID}_Uid],
-                                            H{index}_AH{f.FieldTypeID}_DV.DisplayValue AS [H{index}_H{f.FieldTypeID}_DisplayValue],
-                                            H{index}_RH{f.FieldTypeID}.IntersectTypeUid AS [H{index}_H{f.FieldTypeID}_IntersectTypeUid]");
-
-                            joins.Add($@"LEFT JOIN graph.AssetEdge H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.$to_id = H{index}.$node_id AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}
-                                         LEFT JOIN graph.AssetNode H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.$node_id = H{index}_R{f.FieldTypeID}.$from_id
-                                         LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
-                        }
-                        else if (f.FieldTypeID != 0)
-                        {
-                            string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
+                            var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
                             string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
+                            gField.name = gColumn.datafield = fieldAlias;
+                            gField.apiName = gColumn.apiName = ft.Name;
 
                             switch (ft.Type.ToLowerInvariant())
                             {
                                 case "boolean":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS bit) AS [{fieldAlias}]");
+                                    gColumn.columntype = "checkbox";
+                                    gField.type = "bool";
                                     break;
                                 case "number":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
-                                    break;
                                 case "decimal":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal) AS [{fieldAlias}]");
+                                    gColumn.columntype = "numberinput";
+                                    gField.type = "number";
                                     break;
                                 case "date":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS date) AS [{fieldAlias}]");
+                                    gColumn.columntype = "datetimeinput";
+                                    gField.type = "date";
                                     break;
                                 case "datetime":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS datetime) AS [{fieldAlias}]");
+                                    gColumn.columntype = "datetimeinput";
+                                    gField.type = "datetime";
                                     break;
                                 case "counter":
-                                    string cnt_prefix = "cntprefix_" + ft.ID;
-                                    dbArgs.Add(cnt_prefix, ft.CounterPrefix);
-                                    selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
+                                    gColumn.columntype = "counter";
+                                    gField.type = "counter";
                                     break;
                                 default:
-                                    selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");
+                                    gColumn.columntype = "textbox";
+                                    gField.type = "text";
                                     break;
                             }
 
-                            if (ft.Type != "Counter")
+                            if (currentRel == f.RelationIndex)
                             {
-                                joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                                gField.type = gColumn.columntype = "preview";
+                                gColumn.uidfield = $"H{f.RelationIndex}_Uid";
+                                gColumn.urlfield = $"H{f.RelationIndex}_Url";
+
+                                Fields.Add(new GridField { name = gColumn.uidfield, type = "text" });
+                                Fields.Add(new GridField { name = gColumn.urlfield, type = "text" });
+
+                                currentRel++;
                             }
-                            else
-                            {
-                                joins.Add($@"OUTER apply
-                              (SELECT top 1 [Value] AS FormattedValue
-                               FROM dbo.FieldCounterValue
-                               WHERE AssetId = H{f.RelationIndex + 1}.ID
-                                 AND FieldTypeId = {ft.ID}){fieldSelector}");
-                            }
+                        }
+                        else
+                        {
+                            var b = "";
                         }
 
 
+                        Columns.Add(gColumn);
+                        Fields.Add(gField);
                     }
 
-                    var sql = $@"select distinct 
-                                {(string.Join(",", selects))}
-                                from graph.AssetNode H1
-                                {(string.Join("\n", joins))}
-                                 order by 1
-                                 offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
 
                     Values = (await Company.QueryAsync<dynamic>(sql, dbArgs)).ToList();
                 }
 
 
-                var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
-                       dbArgs
-                    );
+                //var reader = await Company.QueryMultipleAsync(
+                //        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
+                //       dbArgs
+                //    );
 
-                var Columns = reader.Read<GridColumn>().ToList();
-                var Fields = reader.Read<GridField>().ToList();
+                //var Fields = reader.Read<GridField>().ToList();
 
                 try
                 {
@@ -1625,20 +1572,20 @@ namespace d360.web.Controllers.V2
 
                 }
 
-                //additional data e.g. scoring allocation data
+                ////additional data e.g. scoring allocation data
                 List<dynamic> scoringInfo = new List<dynamic>();
-                try
-                {
-                    scoringInfo = reader.Read<dynamic>().ToList();
-                }
-                catch (Exception ex)
-                {
-                    //if reader is disposed there are no additional data returned
-                    if (!ex.Message.Contains("has been disposed"))
-                    {
-                        throw ex;
-                    }
-                }
+                //try
+                //{
+                //    scoringInfo = reader.Read<dynamic>().ToList();
+                //}
+                //catch (Exception ex)
+                //{
+                //    //if reader is disposed there are no additional data returned
+                //    if (!ex.Message.Contains("has been disposed"))
+                //    {
+                //        throw ex;
+                //    }
+                //}
 
                 foreach (IDictionary<string, object> value in Values)
                 {
@@ -1658,7 +1605,6 @@ namespace d360.web.Controllers.V2
 
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
-                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var definition = ftl.ParseComplexLookupDefinition();
 
                     if (useFriendlyNames)
@@ -1834,6 +1780,7 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknown error."));
             }
         }
+
 
         /// <summary>
         /// Retrieves a list of possible owners for asset type.

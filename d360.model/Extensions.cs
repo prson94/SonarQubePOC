@@ -54,7 +54,7 @@ namespace d360.model
                 {
                     throw new ArgumentException("Ordered list of column names must be provided when TVP contains more than one column");
                 }
-    
+
                 var columnNames = (orderedColumnNames ??
                     readableProperties.Select(s => s.Name)).ToArray();
                 foreach (string name in columnNames)
@@ -93,7 +93,7 @@ namespace d360.model
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Where",
-                    new [] { source.ElementType },
+                    new[] { source.ElementType },
                     source.Expression, Expression.Quote(lambda)));
         }
 
@@ -103,15 +103,15 @@ namespace d360.model
             {
                 throw new ArgumentNullException("source");
             }
-            if (selector == null) 
-            { 
-                throw new ArgumentNullException("selector"); 
+            if (selector == null)
+            {
+                throw new ArgumentNullException("selector");
             }
             LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, null, selector, values);
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Select",
-                    new [] { source.ElementType, lambda.Body.Type },
+                    new[] { source.ElementType, lambda.Body.Type },
                     source.Expression, Expression.Quote(lambda)));
         }
 
@@ -138,7 +138,7 @@ namespace d360.model
             {
                 queryExpr = Expression.Call(
                     typeof(Queryable), o.Ascending ? methodAsc : methodDesc,
-                    new [] { source.ElementType, o.Selector.Type },
+                    new[] { source.ElementType, o.Selector.Type },
                     queryExpr, Expression.Quote(Expression.Lambda(o.Selector, parameters)));
                 methodAsc = "ThenBy";
                 methodDesc = "ThenByDescending";
@@ -155,20 +155,20 @@ namespace d360.model
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Take",
-                    new [] { source.ElementType },
+                    new[] { source.ElementType },
                     source.Expression, Expression.Constant(count)));
         }
 
         public static IQueryable Skip(this IQueryable source, int count)
         {
-            if (source == null) 
+            if (source == null)
             {
                 throw new ArgumentNullException("source");
             }
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Skip",
-                    new [] { source.ElementType },
+                    new[] { source.ElementType },
                     source.Expression, Expression.Constant(count)));
         }
 
@@ -185,7 +185,7 @@ namespace d360.model
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "GroupBy",
-                    new [] { source.ElementType, keyLambda.Body.Type, elementLambda.Body.Type },
+                    new[] { source.ElementType, keyLambda.Body.Type, elementLambda.Body.Type },
                     source.Expression, Expression.Quote(keyLambda), Expression.Quote(elementLambda)));
         }
 
@@ -198,7 +198,7 @@ namespace d360.model
             return (bool)source.Provider.Execute(
                 Expression.Call(
                     typeof(Queryable), "Any",
-                    new [] { source.ElementType }, source.Expression));
+                    new[] { source.ElementType }, source.Expression));
         }
 
         public static int Count(this IQueryable source)
@@ -210,7 +210,7 @@ namespace d360.model
             return (int)source.Provider.Execute(
                 Expression.Call(
                     typeof(Queryable), "Count",
-                    new [] { source.ElementType }, source.Expression));
+                    new[] { source.ElementType }, source.Expression));
         }
     }
 
@@ -448,7 +448,7 @@ namespace d360.model
                 genGet.Emit(OpCodes.Ret);
                 MethodBuilder mbSet = tb.DefineMethod("set_" + dp.Name,
                     MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
-                    null, new [] { dp.Type });
+                    null, new[] { dp.Type });
                 ILGenerator genSet = mbSet.GetILGenerator();
                 genSet.Emit(OpCodes.Ldarg_0);
                 genSet.Emit(OpCodes.Ldarg_1);
@@ -466,7 +466,7 @@ namespace d360.model
             MethodBuilder mb = tb.DefineMethod("Equals",
                 MethodAttributes.Public | MethodAttributes.ReuseSlot |
                 MethodAttributes.Virtual | MethodAttributes.HideBySig,
-                typeof(bool), new [] { typeof(object) });
+                typeof(bool), new[] { typeof(object) });
             ILGenerator gen = mb.GetILGenerator();
             LocalBuilder other = gen.DeclareLocal(tb);
             Label next = gen.DefineLabel();
@@ -488,7 +488,7 @@ namespace d360.model
                 gen.Emit(OpCodes.Ldfld, field);
                 gen.Emit(OpCodes.Ldloc, other);
                 gen.Emit(OpCodes.Ldfld, field);
-                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("Equals", new [] { ft, ft }), null);
+                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("Equals", new[] { ft, ft }), null);
                 gen.Emit(OpCodes.Brtrue_S, next);
                 gen.Emit(OpCodes.Ldc_I4_0);
                 gen.Emit(OpCodes.Ret);
@@ -513,7 +513,7 @@ namespace d360.model
                 gen.EmitCall(OpCodes.Call, ct.GetMethod("get_Default"), null);
                 gen.Emit(OpCodes.Ldarg_0);
                 gen.Emit(OpCodes.Ldfld, field);
-                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("GetHashCode", new [] { ft }), null);
+                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("GetHashCode", new[] { ft }), null);
                 gen.Emit(OpCodes.Xor);
             }
             gen.Emit(OpCodes.Ret);
@@ -747,7 +747,7 @@ namespace d360.model
             {
                 throw new ArgumentNullException("expression");
             }
-          
+
             symbols = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             literals = new Dictionary<Expression, string>();
             if (parameters != null)
@@ -773,8 +773,8 @@ namespace d360.model
                     AddSymbol(pe.Name, pe);
                 }
             }
-            if (parameters.Length == 1 && String.IsNullOrEmpty(parameters[0].Name)) 
-            { 
+            if (parameters.Length == 1 && String.IsNullOrEmpty(parameters[0].Name))
+            {
                 it = parameters[0];
             }
         }
@@ -1153,9 +1153,9 @@ namespace d360.model
                 if (!UInt64.TryParse(text, out value))
                     throw ParseError(Res.InvalidIntegerLiteral, text);
                 NextToken();
-                if (value <= (ulong)Int32.MaxValue) 
-                { 
-                    return CreateLiteral((int)value, text); 
+                if (value <= (ulong)Int32.MaxValue)
+                {
+                    return CreateLiteral((int)value, text);
                 }
                 if (value <= (ulong)UInt32.MaxValue)
                 {
@@ -1477,11 +1477,11 @@ namespace d360.model
             Type[] typeArgs;
             if (signature.Name == "Min" || signature.Name == "Max")
             {
-                typeArgs = new [] { elementType, args[0].Type };
+                typeArgs = new[] { elementType, args[0].Type };
             }
             else
             {
-                typeArgs = new [] { elementType };
+                typeArgs = new[] { elementType };
             }
             if (args.Length == 0)
             {
@@ -2483,7 +2483,7 @@ namespace d360.model
         /// <param name="namespaces">An optional dictionary of available namespaces</param>
         /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
         /// <returns>Returns an Xml representation of the dynamic object.</returns>
-        public static XElement ConvertToXml(dynamic dynamicObject, string element, Dictionary<string,string> namespaces = null, XElement parent = null)
+        public static XElement ConvertToXml(dynamic dynamicObject, string element, Dictionary<string, string> namespaces = null, XElement parent = null)
         {
             if (namespaces == null)
                 namespaces = new Dictionary<string, string>();
@@ -2533,7 +2533,7 @@ namespace d360.model
 
                 }
             }
-            
+
             return ret;
         }
 
@@ -2653,7 +2653,7 @@ namespace d360.model
         /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
         /// <param name="content">Content for the XElement</param>
         /// <returns></returns>
-        public static XElement GetXElement(string name, Dictionary<string,string> namespaces = null, XElement parent = null, params object[] content)
+        public static XElement GetXElement(string name, Dictionary<string, string> namespaces = null, XElement parent = null, params object[] content)
         {
             if (namespaces == null)
                 namespaces = new Dictionary<string, string>();
@@ -2870,5 +2870,96 @@ namespace d360.model
 
             return unflattened;
         }
+
+        public static string GetComplexRelationLookupSQL(this FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields)
+        {
+            List<string> joins = new List<string>();
+            List<string> selects = new List<string>();
+            int idx = 1;
+            foreach (var rel in definition.Relations)
+            {
+                selects.Add($"dbo.GenerateAssetUrl(H{idx}.ID) as [H{idx}_Url]");
+                selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
+
+                joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
+                joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                joins.Add($"inner join graph.AssetNodeDisplayPath H{idx}P on H{idx}P.ID = H{idx}.ID");
+                idx++;
+            }
+
+            foreach (var f in definition.Fields)
+            {
+                var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
+
+                if (ft == null && f.FieldTypeName.StartsWith("Related Item."))
+                {
+                    var index = f.RelationIndex + 1;
+
+                    selects.Add($@" H{index}_A{f.FieldTypeID}.Uid AS [H{index}_{f.FieldTypeID}_Uid],
+                                            H{index}_A{f.FieldTypeID}_DV.DisplayValue AS [H{index}_{f.FieldTypeID}_DisplayValue],
+                                            H{index}_R{f.FieldTypeID}.IntersectTypeUid AS [H{index}_{f.FieldTypeID}_IntersectTypeUid]");
+
+                    joins.Add($@"LEFT JOIN graph.AssetEdge H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.$to_id = H{index}.$node_id AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}
+                                         LEFT JOIN graph.AssetNode H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.$node_id = H{index}_R{f.FieldTypeID}.$from_id
+                                         LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
+                }
+                else if (f.FieldTypeID != 0)
+                {
+                    string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
+                    string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
+
+                    switch (ft.Type.ToLowerInvariant())
+                    {
+                        case "boolean":
+                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS bit) AS [{fieldAlias}]");
+                            break;
+                        case "number":
+                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
+                            break;
+                        case "decimal":
+                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal) AS [{fieldAlias}]");
+                            break;
+                        case "date":
+                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS date) AS [{fieldAlias}]");
+                            break;
+                        case "datetime":
+                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS datetime) AS [{fieldAlias}]");
+                            break;
+                        case "counter":
+                            string cnt_prefix = "cntprefix_" + ft.ID;
+                            dbArgs.Add(cnt_prefix, ft.CounterPrefix);
+                            selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
+                            break;
+                        default:
+                            selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");
+                            break;
+                    }
+
+                    if (ft.Type != "Counter")
+                    {
+                        joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                    }
+                    else
+                    {
+                        joins.Add($@"OUTER apply
+                              (SELECT top 1 [Value] AS FormattedValue
+                               FROM dbo.FieldCounterValue
+                               WHERE AssetId = H{f.RelationIndex + 1}.ID
+                                 AND FieldTypeId = {ft.ID}){fieldSelector}");
+                    }
+                }
+
+
+            }
+
+            var sql = $@"select distinct 
+                                {(string.Join(",", selects))}
+                                from graph.AssetNode H1
+                                {(string.Join("\n", joins))}
+                                 order by 1
+                                 offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+            return sql;
+        }
+
     }
 }

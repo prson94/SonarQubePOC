@@ -1,10 +1,6 @@
 ﻿using d360.core.entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace d360.model.validators
 {
