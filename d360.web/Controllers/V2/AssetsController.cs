@@ -1337,6 +1337,12 @@ namespace d360.web.Controllers.V2
                 List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
                 FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
 
+                List<dynamic> Values = new List<dynamic>();
+                List<GridColumn> Columns = new List<GridColumn>();
+                List<GridField> Fields = new List<GridField>();
+                int count = 0;
+                var dbArgs = new DynamicParameters();
+
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
                     if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "usefriendlynames").Value.Trim().ToLower(), out useFriendlyNames))
@@ -1396,7 +1402,14 @@ namespace d360.web.Controllers.V2
                     var filterDataProvider = new FilterDataProvider(this.Company);
                     var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
                     filterExpressionParser.LoadFieldTypes(fields, null);
-                    filters = filterExpressionParser.Parse(filter, out _, out _);
+
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    filters = filterExpressionParser.Parse(filter, out sqlParams, out _);
+
+                    foreach (var p in sqlParams)
+                    {
+                        dbArgs.Add(p.Key, p.Value);
+                    }
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
@@ -1459,95 +1472,28 @@ namespace d360.web.Controllers.V2
                 }
 
 
-                List<dynamic> Values = new List<dynamic>();
-                List<GridColumn> Columns = new List<GridColumn>();
-                List<GridField> Fields = new List<GridField>();
-                var dbArgs = new DynamicParameters();
 
                 dbArgs.Add("resourceId", Company.CurrentResourceID);
                 dbArgs.Add("pageSize", pageSize);
                 dbArgs.Add("pageNum", pageNum);
-                dbArgs.Add("simpleFilter", simpleFilter);
                 dbArgs.Add("orderBy", orderBy);
                 dbArgs.Add("orderDirection", direction);
                 dbArgs.Add("useUidUrls", returnuseUidUrls);
-                dbArgs.Add("filters", filters);
-
                 dbArgs.Add("assetUid", assetUid);
 
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
                     var definition = ftl.ParseComplexLookupDefinition();
                     var maps = definition.GetFieldMapings();
-                    string sql = definition.GetComplexRelationLookupSQL(dbArgs, fields);
+                    string sql = definition.GetComplexRelationLookupSQL(dbArgs, fields, filters);
+                    string countSql = definition.GetComplexRelationLookupSQL(dbArgs, fields, filters, isCountQuery: true);
 
-                    int currentRel = 1;
-                    foreach (var f in definition.Fields.Where(x => x.Show == true).OrderBy(x => x.DisplayOrder))
-                    {
+                    (Columns, Fields) = GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
-                        var gColumn = new GridColumn { text = f.FieldTypeName };
-                        var gField = new GridField { type = "text" };
-                        if (!f.FieldTypeName.StartsWith("Related Item."))
-                        {
-                            var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
-                            string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
-                            gField.name = gColumn.datafield = fieldAlias;
-                            gField.apiName = gColumn.apiName = ft.Name;
+                    var reader = await Company.QueryMultipleAsync($@"{sql}; {countSql}", dbArgs);
 
-                            switch (ft.Type.ToLowerInvariant())
-                            {
-                                case "boolean":
-                                    gColumn.columntype = "checkbox";
-                                    gField.type = "bool";
-                                    break;
-                                case "number":
-                                case "decimal":
-                                    gColumn.columntype = "numberinput";
-                                    gField.type = "number";
-                                    break;
-                                case "date":
-                                    gColumn.columntype = "datetimeinput";
-                                    gField.type = "date";
-                                    break;
-                                case "datetime":
-                                    gColumn.columntype = "datetimeinput";
-                                    gField.type = "datetime";
-                                    break;
-                                case "counter":
-                                    gColumn.columntype = "counter";
-                                    gField.type = "counter";
-                                    break;
-                                default:
-                                    gColumn.columntype = "textbox";
-                                    gField.type = "text";
-                                    break;
-                            }
-
-                            if (currentRel == f.RelationIndex)
-                            {
-                                gField.type = gColumn.columntype = "preview";
-                                gColumn.uidfield = $"H{f.RelationIndex}_Uid";
-                                gColumn.urlfield = $"H{f.RelationIndex}_Url";
-
-                                Fields.Add(new GridField { name = gColumn.uidfield, type = "text" });
-                                Fields.Add(new GridField { name = gColumn.urlfield, type = "text" });
-
-                                currentRel++;
-                            }
-                        }
-                        else
-                        {
-                            var b = "";
-                        }
-
-
-                        Columns.Add(gColumn);
-                        Fields.Add(gField);
-                    }
-
-
-
-                    Values = (await Company.QueryAsync<dynamic>(sql, dbArgs)).ToList();
+                    Values = reader.Read<dynamic>().ToList();
+                    count = reader.Read<int>().FirstOrDefault();
                 }
 
 
@@ -1623,22 +1569,6 @@ namespace d360.web.Controllers.V2
                     }
 
                 }
-
-                var dbArgsCount = new DynamicParameters();
-
-                dbArgsCount.Add("object", asset.Object, DbType.AnsiString, size: 50);
-                dbArgsCount.Add("objectId", asset.ObjectID);
-                dbArgsCount.Add("fieldTypeId", fieldType.ID);
-                dbArgsCount.Add("resourceId", Company.CurrentResourceID);
-                dbArgsCount.Add("pageSize", pageSize);
-                dbArgsCount.Add("pageNum", pageNum);
-                dbArgsCount.Add("simpleFilter", simpleFilter);
-                dbArgsCount.Add("filters", filters);
-
-                var count = Company.Query<int>(
-                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, 0, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
-                     dbArgsCount
-                     ).First();
 
                 if (isStreamResponse)
                 {
@@ -1779,6 +1709,121 @@ namespace d360.web.Controllers.V2
                 });
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknown error."));
             }
+        }
+
+        private static (List<GridColumn>, List<GridField>) GetComplexRelationLookupFieldsAndColumns(List<FieldType> fields, FieldTypeComplexLookupDefinition definition)
+        {
+            List<GridColumn> Columns = new List<GridColumn>();
+            List<GridField> Fields = new List<GridField>();
+            int currentRel = 0;
+            foreach (var f in definition.Fields.Where(x => x.Show == true).OrderBy(x => x.DisplayOrder))
+            {
+
+
+                if (f.FieldTypeName.StartsWith("Related Item."))
+                {
+                    Columns.Add(new GridColumn
+                    {
+                        text = f.FieldTypeName,
+                        columntype = "preview",
+                        datafield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue",
+                        uidfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid",
+                        urlfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url"
+                    });
+
+                    Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid" });
+                    Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url" });
+                    Fields.Add(new GridField { type = "preview", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue" });
+                }
+                else if (f.FieldTypeID > 0)
+                {
+                    var gColumn = new GridColumn { text = f.FieldTypeName };
+                    var gField = new GridField { type = "text" };
+                    var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
+                    string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
+                    gField.name = gColumn.datafield = fieldAlias;
+                    gField.apiName = gColumn.apiName = ft.Name;
+
+                    switch (ft.Type.ToLowerInvariant())
+                    {
+                        case "boolean":
+                            gColumn.columntype = "checkbox";
+                            gField.type = "bool";
+                            break;
+                        case "number":
+                        case "decimal":
+                            gColumn.columntype = "numberinput";
+                            gField.type = "number";
+                            break;
+                        case "date":
+                            gColumn.columntype = "datetimeinput";
+                            gField.type = "date";
+                            break;
+                        case "datetime":
+                            gColumn.columntype = "datetimeinput";
+                            gField.type = "datetime";
+                            break;
+                        case "counter":
+                            gColumn.columntype = "counter";
+                            gField.type = "counter";
+                            break;
+                        case "link":
+                            gColumn.columntype = "link";
+                            gField.type = "link";
+                            break;
+                        case "html":
+                            gColumn.columntype = "textbox";
+                            gField.type = "html";
+                            break;
+                        default:
+                            gColumn.columntype = "textbox";
+                            gField.type = "text";
+                            break;
+                    }
+
+                    if (currentRel == f.RelationIndex)
+                    {
+                        gField.type = gColumn.columntype = "preview";
+                        gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
+                        gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
+
+                        Fields.Add(new GridField { name = gColumn.uidfield, type = "text" });
+                        Fields.Add(new GridField { name = gColumn.urlfield, type = "text" });
+
+                        currentRel++;
+                    }
+
+                    Columns.Add(gColumn);
+                    Fields.Add(gField);
+                }
+                else if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
+                {
+                    var gColumn = new GridColumn { text = f.FieldTypeName };
+                    var gField = new GridField { type = "text" };
+                    gField.type = gColumn.columntype = "preview";
+                    gField.name = gColumn.datafield = $"H{f.RelationIndex + 1}_DisplayValue";
+                    gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
+                    gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
+
+                    Columns.Add(gColumn);
+                    Fields.Add(gField);
+                }
+                else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
+                {
+                    var gColumn = new GridColumn { text = f.FieldTypeName };
+                    var gField = new GridField { type = "text" };
+                    gField.type = gColumn.columntype = "preview";
+                    gField.name = gColumn.datafield = $"H{f.RelationIndex + 1}__assetPath";
+                    gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
+                    gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
+
+                    Columns.Add(gColumn);
+                    Fields.Add(gField);
+                }
+
+            }
+
+            return (Columns, Fields);
         }
 
 

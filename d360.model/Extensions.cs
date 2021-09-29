@@ -2871,7 +2871,7 @@ namespace d360.model
             return unflattened;
         }
 
-        public static string GetComplexRelationLookupSQL(this FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields)
+        public static string GetComplexRelationLookupSQL(this FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, string filters = "", bool isCountQuery = false)
         {
             List<string> joins = new List<string>();
             List<string> selects = new List<string>();
@@ -2883,7 +2883,6 @@ namespace d360.model
 
                 joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
                 joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
-                joins.Add($"inner join graph.AssetNodeDisplayPath H{idx}P on H{idx}P.ID = H{idx}.ID");
                 idx++;
             }
 
@@ -2905,7 +2904,7 @@ namespace d360.model
                 }
                 else if (f.FieldTypeID != 0)
                 {
-                    string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
+                    string fieldSelector = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
 
                     switch (ft.Type.ToLowerInvariant())
@@ -2935,11 +2934,14 @@ namespace d360.model
                             break;
                     }
 
-                    if (ft.Type != "Counter")
+                    if (f.FieldTypeName.StartsWith("Relation."))
                     {
-                        joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                        joins.Add($@"LEFT JOIN Field {fieldSelector} ON {fieldSelector}.ObjectType = 'Intersect'
+                            AND {fieldSelector}.FieldTypeID = {f.FieldTypeID}
+                            AND {fieldSelector}.ObjectID = R1.ID
+                            AND {fieldSelector}.FormattedValue <> ''");
                     }
-                    else
+                    else if (ft.Type == "Counter")
                     {
                         joins.Add($@"OUTER apply
                               (SELECT top 1 [Value] AS FormattedValue
@@ -2947,18 +2949,44 @@ namespace d360.model
                                WHERE AssetId = H{f.RelationIndex + 1}.ID
                                  AND FieldTypeId = {ft.ID}){fieldSelector}");
                     }
+                    else
+                    {
+                        joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                    }
+                }
+                else
+                {
+                    if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
+                    {
+                        selects.Add($"h{f.RelationIndex + 1}_dv.displayvalue AS [H{f.RelationIndex + 1}_DisplayValue]");
+                        joins.Add($"LEFT JOIN assetdisplayvalue H{f.RelationIndex + 1}_DV ON h{f.RelationIndex + 1}_dv.assetid = h{f.RelationIndex + 1}.id");
+                    }
+                    if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
+                    {
+                        selects.Add($"h{f.RelationIndex + 1}p.displaypath AS [H{f.RelationIndex + 1}__assetPath]");
+                        joins.Add($"LEFT JOIN graph.assetnodedisplaypath H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
+                    }
                 }
 
 
             }
 
-            var sql = $@"select distinct 
+            if (isCountQuery)
+            {
+                return $@"select distinct count(*)
+                                from graph.AssetNode H1
+                                {(string.Join("\n", joins))}
+                                {(string.IsNullOrEmpty(filters) ? "" : "where" + filters)}
+                                ";
+            }
+
+            return $@"select distinct 
                                 {(string.Join(",", selects))}
                                 from graph.AssetNode H1
                                 {(string.Join("\n", joins))}
+                                {(string.IsNullOrEmpty(filters) ? "" : "where " + filters)}
                                  order by 1
                                  offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
-            return sql;
         }
 
     }

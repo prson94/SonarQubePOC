@@ -37,9 +37,12 @@ namespace d360.model.helpers.filters
                     throw new FormatException(valueValidation.Message);
                 }
                 this.value = valueValidation.UpdatedValue;
-
                 UpdateTokenValueForType(true);
-                return $"( {Field} {FilterHelpers.GetSQLOperator(@operator)} '{EscapedValueAsString}')";
+
+                string parameterName = "filter_" + parameterIdx;
+                sqlParams.Add(parameterName, this.value);
+
+                return $"({FieldName} {FilterHelpers.GetSQLOperator(@operator)} @{parameterName})";
             }
             else
             {
@@ -48,7 +51,15 @@ namespace d360.model.helpers.filters
                     throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
                 }
 
-                return $"( {Field} { FilterHelpers.GetSQLNullOperator(@operator)})";
+                return $"({FieldName} {FilterHelpers.GetSQLNullOperator(@operator)})";
+            }
+        }
+
+        private string FieldName
+        {
+            get
+            {
+                return $"{Field}.FormattedValue";
             }
         }
 
