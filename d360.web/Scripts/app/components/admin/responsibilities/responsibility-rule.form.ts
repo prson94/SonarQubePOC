@@ -338,8 +338,6 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     private loadThenValuesForFieldType(item: any, clearValue?: boolean): Promise<void> {
-        console.log(item);
-        console.log(this.thenFieldTypes);
         let selectedFieldType = this.thenFieldTypes.find((f) => f.value === item.FieldTypeID);
         if (clearValue !== undefined && clearValue === true) item.Value = "";
         if (selectedFieldType) {
@@ -382,7 +380,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     private isValid(): boolean {
         if (!this.model.ApplyToType) {
-            if (this.model.StructuredDefinition.When.length === 0) {
+            if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0) {
                 return false;
             }
             else {
