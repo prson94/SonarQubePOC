@@ -741,6 +741,7 @@ namespace d360.web.Controllers
                 EnableOrganizations = settings.GetValue<bool>(Setting.EnableOrganizations),
                 EnableShoppingCart = settings.GetValue<bool>(Setting.EnableShoppingCart),
                 DefaultRoute = settings.GetValue(Setting.DefaultRoute),
+                EnableSagacity = settings.GetValue<bool>(Setting.EnableSagacity),
                 EnableSearchExactMatch = settings.GetValue<bool>(Setting.SearchExactMatch),
                 HideData3SixtyUsers = settings.GetValue<bool>(Setting.HideData3SixtyUsers),
                 ShowAllUsersAPIKey = settings.GetValue<bool>(Setting.ShowAllUsersAPIKey),
