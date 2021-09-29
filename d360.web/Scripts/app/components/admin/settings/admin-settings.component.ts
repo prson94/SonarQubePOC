@@ -85,6 +85,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.companyLogo = new CompanyImage();
                 this.companyIcon = new CompanyImage();
                 this.homePageImage = new CompanyImage();
+                delete data['EnableShoppingCart'];
 
                 this.companySettings = data;
 
