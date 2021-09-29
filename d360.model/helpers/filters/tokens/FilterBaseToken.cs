@@ -272,11 +272,11 @@ namespace d360.model.helpers.filters
             }
             else
             {
-                if (fieldColumn == null || fieldColumn.LastIndexOf(" as ", StringComparison.InvariantCulture) <= 0)
+                if (fieldColumn == null || fieldColumn.ToLowerInvariant().LastIndexOf(" as ", StringComparison.InvariantCulture) <= 0)
                 {
                     return $"F{fieldTypeId}.FormattedValue";
                 }
-                return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as ", StringComparison.InvariantCulture));
+                return fieldColumn.Substring(0, fieldColumn.ToLowerInvariant().LastIndexOf(" as ", StringComparison.InvariantCulture));
             }
         }
 

@@ -33,7 +33,11 @@ namespace d360.model.helpers.filters
             if (ftRelationship != null)
             {
                 string sqlOperator = "=";
-                string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
+                string relField = ftQueryName.Replace("_IntersectTypeUid", "");
+
+                string typeQuery = relField.Replace("_", "_R") + ".IntersectTypeUid";
+                string relationQuery = relField.Replace("_", "_A") + ".Uid";
+
                 if (IsNullValue)
                 {
                     sqlOperator = " is null ";
@@ -42,7 +46,7 @@ namespace d360.model.helpers.filters
                         sqlOperator = " is not null";
                     }
 
-                    relationshipFilterSQL = $"( {ftQueryName} {sqlOperator})";
+                    relationshipFilterSQL = $"({typeQuery} {sqlOperator})";
                 }
                 else
                 {
@@ -51,7 +55,7 @@ namespace d360.model.helpers.filters
                         sqlOperator = "<>";
                     }
 
-                    relationshipFilterSQL = $"( {ftQueryName} = '{intersectTypeUid}' and {relField} {sqlOperator} '{intersectUid.Replace("'", "")}')";
+                    relationshipFilterSQL = $"({relationQuery} {sqlOperator} '{intersectUid.Replace("'", "")}')";
                 }
 
             }

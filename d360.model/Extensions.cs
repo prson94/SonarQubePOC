@@ -2871,10 +2871,10 @@ namespace d360.model
             return unflattened;
         }
 
-        public static string GetComplexRelationLookupSQL(this FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, string filters = "", bool isCountQuery = false)
+        public static string GetComplexRelationLookupSQL(this FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields,out List<string> selects, bool isCountQuery = false)
         {
+            selects = new List<string>();
             List<string> joins = new List<string>();
-            List<string> selects = new List<string>();
             int idx = 1;
             foreach (var rel in definition.Relations)
             {
@@ -2904,7 +2904,7 @@ namespace d360.model
                 }
                 else if (f.FieldTypeID != 0)
                 {
-                    string fieldSelector = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
+                    string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
 
                     switch (ft.Type.ToLowerInvariant())
@@ -2975,18 +2975,13 @@ namespace d360.model
             {
                 return $@"select distinct count(*)
                                 from graph.AssetNode H1
-                                {(string.Join("\n", joins))}
-                                {(string.IsNullOrEmpty(filters) ? "" : "where" + filters)}
-                                ";
+                                {(string.Join("\n", joins))}";
             }
 
             return $@"select distinct 
                                 {(string.Join(",", selects))}
                                 from graph.AssetNode H1
-                                {(string.Join("\n", joins))}
-                                {(string.IsNullOrEmpty(filters) ? "" : "where " + filters)}
-                                 order by 1
-                                 offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+                                {(string.Join("\n", joins))}";
         }
 
     }

@@ -1396,22 +1396,6 @@ namespace d360.web.Controllers.V2
                     simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
                 }
 
-                if (qparams.Any(x => x.Key.ToLower() == "filter"))
-                {
-                    var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
-                    var filterDataProvider = new FilterDataProvider(this.Company);
-                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
-                    filterExpressionParser.LoadFieldTypes(fields, null);
-
-                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    filters = filterExpressionParser.Parse(filter, out sqlParams, out _);
-
-                    foreach (var p in sqlParams)
-                    {
-                        dbArgs.Add(p.Key, p.Value);
-                    }
-                }
-
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
                 {
                     orderBy = qparams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
@@ -1485,15 +1469,149 @@ namespace d360.web.Controllers.V2
                 {
                     var definition = ftl.ParseComplexLookupDefinition();
                     var maps = definition.GetFieldMapings();
-                    string sql = definition.GetComplexRelationLookupSQL(dbArgs, fields, filters);
-                    string countSql = definition.GetComplexRelationLookupSQL(dbArgs, fields, filters, isCountQuery: true);
+                    List<string> selects = new List<string>();
+
+                    string sql = definition.GetComplexRelationLookupSQL(dbArgs, fields, out selects);
+                    string countSql = definition.GetComplexRelationLookupSQL(dbArgs, fields, out _, isCountQuery: true);
 
                     (Columns, Fields) = GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
-                    var reader = await Company.QueryMultipleAsync($@"{sql}; {countSql}", dbArgs);
+                    if (qparams.Any(x => x.Key.ToLower() == "filter"))
+                    {
+                        var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
+                        var filterDataProvider = new FilterDataProvider(this.Company);
+                        var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                        filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                        Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                        filters = filterExpressionParser.Parse(filter, out sqlParams, out _);
+
+                        foreach (var p in sqlParams)
+                        {
+                            dbArgs.Add(p.Key, p.Value);
+                        }
+                    }
+
+                    var itemsSQL = $@"{sql}  
+                           {(string.IsNullOrEmpty(filters) ? "" : "where " + filters)}
+                            order by 1
+                            offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+
+                    var countSQL = $@"{countSql}
+                            {(string.IsNullOrEmpty(filters) ? "" : "where " + filters)}";
+
+                    var reader = await Company.QueryMultipleAsync(
+                        $"{itemsSQL}; {countSQL}", dbArgs);
 
                     Values = reader.Read<dynamic>().ToList();
                     count = reader.Read<int>().FirstOrDefault();
+                }
+
+                if (fieldType.Type == "RefListRelationship")
+                {
+                    List<string> selects = new List<string>();
+                    List<string> joins = new List<string>();
+                    List<string> wheres = new List<string>();
+
+                    dbArgs.Add("object", asset.Object);
+                    dbArgs.Add("objectId", asset.ObjectID);
+                    dbArgs.Add("fieldTypeId", fieldType.ID);
+
+                    int assetTypeId = (await Company.QueryAsync<int>($@"declare @isSubject bit,
+				                        @referenceItemTypeID int
+		                        select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
+		                        from	IntersectType I 
+				                        inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
+		
+		                        if @isSubject = 1
+		                        begin
+			                        select	top 1
+					                        @referenceItemTypeID = A.ID
+			                        from	[Intersect] I
+					                        inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
+		                        end
+		                        else
+		                        begin 
+			                        select	top 1
+					                        @referenceItemTypeID = A.ID
+			                        from	[Intersect] I
+					                        inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
+		                        end
+		                        select @referenceItemTypeID", dbArgs)).FirstOrDefault();
+
+                    foreach (var ft in fields)
+                    {
+
+                        if (ft.Name == "Code" && ft.ID == 0)
+                        {
+                            selects.Add("A.[Code] as [Code]");
+                        }
+                        else if (ft.Name == "Color" && ft.ID == 0)
+                        {
+                            selects.Add("ACJ.ColorJson as [Color]");
+                            joins.Add("outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ");
+                        }
+                        else
+                        {
+                            string fieldSelector = $"F{ft.ID}";
+                            string fieldAlias = ft.Name;
+
+                            switch (ft.Type.ToLowerInvariant())
+                            {
+                                case "boolean":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS bit) AS [{fieldAlias}]");
+                                    break;
+                                case "number":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
+                                    break;
+                                case "decimal":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal) AS [{fieldAlias}]");
+                                    break;
+                                case "date":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS date) AS [{fieldAlias}]");
+                                    break;
+                                case "datetime":
+                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS datetime) AS [{fieldAlias}]");
+                                    break;
+                                case "counter":
+                                    string cnt_prefix = "cntprefix_" + ft.ID;
+                                    dbArgs.Add(cnt_prefix, ft.CounterPrefix);
+                                    selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
+                                    break;
+                                default:
+                                    selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");
+                                    break;
+                            }
+
+                            joins.Add($"left join FieldDetail F{ft.ID} on F{ft.ID}.AssetID = A.ID and F{ft.ID}.FieldTypeID = {ft.ID} and F{ft.ID}.FormattedValue <> ''");
+                        }
+                    }
+
+                    wheres.Add("A.AssetTypeID = @assetTypeId");
+                    wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");
+                    dbArgs.Add("assetTypeId", assetTypeId);
+
+                    var itemsSQL = $@"
+                            select distinct 
+                            {(string.Join(", ", selects))}
+                            from Asset A
+                            {(string.Join("\n", joins))}
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                            order by A.Code asc
+                            offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+
+                    var countSQL = $@"select distinct 
+                            count(*)
+                            from Asset A
+                            {(string.Join("\n", joins))}
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+                    var reader = await Company.QueryMultipleAsync(
+                        $"{itemsSQL}; {countSQL}", dbArgs);
+
+                    Values = reader.Read<dynamic>().ToList();
+                    count = reader.Read<int>().FirstOrDefault();
+                    (Columns, Fields) = GetComplexRefListFromRelFieldsAndColumns(fields);
                 }
 
 
@@ -1820,6 +1938,64 @@ namespace d360.web.Controllers.V2
                     Columns.Add(gColumn);
                     Fields.Add(gField);
                 }
+
+            }
+
+            return (Columns, Fields);
+        }
+        private static (List<GridColumn>, List<GridField>) GetComplexRefListFromRelFieldsAndColumns(List<FieldType> fields)
+        {
+            List<GridColumn> Columns = new List<GridColumn>();
+            List<GridField> Fields = new List<GridField>();
+            int currentRel = 0;
+            foreach (var ft in fields.OrderBy(x => x.SortOrder))
+            {
+                var gColumn = new GridColumn { text = ft.FriendlyName, datafield = ft.Name };
+                var gField = new GridField { type = "text", name = ft.Name, apiName = ft.Name };
+
+                switch (ft.Type.ToLowerInvariant())
+                {
+                    case "boolean":
+                        gColumn.columntype = "checkbox";
+                        gField.type = "bool";
+                        break;
+                    case "number":
+                    case "decimal":
+                        gColumn.columntype = "numberinput";
+                        gField.type = "number";
+                        break;
+                    case "date":
+                        gColumn.columntype = "datetimeinput";
+                        gField.type = "date";
+                        break;
+                    case "datetime":
+                        gColumn.columntype = "datetimeinput";
+                        gField.type = "datetime";
+                        break;
+                    case "counter":
+                        gColumn.columntype = "counter";
+                        gField.type = "counter";
+                        break;
+                    case "link":
+                        gColumn.columntype = "link";
+                        gField.type = "link";
+                        break;
+                    case "html":
+                        gColumn.columntype = "textbox";
+                        gField.type = "html";
+                        break;
+                    case "color":
+                        gColumn.columntype = "color";
+                        gField.type = "color";
+                        break;
+                    default:
+                        gColumn.columntype = "textbox";
+                        gField.type = "text";
+                        break;
+                }
+
+                Columns.Add(gColumn);
+                Fields.Add(gField);
 
             }
 
