@@ -39,6 +39,9 @@ namespace d360.core.entities
         [DataMember]
         public int? SubjectAssetTypeID { get; set; }
 
+        [DataMember]
+        public string SubjectAssetTypePath { get; set; }
+
         [DataMember, Key, Column(Order = 4, TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
@@ -63,6 +66,8 @@ namespace d360.core.entities
         [DataMember]
         public int ObjectAssetTypeID { get; set; }
 
+        [DataMember]
+        public string ObjectAssetTypePath { get; set; }
 
         [DataMember]
         public int? PredicateID { get; set; }
