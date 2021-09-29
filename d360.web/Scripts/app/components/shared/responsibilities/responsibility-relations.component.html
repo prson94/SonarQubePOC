@@ -19,16 +19,16 @@
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-        <p-table #dt [value]="rows" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ClassName', 'AssetTypeName','ResponsibilityTypeName']" [paginator]="true" [rows]="10" [(selection)]="selectedRow">
+        <p-table #dt [value]="rows" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ClassName', 'AssetTypePath','ResponsibilityTypeName']" [paginator]="true" [rows]="10" [(selection)]="selectedRow">
             <ng-template pTemplate="header">
                 <tr>
                     <th *ngIf="queryType === 'R'" [pSortableColumn]="'ClassName'" style="width: 150px">
                         Class
                         <d3s-sortIcon [field]="'ClassName'"></d3s-sortIcon>
                     </th>
-                    <th *ngIf="queryType === 'R'" [pSortableColumn]="'AssetTypeName'">
+                    <th *ngIf="queryType === 'R'" [pSortableColumn]="'AssetTypePath'">
                         Type
-                        <d3s-sortIcon [field]="'AssetTypeName'"></d3s-sortIcon>
+                        <d3s-sortIcon [field]="'AssetTypePath'"></d3s-sortIcon>
                     </th>
                     <th *ngIf="queryType === 'A'" [pSortableColumn]="'ResponsibilityTypeName'">
                         Type
@@ -38,7 +38,7 @@
                     <th style="width: 50px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
-                    <th *ngIf="queryType === 'R'"><d3s-column-filter [field]="'AssetTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th *ngIf="queryType === 'R'"><d3s-column-filter [field]="'AssetTypePath'" [datatype]="'text'"></d3s-column-filter></th>
                     <th *ngIf="queryType === 'A'" ><d3s-column-filter [field]="'ResponsibilityTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                     <th></th>
                     <th></th>
@@ -47,7 +47,7 @@
             <ng-template pTemplate="body" let-item>
                 <tr (dblclick)="isEditing=showEditButton;" [pSelectableRow]="item">
                     <td *ngIf="queryType === 'R'">{{item.AssetTypeClass.Name}}</td>
-                    <td *ngIf="queryType === 'R'">{{item.AssetTypeName}}</td>
+                    <td *ngIf="queryType === 'R'">{{item.AssetTypePath}}</td>
                     <td *ngIf="queryType === 'A'">{{item.ResponsibilityTypeName}}</td>
                     <td>
                         <div *ngIf="showEditButton" class="RowTools">
