@@ -1257,10 +1257,11 @@ namespace d360.extensions.search
                             Must = values.Select(v => {
                                 QueryContainer q = new NestedQuery {
                                     Path = path,
-                                    Query = new TermQuery
+                                    Query = new MatchQuery
                                     {
                                         Field = fldTag,
-                                        Value = v
+                                        Query = v,
+                                        Operator = Nest.Operator.And
                                     }
                                 };
                                 return q;
@@ -1274,10 +1275,11 @@ namespace d360.extensions.search
                             Query = new BoolQuery
                             {
                                 Should = values.Select(v => {
-                                    QueryContainer q = new TermQuery
+                                    QueryContainer q = new MatchQuery
                                     {
                                         Field = fldTag,
-                                        Value = v
+                                        Query = v,
+                                        Operator = Nest.Operator.And
                                     };
                                     return q;
                                 }),
