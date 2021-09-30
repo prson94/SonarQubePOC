@@ -63,6 +63,7 @@ namespace d360.extensions
             AggregationFilters = new List<AggregationFilter>();
             FieldFilters = new List<FieldFilter>();
             Aggregations = new List<string>();
+            FieldBoosters = new List<FieldBoost>();
         }
         private string _term;
         public string Term {
@@ -334,18 +335,6 @@ namespace d360.extensions
         /// <param name="companyID">The current company ID</param>
         /// <param name="assetTypeUid">UID of Asset Type to remove/param>
         void ClearIndex(int companyID, Guid assetTypeUid);
-
-        /// <summary>
-        /// Gets search results for the specified phrase.
-        /// </summary>
-        /// <param name="companyID">The current company ID</param>
-        /// <param name="resourceID">The current user ID</param>
-        /// <param name="phrase">The search phrase to get results for</param>
-        /// <param name="size">Page Size</param>
-        /// <param name="from">Start at result</param>
-        /// <returns>A list of search results.</returns>
-        /// <exception cref="SearchResultsException"></exception>
-        IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "", string advancedFilterJSON = "");
 
         IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories, QueryLimitation queryLimit);
 
