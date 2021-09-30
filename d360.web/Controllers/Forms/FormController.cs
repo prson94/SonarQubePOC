@@ -886,7 +886,6 @@ namespace d360.web.Controllers
                 #region Global Fields
 
                 settingActionValue(Setting.DisableIssueManagement, formModel.DisableIssueManagement.ToString().ToLower());
-                settingActionValue(Setting.EnableShoppingCart, formModel.EnableShoppingCart.ToString().ToLower());
                 settingActionValue(Setting.DefaultRoute, (formModel.DefaultRoute ?? "").Trim());
                 settingActionValue(Setting.SearchExactMatch, formModel.EnableSearchExactMatch.ToString().ToLower());
                 settingActionValue(Setting.HideData3SixtyUsers, formModel.HideData3SixtyUsers.ToString().ToLower());
