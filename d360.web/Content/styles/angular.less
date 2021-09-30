@@ -2259,148 +2259,160 @@ div.home-image-title-text {
 }
 
 .modal-overlay .modal-dialog {
-    display: inline-flex;
-    flex-direction: column;
-    background: white;
-    border-radius: 5px;
-    box-shadow: rgba(0, 0, 0, 0.33) 0 5px 10px;
-    transform: scale(0.8);
-    transform-origin: center top;
-    transition: transform 200ms ease;
-    max-height: calc(100vh - 80px);
-    max-width: calc(100vw - 80px);
+  display: inline-flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.33) 0 5px 10px;
+  transform: scale(0.8);
+  transform-origin: center top;
+  transition: transform 200ms ease;
+  max-height: calc(100vh - 80px);
+  max-width: calc(100vw - 80px);
 
-    &.small-dialog {
-        width: 100%;
-        max-width: 300px;
+  &.small-dialog {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  &.medium-dialog {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  &.medium-dialog-with-side-panel {
+    .modal-dialog-main-panel {
+      max-width: 600px;
     }
+  }
 
-    &.medium-dialog {
-        width: 100%;
-        max-width: 600px;
+  &.large-dialog {
+    width: 100%;
+    max-width: 800px;
+    max-height: 100%;
+
+    .confirmation-wrapper {
+      padding: 0px 24px 24px 24px;
     }
+  }
 
-    &.large-dialog {
-        width: 100%;
-        max-width: 800px;
-        max-height: 100%;
-
-        .confirmation-wrapper {
-            padding: 0px 24px 24px 24px;
-        }
+  &.large-dialog-with-side-panel {
+    .modal-dialog-main-panel {
+      max-width: 800px;
     }
+  }
 
-    &.xlarge-dialog {
-        width: 90%;
-        max-height: 100%;
+  &.xlarge-dialog {
+    width: 90%;
+    max-height: 100%;
 
-        .confirmation-wrapper {
-            padding: 0px 24px 24px 24px;
-        }
+    .confirmation-wrapper {
+      padding: 0px 24px 24px 24px;
     }
+  }
 
-    &.mini-dialog-no-action {
-        width: 200px;
-
-        .content {
-            padding: 0px;
-        }
-
-        .modal-title-bar {
-            display: none;
-        }
-    }
-
-    [prompt] {
-        display: flex;
-        flex-direction: column;
-        min-height: 32px;
-    }
+  &.mini-dialog-no-action {
+    width: 200px;
 
     .content {
+      padding: 0px;
+    }
+
+    .modal-title-bar {
+      display: none;
+    }
+  }
+
+  [prompt] {
+    display: flex;
+    flex-direction: column;
+    min-height: 32px;
+  }
+
+  .content {
+
+    table {
+      th, td {
+        padding-bottom: 10px;
+        padding-top: 10px;
+      }
+    }
+
+    &.condensed-table {
+      .p-datatable {
+        padding-right: 16px;
 
         table {
-            th, td {
-                padding-bottom: 10px;
-                padding-top: 10px;
-            }
-        }
-
-        &.condensed-table {
-            .p-datatable {
-                padding-right: 16px;
-
-                table {
-                    th, td {
-                        height: 32px;
-                        padding: .25em .5em;
-
-                        button {
-                            position: relative;
-                            right: -7px;
-                        }
-                    }
-                }
-            }
-        }
-
-        .p-checkbox {
-            .p-checkbox-box.p-highlight {
-                color: black;
-                background: white;
-            }
-        }
-
-        label {
-            color: black;
-        }
-
-        .default-label {
-            padding-left: 10px;
-
-            &:before, &:after {
-                display: none;
-            }
-        }
-
-        [type="radio"] {
-            position: relative;
-            top: 2px;
-        }
-    }
-
-    d3s-dynamic-editor {
-        .errorMessage {
-            color: @d3s-primary-red;
-            font-weight: bold;
-            background: none;
-            padding: 0px;
-            border: none;
-            margin: 0;
-        }
-    }
-
-    form {
-        input:not(.ig-input) {
-            width: 100%;
-        }
-    }
-
-    .search-wrapper {
-        position: relative;
-        padding: 16px 0px 8px 0px;
-
-        input {
-            width: 100%;
-        }
-
-        .fa-search {
-            position: absolute;
+          th, td {
             height: 32px;
-            line-height: 32px;
-            right: 8px;
+            padding: .25em .5em;
+
+            button {
+              position: relative;
+              right: -7px;
+            }
+          }
         }
+      }
     }
+
+    .p-checkbox {
+      .p-checkbox-box.p-highlight {
+        color: black;
+        background: white;
+      }
+    }
+
+    label {
+      color: black;
+    }
+
+    .default-label {
+      padding-left: 10px;
+
+      &:before, &:after {
+        display: none;
+      }
+    }
+
+    [type="radio"] {
+      position: relative;
+      top: 2px;
+    }
+  }
+
+  d3s-dynamic-editor {
+    .errorMessage {
+      color: @d3s-primary-red;
+      font-weight: bold;
+      background: none;
+      padding: 0px;
+      border: none;
+      margin: 0;
+    }
+  }
+
+  form {
+    input:not(.ig-input) {
+      width: 100%;
+    }
+  }
+
+  .search-wrapper {
+    position: relative;
+    padding: 16px 0px 8px 0px;
+
+    input {
+      width: 100%;
+    }
+
+    .fa-search {
+      position: absolute;
+      height: 32px;
+      line-height: 32px;
+      right: 8px;
+    }
+  }
 }
 
 .modal-overlay .modal-dialog .modal-title-bar {
