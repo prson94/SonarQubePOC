@@ -16,6 +16,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Data;
 
 namespace d360.extensions.search
 {
@@ -354,9 +355,19 @@ namespace d360.extensions.search
             return $"d3s{companyID}";
         }
 
+        protected virtual IDbConnection GetDBConnection()
+        {
+            return new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+        }
+
+        protected virtual IElasticClient GetElasticClient(int companyID)
+        {
+            return new ElasticClient(GetConnectionSettings(companyID));
+        }
+
         private ConnectionSettings GetConnectionSettings(int companyID)
         {
-            using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            using (var community = GetDBConnection())
             {
                 var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
 
@@ -381,7 +392,7 @@ namespace d360.extensions.search
         {
             var indexName = GetCompanyIndexName(companyID);
             //NEST client
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             if (!client.IndexExists(indexName).Exists)
             {
                 string esSettings = MAPPING_VERSION_5;
@@ -409,7 +420,7 @@ namespace d360.extensions.search
         public Version GetElasticVersion(int companyID)
         {
             Version ver = null;
-            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID).LowLevel;
             var response = client.Info<StringResponse>();
 
             if (response.Success)
@@ -426,7 +437,7 @@ namespace d360.extensions.search
         public int GetTotalRecordCount(int companyID)
         {
             int count = -1;
-            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID).LowLevel;
             var response = client.Count<StringResponse>(PostData.Serializable(new { }));
             if (response.Success)
             {
@@ -444,7 +455,7 @@ namespace d360.extensions.search
         {
             var indexName = GetCompanyIndexName(companyID);
             //NEST client
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             if (client.IndexExists(indexName).Exists)
             {
                 var response = client.DeleteIndex(indexName);
@@ -522,7 +533,7 @@ namespace d360.extensions.search
                 }
                 sb.Append("\n");
 
-                var client = new ElasticLowLevelClient(GetConnectionSettings(companyId));
+                var client = GetElasticClient(companyId).LowLevel;
                 var bulkResponse = client.Bulk<StringResponse>(GetCompanyIndexName(companyId), sb.ToString());
 
                 if (!bulkResponse.Success)
@@ -595,7 +606,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
 
@@ -625,7 +636,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
             StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString);
@@ -710,262 +721,6 @@ namespace d360.extensions.search
             }
 
             return phrase;
-        }
-
-        /// <summary>
-        /// Gets the search results from elastic search and converts them to index results
-        /// </summary>
-        /// <param name="companyID"></param>
-        /// <param name="resourceID"></param>
-        /// <param name="phrase"></param>
-        /// <returns></returns>
-        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "", string advancedFilterJSON = "")
-        {
-            IndexResults result = new IndexResults();
-
-            Nest.Field fldName = new Nest.Field(DYNAMIC_FIELD_PREFIX + "Name");
-            Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
-            Nest.Field fldAssetType = new Nest.Field(D3S_FIELD_PREFIX + "AssetType");
-            Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
-
-            string tagSearch = "";
-            QueryBase coreQuery = null;
-            List<QueryContainer> filterQueries = new List<QueryContainer>();
-
-            if (!string.IsNullOrEmpty(phrase))
-            {
-                //Regular search
-                if (phrase.StartsWith("'") && phrase.EndsWith("'"))
-                {
-                    phrase = EscapeSpecialCharacters(phrase.Trim('\''));
-                    coreQuery = new MatchPhraseQuery
-                    {
-                        Field = fldName,
-                        Query = phrase
-                    };
-                    tagSearch = phrase;
-                }
-                else
-                {
-                    if (phrase.EndsWith("*")) //If we have trailing *, remove before escaping
-                    {
-                        phrase = phrase.Remove(phrase.Length - 1);
-                    }
-                    phrase = EscapeSpecialCharacters(phrase) + "*";
-
-                    coreQuery = new QueryStringQuery
-                    {
-                        Query = phrase,
-                        AnalyzeWildcard = true
-                    };
-                    tagSearch = phrase;
-                }
-            }
-            else if (!string.IsNullOrEmpty(advancedFilterJSON))
-            {
-                //Advanced search
-                //deserialize advanced search parameters
-                var advFilters = JsonConvert.DeserializeObject<List<AdvancedSearchParameters>>(advancedFilterJSON);
-
-                
-                var compositeSearchTermBuilder = new StringBuilder();
-                SearchConnector con = SearchConnector.And;
-
-                foreach (var item in advFilters)
-                {
-                    if (string.IsNullOrEmpty(item.value))
-                    {
-                        continue;
-                    }
-
-                    var field = item.field;
-                    if (field == "_type")
-                    {
-                        field = DYNAMIC_FIELD_PREFIX + "Category";
-                    }
-                    else if (field == "d3sTags")
-                    {
-                        tagSearch = EscapeSpecialCharacters(item.value);
-                        continue;
-                    }
-                    else
-                    {
-                        field = DYNAMIC_FIELD_PREFIX + field;
-                    }
-
-                    if (!string.IsNullOrEmpty(compositeSearchTermBuilder.ToString()))
-                    {
-                        compositeSearchTermBuilder.Append($" {con.ToString().ToUpper()} ");
-                    }
-                    con = item.connector;
-
-                    var searchTerm = EscapeSpecialCharacters(item.value);
-                    if (item.exact)
-                    {
-                        searchTerm = searchTerm.Replace("\"", "");
-                        searchTerm = "\"" + searchTerm + "\"";
-                    }
-                    else if (!searchTerm.EndsWith("*"))
-                    {
-                        //Not exact, so append * to searchTerm if it does not already end with *
-                        searchTerm += "*";
-                    }
-
-                    compositeSearchTermBuilder.Append($"{field}:{searchTerm}");
-                }
-                coreQuery = new QueryStringQuery
-                {
-                    Query = compositeSearchTermBuilder.ToString(),
-                    AnalyzeWildcard = true
-                };
-            }
-
-            //If neither advanced nor a phrase is available, return an empty result set
-            if (coreQuery == null)
-            {
-                return result;
-            }
-
-            if (!string.IsNullOrEmpty(type))
-            {
-                string[] types = type.Split(',');
-                if (types.Length > 1)
-                {
-                    filterQueries.Add(new TermsQuery
-                    {
-                        Field = fldCategory,
-                        Terms = types
-                    });
-                }
-                else
-                {
-                    filterQueries.Add(new TermQuery
-                    {
-                        Field = fldCategory,
-                        Value = type,
-                    });
-                }
-            }
-            //if a group was specified filter by it
-            if (!string.IsNullOrEmpty(group))
-            {
-                filterQueries.Add(new TermQuery
-                {
-                    Field = fldAssetType,
-                    Value = group,
-                });
-            }
-
-            SearchRequest sReq = new SearchRequest
-            {
-                Query = new BoolQuery
-                {
-                    Must = new QueryContainer[] {
-                        new BoolQuery{
-                            Should = new QueryContainer[] {
-                                coreQuery,
-                                new NestedQuery {
-                                    Path = D3S_FIELD_PREFIX + "Tags",
-                                    Query = new BoolQuery{
-                                        Must = new QueryContainer[] { new QueryStringQuery {
-                                            DefaultField = fldTag,
-                                            Query = tagSearch,
-                                            AnalyzeWildcard = true
-                                        }}
-                                    },
-                                    InnerHits = new InnerHits {
-                                        Highlight = new Highlight {
-                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } },
-                                            Encoder = HighlighterEncoder.Html
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    Filter = new QueryContainer[] { new BoolQuery {
-                        Must = filterQueries
-                    } }
-                },
-                Highlight = new Highlight
-                {
-                    Fields = new Dictionary<Nest.Field, IHighlightField> { { fldName, new HighlightField {
-                        PreTags = new [] { "<em class='search-highlight'>" },
-                        PostTags = new [] { "</em>" },
-                        NumberOfFragments = 0
-                    } } },
-                    RequireFieldMatch = false,
-                    Encoder = HighlighterEncoder.Html
-                },
-                From = from,
-                Size = size
-            };
-
-            // if no group filter then we need to get list of categories
-            if (string.IsNullOrEmpty(group))
-            {
-                //size=0 intepreted as integer.MAX_VALUE deprecated in ES 2.4.0.
-                //Using 2000 for categories and 20 for Group/asset class
-                sReq.Aggregations = new TermsAggregation("all_types")
-                {
-                    Field = fldCategory,
-                    Size = 20,
-                    Aggregations = new TermsAggregation("category")
-                    {
-                        Field = fldAssetType,
-                        Size = 2000
-                    }
-                };
-            }
-
-            var client = new ElasticClient(GetConnectionSettings(companyID));
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-                throw new ArgumentException(response.OriginalException.Message);
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
-
-            result.Results = searchResults.hits.hits.Select(h => new IndexResult
-            {
-                Name = GetHighlightedNameValueIfExists(h),
-                DisplayName = GetDisplayName(h),
-                Description = GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "Description") ?? GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "description"),
-                Group = MapCategoryToFriendlyName(h.d3sCategory),
-                ID = h._id,
-                NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
-                Score = h._score,
-                Type = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "AssetType"),
-                Url = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "Url"),
-                Uid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "Uid"),
-                AssetTypeUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "AssetTypeUid"),
-                Tags = GetTags(h)
-            }).ToList();
-
-
-            if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
-            {
-                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
-                {
-                    Name = h.key,
-                    DisplayName = MapCategoryToFriendlyName(h.key),
-                    ResultCount = h.doc_count,
-                    Categories = h.category?.buckets.Select(c => new IndexCategory
-                    {
-                        Name = c.key,
-                        ResultCount = c.doc_count
-                    }).OrderBy(x => x.Name).ToList()
-                }).OrderBy(x => x.DisplayName));
-            }
-
-            result.ElapsedMS = searchResults.took;
-
-            if (searchResults.hits != null)
-                result.Matches = searchResults.hits.total;
-
-            return result;
         }
 
         private const char STRATEGY_NONE = ' ';
@@ -1231,7 +986,7 @@ namespace d360.extensions.search
             return mainQueries;
         }
 
-        QueryContainer[] GetRefinementFilters(QueryRequest queryRequest)
+        private QueryContainer[] GetRefinementFilters(QueryRequest queryRequest)
         {
             List<QueryContainer> mustQueries = new List<QueryContainer>();
             List<QueryContainer> shouldQueries = new List<QueryContainer>();
@@ -1350,7 +1105,7 @@ namespace d360.extensions.search
             };
         }
 
-        List<QueryContainer> GetAggregationFilters(QueryRequest queryRequest, QueryLimitation queryLimit)
+        private List<QueryContainer> GetAggregationFilters(QueryRequest queryRequest, QueryLimitation queryLimit)
         {
             List<QueryContainer> aggFilters = new List<QueryContainer>();
 
@@ -1466,7 +1221,7 @@ namespace d360.extensions.search
                 sReq.Explain = true;
             }
 
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
@@ -1552,7 +1307,7 @@ namespace d360.extensions.search
                 };
             }
 
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
@@ -1613,7 +1368,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
@@ -1633,7 +1388,7 @@ namespace d360.extensions.search
             return result;
         }
 
-        List<QueryContainer> FiltersFromLimit(QueryLimitation queryLimit)
+        private List<QueryContainer> FiltersFromLimit(QueryLimitation queryLimit)
         {
             List<QueryContainer> mustNotQueries = new List<QueryContainer>
             {
@@ -1899,7 +1654,7 @@ namespace d360.extensions.search
                 Size = size
             };
 
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
@@ -1994,7 +1749,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = new ElasticClient(GetConnectionSettings(companyID));
+            var client = GetElasticClient(companyID);
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
@@ -2183,7 +1938,7 @@ namespace d360.extensions.search
 
             CreateIndexIfNotExists(item.CompanyID);
 
-            var client = new ElasticLowLevelClient(GetConnectionSettings(item.CompanyID));
+            var client = GetElasticClient(item.CompanyID).LowLevel;
             var response = client.Delete<StringResponse>(GetCompanyIndexName(item.CompanyID), "_doc", item.getObjectID());
 
             if (!response.Success)
@@ -2209,7 +1964,7 @@ namespace d360.extensions.search
                 sb.Append("{ \"delete\" : { \"_type\" : \"_doc\", \"_id\" : \"" + item.getObjectID() + "\"}}\n");
             }
 
-            var client = new ElasticLowLevelClient(GetConnectionSettings(companyId));
+            var client = GetElasticClient(companyId).LowLevel;
             var bulkResponse = client.Bulk<StringResponse>(GetCompanyIndexName(companyId), sb.ToString());
 
             if (!bulkResponse.Success)
@@ -2238,7 +1993,7 @@ namespace d360.extensions.search
 
             CreateIndexIfNotExists(item.CompanyID);
 
-            var client = new ElasticLowLevelClient(GetConnectionSettings(item.CompanyID));
+            var client = GetElasticClient(item.CompanyID).LowLevel;
             var response = client.Update<StringResponse>(GetCompanyIndexName(item.CompanyID), "_doc", item.getObjectID(), CreateDocument(item, true));
 
             if (!response.Success)
@@ -2265,7 +2020,7 @@ namespace d360.extensions.search
                 sb.AppendLine("{ \"doc\": " + CreateDocument(item, true) + "}");
             }
 
-            var client = new ElasticLowLevelClient(GetConnectionSettings(companyId));
+            var client = GetElasticClient(companyId).LowLevel;
             var bulkResponse = client.Bulk<StringResponse>(GetCompanyIndexName(companyId), sb.ToString());
 
             if (!bulkResponse.Success)
