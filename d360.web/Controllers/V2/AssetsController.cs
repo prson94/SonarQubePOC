@@ -1604,6 +1604,24 @@ namespace d360.web.Controllers.V2
                         dbArgs.Add("responsibilityTypeId", definition.ResponsibilityType);
                     }
 
+
+                    if (qparams.Any(x => x.Key.ToLower() == "filter"))
+                    {
+                        var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
+                        var filterDataProvider = new FilterDataProvider(this.Company);
+                        var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                        filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                        Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                        filters = filterExpressionParser.Parse(filter, out sqlParams, out _);
+
+                        wheres.Add(filters);
+                        foreach (var p in sqlParams)
+                        {
+                            dbArgs.Add(p.Key, p.Value);
+                        }
+                    }
+
                     var sql = $@"select distinct 
                             {(string.Join(", ", selects))}
                         FROM[dbo].[ResponsibilityDetail] R
