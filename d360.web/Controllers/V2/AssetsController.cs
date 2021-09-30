@@ -14,12 +14,10 @@ using Newtonsoft.Json.Linq;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using d360.model.DataAccessLayer;
@@ -30,12 +28,12 @@ using Resources;
 using System.IO;
 using d360.model.helpers.filters;
 using System.Data.Entity;
-using System.Dynamic;
-using System.Configuration;
 using SpreadsheetLight;
 using d360.model.helpers;
 using System.Data;
 using System.Threading;
+using d360.core.Models;
+using d360.model.helpers;
 
 namespace d360.web.Controllers.V2
 {
@@ -1411,13 +1409,6 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                if (isStreamResponse)
-                {
-                    pageNum = 1;
-                    pageSize = 10000;
-                }
-
                 if (!string.IsNullOrEmpty(orderBy))
                 {
                     if (fieldType.Type == "OwnershipLookup")
@@ -1455,6 +1446,13 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+                if (isStreamResponse)
+                {
+                    pageNum = 1;
+                    pageSize = 10000;
+                }
+
 
 
                 dbArgs.Add("resourceId", Company.CurrentResourceID);
@@ -1471,10 +1469,10 @@ namespace d360.web.Controllers.V2
                     var maps = definition.GetFieldMapings();
                     List<string> selects = new List<string>();
 
-                    string sql = definition.GetComplexRelationLookupSQL(dbArgs, fields, out selects);
-                    string countSql = definition.GetComplexRelationLookupSQL(dbArgs, fields, out _, isCountQuery: true);
+                    string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out selects);
+                    string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out _, isCountQuery: true);
 
-                    (Columns, Fields) = GetComplexRelationLookupFieldsAndColumns(fields, definition);
+                    (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
                     if (qparams.Any(x => x.Key.ToLower() == "filter"))
                     {
@@ -1517,93 +1515,38 @@ namespace d360.web.Controllers.V2
                     dbArgs.Add("objectId", asset.ObjectID);
                     dbArgs.Add("fieldTypeId", fieldType.ID);
 
-                    int assetTypeId = (await Company.QueryAsync<int>($@"declare @isSubject bit,
-				                        @referenceItemTypeID int
-		                        select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
-		                        from	IntersectType I 
-				                        inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
-		
-		                        if @isSubject = 1
-		                        begin
-			                        select	top 1
-					                        @referenceItemTypeID = A.ID
-			                        from	[Intersect] I
-					                        inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
-		                        end
-		                        else
-		                        begin 
-			                        select	top 1
-					                        @referenceItemTypeID = A.ID
-			                        from	[Intersect] I
-					                        inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
-		                        end
-		                        select @referenceItemTypeID", dbArgs)).FirstOrDefault();
-
-                    foreach (var ft in fields)
-                    {
-
-                        if (ft.Name == "Code" && ft.ID == 0)
-                        {
-                            selects.Add("A.[Code] as [Code]");
-                        }
-                        else if (ft.Name == "Color" && ft.ID == 0)
-                        {
-                            selects.Add("ACJ.ColorJson as [Color]");
-                            joins.Add("outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ");
-                        }
-                        else
-                        {
-                            string fieldSelector = $"F{ft.ID}";
-                            string fieldAlias = ft.Name;
-
-                            switch (ft.Type.ToLowerInvariant())
-                            {
-                                case "boolean":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS bit) AS [{fieldAlias}]");
-                                    break;
-                                case "number":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
-                                    break;
-                                case "decimal":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal) AS [{fieldAlias}]");
-                                    break;
-                                case "date":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS date) AS [{fieldAlias}]");
-                                    break;
-                                case "datetime":
-                                    selects.Add($"try_cast({fieldSelector}.FormattedValue AS datetime) AS [{fieldAlias}]");
-                                    break;
-                                case "counter":
-                                    string cnt_prefix = "cntprefix_" + ft.ID;
-                                    dbArgs.Add(cnt_prefix, ft.CounterPrefix);
-                                    selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
-                                    break;
-                                default:
-                                    selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");
-                                    break;
-                            }
-
-                            joins.Add($"left join FieldDetail F{ft.ID} on F{ft.ID}.AssetID = A.ID and F{ft.ID}.FieldTypeID = {ft.ID} and F{ft.ID}.FormattedValue <> ''");
-                        }
-                    }
+                    int assetTypeId = await GetAssetTypeIdForRefListField(dbArgs);
 
                     wheres.Add("A.AssetTypeID = @assetTypeId");
                     wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");
                     dbArgs.Add("assetTypeId", assetTypeId);
 
-                    var itemsSQL = $@"
-                            select distinct 
-                            {(string.Join(", ", selects))}
-                            from Asset A
-                            {(string.Join("\n", joins))}
+                    string itemsSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, false);
+                    string countSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, true);
+
+                    if (qparams.Any(x => x.Key.ToLower() == "filter"))
+                    {
+                        var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
+                        var filterDataProvider = new FilterDataProvider(this.Company);
+                        var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                        filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                        Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                        filters = filterExpressionParser.Parse(filter, out sqlParams, out _);
+
+                        wheres.Add(filters);
+                        foreach (var p in sqlParams)
+                        {
+                            dbArgs.Add(p.Key, p.Value);
+                        }
+                    }
+
+                    itemsSQL = $@"{itemsSQL}
                             {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
                             order by A.Code asc
                             offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
-                    var countSQL = $@"select distinct 
-                            count(*)
-                            from Asset A
-                            {(string.Join("\n", joins))}
+                    countSQL = $@"{countSQL}
                             {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
 
                     var reader = await Company.QueryMultipleAsync(
@@ -1611,27 +1554,56 @@ namespace d360.web.Controllers.V2
 
                     Values = reader.Read<dynamic>().ToList();
                     count = reader.Read<int>().FirstOrDefault();
-                    (Columns, Fields) = GetComplexRefListFromRelFieldsAndColumns(fields);
+                    (Columns, Fields) = ComplexFieldsHelper.GetComplexRefListFromRelFieldsAndColumns(fields);
                 }
 
-
-                //var reader = await Company.QueryMultipleAsync(
-                //        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
-                //       dbArgs
-                //    );
-
-                //var Fields = reader.Read<GridField>().ToList();
-
-                try
+                if (fieldType.Type == "OwnershipLookup")
                 {
-                    //Values = reader.Read<dynamic>().ToList();
-                }
-                catch (Exception ex)
-                {
-                    //if reader is disposed there are no results returned
-                    if (!ex.Message.Contains("has been disposed"))
+                    var definition = ftl.ParseOwnershipLookupDefinition();
+
+                    List<string> selects = new List<string>();
+                    List<string> wheres = new List<string>();
+                    string orderBySQL = "ORDER BY r.responsibilitytypename ASC,resourcename ASC";
+
+                    selects.Add("r.context AS [Context]");
+                    selects.Add("r.responsibilitytypename AS [ResponsibilityTypeName]");
+                    selects.Add("r.SecurityAssetName AS [SecurityAssetName]");
+
+                    if (definition.ExpandGroupMembership != false)
                     {
-                        throw ex;
+                        selects.Add("'/resource/' + Cast(r.resourceid AS VARCHAR) AS [ResourceItemUrl]");
+                        selects.Add("r.resourceuid AS [ResourceUid]");
+                        selects.Add("resourcename as [ResourceName]");
+                    }
+                    else
+                    {
+                        selects.Add(@"CASE securityassetname
+                                                      WHEN resourcename THEN '/resource/' + Cast(r.resourceid AS    VARCHAR)
+                                                       ELSE '/group/' + Cast(securityassetid AS VARCHAR)
+                                       END AS [ResourceItemUrl]");
+
+                        selects.Add(@" CASE securityassetname
+                                          WHEN resourcename THEN 'Resource'
+                                          ELSE 'Group'
+                                       END AS [ResourceObject]");
+                        selects.Add("securityassetname as [ResourceName]");
+
+                        orderBySQL = "ORDER BY r.responsibilitytypename ASC,securityassetname ASC";
+                    }
+
+                    wheres.Add("r.isvisible = 1");
+                    wheres.Add("((r.assetid = @assetId) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
+
+                    var sql = $@"select distinct 
+                            {(string.Join(", ", selects))}
+                        FROM[dbo].[ResponsibilityDetail] R
+                        inner join asset a on a.uid = @assetuid
+                        {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                        {orderBySQL}";
+
+                    if (definition.ResponsibilityTypeUid != Guid.Empty)
+                    {
+                        //AND r.responsibilitytypeid = 176
                     }
 
                 }
@@ -1829,179 +1801,30 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private static (List<GridColumn>, List<GridField>) GetComplexRelationLookupFieldsAndColumns(List<FieldType> fields, FieldTypeComplexLookupDefinition definition)
+        private async Task<int> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
         {
-            List<GridColumn> Columns = new List<GridColumn>();
-            List<GridField> Fields = new List<GridField>();
-            int currentRel = 0;
-            foreach (var f in definition.Fields.Where(x => x.Show == true).OrderBy(x => x.DisplayOrder))
-            {
-
-
-                if (f.FieldTypeName.StartsWith("Related Item."))
-                {
-                    Columns.Add(new GridColumn
-                    {
-                        text = f.FieldTypeName,
-                        columntype = "preview",
-                        datafield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue",
-                        uidfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid",
-                        urlfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url"
-                    });
-
-                    Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid" });
-                    Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url" });
-                    Fields.Add(new GridField { type = "preview", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue" });
-                }
-                else if (f.FieldTypeID > 0)
-                {
-                    var gColumn = new GridColumn { text = f.FieldTypeName };
-                    var gField = new GridField { type = "text" };
-                    var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
-                    string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
-                    gField.name = gColumn.datafield = fieldAlias;
-                    gField.apiName = gColumn.apiName = ft.Name;
-
-                    switch (ft.Type.ToLowerInvariant())
-                    {
-                        case "boolean":
-                            gColumn.columntype = "checkbox";
-                            gField.type = "bool";
-                            break;
-                        case "number":
-                        case "decimal":
-                            gColumn.columntype = "numberinput";
-                            gField.type = "number";
-                            break;
-                        case "date":
-                            gColumn.columntype = "datetimeinput";
-                            gField.type = "date";
-                            break;
-                        case "datetime":
-                            gColumn.columntype = "datetimeinput";
-                            gField.type = "datetime";
-                            break;
-                        case "counter":
-                            gColumn.columntype = "counter";
-                            gField.type = "counter";
-                            break;
-                        case "link":
-                            gColumn.columntype = "link";
-                            gField.type = "link";
-                            break;
-                        case "html":
-                            gColumn.columntype = "textbox";
-                            gField.type = "html";
-                            break;
-                        default:
-                            gColumn.columntype = "textbox";
-                            gField.type = "text";
-                            break;
-                    }
-
-                    if (currentRel == f.RelationIndex)
-                    {
-                        gField.type = gColumn.columntype = "preview";
-                        gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
-                        gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
-
-                        Fields.Add(new GridField { name = gColumn.uidfield, type = "text" });
-                        Fields.Add(new GridField { name = gColumn.urlfield, type = "text" });
-
-                        currentRel++;
-                    }
-
-                    Columns.Add(gColumn);
-                    Fields.Add(gField);
-                }
-                else if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
-                {
-                    var gColumn = new GridColumn { text = f.FieldTypeName };
-                    var gField = new GridField { type = "text" };
-                    gField.type = gColumn.columntype = "preview";
-                    gField.name = gColumn.datafield = $"H{f.RelationIndex + 1}_DisplayValue";
-                    gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
-                    gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
-
-                    Columns.Add(gColumn);
-                    Fields.Add(gField);
-                }
-                else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
-                {
-                    var gColumn = new GridColumn { text = f.FieldTypeName };
-                    var gField = new GridField { type = "text" };
-                    gField.type = gColumn.columntype = "preview";
-                    gField.name = gColumn.datafield = $"H{f.RelationIndex + 1}__assetPath";
-                    gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
-                    gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
-
-                    Columns.Add(gColumn);
-                    Fields.Add(gField);
-                }
-
-            }
-
-            return (Columns, Fields);
+            return (await Company.QueryAsync<int>($@"declare @isSubject bit,
+				                        @referenceItemTypeID int
+		                        select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
+		                        from	IntersectType I 
+				                        inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
+		
+		                        if @isSubject = 1
+		                        begin
+			                        select	top 1
+					                        @referenceItemTypeID = A.ID
+			                        from	[Intersect] I
+					                        inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
+		                        end
+		                        else
+		                        begin 
+			                        select	top 1
+					                        @referenceItemTypeID = A.ID
+			                        from	[Intersect] I
+					                        inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
+		                        end
+		                        select @referenceItemTypeID", dbArgs)).FirstOrDefault();
         }
-        private static (List<GridColumn>, List<GridField>) GetComplexRefListFromRelFieldsAndColumns(List<FieldType> fields)
-        {
-            List<GridColumn> Columns = new List<GridColumn>();
-            List<GridField> Fields = new List<GridField>();
-            int currentRel = 0;
-            foreach (var ft in fields.OrderBy(x => x.SortOrder))
-            {
-                var gColumn = new GridColumn { text = ft.FriendlyName, datafield = ft.Name };
-                var gField = new GridField { type = "text", name = ft.Name, apiName = ft.Name };
-
-                switch (ft.Type.ToLowerInvariant())
-                {
-                    case "boolean":
-                        gColumn.columntype = "checkbox";
-                        gField.type = "bool";
-                        break;
-                    case "number":
-                    case "decimal":
-                        gColumn.columntype = "numberinput";
-                        gField.type = "number";
-                        break;
-                    case "date":
-                        gColumn.columntype = "datetimeinput";
-                        gField.type = "date";
-                        break;
-                    case "datetime":
-                        gColumn.columntype = "datetimeinput";
-                        gField.type = "datetime";
-                        break;
-                    case "counter":
-                        gColumn.columntype = "counter";
-                        gField.type = "counter";
-                        break;
-                    case "link":
-                        gColumn.columntype = "link";
-                        gField.type = "link";
-                        break;
-                    case "html":
-                        gColumn.columntype = "textbox";
-                        gField.type = "html";
-                        break;
-                    case "color":
-                        gColumn.columntype = "color";
-                        gField.type = "color";
-                        break;
-                    default:
-                        gColumn.columntype = "textbox";
-                        gField.type = "text";
-                        break;
-                }
-
-                Columns.Add(gColumn);
-                Fields.Add(gField);
-
-            }
-
-            return (Columns, Fields);
-        }
-
 
         /// <summary>
         /// Retrieves a list of possible owners for asset type.
