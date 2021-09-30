@@ -636,11 +636,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
                     if (this.treeNodeArray.length > 0) {
                         this.selectAsset(this.treeNodeArray[0]);
+                    } else {
+                        this.selectAsset(null);
                     }
                     this.buildScoreAllocationThresholds();
                 }
                 else {
                     this.treeNodeArray = [];
+                    this.selectAsset(null);
                 }
 
                 this.isLoading = false;
