@@ -1567,7 +1567,6 @@ namespace d360.web.Controllers.V2
 
                     selects.Add("r.context AS [Context]");
                     selects.Add("r.responsibilitytypename AS [ResponsibilityTypeName]");
-                    selects.Add("r.SecurityAssetName AS [SecurityAssetName]");
 
                     if (definition.ExpandGroupMembership != false)
                     {
@@ -1591,20 +1590,59 @@ namespace d360.web.Controllers.V2
                         orderBySQL = "ORDER BY r.responsibilitytypename ASC,securityassetname ASC";
                     }
 
+                    if (definition.DisplayAssignmentSource)
+                    {
+                        selects.Add("r.SecurityAssetName AS [SecurityAssetName]");
+                    }
+
                     wheres.Add("r.isvisible = 1");
-                    wheres.Add("((r.assetid = @assetId) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
+                    wheres.Add("((r.assetid = A.Id) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
+
+                    if (definition.ResponsibilityType != null)
+                    {
+                        wheres.Add("(r.responsibilitytypeid = @responsibilityTypeId)");
+                        dbArgs.Add("responsibilityTypeId", definition.ResponsibilityType);
+                    }
 
                     var sql = $@"select distinct 
                             {(string.Join(", ", selects))}
                         FROM[dbo].[ResponsibilityDetail] R
                         inner join asset a on a.uid = @assetuid
                         {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
-                        {orderBySQL}";
+                        {orderBySQL}
+                        offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
-                    if (definition.ResponsibilityTypeUid != Guid.Empty)
+
+                    var countSql = $@"select distinct 
+                            count(*)
+                        FROM [dbo].[ResponsibilityDetail] R
+                        inner join asset a on a.uid = @assetuid
+                        {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+                    var reader = await Company.QueryMultipleAsync(
+                            $"{sql}; {countSql}", dbArgs);
+
+                    Values = reader.Read<dynamic>().ToList();
+                    count = reader.Read<int>().FirstOrDefault();
+
+
+                    Columns.Add(new GridColumn { text = "Responsibility", datafield = "ResponsibilityTypeName", columntype = "textbox" });
+                    Columns.Add(new GridColumn { text = "Assigned User/Group", datafield = "ResourceName", columntype = "preview", uidfield = "SecurityAssetUid", urlfield = "ResourceItemUrl" });
+                    if (definition.DisplayAssignmentSource)
                     {
-                        //AND r.responsibilitytypeid = 176
+                        Columns.Add(new GridColumn { text = "Via", datafield = "SecurityAssetName", columntype = "preview", uidfield = "SecurityAssetUid" });
+                        Fields.Add(new GridField { name = "SecurityAssetName", type = "preview" });
+
                     }
+                    Columns.Add(new GridColumn { text = "Context", datafield = "Context", columntype = "textbox" });
+
+
+                    Fields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
+                    Fields.Add(new GridField { name = "ResourceName", type = "preview" });
+                    Fields.Add(new GridField { name = "ResourceItemUrl", type = "string" });
+                    Fields.Add(new GridField { name = "SecurityAssetUid", type = "string" });
+                    Fields.Add(new GridField { name = "Context", type = "html" });
+
 
                 }
 
