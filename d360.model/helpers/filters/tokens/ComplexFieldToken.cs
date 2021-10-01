@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace d360.model.helpers.filters
 {
@@ -22,6 +23,11 @@ namespace d360.model.helpers.filters
             @operator = op;
             this.value = value;
 
+            if (@operator == "ct")
+            {
+                this.value = HttpUtility.UrlDecode(value.ToString());
+            }
+
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
                 this.IsNullValue = true;
@@ -36,7 +42,7 @@ namespace d360.model.helpers.filters
             }
             sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            if (this.fieldType.Type == "Path")
+            if (this.fieldType.Type == "Path" && false)
             {
                 value = value.ToString().ToLower(CultureInfo.InvariantCulture);
                 if (value.ToString().StartsWith("'"))
@@ -120,21 +126,23 @@ namespace d360.model.helpers.filters
             }
             else if (!this.IsNullValue)
             {
-                if (!FilterHelpers.IsValidOperatorForFieldType(this.CurrentFieldType, @operator))
-                {
-                    throw new FilterExpressionParserException($"Operator '{@operator}' is not valid for '{this.CurrentFieldType}' on field {field}");
-                }
-
                 FilterHelpers.ValidateValueForType(this.CurrentFieldType, value);
 
-                var valueValidation = this.fieldValueValidator.CheckValue(this.value, this.field, this.@operator);
-                if (!valueValidation.Status)
+                if (this.@operator != "ct")
                 {
-                    throw new FormatException(valueValidation.Message);
-                }
-                this.value = valueValidation.UpdatedValue;
+                    var valueValidation = this.fieldValueValidator.CheckValue(this.value, this.field, this.@operator);
+                    if (!valueValidation.Status)
+                    {
+                        throw new FormatException(valueValidation.Message);
+                    }
 
-                UpdateTokenValueForType();
+                    this.value = valueValidation.UpdatedValue;
+                }
+                else
+                {
+                    this.value = this.value.ToString().Trim('\'');
+                }
+                UpdateTokenValueForType(complexField: true);
             }
             else
             {

@@ -132,6 +132,10 @@ namespace d360.core.Models
         public string type { get; set; }
 
         public string apiName { get; set; }
+
+        public string defaultFilter { get; set; }
+
+        public int sortOrder { get; set; }
     }
 
 }

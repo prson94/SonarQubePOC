@@ -78,7 +78,7 @@ namespace d360.model.helpers.filters
             }
         }
 
-        protected void UpdateTokenValueForType(bool skipLookupCheck = false)
+        protected void UpdateTokenValueForType(bool skipLookupCheck = false, bool complexField = false)
         {
             if (@operator == "ct" || @operator == "nct")
             {
@@ -99,7 +99,7 @@ namespace d360.model.helpers.filters
 
             string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
 
-            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
+            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()) && !complexField)
             {
                 if (fieldType.LookupObjectID == null)
                 {
@@ -129,6 +129,10 @@ namespace d360.model.helpers.filters
             if (!this.isLookupField && fieldType.Type != DataType.Color.ToString())
             {
                 var fieldSql = GetColumnValueSyntax(fieldType.ID);
+                if (@operator == "ct" && complexField)
+                {
+                    fieldSql = $"CONVERT(NVARCHAR(max),{fieldSql})";
+                }
 
                 if (this.ConvertToNvarChar)
                 {

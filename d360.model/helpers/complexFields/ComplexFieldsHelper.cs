@@ -31,9 +31,9 @@ namespace d360.model.helpers
                 {
                     var index = f.RelationIndex + 1;
 
-                    selects.Add($@" H{index}_A{f.FieldTypeID}.Uid AS [H{index}_{f.FieldTypeID}_Uid],
-                                            H{index}_A{f.FieldTypeID}_DV.DisplayValue AS [H{index}_{f.FieldTypeID}_DisplayValue],
-                                            H{index}_R{f.FieldTypeID}.IntersectTypeUid AS [H{index}_{f.FieldTypeID}_IntersectTypeUid]");
+                    selects.Add($"H{index}_A{f.FieldTypeID}.Uid AS [H{index}_{f.FieldTypeID}_Uid]");
+                    selects.Add($"H{index}_A{f.FieldTypeID}_DV.DisplayValue AS [H{index}_{f.FieldTypeID}_DisplayValue]");
+                    selects.Add($"H{index}_R{f.FieldTypeID}.IntersectTypeUid AS [H{index}_{f.FieldTypeID}_IntersectTypeUid]");
 
                     joins.Add($@"LEFT JOIN graph.AssetEdge H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.$to_id = H{index}.$node_id AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}
                                          LEFT JOIN graph.AssetNode H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.$node_id = H{index}_R{f.FieldTypeID}.$from_id
@@ -126,15 +126,18 @@ namespace d360.model.helpers
             List<GridColumn> Columns = new List<GridColumn>();
             List<GridField> Fields = new List<GridField>();
             int currentRel = 0;
+
             foreach (var f in definition.Fields.Where(x => x.Show == true).OrderBy(x => x.DisplayOrder))
             {
-
+                string fieldName = string.IsNullOrEmpty(f.OverrideDisplayName) ? f.FieldTypeName : f.OverrideDisplayName;
+                int? colWidth = f.Width;
 
                 if (f.FieldTypeName.StartsWith("Related Item."))
                 {
                     Columns.Add(new GridColumn
                     {
-                        text = f.FieldTypeName,
+                        text = fieldName,
+                        columnWidth = colWidth,
                         columntype = "preview",
                         datafield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue",
                         uidfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid",
@@ -143,12 +146,12 @@ namespace d360.model.helpers
 
                     Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid" });
                     Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url" });
-                    Fields.Add(new GridField { type = "preview", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue" });
+                    Fields.Add(new GridField { type = "preview", apiName = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue", defaultFilter = f.Filter, sortOrder = f.SortOrder });
                 }
                 else if (f.FieldTypeID > 0)
                 {
-                    var gColumn = new GridColumn { text = f.FieldTypeName };
-                    var gField = new GridField { type = "text" };
+                    var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
+                    var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder};
                     var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
                     gField.name = gColumn.datafield = fieldAlias;
@@ -208,10 +211,10 @@ namespace d360.model.helpers
                 }
                 else if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
                 {
-                    var gColumn = new GridColumn { text = f.FieldTypeName };
-                    var gField = new GridField { type = "text" };
+                    var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
+                    var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
                     gField.type = gColumn.columntype = "preview";
-                    gField.name = gColumn.datafield = $"H{f.RelationIndex + 1}_DisplayValue";
+                    gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}_DisplayValue";
                     gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
                     gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
 
@@ -220,17 +223,16 @@ namespace d360.model.helpers
                 }
                 else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
                 {
-                    var gColumn = new GridColumn { text = f.FieldTypeName };
-                    var gField = new GridField { type = "text" };
+                    var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
+                    var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
                     gField.type = gColumn.columntype = "preview";
-                    gField.name = gColumn.datafield = $"H{f.RelationIndex + 1}__assetPath";
+                    gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}__assetPath";
                     gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
                     gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
 
                     Columns.Add(gColumn);
                     Fields.Add(gField);
                 }
-
             }
 
             return (Columns, Fields);

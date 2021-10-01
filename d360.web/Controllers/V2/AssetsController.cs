@@ -34,6 +34,7 @@ using System.Data;
 using System.Threading;
 using d360.core.Models;
 using d360.model.helpers;
+using System.Web;
 
 namespace d360.web.Controllers.V2
 {
@@ -1306,6 +1307,7 @@ namespace d360.web.Controllers.V2
                 int pageSize = 10;
                 int pageNum = 1;
                 string simpleFilter = string.Empty;
+                string advancedFilter = string.Empty;
 
                 if (asset == null)
                 {
@@ -1330,7 +1332,6 @@ namespace d360.web.Controllers.V2
                 bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
-                string filters = string.Empty;
 
                 List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
                 FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
@@ -1338,6 +1339,8 @@ namespace d360.web.Controllers.V2
                 List<dynamic> Values = new List<dynamic>();
                 List<GridColumn> Columns = new List<GridColumn>();
                 List<GridField> Fields = new List<GridField>();
+                List<dynamic> scoringInfo = new List<dynamic>();
+
                 int count = 0;
                 var dbArgs = new DynamicParameters();
 
@@ -1391,7 +1394,12 @@ namespace d360.web.Controllers.V2
 
                 if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
                 {
-                    simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
+                    simpleFilter = qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value;
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "filter"))
+                {
+                    advancedFilter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
@@ -1453,56 +1461,18 @@ namespace d360.web.Controllers.V2
                     pageSize = 10000;
                 }
 
-
-
                 dbArgs.Add("resourceId", Company.CurrentResourceID);
                 dbArgs.Add("pageSize", pageSize);
                 dbArgs.Add("pageNum", pageNum);
-                dbArgs.Add("orderBy", orderBy);
-                dbArgs.Add("orderDirection", direction);
                 dbArgs.Add("useUidUrls", returnuseUidUrls);
                 dbArgs.Add("assetUid", assetUid);
 
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
-                    var definition = ftl.ParseComplexLookupDefinition();
-                    var maps = definition.GetFieldMapings();
-                    List<string> selects = new List<string>();
+                    string itemsSQL, countSQL;
+                    (Columns, Fields, Values, count, scoringInfo) =
+                       await GetComplexRelationLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
 
-                    string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out selects);
-                    string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out _, isCountQuery: true);
-
-                    (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
-
-                    if (qparams.Any(x => x.Key.ToLower() == "filter"))
-                    {
-                        var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
-                        var filterDataProvider = new FilterDataProvider(this.Company);
-                        var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
-                        filterExpressionParser.LoadFieldTypes(fields, selects);
-
-                        Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                        filters = filterExpressionParser.Parse(filter, out sqlParams, out _);
-
-                        foreach (var p in sqlParams)
-                        {
-                            dbArgs.Add(p.Key, p.Value);
-                        }
-                    }
-
-                    var itemsSQL = $@"{sql}  
-                           {(string.IsNullOrEmpty(filters) ? "" : "where " + filters)}
-                            order by 1
-                            offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
-
-                    var countSQL = $@"{countSql}
-                            {(string.IsNullOrEmpty(filters) ? "" : "where " + filters)}";
-
-                    var reader = await Company.QueryMultipleAsync(
-                        $"{itemsSQL}; {countSQL}", dbArgs);
-
-                    Values = reader.Read<dynamic>().ToList();
-                    count = reader.Read<int>().FirstOrDefault();
                 }
 
                 if (fieldType.Type == "RefListRelationship")
@@ -1524,17 +1494,15 @@ namespace d360.web.Controllers.V2
                     string itemsSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, false);
                     string countSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, true);
 
-                    if (qparams.Any(x => x.Key.ToLower() == "filter"))
+                    if (!string.IsNullOrEmpty(advancedFilter))
                     {
-                        var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
                         var filterDataProvider = new FilterDataProvider(this.Company);
                         var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
                         filterExpressionParser.LoadFieldTypes(fields, selects);
 
                         Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                        filters = filterExpressionParser.Parse(filter, out sqlParams, out _);
+                        wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
 
-                        wheres.Add(filters);
                         foreach (var p in sqlParams)
                         {
                             dbArgs.Add(p.Key, p.Value);
@@ -1605,17 +1573,15 @@ namespace d360.web.Controllers.V2
                     }
 
 
-                    if (qparams.Any(x => x.Key.ToLower() == "filter"))
+                    if (!string.IsNullOrEmpty(advancedFilter))
                     {
-                        var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
                         var filterDataProvider = new FilterDataProvider(this.Company);
                         var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
                         filterExpressionParser.LoadFieldTypes(fields, selects);
 
                         Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                        filters = filterExpressionParser.Parse(filter, out sqlParams, out _);
+                        wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
 
-                        wheres.Add(filters);
                         foreach (var p in sqlParams)
                         {
                             dbArgs.Add(p.Key, p.Value);
@@ -1663,21 +1629,6 @@ namespace d360.web.Controllers.V2
 
 
                 }
-
-                ////additional data e.g. scoring allocation data
-                List<dynamic> scoringInfo = new List<dynamic>();
-                //try
-                //{
-                //    scoringInfo = reader.Read<dynamic>().ToList();
-                //}
-                //catch (Exception ex)
-                //{
-                //    //if reader is disposed there are no additional data returned
-                //    if (!ex.Message.Contains("has been disposed"))
-                //    {
-                //        throw ex;
-                //    }
-                //}
 
                 foreach (IDictionary<string, object> value in Values)
                 {
@@ -1855,6 +1806,105 @@ namespace d360.web.Controllers.V2
                 });
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknown error."));
             }
+        }
+
+        private async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int, List<dynamic>)> GetComplexRelationLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc")
+        {
+            string orderByClause = "order by 1";
+            var Columns = new List<GridColumn>();
+            var Fields = new List<GridField>();
+
+            var definition = ftl.ParseComplexLookupDefinition();
+            var maps = definition.GetFieldMapings();
+            List<string> selects = new List<string>();
+            List<string> wheres = new List<string>();
+
+            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out selects);
+            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out _, isCountQuery: true);
+
+            (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
+
+            List<string> defaultFilters = new List<string>();
+            List<string> simpleFilters = new List<string>();
+
+            foreach (var field in Fields.Where(x => !string.IsNullOrEmpty(x.defaultFilter)))
+            {
+                defaultFilters.Add($"({field.apiName} ct '{HttpUtility.UrlEncode(field.defaultFilter)}')");
+            }
+
+            if (!string.IsNullOrEmpty(simpleFilter))
+            {
+                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+                {
+                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                }
+            }
+
+            if (defaultFilters.Count > 0)
+            {
+                var defFilters = $"({string.Join(" and ", defaultFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? defFilters : advancedFilter + " and " + defFilters;
+            }
+
+            if (simpleFilters.Count > 0)
+            {
+                var sFilter = $"({string.Join(" or ", simpleFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? sFilter : advancedFilter + " and " + sFilter;
+            }
+
+            if (!string.IsNullOrEmpty(advancedFilter))
+            {
+                var filterDataProvider = new FilterDataProvider(this.Company);
+                var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
+
+                foreach (var p in sqlParams)
+                {
+                    dbArgs.Add(p.Key, p.Value);
+                }
+            }
+
+            var sortFields = Fields.Where(x => x.sortOrder > 0).OrderBy(x => x.sortOrder).ToList();
+            if (string.IsNullOrEmpty(orderBy) && sortFields.Count > 0)
+            {
+                List<int> idxs = new List<int>();
+
+                foreach(var item in sortFields)
+                {
+                    idxs.Add(selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())));
+                }
+
+                orderByClause = "order by " + string.Join(",", idxs);
+            }
+            else
+            {
+                var el = selects.Where(x => x != null && x.ToLowerInvariant().Contains(orderBy.ToLowerInvariant())).FirstOrDefault();
+                var index = selects.IndexOf(el);
+                if (index > 0)
+                {
+                    orderByClause = "order by " + (index + 1);
+                }
+            }
+
+            var itemsSQL = $@"{sql}  
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                            {orderByClause} {direction}
+                            offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+            var countSQL = $@"{countSql}
+                                    {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+
+            var reader = await Company.QueryMultipleAsync(
+                $"{itemsSQL}; {countSQL}", dbArgs);
+
+            var Values = reader.Read<dynamic>().ToList();
+            var count = reader.Read<int>().FirstOrDefault();
+            var scoringInfo = new List<dynamic>();
+
+            return (Columns, Fields, Values, count, scoringInfo);
         }
 
         private async Task<int> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
