@@ -219,4 +219,7 @@
   <data name="CanEditParentRestriction" xml:space="preserve">
     <value>Can Edit Parent can be set only on children asset types.</value>
   </data>
+  <data name="InvalidValueReturnCount" xml:space="preserve">
+    <value>Invalid value for parameter [ReturnCount]</value>
+  </data>
 </root>
