@@ -2,9 +2,11 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
-using d360.core.queue;
+using d360.core.Models;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
+using d360.model.helpers.filters;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -12,8 +14,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace d360.model.DataAccessLayer
 {
@@ -1989,7 +1991,7 @@ from	IntersectType I
                 var definition = ftl.ParseComplexLookupDefinition();
 
                 var mappings = definition.GetFieldMapings();
-                var fieldTypeIds = definition.Fields.Where(x=> !x.FieldTypeName.StartsWith("Related Item.")).Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
+                var fieldTypeIds = definition.Fields.Where(x => !x.FieldTypeName.StartsWith("Related Item.")).Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
                 List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
                 foreach (var f in mappings)
                 {
@@ -2072,5 +2074,338 @@ from	IntersectType I
                 return fields;
             }
         }
+
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int, List<dynamic>)> GetComplexRelationLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc")
+        {
+            string orderByClause = "order by 1";
+            var Columns = new List<GridColumn>();
+            var Fields = new List<GridField>();
+
+            var definition = ftl.ParseComplexLookupDefinition();
+            var maps = definition.GetFieldMapings();
+            List<string> selects = new List<string>();
+            List<string> wheres = new List<string>();
+
+            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out selects);
+            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out _, isCountQuery: true);
+
+            (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
+
+            List<string> defaultFilters = new List<string>();
+            List<string> simpleFilters = new List<string>();
+
+            foreach (var field in Fields.Where(x => !string.IsNullOrEmpty(x.defaultFilter)))
+            {
+                defaultFilters.Add($"({field.apiName} ct '{HttpUtility.UrlEncode(field.defaultFilter)}')");
+            }
+
+            if (defaultFilters.Count > 0)
+            {
+                var defFilters = $"({string.Join(" and ", defaultFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? defFilters : advancedFilter + " and " + defFilters;
+            }
+
+            if (!string.IsNullOrEmpty(simpleFilter))
+            {
+                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+                {
+                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                }
+            }
+
+            if (simpleFilters.Count > 0)
+            {
+                var sFilter = $"({string.Join(" or ", simpleFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? sFilter : advancedFilter + " and " + sFilter;
+            }
+
+            if (!string.IsNullOrEmpty(advancedFilter))
+            {
+                var filterDataProvider = new FilterDataProvider(this.Company);
+                var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
+
+                foreach (var p in sqlParams)
+                {
+                    dbArgs.Add(p.Key, p.Value);
+                }
+            }
+
+            var sortFields = Fields.Where(x => x.sortOrder > 0).OrderBy(x => x.sortOrder).ToList();
+            if (string.IsNullOrEmpty(orderBy) && sortFields.Count > 0)
+            {
+                List<int> idxs = new List<int>();
+
+                foreach (var item in sortFields)
+                {
+                    idxs.Add(selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())));
+                }
+
+                orderByClause = "order by " + string.Join(",", idxs);
+            }
+            else
+            {
+                var el = selects.Where(x => x != null && x.ToLowerInvariant().Contains(orderBy.ToLowerInvariant())).FirstOrDefault();
+                var index = selects.IndexOf(el);
+                if (index > 0)
+                {
+                    orderByClause = "order by " + (index + 1);
+                }
+            }
+
+            var itemsSQL = $@"{sql}  
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                            {orderByClause} {direction}
+                            offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+            var countSQL = $@"{countSql}
+                                    {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+
+            var reader = await Company.QueryMultipleAsync(
+                $"{itemsSQL}; {countSQL}", dbArgs);
+
+            var Values = reader.Read<dynamic>().ToList();
+            var count = reader.Read<int>().FirstOrDefault();
+            var scoringInfo = new List<dynamic>();
+
+            return (Columns, Fields, Values, count, scoringInfo);
+        }
+
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc")
+        {
+            string orderByClause = "order by A.Code";
+            var Columns = new List<GridColumn>();
+            var Fields = new List<GridField>();
+
+            List<string> selects = new List<string>();
+            List<string> joins = new List<string>();
+            List<string> wheres = new List<string>();
+
+            int assetTypeId = await GetAssetTypeIdForRefListField(dbArgs);
+
+            wheres.Add("A.AssetTypeID = @assetTypeId");
+            wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");
+            dbArgs.Add("assetTypeId", assetTypeId);
+
+            string itemsSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, false);
+            string countSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, true);
+            (Columns, Fields) = ComplexFieldsHelper.GetComplexRefListFromRelFieldsAndColumns(fields);
+
+            List<string> simpleFilters = new List<string>();
+            if (!string.IsNullOrEmpty(simpleFilter))
+            {
+                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+                {
+                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                }
+            }
+
+            if (simpleFilters.Count > 0)
+            {
+                var sFilter = $"({string.Join(" or ", simpleFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? sFilter : advancedFilter + " and " + sFilter;
+            }
+
+            if (!string.IsNullOrEmpty(advancedFilter))
+            {
+                var filterDataProvider = new FilterDataProvider(this.Company);
+                var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
+
+                foreach (var p in sqlParams)
+                {
+                    dbArgs.Add(p.Key, p.Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                var el = selects.FirstOrDefault(x => x.ToLowerInvariant().Contains($"[{orderBy.ToLowerInvariant()}]"));
+                var idx = selects.IndexOf(el);
+                if (idx > 0)
+                {
+                    orderByClause = "order by " + (idx + 1);
+                }
+            }
+
+            itemsSQL = $@"{itemsSQL}
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                            {orderByClause} {direction}
+                            offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+
+            countSQL = $@"{countSQL}
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+            var reader = await Company.QueryMultipleAsync(
+                $"{itemsSQL}; {countSQL}", dbArgs);
+
+            var Values = reader.Read<dynamic>().ToList();
+            var count = reader.Read<int>().FirstOrDefault();
+
+            return (Columns, Fields, Values, count);
+        }
+
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetOwnershipLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc")
+        {
+            var definition = ftl.ParseOwnershipLookupDefinition();
+
+            List<GridColumn> Columns = new List<GridColumn>();
+            List<GridField> Fields = new List<GridField>();
+
+            Columns.Add(new GridColumn { text = "Responsibility", datafield = "ResponsibilityTypeName", columntype = "textbox" });
+            Columns.Add(new GridColumn { text = "Assigned User/Group", datafield = "ResourceName", columntype = "preview", uidfield = "SecurityAssetUid", urlfield = "ResourceItemUrl" });
+            if (definition.DisplayAssignmentSource)
+            {
+                Columns.Add(new GridColumn { text = "Via", datafield = "SecurityAssetName", columntype = "preview", uidfield = "SecurityAssetUid" });
+                Fields.Add(new GridField { apiName = "SecurityAssetName", name = "SecurityAssetName", type = "preview" });
+
+            }
+            Columns.Add(new GridColumn { text = "Context", datafield = "Context", columntype = "textbox" });
+
+
+            Fields.Add(new GridField { apiName = "ResponsibilityTypeName", name = "ResponsibilityTypeName", type = "string" });
+            Fields.Add(new GridField { apiName = "ResourceName", name = "ResourceName", type = "preview" });
+            Fields.Add(new GridField { name = "ResourceItemUrl", type = "string" });
+            Fields.Add(new GridField { name = "SecurityAssetUid", type = "string" });
+            Fields.Add(new GridField { apiName = "Context", name = "Context", type = "html" });
+
+
+            List<string> selects = new List<string>();
+            List<string> wheres = new List<string>();
+            string orderByClause = "ORDER BY r.responsibilitytypename ASC,resourcename";
+
+            selects.Add("r.context AS [Context]");
+            selects.Add("r.responsibilitytypename AS [ResponsibilityTypeName]");
+
+            if (definition.ExpandGroupMembership != false)
+            {
+                selects.Add("'/resource/' + Cast(r.resourceid AS VARCHAR) AS [ResourceItemUrl]");
+                selects.Add("r.resourceuid AS [ResourceUid]");
+                selects.Add("resourcename as [ResourceName]");
+            }
+            else
+            {
+                selects.Add(@"CASE securityassetname
+                                                      WHEN resourcename THEN '/resource/' + Cast(r.resourceid AS    VARCHAR)
+                                                       ELSE '/group/' + Cast(securityassetid AS VARCHAR)
+                                       END AS [ResourceItemUrl]");
+
+                selects.Add(@" CASE securityassetname
+                                          WHEN resourcename THEN 'Resource'
+                                          ELSE 'Group'
+                                       END AS [ResourceObject]");
+                selects.Add("securityassetname as [ResourceName]");
+
+                orderByClause = "ORDER BY r.responsibilitytypename ASC,securityassetname";
+            }
+
+            if (definition.DisplayAssignmentSource)
+            {
+                selects.Add("r.SecurityAssetName AS [SecurityAssetName]");
+            }
+
+            wheres.Add("r.isvisible = 1");
+            wheres.Add("((r.assetid = A.Id) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
+
+            if (definition.ResponsibilityType != null)
+            {
+                wheres.Add("(r.responsibilitytypeid = @responsibilityTypeId)");
+                dbArgs.Add("responsibilityTypeId", definition.ResponsibilityType);
+            }
+
+            List<string> simpleFilters = new List<string>();
+            if (!string.IsNullOrEmpty(simpleFilter))
+            {
+                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+                {
+                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                }
+            }
+
+            if (simpleFilters.Count > 0)
+            {
+                var sFilter = $"({string.Join(" or ", simpleFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? sFilter : advancedFilter + " and " + sFilter;
+            }
+
+            if (!string.IsNullOrEmpty(advancedFilter))
+            {
+                var filterDataProvider = new FilterDataProvider(this.Company);
+                var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
+
+                foreach (var p in sqlParams)
+                {
+                    dbArgs.Add(p.Key, p.Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                var el = selects.FirstOrDefault(x => x.ToLowerInvariant().Contains($"[{orderBy.ToLowerInvariant()}]"));
+                var idx = selects.IndexOf(el);
+                if (idx > 0)
+                {
+                    orderByClause = "order by " + (idx + 1);
+                }
+            }
+
+            var sql = $@"select distinct 
+                            {(string.Join(", ", selects))}
+                        FROM[dbo].[ResponsibilityDetail] R
+                        inner join asset a on a.uid = @assetuid
+                        {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                        {orderByClause} {direction}
+                        offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+
+
+            var countSql = $@"select distinct 
+                            count(*)
+                        FROM [dbo].[ResponsibilityDetail] R
+                        inner join asset a on a.uid = @assetuid
+                        {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+            var reader = await Company.QueryMultipleAsync(
+                    $"{sql}; {countSql}", dbArgs);
+
+            var Values = reader.Read<dynamic>().ToList();
+            var count = reader.Read<int>().FirstOrDefault();
+            return (Columns, Fields, Values, count);
+        }
+
+        private async Task<int> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
+        {
+            return (await Company.QueryAsync<int>($@"declare @isSubject bit,
+				                        @referenceItemTypeID int
+		                        select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
+		                        from	IntersectType I 
+				                        inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
+		
+		                        if @isSubject = 1
+		                        begin
+			                        select	top 1
+					                        @referenceItemTypeID = A.ID
+			                        from	[Intersect] I
+					                        inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
+		                        end
+		                        else
+		                        begin 
+			                        select	top 1
+					                        @referenceItemTypeID = A.ID
+			                        from	[Intersect] I
+					                        inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
+		                        end
+		                        select @referenceItemTypeID", dbArgs)).FirstOrDefault();
+        }
+
     }
 }

@@ -301,6 +301,7 @@ namespace d360.model.helpers
             if (isCountQuery)
             {
                 joins.Clear();
+                selects.Clear();
             }
 
             foreach (var ft in fields)

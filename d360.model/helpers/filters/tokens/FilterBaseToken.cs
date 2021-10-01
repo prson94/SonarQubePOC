@@ -166,6 +166,13 @@ namespace d360.model.helpers.filters
                 }
 
                 this.field = "ISNULL(ACJ.ColorJson,'')";
+
+                if (complexField)
+                {
+                    stringBuilder.Append("ISNULL(ACJ.ColorJson,'')");
+                    stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
+                    stringBuilder.Append($"@filter_{parameterIdx}");
+                }
             }
 
             if (sqlParamsRef != null)
