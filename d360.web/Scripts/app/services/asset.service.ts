@@ -114,7 +114,7 @@ export class AssetService extends BaseObservableService {
     public getAssetCountsByAssetType(cs: AssetTypeClass): Observable<AssetCount[]> {
 
         var qString = '';
-        if (cs == AssetTypeClass.BusinessAsset || cs == AssetTypeClass.TechnicalAsset) {
+        if (cs === AssetTypeClass.BusinessAsset || cs === AssetTypeClass.TechnicalAsset) {
             qString = `&returncount=false`;
         }
 
