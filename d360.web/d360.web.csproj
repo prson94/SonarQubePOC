@@ -521,6 +521,7 @@
     <Compile Include="Models\ModelMetadataExtensions.cs" />
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\InternationalizationUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\Documentation.XML">

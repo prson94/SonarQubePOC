@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
+using d360.web.Utilities;
 
 namespace d360.web
 {
@@ -99,12 +100,18 @@ namespace d360.web
 
     public class MvcApplication : HttpApplication
     {
+
+        protected void Application_BeginRequest()
+        {
+            // Set the locale based on the accept language header in the request for only UI resources (strings)
+            InternationalizationUtilities.SetUserLocale(setCulture: false);
+        }
+
         protected void Application_PreSendRequestHeaders(object sender, EventArgs e)
         {
             // GOV-14170 server and x-powered-by still appearing on some files in govern
             Response.Headers.Remove("Server");
             Response.Headers.Remove("X-Powered-By");
-            
 
             /*
              * If Govern is accessed in a frame, cookies will be considered 3rd party cookies by the ancestor page
@@ -181,5 +188,7 @@ namespace d360.web
             // set the app insights telemetry initializer so that the user id can be passed with app insights info
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.TelemetryInitializers.Add(new GovernAppInsightsTelemetryInitializer());
         }
+
+
     }
 }
