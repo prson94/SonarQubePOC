@@ -1149,7 +1149,14 @@ namespace d360.web.Controllers
                     var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
                     if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
-                        responseModel.Items.HasOwnership = true;
+                        if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+                        {
+                            responseModel.Items.HasOwnership = false;
+                        }
+                        else
+                        {
+                            responseModel.Items.HasOwnership = true;
+                        }
                     }
 
                     if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
@@ -1163,7 +1170,14 @@ namespace d360.web.Controllers
                     var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
                     if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
-                        responseModel.Items.HasOwnership = true;
+                        if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+                        {
+                            responseModel.Items.HasOwnership = false;
+                        }
+                        else
+                        {
+                            responseModel.Items.HasOwnership = true;
+                        }
                     }
                     else
                     {
