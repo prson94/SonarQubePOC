@@ -103,7 +103,7 @@ export class DataProfileService extends BaseObservableService {
 
         if (sortField) {
             url += `&_order=${sortField}`;
-            if (sortOrder && sortOrder != SortOrder.None) {
+            if (sortOrder && sortOrder !== SortOrder.None) {
                 url += `&_direction=${sortOrder === SortOrder.Ascending ? "asc" : "desc"}`;
             }
         }
