@@ -129,7 +129,7 @@ namespace d360.model.helpers.filters
             if (!this.isLookupField && fieldType.Type != DataType.Color.ToString())
             {
                 var fieldSql = GetColumnValueSyntax(fieldType.ID);
-                if (@operator == "ct" && complexField)
+                if (@operator == "ct" && complexField && fieldType.Type != "Text")
                 {
                     fieldSql = $"CONVERT(NVARCHAR(max),{fieldSql})";
                 }
