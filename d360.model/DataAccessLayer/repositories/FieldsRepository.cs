@@ -2075,7 +2075,7 @@ from	IntersectType I
             }
         }
 
-        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int, List<dynamic>)> GetComplexRelationLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc")
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int, List<dynamic>)> GetComplexRelationLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
         {
             string orderByClause = "order by 1";
             var Columns = new List<GridColumn>();
@@ -2163,18 +2163,26 @@ from	IntersectType I
             var countSQL = $@"{countSql}
                                     {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
 
+            if (countOnly)
+            {
+                itemsSQL = "";
+            }
 
             var reader = await Company.QueryMultipleAsync(
                 $"{itemsSQL}; {countSQL}", dbArgs);
 
-            var Values = reader.Read<dynamic>().ToList();
+            var Values = new List<dynamic>();
+            if (!countOnly)
+            {
+                Values = reader.Read<dynamic>().ToList();
+            }
             var count = reader.Read<int>().FirstOrDefault();
             var scoringInfo = new List<dynamic>();
 
             return (Columns, Fields, Values, count, scoringInfo);
         }
 
-        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc")
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
         {
             string orderByClause = "order by A.Code";
             var Columns = new List<GridColumn>();
@@ -2242,16 +2250,26 @@ from	IntersectType I
             countSQL = $@"{countSQL}
                             {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
 
+            if (countOnly)
+            {
+                itemsSQL = "";
+            }
+
             var reader = await Company.QueryMultipleAsync(
                 $"{itemsSQL}; {countSQL}", dbArgs);
 
-            var Values = reader.Read<dynamic>().ToList();
+            var Values = new List<dynamic>();
+            if (!countOnly)
+            {
+                Values = reader.Read<dynamic>().ToList();
+            }
+
             var count = reader.Read<int>().FirstOrDefault();
 
             return (Columns, Fields, Values, count);
         }
 
-        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetOwnershipLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc")
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetOwnershipLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
         {
             var definition = ftl.ParseOwnershipLookupDefinition();
 
@@ -2359,7 +2377,7 @@ from	IntersectType I
                 }
             }
 
-            var sql = $@"select distinct 
+            var itemsSQL = $@"select distinct 
                             {(string.Join(", ", selects))}
                         FROM[dbo].[ResponsibilityDetail] R
                         inner join asset a on a.uid = @assetuid
@@ -2368,16 +2386,26 @@ from	IntersectType I
                         offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
 
-            var countSql = $@"select distinct 
+            var countSQL = $@"select distinct 
                             count(*)
                         FROM [dbo].[ResponsibilityDetail] R
                         inner join asset a on a.uid = @assetuid
                         {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
 
-            var reader = await Company.QueryMultipleAsync(
-                    $"{sql}; {countSql}", dbArgs);
+            
+            if (countOnly)
+            {
+                itemsSQL = "";
+            }
 
-            var Values = reader.Read<dynamic>().ToList();
+            var reader = await Company.QueryMultipleAsync(
+                $"{itemsSQL}; {countSQL}", dbArgs);
+
+            var Values = new List<dynamic>();
+            if (!countOnly)
+            {
+                Values = reader.Read<dynamic>().ToList();
+            }
             var count = reader.Read<int>().FirstOrDefault();
             return (Columns, Fields, Values, count);
         }

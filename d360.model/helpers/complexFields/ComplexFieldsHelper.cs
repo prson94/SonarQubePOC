@@ -18,8 +18,16 @@ namespace d360.model.helpers
                 selects.Add($"dbo.GenerateAssetUrl(H{idx}.ID) as [H{idx}_Url]");
                 selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
 
-                joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
-                joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
+                {
+                    joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
+                    joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                }
+                else
+                {
+                    joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$from_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
+                    joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$to_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                }
                 idx++;
             }
 
@@ -103,6 +111,11 @@ namespace d360.model.helpers
                         selects.Add($"h{f.RelationIndex + 1}p.displaypath AS [H{f.RelationIndex + 1}__assetPath]");
                         joins.Add($"LEFT JOIN graph.assetnodedisplaypath H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
                     }
+                    if (f.FieldTypeName.ToLowerInvariant() == "code")
+                    {
+                        selects.Add($"H{f.RelationIndex + 1}_CODE.Code as [H{f.RelationIndex + 1}_Code]");
+                        joins.Add($"left join asset H{f.RelationIndex + 1}_CODE on H{f.RelationIndex + 1}_CODE.uid = H{f.RelationIndex + 1}.Uid");
+                    }
                 }
 
 
@@ -151,7 +164,7 @@ namespace d360.model.helpers
                 else if (f.FieldTypeID > 0)
                 {
                     var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
-                    var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder};
+                    var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
                     var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
                     gField.name = gColumn.datafield = fieldAlias;
@@ -233,6 +246,16 @@ namespace d360.model.helpers
                     Columns.Add(gColumn);
                     Fields.Add(gField);
                 }
+                else if (f.FieldTypeName.ToLowerInvariant() == "code")
+                {
+                    var gColumn = new GridColumn { text = "Code", datafield = $"H{f.RelationIndex + 1}_Code", columntype = "text", };
+                    gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
+                    gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
+
+                    var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text" };
+                    Columns.Add(gColumn);
+                    Fields.Add(gField);
+                }
             }
 
             return (Columns, Fields);
@@ -280,6 +303,7 @@ namespace d360.model.helpers
                         break;
                     case "color":
                         gColumn.columntype = "color";
+                        gColumn.text = "Color";
                         gField.type = "color";
                         break;
                     default:
