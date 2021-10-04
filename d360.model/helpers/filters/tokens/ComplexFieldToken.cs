@@ -42,8 +42,9 @@ namespace d360.model.helpers.filters
             }
             sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            if (this.fieldType.Type == "Path" && false)
+            if (this.fieldType.Type == "Path" && this.fieldType.Name.Contains("__assetPath"))
             {
+                var pathSegmentsLocation = this.fieldType.Name.Replace("__assetPath", "") + "p.Segments";
                 value = value.ToString().ToLower(CultureInfo.InvariantCulture);
                 if (value.ToString().StartsWith("'"))
                 {
@@ -120,7 +121,7 @@ namespace d360.model.helpers.filters
                         }
                         break;
                 }
-                stringBuilder.AppendFormat(formattedSql, "Node.Segments", pName);
+                stringBuilder.AppendFormat(formattedSql, pathSegmentsLocation, pName);
 
                 sqlParamsRef.Add(pName, value);
             }
