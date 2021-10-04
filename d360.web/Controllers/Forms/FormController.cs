@@ -741,6 +741,7 @@ namespace d360.web.Controllers
                 EnableOrganizations = settings.GetValue<bool>(Setting.EnableOrganizations),
                 EnableShoppingCart = settings.GetValue<bool>(Setting.EnableShoppingCart),
                 DefaultRoute = settings.GetValue(Setting.DefaultRoute),
+                EnableSagacity = settings.GetValue<bool>(Setting.EnableSagacity),
                 EnableSearchExactMatch = settings.GetValue<bool>(Setting.SearchExactMatch),
                 HideData3SixtyUsers = settings.GetValue<bool>(Setting.HideData3SixtyUsers),
                 ShowAllUsersAPIKey = settings.GetValue<bool>(Setting.ShowAllUsersAPIKey),
@@ -886,7 +887,6 @@ namespace d360.web.Controllers
                 #region Global Fields
 
                 settingActionValue(Setting.DisableIssueManagement, formModel.DisableIssueManagement.ToString().ToLower());
-                settingActionValue(Setting.EnableShoppingCart, formModel.EnableShoppingCart.ToString().ToLower());
                 settingActionValue(Setting.DefaultRoute, (formModel.DefaultRoute ?? "").Trim());
                 settingActionValue(Setting.SearchExactMatch, formModel.EnableSearchExactMatch.ToString().ToLower());
                 settingActionValue(Setting.HideData3SixtyUsers, formModel.HideData3SixtyUsers.ToString().ToLower());

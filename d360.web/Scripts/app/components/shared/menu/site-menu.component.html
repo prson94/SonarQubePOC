@@ -2,7 +2,6 @@
     <div [ngClass]="isMenuActive ? 'menu-active-overlay': ''">
         <ul #menu
             (scroll)="onElementScroll($event)"
-            [style.margin-top]="(hideHeader == true ? '0' : null)"
             [class.left-side-nav-open]="menuOpen"
             [class.left-side-nav]='!menuOpen'>
             <d3s-site-menu-category [expanded]="menuOpen"

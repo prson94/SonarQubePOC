@@ -138,7 +138,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("WorkflowTypeUid", "Workflow Type unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by VersionNumber.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are UpdatedOn, CreatedOn, State, and VersionNumber. By default the results are ordered by VersionNumber.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionsApiViewModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "Action Type / Asset Type / Relationship Type / Workfflow Type  not found based on Uid provided.", typeof(ErrorResponse)),

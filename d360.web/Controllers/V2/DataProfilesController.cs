@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using SpreadsheetLight;
+using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -562,6 +563,11 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
+            catch (FilterExpressionParserException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage)).ConfigureAwait(false);
+            }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
@@ -695,7 +701,7 @@ namespace d360.web.Controllers.V2
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
-            }            
+            }
         }
 
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
@@ -745,8 +751,8 @@ namespace d360.web.Controllers.V2
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record does not exist for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
                 }
-                
-                if(model.topK !=null && model.topK.Any(x=> x.Trim() == string.Empty))
+
+                if (model.topK !=null && model.topK.Any(x=> x.Trim() == string.Empty))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in topK cannot be Empty strings");
                 }

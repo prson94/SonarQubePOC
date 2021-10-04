@@ -430,7 +430,12 @@ from    [queue].[Task] T
                                                                         queue.CreateMessage(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
                                                                         break;
                                                                     case "SearchIndex":
-                                                                        queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c.CompanyID });
+                                                                        ReindexModel model = new ReindexModel { CompanyID = c.CompanyID };
+                                                                        if (!string.IsNullOrEmpty(q.Object) && SearchIndexer.IsIndexable(q.Object))
+                                                                        {
+                                                                            model.Category = q.Object;
+                                                                        }
+                                                                        queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
                                                                         break;
                                                                 }
                                                             }

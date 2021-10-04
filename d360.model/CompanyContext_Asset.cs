@@ -100,6 +100,17 @@ namespace d360.model
 
             return sqlDataType;
         }
+
+        public void SynchronizeExecutionAssetsWithGraph(Guid executionUid)
+        {
+            Connection.Execute("exec[graph].[SynchronizeAssetExecution] @executionUid", new { executionUid });
+        }
+
+        public void SynchronizeExecutionRelationshipWithGraph(Guid executionUid)
+        {
+            Connection.Execute("[graph].[SynchronizeRelationshipExecution] @executionUid", new { executionUid });
+        }
+
         #endregion
     }
 }

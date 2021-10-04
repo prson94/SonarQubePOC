@@ -74,7 +74,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.isFiltersReady = false;
 
-
         this.sub = this
             .route
             .params
@@ -93,7 +92,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 
                     //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
-                    if (["PolicyType", "TaxonomyType", "Report", "ResponsibilityType", "ReferenceItemType"].indexOf(this.objectType) > -1) {
+                    if (["PolicyType", "TaxonomyType", "Report", "IntersectType", "ResponsibilityType", "ReferenceItemType"].indexOf(this.objectType) > -1) {
                         reloadNav = false;
                     }
 
@@ -124,22 +123,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             .getAuditData(this.uid, this.getParams())
             .subscribe(result => {
                 this.isLoading = false;
-                result.items.forEach((object) => {
-                    if ((object.actionObject == "ArtifactType" && object.class == 1) || (object.actionObject == "Artifact" && object.class == 1)) {
-                        object.actionObject = "Business Asset";
-                        if (object.actionDescription.includes("Artifact")) {
-                            object.actionDescription = object.actionDescription.replace("ArtifactType", "Business Asset");
-                            object.actionDescription = object.actionDescription.replace("Artifact", "Business Asset");
-                        }
-                    }
-                    if ((object.actionObject == "ArtifactType" && object.class == 8) || (object.actionObject == "Artifact" && object.class == 8)) {
-                        object.actionObject = "Technical Asset";
-                        if (object.actionDescription.includes("Artifact")) {
-                            object.actionDescription = object.actionDescription.replace("ArtifactType", "Technical Asset");
-                            object.actionDescription = object.actionDescription.replace("Artifact", "Technical Asset");
-                        }
-                    }
-                });
                 this.audits = <Audit[]>result.items;
                 this.totalRecords = result.total;
                 this.changeDetectorRef.markForCheck();

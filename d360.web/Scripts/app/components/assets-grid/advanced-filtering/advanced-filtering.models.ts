@@ -44,6 +44,7 @@ export class AdvancedFilterFieldCondition {
     operator: Operator;
     value: any;
     value2: any;
+    exact: boolean = false;
 
     friendlyFieldName: string = "";
     markForDeletion: boolean = false;
@@ -180,6 +181,11 @@ export class AdvancedFilterFieldCondition {
         if (this.value2 && this.operator.toString() === "Between") {
             str += " and " + this.getTypedValue2();
         }
+
+        if (this.exact) {
+            str += " (match exact phrase)";
+        }
+
         return str;
     }
 

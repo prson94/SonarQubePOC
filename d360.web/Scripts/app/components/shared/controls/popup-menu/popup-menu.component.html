@@ -5,7 +5,7 @@
 </div>
 
 <ng-template #menuItemsTemplate let-items let-class="class">
-    <ul class="menu-items {{(hasCheckboxes(items) || hasIcons(items) ? 'no-left-padding' : 'default-padding')}} {{class}} {{(openToLeftSide ? ' open-left' : 'open-right')}} {{(openToBottomSide ? 'open-bottom' : 'open-top')}}">
+    <ul class="menu-items {{(hasCheckboxes(items) || hasIcons(items) || hasSelectedboxes(items) ? 'no-left-padding' : 'default-padding')}} {{class}} {{(openToLeftSide ? ' open-left' : 'open-right')}} {{(openToBottomSide ? 'open-bottom' : 'open-top')}}">
         <li *ngFor="let item of items"
             pTooltip="{{item.tooltip}}" 
             tooltipPosition="top" 
@@ -17,6 +17,9 @@
             <div class="item-container">
                 <div *ngIf="hasCheckboxes(items)" class="part checkbox-part">
                     <i *ngIf="item.isChecked" class="fa fa-check"></i>
+                </div>
+                <div *ngIf="hasSelectedboxes(items)" class="part checkbox-part">
+                    <i *ngIf="item.isSelected" class="fa fa-check"></i>
                 </div>
                 <div class="part icon-part" *ngIf="hasIcons(items)"><i class="menu-icon fa {{item.icon}}"></i></div>
                 <div class="part title-part" [innerHtml]="item.title"></div>

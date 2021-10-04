@@ -1,4 +1,4 @@
-import { Input, Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Input, Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { TagType, TagApiModel } from '../../../models/tag.model';
 import { TagService } from '../../../services/tag.service';
@@ -6,6 +6,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { BaseComponent } from '../base.component';
+import { StateService } from '../../../services/state.service';
 
 declare var CurrentResourceID;
 
@@ -17,7 +18,7 @@ declare var CurrentResourceID;
     host: { '(window:resize)': 'manageWidth()' }
 })
 
-export class TagView extends BaseComponent implements OnInit {
+export class TagView extends BaseComponent implements OnInit, OnDestroy {
     public theDeleteCallback: Function;
     @ViewChild('tagInput', { static: false }) tagInput: ElementRef;
     @Input() data: any;
@@ -44,12 +45,14 @@ export class TagView extends BaseComponent implements OnInit {
     @ViewChild("container", { static: false }) container: ElementRef;
     error: any;
     timeouthandle: any;
+    resizeSub: any;
 
     private tagTooltip: TagType;
     private isTooltipLoaded: boolean = false;
 
     constructor(private router: Router,
         private tagService: TagService,
+        private stateService: StateService,
         private messagesService: MessagesObservableService,
         private ref: ChangeDetectorRef,
         private auth: AuthenticationService) {
@@ -83,6 +86,16 @@ export class TagView extends BaseComponent implements OnInit {
                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));                               
             }
             this.selected = this.tags;
+        }
+
+        this.resizeSub = this.stateService.recalculateTagSize$.subscribe(() => {
+            setTimeout(() => this.manageWidth(), 200);
+        });
+    }
+
+    ngOnDestroy() {
+        if (this.resizeSub) {
+            this.resizeSub.unsubscribe();
         }
     }
 
@@ -374,7 +387,11 @@ export class TagView extends BaseComponent implements OnInit {
         this.isTooltipLoaded = false;
         this.tagService.getTagTooltip(tag.uid, this.assetUID, tag.Value)
             .subscribe(t => {
-                this.tagTooltip = t[0];
+                if (t.length > 0) {
+                    this.tagTooltip = t[0];
+                } else {
+                    this.tagTooltip = new TagType();
+                }
 
                 this.tags.forEach(x => {
                     if (x.Value == tag.Value) {

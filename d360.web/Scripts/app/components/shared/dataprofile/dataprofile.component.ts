@@ -10,7 +10,7 @@ import * as Highcharts from 'highcharts';
     styleUrls: ['dataprofile.less']
 })
 
-export class DataProfileComponent extends BaseComponent implements OnInit, OnChanges, AfterViewInit {
+export class DataProfileComponent extends BaseComponent implements OnInit, AfterViewInit {
     @Input() dataProfile: any;
     @Input() isModal: boolean = false;
     @Output() linkClicked = new EventEmitter();
@@ -62,17 +62,12 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
 
     ngOnInit() { 
         this.initialize();
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes['dataProfile'] && !changes['dataProfile'].firstChange) {
-            this.initialize();
-            setTimeout(() => this.renderSampleDistributionChart(), 10);
-        }
-    }
+    }    
 
     ngAfterViewInit() {
+    if (!this.sampleDistributionChart) {
         setTimeout(() => this.renderSampleDistributionChart(), 10);
+        }            
     }
 
     initialize() {

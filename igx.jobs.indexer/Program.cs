@@ -133,23 +133,22 @@ namespace igx.jobs.indexer
             }
             else if (!string.IsNullOrEmpty(reindex.Category))
             {
+                if (reindex.Category == "Intersect" || reindex.Category == "Synonym")
+                {
+                    //Class "Predicate" is overloaded to be used for synonyms and intersects
+                    reindex.Category = AssetTypeClass.Predicate.ToString();
+                }
                 if (SearchIndexer.IsIndexable(reindex.Category) || reindex.Category == AssetTypeClass.Predicate.ToString())
                 {
-                    string cat = reindex.Category == AssetTypeClass.Predicate.ToString() ? "Synonym" : reindex.Category;
-                    LogReindexStart(cat, reindex.CompanyID);
+                    string categoryLabel = reindex.Category == AssetTypeClass.Predicate.ToString() ? "Synonym" : reindex.Category;
+                    LogReindexStart(categoryLabel, reindex.CompanyID);
 
                     AssetTypeClassInfo info = AssetTypeClassExtensions.GetAsList(AssetTypeClass.Generic).Where(c => c.Value == reindex.Category).FirstOrDefault();
                     if (info != null)
                     {
                         indexer.IndexAssetClass(info.ID);
                     }
-                    else if (reindex.Category == "Intersect" || reindex.Category == "Synonym")
-                    {
-                        //Synonyms and Intersects are the same category
-                        indexer.IndexObjectType("Intersect", true);
-                        indexer.IndexObjectType("Synonym", false);
-                    }
-                    LogReindexEnd(reindex.Category, reindex.CompanyID);
+                    LogReindexEnd(categoryLabel, reindex.CompanyID);
 
                 }
             }

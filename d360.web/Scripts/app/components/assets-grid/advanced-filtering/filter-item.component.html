@@ -55,6 +55,19 @@
                 <ng-container *ngIf="doesNeedValue">
                     <input *ngIf="currentInputType === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required maxlength="{{maxNumberOfFilterCharacters}}" />
 
+                    <ng-container *ngIf="currentInputType === 'text' && isGlobalSearch">
+                        <div class="value-separator">
+                            <p-checkbox igCheckbox [(ngModel)]="condition.exact" binary="true" label="Match exact phrase"></p-checkbox>
+                            <div class="exact-tooltip"
+                                 pTooltip="This is used for matching exact phrased. E.g. a &quot;bank account&quot; search with this method will only return results like &quot;bank account&quot;, &quot;basic bank account&quot;. It won't return results like &quot;bank savings account&quot; or &quot;account, bank&quot;."
+                                 [escape]="false"
+                                 tooltipPosition="top"
+                                 tooltipStyleClass="ig-tooltip">
+                                <i class="fa fa-info-circle"></i>
+                            </div>
+                        </div>
+                    </ng-container>
+
                     <ng-container *ngIf="currentInputType === 'number'">
                         <ig-number-input igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" #condval="ngModel"></ig-number-input>
                         <div *ngIf="condval.invalid && (condval.dirty || condval.touched)">

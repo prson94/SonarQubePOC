@@ -6,7 +6,7 @@
            tabindex=-1>
     <div class="modal-with-side-panel">
         <div class="modal-dialog-main-panel">
-        <div class="content match-detection-dialog condensed-table">
+        <div class="content condensed-table">
             <div class="modal-edit-form">
                 <div class="title">
                     Match Detection
@@ -66,9 +66,6 @@
                              (selectionChange)="selectMatch($event)">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th style="width: 30px">
-                                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                                </th>
                                 <th>
                                     Asset Path
                                 </th>
@@ -80,9 +77,6 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td style="width: 30px">
-                                    <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                </td>
                                 <td>
                                     <span class="item-value" [innerHTML]="formatPath(item.path)"></span>
                                 </td>
@@ -161,9 +155,6 @@
                              (selectionChange)="selectMatch($event)">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th style="width: 30px">
-                                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                                </th>
                                 <th>
                                     Asset Path
                                 </th>
@@ -175,9 +166,6 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td style="width: 30px">
-                                    <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                </td>
                                 <td>
                                     <span class="item-value" [innerHTML]="item.path"></span>
                                 </td>
@@ -218,6 +206,8 @@
         </div>       
         <div class="side-panel" *ngIf="!isLoading">
             <side-panel (expandedChange)="sidePanelOpen=$event"
+                        [expanded]="sidePanelOpen"
+                        [selectedPanel]="sidePanelTab"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [selectedItem]="selection"
                         [panelApplies]="panelApplies"

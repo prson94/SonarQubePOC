@@ -293,6 +293,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             options.push({ label: "contains", value: "Equals" });
             options.push({ label: "does not contain", value: "NotEquals" });
             return options;
+        } else if (this.isGlobalSearch) {
+            options.push({ label: "contains", value: "Contains" });
+            options.push({ label: "does not contain", value: "NotContains" });
+            return options;
         }
 
         if (this.currentField.IsRelationship) {
@@ -1296,6 +1300,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     get isComplexField() {
         return this.loadIdentifier.startsWith("ComplexField");
+    }
+
+    get isGlobalSearch() {
+        return this.loadIdentifier.startsWith("GlobalSearch");
     }
 
     get complexFieldDefinition(): ComplexFieldDefinition {
