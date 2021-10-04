@@ -66,11 +66,13 @@
                              (selectionChange)="selectMatch($event)">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>
+                                <th [pSortableColumn]="'Path'">
                                     Asset Path
+                                    <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
                                 </th>
-                                <th>
+                                <th [pSortableColumn]="'Tags'">
                                     Tags
+                                    <d3s-sortIcon [field]="'Tags'"></d3s-sortIcon>
                                 </th>
                                 <th width="50"></th>
                             </tr>
@@ -155,11 +157,13 @@
                              (selectionChange)="selectMatch($event)">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>
+                                <th [pSortableColumn]="'Path'">
                                     Asset Path
+                                    <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
                                 </th>
-                                <th>
+                                <th [pSortableColumn]="'Tags'">
                                     Tags
+                                    <d3s-sortIcon [field]="'Tags'"></d3s-sortIcon>
                                 </th>
                                 <th width="50"></th>
                             </tr>

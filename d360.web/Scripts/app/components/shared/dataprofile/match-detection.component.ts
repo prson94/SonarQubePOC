@@ -64,6 +64,11 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     name: string;
 
+    duplicateSortField: string;
+    duplicateSortOrder: number;
+    similarSortField: string;
+    similarSortOrder: number;
+
     menuItems = [
         {
             title: 'Open'
@@ -88,7 +93,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             Category: "",            
             RemovePopulatedOperator: true
         }
-    ]
+    ]        
 
     constructor(
         private assetService: AssetService,
@@ -137,7 +142,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
         this.duplicateRowsPerPage = e.rows;
         this.duplicateCurrentPageNumber = (e.first / e.rows) + 1;
-
+        this.duplicateSortField = e.sortField;
+        this.duplicateSortOrder = e.sortOrder;
         localStorage.setItem("duplicate-rows", e.rows.toString());
         this.getData('data');
         
@@ -147,7 +153,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
         this.similarRowsPerPage = e.rows;
         this.similarCurrentPageNumber = (e.first / e.rows) + 1;
-
+        this.similarSortField = e.sortField;
+        this.similarSortOrder = e.sortOrder;
         localStorage.setItem("similar-rows", e.rows.toString());
 
         this.getData('similar');
@@ -184,7 +191,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     getData(type: string) {        
         if (type.toLowerCase() === "data") {
             this.duplicatesDataLoading = true;
-            this.dataProfileService.getMatchesByMatchType(this.assetUid, "Data", this.duplicateCurrentPageNumber, this.duplicateRowsPerPage, this.duplicatesSimpleFilter, this.duplicateAdvancedFilter)
+            this.dataProfileService.getMatchesByMatchType(this.assetUid, "Data", this.duplicateCurrentPageNumber, this.duplicateRowsPerPage, this.duplicatesSimpleFilter, this.duplicateAdvancedFilter, this.duplicateSortField, this.duplicateSortOrder)
                 .subscribe((res) => {
                     this.duplicatesDataTotalCount = +res.total;
                     this.duplicatesData = res.items;                    
@@ -193,8 +200,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                     this.cdRef.markForCheck();
                 });            
         } else if (type.toLowerCase() === "similar") {
-            this.similarDataLoading = true;
-            this.dataProfileService.getMatchesByMatchType(this.assetUid, "Structure", this.similarCurrentPageNumber, this.similarRowsPerPage, this.similarSimpleFilter, this.similarAdvancedFilter)
+            this.similarDataLoading = true;            
+            this.dataProfileService.getMatchesByMatchType(this.assetUid, "Structure", this.similarCurrentPageNumber, this.similarRowsPerPage, this.similarSimpleFilter, this.similarAdvancedFilter, this.similarSortField, this.similarSortOrder)
                 .subscribe((res) => {
                     this.similarData = res.items;
                     this.similarDataTotalCount = +res.total;                    
@@ -241,25 +248,28 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         let selectedAssets = event;
         this.multipleItemsSelected = false;
         if (selectedAssets && selectedAssets.length == 1) {
-            this.selection = selectedAssets[0];
-            this.sidePanelLoading = true;
-            this.dataProfileService.getDataProfiles(this.selection.uid).subscribe(
-                (r) => {
-                    if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
-                        this.dataProfile = r.items[0];
+            //only reload side panel if selection has changed. 
+            if (this.selection !== selectedAssets[0]) {
+                this.selection = selectedAssets[0];
+                this.sidePanelLoading = true;
+                this.dataProfileService.getDataProfiles(this.selection.uid).subscribe(
+                    (r) => {
+                        if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                            this.dataProfile = r.items[0];
 
-                        forkJoin(
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                        ).subscribe((res) => {
-                            this.dataProfile['matches'] = {
-                                structure: res[0],
-                                data: res[1]
-                            };
-                        });
-                    }
-                    this.sidePanelLoading = false;
-                });
+                            forkJoin(
+                                this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                                this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                            ).subscribe((res) => {
+                                this.dataProfile['matches'] = {
+                                    structure: res[0],
+                                    data: res[1]
+                                };
+                            });
+                        }
+                            this.sidePanelLoading = false;
+                    });
+            }                                    
         } else {
             this.selection = null;
             if (selectedAssets && selectedAssets.length > 1) {
@@ -289,15 +299,15 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }   
 
     private setSelectedMatch() {
-        if (this.matchType === "data") {
-            this.duplicatesSelection = this.duplicatesData.slice(0, 1);
-            this.selectMatch(this.duplicatesSelection);
-            this.similarSelection = null;
+        if (this.matchType === "data") {            
+                this.duplicatesSelection = this.duplicatesData.slice(0, 1);
+                this.selectMatch(this.duplicatesSelection);
+                this.similarSelection = null;
         }
-        if (this.matchType === "similar") {
-            this.similarSelection = this.similarData.slice(0, 1);
-            this.selectMatch(this.similarSelection);
-            this.duplicatesSelection = null;
+        if (this.matchType === "similar") {            
+                this.similarSelection = this.similarData.slice(0, 1);
+                this.selectMatch(this.similarSelection);
+                this.duplicatesSelection = null;
         }
     }
 

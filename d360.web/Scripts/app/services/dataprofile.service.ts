@@ -10,6 +10,7 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 
 import * as _ from 'lodash';
+import { SortOrder } from '../models/enums.model';
 
 @Injectable()
 export class DataProfileService extends BaseObservableService {
@@ -86,7 +87,7 @@ export class DataProfileService extends BaseObservableService {
             });
     }
 
-    public getMatchesByMatchType(assetUid: string, matchType: string, pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = ""): Observable<any> {
+    public getMatchesByMatchType(assetUid: string, matchType: string, pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", sortField: string = "", sortOrder: number = SortOrder.Ascending): Observable<any> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -98,6 +99,13 @@ export class DataProfileService extends BaseObservableService {
 
         if (advancedFilter) {
             url += `&_filter=${advancedFilter}`;
+        }
+
+        if (sortField) {
+            url += `&_order=${sortField}`;
+            if (sortOrder && sortOrder != SortOrder.None) {
+                url += `&_direction=${sortOrder === SortOrder.Ascending ? "asc" : "desc"}`;
+            }
         }
         return this
             .http
