@@ -108,6 +108,7 @@
     <Compile Include="FilterParserTests\FieldValidatorsTests.cs" />
     <Compile Include="FieldTests\ShowInColumnTests.cs" />
     <Compile Include="FilterParserTests\RuleResultTests.cs" />
+    <Compile Include="HelperTests\ComplexFieldsHelper.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
     <Compile Include="FilterParserTests\AssetsGridFilteringTests.cs" />
