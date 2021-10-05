@@ -2635,7 +2635,10 @@ namespace d360.model
                     }
 
                     //get any field values for this issue
-                    var fieldTypes = FieldTypes.Where(x => x.Object == "IssueType" && x.ObjectID == issue.IssueTypeID);
+                    var fieldTypes = FieldTypes
+                        .Where(x => x.Object == "IssueType" && x.ObjectID == issue.IssueTypeID)
+                        .OrderBy(x => x.ColumnOrder)
+                        .ThenBy(x => x.FriendlyName);
 
                     var fieldValues = Fields.Where(x => x.ObjectType == "Issue" && x.ObjectID == issue.ID);
 
