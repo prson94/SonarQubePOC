@@ -19,6 +19,7 @@ using d360.extensions;
 using Newtonsoft.Json;
 using Resources;
 using d360.core.enums;
+using static d360.core.entities.Resource;
 
 namespace d360.web.Controllers.V2
 {
@@ -471,5 +472,390 @@ namespace d360.web.Controllers.V2
             }
         }
         #endregion
+
+        /// <summary>
+        /// Gets bulk load info.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("bulkload"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets bulk load info.", typeof(APIExecutionBulkLoadModel)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, Requestor. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+        
+        public async Task<IHttpActionResult> GetLoads()
+        {
+            ResourceApiViewModel model = new ResourceApiViewModel();
+            var queryParams = Request.GetQueryNameValuePairs();
+            int _pageSize = 200;
+            int _pageNum = 1;
+            string _order = "L.DateStarted";
+            string _direction = "desc";
+            string orderBySql = "";
+            string offsetSql = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+            }
+
+            #region "Filter Condition"
+            if (queryParams.Any(x => x.Key == "_pageSize"))
+            {
+                int _temppageSize;
+                if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value, out _temppageSize))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageSize value provided.");
+                }
+                _pageSize = _temppageSize;
+            }
+
+            if (queryParams.Any(x => x.Key == "_pageNum"))
+            {
+                int _temppageNum;
+                if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value, out _temppageNum))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageNum value provided.");
+                }
+                _pageNum = _temppageNum;
+            }
+            if (queryParams.Any(x => x.Key == "_direction"))
+            {
+                string[] allowedDirections = new string[] { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid direction passed in the request.");
+                }
+                _direction = allowedDirections.Contains(order.Trim().ToLower()) ? order : "desc";
+            }
+
+            if (!queryParams.Any(p => p.Key == "_order"))
+            {
+                orderBySql = $" order by L.DateStarted {_direction} ";
+            }
+            else
+            {
+
+                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                string[] validOrderByFields = { "datestarted", "datecompleted", "action", "assettypename",
+                                                "requestor" };
+                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
+                orderBySql = $" order by {orderByCol} {_direction} ";
+            }
+            #endregion
+
+
+            offsetSql = $" offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only ";
+            string LoadDetailBaseSql = @"select	
+            case L.[Action]
+			when 'M' then 'Users/Groups'
+            when 'P' then 'Promotion'
+			when 'R' then 'Relation'
+			when 'U' then 'Unrelation'
+            when 'L' then 'Lineage'
+            when 'O' then 'Responsibilities'
+            when 'T' then 'Lineage : Technical'
+            when 'S' then 'Synonyms'
+			when 'W' then 'Promotion (via Propose Workflow)'
+		end as [Action],
+        case when L.Action in ('P','R','U') and L.[File] is null then
+            case when (select count(*) from LoadItem where LoadID = L.ID) = (select count(*) from LoadItem where LoadID = L.ID and Status = 0) then
+                L.DateCompleted
+            when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
+                null
+            when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
+                EE.CompletedOn
+            else
+                EA.CompletedOn      
+            end
+        else 
+            L.DateCompleted 
+        end as DateCompleted,
+        coalesce(C_D.[Name], 'Default') as AssetTypeName,
+        C_D.[uid] as AssetTypeUid,
+        L.DateStarted as DateStarted,
+        coalesce(EA.ErrorMessage, '' ) + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
+        S.C as Success,
+        E.C as Error,
+		T.C as Total,
+        R.FirstName + ' ' + R.LastName as RequestorName,
+        R.uid as RequestorUid
+from	[Load] L
+        left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
+        left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
+		left join (
+			select [Name],[uid], [Object] ,ObjectID from AssetType
+			union all
+			select ITN.[Name] as [Name], [uid] as uid, 'IntersectType' as [Object], ID as ObjectID from IntersectType IT
+			cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
+
+		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
+		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
+        {0} " + orderBySql + offsetSql;
+
+            var countSql = @"
+                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+                cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
+            var results = Company.Query<LoadDetailV2>(string.Format(LoadDetailBaseSql, countSql));
+            model.pageNum = _pageNum;
+            model.pageSize = _pageSize;
+            model.items = results;
+            model.total = results.Count();
+
+            return await Task.FromResult<IHttpActionResult>(
+                        ResponseMessage(
+                            Request.CreateResponse(
+                                HttpStatusCode.OK,model
+                            )
+                        )
+                    );
+        }
+
+        /// <summary>
+        /// Gets bulk load items details.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("bulkload/items/{id:int}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets bulk load items details.", typeof(APIExecutionBulkLoadItemDetailsModel)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, Requestor. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+
+        public async Task<IHttpActionResult> GetLoadItemDetails(int id)
+        {
+            ResourceApiViewModel model = new ResourceApiViewModel();
+            var queryParams = Request.GetQueryNameValuePairs();
+            int _pageSize = 200;
+            int _pageNum = 1;
+            string _order = "RowIndex";
+            string _direction = "desc";
+            string orderBySql = "";
+            string offsetSql = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+            }
+
+            #region "Filter Condition"
+            if (queryParams.Any(x => x.Key == "_pageSize"))
+            {
+                int _temppageSize;
+                if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value, out _temppageSize))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageSize value provided.");
+                }
+                _pageSize = _temppageSize;
+            }
+
+            if (queryParams.Any(x => x.Key == "_pageNum"))
+            {
+                int _temppageNum;
+                if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value, out _temppageNum))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageNum value provided.");
+                }
+                _pageNum = _temppageNum;
+            }
+            if (queryParams.Any(x => x.Key == "_direction"))
+            {
+                string[] allowedDirections = new string[] { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid direction passed in the request.");
+                }
+                _direction = allowedDirections.Contains(order.Trim().ToLower()) ? order : "desc";
+            }
+
+            if (!queryParams.Any(p => p.Key == "_order"))
+            {
+                orderBySql = $" order by RowIndex {_direction} ";
+            }
+            else
+            {
+
+                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                string[] validOrderByFields = { "datestarted", "datecompleted", "action", "assettypename",
+                                                "requestor" };
+                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
+                orderBySql = $" order by {orderByCol} {_direction} ";
+            }
+            #endregion
+
+
+            var load = Company.GetById<Load>(id);
+            var useExecutionTable = false;
+
+            if ((load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
+                useExecutionTable = true;
+
+            var columns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
+            var sql = "";
+            var sqlColumns = "";
+            var sqlTables = "";
+            offsetSql = $" offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only ";
+
+            if (useExecutionTable)
+            {
+                switch (load.Action)
+                {
+                    case "P":
+                        AssetType assetType = Company.Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
+                        core.SystemObjects type = core.SystemObjects.Load;
+                        if (Enum.TryParse(assetType.Object, out core.SystemObjects pObject))
+                        {
+                            type = pObject;
+                        }
+                        AssetType parentAssetType = assetType == null ? null : Company.GetParentType(assetType.ID, type);
+
+                        sqlColumns = $"select I.RowIndex as RowIndex\n";
+                        sqlTables = @"
+                            from (
+		                        select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
+		                        union all
+		                        select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
+	                         ) EA
+                             left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+                        columns.ForEach(c =>
+                        {
+                            var i = c.ColumnIndex;
+                            if (parentAssetType != null && c.Name == parentAssetType.Name)
+                            {
+                                sqlColumns += $",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}\n";
+                                sqlTables += $" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID\n";
+                            }
+                            else
+                            {
+                                sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
+                                sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+                                sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+                            }
+
+                        });
+                        sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
+
+                        sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
+                        sql += $"union all\n";
+                        sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
+
+                        break;
+                    case "R":
+                        sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+                        sqlTables = @"from LoadItem I
+                                      left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
+                                      left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid and ER.ExecutionID = @postExecutionID
+                                      left join api.Execution E on E.ExecutionID = @postExecutionID ";
+                        columns.ForEach(c =>
+                        {
+                            var i = c.ColumnIndex;
+                            sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
+                            sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+                            sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+
+                        });
+                        sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
+                        sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
+
+                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
+
+                        break;
+                    case "U":
+                        sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+                        sqlTables = @"from LoadItem I
+                                        left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
+                        columns.ForEach(c =>
+                        {
+                            var i = c.ColumnIndex;
+                            sqlColumns += $",C{i}.[Value] as Column{i}\n";
+                            sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+
+                        });
+                        sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
+
+                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n " + orderBySql + offsetSql;
+                        break;
+                }
+
+
+                var results = Company.Query<dynamic>(sql, new { id, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
+                model.pageNum = _pageNum;
+                model.pageSize = _pageSize;
+                model.items = results;
+                model.total = results.Count();
+                return await Task.FromResult<IHttpActionResult>(
+                        ResponseMessage(
+                            Request.CreateResponse(
+                                HttpStatusCode.OK, model
+                            )
+                        )
+                    );
+            }
+            else
+            {
+                sqlColumns = "select I.RowIndex";
+                sqlTables = "from LoadItem I";
+                columns.ForEach(c =>
+                {
+                    sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
+                    sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
+                });
+                sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage";
+
+                sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex " + orderBySql + offsetSql;
+
+                var results = Company.Query<dynamic>(sql, new { id });
+                model.pageNum = _pageNum;
+                model.pageSize = _pageSize;
+                model.items = results;
+                model.total = results.Count();
+                return await Task.FromResult<IHttpActionResult>(
+                        ResponseMessage(
+                            Request.CreateResponse(
+                                HttpStatusCode.OK, model
+                            )
+                        )
+                    );
+            }
+        }
     }
 }

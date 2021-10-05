@@ -142,6 +142,57 @@ namespace d360.core.entities
         public string Requestor { get; set; }
     }
 
+    [DataContract(Namespace = NAMESPACE)]
+    public class LoadDetailV2 : BaseObject
+    {
+        [DataMember]
+        public string Action { get; set; }
+        [DataMember]
+        public DateTime? DateCompleted { get; set; }
+        [DataMember]       
+        public DateTime? DateStarted { get; set; }
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+        [DataMember]
+        public string AssetTypeName { get; set; }
+        [DataMember]
+        public string RequestorName { get; set; }
+        [DataMember]
+        public Guid RequestorUid { get; set; }
+        [DataMember]
+        public int Success { get; set; }
+        [DataMember]
+        public int Error { get; set; }
+        [DataMember]
+        public int Total { get; set; }
+        [DataMember]
+        public string ErrorMessage { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class LoadItemDetail : BaseObject
+    {
+        [DataMember]
+        public int RowIndex { get; set; }
+        [DataMember]
+        public string Column1 { get; set; }
+        [DataMember]
+        public string Column2 { get; set; }
+        [DataMember]
+        public string Column3 { get; set; }
+        [DataMember]
+        public string Column4 { get; set; }
+        [DataMember]
+        public string Column5 { get; set; }
+        [DataMember]
+        public string Column6 { get; set; }
+        [DataMember]
+        public string Status { get; set; }
+        [DataMember]
+        public string StatusMessage { get; set; }
+        
+    }
+
     public class TopNavigationItem
     {
         public string MenuID { get; set; }
