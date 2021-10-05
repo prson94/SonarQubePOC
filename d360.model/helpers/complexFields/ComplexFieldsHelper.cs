@@ -8,9 +8,8 @@ namespace d360.model.helpers
 {
     public static class ComplexFieldsHelper
     {
-        public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, out List<string> selects, bool isCountQuery = false)
+        public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, bool isCountQuery = false)
         {
-            selects = new List<string>();
             List<string> joins = new List<string>();
             int idx = 1;
             foreach (var rel in definition.Relations)

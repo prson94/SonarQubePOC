@@ -2086,8 +2086,8 @@ from	IntersectType I
             List<string> selects = new List<string>();
             List<string> wheres = new List<string>();
 
-            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out selects);
-            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, out _, isCountQuery: true);
+            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects);
+            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, new List<string>(), isCountQuery: true);
 
             (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
