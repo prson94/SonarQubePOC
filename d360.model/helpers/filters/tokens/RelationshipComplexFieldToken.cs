@@ -25,7 +25,6 @@ namespace d360.model.helpers.filters
 
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
-            var intersectTypeUid = this.Field.ToLower().Replace("$related:", "");
             var intersectUid = this.EscapedValueAsString;
             var ftRelationship = fieldTypes.Where(x => x.Name.ToLower() == this.Field.ToLower()).FirstOrDefault();
             var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace d360.model.helpers
 {
-    public class ComplexFieldsHelper
+    public static class ComplexFieldsHelper
     {
         public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, out List<string> selects, bool isCountQuery = false)
         {

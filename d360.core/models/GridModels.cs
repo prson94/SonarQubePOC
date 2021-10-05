@@ -7,21 +7,21 @@ namespace d360.core.Models
     [DataContract]
     public class GridColumn
     {
-        public static string COLUMN_TYPE_NUMBER_READONLY = "number";
-        public static string COLUMN_TYPE_CHECKBOX = "checkbox";
-        public static string COLUMN_TYPE_NUMBER = "numberinput";
-        public static string COLUMN_TYPE_DROPDOWN = "dropdownlist";
-        public static string COLUMN_TYPE_COMBO = "combobox";
-        public static string COLUMN_TYPE_DATE = "datetimeinput";
-        public static string COLUMN_TYPE_STRING = "textbox";
+        public static readonly string COLUMN_TYPE_NUMBER_READONLY = "number";
+        public static readonly string COLUMN_TYPE_CHECKBOX = "checkbox";
+        public static readonly string COLUMN_TYPE_NUMBER = "numberinput";
+        public static readonly string COLUMN_TYPE_DROPDOWN = "dropdownlist";
+        public static readonly string COLUMN_TYPE_COMBO = "combobox";
+        public static readonly string COLUMN_TYPE_DATE = "datetimeinput";
+        public static readonly string COLUMN_TYPE_STRING = "textbox";
 
-        public static string FILTER_TYPE_CHECKBOX = "bool";
-        public static string FILTER_TYPE_CHECKEDLIST = "checkedlist";
-        public static string FILTER_TYPE_LIST = "list";
-        public static string FILTER_TYPE_DATE = "date";
-        public static string FILTER_TYPE_NUMBER = "number";
-        public static string FILTER_TYPE_RANGE = "range";
-        public static string FILTER_TYPE_STRING = "textbox";
+        public static readonly string FILTER_TYPE_CHECKBOX = "bool";
+        public static readonly string FILTER_TYPE_CHECKEDLIST = "checkedlist";
+        public static readonly string FILTER_TYPE_LIST = "list";
+        public static readonly string FILTER_TYPE_DATE = "date";
+        public static readonly string FILTER_TYPE_NUMBER = "number";
+        public static readonly string FILTER_TYPE_RANGE = "range";
+        public static readonly string FILTER_TYPE_STRING = "textbox";
 
         public GridColumn()
         {
