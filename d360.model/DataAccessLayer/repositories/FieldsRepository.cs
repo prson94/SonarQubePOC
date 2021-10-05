@@ -2179,6 +2179,16 @@ from	IntersectType I
             var count = reader.Read<int>().FirstOrDefault();
             var scoringInfo = new List<dynamic>();
 
+            var scoreFields = fields.Where(x => x.Type == "Score").Select(x => x.ID).ToList();
+            if (scoreFields.Any())
+            {
+                scoringInfo = (await Company.QueryAsync($@"select ft.id AS FieldTypeId, ma.ScoreType, ma.LowerThreshold, ma.UpperThreshold from 
+			                 FieldType ft 
+			                inner join AssetType at on ft.object = at.object and ft.objectid = at.objectid
+			                inner join metrics.Allocation ma on ma.AssetTypeUid = at.uid  and ma.ScoreType = ft.ScoreType
+		                where ft.Type = 'Score' and ft.id in @scoreFields", new { scoreFields })).ToList();
+            }
+
             return (Columns, Fields, Values, count, scoringInfo);
         }
 
@@ -2392,7 +2402,7 @@ from	IntersectType I
                         inner join asset a on a.uid = @assetuid
                         {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
 
-            
+
             if (countOnly)
             {
                 itemsSQL = "";

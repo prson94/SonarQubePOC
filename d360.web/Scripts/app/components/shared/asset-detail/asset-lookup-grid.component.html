@@ -24,7 +24,7 @@
                                  [infoTooltip]="simpleSearchTooltipHTML">
                 </ig-search-field>
             </div>
-            <advanced-filtering *ngIf="showAdvancedFilterField" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+            <advanced-filtering *ngIf="showAdvancedFilterField" [externalAllocations]="externalAllocations" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
         </ng-container>
         <div *ngIf="hideFilter" class="ig-lookup-grid-filter-placeholder">&nbsp;</div>
         <div class="grid-action-buttons">

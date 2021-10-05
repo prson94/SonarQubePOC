@@ -111,6 +111,10 @@ namespace d360.model.helpers
                                WHERE AssetId = H{f.RelationIndex + 1}.ID
                                  AND FieldTypeId = {ft.ID}){fieldSelector}");
                     }
+                    else if (ft.Type == "Score")
+                    {
+                        joins.Add($"outer apply dbo.GetAssetScoreById(H{f.RelationIndex + 1}.ID, {ft.ScoreType}){fieldSelector}");
+                    }
                     else
                     {
                         joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
@@ -180,9 +184,9 @@ namespace d360.model.helpers
                 }
                 else if (f.FieldTypeID > 0)
                 {
-                    var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
                     var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
                     var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
+                    var gColumn = new GridColumn { text = ft.FriendlyName, columnWidth = colWidth };
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
                     gField.name = gColumn.datafield = fieldAlias;
                     gField.apiName = gColumn.apiName = ft.Name;
@@ -217,6 +221,18 @@ namespace d360.model.helpers
                         case "html":
                             gColumn.columntype = "textbox";
                             gField.type = "html";
+                            break;
+                        case "score":
+                            gColumn.columntype = "Score";
+                            gField.type = "Score";
+                            if (ft.ScoreType == 1)
+                            {
+                                gColumn.description = "This is the Governance Score";
+                            }
+                            else
+                            {
+                                gColumn.description = "This is the DQ Score";
+                            }
                             break;
                         default:
                             gColumn.columntype = "textbox";
