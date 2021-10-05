@@ -2680,33 +2680,6 @@ drop table if exists #tempruleresults;",
 
             #endregion
 
-            #region Legacy table
-
-            var legacyTable = "";
-            switch (at.Object)
-            {
-                case "FusionAttributeType":
-                    legacyTable = "FusionAttribute";
-                    break;
-                case "RuleType":
-                    legacyTable = "[Rule]";
-                    break;
-            }
-
-            if (!string.IsNullOrEmpty(legacyTable))
-            {
-                Connection.Execute(
-                    $@"delete t
-                                                    from {legacyTable} t
-                                                    where exists (select 1 from api.ExecutionDeletedAsset S where t.ID = s.ObjectID and {querySuffix})",
-                    new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-                AddMeasurement(metrics, $"remove from {legacyTable} table >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                sw.Restart();
-            }
-
-            #endregion
-
             #region Delete Intersects
 
             Connection.Execute($@"
@@ -2928,6 +2901,7 @@ drop table if exists #temprestable2;",
             AddMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
             sw.Restart();
             #endregion
+            
             return step;
         }
 
@@ -3777,12 +3751,6 @@ where	T.ExecutionID = @ExecutionID
                                     		from	IssueTypeRelation T
                                     				where T.AssetTypeID = @AssetTypeId;
 
-                                    		delete	T
-                                    		from	[Rule] T
-                                    				inner join RuleType A on A.ID = T.RuleTypeID
-                                    				where @Object = 'RuleType' and @ObjectId = A.ID;
-
-
                                             delete T
                                     		from	AssetType T
                                     				where @Object = 'ArtifactType' and T.ID = @AssetTypeId;
@@ -3795,10 +3763,6 @@ where	T.ExecutionID = @ExecutionID
                                             delete T
                                     		from	AssetType T
                                     				where @Object = 'ReferenceItemType' and @AssetTypeId = T.ID;
-
-                                    		delete	A
-                                    		from	RuleType A
-                                    				where @Object = 'RuleType' and @ObjectId = A.ID;
 
                                             delete T
                                     		from	AssetType T
@@ -4924,15 +4888,26 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                         case AssetTypeClass.TechnicalAsset:
                                         case AssetTypeClass.Diagram:
                                         case AssetTypeClass.Model:
+                                        case AssetTypeClass.Rule:
                                             #region
                                             string @object = "Artifact";
-                                            if (at.Class == AssetTypeClass.Policy)
-                                                @object = "Policy";
-                                            if (at.Class == AssetTypeClass.Diagram)
-                                                @object = "Task";
-                                            if (at.Class == AssetTypeClass.Model)
-                                                @object = "Taxonomy";
-
+                                            
+                                            if (at.Class == AssetTypeClass.Policy) { 
+                                                @object = "Policy"; 
+                                            }
+                                                
+                                            if (at.Class == AssetTypeClass.Rule) { 
+                                                @object = "Rule"; 
+                                            }
+                                            
+                                            if (at.Class == AssetTypeClass.Diagram) { 
+                                                @object = "Task"; 
+                                            }
+                                            
+                                            if (at.Class == AssetTypeClass.Model) { 
+                                                @object = "Taxonomy"; 
+                                            }
+                                            
                                             sw.Restart();
                                             if (isInsert)
                                             {
@@ -4991,66 +4966,6 @@ where	{executionAssetWhereSql};",
                                                 AddMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             break;
-                                        #endregion
-                                        case AssetTypeClass.Rule:
-                                            #region
-                                            sw.Restart();
-                                            if (isInsert)
-                                            {
-                                                Connection.Execute($@"
-create table #ObjectMergeTableResult (ID int, ItemNumber int,[Operation] varchar(10));
-CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
-
-merge   [Rule] as T
-using   (
-        select  A.ItemNumber,
-                CR.LookupValue as Color
-        from    api.ExecutionAsset A
-                left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
-        where   A.ExecutionID = @ExecutionID
-                and A.Success is null
-                and A.ItemNumber between @beginItemNumber and @endItemNumber
-        ) S
-on      (1 = 0)
-when    not matched then
-insert  (RuleTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-values  (@ObjectID, @R, @D, @R, @D, S.Color)
-output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
-
-update  T
-set     T.Object = 'Rule',
-        T.ObjectID = S.ID,
-        T.IsNew = 1
-from    api.ExecutionAsset T
-        inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-
-{updateAssetInfoOnExecutionRecordsSql}
-
-{insertGraphAssetNode}",
-                                                new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow },
-                                                transaction: trans,
-                                                commandTimeout: timeout);
-                                                AddMeasurement(metrics, $"AssetTypeClass.Rule >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                            }
-                                            else
-                                            {
-                                                Connection.Execute($@"
-update	T
-set		T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
-        T.UpdatedBy = @R,
-		T.UpdatedOn = @D
-from	[Rule] T
-		inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-        left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
-
-update	api.ExecutionAsset
-set		IsNew = 0
-where	{executionAssetWhereSql};",
-                                                new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                AddMeasurement(metrics, $"AssetTypeClass.Rule >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                            }
-                                            break;
-                                        #endregion
                                         case AssetTypeClass.Reference:
                                             #region
                                             sw.Restart();

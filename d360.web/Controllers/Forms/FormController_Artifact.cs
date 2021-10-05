@@ -57,8 +57,8 @@ namespace d360.web.Controllers
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
-        [Route("Artifact_AddFields"), NonNullableParameters]
-        public JsonResult Artifact_AddFields(int at, int p)
+        [Route("Asset_AddFields"), NonNullableParameters]
+        public JsonResult Asset_AddFields(int at, int p)
         {
             if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, at, Permission.AddAsset))
             {
@@ -93,28 +93,28 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
-        [Route("Artifact_EditFields"), NonNullableParameters]
-        public JsonResult Artifact_EditFields(int id)
+        [Route("Asset_EditFields"), NonNullableParameters]
+        public JsonResult Asset_EditFields(SystemObjects type, SystemObjects obj, int id)
         {
-            if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.EditAsset))
+            if (!Company.HasAssetPermission(obj, id, Permission.EditAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }
 
             var list = new List<EditableField>();
-            var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
+            var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == obj.ToString()).Include(x => x.AssetType).FirstOrDefault();
 
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
-            var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ArtifactType);
+            var parentType = Company.GetParentType(a.AssetType.ObjectID, type);
 
 
             if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 if (parentType != null)
                 {
-                    var parent = Company.GetParentObject(a.ObjectID, SystemObjects.Artifact);
+                    var parent = Company.GetParentObject(a.ObjectID, obj);
 
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                     var parents = Company.Query<SelectListItem>(
@@ -146,11 +146,11 @@ namespace d360.web.Controllers
 
             list = (
                 loadDynamicFields(
-                    SystemObjects.Artifact.ToString(),
+                    obj.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.AssetType.ObjectID).ToList(),
-                    Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(),
+                    Company.GetFieldTypesByObject(type, a.AssetType.ObjectID).ToList(),
+                    Company.GetFieldRelationsByObject(obj, id).ToList(),
                     2
                 )
             );

@@ -2424,23 +2424,16 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     break;
                 case AssetTypeClass.Rule:
                     #region
-                    var r = new RuleType
-                    {
-                        Name = model.Name,
-                        DisplayFormat = model.DisplayFormat,
-                        Description = model.Description
-                    };
-                    CompanyContext.Add(r);
                     parentType = SystemObjects.Rule;
-                    model.ObjectID = r.ID;
-                    model.Object = SystemObjects.RuleType.ToString();
-
-                    var ruleAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
+                    var ruleAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.Name == model.Name && i.uid != model.Uid).SingleOrDefault();
                     if (ruleAssetType != null)
                     {
                         ruleAssetType.uid = uid;
                         CompanyContext.Update(ruleAssetType);
                     }
+
+                    model.ObjectID = ruleAssetType.ObjectID;
+                    model.Object = SystemObjects.RuleType.ToString();
 
                     #endregion
                     break;
@@ -2548,11 +2541,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
+                case AssetTypeClass.Diagram:
+                case AssetTypeClass.Model:
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Reference:
-                case AssetTypeClass.Model:
+                case AssetTypeClass.Rule:
                 case AssetTypeClass.TechnicalAsset:
-                case AssetTypeClass.Diagram:
                     #region
 
                     if (assetType == null)
@@ -2624,23 +2618,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
                     assetType.Notes = model.Notes ?? assetType.Notes;
-                    assetType.CanEditParent = model.CanEditParent;
-
-                    #endregion
-                    break;
-                case AssetTypeClass.Rule:
-                    #region
-
-                    var r = CompanyContext.GetById<RuleType>(model.ObjectID);
-                    if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
-                    r.Name = model.Name;
-                    r.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-                    r.Description = model.Description;
-                    CompanyContext.Update(r);
-
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-                    assetType.Description = model.Description;
                     assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
@@ -3652,7 +3629,6 @@ from    Asset A
         inner join AssetType T on T.ID = A.AssetTypeID
         left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
         left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
-        {(assetType.Class == AssetTypeClass.Rule ? "inner join [Rule] R on R.ID = A.ObjectID" : "")}
         cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
         outer apply (
             select  T.[uid]

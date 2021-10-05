@@ -140,8 +140,6 @@
 	<include file="scripts/Table.dbo.Contract.xml"/>
 	<include file="scripts/Table.dbo.ContractAcceptance.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
-	<include file="scripts/Table.dbo.ReportTile_backup.xml"/>
-	<include file="scripts/Table.dbo.ReportLayout_backup.xml"/>
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
 	<include file="scripts/Table.dbo.ResourcePasswordReset.xml"/>
@@ -152,16 +150,6 @@
 	<include file="scripts/Table.dbo.ResponsibilityTypeRelationRule.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityRuleResultAsset.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityRuleResultSecurityAsset.xml"/>
-	<include file="scripts/Table.dbo.responsibilitytyperelationruleresult_backup.xml"/>
-	<include file="scripts/Table.dbo.RuleType.xml"/>
-	<include file="scripts/Table.dbo.Rule.xml"/>
-	<include file="scripts/Table.dbo.RuleImplementation.xml"/>
-	<include file="scripts/Function.utility.CalculatePassed.xml"/>			<!--Function used for computed column-->
-	<include file="scripts/Function.utility.CalculatePassedWrapper.xml"/>	<!--Function used for computed column-->
-	<include file="scripts/Table.dbo.RuleResult.xml"/>
-	<include file="scripts/Table.dbo.RuleResultFusionAttribute.xml"/>
-	<include file="scripts/Table.dbo.RuleResultQualifierType.xml"/>
-	<include file="scripts/Table.dbo.RuleResultQualifier.xml"/>
 	<include file="scripts/Table.dbo.SearchBoost.xml"/>
 	<include file="scripts/Table.dbo.Setting.xml"/>
 	<include file="scripts/Table.dbo.ShoppingCartType.xml"/>
@@ -366,8 +354,6 @@
 	<include file="scripts/View.reporting.Resource_All.xml"/>
 	<include file="scripts/View.reporting.Responsibility_All.xml"/>
 	<include file="scripts/View.reporting.ResponsibilityTypeMap.xml"/>
-	<include file="scripts/View.reporting.RuleImplementations_All.xml"/>
-	<include file="scripts/View.reporting.RuleImplementations_ResultQualifiers.xml"/>
 	<include file="scripts/View.reporting.RuleImplementations_Results.xml"/>
 	<include file="scripts/View.reporting.Rules_All.xml"/>
 	<include file="scripts/View.reporting.Rules_Fields.xml"/>
@@ -377,6 +363,8 @@
 
 	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
 	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
+
+	<include file="scripts/View.Deletions.xml"/>
 	
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
@@ -422,7 +410,7 @@
 	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
 	<include file="scripts/Function.utility.GetIntersectTypesByType.xml"/>
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
-  <include file="scripts/Function.utility.GetPredicateFunctionalTypeValue.xml"/>
+	<include file="scripts/Function.utility.GetPredicateFunctionalTypeValue.xml"/>
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>
 
 	<!-- Procedures (object-based naming) -->

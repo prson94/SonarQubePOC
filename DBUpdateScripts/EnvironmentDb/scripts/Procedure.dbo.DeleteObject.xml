@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v14">
-  <comment>GOV-11726</comment>
+  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v15">
+  <comment>GOV-4862</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -459,17 +459,6 @@ create or alter procedure [dbo].[DeleteObject]
 				  delete	O
 				  from	[AssetType] O
 						  inner join #types I on I.ID = O.ID;
-
-				  if @Object = 'RuleType'
-				  begin
-					  delete	O 
-					  from	[Rule] O
-							  inner join RuleType T on T.ID = O.RuleTypeID
-							  inner join #types I on I.ObjectID = T.ID;
-					  delete	O
-					  from	RuleType O
-							  inner join #types I on I.ObjectID = O.ID;
-				  end;
 			  end
 			  else
 			  begin
@@ -520,13 +509,6 @@ create or alter procedure [dbo].[DeleteObject]
 				  delete	A
 				  from		[Asset] A
 							inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
-				
-				  if @Object = 'Rule'
-				  begin
-					  delete	O 
-					  from	[Rule] O
-							  inner join #items I on I.ObjectID = O.ID;
-				  end;
 			  end;
 		  end;
  
@@ -968,24 +950,6 @@ create or alter procedure [dbo].[DeleteObject]
 			  where	ID = @ObjectID;
 		  end;
 
-		  if @Object = 'Fusion'
-		  begin
-			  insert into #items (ID, Object, ObjectID)
-				  select	A.ID, A.Object, A.ObjectID
-				  from	FusionAttribute F
-						  inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = F.ID
-						  inner join #items I on I.ObjectID = F.FusionID;
-		  end;
-
-		  if @Object = 'FusionType'
-		  begin
-			  insert into #types (ID, Object, ObjectID)
-				  select	A.ID, A.Object, A.ObjectID
-				  from	FusionAttributeType F
-						  inner join AssetType A on A.Object = 'FusionAttributeType' and A.ObjectID = F.ID
-						  inner join #types I on I.ObjectID = F.FusionTypeID;
-		  end;
-
 		  if @Object = 'Intersect'
 		  begin
 			  set @ClearComments = 0
@@ -1212,36 +1176,6 @@ create or alter procedure [dbo].[DeleteObject]
 				  from	[AssetType] O
 						  inner join #types I on I.ID = O.ID;
 
-				  if @Object = 'FusionAttributeType'
-				  begin
-					  delete	O
-					  from	FusionAttribute O
-							  inner join FusionAttributeType F on F.ID = O.FusionAttributeTypeID
-							  inner join #types I on I.ObjectID = F.ID;
-
-					  delete	O
-					  from	FusionAttributeType O
-							  inner join #types I on I.ObjectID = O.ID;
-				  end;
-				  if @Object = 'FusionType'
-				  begin
-					  delete	O
-					  from	FusionAttribute O
-							  inner join FusionAttributeType F on F.ID = O.FusionAttributeTypeID
-							  inner join #types I on I.Object = 'FusionAttributeType' and I.ObjectID = F.ID;
-
-					  delete	O
-					  from	FusionAttributeType O
-							  inner join #types I on I.Object = 'FusionType' and I.ObjectID = O.FusionTypeID;
-
-					  delete	O
-					  from	Fusion O
-							  inner join #types I on I.Object = 'FusionType' and I.ObjectID = O.FusionTypeID;
-					
-					  delete	O
-					  from	FusionType O
-							  inner join #types I on I.Object = 'FusionType' and I.ObjectID = O.ID;
-				  end;
 				  if @Object = 'RuleType'
 				  begin
 					  delete	O 
@@ -1303,25 +1237,6 @@ create or alter procedure [dbo].[DeleteObject]
 				  from		[Asset] A
 							inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
 				
-				  if @Object = 'Fusion'
-				  begin
-					  delete	O
-					  from	FusionAttribute O
-							  inner join Fusion F on F.ID = O.FusionID
-							  inner join #items I on I.Object = @Object and I.ObjectID = F.ID;
-					
-					  delete	O
-					  from	Fusion O
-							  inner join #items I on I.Object = @Object and I.ObjectID = O.ID;
-				  end;
-
-				  if @Object = 'FusionAttribute'
-				  begin
-					  delete	O
-					  from	FusionAttribute O
-							  inner join #items I on I.ObjectID = O.ID;
-				  end;
-
 				  if @Object = 'Rule'
 				  begin
 					  delete	O 
