@@ -12,7 +12,7 @@ namespace d360.web
     {
         public CompanyContext CreateOwinCompanyContext(int companyId)
         {
-            var sec = new UriSecurityContextProvider()
+            var sec = new UriSecurityContextProvider
             {
                 CompanyID = companyId,
                 ResourceID = 0,
