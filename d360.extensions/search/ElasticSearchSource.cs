@@ -139,139 +139,6 @@ namespace d360.extensions.search
         private const string D3S_FIELD = "d3s";
         public static readonly string D3S_FIELD_PREFIX = D3S_FIELD + ".";
 
-        private static readonly string MAPPING_VERSION_5 = "{" +
-            "\"settings\": {" +
-            "  \"index\": {" +
-            "    \"number_of_shards\": 2," +
-            "    \"number_of_replicas\": 1" +
-            "  }" +
-            "},\"mappings\": {" +
-            "  \"_doc\": {" +
-            "    \"date_detection\": false," +
-            "    \"properties\": {" +
-            "      \"" + DYNAMIC_FIELD + "\": {" +
-            "        \"type\": \"object\"," +
-            "        \"dynamic\": true" +
-            "      }," +
-            "      \"" + D3S_FIELD + "\": {" +
-            "        \"properties\": {" +
-            "          \"Category\": {" +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"Tags\": {" +
-            "            \"type\": \"nested\"," +
-            "            \"properties\": {" +
-            "              \"Uid\": {" +
-            "                \"type\": \"keyword\"" +
-            "              }" +
-            "            }" +
-            "          }," +
-            "          \"AssetType\": {" +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"Uid\": {" +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"AssetTypeUid\": {" +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"Url\": {" +
-            "            \"type\": \"keyword\"," +
-            "            \"index\": false" +
-            "          }," +
-            "          \"NoReadResourceID\": { " +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"NoReadGroupID\": { " +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"NoReadOrgID\": { " +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"Data3SixtyUser\": {" +
-            "            \"type\": \"boolean\"" +
-            "          }" +
-            "        }" +
-            "      }" +
-            "    }" +
-            "  }" +
-            "}}";
-
-        //This complex intersect synonym query is used by both the indexer and databasetaskprocessor jobs so we maintain the core of the query in one place
-        public static readonly string INTERSECT_SYNONYM_QUERY = @"select 
-                I.ID,
-                'S' as 'Direction',
-                SubjectAdv.DisplayValue as 'Synonym',
-                I.Subject as 'SynonymObjectType',
-                I.SubjectID as  'SynonymObjectID',
-                SubjectAsset.ID as 'SynonymAssetID', 
-                ObjectAdv.DisplayValue as 'SynonymFor', 
-                I.Object as 'SynonymForObject', 
-                I.ObjectID as 'SynonymForObjectID',
-                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', 
-                ArtType.Name as 'SynonymForObjectType',
-                P.Name as 'PredicateName' 
-            from[intersect] I 
-                inner join IntersectType T on T.ID = I.IntersectTypeID
-                inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-                inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Subject and SubjectAsset.ObjectID = I.SubjectID 
-                inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID 
-                inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Object and ObjectAsset.ObjectID = I.ObjectID 
-                inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID 
-                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID 
-            Union 
-            SELECT
-                I.ID, 
-                'O' as 'Direction', 
-                SubjectAdv.DisplayValue as 'Synonym', 
-                I.Object as 'SynonymObjectType', 
-                I.ObjectID as  'SynonymObjectID', 
-                SubjectAsset.ID as 'SynonymAssetID', 
-                ObjectAdv.DisplayValue as 'SynonymFor', 
-                I.Subject as 'SynonymForObject', 
-                I.SubjectID as 'SynonymForObjectID', 
-                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', 
-                ArtType.Name as 'SynonymForObjectType', 
-                P.Name as 'PredicateName'
-            from [intersect] I
-                inner join IntersectType T on T.ID = I.IntersectTypeID 
-                inner join Predicate P on P.ID = T.PredicateID and P.Type = 6 
-                inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Object and SubjectAsset.ObjectID = I.ObjectID 
-                inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
-                inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Subject and ObjectAsset.ObjectID = I.SubjectID 
-                inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID 
-                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID";
-
-        //This responsibility query is used by both the indexer and databasetaskprocessor jobs so we maintain the core of the query in one place
-        public static string GetAssetResponsibilityQuery()
-        {
-            string sql = $@"SELECT a.id as AssetID, 
-                              rresource.SecurityAsset,
-                              rresource.SecurityAssetID
-                        FROM ResponsibilityTypeRelationRule r
-                        INNER JOIN ResponsibilityTypeRelation rrel ON (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID
-                                                                      AND r.[Object] = rrel.[ObjectType]
-                                                                      AND r.ObjectID = rrel.ObjectID)
-                        INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (r.ID = rasset.RuleID)
-                        INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (r.ID = rresource.RuleID)
-                        INNER JOIN Asset a ON A.AssetTypeID = rasset.AssetTypeID
-                        WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 0
-                         AND rasset.AssetID = 0
-                        UNION ALL
-                        SELECT rasset.AssetID,
-                              rresource.SecurityAsset,
-                              rresource.SecurityAssetID
-                        FROM ResponsibilityTypeRelationRule rtrr
-                        INNER JOIN ResponsibilityTypeRelation rrel ON (rtrr.ResponsibilityTypeID = rrel.ResponsibilityTypeID
-                                                                      AND rtrr.[Object] = rrel.[ObjectType]
-                                                                      AND rtrr.ObjectID = rrel.ObjectID)
-                        INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (rtrr.ID = rasset.RuleID)
-                        INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (rtrr.ID = rresource.RuleID)
-                        WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 0
-                         AND rasset.AssetTypeID = 0";
-                return sql;
-        }
-
         private readonly string CommunityConnectionString;
 
         public ElasticSearchSource()
@@ -411,23 +278,62 @@ namespace d360.extensions.search
         private void CreateIndexIfNotExists(int companyID)
         {
             var indexName = GetCompanyIndexName(companyID);
-            //NEST client
             var client = GetElasticClient(companyID);
+
             if (!client.IndexExists(indexName).Exists)
             {
-                string esSettings = MAPPING_VERSION_5;
-                if (IndexFieldLimit.HasValue)
+                CreateIndexDescriptor indexDescriptor = new CreateIndexDescriptor(indexName)
+                    .Settings(s => s
+                        .NumberOfReplicas(1)
+                        .NumberOfShards(2)
+                        .Setting("index.mapping.total_fields.limit", IndexFieldLimit)
+                    ).Mappings(ms => ms
+                        .Map("_doc", m => m
+                            .DateDetection(false)
+                            .Properties(ps => ps
+                                .Object<dynamic>(o => o
+                                    .Dynamic(true)
+                                    .Name(DYNAMIC_FIELD)
+                                )
+                                .Object<dynamic>(o => o
+                                    .Name(D3S_FIELD)
+                                    .Properties(p => p
+                                        .Keyword(s => s.Name("Category"))
+                                        .Nested<dynamic>(n => n
+                                            .Name("Tags")
+                                            .Properties(np => np
+                                                .Keyword(s => s.Name("Uid"))
+                                                .Text(s => s
+                                                    .Name("Value")
+                                                    .Fields(f => f
+                                                        .Keyword(k => k
+                                                            .Name("keyword")
+                                                            .IgnoreAbove(256)
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                        .Keyword(s => s.Name("AssetType"))
+                                        .Keyword(s => s.Name("Uid"))
+                                        .Keyword(s => s.Name("AssetTypeUid"))
+                                        .Keyword(s => s.Name("Url").Index(false))
+                                        .Keyword(s => s.Name("NoReadResourceID"))
+                                        .Keyword(s => s.Name("NoReadGroupID"))
+                                        .Keyword(s => s.Name("NoReadOrgID"))
+                                        .Boolean(b => b.Name("Data3SixtyUser"))
+                                    )
+                                )
+                            )
+                        )
+                    );
+
+                var response = client.CreateIndex(indexDescriptor);
+
+                //If Resource already exist, no reason to complain
+                if (!response.IsValid && response.ServerError.Error.Type != "resource_already_exists_exception")
                 {
-                    esSettings = esSettings.Replace("\"number_of_replicas\": 1", "\"number_of_replicas\": 1, \"mapping.total_fields.limit\" : " + IndexFieldLimit);
-                }
-                var response = client.LowLevel.IndicesCreate<CreateResponse>(indexName, esSettings);
-                if (!response.IsValid)
-                {
-                    //If Resource already exist, no reason to complain
-                    if (response.ServerError.Error.Type != "resource_already_exists_exception")
-                    {
-                        throw new ArgumentException(response.OriginalException.Message);
-                    }
+                    throw new ArgumentException(response.OriginalException.Message);
                 }
             }
 
@@ -1055,6 +961,48 @@ namespace d360.extensions.search
                                         Field = fldTag,
                                         Query = v,
                                         Operator = Nest.Operator.And
+                                    };
+                                    return q;
+                                }),
+                                MinimumShouldMatch = 1
+                            }
+                        };
+                    }
+                }
+                else if (fieldFilter.Field == "TagUids")
+                {
+                    string path = D3S_FIELD_PREFIX + "Tags";
+                    Nest.Field fldTagUid = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+                    if (fieldFilter.Connector == SearchConnector.And)
+                    {
+                        qry = new BoolQuery
+                        {
+                            Must = fieldFilter.Values.Select(v => {
+                                QueryContainer q = new NestedQuery
+                                {
+                                    Path = path,
+                                    Query = new TermQuery
+                                    {
+                                        Field = fldTagUid,
+                                        Value = v
+                                    }
+                                };
+                                return q;
+                            })
+                        };
+                    }
+                    else
+                    {
+                        qry = new NestedQuery
+                        {
+                            Path = path,
+                            Query = new BoolQuery
+                            {
+                                Should = fieldFilter.Values.Select(v => {
+                                    QueryContainer q = new TermQuery
+                                    {
+                                        Field = fldTagUid,
+                                        Value = v
                                     };
                                     return q;
                                 }),
