@@ -272,6 +272,18 @@ namespace d360.extensions.search
                 return sql;
         }
 
+        private readonly string CommunityConnectionString;
+
+        public ElasticSearchSource()
+        {
+
+        }
+
+        public ElasticSearchSource(string communityConnectionString)
+        {
+            CommunityConnectionString = communityConnectionString;
+        }
+
         protected string SearchServerUrl { get; set; }
 
         public int? IndexFieldLimit { get; set; }
@@ -357,7 +369,15 @@ namespace d360.extensions.search
 
         protected virtual IDbConnection GetDBConnection()
         {
-            return new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            if (string.IsNullOrEmpty(CommunityConnectionString))
+            {
+                return new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            }
+            else
+            {
+                return new SqlConnection(CommunityConnectionString);
+            }
+            
         }
 
         protected virtual IElasticClient GetElasticClient(int companyID)
