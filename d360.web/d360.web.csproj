@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -861,6 +861,20 @@
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
+    <Content Include="fonts\precisely\Precisely-Black.ttf" />
+    <Content Include="fonts\precisely\Precisely-BlackIt.ttf" />
+    <Content Include="fonts\precisely\Precisely-Bold.ttf" />
+    <Content Include="fonts\precisely\Precisely-BoldIt.ttf" />
+    <Content Include="fonts\precisely\Precisely-Demi.ttf" />
+    <Content Include="fonts\precisely\Precisely-DemiIt.ttf" />
+    <Content Include="fonts\precisely\Precisely-ExtraBold.ttf" />
+    <Content Include="fonts\precisely\Precisely-ExtraBoldIt.ttf" />
+    <Content Include="fonts\precisely\Precisely-Light.ttf" />
+    <Content Include="fonts\precisely\Precisely-LightIt.ttf" />
+    <Content Include="fonts\precisely\Precisely-Regular.ttf" />
+    <Content Include="fonts\precisely\Precisely-RegularIt.ttf" />
+    <Content Include="fonts\precisely\Precisely-Thin.ttf" />
+    <Content Include="fonts\precisely\Precisely-ThinIt.ttf" />
     <None Include="Scripts\app\components\resource\api-key\resource-api.component.less" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
