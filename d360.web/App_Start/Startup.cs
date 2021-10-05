@@ -86,9 +86,9 @@ namespace d360.web
 
             #endregion
 
-            app.Use<IpRestrictionMiddleware>();
             app.Use<CompanyIDCheckMiddleware>();
             app.Use<UserIDCheckMiddleware>();
+            app.Use<IpRestrictionMiddleware>();
             app.Use<ContractValidationMiddleware>();
             app.Use<CachingHeaderMiddleware>();
             app.Use<CorsMiddleware>();

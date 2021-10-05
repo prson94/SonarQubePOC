@@ -39,7 +39,7 @@ namespace d360.web.Controllers
             {
                 foreach (var el in xml.Elements("nav"))
                 {
-                    var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value, ShowChildren = showChildren };
+                    var item = new NavigationItem { Name = (el.Element("name") ?? el.Element("Name")).Value, Url = el.Element("url").Value, ShowChildren = showChildren };
                     if (el.Element("items") != null)
                     {
                         item.Items = parseXmlNavigationDocument(el.Element("items"),showChildren);

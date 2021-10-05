@@ -2850,13 +2850,22 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
 
             settings.ForEach(s =>
             {
+                var defaultValue = s.DefaultValue;
+                if (defaultValue.In("True", "False"))
+                {
+                    defaultValue = defaultValue.ToLower();
+                }
                 if (overrides.Any(o => o.ID == s.ID))
                 {
                     s.Value = overrides.First(o => o.ID == s.ID).Value;
+                    if (s.Value.In("True", "False"))
+                    {
+                        s.Value = s.Value.ToLower();
+                    }
                 }
                 else
                 {
-                    s.Value = s.DefaultValue;
+                    s.Value = defaultValue;
                 }
             });
 
