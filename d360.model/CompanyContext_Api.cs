@@ -4966,6 +4966,7 @@ where	{executionAssetWhereSql};",
                                                 AddMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             break;
+                                            #endregion
                                         case AssetTypeClass.Reference:
                                             #region
                                             sw.Restart();

@@ -26,6 +26,7 @@ using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
 using d360.web.Extensions;
+using Resources;
 
 namespace d360.web.Controllers
 {
@@ -2472,9 +2473,9 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
                             },
-                                Category = Resources.FieldInfo.SystemFieldCategory
+                                Category = FieldInfo.SystemFieldCategory
                             });
 
                             model.rows.Add(new DetailReadOnlyRowModel
@@ -2497,10 +2498,10 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                                 {
                                     columns = 2,
                                     FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
                                 },
                                     SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
                                 },
                                     Category = Resources.FieldInfo.SystemFieldCategory
                                 });
@@ -2523,7 +2524,7 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                                 {
                                     columns = 2,
                                     FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = asset.GetName(i => i.ObjectID), FieldName = "RuleID", FieldDescription = asset.GetDescription(i => i.ObjectID), Value = $"{asset.ObjectID}" }
+                                    new ReadOnlyField { Name = FieldInfo.RuleID_Name, FieldName = "RuleID", Value = $"{asset.ObjectID}" }
                                 },
                                     Category = Resources.FieldInfo.SystemFieldCategory
                                 });

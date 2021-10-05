@@ -917,11 +917,6 @@ namespace d360.web.Controllers.V2
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                if (assets.Any(x => x.Uid != null && x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID parameter is not supported for {assetType.Class.GetDisplayName()} Asset Type."));
-                }
-
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid });
 
                 var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
