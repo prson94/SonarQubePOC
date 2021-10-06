@@ -712,8 +712,11 @@ from	[Load] L
             {
 
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                string[] validOrderByFields = { "datestarted", "datecompleted", "action", "assettypename",
-                                                "requestor" };
+                string[] validOrderByFields = { "rowindex","column1", "column2", "column3", "column4",
+                                                "column5","column6", "column7", "column8", "column9",
+                                                "column10", "column11", "column12", "column13", "column14",
+                                                "column15","column16", "column17", "column18", "column19",
+                                                "column20", "status","statusmessage" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
                 orderBySql = $" order by {orderByCol} {_direction} ";
@@ -812,7 +815,7 @@ from	[Load] L
                         sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
                         sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
 
-                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n " + orderBySql + offsetSql;
+                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id\n " + orderBySql + offsetSql;
                         break;
                 }
 
@@ -841,7 +844,7 @@ from	[Load] L
                 });
                 sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage";
 
-                sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex " + orderBySql + offsetSql;
+                sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id " + orderBySql + offsetSql;
 
                 var results = Company.Query<dynamic>(sql, new { id });
                 model.pageNum = _pageNum;
