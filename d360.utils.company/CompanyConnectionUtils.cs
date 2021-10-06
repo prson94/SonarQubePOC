@@ -6,11 +6,12 @@ using Dapper;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using System.Configuration;
 
 namespace d360.utils.company
 {
     public static class CompanyConnectionUtils
-    {        
+    {
         public static string GetConnectionString(int id, string server, string username, string password)
         {
             return CompanyConnectionStringHelper.ConnectionString(id, server, username, password);
@@ -34,7 +35,7 @@ namespace d360.utils.company
                     connectionString = CompanyConnectionStringHelper.ConnectionString(companyID, company.Server, company.Username, company.Password);
                 }
             }
-            
+
             return connectionString;
         }
 
@@ -59,10 +60,30 @@ namespace d360.utils.company
             }
         }
 
-        public static List<CompanyWithDatabaseServerSettings> GetCompaniesWithDatabaseServerSettings()
+        public static SqlConnection GetCompanyConnection(int companyID, string connectionString)
+        {
+            using (var cnn = new SqlConnection(connectionString))
+            {
+                cnn.Open();
+                var db = cnn.Query<DatabaseServer>(
+                    @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",
+                    new { id = companyID }
+                ).SingleOrDefault();
+
+                if (db == null) throw new Exception("Invalid company id or database server id.  Cannot load server information.");
+
+                return new SqlConnection(GetConnectionString(companyID, db.Server, db.Username, db.Password));
+            }
+        }
+        public static string GetEventTopicName(int companyID)
+        {
+            return ConfigurationManager.AppSettings["EventBusTopicName"].ToString();
+        }
+
+        public static List<CompanyWithDatabaseServerSettings> GetCompaniesWithDatabaseServerSettings(string connectionString)
         {
             List<CompanyWithDatabaseServerSettings> companies = null;
-            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            using (var cnn = new SqlConnection(connectionString))
             {
                 cnn.Open();
                 companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
@@ -84,24 +105,12 @@ namespace d360.utils.company
             return companies;
         }
 
-        public static List<CompanySetting> GetCompanySettings(int companyID)
+        public static List<CompanyWithDatabaseServerSettings> GetCompaniesWithDatabaseServerSettings()
         {
-            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                cnn.Open();
-
-                return cnn.Query<CompanySetting>(@"
-                    select 
-                        @companyID as CompanyID, 
-                        S.ID as SettingID, 
-                        coalesce(CS.Value, S.DefaultValue) as Value
-                    from Setting S 
-                    left join CompanySetting CS on CS.CompanyID = @companyID and CS.SettingID = S.ID", new { companyID }).ToList();
-            }
+            return GetCompaniesWithDatabaseServerSettings(constants.COMMUNITY_DATABASE_CONNECTION);
         }
 
-
-        public static List<int> UpdateRebuildRequestForEnvironmentLevel(EnvironmentLevel level, CompanyRebuildJobToken jobToken)
+        public static List<int> UpdateRebuildRequestForEnvironmentLevel(EnvironmentLevel level, CompanyRebuildJobToken jobToken, string connectionString)
         {
             List<int> companies = null;
             int timeoutInHours = 18;
@@ -110,10 +119,10 @@ namespace d360.utils.company
                 timeoutInHours = timeout;
             }
 
-            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            using (var cnn = new SqlConnection(connectionString))
             {
                 cnn.Open();
-                
+
                 companies = cnn.Query<int>(@"
 declare @ids table (CompanyID int)
 
@@ -135,10 +144,15 @@ insert	(CompanyID, JobToken, LastStartedOn, LastStartedBy, [State])
 values	(S.CompanyID, @jobToken, getutcdate(), 0, 1)
 output inserted.CompanyID into @ids;
 
-select CompanyID from @ids", new { level = (int)level, jobToken = (int)jobToken, timeoutOn = DateTime.UtcNow.AddHours(-1*timeoutInHours) }).ToList();
+select CompanyID from @ids", new { level = (int)level, jobToken = (int)jobToken, timeoutOn = DateTime.UtcNow.AddHours(-1 * timeoutInHours) }).ToList();
             }
 
             return companies;
+        }
+
+        public static List<int> UpdateRebuildRequestForEnvironmentLevel(EnvironmentLevel level, CompanyRebuildJobToken jobToken)
+        {
+            return UpdateRebuildRequestForEnvironmentLevel(level, jobToken, constants.COMMUNITY_DATABASE_CONNECTION);
         }
     }
 }

@@ -97,7 +97,7 @@ export class AdminDashboardsEditor {
     }
 
     ngOnInit() {
-        if (CompanySettings.EnableSagacity == "true") this.reportTypes.push({ value: "sagacity", title: "Data360 DQ+" });
+        if (CompanySettings.EnableSagacity == "true" || CompanySettings.EnableSagacity == "True") this.reportTypes.push({ value: "sagacity", title: "Data360 DQ+" });
         if (this.report != undefined) {
             this.editedReport = _.cloneDeep(this.report);
             this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();

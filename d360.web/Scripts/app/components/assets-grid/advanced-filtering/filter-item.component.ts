@@ -1,9 +1,8 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnDestroy, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
-import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
 import { OperatorModel } from "../../../models/operator.model";
-import { AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields } from "./advanced-filtering.models";
+import { FieldTypeAPIModelFieldAdvancedCondition, AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields, LookupValuesAPIParameters, LookupValuesAPIModel } from "./advanced-filtering.models";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { TagService } from "../../../services/tag.service";
@@ -24,7 +23,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     @Input() loadIdentifier: string = "";
     @Input() gridType: string = "List";
     @Input() condition: AdvancedFilterFieldCondition;
-    @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
+    @Input() fields: FieldTypeAPIModelFieldAdvancedCondition[] = null;
     @Input() operators: OperatorModel[] = [];
     @Input() relationshipTypes: RelationshipType[] = [];
 
@@ -34,7 +33,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     lazyLoadSubscription: Subscription;
 
-    currentField: FieldTypeAPIModelFieldCondition;
+    currentField: FieldTypeAPIModelFieldAdvancedCondition;
 
     allFieldsDropdown: SelectItemGroup[] = [];
 
@@ -74,6 +73,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     numberMin: number = null;
 
     defaultColorOptions: any[] = [];
+
+    private previousFilter: string = "";
 
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
@@ -256,7 +257,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 selectionElement.style.top = topPosition + "px";
             }
 
-            const fieldSelectionLeftOffset = window.outerWidth - html.getBoundingClientRect().left - 350;
+            const fieldSelectionLeftOffset = window.innerWidth - html.getBoundingClientRect().left - 350;
             let fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
             if (fieldSelectionElement) {
                 if (fieldSelectionLeftOffset < 0) {
@@ -291,6 +292,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
             options.push({ label: "contains", value: "Equals" });
             options.push({ label: "does not contain", value: "NotEquals" });
+            return options;
+        } else if (this.isGlobalSearch) {
+            options.push({ label: "contains", value: "Contains" });
+            options.push({ label: "does not contain", value: "NotContains" });
             return options;
         }
 
@@ -388,7 +393,14 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.isSelectingValue = true;
             this.startUpdateDynamicWidths();
         }
+        this.reloadNonLazyLoadValues();
         this.updateFocus();
+    }
+
+    reloadNonLazyLoadValues() {
+        if (this.condition.fieldType === "Tag") {
+            this.loadTagValues();
+        }
     }
 
     updateFocus() {
@@ -429,7 +441,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.relationshipFieldIntersectTypeUid = "";
         this.hasSelectAllCheckbox = false;
 
-
         var type = this.getFieldType(this.condition);
         if (this.fields.filter((x) => x.Name === this.condition.field).length !== 0) {
             this.currentField = this.fields.filter((x) => x.Name === this.condition.field)[0];
@@ -466,6 +477,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
             if (type.Type.Score && !this.condition.value) {
                 this.condition.value = "poor";
+            }
+
+            if (type.Type.Tag) {
+                this.loadTagValues();
             }
         }
         else {
@@ -507,8 +522,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadListLazy(event: LazyLoadEvent) {
-
-        var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
+        var params: LookupValuesAPIParameters = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
@@ -562,44 +576,50 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.doesNeedValue = this.needsValue();
     }
 
-    loadLookupValues(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
+    private checkIfLoadLookupValues(params: LookupValuesAPIParameters): boolean {
+        let ret = true;
+        const filterchange = params.filter !== this.previousFilter;
+        this.previousFilter = params.filter;
+        if (this.currentField.Values?.length > 0 && !params.filter && !filterchange) {
+            ret = this.currentField.Values.slice(+params.skip, +params.skip + +params.take).some((x) => !x);
+        }
+        return ret;
+    }
+
+    loadLookupValues(params: LookupValuesAPIParameters) {
+        if (!this.checkIfLoadLookupValues(params)) {
+            return;
         }
 
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
-        var fieldTypeUid = this.currentField.AssetTypeUid;
+        var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
 
-        if (!fieldTypeUid) {
-            fieldTypeUid = "00000000-0000-0000-0000-000000000000";
+        let lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
+
+        this.lazyLoadSubscription = lookupMethod.subscribe((res) => this.consumeLoadedLookupValues(res, params));
+    }
+
+    private consumeLoadedLookupValues(res: LookupValuesAPIModel, params: LookupValuesAPIParameters) {
+        if (!this.currentField.Values || this.currentField.Values.length === 0) {
+            this.currentField.Values = Array.from({ length: res.count });
         }
 
-        this.lazyLoadSubscription = this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
-            .subscribe((res) => {
-                if (!this.currentField.Values || this.currentField.Values.length === 0) {
-                    this.currentField.Values = Array.from({ length: res.count });
-                }
+        let loadedData = [];
 
-                let loadedData = [];
+        res.items.forEach((str) => {
+            loadedData.push({ title: str, value: str });
+        });
 
-                res.items.forEach((str) => {
-                    loadedData.push({ title: str, value: str });
-                });
+        Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
-                Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+        this.currentField.Values = [...this.currentField.Values];
 
-                this.currentField.Values = [...this.currentField.Values];
+        this.isLookupValuesLoading = false;
 
-                this.isLookupValuesLoading = false;
-
-                this.cdRef.markForCheck();
-            });
+        this.cdRef.markForCheck();
     }
 
     loadLookupValuesForComplexFields(params: any) {
@@ -640,7 +660,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadTagValues() {
-        if (!this.currentField.Values) {
+        let loadValues: boolean = !this.currentField.Values || this.currentField.Values.length === 0;
+        if (loadValues) {
             this.isLookupValuesLoading = true;
 
             this.tagService.getTagsList(true).subscribe((res) => {
@@ -1220,6 +1241,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             if (!el.parentElement) {
                 return false;
             }
+            const datepickerEl = document.querySelector("div.p-datepicker.p-component");
+            if (datepickerEl && datepickerEl.contains(el)) {
+                return true;
+            }
 
             return this.isInBodyElement(el.parentElement);
         }
@@ -1275,6 +1300,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     get isComplexField() {
         return this.loadIdentifier.startsWith("ComplexField");
+    }
+
+    get isGlobalSearch() {
+        return this.loadIdentifier.startsWith("GlobalSearch");
     }
 
     get complexFieldDefinition(): ComplexFieldDefinition {

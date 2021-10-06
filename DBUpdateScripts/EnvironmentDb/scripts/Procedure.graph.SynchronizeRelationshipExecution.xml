@@ -1,0 +1,66 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TDuric" id="Procedure.graph.SynchronizeRelationshipExecution-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [graph].[SynchronizeRelationshipExecution]
+	@executionUid uniqueidentifier
+as
+begin
+	set nocount on;
+	declare @method varchar(7) = '';
+	select @method = upper(Method) from api.Execution where ExecutionID = @executionUid;
+
+	declare @currentUid uniqueidentifier
+
+	drop table if exists #relationshipsToUpdate
+	create table #relationshipsToUpdate(uid uniqueidentifier)
+
+	if (@method = 'POST' OR @method = 'PUT') and exists(select 1 from api.ExecutionRelationship where ExecutionID = @executionUid)
+	begin
+		insert into #relationshipsToUpdate
+		select uid from api.ExecutionRelationship where executionid = @executionUid and uid is not null order by uid desc
+
+		set @currentUid  = (select top 1 uid from #relationshipsToUpdate order by uid desc)
+
+		while @currentUid is not null
+		begin
+			exec graph.UpdateAssetEdge @currentUid
+			delete from #relationshipsToUpdate where uid in ((select top 1 uid from #relationshipsToUpdate order by uid desc))
+			set @currentUid  = (select top 1 uid from #relationshipsToUpdate order by uid desc)
+		end
+	end
+
+	if (@method = 'DELETE') and exists(select 1 from api.ExecutionDeletedRelationship where ExecutionID = @executionUid)
+	begin
+		insert into #relationshipsToUpdate
+		select uid from api.ExecutionDeletedRelationship where executionid = @executionUid and uid is not null order by uid desc
+
+		set @currentUid  = (select top 1 uid from #relationshipsToUpdate order by uid desc)
+
+		while @currentUid is not null
+		begin
+			exec graph.UpdateAssetEdge @currentUid
+			delete from #relationshipsToUpdate where uid in ((select top 1 uid from #relationshipsToUpdate order by uid desc))
+			set @currentUid  = (select top 1 uid from #relationshipsToUpdate order by uid desc)
+		end
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop procedure if exists [graph].[SynchronizeRelationshipExecution]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

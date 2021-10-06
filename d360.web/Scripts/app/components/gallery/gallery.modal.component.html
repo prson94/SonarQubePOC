@@ -69,6 +69,78 @@
 </div>
 
 <div class="tile tile-detail">
+    <header>Modal with Side Panel</header>
+    <div class="gallery-section">
+        <p>A side panel can also be added to medium, large and xLarge dialogs.</p>
+        <p>Settings for the modal can be changed in the form below.</p>
+        <button igButton label="Open Modal" (click)="isModalVisible = true" tabindex="3"></button><br />
+        <d3s-modal [showTitle]="false"
+                   [isVisible]="isModalVisible"
+                   [showConfirm]="false"
+                   [additionalClasses]="sidePanelModalAdditionalClasses"
+                   (onClose)="isModalVisible = false">
+            <div class="modal-with-side-panel">
+                <div class="modal-dialog-main-panel">
+                    <div class="content condensed-table">
+                        <div class="modal-edit-form">
+                            <div class="title">
+                                Match Detection
+                            </div>
+                        </div>
+                        <div class="scrollable-content">
+                            <ig-property-group title="Collapse / Expand for content overflow" [expanded]="true" [showHeaderLine]="false" [shouldBePadded]="false">
+                                <div inputs>
+                                    <span [innerHtml]="getLorem(3)"></span>
+                                </div>
+                            </ig-property-group>
+
+                            <ig-property-group title="Large category to show scrolling" [expanded]="false" [showHeaderLine]="false" [shouldBePadded]="false">
+                                <div inputs>
+                                    <span [innerHtml]="getLorem(15)"></span>
+                                </div>
+                            </ig-property-group>
+                        </div>
+                    </div>
+                    <div class="action-bar">
+                        <span class="grow"></span>
+                        <button igButton (click)="isModalVisible = false" class="ig-button-primary" label="Close"></button>
+                    </div>
+                </div>
+                <div class="side-panel" *ngIf="!isLoading">
+                    <side-panel (expandedChange)="sidePanelOpen=$event"
+                                (selectedPanelChange)="sidePanelTab=$event"
+                                [selectedItem]="selection"
+                                [panelApplies]="true"
+                                hasDetail="true"
+                                [storageKey]="sidePanelStorageKey"
+                                [height]="'calc(100vh - 220px)'"
+                                [multipleItemsSelected]="multipleItemsSelected">
+                    </side-panel>
+                </div>
+            </div>
+        </d3s-modal>
+
+
+        <br /><br />
+
+        <ig-property-group title="Modal settings" [expanded]="false">
+            <div inputs>
+                <div class="row">
+                    <label for="sidePanelAdditionalClasses">additionalClasses</label><br />
+                    <p-dropdown igDropdown
+                                id="sidePanelAdditionalClasses"
+                                required
+                                igSize="small"
+                                [appendTo]="'body'"
+                                [(ngModel)]="sidePanelModalAdditionalClasses"
+                                [options]="sidePanelClassOptions"></p-dropdown>
+                </div>
+            </div>
+        </ig-property-group>
+    </div>
+</div>
+
+<div class="tile tile-detail">
     <header>Properties</header>
     <p-table [value]="properties">
         <ng-template pTemplate="header">

@@ -40,13 +40,14 @@ namespace d360.web.Controllers.V2
         IIssueRepository issueRepository;
         IResponsibilityRepository responsibilityRepository;
 
-        public ActionsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
-            : base(community, company)
+        public ActionsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             assetRepository = assets;
             commentRepository = comments;
             issueRepository = issues;
             responsibilityRepository = responsibilities;
+            SettingsRepository = settingsRepository;
         }
 
         /// <summary>
@@ -125,7 +126,7 @@ namespace d360.web.Controllers.V2
                 case "desc":
                     break;
                 default:
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid value for _direction. Allowed values are: asc; desc"));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection));
             }
 
             if (string.IsNullOrEmpty(_order))
@@ -188,7 +189,7 @@ namespace d360.web.Controllers.V2
                     IssueType issueType = this.issueRepository.GetIssueTypeByUID(atGuid);
 
                     if (issueType == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Action Type with Uid {actionTypeUid} could not be found.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid))).ConfigureAwait(false);
                     else
                     {
                         queries.Add("IT.[Uid] = @actionTypeUid");
@@ -219,13 +220,13 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Action Type Not Found", $"Invalid GUID {actionTypeUid}.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ActionApiMessages.ActionTypeNotFound, string.Format(ApiMessages.InvalidGuid, actionTypeUid))).ConfigureAwait(false);
                 }
             }
 
             if (!isOrderByFieldValid)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Order By Field Not Found", $"The field you specified for sorting ({_order}) could not be found.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ActionApiMessages.OrderByFieldNotFound, string.Format(ActionApiMessages.OrderByFieldNotFoundMessage, _order))).ConfigureAwait(false);
             }
 
             if (!string.IsNullOrEmpty(assetUid) && !string.IsNullOrWhiteSpace(assetUid))
@@ -235,7 +236,7 @@ namespace d360.web.Controllers.V2
                     Asset asset = this.assetRepository.GetAssetByUID(aGuid);
                     if (asset == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Asset Not found", $"Asset with Uid {assetUid} could not be found.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.AssetNotfound, string.Format(ActionApiMessages.AssetUidIsNotValid, assetUid))).ConfigureAwait(false);
                     }
 
                     queries.Add("A.[Uid] = @assetUid");
@@ -243,7 +244,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Asset Not found", $"Invalid GUID {assetUid}.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.AssetNotfound, string.Format(ApiMessages.InvalidGuid, assetUid))).ConfigureAwait(false);
                 }
             }
 
@@ -309,7 +310,7 @@ for json path";
 
                 if (model == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have passed an empty or invalid set of criteria.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.EmptyInvalidParameterSet);
                 }
                 else if (model.assets.Count == 0)
                 {
@@ -340,7 +341,7 @@ for json path";
                     { "model", JsonConvert.SerializeObject(model) }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -376,12 +377,12 @@ for json path";
 
                     if (!validUid)
                     {
-                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Action Type Uid provided does not exist.")).ConfigureAwait(false);
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()))).ConfigureAwait(false);
                     }
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Action Type Uid provided is invalid.")).ConfigureAwait(false);
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
                 }
             }
 
@@ -395,17 +396,17 @@ for json path";
 
                     if (assetType == null)
                     {
-                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type Uid provided does not exist.")).ConfigureAwait(false);
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
                     }
                     else if (assetType.Class == AssetTypeClass.Diagram)
                     {
-                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid.")).ConfigureAwait(false);
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
                     }
 
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid.")).ConfigureAwait(false);
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
                 }
             }
 
@@ -419,11 +420,11 @@ for json path";
 
                     if (asset == null)
                     {
-                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Uid provided does not exist.")).ConfigureAwait(false);
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound,assetUid.ToString()))).ConfigureAwait(false);
                     }
                     else if(asset.AssetType.Class == AssetTypeClass.Diagram)
                     {
-                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid provided is invalid.")).ConfigureAwait(false);
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
                     }
 
                     if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
@@ -431,14 +432,14 @@ for json path";
                         var assetTypeuUid = Guid.Parse(assetTypeUidParam.Value);
                         if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
                         {
-                            return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid does not match the Asset Type provided.")).ConfigureAwait(false);
+                            return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.AssetValidateWithAssetType)).ConfigureAwait(false);
                         }
                     }
 
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid provided is invalid.")).ConfigureAwait(false);
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
                 }
             }
 
@@ -448,12 +449,12 @@ for json path";
             {
                 if (string.IsNullOrEmpty(nameParam.Value.Trim()))
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Empty string provided for Name. Cannot be empty.")).ConfigureAwait(false);
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest,ActionApiMessages.NameNotEmptyAndRequired)).ConfigureAwait(false);
                 }
 
                 if (nameParam.Value.Trim().Length > 250)
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Name provided must be less then 250 characters in length.")).ConfigureAwait(false);
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
                 }
             }
 
@@ -467,12 +468,12 @@ for json path";
 
                     if (!validUid)
                     {
-                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Resource Uid provided does not exist."));
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, ActionApiMessages.ResourceUidNotFound)).ConfigureAwait(false);
                     }
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Resource Uid provided is invalid."));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
                 }
             }
 
@@ -482,7 +483,7 @@ for json path";
             {
                 if (!bool.TryParse(limitToActiveWorkflowsParam.Value, out _))
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Limit To Active Workflows value provided is not valid."));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidLimitActiveWorkflow)).ConfigureAwait(false);
                 }
             }
 
@@ -516,7 +517,7 @@ for json path";
 
                 if (assetType == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {AssetTypeUid} could not be found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()))).ConfigureAwait(false);
                 }
 
                 var allocations = await this.issueRepository.GetAllocationByAssetType(AssetTypeUid);
@@ -529,7 +530,7 @@ for json path";
                     { "Endpoint Method", prefix  }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -553,7 +554,8 @@ for json path";
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage
+)).ConfigureAwait(false);
                 }
 
                 if (model.Uid != null)
@@ -562,25 +564,25 @@ for json path";
 
                     if (validUid)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Uid provided already in use.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UniqueUid)).ConfigureAwait(false);
                     }
                 }
 
                 if (string.IsNullOrEmpty(model.Name.Trim()))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Empty string provided for Name. Cannot be empty.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameNotEmptyAndRequired)).ConfigureAwait(false);
                 }
 
                 if (model.Name.Trim().Length > 250)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name provided must be less then 250 characters in length.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
                 }
 
                 var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
 
                 if (validName)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name must be unique. Workflow action already exists with this name")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UniqueNameWorkflowAction)).ConfigureAwait(false);
                 }
 
                 if (model.Uid == null || model.Uid == Guid.Empty)
@@ -623,7 +625,7 @@ for json path";
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
             }
         }
 
@@ -648,41 +650,41 @@ for json path";
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
 
                 if (model.Uid == null || model.Uid == Guid.Empty)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"A valid Uid is required.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UidNotEmptyAndRequired)).ConfigureAwait(false);
                 }
 
                 var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == model.Uid);
 
                 if (issueType == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The Uid provided is invalid.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UidNotValid)).ConfigureAwait(false);
                 }
 
 
                 if (model.Name == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name is a required field.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameNotNull)).ConfigureAwait(false);
                 }
 
                 if (string.IsNullOrEmpty(model.Name.Trim()))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Empty string provided for Name. Cannot be empty.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameNotEmptyAndRequired)).ConfigureAwait(false);
                 }
 
                 if (model.Name.Trim().Length > 250)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name provided must be less then 250 characters in length.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
                 }
 
                 var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower() && i.uid != model.Uid);
 
                 if (validName)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name must be unique. Workflow action already exists with this name")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,ActionApiMessages.UniqueNameWorkflowAction)).ConfigureAwait(false);
                 }
 
                 if (model.Description == null)
@@ -711,7 +713,7 @@ for json path";
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
             }
         }
 
@@ -732,12 +734,12 @@ for json path";
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
             }
 
             if (actionTypeUid == null || actionTypeUid == Guid.Empty)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"A valid actionTypeUid must be provided.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
             }
 
 
@@ -763,18 +765,18 @@ for json path";
 
             if (issueType == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"No Action Type found matching the Uid Provided.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.InvalidActionTypeUid, actionTypeUid.ToString()))).ConfigureAwait(false);
             }
 
             if (!model.cascade && (Company.Issues.Any(x => x.IssueTypeID == issueType.ID)))
             {
                 if (IsFromUI)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The selected action type ({issueType.Name}) has associated actions, and therefore cannot be deleted.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.ChildRecordExistsIssueType, issueType.Name))).ConfigureAwait(false);
                 }
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions. Enable on cascade request to delete.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.CascadeDeleteActionType)).ConfigureAwait(false);
                 }
             }
 
@@ -1165,16 +1167,8 @@ for json path";
 
         private bool IsWriteActionDescriptionEnabled()
         {
-            var setting = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID && i.SettingID == 61).SingleOrDefault();
-            if (setting == null)
-            {
-                return true;
-            }
-            else
-            {
-                return bool.Parse(setting.Value);
-            }
-
+            var setting = SettingsRepository.GetSettings().Single(s => s.ID == Setting.WriteActionDescription);
+            return (setting.Value == "true");
         }        
 
         /// <summary>
@@ -1427,7 +1421,7 @@ for json path";
 
                 if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, "Allocation already exists."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ActionApiMessages.UniqueAllocation)).ConfigureAwait(false);
                 }                
 
                 if (model.responsibilityTypeUid.Count() > 0)
@@ -1438,7 +1432,7 @@ for json path";
                     {
                         if(!responsibilityTypes.Any(rt => rt.uid == uid))
                         {
-                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format("{0} is an invalid responsibilityTypeUid for {1}.", uid, assetType.Name)));
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name))).ConfigureAwait(false);
                         }
                     }
                 }

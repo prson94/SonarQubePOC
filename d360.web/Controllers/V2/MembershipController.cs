@@ -32,6 +32,8 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
+using d360.core.enums;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -46,8 +48,7 @@ namespace d360.web.Controllers.V2
         readonly ICompanyContext _company;
         readonly IMembershipRepository membershipRepository;
         readonly IAssetRepository assetRepository;
-        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             _company = company;
             this.membershipRepository = membershipRepository;
@@ -91,7 +92,7 @@ namespace d360.web.Controllers.V2
                     Cancellationtoken = CancellationToken.None;
                 }
 
-                var settings = Community.GetCompanySettings();
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
                 bool IsCurrentUser = false;
 
                 if (ResourceID != null)
@@ -102,9 +103,9 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE" && IsCurrentUser == false)
+                if (!Company.CurrentResourceIsAdmin && !showResources && IsCurrentUser == false)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
                 }
 
                 string finalSql = "";
@@ -128,7 +129,7 @@ namespace d360.web.Controllers.V2
                     bool tempbool;
                     if (!bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "iscommunityuserresposibility").Value, out tempbool))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Value", $"  {queryParams.ToList().FirstOrDefault(q => q.Key == "iscommunityuserresposibility").Value} is not a valid boolean value")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidBoolean)).ConfigureAwait(false);
                     }
 
                     iscommunityuserresposibility = tempbool;
@@ -139,7 +140,7 @@ namespace d360.web.Controllers.V2
                     Guid tempguid;
                     if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "responsibilitytypeuid").Value, out tempguid))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Value", $"  {queryParams.ToList().FirstOrDefault(q => q.Key == "responsibilitytypeuid").Value} is not a valid GUID value")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(ApiMessages.InvalidGuid, queryParams.ToList().FirstOrDefault(q => q.Key == "responsibilitytypeuid").Value))).ConfigureAwait(false);
                     }
 
                     responsibilitytypeuid = tempguid;
@@ -244,7 +245,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", isValid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
                 }
 
                 List<FieldType> fieldTypes;
@@ -318,13 +319,15 @@ namespace d360.web.Controllers.V2
                     if (!string.IsNullOrEmpty(filterValue))
                     {
                         FilterExpressionParser filterExpressionParser;
+                        var filterDataProvider = new FilterDataProvider(this.Company);
+
                         if (!iscommunityuserresposibility)
                         {
-                            filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
+                            filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false, true);
                         }
                         else
                         {
-                            filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CommunityResposibilityResource, false, false);
+                            filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CommunityResposibilityResource, false, false);
                         }
                         filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
                         queries.Add("(" + filterExpressionParser.Parse(filterValue, out Dictionary<string, object> sqlParams, out List<int> filteredFieldIds) + ")");
@@ -382,7 +385,8 @@ namespace d360.web.Controllers.V2
                     queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
                 }
 
-                if (Community.GetCompanySettingByKey<bool>("HideData3SixtyUsers") && !IsCurrentUser)
+                var hide = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+                if (hide && !IsCurrentUser)
                 {                    
                     queries.Add("email not like '%@infogix.com'");
                 }
@@ -413,12 +417,12 @@ namespace d360.web.Controllers.V2
 
                 if (validCols.All(x => x.ToLowerInvariant() != _order.ToLowerInvariant()))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, ActionApiMessages.OrderByFieldNotFound)).ConfigureAwait(false);
                 }
 
                 if (!new[] { "asc", "desc" }.Contains(_direction.ToLowerInvariant()))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order passed in the request")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidDirection)).ConfigureAwait(false);
                 }
 
                 orderBySQL = $"order by {_order} {_direction}";
@@ -476,12 +480,12 @@ namespace d360.web.Controllers.V2
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorFilterExpressionParse, errorMessage)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -507,7 +511,7 @@ namespace d360.web.Controllers.V2
 
             if (groupUid == Guid.Empty)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group Uid passed in is empty. Please provided a valid group"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.UidNotEmptyAndRequired));
             }
 
             var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
@@ -516,29 +520,29 @@ namespace d360.web.Controllers.V2
 
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
             }
 
             if (isValidGroup.Total == 0)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group UID. Group does not exist."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.GroupUidNotExists));
             }
 
             if (isValidGroup.items?.First()?.IsActiveDirectoryGroup == true)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group UID provided is an active directory group and cannot be managed manually."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.GroupIsAcitveDirectorNotManageManually));
             }
 
             var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
 
             if (duplicatedUsers.Count() != 0)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User UID appears multiple times."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.DuplicateUserUidProvided));
             }
 
             if (users.Count == 0)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No user UIDs provided."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NoUserUIDProvided));
             }
 
             var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
@@ -550,14 +554,14 @@ namespace d360.web.Controllers.V2
 
                 if (!isValid)
                 {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs do not exist."));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ActionApiMessages.UidNotValid));
                 }
 
                 var isUser = this.assetRepository.GetAssetByUID(user.Uid);
 
                 if (isUser == null || isUser.Object != "Resource")
                 {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not a user."));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.InvalidUserUids));
                 }
 
 
@@ -565,7 +569,7 @@ namespace d360.web.Controllers.V2
 
                 if (isMember != null)
                 {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.Uid.ToString()} is already a member of this group"));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.UserAlreadyMemberOfGroup, user.Uid.ToString())));
                 }
 
                 resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
@@ -769,11 +773,11 @@ namespace d360.web.Controllers.V2
 
                 if (!this.IsValidGuid(queryParams, "uid"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.UidNotValid)).ConfigureAwait(false);
                 }
                 if (!this.IsValidGuid(queryParams, "resourceuid"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid Resource Uid provided in request")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
                 }
                 var results = await this.membershipRepository.GetGroups(queryParams);
 
@@ -786,7 +790,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -813,7 +817,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", "Access Denied.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.Forbidden ,ApiMessages.AccessDenied)).ConfigureAwait(false);
                 }
 
                 var group = (await Company.QueryAsync<Group>(@"
@@ -825,7 +829,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if (group?.PrimaryOwnerResourceID == userId)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Cannot delete Primary Owner of group.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, ApiMessages.PrimayOwnerOfGroupNotDelete)).ConfigureAwait(false);
                 }
 
                 var res = await Company.Database.Connection.ExecuteAsync(@"delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID;  
@@ -845,11 +849,11 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if (res > 0)
                 {
-                    return successMessageResponse(HttpStatusCode.OK, "User removed.", "User removed from group."); // deleted
+                    return successMessageResponse(HttpStatusCode.OK, ApiMessages.Userremoved, ApiMessages.UserremovedMessage); // deleted
                 }
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Resource / Group doesn't exist")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.NotFound, ApiMessages.ResourceGroupNotExists)).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -859,7 +863,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", "Membership.DeleteGroupMember => " }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -885,12 +889,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized,  ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
                 }
 
                 if (users == null || users.Count() == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", $"No users provided in request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
                 }
 
                 List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
@@ -921,7 +925,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -961,12 +965,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             if (!Company.CurrentResourceIsAdmin)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
             }
 
             if (users == null || users.Count == 0)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
             }
 
             users.ForEach(u => u.IsNew = true);
@@ -984,7 +988,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1049,26 +1053,26 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 if (Community.CurrentCompanySsoModel.AuthenticationType != core.enums.AuthenticationType.Forms)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true, Not allowed for authentication type other than Forms")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest,ApiMessages.IsChangePwdReqAuthOtherThanForm)).ConfigureAwait(false);
                 }
                 if (!IsCurrentUser)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true only for current user")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,ApiMessages.IsChangePwdReqCurrentUser)).ConfigureAwait(false);
                 }
                 if (users != null && users.Count > 1)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Only one request accepted for IsChangePasswordReqeust set to true.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,ApiMessages.IsChangePwdReqOneReq)).ConfigureAwait(false);
                 }
             }
 
             if (!Company.CurrentResourceIsAdmin && IsCurrentUser == false)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
             }
 
             if (users == null || users.Count == 0)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,ApiMessages.NoUserRequest)).ConfigureAwait(false);
             }
 
             users.ForEach(u => u.IsNew = false);
@@ -1086,7 +1090,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1117,7 +1121,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1149,7 +1153,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1176,7 +1180,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message)).ConfigureAwait(false);
                 }
 
-                return await Task.FromResult(successMessageResponse(result.StatusCode, "Success", result.Message)).ConfigureAwait(false);
+                return await Task.FromResult(successMessageResponse(result.StatusCode,ApiMessages.Success, result.Message)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1185,7 +1189,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1240,7 +1244,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 if (string.IsNullOrWhiteSpace(favorite.Name))
                 {
                     string message = "Name is required.";
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1249,7 +1253,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 if (favorite.Type == FavoriteType.Page && string.IsNullOrWhiteSpace(favorite.Route))
                 {
                     string message = "Favorites of type Page cannot have an empty route.";
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type and Route.", message)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1263,7 +1267,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 else
                 {
                     string message = "Uid Invalid for " + favorite.Type.ToString();
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid.", message)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, message)).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -1273,7 +1277,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", "Membership.ToggleFavoriteOrHomepage => " }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error.", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1295,12 +1299,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden,ApiMessages.AccessDenied));
             }
 
             if (groups.Count() < 1)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No Groups provided in request"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NoGroupRequest));
             }
 
             var execution = getApiExecution(groups.Count);
@@ -1349,19 +1353,19 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden,ApiMessages.AccessDenied));
             }
 
             if (groups.Count < 1)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,ApiMessages.NoGroupRequest));
             }
 
             var isValid = groups.All(x => x.Uid.HasValue);
 
             if (!isValid)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Uid must be provided in all requests"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.UidNotEmptyAndRequired));
             }
 
             var execution = getApiExecution(groups.Count);
@@ -1390,25 +1394,25 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden,ApiMessages.AccessDenied));
             }
 
             if (groups.Count < 1)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,ApiMessages.NoGroupRequest));
             }
 
 
             if (groups.Any(x => string.IsNullOrEmpty(x.Name)))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Name is missing in one or more of the groups in the payload. Name must be provided."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NameMissingInGroupPayload));
             }
 
             foreach (var g in groups.FindAll(x => x.Uid.HasValue && x.Uid != Guid.Empty))
             {
                 if (Company.Assets.Any(a => a.uid == g.Uid))
                 {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more of the Uids specified already exists."));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.OneMoreUidExists));
                 }
             }
 
@@ -1445,12 +1449,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden,ApiMessages.AccessDenied));
             }
 
             if (!Company.Any<AssetType>(x => x.uid == organizationTypeUid && x.Object == core.SystemObjects.OrganizationType.ToString()))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid organizationTypeUid provided")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidOrgTypeUid)).ConfigureAwait(false);
             }
 
             var queryParams = Request.GetQueryNameValuePairs();
@@ -1480,7 +1484,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             if (!string.IsNullOrEmpty(isValid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
             }
             try
             {
@@ -1491,12 +1495,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorFilterExpressionParse, errorMessage)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1519,7 +1523,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden,ApiMessages.AccessDenied));
             }
 
             try
@@ -1527,14 +1531,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 OrganizationDetailModel organizationDetails = await membershipRepository.GetOrganizationsDetails(organizationUid);
                 if (organizationDetails == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Organization Uid", "Invalid Organization Uid provided")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidOrgUid)).ConfigureAwait(false);
                 }
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizationDetails))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1614,17 +1618,11 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             var prefix = "Membership.GetApikey => ";
 
-            var showAllUsersAPIKey = false;
-            var settings = Community.GetCompanySettings();
-            if (settings.Any(i => i.Key == "ShowAllUsersAPIKey"))
-            {
-                showAllUsersAPIKey = bool.Parse(settings["ShowAllUsersAPIKey"]);
-            }
-
+            var showAllUsersAPIKey = SettingsRepository.GetSettingValue<bool>(Setting.ShowAllUsersAPIKey);
 
             if (!Company.CurrentResourceIsAdmin && !showAllUsersAPIKey)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
             }
 
             try
@@ -1633,7 +1631,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if (resource is null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid user information", "Invalid user information")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, ApiMessages.InvalidUser)).ConfigureAwait(false);
                 }
 
                 var apikeydetail = new ApiKeyDetailModel
@@ -1644,7 +1642,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if (apikeydetail.apiKey == null || apikeydetail.apiSecret == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid user information", "Invalid user information")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidUser)).ConfigureAwait(false);
                 }
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apikeydetail))).ConfigureAwait(false);
             }
@@ -1655,7 +1653,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1696,7 +1694,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1722,19 +1720,19 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             if (model.assetTypeUid == null && model.assetUid == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Either assetTypeUid or assetUid must be provided")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ActionApiMessages.AssetTypeOrAssetRequired)).ConfigureAwait(false);
             }
 
             if (model.assetTypeUid != null && model.assetUid != null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Only one of assetTypeUid or assetUid should be provided")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.AssetTypeOrAssetRequired)).ConfigureAwait(false);
             }
 
             if (model.assetTypeUid != null)
             {
                 if ((model.assetTypeUid.Value == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == model.assetTypeUid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1751,7 +1749,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if ((model.assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == model.assetUid.Value))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid provided")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ApiMessages.InvalidAssetUid)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1770,13 +1768,13 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if (followDetail.HardFollow)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are already watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.AlreadyWatch, (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
                 }
                 else
                 {
                     if (followDetail != null && !followDetail.HardFollow)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You are currently watching '{name}' via it's parent, '{parentName}'.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.CurrentWatch, name, parentName))).ConfigureAwait(false);
                     }
                 }
             }
@@ -1785,17 +1783,17 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 if (followDetail == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are not currently watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.NotCurrentWatch, (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
                 }
                 if (followDetail != null && !followDetail.HardFollow)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You are currently watching this item's parent, '{parentName}'.  You can not unwatch this item individually."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.CurrentWatchNotUnwatchIndividually, parentName))).ConfigureAwait(false);
                 }
             }
 
             bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);
 
-            return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+            return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, string.Format(ApiMessages.YouAreWatching, (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
         }
 
 
@@ -1818,12 +1816,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             if (email == null)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Invalid resource uid specified.");
+                return errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.NotFound, ActionApiMessages.ResourceUidNotValid);
             }
 
             if (size < 1 || size > 2048)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid request, invalid size specified for image. Value must be less then 2048 or greater than 0.");
+                return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, ApiMessages.ImageSize2048) ;
             }
 
 
@@ -1899,7 +1897,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             if ((assetTypeUid == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == assetTypeUid))
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided.");
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetTypeUid);
             }
 
             var assetType = assetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -1909,7 +1907,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if ((assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == assetUid.Value))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid provided.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetUid);
                 }
                 else
                 {
@@ -1917,7 +1915,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                     if (asset.AssetTypeUid != assetTypeUid)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid does not match the asset type provided.");
+                        return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.AssetValidateWithAssetType);
                     }
 
                     response = Company.Any<Follow>(F => F.ObjectID == asset.ObjectID && F.ObjectType == asset.Object && F.ResourceID == Company.CurrentResourceID);
@@ -1955,28 +1953,28 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if (model is null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Model cannot be empty")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
                 }
 
 
                 if (string.IsNullOrEmpty(model?.apiKey))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "apikey is required field")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "apikey"))).ConfigureAwait(false);
                 }
 
                 if (string.IsNullOrEmpty(model?.apiSecret))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "apiSecret is required field")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "apiSecret"))).ConfigureAwait(false);
                 }
 
                 if (resource.APIPublicKey != model.apiKey || resource.APIPrivateKey != model.apiSecret)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid apiKey or apiSecret for currentUser")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidApiKeyOrApiSecret)).ConfigureAwait(false);
                 }
 
                 if (resource is null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid user information", "Invalid user information")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidRequest, ApiMessages.InvalidUser)).ConfigureAwait(false);
                 }
 
                 var newKeys = Community.Query<ApiKeyDetailModel>(@"
@@ -2012,7 +2010,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", "UpdateApiKey" }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
     }

@@ -14,42 +14,53 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using System.Collections.Concurrent;
 using System.Data;
+using System.Text.Json;
+using d360.extensions.mail;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace igx.functions.databasetaskprocessor
-{    
-    public static class DatabaseTaskProcessor
+{
+    public class DatabaseTaskProcessor
     {
         const string functionName = "DatabaseTask_ProcessScheduled";
-        const string timerSettings = "*/1 * * * * *";        
+        const string timerSettings = "*/1 * * * * *";
         const int DEFAULT_QUEUE_ITEMS = 1000;
-
+        private CoreFunction CoreFunction;
 
         [FunctionName("DatabaseTaskProcessor")]
-        public static void Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, System.IO.TextWriter log)
+        public async Task Run([TimerTrigger(timerSettings, RunOnStartup = true)] TimerInfo myTimer, System.IO.TextWriter log, Microsoft.Azure.WebJobs.ExecutionContext context)
         {
             try
             {
+                var config = new ConfigurationBuilder()
+                   .SetBasePath(context.FunctionAppDirectory)
+                   .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
+                   .AddEnvironmentVariables()
+                   .Build();
+
+                CoreFunction = new CoreFunction(config);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 3).ToList();
+                companies = companies.Where(i => i.CompanyID == 4).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
-                                
+
                 companies.AsParallel().ForAll(c =>
                 {
                     try
                     {
                         var numberOfQueueItems = DEFAULT_QUEUE_ITEMS;
-                        if (int.TryParse(CoreFunction.GetConfigValueByKey("TaskProcessorNumQueueItems"), out int tempNumQueueItems))
+                        if (int.TryParse(CoreFunction.GetConfigValueByKey<string>("TaskProcessorNumQueueItems"), out int tempNumQueueItems))
                         {
                             numberOfQueueItems = tempNumQueueItems > 0 ? tempNumQueueItems : DEFAULT_QUEUE_ITEMS;
                         }
 
                         var indexCollectionModel = new ObjectIndexCollectionModel();
-                        
-                        using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
+
+                        using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, config.GetConnectionString("CommunityContext")))
                         {
                             outerCompanyConnection.Open();
 
@@ -165,6 +176,7 @@ select  T.*
 from    [queue].[Task] T
         inner join @IDs S on S.ID = T.ID
 ";
+
                                 List<QueueTask> queueItems = null;
 
                                 // Checkout select and update should be done in transaction to avoid other webjob instances from
@@ -173,7 +185,7 @@ from    [queue].[Task] T
                                 {
                                     try
                                     {
-                                        queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = new DbString { Value = System.Environment.MachineName, IsAnsi = true, Length = 250 } }, transaction:trans).ToList();
+                                        queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = new DbString { Value = System.Environment.MachineName, IsAnsi = true, Length = 250 } }, transaction: trans).ToList();
 
                                         trans.Commit();
                                     }
@@ -196,11 +208,11 @@ from    [queue].[Task] T
 
                                 if (queueItems != null)
                                 {
-                                    queueItems.AsParallel().ForAll(q =>
+                                    queueItems.AsParallel().ForAll(async q =>
                                     {
                                         try
                                         {
-                                            using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
+                                            using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, config.GetConnectionString("CommunityContext")))
                                             {
                                                 companyConnection.Open();
 
@@ -209,20 +221,20 @@ from    [queue].[Task] T
                                                     switch (q.Action)
                                                     {
                                                         case "Add":
-                                                        #region
+                                                            #region
                                                             addAuditEntry(companyConnection, "Created", q);
                                                             resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
                                                             break;
-                                                    #endregion
-                                                    case "Delete":
-                                                        #region                                                                                             
+                                                        #endregion
+                                                        case "Delete":
+                                                            #region                                     
                                                             addAuditEntry(companyConnection, "Removed", q);
                                                             resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
                                                             break;
-                                                    #endregion
-                                                    case "EventTopicNotification":
-                                                        #region
-                                                        if (!string.IsNullOrEmpty(q.Custom))
+                                                        #endregion
+                                                        case "EventTopicNotification":
+                                                            #region
+                                                            if (!string.IsNullOrEmpty(q.Custom))
                                                             {
                                                                 var customXml = XElement.Parse(q.Custom);
 
@@ -241,9 +253,9 @@ from    [queue].[Task] T
                                                                             {
                                                                                 var topicName = c.EventTopic;
 #if DEBUG
-                                                                            topicName = "events-debug";
+                                                                                topicName = "events-debug";
 #endif
-                                                                            queue.CreateTopicMessage(topicName, new EventInfo
+                                                                                queue.CreateTopicMessage(topicName, new EventInfo
                                                                                 {
                                                                                     Action = ct,
                                                                                     CompanyID = c.CompanyID,
@@ -279,34 +291,26 @@ from    [queue].[Task] T
                                                             {
                                                                 throw new ApplicationException("XML field does not have any valid information contained within.");
                                                             }
-
+                                                            #endregion
                                                             break;
-                                                    #endregion
-                                                    case "Notify":
-                                                        #region Email Notification
-                                                        // this can be used for the comment tag notifications in the future
-                                                        // fusion notifications used to use this but are no longer used
-                                                        break;
-                                                    #endregion
-                                                    case "ObjectIndex":
-                                                        #region
-                                                        resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
+                                                        case "ObjectIndex":
+                                                            #region
+                                                            resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
                                                             break;
-                                                    #endregion
-                                                    case "Update":
-                                                        #region
-                                                        addAuditEntry(companyConnection, "Updated", q);
+                                                        #endregion
+                                                        case "Update":
+                                                            #region
+                                                            addAuditEntry(companyConnection, "Updated", q);
 
                                                             if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
                                                                 resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
                                                             break;
-                                                    #endregion
-                                                    case "TagConsolidated":
+                                                        #endregion
+                                                        case "TagConsolidated":
                                                             addAuditEntry(companyConnection, "Tag Consolidate", q);
                                                             break;
                                                         case "CompanySettingsUpdate":
                                                             addAuditEntry(companyConnection, "Update settings", q);
-
                                                             break;
                                                         case "QueueRebuild":
                                                             if (!string.IsNullOrEmpty(q.Custom))
@@ -364,8 +368,7 @@ from    [queue].[Task] T
 
                         try
                         {
-
-                            var search = new ElasticSearchSource();
+                            var search = new ElasticSearchSource(config.GetConnectionStringOrSetting("CommunityContext"));
 
                             if (indexCollectionModel.Adds.Count > 0)
                             {
@@ -385,7 +388,7 @@ from    [queue].[Task] T
                             {
                                 try
                                 {
-                                    using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
+                                    using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, config.GetConnectionStringOrSetting("CommunityContext")))
                                     {
                                         companyConnection.Open();
                                         SearchIndexer indexer = new SearchIndexer(companyConnection, c.CompanyID, search);
@@ -426,6 +429,7 @@ from    [queue].[Task] T
             }
         }
 
+
         private static void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
         {
             if (!string.IsNullOrEmpty(queueRecord.Custom))
@@ -434,13 +438,13 @@ from    [queue].[Task] T
 
                 var parameters = new DynamicParameters();
 
-                parameters.Add("@MainObject", queueRecord.Object, System.Data.DbType.AnsiString, size: 50);
+                parameters.Add("@MainObject", queueRecord.Object, DbType.AnsiString, size: 50);
                 parameters.Add("@MainObjectID", queueRecord.ObjectID);
                 parameters.Add("@DependentObject", customXml.Element("ActionObject").Value, System.Data.DbType.AnsiString, size: 50);
                 parameters.Add("@DependentObjectID", int.Parse(customXml.Element("ActionObjectID").Value));
                 parameters.Add("@Date", queueRecord.Date);
                 parameters.Add("@ResourceID", int.Parse(customXml.Element("ResourceID").Value));
-                parameters.Add("@Action", oper, System.Data.DbType.AnsiString, size: 15);
+                parameters.Add("@Action", oper, DbType.AnsiString, size: 15);
                 parameters.Add("@NewValue", (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value), System.Data.DbType.AnsiString, size: 50);
 
                 if (customXml.Element("FieldInfo") != null)

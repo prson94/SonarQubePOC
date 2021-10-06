@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { RuleType, Rule, RuleDetail, RuleResultPagedResults } from '../models/rule.model';
+import { RuleType, RuleDetail, RuleResultPagedResults } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -29,13 +29,6 @@ export class RulesService extends BaseObservableService {
                 map(response => <RuleType>response),
                 catchError(err => this.handleError(err))
             );
-    }
-
-    saveRule(rule: Rule): Observable<JsonResult> {
-        if (rule.ID == undefined || !rule.ID) {
-            return this.postDynamic(this.http, 'rule', rule);
-        }
-        return this.putDynamic(this.http, 'rule', rule);
     }
 
     deleteRuleType(id: number): Observable<JsonResult> {
@@ -79,7 +72,10 @@ export class RulesService extends BaseObservableService {
 
         if (isExport) {
             // get Friendly name export
-            uri += "&_isFriendlyNameExport=true&_pageNum=1&_pageSize=20000&_includeDuplicateFlag=True";
+            if (!pageSize) {
+                pageSize = 20000;
+            }
+            uri += `&_isFriendlyNameExport=true&_pageNum=1&_pageSize=${pageSize}&_includeDuplicateFlag=True`;
 
             this.getRule(ruleId)
                 .subscribe(result => {

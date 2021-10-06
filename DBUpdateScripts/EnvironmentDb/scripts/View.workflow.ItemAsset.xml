@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="TDuric" id="View.workflow.ItemAsset-v1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<![CDATA[
+create view [workflow].[ItemAsset] WITH SCHEMABINDING
+as
+	select 
+	wi.id as WorkFlowItemId,
+	cast(coalesce(substring(adv.displayvalue,0,850),'(unknown)') as nvarchar(850)) as AssetName 
+		from [workflow].[type] wt 
+        inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+        inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+        inner join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
+		inner join dbo.AssetDisplayValue adv on assetid = ass.id
+go
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_WorkflowItemAsset')
+BEGIN
+	CREATE UNIQUE CLUSTERED INDEX CIX_WorkflowItemAsset ON [workflow].[ItemAsset](WorkFlowItemId);
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_CIX_WorkflowItemAsset_AssetName')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_CIX_WorkflowItemAsset_AssetName ON [workflow].[ItemAsset](AssetName);
+END
+			]]>
+		</sql>
+		<rollback>
+			<![CDATA[	
+drop view if exists [workflow].[ItemAsset]
+			]]>
+		</rollback>
+	</changeSet>
+
+</databaseChangeLog>

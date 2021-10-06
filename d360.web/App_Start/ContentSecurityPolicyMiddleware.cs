@@ -1,23 +1,20 @@
-﻿using d360.core;
+﻿using d360.core.enums;
+using d360.model;
 using d360.web.caching;
-using Dapper;
 using Microsoft.Owin;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace d360.web
 {
-    public class ContentSecurityPolicyMiddleware
+    public class ContentSecurityPolicyMiddleware : BaseMiddleware
     {
         readonly Func<IDictionary<string, object>, Task> _next;
         const string FramesKey = "FrameAncestors";
-        const int AncestorSettingsID = 77;
 
         private readonly Dictionary<string, List<string>> Permissive = new Dictionary<string, List<string>>
         {
@@ -41,34 +38,13 @@ namespace d360.web
             IOwinContext context = new OwinContext(environment);
             IOwinResponse response = context.Response;
             IOwinRequest request = context.Request;
-
-            var cache = new MemoryCachingProvider();
+            
             int? companyID = request.Get<int?>("CompanyID");
-            ConcurrentBag<CompanyFrameAncestor> ancestors = cache.GetItem<ConcurrentBag<CompanyFrameAncestor>>(FramesKey) ?? new ConcurrentBag<CompanyFrameAncestor>();
-
+            
             if (companyID.HasValue)
             {
-                CompanyFrameAncestor companyAncestor = ancestors.FirstOrDefault(o => o.CompanyID == (int)companyID);
-                string ancestor = string.Empty;
-
-                if (companyAncestor == null)
-                {
-                    using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
-                    {
-                        cnn.Open();
-                        ancestor = cnn.Query<string>(@"select coalesce(CS.Value, S.DefaultValue) from Setting S 
-                            left join CompanySetting CS on CS.SettingID = S.ID and CS.CompanyID = @companyID
-                            where S.ID = @AncestorSettingsID", new { companyID, AncestorSettingsID }).FirstOrDefault();
-
-                        companyAncestor = new CompanyFrameAncestor { CompanyID = (int)companyID, FrameAncestor = ancestor };
-                        ancestors.Add(companyAncestor);
-                    }
-                }
-                else
-                {
-                    ancestor = companyAncestor.FrameAncestor;
-                }
-                cache.SetItem(FramesKey, ancestors);
+                var ctx = CreateOwinCompanyContext(companyID.Value);
+                string ancestor = ctx.GetSettingValue<string>(Setting.FramingDomains);
 
                 //If company has a frame setting, a CSP header should be added to allow the frame ancestors
                 if(!string.IsNullOrEmpty(ancestor))

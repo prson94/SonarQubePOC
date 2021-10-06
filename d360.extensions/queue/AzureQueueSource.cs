@@ -5,35 +5,36 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using d360.core.enums.Workflow;
 using System.Threading.Tasks;
-using Microsoft.Azure;
 using Microsoft.Azure.Storage.Queue;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.RetryPolicies;
 using System.Text;
 using Azure.Messaging.ServiceBus;
 using System.Collections.Concurrent;
+using System.Configuration;
 
 namespace d360.extensions.queue
 {
     public class AzureQueueSource : IQueueSource
     {
-        public string QueueStorageName { get { return CloudConfigurationManager.GetSetting("QueueStorageName"); } }
-        public string QueueStorageKey { get { return CloudConfigurationManager.GetSetting("QueueStorageKey"); } }
-        public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
+        public string QueueStorageName { get { return ConfigurationManager.AppSettings["QueueStorageName"]; } }
+        public string QueueStorageKey { get { return ConfigurationManager.AppSettings["QueueStorageKey"]; } }
+        public string EventServiceBusConnectionString { get { return ConfigurationManager.AppSettings["EventServiceBus"]; } }
 
         //keep service bus clients and senders static and reusable where possible
         //these clients are thread safe and designed to be used with DI or singleton patterns
         private static ServiceBusClient ServiceBusClient;
         private static ConcurrentDictionary<string, ServiceBusSender> ServiceBusSenders;
 
-        private CloudQueueClient cloudClient {
+        private CloudQueueClient cloudClient
+        {
             get
             {
                 return new CloudQueueClient(
                     new Uri($"https://{QueueStorageName}.queue.core.windows.net/"),
                     getCredentials()
                 );
-            }        
+            }
         }
 
         private StorageCredentials getCredentials()
@@ -74,7 +75,7 @@ namespace d360.extensions.queue
             {
                 messageId += $"_O{eventInfo.Object.Object}|{eventInfo.Object.ObjectID}";
             }
-            
+
             return messageId;
         }
 
@@ -88,7 +89,7 @@ namespace d360.extensions.queue
 
                 var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
 
-                queue.AddMessage(msg, options:queueRequestOptions);
+                queue.AddMessage(msg, options: queueRequestOptions);
 
                 // per azure docs popreceipt should be present if sucess https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.storage.queue.cloudqueue.addmessage?view=azure-dotnet-legacy
                 // check added to ensure message was delivered.
@@ -102,9 +103,9 @@ namespace d360.extensions.queue
             }
             return true;
         }
-    
+
         public async Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
-        {            
+        {
             try
             {
                 var queueClient = cloudClient;
@@ -112,8 +113,8 @@ namespace d360.extensions.queue
                 var queue = queueClient.GetQueueReference(queueName);
 
                 var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
-                
-                await queue.AddMessageAsync(msg,null, initialVisibilityDelay, queueRequestOptions, null);
+
+                await queue.AddMessageAsync(msg, null, initialVisibilityDelay, queueRequestOptions, null);
 
                 // per azure docs popreceipt should be present if sucess https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.storage.queue.cloudqueue.addmessage?view=azure-dotnet-legacy
                 // check added to ensure message was delivered.
@@ -139,7 +140,7 @@ namespace d360.extensions.queue
                 items.ForEach(item =>
                 {
                     var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
-                                        
+
                     queue.AddMessage(msg);
                 });
 
@@ -161,11 +162,11 @@ namespace d360.extensions.queue
                 var queue = queueClient.GetQueueReference(queueName);
 
                 await Task.Run(() => {
-                     items.ForEach(item =>
-                     {
-                         var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));                         
-                         queue.AddMessage(msg,initialVisibilityDelay: initialVisibilityDelay);
-                     });
+                    items.ForEach(item =>
+                    {
+                        var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
+                        queue.AddMessage(msg, initialVisibilityDelay: initialVisibilityDelay);
+                    });
                 });
             }
             catch (Exception ex)
@@ -203,6 +204,14 @@ namespace d360.extensions.queue
             var bm = GetServiceBusMessageFromObject(e);
             var sender = CreateServiceBusSender(topicName);
             await sender.SendMessageAsync(bm);
+        }
+
+        public async Task CreateScheduledTopicMessageAsync(EventInfo e, DateTimeOffset delay)
+        {
+            var topicName = getTopicName();
+            var bm = GetServiceBusMessageFromObject(e);
+            var sender = CreateServiceBusSender(topicName);
+            await sender.ScheduleMessageAsync(bm, delay);
         }
 
         public void CreateTopicMessages(List<EventInfo> events)
@@ -253,11 +262,11 @@ namespace d360.extensions.queue
 
         public string GetTopicNameBySetting(string settingName)
         {
-            return CloudConfigurationManager.GetSetting(settingName);
+            return ConfigurationManager.AppSettings[settingName];
         }
 
         private string getTopicName()
-        {            
+        {
             return (GetTopicNameBySetting("EventBusTopicName") ?? "events-debug");
         }
 
@@ -285,14 +294,14 @@ namespace d360.extensions.queue
         {
             var topicName = getTopicName();
             await CreateTopicMessagesAsync(topicName, events);
-        }     
+        }
 
         public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
         {
             var sender = CreateServiceBusSender(topicName);
             var messages = new Queue<ServiceBusMessage>();
 
-            foreach(var @event in events)
+            foreach (var @event in events)
             {
                 messages.Enqueue(GetServiceBusMessageFromObject(@event));
             }

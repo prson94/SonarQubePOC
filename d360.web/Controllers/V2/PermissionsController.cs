@@ -35,8 +35,8 @@ namespace d360.web.Controllers.V2
         #region DI
         IAssetRepository AssetRepository;
 
-        public PermissionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository)
-            : base(community, company)
+        public PermissionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             AssetRepository = repository;
         }
@@ -151,7 +151,7 @@ namespace d360.web.Controllers.V2
         /// <returns>Returns true if permissions are supported</returns>
         private bool SupportsPermissions(AssetTypeClass assetTypeClass)
         {
-            if(new[] { AssetTypeClass.Generic, AssetTypeClass.Fusion, AssetTypeClass.FusionAttribute, AssetTypeClass.Organization, AssetTypeClass.User, AssetTypeClass.Group }.Contains(assetTypeClass))
+            if(new[] { AssetTypeClass.Generic, AssetTypeClass.Organization, AssetTypeClass.User, AssetTypeClass.Group }.Contains(assetTypeClass))
             {
                 return false;
             }

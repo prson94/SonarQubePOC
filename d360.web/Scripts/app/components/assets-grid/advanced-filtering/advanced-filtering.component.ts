@@ -5,7 +5,7 @@ import { FieldsObservableService } from "../../../services/fieldsObservable.serv
 import { CompanySettingsService } from "../../../services/settings.service";
 import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
-import { AdvancedFilterFieldType, AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
+import { AdvancedFilterFieldType, AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldAdvancedCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
@@ -25,7 +25,8 @@ export class AdvancedFilteringComponent implements OnChanges {
     @Input() loadIdentifier: string = "";
     @Input() enableFilterSaving: boolean = true;
     @Input() gridType: string = "List";
-    @Input() fieldsObserver: Observable<AdvancedFilterFieldType[]>
+    @Input() fieldsObserver: Observable<AdvancedFilterFieldType[]>;
+    @Input() externalStorage: string;
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
@@ -36,7 +37,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     filters: Filters;
     emittedFilters: string;
 
-    fields: FieldTypeAPIModelFieldCondition[] = null;
+    fields: FieldTypeAPIModelFieldAdvancedCondition[] = null;
     operators: OperatorModel[] = [];
 
     conditions: AdvancedFilterFieldConditionCollection;
@@ -136,10 +137,17 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         var currentFilters = JSON.stringify(this.filters);
 
+        if (this.isGlobalSearch) {
+            const exatcs: string[] = this.conditions.filters.filter((f) => f.exact).map((f) => f.field);
+            if (exatcs.length > 0) {
+                currentFilters += ` and exact(${exatcs.join(",")})`;
+            }
+        }
+
         if (currentFilters !== this.emittedFilters) {
             this.onChange.emit(this.filters);
             this.saveFilters();
-            this.emittedFilters = JSON.stringify(this.filters);
+            this.emittedFilters = currentFilters;
         }
     }
 
@@ -225,22 +233,22 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private processLoadedData(res: AdvancedFilterFieldType[]) {
-        var tempFields: FieldTypeAPIModelFieldCondition[] = [];
+        var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
         res.forEach((f) => {
             if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
-                var fModel = f as FieldTypeAPIModelFieldCondition;
+                var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
                 tempFields.push(fModel);
             }
         });
 
         SystemFields.GetSystemFieldDefinition(this.gridType).forEach((f) => {
-            var fModel = f as FieldTypeAPIModelFieldCondition;
+            var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);
         });
 
         SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-            var fModel = f as FieldTypeAPIModelFieldCondition;
+            var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);
         });
@@ -278,18 +286,12 @@ export class AdvancedFilteringComponent implements OnChanges {
             ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
         });
 
-        res.filter((r) => r.ValueList?.length > 0).forEach((r) => {
-            let ft = tempFields.find((t) => t.Name === r.Name);
-            ft.Values = [];
-            r.ValueList.forEach((vl) => ft.Values.push(vl));
-        });
-
         this.fields = tempFields;
 
         this.cdRef.markForCheck();
 
         let loadedFilters: AdvancedFilterFieldCondition[] = [];
-        if (this.enableFilterSaving) {
+        if (this.enableFilterSaving || this.isGlobalSearch) {
             loadedFilters = this.loadFilters();
         }
 
@@ -319,9 +321,9 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         loadedFilters.filter((f) => f !== null).forEach((f) => {
             this.conditions.filters.push(f);
-        });
+        });        
 
-        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
+        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));        
         this.visible = true;
 
         this.onItemChange();
@@ -332,7 +334,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         }, 50);
     }
 
-    private updateOperatorsForDateTimeSystemField(f: FieldTypeAPIModelFieldCondition) {
+    private updateOperatorsForDateTimeSystemField(f: FieldTypeAPIModelFieldAdvancedCondition) {
         f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
         f.Operators.forEach((item) => {
             if (item.value === "Equals") {
@@ -349,7 +351,9 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private saveFilters() {
-        localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions));
+        if (this.enableFilterSaving) {
+            localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions));
+        }
     }
 
     private getStorageFilters(): AdvancedFilterFieldConditionCollection {
@@ -371,14 +375,36 @@ export class AdvancedFilteringComponent implements OnChanges {
         return null;
     }
 
+    private getGlobalSearchFilters(): AdvancedFilterFieldConditionCollection {
+        let state: AdvancedFilterFieldConditionCollection;
+        try {
+            if (this.externalStorage) {
+                let parsedState: AdvancedFilterFieldConditionCollection = JSON.parse(this.externalStorage);
+                if (parsedState !== null) {
+                    parsedState.filters.forEach((f) => {
+                        const field = this.fields.find((x) => x.Name === f.field);
+                        f.type = field;
+                        f.friendlyFieldName = field.FriendlyName;
+                    });
+                    state = parsedState;
+                }
+            }
+        } catch (ex) {
+            // eslint-disable-next-line no-console
+            console.warn("Error parsing externaly stored filter");
+        }
+        return state;
+    }
+
     private clearFiltersStorage() {
         localStorage.removeItem(this.getLocalStorageKey());
     }
 
     private loadFilters(): AdvancedFilterFieldCondition[] {
         try {
+            this.conditions = new AdvancedFilterFieldConditionCollection();
             let loadedFilters: AdvancedFilterFieldCondition[] = [];
-            var savedState = this.getStorageFilters();
+            var savedState = this.isGlobalSearch ? this.getGlobalSearchFilters() : this.getStorageFilters();
             if (!savedState && !savedState.filters) {
                 return [];
             }
@@ -468,6 +494,10 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     get isComplexField() {
         return this.loadIdentifier.startsWith("ComplexField");
+    }
+
+    get isGlobalSearch() {
+        return this.loadIdentifier.startsWith("GlobalSearch");
     }
 
     get complexFieldDefinition(): ComplexFieldDefinition {

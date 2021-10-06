@@ -5,24 +5,39 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.integration.AssetFieldRelationship-Rename-v1">
-  <comment>GOV-15287</comment>
+  <changeSet author="Puneet Gupta" id="Table.integration.AssetFieldRelationship-Drop-v1">
+  <comment>GOV-15288</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'AssetFieldRelationship')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'AssetFieldRelationship_backup')
 BEGIN
-	exec sp_rename 'integration.AssetFieldRelationship', 'AssetFieldRelationship_backup';
+	DROP TABLE integration.AssetFieldRelationship_backup;
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'AssetFieldRelationship_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'AssetFieldRelationship_backup')
 BEGIN
-	exec sp_rename 'integration.AssetFieldRelationship_backup', 'AssetFieldRelationship';
+	CREATE TABLE [integration].[AssetFieldRelationship_backup](
+		[Uid] [uniqueidentifier] CONSTRAINT [DF_IntegrationAssetFieldRelationship_Uid] DEFAULT (newid()) NOT NULL,
+		[SynchedAssetTypeID] [int] NOT NULL,
+		[SourceID] [varchar](100) NOT NULL,
+		[FieldName] [nvarchar](250) NOT NULL,
+		[AssetSourceType] [varchar](100) NOT NULL,
+		[AssetSourceID] [varchar](100) NOT NULL,
+		[IsSubject] [bit] NOT NULL,
+		[IntersectTypeID] [int] NULL,
+		[SubjectID] [bigint] NULL,
+		[ObjectID] [bigint] NULL,
+		[IntersectID] [int] NULL,
+		[Present] [bit] CONSTRAINT [DF_IntegrationAssetFieldRelationship_Present] DEFAULT (0) NOT NULL,
+		[Action] [varchar](1) NULL,
+		CONSTRAINT [PK_IntegrationAssetFieldRelationship] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
+	)
 END
 		]]>
 	</rollback>

@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Models;
 using Dapper;
 using Microsoft.ApplicationInsights;
@@ -70,6 +71,7 @@ namespace d360.web.Controllers
     {
         internal ICompanyContext Company;
         internal ICommunityContext Community;
+        internal ISettingsRepository SettingsRepository;
 
         internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
@@ -95,21 +97,16 @@ namespace d360.web.Controllers
 
         #endregion
 
-        public BaseApiController(ICommunityContext community, ICompanyContext company)
+        public BaseApiController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
         {
             Community = community;
             Company = company;
+            SettingsRepository = settingsRepository;
         }
 
         protected internal bool HideData3SixtyUsers()
         {
-            var hideData3SixtyUsers = false;
-            var settings = Community.GetCompanySettings();
-            if (settings.Any(i => i.Key == "HideData3SixtyUsers"))
-            {
-                hideData3SixtyUsers = bool.Parse(settings["HideData3SixtyUsers"]);
-            }
-            return hideData3SixtyUsers;
+            return SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
         }
 
         protected internal IQueryable<Resource> GetCompanyResources()
@@ -173,11 +170,11 @@ namespace d360.web.Controllers
             { 
                 if (ex.Message.ToLower().Contains("invalid filter expression"))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, $"Invalid filter expression used.{ex.Message.Replace("Invalid filter expression:", "")}");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, $"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}");
                 }
                 else if (ex.Message.ToLower().Contains("conversion failed when converting from"))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, "Invalid filter expression used. Please check your filter values and their data types.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, ApiMessages.InvalidFilterExpressionUsedMessage);
                 }
                 else
                 {
@@ -428,6 +425,7 @@ namespace d360.web.Controllers
     {
         internal ICompanyContext Company;
         internal ICommunityContext Community;
+        internal ISettingsRepository SettingsRepository;
 
         internal List<string> limitedFieldTypes = new List<string> {
             DataType.Path.ToString(),
@@ -443,10 +441,11 @@ namespace d360.web.Controllers
             DataType.Counter.ToString()
         };
 
-        public BaseController(ICommunityContext community, ICompanyContext company)
+        public BaseController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
         {
             Community = community;
             Company = company;
+            SettingsRepository = settingsRepository;
         }
 
         #region Validation constants
@@ -602,24 +601,12 @@ namespace d360.web.Controllers
 
         internal bool HideData3SixtyUsers()
         {
-            var hideData3SixtyUsers = false;
-            var settings = Community.GetCompanySettings();
-            if (settings.Any(i => i.Key == "HideData3SixtyUsers"))
-            {
-                hideData3SixtyUsers = bool.Parse(settings["HideData3SixtyUsers"]);
-            }
-            return hideData3SixtyUsers;
+            return SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
         }
 
         internal bool ShowAllUsersAPIKey()
         {
-            var showAllUsersAPIKey = false;
-            var settings = Community.GetCompanySettings();
-            if (settings.Any(i => i.Key == "ShowAllUsersAPIKey"))
-            {
-                showAllUsersAPIKey = bool.Parse(settings["ShowAllUsersAPIKey"]);
-            }
-            return showAllUsersAPIKey;
+            return SettingsRepository.GetSettingValue<bool>(Setting.ShowAllUsersAPIKey);
         }
 
         internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true)
@@ -773,7 +760,7 @@ namespace d360.web.Controllers
                                     }
                                     else
                                     {
-                                        int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
+                                        int maxItems = SettingsRepository.GetSettingValue<int>(Setting.MaxDropdownItems);
                                         int count = Company.Query<int>(countSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID }).FirstOrDefault();
 
                                         if (count > maxItems)
@@ -1056,7 +1043,7 @@ namespace d360.web.Controllers
                                     }
                                     else
                                     {
-                                        int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
+                                        int maxItems = SettingsRepository.GetSettingValue<int>(Setting.MaxDropdownItems);
                                         int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID }).FirstOrDefault();
 
                                         string selectedValue = null;

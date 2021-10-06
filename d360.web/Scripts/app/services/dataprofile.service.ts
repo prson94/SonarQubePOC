@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpClientJsonpModule } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpClientJsonpModule, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, throwError } from "rxjs";
 import { catchError, map, debounceTime } from "rxjs/operators";
 
@@ -10,6 +10,7 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 
 import * as _ from 'lodash';
+import { SortOrder } from '../models/enums.model';
 
 @Injectable()
 export class DataProfileService extends BaseObservableService {
@@ -55,7 +56,38 @@ export class DataProfileService extends BaseObservableService {
             );
     }
 
-    public getMatchesByMatchType(assetUid: string, matchType: string, pageNum: number, pageSize: number, simpleFilter: string = ''): Observable<any> {
+    public exportMatches(assetUid: string, matchType: string, simpleFilter: string = '', advancedFilter: string = "", assetName: string, callback: Function = null) {
+
+        let pageNum: number = 1;
+        let pageSize: number = 200000;
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': "application/octet-stream" }), responseType: 'blob'
+        };
+
+        let url: string = `/api/v2/dataprofiles/${assetUid}/similar/${matchType}?_pageSize=${pageSize}&_pageNum=${pageNum}&_includeTotal=false`;
+
+        if (simpleFilter) {
+            url += `&_simpleFilter=${simpleFilter}`;
+        }
+
+        if (advancedFilter) {
+            url += `&_filter=${advancedFilter}`;
+        }
+
+        this.
+            http
+            .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+            .subscribe((data) => {
+                let filename = `Filtered ${assetName} ${matchType.toLowerCase() === 'data' ? "Duplicate" : "Similiar"} Fields List`;
+                this.downloadFile(data, filename);
+                if (callback) {
+                    callback();
+                }
+            });
+    }
+
+    public getMatchesByMatchType(assetUid: string, matchType: string, pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", sortField: string = "", sortOrder: number = SortOrder.Ascending): Observable<any> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -65,12 +97,39 @@ export class DataProfileService extends BaseObservableService {
             url += `&_simpleFilter=${simpleFilter}`;
         }
 
+        if (advancedFilter) {
+            url += `&_filter=${advancedFilter}`;
+        }
+
+        if (sortField) {
+            url += `&_order=${sortField}`;
+            if (sortOrder && sortOrder !== SortOrder.None) {
+                url += `&_direction=${sortOrder === SortOrder.Ascending ? "asc" : "desc"}`;
+            }
+        }
         return this
             .http
             .get(url, httpOptions)
             .pipe(
                 map((response) => <any>response),
-                catchError((err) => this.handleError(err, true))
+                catchError((err) => err instanceof HttpErrorResponse && err.status === 404 ? null : this.handleError(err))
             );
+    }
+
+    downloadFile(data: Blob, name: string) {
+
+        var filename = `${name} _${new Date().toDateString()}_.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data);
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 }

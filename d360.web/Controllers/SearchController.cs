@@ -26,8 +26,8 @@ namespace d360.web.Controllers
             ICommunityContext community,
             ICompanyContext company,
             ISearchSource searchSource,
-            IAssetRepository repository)
-            : base(community, company)
+            IAssetRepository repository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             SearchSource = searchSource;
             AssetRepository = repository;
@@ -146,8 +146,13 @@ namespace d360.web.Controllers
             types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
 
             List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
+            
+            //Overload "Predicate" class as a representation for synonyms
+            classes.Add(new IndexableType { Name = "Synonym", Class = (int)AssetTypeClass.Predicate, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.Predicate.ToString() });
 
             classes.AddRange(types);
+
+            //Reclassify Reference/ReferenceItemType
             classes.Where((c) => c.Class == 9).ToList().ForEach((c) => c.Class = 14);
 
             return Json(classes, JsonRequestBehavior.AllowGet);
@@ -200,6 +205,8 @@ namespace d360.web.Controllers
         }
 
         #endregion
+
+        #region Enrich elastic results with DB data
 
         //Icons set based on Category/Class directly
         private static readonly Dictionary<string, string> categoryMap = new Dictionary<string, string>() {
@@ -272,7 +279,7 @@ namespace d360.web.Controllers
 
                 var menuItems = Company.Query<dynamic>(sql, new
                 {
-                    uids = results.Where(r => r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
+                    uids = results.Where(r => r.AssetTypeUid != null && r.MissingIcon()).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
                             "dbo.UidTable",
                             new List<string>() { "Uid" })
                 });
@@ -287,7 +294,14 @@ namespace d360.web.Controllers
                         }
                         else if (!string.IsNullOrEmpty(m.Icon))
                         {
-                            r.Icon = m.Icon;
+                            if (((string)m.Icon).StartsWith("/"))
+                            {
+                                r.ImageUrl = m.Icon;
+                            }
+                            else
+                            {
+                                r.Icon = m.Icon;
+                            }
                         }
                     }
                 }
@@ -349,23 +363,106 @@ namespace d360.web.Controllers
         {
             await AugmentResults(results as IEnumerable<TypeaheadResult>);
 
-            //Only get search fields for asset types that have any
-            var sql = @"Select at.uid
-            FROM assettype at
-            INNER JOIN @uids U on U.Uid = AT.Uid
-            WHERE exists (select 1 from fieldtype ft where ft.AssetTypeID = at.id and ft.SearchAddToResult = 1)";
-            List<Guid> assetTypeUidWithFields = Company.Query<Guid>(sql, new
+            if(!results.Any())
             {
-                uids = results.Where(r => r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
+                return;
+            }
+
+            //Determine which results have asset tyoes with search fields defined
+            List<Guid> assetTypeUidWithFields = Company.Query<Guid>(
+                @"SELECT at.uid
+                FROM assettype at
+                INNER JOIN @uids U on U.Uid = AT.Uid
+                WHERE exists (select 1 from fieldtype ft where ft.AssetTypeID = at.id and ft.SearchAddToResult = 1)", new
+                {
+                    uids = results.Where(r => r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
                         "dbo.UidTable",
                         new List<string>() { "Uid" })
-            }).ToList();
+                })
+                .ToList();
 
-            foreach (var result in results.Where(r => r.Uid.HasValue && r.Uid.Value != Guid.Empty && assetTypeUidWithFields.Contains(r.AssetTypeUid ?? Guid.Empty)))
+            //Get enrichment values and scores
+            Dapper.SqlMapper.GridReader augmentReader = await Company.QueryMultipleAsync(
+                @"select
+	                A.[UID] as [AssetUid],
+                    COALESCE(StatusColor.FormattedValue, f.FormattedValue, ft.DefaultFormattedValue) as Status,
+                    A.Object,
+                    A.ObjectId,
+	                Profiling.HasProfiling as HasProfiling
+                from Asset A
+                inner join @uids u on a.uid = u.uid
+                inner join AssetType AT on AT.ID = A.AssetTypeID
+                left join FieldType ft on ft.AssetTypeID = AT.id and ft.FriendlyName like 'status'
+                left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
+                outer apply (select case when exists (select 1 from AssetDataProfile where AssetID = A.ID) then cast(1 as bit) else cast(0 as bit) end as HasProfiling) Profiling
+                outer apply(
+                    select FormattedValue = 
+                    (SELECT F.FormattedValue as name,
+                    COALESCE(JSON_VALUE(ACJF.ColorJSON,'$.Value'), 'transparent') as color FOR JSON PATH) 
+	                FROM Asset ACF    
+	                cross apply dbo.GetAssetColorJsonByColor(ACF.Color) ACJF
+	                WHERE ACF.Object = ft.LookupObjectType and ACF.ObjectID = TRY_PARSE(F.Value as int)
+                ) StatusColor (FormattedValue);
+
+                select
+	                O.AssetUid,
+	                O.EffectiveDate,
+	                O.EndDate,
+	                O.Rundate,
+	                O.ScoreType,
+	                O.Value,
+	                O.LowerThreshold,
+	                O.UpperThreshold
+                from (
+		                select  S.AssetUid,
+				                S.EffectiveDate,
+				                S.EndDate,
+				                S.RunDate,
+				                case 
+					                when AL.ScoreType = 1 then 'Governance'
+					                when AL.ScoreType = 2 then 'DataQuality'
+				                end as ScoreType,
+				                ROW_NUMBER() OVER(PARTITION BY S.AssetUid, AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
+				                S.Value, 
+				                AL.LowerThreshold, 
+				                AL.UpperThreshold 
+		                from    metrics.Score S
+				                inner join @uids U on U.Uid = S.AssetUid  and S.EffectiveDate <= GETUTCDATE() 
+				                inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
+		                ) O
+                where	O.RowNum = 1;",
+                new {
+                    uids = results
+                            .Where(r => r.Uid != null)
+                            .Select(r => r.Uid.ToString())
+                            .Distinct()
+                            .AsTableValuedParameter( "dbo.UidTable", new List<string> { "Uid" })
+                }
+            );
+
+            List<SearchAugment> searchAugments = augmentReader.Read<SearchAugment>().ToList();
+            List<IndexAssetScore> searchScores = augmentReader.Read<IndexAssetScore>().ToList();
+
+            foreach (var result in results.Where(r => r.Uid.HasValue && r.Uid.Value != Guid.Empty))
             {
-                result.Fields = await AssetRepository.GetAssetSearchFields(result.Uid ?? Guid.Empty);
+                if (assetTypeUidWithFields.Contains(result.AssetTypeUid ?? Guid.Empty))
+                {
+                    result.Fields = await AssetRepository.GetAssetSearchFields(result.Uid ?? Guid.Empty);
+                }
+
+                SearchAugment augment = searchAugments.Find(a => a.AssetUid == result.Uid);
+                if(augment.AssetUid != Guid.Empty)
+                {
+                    result.Status = augment.Status;
+                    result.Object = augment.Object;
+                    result.ObjectId = augment.ObjectId;
+                    result.HasProfiling = augment.HasProfiling;
+                }
+
+                result.Scores = searchScores.Where(s => s.AssetUid == result.Uid).ToList();
             }
         }
+        #endregion
 
         private QueryLimitation GetQueryLimitation()
         {
@@ -377,11 +474,9 @@ namespace d360.web.Controllers
             };
             if (Company.CurrentResourceIsAdmin)
             {
-                if (Community.GetCompanySettings().TryGetValue("HideData3SixtyUsers", out string val))
-                {
-                    limits.HideData3SixtyUsers = bool.Parse(val);
-                }
-            } else
+                limits.HideData3SixtyUsers = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+            } 
+            else
             {
                 limits.AggregationFilters.Add(
                     new AggregationFilter
@@ -394,5 +489,29 @@ namespace d360.web.Controllers
             return limits;
         }
 
+        struct SearchAugment : IEquatable<SearchAugment>
+        {
+            public SearchAugment(Guid guid, string status, string obj, long objectid, bool profile)
+            {
+                AssetUid = guid;
+                Status = status;
+                Object = obj;
+                ObjectId = objectid;
+                HasProfiling = profile;
+            }
+
+            public Guid AssetUid;
+            public string Status;
+            public string Object;
+            public long ObjectId;
+            public bool HasProfiling; 
+
+            public bool Equals(SearchAugment other)
+            {
+                return AssetUid.Equals(other.AssetUid);
+            }
+        }
     }
+
+
 }

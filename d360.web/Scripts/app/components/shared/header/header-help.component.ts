@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, Eleme
 import { CurrentEnvironmentSettings } from "../../../static/environment-settings";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ResourcesService } from "../../../services/resources.service";
+import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 import { HelpResource } from "../../../models/resource.model";
 import { Observable } from "rxjs";
 import { environment } from '../../../../environments/environment';
@@ -11,15 +12,13 @@ import { environment } from '../../../../environments/environment';
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
                     <div class="header-button"><i class="fa fa-question-circle"></i></div>
                     <div class="header-help search-child header-profile-panel">
-                       <ul>       
-                            <ng-container *ngIf="(customHelpResources$ | async) as list">
-                                <li class="header-item" *ngFor="let help of list"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="help.Url">{{help.Name}}</a></div></div></li>                                
-                                <li class="header-item" *ngIf="list?.length == 0"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="userGuide">User Guide</a></div></div></li>
-                                <li class="header-item" *ngIf="list?.length == 0"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
-                            </ng-container>                            
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">About Data360 Govern</a></div></div></li>
+                       <ul class="header-help-dropdown">      
+                            <ng-container *ngFor="let i of items">
+                                    <li *ngIf="i.visibilty == 1 && i.Url != 'about'" class="header-item" pTooltip="{{i.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text" ><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
+                                    <li *ngIf="i.visibilty == 2 && isAdmin && i.Url != 'about'" class="header-item" pTooltip="{{i.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
+                                    <li *ngIf="i.visibilty == 1 && (i.Url == 'about' && i.isSystem == 1)" class="header-item" pTooltip="{{i.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">{{i.Name}}</a></div></div></li>
+                                    <li *ngIf="i.visibilty == 2 && (i.Url == 'about' && i.isSystem == 1) && isAdmin" class="header-item" pTooltip="{{i.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">{{i.Name}}</a></div></div></li>
+                            </ng-container> 
                        </ul>
                     </div>
                     <d3s-modal #popupBox [title]="'About Data360 Govern'" 
@@ -58,7 +57,7 @@ import { environment } from '../../../../environments/environment';
                     </d3s-modal>
                 </span>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [CompanySettingsService],
+    providers: [CompanySettingsService, HelpMenuService],
     styles: [`
         .licence-info{
             list-style: disc;
@@ -82,6 +81,7 @@ export class HeaderHelpComponent implements OnInit {
     isLoading: boolean = false;
     customHelpResources: HelpResource[] = null;
     customHelpResources$: Observable<any>;
+
     environment= environment;
     
     public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
@@ -94,15 +94,29 @@ export class HeaderHelpComponent implements OnInit {
 
     licenceData: any;
 
+    private items: HelpMenu[] = [];
+    isAdmin: boolean = false;
+
     constructor(
         private ref: ChangeDetectorRef,
         private settingService: CompanySettingsService,
+        private helpMenuService: HelpMenuService,
         protected resourceService: ResourcesService,
+        protected authenticationService: AuthenticationService,
     ) { }
 
 
     ngOnInit(): void {
+        this.helpMenuService.getHelpMenuItems()
+            .subscribe((r) => {
+                this.items = r;
+                this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
+            });
+        this.authenticationService.checkCurrentUserAdmin().subscribe((a) => {
+            this.isAdmin = a;
+        });
         this.loadCustomHelp();
+
     }
 
     loadCustomHelp(): void {

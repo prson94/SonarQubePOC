@@ -54,6 +54,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     @Input() rowID: string = 'ObjectID';
     @Input() gridObject: AssetGridObject;
     @Output() selectedChange = new EventEmitter();
+    @Output() isLoadingChange = new EventEmitter();
+    @Output() isDefinitionLoadedChange = new EventEmitter();
 
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
@@ -91,6 +93,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     showEditor: boolean = false;
     isLoading: boolean = false;
     isDefinitionLoaded: boolean = false;
+    areFiltersLoaded: boolean = false;
     hasNoListableColumns: boolean = false;
     linkColumnIndex: number = -1;
     readonly excludedLinkColumnTypes = [
@@ -115,6 +118,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     statusHasColor: boolean;
 
     isDebugMode: boolean = false;
+    initialLoadInterval: any;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -158,11 +162,17 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     onFiltersLoaded() {
+        this.areFiltersLoaded = true;
         this.showAssetListPage();
+        this.changeDetectorRef.markForCheck();
     }
 
     showAssetListPage() {
         this.isDefinitionLoaded = true;
+        this.isDefinitionLoadedChange.emit(true);
+        if (this.initialLoadInterval) {
+            clearInterval(this.initialLoadInterval);
+        }
         this.changeDetectorRef.markForCheck();
     }
 
@@ -214,6 +224,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     public filterGridData(dt: Table) {
         this.isLoading = true;
+        this.isLoadingChange.emit(true);
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         if (dt) {
             dt.reset();
@@ -272,7 +283,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     }
                 }
 
-                setTimeout(() => this.showAssetListPage(), 3000);
+                this.initialLoadInterval = setTimeout(() => this.showAssetListPage(), 3000);
                 this.changeDetectorRef.markForCheck();
             }
         );
@@ -370,6 +381,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     getData() {
         this.isLoading = true;
+        this.isLoadingChange.emit(true);
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
         }
@@ -410,7 +422,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                         }
                     }
 
-                });     
+                });
 
                 if (!selectedItemStillExists) {
                     if (this.items && this.items.length > 0) {
@@ -442,10 +454,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 }
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
+                this.isLoadingChange.emit(false);
                 this.changeDetectorRef.markForCheck();
             },
                 err => {
                     this.isLoading = false;
+                    this.isLoadingChange.emit(false);
                     this.items = [];
                     this.totalRecords = 0;
                     this.changeDetectorRef.markForCheck();
@@ -542,6 +556,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if ($event.item.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
         this.getData();
         this.isLoading = false;
+        this.isLoadingChange.emit(false);
         this.showEditor = false;
         this.showEditorChange.emit(false);
         this.changeDetectorRef.markForCheck();
@@ -643,8 +658,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     private onDelete(item) {
-        var path = item['Path'].split('].[');
-        this.deleteName = path[path.length - 1].replace('[', '').replace(']', '');
+        this.deleteName = item['Path'].slice(1, -1);
         this.selected = item;
         this.showDelete = true;
         this.changeDetectorRef.markForCheck();

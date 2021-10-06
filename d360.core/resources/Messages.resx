@@ -183,4 +183,13 @@
   <data name="Error_Item_FieldJsonAttributeReferences" xml:space="preserve">
     <value>One or more JSON Attribute fields reference the field you are attempting to remove.</value>
   </data>
+  <data name="Error_Duplicate_Relationship_Uid" xml:space="preserve">
+    <value>Duplicate Relationship Uid identifiers : {0}. Identifiers must be unique within a batch.</value>
+  </data>
+  <data name="Error_Responsibility_ApplyToType_False" xml:space="preserve">
+    <value>Must use When conditions when ApplyToType value is set to false.</value>
+  </data>
+  <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
+    <value>Parameter '{0}' has invalid GUID value</value>
+  </data>
 </root>

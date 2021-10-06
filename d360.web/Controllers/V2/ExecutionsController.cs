@@ -30,10 +30,10 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        IAssetRepository AssetRepository;        
+        IAssetRepository AssetRepository;
         IStorageProvider Storage;
-        public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, IStorageProvider storage)
-            : base(community, company)
+        public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, ISettingsRepository settingsRepository, IStorageProvider storage)
+            : base(community, company, settingsRepository)
         {
             Storage = storage;
             AssetRepository = repository;
@@ -62,20 +62,20 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetExecutions()
         {
-            
+
             var queryParams = Request.GetQueryNameValuePairs();
 
             string isValid = isPageSizeAndNumValid(queryParams);
 
             if (!string.IsNullOrEmpty(isValid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
             }
 
             var executions = await AssetRepository.GetExecutionItems(queryParams);
             if (executions.StatusCode != HttpStatusCode.OK)
             {
-                return await Task.FromResult(errorMessageResponse(executions.StatusCode, "Invalid request", executions.Message));
+                return await Task.FromResult(errorMessageResponse(executions.StatusCode, ApiMessages.InvalidRequest, executions.Message)).ConfigureAwait(false);
             }
             return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -108,7 +108,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
                 }
 
                 var response = new ConfirmResponse();
@@ -116,41 +116,41 @@ namespace d360.web.Controllers.V2
 
                 if (execution == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionID} does not exist."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotExist, executionID.ToString()))).ConfigureAwait(false);
                 }
 
                 if (execution.State == core.enums.State.Deleted)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionID} has been already canceled."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDCancelled, executionID.ToString()))).ConfigureAwait(false);
                 }
 
                 if (execution.CompletedOn != null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionID} has finished and cannot be canceled."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDFinishedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
                 }
 
                 if (execution.ProcessingStartedOn != null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionID} has started and cannot be canceled."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDStartedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
                 }
 
                 if (!execution.Route.Contains("batch"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionID} is not a batch job and cannot be canceled."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotBatchJobCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
                 }
 
                 execution.State = core.enums.State.Deleted;
                 execution.CompletedOn = DateTime.UtcNow;
-                execution.ErrorMessage = "Execution job was canceled by user.";
+                execution.ErrorMessage = ApiMessages.ExecutionCancelByUser;
 
                 bool isDone = Company.Update(execution);
 
-                response.message = $"Execution with UID {executionID} has been cancelled successfully.";
+                response.message = string.Format(ApiMessages.ExecutionCancel, executionID.ToString());
                 if (isDone)
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Invalid request", $"Something went wrong while canceling Execution."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InvalidRequest, ApiMessages.ExecutionWrongWhenCancel)).ConfigureAwait(false);
                 }
 
             }
@@ -163,7 +163,7 @@ namespace d360.web.Controllers.V2
                     { "ExecutionUid", executionID.ToString() }, //left to prevent a breaking change
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
 
         }
@@ -199,7 +199,7 @@ namespace d360.web.Controllers.V2
                 var res = await AssetRepository.GetExecutionStatusModel(executionID, !summaryOnly);
                 if (res == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound,ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
                 }
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -210,9 +210,9 @@ namespace d360.web.Controllers.V2
                     )
                 );
             }
-            catch(ArgumentException)
+            catch (ArgumentException)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -223,7 +223,7 @@ namespace d360.web.Controllers.V2
                     { "ExecutionUid", executionID.ToString() }, //left to prevent a breaking change
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -237,6 +237,35 @@ namespace d360.web.Controllers.V2
         /// - COMPLETE_SUCCESS
         /// - COMPLETE_FAILURE
         /// - INFORMATION
+        ///
+        /// 
+        /// 
+        /// ###Configuration###
+        /// Configuration value can be any valid JSON object in format of an Array. Object should be places within Array brackets [].
+        ///
+        /// Configuration value example as KeyValue pairs
+        /// ```
+        ///[
+        ///   {"Framework Version" :"5.4"},
+        ///   {"JDBC Harvester Version":"2.5"},
+        ///   { "Analyze Version":"3.6.8"},
+        ///   { "Flow Name":"MYGRAPH"},
+        ///   { "Metadata Source":"MYCRM"}  
+        ///]
+        /// ```
+        ///
+        /// Configuration value example as nested object 
+        /// ```
+        ///[
+        ///   {"Framework Version" :
+        ///     {
+        ///         "JDBC Harvester Version": { 
+        ///             "Analyze Version":"3.6.8"
+        ///         }
+        ///     }
+        ///   }
+        ///]
+        ///```
         /// </remarks>
 
         /// <param name="model">The status of connector to be add.</param>
@@ -254,7 +283,7 @@ namespace d360.web.Controllers.V2
         {
             if (model == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "You have submitted an invalid or empty request please check your request and try again.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest,ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
             }
 
             if (!Company.CurrentResourceIsAdmin)
@@ -263,17 +292,17 @@ namespace d360.web.Controllers.V2
             }
             if (model?.Status == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Status parameter value is required.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.StatusRequied)).ConfigureAwait(false);
             }
             if (model.Component?.Length > 250)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Component cannot exceed 250 characters.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,ApiMessages.ComponentMaxSize250)).ConfigureAwait(false);
             }
 
-  
-            if (!Enum.IsDefined(typeof(ExecutionExternalStatus),model.Status))
+
+            if (!Enum.IsDefined(typeof(ExecutionExternalStatus), model.Status))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,ApiMessages.StatusInvalid));
             }
 
             try
@@ -284,7 +313,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while add status of a connector endpoint", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorConnectorStatus, e.Message);
             }
 
         }
@@ -304,8 +333,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of connector status.", typeof(APIExecutionExternalAPIModelResult)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedOn desc, then ExternalID if the dates are the same", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. By default the results are ordered by CreatedOn desc, then ExternalID if the dates are the same", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_startDate", "Start date to get data for limit result on createdon column.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_endDate", "End date to get data for limit result on createdon column.", DataType = "string", ParameterType = "query", Required = false),
@@ -334,7 +363,7 @@ namespace d360.web.Controllers.V2
 
             if (!string.IsNullOrEmpty(isValid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
             }
 
 
@@ -344,7 +373,7 @@ namespace d360.web.Controllers.V2
                 status = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "status").Value;
                 if (!Enum.IsDefined(typeof(ExecutionExternalStatus), status))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ApiMessages.StatusInvalid)).ConfigureAwait(false);
                 }
             }
 
@@ -353,13 +382,13 @@ namespace d360.web.Controllers.V2
                 DateTime _tempstartDate;
                 if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_startDate").Value, out _tempstartDate))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"Start date is not valid.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidStartDate );
                 }
                 _startDate = _tempstartDate;
 
                 if (_startDate == DateTime.MinValue || DateTime.Compare((DateTime)_startDate, SqlDateTimeMin) < 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"Start date is not valid.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidStartDate);
                 }
             }
 
@@ -368,18 +397,18 @@ namespace d360.web.Controllers.V2
                 DateTime _tempendDate;
                 if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_endDate").Value, out _tempendDate))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"End date is not valid.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidEndDate);
                 }
                 _endDate = _tempendDate;
 
-                if (_endDate == DateTime.MaxValue || DateTime.Compare((DateTime)_endDate,SqlDateTimeMin) < 0)
+                if (_endDate == DateTime.MaxValue || DateTime.Compare((DateTime)_endDate, SqlDateTimeMin) < 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"End date is not valid.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidEndDate);
                 }
 
                 if (_startDate != null && DateTime.Compare((DateTime)_endDate, (DateTime)_startDate) < 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"End date must be later than start date.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.StartEndDateValidation);
                 }
             }
 
@@ -388,7 +417,7 @@ namespace d360.web.Controllers.V2
                 Guid tempexternalId;
                 if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "externalId").Value, out tempexternalId))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"externalId {queryParams.ToList().FirstOrDefault(q => q.Key == "externalId").Value} is not a valid Uid")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(ApiMessages.InvalidExternalID, queryParams.ToList().FirstOrDefault(q => q.Key == "externalId").Value.ToString()))).ConfigureAwait(false);
                 }
 
                 externalId = tempexternalId;
@@ -400,7 +429,7 @@ namespace d360.web.Controllers.V2
 
                 if (results <= 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Connetor status with externalId {externalId} could not be found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ApiMessages.ConnectorStatusNotFound, externalId.ToString()))).ConfigureAwait(false);
                 }
             }
 
@@ -409,11 +438,11 @@ namespace d360.web.Controllers.V2
                 component = queryParams.FirstOrDefault(x => x.Key.ToLower() == "component").Value;
                 if (string.IsNullOrEmpty(component))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"component is not valid.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.ComponentNotValid);
                 }
                 else if (component.Length > 250)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"Component cannot exceed 250 characters.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.ComponentMaxSize250);
                 }
 
             }
@@ -421,11 +450,11 @@ namespace d360.web.Controllers.V2
             #endregion
 
             try
-            { 
+            {
                 var executions = await AssetRepository.GetConnectorStatusItems(queryParams, _startDate, _endDate, externalId, component, status);
                 if (executions.StatusCode != HttpStatusCode.OK)
                 {
-                    return await Task.FromResult(errorMessageResponse(executions.StatusCode, "Invalid request", executions.Message));
+                    return await Task.FromResult(errorMessageResponse(executions.StatusCode, ApiMessages.InvalidRequest, executions.Message)).ConfigureAwait(false);
                 }
                 return await Task.FromResult<IHttpActionResult>(
                         ResponseMessage(
@@ -438,7 +467,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception e)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", e.Message)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
             }
         }
         #endregion

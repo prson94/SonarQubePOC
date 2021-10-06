@@ -5,40 +5,80 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.integration.ExecutionAssetType-Rename-v1">
-  <comment>GOV-15287</comment>
+  <changeSet author="Puneet Gupta" id="Table.integration.ExecutionAssetType-Drop-v1">
+  <comment>GOV-15288</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetType')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetType_backup')
 BEGIN
-			IF EXISTS (select * 
-					   from sys.foreign_keys where name = 'FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType' 
-					   and object_name(parent_object_id) = 'ExecutionAssetTypeError' and schema_name(schema_id) = 'integration'
-					   )
-			BEGIN	
-				ALTER TABLE [integration].[ExecutionAssetTypeError] DROP CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType]
-			END
-			
-			IF EXISTS (select * 
-					   from sys.foreign_keys where name = 'FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType' 
-					   and object_name(parent_object_id) = 'ExecutionAssetTypeLog' and schema_name(schema_id) = 'integration'
-					   )
-			BEGIN	
-				ALTER TABLE [integration].[ExecutionAssetTypeLog] DROP CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType]
-			END
-
-			exec sp_rename 'integration.ExecutionAssetType', 'ExecutionAssetType_backup';
+	DROP TABLE integration.ExecutionAssetType_backup;
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetType_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetType_backup')
 BEGIN
-	exec sp_rename 'integration.ExecutionAssetType_backup', 'ExecutionAssetType';
+	CREATE TABLE [integration].[ExecutionAssetType_backup](
+		[ExecutionID] [bigint] NOT NULL,
+		[SynchedAssetTypeID] [int] NOT NULL,
+		[CurrentSourceAssetCount] [int] NOT NULL,
+		[StartedOn] [datetime] NOT NULL,
+		[CompletedOn] [datetime] NULL,
+		[ErrorMessage] [nvarchar](max) NULL,
+		[IsFullRefresh] [bit] CONSTRAINT [DF_IntegrationExecutionAssetType_IsFullRefresh] DEFAULT (0) NOT NULL,
+		[ProcessedDelete] [bit] CONSTRAINT [DF_IntegrationExecutionAssetType_ProcessedDelete] DEFAULT (0) NOT NULL,
+		[RawDefinition] [nvarchar](max) NULL,
+		[EnumFieldValues] [nvarchar](max) NULL,
+		[AssetsWithMissingDefinition] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_AssetsWithMissingDefinition] DEFAULT (0) NOT NULL,
+		[AssetsWithMissingRelationships] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_AssetsWithMissingRelationships] DEFAULT (0) NOT NULL,
+		[AssetsWithMissingResponsibilities] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_AssetsWithMissingResponsibilities] DEFAULT (0) NOT NULL,
+		[AssetsWithErrors] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_AssetsWithErrors] DEFAULT (0) NOT NULL,
+		[RetrievedAssetCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_RetrievedAssetCount] DEFAULT (0) NOT NULL,
+		[RetrievedAssetRelationshipCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_RetrievedAssetRelationshipCount] DEFAULT (0) NOT NULL,
+		[RetrievedAssetResponsibilityCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_RetrievedAssetResponsibilityCount] DEFAULT (0) NOT NULL,
+		[GovernAssetCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernAssetCount] DEFAULT (0) NOT NULL,
+		[GovernAssetRelationshipCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernAssetRelationshipCount] DEFAULT (0) NOT NULL,
+		[GovernAssetResponsibilityCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernAssetResponsibilityCount] DEFAULT (0) NOT NULL,
+		[IGCAssetRelationshipBreakdown] [nvarchar](max) NULL,
+		[GovernAssetRelationshipBreakdown] [nvarchar](max) NULL,
+		[IGCAssetResponsibilityBreakdown] [nvarchar](max) NULL,
+		[GovernAssetResponsibilityBreakdown] [nvarchar](max) NULL,
+		[GovernDeletedAssetCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernDeletedAssetCount] DEFAULT (0) NOT NULL,
+		[GovernDeletedRelationshipCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernDeletedRelationshipCount] DEFAULT (0) NOT NULL,
+		[MisalignedResponsibilities] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_MisalignedResponsibilities] DEFAULT (0) NOT NULL,
+		[GovernAddedAssetCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernAddedAssetCount] DEFAULT (0) NOT NULL,
+		[GovernAddedRelationshipCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernAddedRelationshipCount] DEFAULT (0) NOT NULL,
+		[GovernAddedResponsibilityCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernAddedResponsibilityCount] DEFAULT (0) NOT NULL,
+		[GovernUpdatedAssetCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernUpdatedAssetCount] DEFAULT (0) NOT NULL,
+		[GovernUpdatedRelationshipCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernUpdatedRelationshipCount] DEFAULT (0) NOT NULL,
+		[GovernUpdatedResponsibilityCount] [int] CONSTRAINT [DF_IntegrationExecutionAssetType_GovernUpdatedResponsibilityCount] DEFAULT (0) NOT NULL,
+		[DelayUntil] [datetime] NULL,
+		[StepExecutionTimes] [varchar](max) NULL,
+		[RetryLog] [varchar](2500) NULL,
+		[FieldHashesCleared] [bit] CONSTRAINT [DF_IntegrationExecutionAssetType_FieldHashesCleared] DEFAULT (0) NOT NULL,
+		[OwnershipHashesCleared] [bit] CONSTRAINT [DF_IntegrationExecutionAssetType_OwnershipHashesCleared] DEFAULT (0) NOT NULL,
+		[RelationshipHashesCleared] [bit] CONSTRAINT [DF_IntegrationExecutionAssetType_RelationshipHashesCleared] DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_IntegrationExecutionAssetType] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [SynchedAssetTypeID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntegrationExecutionAssetType_ExecutionID_SynchedAssetTypeID_StartedOn')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntegrationExecutionAssetType_ExecutionID_SynchedAssetTypeID_StartedOn] ON [integration].[ExecutionAssetType_backup] ( [ExecutionID] DESC, [SynchedAssetTypeID] ASC, [StartedOn] DESC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntegrationExecutionAssetType_IsFullRefresh_SynchedAssetTypeID_CompletedOn_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntegrationExecutionAssetType_IsFullRefresh_SynchedAssetTypeID_CompletedOn_Include] ON [integration].[ExecutionAssetType_backup] ( [IsFullRefresh] ASC, [SynchedAssetTypeID] ASC, [CompletedOn] ASC ) INCLUDE([StartedOn]) 
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntegrationExecutionAssetType_SynchedAssetTypeID_DelayUntil')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntegrationExecutionAssetType_SynchedAssetTypeID_DelayUntil] ON [integration].[ExecutionAssetType_backup] ( [SynchedAssetTypeID] ASC, [DelayUntil] DESC )
 END
 		]]>
 	</rollback>

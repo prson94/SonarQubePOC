@@ -72,7 +72,10 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             if (delimiterIdx > -1) {
                 var name = (this.fieldValue as string).substring(0, delimiterIdx);
                 var href = (this.fieldValue as string).substring(delimiterIdx + 1);
-                this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;
+                if (!name)
+                    this.fieldValue = `<a href="${href}" target="_blank">${href}</a>`;
+                else
+                    this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;                
             }
         }
 

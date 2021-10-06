@@ -10,7 +10,6 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import { HomeSearchComponent} from './home-search.component'
 import { HeroSearchInputComponent } from './hero-search-input';
-import { SearchResultsComponent } from './search-results.component'
 import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
 import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
@@ -33,11 +32,16 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuModule } from 'primeng/menu';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
+import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 
+import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
 import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
 import { SearchStateService } from './search-state.service';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 import { PreviewpopupModule } from '../shared/previewpopup/previewpopup.module';
+import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
+import { AssetDetailModule } from "../shared/asset-detail/asset-detail.module";
+import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 
 @NgModule({
     imports: [
@@ -74,11 +78,15 @@ import { PreviewpopupModule } from '../shared/previewpopup/previewpopup.module';
         TypeaheadSearchModule,
         ExplainWidgetModule,
         IgBadgeModule,
-        AssetPathWidgetModule
+        AdvancedFiltersModule,
+        AssetPathWidgetModule,
+        SidePanelModule,
+        AssetDetailModule,
+        DataProfileModule,
+        PopupMenuModule,
     ],
     declarations: [
         HomeSearchComponent,
-        SearchResultsComponent,
         SearchResultItemComponent,
         SearchComponent,
         HeroSearchInputComponent

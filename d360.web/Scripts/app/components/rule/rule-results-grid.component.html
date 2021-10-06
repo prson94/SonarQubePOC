@@ -14,11 +14,12 @@
     </div>
     <advanced-filtering [loadIdentifier]="'RuleResults_' + ruleUid" (onLoad)="onFiltersLoaded()" [fieldsObserver]="getFieldsObs()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     <div class="grid-action-buttons">
-        <div pTooltip="Export to Excel"
+        <div [pTooltip]="ruleResultsExportTooltip"
              tooltipPosition="left"
              tooltipStyleClass="ig-tooltip">
             <button igButton
                     icon="fa-download"
+                    [disabled]="!ruleResultsExportEnabled"
                     (click)="doExport()">
             </button>
         </div>
@@ -59,7 +60,6 @@
             <col style="width: 100px">
             <col style="width: 100px">
             <col style="width: 100px">
-            <col style="width: 50px">
             <col style="width: 20px">
             <col style="width: 20px">
         </colgroup>
@@ -102,15 +102,10 @@
                 Rows Failed
                 <d3s-sortIcon [field]="'FailCount'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'Passed'" style="text-align:center;">
-                Passed
-                <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
-            </th>
             <th [pSortableColumn]="''"></th>
             <th [pSortableColumn]="''"></th>
         </tr>
         <tr [hidden]="showSimpleFilter">
-            <th></th>
             <th></th>
             <th></th>
             <th></th>
@@ -149,12 +144,6 @@
             <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount | number}}</span></td>
             <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount | number}}</span></td>
             <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount | number}}</span></td>
-            <td style="text-align:center;">
-                <span *ngIf="item.Passed!=undefined && item.Passed!=null">
-                    <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
-                    <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
-                </span>
-            </td>
             <td style="text-align:center;">
                 <div class="RowTools">
                     <a style="cursor:pointer;" (click)="selected=item;">

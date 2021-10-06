@@ -46,7 +46,7 @@
                                               pTooltip="{{getMatchTooltip('duplicates', dataProfile.matches.data)}}"
                                               tooltipPosition="top"
                                               tooltipStyleClass="ig-tooltip">
-                                            <a (click)="isMatchDetectionPopupVisible = true">
+                                            <a (click)="matchDetectionLinkClicked('data')">
                                                 <div class="ig-colorfield-swatch invalidCircle"></div>
                                                 {{dataProfile.matches.data | number}} duplicates
                                             </a>
@@ -65,7 +65,7 @@
                                               pTooltip="{{getMatchTooltip('similiar', dataProfile.matches.structure)}}"
                                               tooltipPosition="left"
                                               tooltipStyleClass="ig-tooltip">
-                                            <a (click)="isMatchDetectionPopupVisible = true">
+                                            <a (click)="matchDetectionLinkClicked('similar')">
                                                 <div class="ig-colorfield-swatch orangeCircle"></div>
                                                 {{dataProfile.matches.structure | number}} similiar fields
                                             </a>
@@ -136,7 +136,15 @@
                         </div>
                     </div>
                 </ig-property-group>
-
+                <ig-property-group *ngIf="showSampleDistribution"
+                                   [expanded]="true"
+                                   [title]="'Sample Distribution'"
+                                   [shouldBePadded]="false"
+                                   [showHeaderLine]="false">
+                    <div readonly class="group" style="padding-top: 0">
+                        <ng-container *ngTemplateOutlet="sampleDistributionTemplate"></ng-container>
+                    </div>
+                </ig-property-group>
                 <ig-property-group *ngIf="hasValidCounts && topSamples && topSamples.length>0"
                                    [expanded]="true"
                                    [title]="'Top Values'"
@@ -272,16 +280,6 @@
                         <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
                     </div>
                 </ig-property-group>
-
-                <ig-property-group *ngIf="showSampleDistribution"
-                                   [expanded]="true"
-                                   [title]="'Sample Distribution'"
-                                   [shouldBePadded]="false"
-                                   [showHeaderLine]="false">
-                    <div readonly class="group">
-                        <ng-container *ngTemplateOutlet="sampleDistributionTemplate"></ng-container>
-                    </div>
-                </ig-property-group>
             </div>
         </ng-container>
     </div>
@@ -289,7 +287,8 @@
 
 
 <ng-template #sampleDistributionTemplate>
-    <div id="sampleChart"></div>
+    <div *ngIf="!isModal" id="sampleChart"></div>
+    <div *ngIf="isModal" id="sampleChartModal"></div>
     <div class="sampleChart x-label">{{sampleChartXLabel}}</div>
 </ng-template>
 
@@ -468,5 +467,5 @@
 </ng-template>
 
 <ng-container *ngIf="dataProfile.matches!=null">
-    <match-detection [showDuplicates]="dataProfile.matches.data > 0" [showSimilar]="dataProfile.matches.structure > 0" [assetUid]="dataProfile.assetUid" [isVisible]="isMatchDetectionPopupVisible" (onClose)="isMatchDetectionPopupVisible=false"></match-detection>
+    <match-detection [showDuplicates]="showDuplicates" [showSimilar]="showSimilar" [assetUid]="matchAssetUid" [isVisible]="isMatchDetectionPopupVisible" [matchType]="matchType" (onClose)="matchDetectionClosed()" (sidePanelLinkClicked)="handleLinkClicked($event)"></match-detection>
 </ng-container>

@@ -1,6 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, SimpleChanges } from '@angular/core';
 import { SidePanelButton } from '../../../models/side-panel.model';
+import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
+import { StateService } from '../../../services/state.service';
 
 @Component({
     selector: 'side-panel',
@@ -28,10 +30,19 @@ export class SidePanelComponent extends BaseComponent {
     @Input() storageKey: string = null;
     readonly storageKeyPrefix: string = 'side_panel_';
 
+    @Input() extraButtons: SidePanelButton[] = [];
+    @Input() multipleItemsSelected: boolean = false;
+
     buttons: SidePanelButton[] = [];
+
+    public panelMenu: PopupMenuItem[] = [];
 
     readonly minWidth = '400px';
     readonly maxWidth = '400px';
+
+    constructor(private stateService: StateService) {
+        super();
+    }
 
     ngOnInit() {
         this.initButtons();
@@ -66,6 +77,10 @@ export class SidePanelComponent extends BaseComponent {
             
         }
 
+        if (changes['expanded'] && changes['expanded'].isFirstChange() && changes['expanded'].currentValue !== changes['expanded'].previousValue) {
+            this.stateService.recalculateTagSize();
+        }
+
         if (loadState || loadButtons) {
             this.loadState();
 
@@ -90,7 +105,7 @@ export class SidePanelComponent extends BaseComponent {
                 if (state != null) {
                     if (state.expanded != null) {
                         this.expanded = state.expanded;
-
+                        this.stateService.recalculateTagSize();
                     }
 
                     if (state.selectedPanel != null && state.selectedPanel.length > 0) {
@@ -120,36 +135,41 @@ export class SidePanelComponent extends BaseComponent {
     private initButtons() {
         this.buttons = [];
 
+        this.extraButtons.forEach((b) => this.buttons.push(b));
+
         if (this.hasDetail) {
-            this.buttons.push({
+            this.buttons.push(new SidePanelButton({
                 label: 'Information',
                 tooltip: 'Information',
                 disabledTooltip: null,
                 nothingSelectedMessage: 'Select an item from the list to display its properties',
-                notApplicableMessage: 'Select an item from the list to display its properties',
+                notApplicableMessage: 'Information data is not available for the selected item',
+                multipleSelectedMessage: 'Select a single item to display it’s properties',
                 key: 'detail',
                 icon: 'fa-info-circle',
                 disabled: false,
                 visible: true
-            });
+            }));
         }
 
         if (this.hasProfiling) {
-            this.buttons.push({
+            this.buttons.push(new SidePanelButton({
                 label: 'Profiling',
                 tooltip: 'Profiling',
                 disabledTooltip: 'Profiling data is not available for the selected item',
                 nothingSelectedMessage: 'Select an item from the list to display its profiling data',
                 notApplicableMessage: 'Profiling data is not available for the selected item',
+                multipleSelectedMessage: 'Select a single item to display it’s profiling information',
                 key: 'dataprofile',
                 icon: 'fa-bar-chart',
                 disabled: this.disableProfiling,
                 visible: true
-            });
+            }));
         }
 
         if (this.buttonCount > 0) {
-            this.selectedPanel = this.buttons[0].key;
+            this.selectedPanel = this.selectedPanel ? this.selectedPanel : this.buttons[0].key;
+            this.panelMenu = this.buttons[0].panelMenu;
             this.selectedPanelChange.emit(this.buttons[0].key);
         }
     }
@@ -158,12 +178,14 @@ export class SidePanelComponent extends BaseComponent {
         if (!b.disabled) {
             if (this.selectedPanel !== b.key) {
                 this.selectedPanel = b.key;
+                this.panelMenu = b.panelMenu;
                 this.selectedPanelChange.emit(b.key);
             }
             this.buttonClick.emit(b.key);
 
             this.expanded = true;
             this.expandedChange.emit(true);
+            this.stateService.recalculateTagSize();
 
             this.saveState();
         }
@@ -214,6 +236,7 @@ export class SidePanelComponent extends BaseComponent {
     collapseSidePanel() {
         this.expanded = false;
         this.expandedChange.emit(false);
+        this.stateService.recalculateTagSize();
 
         this.saveState();
 

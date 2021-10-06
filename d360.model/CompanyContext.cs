@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using d360.core.entities.Metric;
 using d360.model.helpers;
 using System.Text;
+using d360.model.helpers.filters;
 
 namespace d360.model
 {
@@ -45,7 +46,7 @@ namespace d360.model
         {
             get
             {
-                return this.Community.GetCompanySettingByKey<int>("ApiTimeout");
+                return GetSettingValue<int>(Setting.ApiTimeout);
             }
         }
 
@@ -597,26 +598,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                             order by 3 desc, P.TextPath asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
-                case "FusionAttributeType":
-                    formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'FusionAttribute'", "F.Id");
-                    formattedIntersectJoin = string.Format(intersectJoin, "'FusionAttribute'", "F.Id");
-
-                    countSql = $@"select count(*) from FusionAttribute F
-                                    inner join Fusion FF on FF.ID = F.FusionID
-                                    inner join [IntersectType] IT on IT.Id = @intersectTypeID
-                        left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                                where FusionAttributeTypeID = @objID and F.Deleted = 0 and (@query is null or F.TextPath like '%' + @query + '%')
-                                {formattedCardinalityCheck}";
-                    sql = $@"select F.ID as Value, FF.Name + '.' + F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
-                            from FusionAttribute F with (nolock)
-                            inner join Fusion FF on FF.ID = F.FusionID
-                            inner join [IntersectType] IT on IT.Id = @intersectTypeID
-                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                            where F.FusionAttributeTypeID = @objID and F.Deleted = 0 and (@query is null or F.TextPath like '%' + @query + '%')
-                            {formattedCardinalityCheck}
-                            order by 3 desc, TextPath asc
-                            OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
-                    break;
                 case "ResourceType":
                     formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'Resource'", "R.ResourceID");
                     formattedIntersectJoin = string.Format(intersectJoin, "'Resource'", "R.ResourceID");
@@ -1148,9 +1129,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             List<string> excludedClasses = new List<string>
             {
-                SystemObjects.FusionType.ToString(),
                 SystemObjects.OrganizationType.ToString(),
-                SystemObjects.FusionAttributeType.ToString()
             };
 
             if (limitToClasses != null && limitToClasses.Count > 0)
@@ -1187,7 +1166,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 		                case 
 			                when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
                             when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
-			                when T.Object = 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
 			                when T.Object = 'GroupType' then 'Security :: '
 			                when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
 			                when T.Object = 'ReferenceItemType' then 'Reference :: '
@@ -1199,8 +1177,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 		                T.Object as Type
                 from	AssetType T
 		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
-                        left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
-                        left join FusionType FT on FT.ID = FAT.FusionTypeID 
                 where	T.Object not in ({excludeClassInStatement}){classLimitSql}
 			 	{noClassLimitSql}{whereStatement}
                 ) I";
@@ -1237,7 +1213,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             return Database.Connection.Query<IntersectTypeOption>(sql, dbArgs).ToList();
         }
 
-        public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
+        public List<Predicate> GetPredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
             var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
@@ -1274,8 +1250,7 @@ where	I.ID is null";
                 pid = predicateID
             }).ToList()
             .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
-                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor &&
-                        i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
+                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor
                   );
 
             predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
@@ -1283,7 +1258,7 @@ where	I.ID is null";
             return predicates.ToList();
         }
 
-        public IntersectType UpsertIntersectType(IntersectType model, int lineageVersion)
+        public IntersectType UpsertIntersectType(IntersectType model)
         {
             var predicateModel = GetById<Predicate>(model.PredicateID.Value);
 
@@ -1298,11 +1273,6 @@ where	I.ID is null";
             if (($"{model.Subject}{model.SubjectID}" == $"{model.Object}{model.ObjectID}") && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
             {
                 throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
-            }
-
-            if (!predicateModel.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
-            {
-                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {predicateModel.Type.AsInfoModel().Name}.");
             }
 
             AssetType subjectAssetType = null;
@@ -1501,9 +1471,6 @@ where	I.ID is null";
             modelBuilder.Entity<FieldWithRelation>().Property(x => x.MinimumLength).HasPrecision(38, 18);
             modelBuilder.Entity<FieldWithRelation>().Property(x => x.MaximumLength).HasPrecision(38, 18);
 
-            modelBuilder.Entity<core.entities.Rule>().Property(x => x.Threshold).HasPrecision(4, 3);
-
-            
             modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
             {
                 i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");
@@ -2235,7 +2202,6 @@ select @err";
                         if (relationFieldInfo != null)
                         {
                             var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
-                            var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
                             var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
                             var isPolicyType = (relationFieldInfo.Object == SystemObjects.PolicyType.ToString());
                             var isArtifactType = (relationFieldInfo.Object == SystemObjects.ArtifactType.ToString());
@@ -2250,7 +2216,7 @@ select @err";
                                 columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
                             }
 
-                            if (isReferenceItemType || isFusionAttributeType)
+                            if (isReferenceItemType)
                             {
                                 columnbuilder.Append($"{name}_OT.Name");
                             }
@@ -2289,7 +2255,7 @@ select @err";
                                 joinbuilder.Append($" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
                                 joinbuilder.Append($" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT");
                             }
-                            else if (!isReferenceItemType && !isFusionAttributeType)
+                            else if (!isReferenceItemType)
                             {
                                 joinbuilder.Append($" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
                                 joinbuilder.Append($" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD");
@@ -2516,7 +2482,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var filterExpressionParser = new FilterExpressionParser(this, FilterExpressionParseType.CustomFields, false);
+                    var filterDataProvider = new FilterDataProvider(this);
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false);
                     filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFields = new List<int>();
@@ -2805,6 +2772,7 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                             where json.uid = @assetUid";
             return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
         }
+        
         public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
         {
             return Query<int>(@"select count(*) from processexpandeddata ped
@@ -2828,5 +2796,101 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                 where fcv.AssetId=@assetId and fcv.FieldTypeId=@fieldTypeId",
                               new { fieldTypeId, assetId }).FirstOrDefault();
         }
+
+
+        #region Environment Settings
+
+        private class EnvironmentSetting
+        {
+            public Setting ID { get; set; }
+            public string Value { get; set; }
+        }
+
+        private string SettingsCacheKey { get { return $"Settings_{CurrentCompanyID}"; } }
+
+        public void DeleteSetting(Setting setting)
+        {
+            // In essence, this would set back to the default, if any.
+            Connection.Execute("delete Setting where ID = @id", new { id = (int)setting });
+            Caching.RemoveItem(SettingsCacheKey);
+        }
+
+        public SettingInfo GetSetting(Setting setting)
+        {
+            return GetSettings().SingleOrDefault(s => s.ID == setting);
+        }
+
+        public T GetSettingValue<T>(Setting setting)
+        {
+            var info = GetSetting(setting);
+
+            T checkType = default(T);
+            if (checkType is Guid)
+            {
+                var guid = Guid.Parse(info.Value);
+                return (T)(Convert.ChangeType(guid, typeof(T)));
+            }
+
+            return (T)(Convert.ChangeType(info.Value, typeof(T)));
+        }
+
+        public List<SettingInfo> GetSettings()
+        {
+            // Get the list of settings from the D3S_###.dbo.Setting table.
+            // Get the full list of settings from the Setting enum.
+            // Return a list of SettingInfo, merging the values present from the environment into the SettingInfo.Value property.
+
+            var overrides = Caching.GetItem<List<EnvironmentSetting>>(SettingsCacheKey);
+            if (overrides == null)
+            {
+                overrides = Query<EnvironmentSetting>("select * from Setting").ToList();
+                Caching.SetItem(SettingsCacheKey, overrides, true, 1);
+            }
+            var settings = Setting.ActionMessage.GetAsList().OrderBy(s => (int)s.ID).ToList();
+
+            settings.ForEach(s =>
+            {
+                var defaultValue = s.DefaultValue;
+                if (defaultValue.In("True", "False"))
+                {
+                    defaultValue = defaultValue.ToLower();
+                }
+                if (overrides.Any(o => o.ID == s.ID))
+                {
+                    s.Value = overrides.First(o => o.ID == s.ID).Value;
+                    if (s.Value.In("True", "False"))
+                    {
+                        s.Value = s.Value.ToLower();
+                    }
+                }
+                else
+                {
+                    s.Value = defaultValue;
+                }
+            });
+
+            return settings;
+        }
+
+        public Dictionary<string, string> GetSettingsAsDictionary()
+        {
+            return GetSettings().ToDictionary(k => k.ID.ToString(), v => v.Value);
+        }
+
+        public void UpsertSetting(Setting setting, string value)
+        {
+            Connection.Execute(@"
+if exists(select 1 from [Setting] where ID = @ID) 
+begin 
+    update [Setting] set [Value] = @value where ID = @ID 
+end 
+else 
+begin 
+    insert [Setting] values (@ID, @value) 
+end", new { ID = (int)setting, value });
+            Caching.RemoveItem(SettingsCacheKey);
+        }
+
+        #endregion
     }
 }

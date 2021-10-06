@@ -199,7 +199,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.sidePanelLoading = true;
             this.dataProfileService.getDataProfiles(this.selected.data.AssetUid).subscribe(
                 (r) => {
-                    if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                    if (r && r.items && r.items.length > 0) {
                         this.dataProfile = r.items[0];
 
                         forkJoin(
@@ -631,11 +631,21 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams, true).subscribe((result) => {
                 this.totalRecords += result.total;
                 this.hierarchy = result.items;
-                this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
-                if (this.treeNodeArray.length > 0) {
-                    this.selectAsset(this.treeNodeArray[0]);
+
+                if (this.hierarchy.length !== 0) {
+                    this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+                    if (this.treeNodeArray.length > 0) {
+                        this.selectAsset(this.treeNodeArray[0]);
+                    } else {
+                        this.selectAsset(null);
+                    }
+                    this.buildScoreAllocationThresholds();
                 }
-                this.buildScoreAllocationThresholds();
+                else {
+                    this.treeNodeArray = [];
+                    this.selectAsset(null);
+                }
+
                 this.isLoading = false;
             });
         }

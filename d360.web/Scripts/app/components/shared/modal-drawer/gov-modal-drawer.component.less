@@ -1,0 +1,52 @@
+﻿@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.modal-drawer-overlay {
+  position: fixed;
+  background: rgba(255, 255, 255, 0.33);
+  z-index: 200000;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+
+  .modal-drawer-body {
+    width: 448px;
+    height: 100%;
+    background-color: white;
+    position: fixed;
+    right: -448px;
+    box-shadow: rgba(0, 0, 0, 0.33) 0 5px 10px;
+    -webkit-transition: right 0.25s ease-in-out;
+    -moz-transition: right 0.25s ease-in-out;
+    -o-transition: right 0.25s ease-in-out;
+    transition: right 0.25s ease-in-out;
+
+    &.full-width {
+      right: 0;
+    }
+  }
+
+  .modal-drawer-header {
+    color: @ig-black;
+    font-size: 18px;
+    font-weight: 600;
+    width: 100%;
+    line-height: 32px;
+    display: inline-flex;
+    margin-right: 30px;
+    margin-left: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+    padding: 24px;
+  }
+
+  .modal-drawer-content {
+    padding: 0 24px;
+    overflow: auto;
+  }
+
+  .modal-drawer-action-bar {
+    display: flex;
+    padding: 24px;
+  }
+}

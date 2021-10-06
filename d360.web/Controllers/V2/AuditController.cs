@@ -4,7 +4,6 @@ using d360.core.entities;
 using d360.model;
 using d360.web.Models.Attributes;
 using Dapper;
-using Resources;
 using SpreadsheetLight;
 using System;
 using System.Diagnostics;
@@ -19,10 +18,12 @@ using System.Collections.Generic;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.model.helpers;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.entities.Metric;
+using d360.model.helpers.filters;
+using d360.model.DataAccessLayer;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -36,10 +37,19 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController : BaseV2ApiController
     {
-        public AuditController(ICommunityContext community, ICompanyContext company) : base(community, company)
+        public AuditController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
 
         }
+
+        /// A dictionary of Action Object with the DB value as key, and the display value as value
+        private readonly Dictionary<string, string> ActionObjectDictionary = new Dictionary<string, string> {
+            { "Intersect", "Relationship" },
+            { "IntersectType", "RelationshipType" },
+            { "Taxonomy" , "Model" },
+            { "TaxonomyType" , "ModelType" },
+            { "ResponsibilityTypeRelationOverrideItem" , "Responsibility Type Relation Override Item" },
+        };
 
         /// <summary>
         /// Retrieves audit data for the given asset unique identifier.
@@ -83,7 +93,7 @@ namespace d360.web.Controllers.V2
                 string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 List<DefaultFilter> fieldList = new List<DefaultFilter>
@@ -103,7 +113,7 @@ namespace d360.web.Controllers.V2
                     new DefaultFilter("field", "A.field", SqlFieldType.Text),
                     new DefaultFilter("newValue", "A.newValue", SqlFieldType.Text),
                     new DefaultFilter("class", "A.class", SqlFieldType.Number),
-                    new DefaultFilter("version", "A.version", SqlFieldType.Number),
+                    new DefaultFilter("version", "isnull(A.version,0)", SqlFieldType.Number),
                     new DefaultFilter("previousValue", "A.previousValue", SqlFieldType.Text)
                 };
 
@@ -111,9 +121,33 @@ namespace d360.web.Controllers.V2
                 var orderDirection = Company.ParseOrderDirection(queryParams, "desc");
                 orderBySql = $" order by {orderColumn} {orderDirection} ";
 
+                //some actionObject values are translated using ActionObjectDictionary, so incoming filters for actionObject
+                //must have the values translated back
+                List<KeyValuePair<string, string>> modifiedQueryParams = new List<KeyValuePair<string, string>>();
+                foreach(KeyValuePair<string, string> kp in queryParams)
+                {
+                    string currentValue = kp.Value;
+                    if(kp.Key.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "_filter" && currentValue.Contains("actionObject"))
+                    {
+                        List<string> operators = new List<string>
+                        {
+                            "eq",
+                            "ne"
+                        };
+                        Dictionary<string, string> lookups = ActionObjectDictionary.ToDictionary(d => d.Value, d => d.Key);
+                        lookups.Add("Business Asset", "Artifact");
+                        lookups.Add("Technical Asset", "Artifact");
+
+                        currentValue = lookups.SelectMany(l => operators, (l, o) => new { l, o })
+                            .ToDictionary(s => $"actionObject {s.o} '{s.l.Key}'", s=> $"actionObject {s.o} '{s.l.Value}'")
+                            .Aggregate(currentValue, (current, value) => current.Replace(value.Key, value.Value));
+                    }
+                    modifiedQueryParams.Add(new KeyValuePair<string, string> ( kp.Key, currentValue));
+                }
+
                 DynamicParameters advFilterArgs = null;
                 List<string> advFilterStatements = null;
-                Company.ParseAdvancedFilterQueryParameter(queryParams, fieldList, out advFilterArgs, out advFilterStatements);
+                Company.ParseAdvancedFilterQueryParameter(modifiedQueryParams, fieldList, out advFilterArgs, out advFilterStatements);
                 if (advFilterArgs != null && advFilterStatements != null)
                 {
                     dbArgs.AddDynamicParams(advFilterArgs);
@@ -135,7 +169,7 @@ namespace d360.web.Controllers.V2
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if (assetType == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type not found for UID")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.UIDNotFoundObjectAndObjectType)).ConfigureAwait(false);
                     }
                     isAssetType = true;
                 }
@@ -183,7 +217,26 @@ namespace d360.web.Controllers.V2
 
                 sql += " " + orderBySql + " " + offsetSql;
 
-                var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout);
+                var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
+
+                //Translate actionObject values
+                query.ForEach(r => {
+                    if (new[] { "Artifact", "ArtifactType" }.Contains(r.actionObject))
+                    {
+                        if (r.@class == 1)
+                        {
+                            r.actionObject = "Business Asset";
+                            r.actionDescription = r.actionDescription.Replace("Artifact", "Business Asset");
+                        } else if (r.@class == 8)
+                        {
+                            r.actionObject = "Technical Asset";
+                            r.actionDescription = r.actionDescription.Replace("Artifact", "Technical Asset");
+                        }
+                    } else if (ActionObjectDictionary.ContainsKey(r.actionObject))
+                    {
+                        r.actionObject = ActionObjectDictionary[r.actionObject];
+                    }
+                });
 
                 if (isStreamResponse)
                 {
@@ -267,6 +320,70 @@ namespace d360.web.Controllers.V2
             {
                 result = Company.Query<dynamic>($@"select 'Report' as Object, ID as ObjectId, Name as DisplayValue from Report where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets lists of User, Action and ActionObject values in change log for the asset yuid to use in advanced filter lists
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("filterlists/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetFilterLists(Guid assetUid)
+        {
+            dynamic objectInfo = GetLegacyObjectDetails(assetUid);
+            dynamic result = new System.Dynamic.ExpandoObject();
+            string condition;
+
+            AssetType assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
+            if (assetType?.Class == AssetTypeClass.Reference)
+            {
+                condition = @"(ga.[Object] = @Object and ga.ObjectId = @ObjectId) OR (
+                    ga.[Object] = 'ReferenceItem' and ga.ObjectID in 
+                        (select a.objectid from[dbo].[asset] a
+                        inner join [dbo].[assettype] att on(a.assettypeid = att.id)
+                        where att.[Object] = @Object and att.ObjectId = @ObjectId))";
+            }
+            else if (new List<string> { "ResourceType", "GroupType", "MetricAllocation", "Predicate" }.Contains(objectInfo.Object))
+            {
+                condition = "ga.[Object] = @Object";
+            }
+            else
+            {
+                condition = "ga.[Object] = @Object and ga.ObjectId = @ObjectId";
+            }
+
+            result.resourceName = Company.Query<dynamic>($@"select distinct
+	                CASE WHEN R.State = 3 THEN
+		                R.FirstName + ' ' + R.LastName + ' (deleted)'
+	                ELSE
+		                R.FirstName + ' ' + R.LastName
+	                END as val
+                from reporting.global_audit ga
+                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            result.action = Company.Query<dynamic>($@"select distinct ga.action as val
+                from reporting.global_audit ga
+			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            result.actionObject = Company.Query<dynamic>($@"select distinct
+                case when ga.ActionObject like 'Artifact%' and coalesce(at.class, att.class) = 1 then 'Business Asset'
+                when ga.ActionObject like 'Artifact%' and coalesce(at.class, att.class) = 8 then 'Technical Asset'
+                else  ga.ActionObject end val
+                from reporting.global_audit ga
+                left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+				left join Asset A on A.Object = ga.Object and A.ObjectID = ga.ObjectID
+				left join AssetType ATT on A.AssetTypeID = att.id
+                where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => {
+                    return (ActionObjectDictionary.ContainsKey(x.val)) ? ActionObjectDictionary[x.val] : x.val;
+                }).ToList();
 
             return result;
         }
@@ -487,36 +604,6 @@ namespace d360.web.Controllers.V2
                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId
 				left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
                 left join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID";
-            }
-
-            if (type.ToString() == "FusionType")
-            {
-                //Gets the Fusion audit for the fusion type
-                querySql += $@" UNION 
-                        select 	                            
-                        ga.*,
-                        case when R.State = {(int)CompanyResourceState.Deleted} then
-                            R.FirstName + ' ' + R.LastName + ' (deleted)'
-                        else
-                            R.FirstName + ' ' + R.LastName
-                        end as ResourceName, 
-                            fa.FieldName as Field, 
-                            fa.Value as NewValue, 
-                            3 as Class,
-                            fa.[Version] as 'Version',	                            
-                        (select top 1 fa_sub.value as 'value'			                            
-                        from reporting.global_fieldaudit fa_sub
-                        inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
-                        where ga_sub.[object] = ga.[object] 
-                            and ga_sub.[objectid] = ga.[objectid] 
-                            and fa_sub.version = (fa.Version -1) 
-                            and fa_sub.fieldname = fa.FieldName 
-                            and fa_sub.fieldtypeid = fa.FieldTypeId 
-                            and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
-                    from reporting.global_audit ga 
-                    left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id ) 
-                    inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'Fusion' 
-                    and ga.ObjectID in ( select Id from Fusion where fusiontypeid = @objId)";
             }
 
             if (type == SystemObjects.ReferenceItemType)
@@ -827,22 +914,22 @@ select
                 var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
                 if (_pageSize.Length > 10)
                 {
-                    return "Invalid pageSize value provided.";
+                    return string.Format(ApiMessages.InvalidValueMessage, ApiMessages.PageSizeString);
                 }
                 if (long.TryParse(_pageSize, out pageSize))
                 {
                     if (pageSize > pageSizeLimit)
                     {
-                        return "Invalid pageSize value provided. Number is too large";
+                        return string.Format(ApiMessages.InvalidNumberTooLarge, ApiMessages.PageSizeString);
                     }
                     if (pageSize <= 0)
                     {
-                        return "Invalid pageSize value provided. Value must be greater than 0";
+                        return string.Format(ApiMessages.MinLengthCheckGTZero, ApiMessages.PageSizeString);
                     }
                 }
                 else
                 {
-                    return "Invalid pageSize value provided. Must be a numeric value";
+                    return string.Format(ApiMessages.NumberValueMessage, ApiMessages.PageSizeString);
                 }
             }
 
@@ -851,22 +938,22 @@ select
                 var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
                 if (_pageNum.Length > 10)
                 {
-                    return "Invalid pageNum value provided.";
+                    return string.Format(ApiMessages.InvalidValueMessage, ApiMessages.PageNumString);
                 }
                 if (long.TryParse(_pageNum, out pageNum))
                 {
                     if (pageNum > 100000)
                     {
-                        return "Invalid pageNum value provided. Number is too large";
+                        return string.Format(ApiMessages.InvalidNumberTooLarge, ApiMessages.PageNumString);
                     }
                     if (pageNum <= 0)
                     {
-                        return "Invalid pageNum value provided. Value must be greater than 0";
+                        return string.Format(ApiMessages.MinLengthCheckGTZero, ApiMessages.PageNumString);
                     }
                 }
                 else
                 {
-                    return "Invalid pageNum value provided. Must be a numeric value.";
+                    return string.Format(ApiMessages.NumberValueMessage, ApiMessages.PageNumString);
                 }
             }
 

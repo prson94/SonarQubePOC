@@ -22,6 +22,7 @@ using d360.web.Filters;
 using Dapper;
 using Resources;
 using System.Threading.Tasks;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Models
 {
@@ -50,8 +51,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public ResourcesController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public ResourcesController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         { }
 
         #endregion
@@ -120,8 +121,9 @@ from	FollowDetail F
 			    when 'G' then 'Via Group'
 			    when 'O' then 'Via Organization'
 			    else ''
-		    end as Via,
-            A.Uid as UID
+		    end as ViaType,
+            A.Uid as UID,
+            RD.SecurityAssetName as Via
 		from 
 		    ResponsibilityDetail RD 
 		    inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
@@ -140,8 +142,9 @@ from	FollowDetail F
 			        when 'G' then 'Via Group'
 			        when 'O' then 'Via Organization'
 			        else ''
-		        end as Via,
-                A.Uid as UID
+		        end as ViaType,
+                A.Uid as UID,
+                RD.SecurityAssetName as Via
         from	ResponsibilityDetail RD
                 cross apply [dbo].GetAssetTextPathById(RD.AssetID, ' / ') TP
                 inner join Asset A on A.ID = RD.AssetID
@@ -158,8 +161,9 @@ from	FollowDetail F
             document.SetCellValue(1, 1, "Role");
             document.SetCellValue(1, 2, "Name");
             document.SetCellValue(1, 3, "Via");
-            document.SetCellValue(1, 4, "Asset UID");
-            document.SetCellValue(1, 5, "Asset ID");
+            document.SetCellValue(1, 4, "Via Type");
+            document.SetCellValue(1, 5, "Asset UID");
+            document.SetCellValue(1, 6, "Asset ID");
 
             #endregion
 
@@ -170,8 +174,9 @@ from	FollowDetail F
                 document.SetCellValue(r, 1, item.ResponsibilityType);
                 document.SetCellValue(r, 2, item.Path);
                 document.SetCellValue(r, 3, item.Via);
-                document.SetCellValue(r, 4, item.UID.ToString());
-                document.SetCellValue(r, 5, item.AssetID);
+                document.SetCellValue(r, 4, item.ViaType);
+                document.SetCellValue(r, 5, item.UID.ToString());
+                document.SetCellValue(r, 6, item.AssetID);
             }
 
             query = null;

@@ -1,13 +1,11 @@
-﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild } from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild, HostListener, OnChanges, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
-import { isString, isArray } from 'util';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
-import { forEach } from 'core-js/core/array';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -15,7 +13,7 @@ import { forEach } from 'core-js/core/array';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SiteMenuCategoryComponent extends BaseComponent implements AfterViewInit {
+export class SiteMenuCategoryComponent extends BaseComponent implements AfterViewInit, OnChanges {
 
     @Input() url: string;
     @Input() title: string;
@@ -25,9 +23,24 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     @Input() expanded: boolean;
     @Input() imageUrl: string;
     @Input() countData: any[];
+    @Input() isActive: boolean = false;
 
     @Output() clearClick = new EventEmitter();
     @Output() clearSearchesEvent = new EventEmitter();
+    @Output() activeItemChanged = new EventEmitter();
+
+    @HostListener('document:click', ['$event'])
+    documentClick(event: MouseEvent) {
+        if (this.menu) {
+            this.menu.isActiveItem = false;
+        }        
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (!this.isActive && this.menu) {
+            this.menu.isActiveItem = false;
+        }
+    }
 
     public showing: boolean = false;
     private viewReady: boolean;
@@ -130,7 +143,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
         }
     }
-    navigateToUrl(url) {
+    navigateToUrl(url) {        
         if (url) {
             this.router.navigateByUrl(url);
         }
@@ -143,8 +156,10 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
     show(item) {
-        if (this.menu && this.menu.isActiveItem)
+        this.activeItemChanged.emit({ item: this });
+        if (this.menu && this.menu.isActiveItem) {            
             return;
+        }
         this.positionMenu(null, item);
     }
 
@@ -156,7 +171,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             let submenu = item.children[0].nextElementSibling;
             if (submenu) {
                 var dims = item.getBoundingClientRect();
-                this.menu.isActiveItem = true;
+                this.menu.isActiveItem = true;                
                 submenu.style.zIndex = ++SiteNav.zindex;
                 submenu.style.top = dims.top + 'px';
                 submenu.style.left = item.offsetWidth + 'px';
@@ -180,7 +195,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     }
 
     getAllCounts(items, arr: any[]) {
-        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
+        if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') !== -1) {
             //get count for item
             var id = _.findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
@@ -197,7 +212,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
 
         //check if sub items exist
-        if (isArray(items.Items)) {
+        if (_.isArray(items.Items)) {
             //recursively check sub items
             items.Items.forEach((item) => this.getAllCounts(item, arr));
         }

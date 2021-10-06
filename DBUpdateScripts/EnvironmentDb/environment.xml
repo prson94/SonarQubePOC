@@ -105,7 +105,7 @@
 	<include file="scripts/Table.dbo.FusionQueryAttribute.xml"/>
 	<include file="scripts/Table.dbo.FusionStatusLog.xml"/>
 	<include file="scripts/Table.dbo.Group.xml"/>
-  <include file="scripts/Table.dbo.HelpResource.xml"/>
+	<include file="scripts/Table.dbo.HelpResource.xml"/>
 	<include file="scripts/Table.dbo.Predicate.xml"/>
 	<include file="scripts/Table.dbo.IntersectType.xml"/>
 	<include file="scripts/Table.dbo.Intersect.xml"/>
@@ -146,7 +146,7 @@
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
 	<include file="scripts/Table.dbo.ResourcePasswordReset.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityType.xml"/>
-  <include file="scripts/Table.dbo.IssueTypeRelationResponsibility.xml"/> <!-- needs to be after responsibility type table due to FK-->
+	<include file="scripts/Table.dbo.IssueTypeRelationResponsibility.xml"/> <!-- needs to be after responsibility type table due to FK-->
 	<include file="scripts/Table.dbo.ResponsibilityTypeRelation.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityTypeRelationOverrideItem.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityTypeRelationRule.xml"/>
@@ -163,6 +163,7 @@
 	<include file="scripts/Table.dbo.RuleResultQualifierType.xml"/>
 	<include file="scripts/Table.dbo.RuleResultQualifier.xml"/>
 	<include file="scripts/Table.dbo.SearchBoost.xml"/>
+	<include file="scripts/Table.dbo.Setting.xml"/>
 	<include file="scripts/Table.dbo.ShoppingCartType.xml"/>
 	<include file="scripts/Table.dbo.ShoppingCart.xml"/>
 	<include file="scripts/Table.dbo.ShoppingCartItem.xml"/>
@@ -335,7 +336,8 @@
 	<include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
-	
+	<include file="scripts/View.workflow.ItemAsset.xml"/>
+	<include file="scripts/View.workflow.ItemIssue.xml"/>
 
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->
@@ -420,6 +422,7 @@
 	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
 	<include file="scripts/Function.utility.GetIntersectTypesByType.xml"/>
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
+  <include file="scripts/Function.utility.GetPredicateFunctionalTypeValue.xml"/>
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>
 
 	<!-- Procedures (object-based naming) -->
@@ -473,6 +476,8 @@
 	<include file="scripts/Procedure.graph.AssetBrowser_LineageHop.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_OwnershipCounts.xml"/>
 	<include file="scripts/Procedure.graph.PopulatePathsForAssetType.xml"/>
+	<include file="scripts/Procedure.graph.SynchronizeAssetExecution.xml"/>
+	<include file="scripts/Procedure.graph.SynchronizeRelationshipExecution.xml"/>
 	<include file="scripts/Procedure.graph.SynchronizeTables.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetEdge.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetNode.xml"/>

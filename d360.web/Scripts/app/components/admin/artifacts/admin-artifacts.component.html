@@ -80,7 +80,7 @@
     </div>
     <div *ngIf="!isEditing && !isAdding && !isDeleting && (selectedRow?.data?.ID && selectedRow?.data?.AssetTypeID)" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-field-definition-tile [objectName]="selectedRow?.data?.name" [objectType]="'ArtifactType'" [assetTypeUid]="selectedRow?.data?.uid" [supportsPrimaryFilterOption]="true" [showAddToSearch]="true"></d3s-field-definition-tile>
+            <d3s-field-definition-tile [objectName]="selectedRow?.data?.name" [objectType]="'ArtifactType'" [assetTypeUid]="selectedRow?.data?.uid" [supportsPrimaryFilterOption]="true" [showAddToSearch]="true" [showDisplayInColumn]="true"></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
             <d3s-responsibility-relations queryType="A" [uid]="selectedRow?.data?.uid" [showAddButton]="false"></d3s-responsibility-relations>

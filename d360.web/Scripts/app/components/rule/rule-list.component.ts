@@ -37,13 +37,15 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     gridObject: AssetGridObject;
     ruleType: RuleType;
 
-    private selection: any = null;
+    selection: any = null;
     showEditor: boolean = false;
     private sidePanelOpen: boolean = false;
     private sidePanelLoading: boolean = false;
     private sidePanelTab: string;
     private sidePanelStorageKey: string;
     private hasProfiling: boolean = false;
+    gridLoading: boolean = true;
+    definitionLoaded: boolean = false;
     dataProfile: any;
 
 
@@ -120,7 +122,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.sidePanelLoading = true;
             this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
                 (r) => {
-                    if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                    if (r && r.items && r.items.length > 0) {
                         this.dataProfile = r.items[0];
 
                         forkJoin(

@@ -304,32 +304,107 @@ button.WhiteButton {
     overflow:auto;
 }
 
-.side-panel {
-    margin-left: 15px;
-    flex: 0;
-    height: 100%;
-    background-color: white;
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-    margin-right: -16px;
-    height: calc(100vh - 190px);
 
-    .panel-header {
-        letter-spacing: normal;
-        word-break: break-word;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        padding-right: 8px;
-        vertical-align: middle;
+.modal-with-side-panel {
+  display: flex;
 
-        .header-label {
-            font-size: 18px;
-            font-weight: 600;
-            font-stretch: normal;
-            font-style: normal;
+  .modal-dialog-main-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      padding-top: 24px;
+      font-size: 18px;
+      color: #202020;
+      font-weight: 600;
+    }
+
+    .content {
+      flex: 1;
+    }
+
+    .action-bar {
+      flex: 0;
+    }
+
+    .grayed-text {
+      color: @d3s-gray-3;
+      padding: 8px 0 24px 0;
+    }
+
+    .scrollable-content {
+      overflow-y: auto;
+      overflow-x: hidden;
+      max-height: calc(100vh - 306px);
+      margin-left: -4px;
+      padding-left: 4px;
+    }
+
+    .search-bar {
+      display: inline-flex;
+      width: 100%;
+      padding: 8px 16px 16px 0;
+
+      .grid-action-buttons {
+        div {
+          display: inline-block;
         }
-    }    
+
+        button {
+          margin-left: 8px;
+        }
+      }
+
+      .simple-search {
+        width: 200px;
+      }
+    }
+
+    .p-datatable {
+      padding-right: 16px;
+    }
+  }
+
+  .side-panel {
+    max-width: 432px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 16px;
+    margin-right: 0px;
+    margin-left: 0px;
+    height: 100%;
+    border-left: 2px solid @ig-grey-t5;
+  }
+}
+
+
+.side-panel {
+  margin-left: 15px;
+  flex: 0;
+  height: 100%;
+  background-color: white;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  margin-right: -16px;
+  height: calc(100vh - 190px);
+
+  .panel-header {
+    letter-spacing: normal;
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 8px;
+    vertical-align: middle;
+
+    .header-label {
+      font-size: 18px;
+      font-weight: 600;
+      font-stretch: normal;
+      font-style: normal;
+    }
+  }  
 }
 
 .tile-clickable {

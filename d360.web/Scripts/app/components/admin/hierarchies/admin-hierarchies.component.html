@@ -7,7 +7,7 @@
         <d3s-delete-form *ngIf="showDelete"
                          [callback]="theDeleteCallback"
                          [itemId]="selected?.AssetTypeID"
-                         [assetTypeUid]="selected?.uid" 
+                         [assetTypeUid]="selected?.uid"
                          [useUid]="true"
                          [method]="'callback'"
                          [prompt]="'Are you sure you want to delete the ' + ( assetTypeClass == AssetTypeClass.Model ? 'model':'policy') +' [' + [selected?.Name] + ']?'"
@@ -92,13 +92,12 @@
             <object-detail [objectType]="objectType" [objectID]="selectedItemID"></object-detail>
         </div>
         <div class="tile tile-detail">
-            <d3s-field-definition-tile 
-                                       [objectType]="objectType" 
+            <d3s-field-definition-tile [objectType]="objectType"
                                        [objectID]="selectedItemID"
                                        [assetTypeUid]="selected?.uid"
                                        [objectName]="selectedRow?.data?.Name"
                                        [showAddToSearch]="true"
-                                       ></d3s-field-definition-tile>
+                                       [showDisplayInColumn]="true"></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail">
             <d3s-admin-level-grid [objectType]="objectType" [maxDepth]="selected?.MaximumDepth" [objectId]="selectedItemID"></d3s-admin-level-grid>

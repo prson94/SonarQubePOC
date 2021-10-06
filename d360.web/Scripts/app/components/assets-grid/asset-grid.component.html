@@ -3,7 +3,7 @@
     <div class="header-description">
         <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
              [innerHtml]="gridObject.Description | safeHtml"
-             class="tile-description"></div>
+             class="tile-description ql-editor no-padding"></div>
         <span *ngIf="gridObject && gridObject.Description"
               aria-hidden="true"
               title="Details"
@@ -70,7 +70,7 @@
                                   [relationships]="stateService.artifactTypeFilters.relationships"
                                   [simpleFilter]="stateService.artifactTypeFilters.simpleTextFilter"
                                   [owner]="stateService.artifactTypeFilters.owners"></d3s-asset-grid-custom-export>
-    <div class="col s12" [hidden]="showCustomExport" *ngIf="isDefinitionLoaded">
+    <div class="col s12" [hidden]="showCustomExport" *ngIf="isDefinitionLoaded && areFiltersLoaded">
         <p-table #dt
                  [value]="items"
                  selectionMode="single"
@@ -114,7 +114,7 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
-                <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item">
+                <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
                     <td *ngFor="let col of columns; let i=index">
                         <ng-container *ngIf="i != linkColumnIndex; else linked">
                             <div
@@ -149,11 +149,9 @@
                                style="margin: 0 10px 0 5px"></i>
                         </div>
                     </td>
-                    <td>
-                        <div>
-                            <a (click)="linkMenu.toggle($event)" style="padding: 0 14px 0 14px; color: #333">
-                                <i class="fa fa-ellipsis-v"></i>
-                            </a>
+                    <td class="asset-grid-tools">
+                        <div style="display:inline-block">
+                            <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                             <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
                         </div>
                     </td>

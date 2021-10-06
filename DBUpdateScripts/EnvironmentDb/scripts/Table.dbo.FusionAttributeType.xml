@@ -5,120 +5,33 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FusionAttributeType-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.FusionAttributeType-Rename-v1">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttributeType')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttributeType')
 BEGIN
-	CREATE TABLE [dbo].[FusionAttributeType](
-		[ID] [int] IDENTITY(50000,1) NOT NULL,
-		[ParentID] [int] NULL,
-		[FusionTypeID] [int] NOT NULL,
-		[Name] [nvarchar](500) NOT NULL,
-		[TextPath]  AS ([utility].[GetBreadcrumbStringWrapper]('FusionAttributeType',[ID],'.')),
-		[Assignable] [bit] CONSTRAINT [DF_FusionAttributeType_Assignable] DEFAULT (0) NOT NULL,
-		[UpdatedOn] [datetime] NULL,
-		[UpdatedBy] [int] NULL,
-		[ScanEnabled] [bit] CONSTRAINT [DF_FusionAttributeType_ScanEnabled] DEFAULT (1) NOT NULL,
-		CONSTRAINT [PK_FusionAttributeType] PRIMARY KEY CLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttributeType_Parent')
-BEGIN
-	ALTER TABLE [dbo].[FusionAttributeType] WITH CHECK ADD CONSTRAINT [FK_FusionAttributeType_Parent] FOREIGN KEY([ParentID]) REFERENCES [dbo].[FusionAttributeType] ([ID])
-	ALTER TABLE [dbo].[FusionAttributeType] CHECK CONSTRAINT [FK_FusionAttributeType_Parent]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttributeType_FusionTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttributeType_FusionTypeID] ON [dbo].[FusionAttributeType] ( [FusionTypeID] ASC )
+	IF EXISTS (select * 
+			   from sys.foreign_keys where name = 'FK_FusionAttributeType_Parent' 
+			   and object_name(parent_object_id) = 'FusionAttributeType' and schema_name(schema_id) = 'dbo'
+			   )
+	BEGIN	
+		ALTER TABLE [dbo].[FusionAttributeType] DROP CONSTRAINT [FK_FusionAttributeType_Parent]
+	END
+	exec sp_rename 'dbo.FusionAttributeType', 'FusionAttributeType_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionAttributeType-FusionAttributeType_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionAttributeType_AfterDelete]
-   ON  [dbo].[FusionAttributeType] 
-   AFTER DELETE
-AS 
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttributeType_backup')
 BEGIN
-	SET NOCOUNT ON
-	delete AssetType where Object = 'FusionAttributeType' and ObjectID in (select ID from deleted)
+	exec sp_rename 'dbo.FusionAttributeType_backup', 'FusionAttributeType';
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionAttributeType-FusionAttributeType_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionAttributeType_AfterInsert]
-   ON  [dbo].[FusionAttributeType] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
-		select Name, null, 4, '{Name}', 1, 0, 1, 'FusionAttributeType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionAttributeType-FusionAttributeType_AfterUpdate-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionAttributeType_AfterUpdate]
-   ON  [dbo].[FusionAttributeType] 
-   AFTER UPDATE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	update	T
-	set		T.Name = S.Name,
-			T.UpdatedBy = S.UpdatedBy,
-			T.UpdatedOn = S.UpdatedOn
-	from	AssetType T
-			inner join inserted S on T.Object = 'FusionAttributeType' and T.ObjectID = S.ID
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
 </databaseChangeLog>

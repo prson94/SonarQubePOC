@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using d360.model;
+using d360.model.DataAccessLayer;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,8 +20,8 @@ namespace d360.web.Controllers.V2
     public class BaseV2ApiController : BaseApiController
     {
         ICompanyContext _company;
-        public BaseV2ApiController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public BaseV2ApiController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
 
         {
             _company = company;
@@ -33,6 +34,7 @@ namespace d360.web.Controllers.V2
                 return Company.ApiTimeout;
             }
         }
+        
         protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[Object]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
         {
             fieldTypes.ForEach(f =>
@@ -246,7 +248,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        public string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams, bool validateForExport = false)
         {
             var parameters = queryParams.ToList();
             long pageSize = 0;
@@ -261,7 +263,8 @@ namespace d360.web.Controllers.V2
                 }
                 if (long.TryParse(_pageSize, out pageSize))
                 {
-                    if (pageSize > 200000)
+                    int maxRows = validateForExport ? Company.GetSettingValue<int>(Setting.MaxExcelExportRows) : 200000;
+                    if (pageSize > maxRows)
                     {
                         return "Invalid pageSize value provided. Number is too large";
                     }

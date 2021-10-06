@@ -25,6 +25,7 @@ using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
+using d360.web.Extensions;
 
 namespace d360.web.Controllers
 {
@@ -37,8 +38,8 @@ namespace d360.web.Controllers
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
         IConnectorLabelRepository connectorLabelRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
-            : base(community, company)
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
+            : base(community, company, settingsRepository)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
@@ -402,15 +403,20 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
                 var lookupData = await Company.QueryAsync<LookupDataReadOnlyModel>($@"select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText from asset a
                     inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
-                    inner join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
-                    cross apply (select * from STRING_SPLIT(f.Value,','))Val
+                    left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
+                    cross apply (
+                        select * from STRING_SPLIT(f.Value,',')
+                        union 
+                        select DefaultValue from FieldType where id = ft.ID and isnull(f.value,'') = ''
+                        )Val
                     outer apply utility.ObjectDetail(ft.LookupObjectType, trim(Val.Value))OD
                     left join Asset refAsset on refAsset.ID = od.AssetID
                     outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
                     left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
                     where a.uid = @uid 
                     and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
-                    and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)", new { uid = details.UID });
+                    and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
+                    and Val.Value is not null and Val.value <> ''", new { uid = details.UID });
 
                 foreach (var ft in fieldTypes)
                 {
@@ -747,9 +753,9 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 select FT.[Name], FT.ScoreType, A.LowerThreshold, A.UpperThreshold  from FieldType FT
                 inner join AssetType T on T.Id = FT.AssetTypeID
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
-                where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = type.ToString(), id }).ToList();
+                where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
 
-            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = type.ToString(), id }).SingleOrDefault();
+            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new {type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault();
 
             switch (type)
             {
@@ -2024,10 +2030,10 @@ from        (
         [HttpGet, Route("resources/{typeID:int}")]
         public HttpResponseMessage GetResourcesByType(int typeID, string filter = "", bool includeInactive = true)
         {
-            var settings = Community.GetCompanySettings();
+            var showUsers = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
             //check that current user is an admin or the company settings allow users to be listed
-            if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            if (!Company.CurrentResourceIsAdmin && !showUsers)
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
             var joins = "";
             var columns = "";
@@ -2118,26 +2124,24 @@ from    (
         [Route("resources/{typeID:int}/{id:int}")]
         public Resource GetResource(int typeID, int id)
         {
-            //check that the user can see other users profiles
-            var settings = Community.GetCompanySettings();
-            //check that current user is an admin or the company settings allow users to be listed
+            // See if user can see other users profiles by checking that current user is an admin or the company settings allow users to be listed.
             if (id != Company.CurrentResourceID)
             {
-                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
-                    throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                if (!SettingsRepository.GetSettingValue<bool>(Setting.ShowResources))
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
             }
 
             //check that this user exists in this environment
             if (!Company.GlobalReportingResources.Where(x => x.ResourceID == id).Any())
             {
                 // user is not a user of this environment get them outa here!
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
             }
 
             var model = Community.GetById<Resource>(id);
 
             if (model == null)
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
             return model;
         }
@@ -2337,7 +2341,7 @@ from    (
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false)
         {
             int objectId = -1;
             switch (type)
@@ -2347,13 +2351,13 @@ from    (
                     return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
-                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn, includeHeader);
+                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
             }
         }
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false)
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
             model.Object = type.ToString();
@@ -2394,7 +2398,20 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                     model.ObjectTypeID = metadata.ObjectTypeID;
                 }
             }
+            FieldColumnMapper fcMapper = null;
 
+            if (useAssetDetailColumnDefinition)
+            {
+                var fieldColumnMappings = (await Company.QueryAsync<FieldColumnMapping>(@"
+                select ft.Name, DisplayInColumn, Category from asset a
+                inner join fieldtype ft on ft.assettypeid = a.assettypeid
+                where a.object = @type and a.objectid = @objectid
+                and ft.isdisplayable = 1
+                order by ColumnOrder", new { type = type.ToString(), objectid = id })).ToList();
+
+                fcMapper = new FieldColumnMapper(fieldColumnMappings, model);
+                fcMapper.TransformRowsAndCols();
+            }
 
             switch (type)
             {
@@ -2405,7 +2422,17 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
 
                         if (asset != null)
                         {
-                            model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                            var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+
+                            if (useAssetDetailColumnDefinition && fcMapper != null)
+                            {
+                                fcMapper.ArrangeRowsAndCols(dynamicRows);
+                            }
+                            else
+                            {
+                                model.rows.AddRange(dynamicRows);
+                            }
+
 
                             var parent = Company.GetParentObject(id, SystemObjects.Artifact);
 
@@ -2996,9 +3023,16 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             Category = Resources.FieldInfo.SystemNoCategory
                         });
 
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
-
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
                         var asset = Company.Assets.Where(x => x.Object == "Policy" && x.ObjectID == id).FirstOrDefault();
 
                         if (asset != null)
@@ -3056,17 +3090,16 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             Category = Resources.FieldInfo.SystemFieldCategory
                         });
 
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleThreshold_Name, FieldName = "RuleThreshold", FieldDescription = Resources.FieldInfo.RuleThreshold_Description, Value = rule.Threshold.ToString() }
-                            },
-                            Category = Resources.FieldInfo.SystemNoCategory
-                        });
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
 
                         var asset = Company.Assets.Where(x => x.Object == "Rule" && x.ObjectID == id).FirstOrDefault();
 
@@ -3659,7 +3692,16 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             });
                         }
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
@@ -3785,7 +3827,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
             }
 
-            if (useSingleColumn)
+            if (useSingleColumn || useAssetDetailColumnDefinition)
             {
                 model.rows.ForEach(r =>
                 {

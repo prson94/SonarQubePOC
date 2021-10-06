@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { SearchFullResult, AdvancedSearchFilter, SearchQuery, SearchAggregationFilter, SearchFieldFilter, SearchState, SearchCheckTreeVal } from '../../models/search-result.model';
+import { SearchFullResult, SearchQuery, SearchAggregationFilter, SearchFieldFilter, SearchState, SearchCheckTreeVal, SearchConnector } from '../../models/search-result.model';
 import { tap, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Observable, BehaviorSubject, pipe, Subscription } from 'rxjs';
 import { BaseObservableService } from '../../services/baseObservable.service';
@@ -27,8 +27,8 @@ export class SearchStateService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService, protected authenticationService: AuthenticationService, protected searchService: SearchService) {
         super(messagesService);
-        this.createQuerySubscriptions();
         this.searchService.getSearchCategories(this.authenticationService.isAdmin).subscribe((res) => this.searchTypes = res);
+        this.createQuerySubscriptions();
     }
 
     //Subject definitions
@@ -61,7 +61,8 @@ export class SearchStateService extends BaseObservableService {
     }
 
     public selectedFilters: CheckTreeNode[] = [];
-    public advancedFilters: AdvancedSearchFilter[]; 
+    public advancedFilters: SearchFieldFilter[];
+    private _connector: SearchConnector;
 
     private _checkTreeKeys: SearchCheckTreeVal[] = null;
     private _query: SearchQuery;
@@ -77,9 +78,11 @@ export class SearchStateService extends BaseObservableService {
             this._query.Term = state.Term;
             this._query.From = state.From;
             this._query.Size = state.Size;
+            this._query.SearchConnector = state.SearchConnector;
             this._searchTypes = state.SearchTypes;
             this._checkTreeKeys = state.CheckTreeKeys;
             this.advancedFilters = state.AdvancedFilters;
+            this._connector = state.SearchConnector;
         }
     }
 
@@ -88,6 +91,7 @@ export class SearchStateService extends BaseObservableService {
             Term: this._query.Term,
             From: this._query.From,
             Size: this._query.Size,
+            SearchConnector: this._query.SearchConnector,
             SearchTypes: this._searchTypes,
             CheckTreeKeys: (this._initial || this.selectedFilters == undefined) ? this._checkTreeKeys : this.selectedFilters.map(f => new SearchCheckTreeVal(f.key, f.type)),
             AdvancedFilters: this.advancedFilters,
@@ -95,6 +99,16 @@ export class SearchStateService extends BaseObservableService {
         });
         this._checkTreeKeys = (state.CheckTreeKeys == null) ? state.SearchTypes.map(k => new SearchCheckTreeVal(k, "category")) : state.CheckTreeKeys;
         SearchSession.putState(state);
+    }
+
+    get connector(): SearchConnector {
+        return this._query?.SearchConnector ?? this._connector;
+    }
+    set connector(conn: SearchConnector) {
+        this._connector = conn;
+        if (this._query) {
+            this._query.SearchConnector = conn;
+        }
     }
 
     /**
@@ -107,7 +121,8 @@ export class SearchStateService extends BaseObservableService {
         this._query = new SearchQuery({
             Term: "",
             From: 0,
-            Size: 10,
+            Size: 25,
+            SearchConnector: this._connector,
             AggregationFilters: [],
             FieldFilters: [],
             Aggregations: []
@@ -162,13 +177,6 @@ export class SearchStateService extends BaseObservableService {
     private doSearch() {
         this.saveState();
 
-        //Create the fieldFilters from the Advanced Search filter chips
-        let fieldFilters = this.advancedFilters.map(item => new SearchFieldFilter({
-            Field: item.field == "Tags" ? "d3sTags" : item.field,
-            Phrase: item.value,
-            MatchWords: item.exact
-        }));
-
         //Create the Aggregate filters from either the checkbox tree or the provided searchTypes
         let aggFilters: SearchAggregationFilter[] = [];
         let types = [];
@@ -211,8 +219,9 @@ export class SearchStateService extends BaseObservableService {
             From: 0,
             Size: 0,
             AggregationFilters: [],
-            FieldFilters: fieldFilters,
+            FieldFilters: this.advancedFilters,
             Aggregations: ['category'],
+            SearchConnector: this._query.SearchConnector,
             Force: force
         }));
 
@@ -221,8 +230,9 @@ export class SearchStateService extends BaseObservableService {
             From: this._query.From,
             Size: this._query.Size,
             AggregationFilters: aggFilters,
-            FieldFilters: fieldFilters,
+            FieldFilters: this.advancedFilters,
             Aggregations: [],
+            SearchConnector: this._query.SearchConnector,
             Explain: this._query.Explain,
             Force: force
         }));
@@ -328,7 +338,7 @@ export class SearchStateService extends BaseObservableService {
      * Will be merged with the aggregate result from search
      **/
     private getBaseCategoryTree() {
-        if (this._baseCategoryTree == undefined) {
+        if (typeof this._baseCategoryTree === "undefined" && this.searchTypes.length > 0) {
             this._baseCategoryTree = this.searchTypes.map((val) => {
                 return {
                     "label": val.title,
@@ -356,7 +366,14 @@ export class SearchStateService extends BaseObservableService {
                 tree.push(v);
             }
         });
-        return tree;
+        const root: CheckTreeNode[] = [{
+            key: "root",
+            label: "Category",
+            type: "root",
+            expanded: true,
+            children: tree
+        }];
+        return root;
     }
 
     /**
@@ -375,6 +392,9 @@ export class SearchStateService extends BaseObservableService {
             return false;
         if (x.Explain != y.Explain)
             return false;
+        if (x.SearchConnector !== y.SearchConnector) {
+            return false;
+        }
         if (x.Aggregations == undefined || y.Aggregations == undefined || x.Aggregations.length != y.Aggregations.length)
             return false;
         if (JSON.stringify(x.Aggregations) != JSON.stringify(y.Aggregations))

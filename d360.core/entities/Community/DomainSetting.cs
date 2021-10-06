@@ -23,6 +23,8 @@ namespace d360.core.entities
 
         public bool SignInitialSSORequest { get; set; }
 
+        public string AuthenticationSettings { get; set; }
+
         [IgnoreDataMember, ForeignKey("IdpDomainCertificateID")]
         public DomainCertificate IdpDomainCertificate { get; set; }
 

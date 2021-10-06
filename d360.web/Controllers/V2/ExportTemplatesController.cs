@@ -32,8 +32,8 @@ namespace d360.web.Controllers.V2
     {
         #region DI
         private IAssetRepository assetRepository;
-        public ExportTemplatesController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository)
-            : base(community, company)
+        public ExportTemplatesController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             this.assetRepository = assetRepository;
         }
@@ -78,7 +78,7 @@ namespace d360.web.Controllers.V2
 
             if (templateList.Count == 0)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template not found.",  "No Templates found for the UID provided.");
+                return errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.TemplateNotFound,  ApiMessages.TemplateNotFoundMessage);
             }
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, templateList));
@@ -101,7 +101,7 @@ namespace d360.web.Controllers.V2
 
             if (templateList.Count == 0)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template not found.", "No Templates found for the UID provided.");
+                return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.TemplateNotFound, ApiMessages.TemplateNotFoundMessage);
             }
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, templateList.FirstOrDefault()));
@@ -124,7 +124,7 @@ namespace d360.web.Controllers.V2
 
             if (templateList.Count == 0)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template not found.", "No Templates found for the UID provided.");
+                return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.TemplateNotFound, ApiMessages.TemplateNotFoundMessage);
             }
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, templateList.FirstOrDefault().ID));
@@ -156,12 +156,12 @@ namespace d360.web.Controllers.V2
 
             if (res > 0)
             {
-                return successMessageResponse(HttpStatusCode.OK, "Template Deleted.", "Template Deleted Successfully."); // deleted
+                return successMessageResponse(HttpStatusCode.OK,ApiMessages.TemplateDeleted, ApiMessages.TemplateDeletedMessage); // deleted
             }else if (res == 0){
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template Not Found", "Template not found matching Uid Provided.");
+                return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.TemplateNotFound, ApiMessages.TemplateNotFoundMessage);
             }else
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Deleting Template",  $"Error encountered while deleteing template {templateUid}.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.TemplateDeletedError, string.Format(ApiMessages.TemplateDeletedError, templateUid.ToString()));
             }
         }
 
@@ -191,7 +191,7 @@ namespace d360.web.Controllers.V2
             //Validate and map asset type uid to to id
             if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()) || model.AssetTypeUID == Guid.Empty)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetTypeUid is a required field");
+                return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetTypeUid);
             }
 
             AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
@@ -222,12 +222,12 @@ namespace d360.web.Controllers.V2
             
             if (res <= 0)
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Creating Template",  INTERNAL_ERROR_MESSAGE);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.TemplateCreatingError,  INTERNAL_ERROR_MESSAGE);
             }
             
             var templateUid = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.ID == templateId).Uid;
 
-            var response = new AssetTypeSuccess { Uid = templateUid, Message = $"{model.Name} successfully added.", Success = true };
+            var response = new AssetTypeSuccess { Uid = templateUid, Message = string.Format(ApiMessages.SuccessfullyAdded, model.Name), Success = true };
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
         }
@@ -249,7 +249,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
             }
             var styles = Company.AssetTypeExportTemplateStyles.Where(x => x.AssetTypeExportTemplateID == templateId).ToList();
             styles.ForEach(x =>
@@ -280,11 +280,11 @@ namespace d360.web.Controllers.V2
             var context = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden,  ApiMessages.AccessDenied));
             }
             if (!Company.AssetTypeExportTemplates.Any(x => x.ID == model.AssetTypeExportTemplateID))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Template not found"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.TemplateNotFound));
             }
 
             if (!string.IsNullOrEmpty(model.BgColor))
@@ -322,18 +322,18 @@ namespace d360.web.Controllers.V2
         public async Task<AssetTypeExportTemplateStyle> UpdateTemplateStyle(int id, AssetTypeExportTemplateStyle model)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
 
             //validate the model input
             if (model.ID <= 0 || model.AssetTypeExportTemplateID <= 0)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ErrorInvalidDatasetMessage));
             }
 
             //check that there is a export template exists
             if (!Company.AssetTypeExportTemplateStyles.Any(x => x.ID == model.ID))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain a valid existing export template style."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ModelExportTemplateStyleNotFound));
             }
             var data = Company.AssetTypeExportTemplateStyles.FirstOrDefault(x => x.ID == model.ID);
             data.IsBold = model.IsBold;
@@ -357,7 +357,7 @@ namespace d360.web.Controllers.V2
                 return model; // updated
             }
 
-            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Export Template Style not found to update."));
+            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.TemplateNotFoundUpdate));
 
         }
 
@@ -379,7 +379,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
             }
 
             var res = await Company.Database.Connection.ExecuteAsync("delete AssetTypeExportTemplateStyle where id = @id", new { id = id });
@@ -415,7 +415,7 @@ namespace d360.web.Controllers.V2
 
             if (!Company.AssetTypeExportTemplates.Any(x => x.Uid == templateUid))
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template Not Found", "Template not found matching Uid Provided.");
+                return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.TemplateNotFound, ApiMessages.TemplateNotFoundMessage);
             }
 
             byte[] template = null;
@@ -432,18 +432,18 @@ namespace d360.web.Controllers.V2
                     }
                     else
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "A Template file type must be .xls or .xlsx.");
+                        return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidRequest,ApiMessages.TemplateFileTypeValidate);
                     }
                 }                
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Creating Template", "Error while opening file.");               
+                return errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.ErrorCreateTemplate, ApiMessages.ErrorFileOpen);               
             }
 
             var res = await Company.Database.Connection.ExecuteAsync("update AssetTypeExportTemplate set TemplateFile = @t where uid = @uid", new { @t = template, @uid = templateUid });
 
-            return successMessageResponse(HttpStatusCode.OK, "Success", "File Successfully uploaded");
+            return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success,ApiMessages.FileUploadMessage);
         }
 
 
@@ -473,7 +473,7 @@ namespace d360.web.Controllers.V2
             //Validate and map asset type uid to to id
             if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()))
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetTypeUid is a required field");
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetTypeUid);
             }
 
             AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
@@ -486,7 +486,7 @@ namespace d360.web.Controllers.V2
             var currentTemplate = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.Uid == templateUid);
             if (currentTemplate == null)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template not Found", "Export Template not found matching the Uid Provided.");
+                return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.TemplateNotFound, ApiMessages.TemplateNotFoundMessage);
             }
             else
             {
@@ -521,12 +521,12 @@ namespace d360.web.Controllers.V2
 
             if (res >= 0)
             {
-                var result = new AssetTypeSuccess { Uid = template.Uid, Message = $"{model.Name} successfully updated.", Success = true };
+                var result = new AssetTypeSuccess { Uid = template.Uid, Message = string.Format(ApiMessages.SucessfullyUpdated, model.Name), Success = true };
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
             }
             else
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Updating Template", INTERNAL_ERROR_MESSAGE);                
+                return errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.ErrorUpdateTemplate, INTERNAL_ERROR_MESSAGE);                
             }            
         }
         
@@ -559,7 +559,6 @@ namespace d360.web.Controllers.V2
 		                        A.ID as 'ID',
 		                        A.uid as 'AssetUid',
 		                        AT.uid as 'AssetTypeUid',
-		                        R.Threshold,
 		                        A.UpdatedOn,
 		                        A.CreatedOn,
                                 'asset/' +  + CAST(A.uid as varchar(36)) as 'Url'
@@ -577,7 +576,6 @@ namespace d360.web.Controllers.V2
 
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
-            fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
             if (template == null || (template != null && template.IncludeUrl))
@@ -705,38 +703,38 @@ namespace d360.web.Controllers.V2
         {
             if(assetType ==null)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "A valid AssetTypeUid is required.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest,  ApiMessages.InvalidRequest,ActionApiMessages.InvalidAssetTypeUid);
             }
 
             if (assetType.Class != AssetTypeClass.BusinessAsset
                && assetType.Class != AssetTypeClass.TechnicalAsset
                && assetType.Class != AssetTypeClass.Rule)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "AssetType does not support Export Template.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ApiMessages.AssetTypeNotSupportExport);
             }
             //validate the model input
             if (string.IsNullOrEmpty(template.Name))
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "Name is a required field.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.NameNotEmptyAndRequired);
             }
             else if (template.Name.Length > 250)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "Name must not exceed 250 characters.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.NameMaxLength250Char);
             }
 
             if (Company.AssetTypeExportTemplates.Any(t => t.AssetTypeID == template.AssetTypeID && t.Name == template.Name && ((template.Uid == null || template.Uid == Guid.Empty) || (template.Uid != null && t.Uid!=template.Uid))))
             {
-                return new WorkHttpStatus(HttpStatusCode.Conflict, "Conflict", $"Template named '{template.Name}' already exists for Asset Type '{assetType.Name}'.");
+                return new WorkHttpStatus(HttpStatusCode.Conflict, ApiMessages.Conflict, string.Format(ApiMessages.TemplateNameDuplicate, template.Name, assetType.Name));
             }
 
             if (template.AssetTypeID <= 0)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "AssetType not found for the UID provided.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ApiMessages.InvalidAssetTypeID);
             }            
 
             if(!Enum.IsDefined(typeof(ExportView), template.ExportViewType))
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "A valid ExportViewType is required.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ExportViewMessage);
             }
 
             if (template.IncludeFieldTypes != null && template.IncludeFieldTypes.Length > 0)
@@ -745,7 +743,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (!Company.FieldTypes.Any(x => x.AssetTypeID == template.AssetTypeID && x.Name == fieldName))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", $"Field '{fieldName}' is not valid for Asset Type specified.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.FieldValidateWithAssetType, fieldName));
                     }
                 }
             }

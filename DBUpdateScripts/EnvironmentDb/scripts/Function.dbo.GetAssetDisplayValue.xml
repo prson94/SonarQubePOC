@@ -5,12 +5,48 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Function.dbo.GetAssetDisplayValue-v4">
+  <changeSet author="Puneet Gupta" id="Function.dbo.GetAssetDisplayValue-v5">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetDisplayValue]()
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select		A.AssetTypeID,
+				A.ID,
+				A.Object,
+				A.ObjectID,
+				string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+	from		Asset A
+				inner join AssetType T on T.ID = A.AssetTypeID 
+				outer apply (
+							select	top 100 TL.value,
+									coalesce(case when TL.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, G.Name) as FormattedValue
+							from	[utility].[OrderedSplit](replace(T.DisplayFormat, '{', '|'), '|') TF
+									cross apply [utility].[OrderedSplit](replace(TF.[value], '}', '|'), '|') TL
+									left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TL.Value
+									left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+									left join Asset RI on TL.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ID
+									left join [Group] G on TL.Value = 'Name' and A.Object = 'Group' and G.ID = A.ObjectID
+									left join reporting.Global_resource R on TL.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+							where	RTRIM(TF.value) <> ''
+									and RTRIM(TL.value) <> ''
+							order by TF.[index], TL.[index]
+							) D
+	group by	A.AssetTypeID,
+				A.ID,
+				A.Object,
+				A.ObjectID
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetAssetDisplayValue]()
 RETURNS TABLE 
 AS
@@ -44,11 +80,6 @@ RETURN
 				A.Object,
 				A.ObjectID
 )
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

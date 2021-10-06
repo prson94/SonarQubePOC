@@ -106,6 +106,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate Relationship Uid identifiers : {0}. Identifiers must be unique within a batch..
+        /// </summary>
+        public static string Error_Duplicate_Relationship_Uid {
+            get {
+                return ResourceManager.GetString("Error_Duplicate_Relationship_Uid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This field type is allocated to one ore more system objects..
         /// </summary>
         public static string Error_FieldType_Allocations {
@@ -178,11 +187,29 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; has invalid GUID value.
+        /// </summary>
+        public static string Error_Parameter_InvalidUidValue {
+            get {
+                return ResourceManager.GetString("Error_Parameter_InvalidUidValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to One or more responsibilities are assigned to the group your are trying to remove. You must first remove these responsibilities before continuing..
         /// </summary>
         public static string Error_ResponsibilitiesAssignedToGroup {
             get {
                 return ResourceManager.GetString("Error_ResponsibilitiesAssignedToGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Must use When conditions when ApplyToType value is set to false..
+        /// </summary>
+        public static string Error_Responsibility_ApplyToType_False {
+            get {
+                return ResourceManager.GetString("Error_Responsibility_ApplyToType_False", resourceCulture);
             }
         }
         

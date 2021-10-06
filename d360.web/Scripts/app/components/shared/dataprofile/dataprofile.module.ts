@@ -14,6 +14,11 @@ import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
 import { PopupMenuModule } from "../controls/popup-menu/popup-menu.component";
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
 import { FormsModule } from "@angular/forms";
+import { TagViewModule } from '../tags/d3s-tag-view.module';
+import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
+import { SidePanelModule } from "../sidepanel/side-panel.module";
+import { CoreModule } from "../core.module";
+import { AssetDetailModule } from "../asset-detail/asset-detail.module";
 
 
 @NgModule({
@@ -29,7 +34,12 @@ import { FormsModule } from "@angular/forms";
         TableModule,
         SharedGridPagingInfoModule,
         PopupMenuModule,
-        SearchFieldModule
+        SearchFieldModule,
+        TagViewModule,
+        AdvancedFiltersModule,
+        SidePanelModule,
+        CoreModule,
+        AssetDetailModule
     ],
     declarations: [
         DataProfileComponent,

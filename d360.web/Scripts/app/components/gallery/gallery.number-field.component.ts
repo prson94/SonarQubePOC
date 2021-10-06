@@ -39,7 +39,7 @@ export class GalleryNumberFieldComponent implements OnInit {
     enforcemodel: DummyenforceModel = new DummyenforceModel("enforcemodel", 0, true);
     form: FormGroup = null;
     demoSize: string = "small";
-
+    enforceForm: FormGroup = null;
     constructor(private fb: FormBuilder) { }
 
     ngOnInit(): void {

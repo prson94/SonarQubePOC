@@ -6,6 +6,7 @@ using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -15,53 +16,19 @@ using System.Linq;
 
 namespace igx.functions
 {
-    public static class ConnectionExtensions
+
+    public class CoreFunction
     {
-        public static void ProcessTask(this SqlConnection company, TextWriter log, string functionName, int companyID, string sql, int timeout = 1400)
+        private readonly IConfiguration Configuration;
+        public CoreFunction(IConfiguration configuration)
         {
-            bool processStatus = false;
-            var processTask = company.ExecuteAsync(sql, commandTimeout: 1400);
-            processTask.ContinueWith(t =>
-            {
-                string exceptionData = "";
-                if (t.Exception != null)
-                {
-                    exceptionData = t.Exception.GetFullExceptionData();
-                    if (t.Exception.InnerExceptions != null)
-                    {
-                        foreach (var ex in t.Exception.InnerExceptions)
-                        {
-                            exceptionData += ex.GetFullExceptionData();
-                        }
-                    }
-                    CoreFunction.AITrackException(functionName, t.Exception, companyID);
-                }
-
-                if (t.IsCompleted)
-                {
-                    if (t.IsFaulted)
-                    {
-                        CoreFunction.AITrackException(functionName, t.Exception, companyID);
-                    }
-                }
-
-                processStatus = false;
-            });
-
-            while (processStatus && (processTask.Exception == null))
-            {
-                log.WriteLine("Processing scores for company {0}...", companyID);
-                System.Threading.Thread.Sleep(30000);
-            }
+            Configuration = configuration;
         }
-    }
 
-    public static class CoreFunction
-    {
         #region AppInsights
 
-        static string _AppInsightsInstrumentationKey = null;
-        public static string AppInsightsInstrumentationKey(string key)
+        string _AppInsightsInstrumentationKey;
+        public string AppInsightsInstrumentationKey(string key)
         {
             if (string.IsNullOrEmpty(_AppInsightsInstrumentationKey))
             {
@@ -71,8 +38,8 @@ namespace igx.functions
         }
 
 
-        static TelemetryClient _AITelemetryClient;
-        public static TelemetryClient AITelemetryClient
+        TelemetryClient _AITelemetryClient;
+        public TelemetryClient AITelemetryClient
         {
             get
             {
@@ -90,7 +57,7 @@ namespace igx.functions
             }
         }
 
-        private static Dictionary<string, string> buildPropertiesToLog(string jobName, IDictionary<string, string> properties = null, int? companyId = null)
+        private Dictionary<string, string> buildPropertiesToLog(string jobName, IDictionary<string, string> properties = null, int? companyId = null)
         {
             var propsToSend = new Dictionary<string, string> {
                 { "Environment", ConfigurationManager.AppSettings["Environment"] },
@@ -112,26 +79,26 @@ namespace igx.functions
             return propsToSend;
         }
 
-        public static void AITrackTrace(string jobName, string message, IDictionary<string, string> properties = null, int? companyId = null)
+        public void AITrackTrace(string jobName, string message, IDictionary<string, string> properties = null, int? companyId = null)
         {
             var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
             AITelemetryClient.TrackTrace(message, propsToSend);
         }
 
-        public static void AITrackEvent(string jobName, string eventName, IDictionary<string, string> properties = null, int? companyId = null, IDictionary<string, double> metrics = null)
+        public void AITrackEvent(string jobName, string eventName, IDictionary<string, string> properties = null, int? companyId = null, IDictionary<string, double> metrics = null)
         {
             var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
             AITelemetryClient.TrackEvent(eventName, propsToSend, metrics);
         }
 
-        public static void AITrackException(string jobName, Exception e, int? companyId = null, IDictionary<string, string> properties = null)
+        public void AITrackException(string jobName, Exception e, int? companyId = null, IDictionary<string, string> properties = null)
         {
             var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
             AITelemetryClient.TrackException(e, propsToSend);
             AIFlush();
         }
 
-        public static void AITrackJobCompletedNoErrors(string jobName)
+        public void AITrackJobCompletedNoErrors(string jobName)
         {
             Dictionary<string, string> properties = new Dictionary<string, string>();
             properties["Function"] = jobName;
@@ -142,7 +109,7 @@ namespace igx.functions
             AIFlush();
         }
 
-        public static void AITrackJobStart(string name)
+        public void AITrackJobStart(string name)
         {
             Dictionary<string, string> properties = new Dictionary<string, string>();
             properties["Function"] = name;
@@ -151,29 +118,34 @@ namespace igx.functions
             AITelemetryClient.TrackEvent("Function Started", properties);
         }
 
-        public static void AITrackRequest(string name, TimeSpan elapsedTime)
+        public void AITrackRequest(string name, TimeSpan elapsedTime)
         {
             AITelemetryClient.TrackRequest(name, DateTime.Now, elapsedTime, "", true);
         }
 
-        public static void AIFlush()
+        public void AIFlush()
         {
             AITelemetryClient.Flush();
         }
 
         #endregion
 
-        public static string GetConfigValueByKey(string name)
+        public T GetConfigValueByKey<T>(string name)
         {
-            return CloudConfigurationManager.GetSetting(name);
+            return Configuration.GetValue<T>(name);
         }
 
-        public static d360.core.enums.EnvironmentLevel GetEnvironmentLevelCurrentSlot()
+        public string GetConnectionString(string name)
+        {
+            return Configuration.GetConnectionString(name);
+        }
+
+        public d360.core.enums.EnvironmentLevel GetEnvironmentLevelCurrentSlot()
         {
 
             try
             {
-                var environment = GetConfigValueByKey("Environment");
+                var environment = GetConfigValueByKey<string>("Environment");
                 d360.core.enums.EnvironmentLevel lvl = d360.core.enums.EnvironmentLevel.Nightly;
 
                 switch (environment)
@@ -200,13 +172,13 @@ namespace igx.functions
             }
         }
 
-        public static List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot()
+        public List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot()
         {
 
             try
             {
                 var lvl = GetEnvironmentLevelCurrentSlot();
-                return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.EnvironmentLevel == lvl).ToList();
+                return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(GetConnectionString("CommunityContext")).Where(i => i.EnvironmentLevel == lvl).ToList();
             }
             catch (Exception)
             {
@@ -214,12 +186,12 @@ namespace igx.functions
             }
         }
 
-        public static List<int> UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken jobToken)
+        public List<int> UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken jobToken)
         {
             var lvl = GetEnvironmentLevelCurrentSlot();
             try
             {
-                return CompanyConnectionUtils.UpdateRebuildRequestForEnvironmentLevel(lvl, jobToken);
+                return CompanyConnectionUtils.UpdateRebuildRequestForEnvironmentLevel(lvl, jobToken, GetConnectionString("CommunityContext"));
             }
             catch (Exception)
             {

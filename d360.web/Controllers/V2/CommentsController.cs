@@ -15,6 +15,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -25,8 +26,8 @@ namespace d360.web.Controllers.V2
 
         readonly ICommentRepository Comments;
 
-        public CommentsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments)
-            : base(community, company)
+        public CommentsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             Comments = comments;
         }
@@ -59,7 +60,7 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to create this comment." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentCreatePermission}
                 };
                 return DetermineUnhandledException(
                     ex,
@@ -150,15 +151,15 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return errorMessageResponse(HttpStatusCode.InternalServerError, "error", "Not able to successfully remove comment. Please try again later.");
+                    return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError , CommentsAPIMessages.CommentRetryRemove);
                 }
             }
             catch (Exception ex)
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to remove this comment." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentCreatePermission },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
                 };
                 return DetermineUnhandledException(
                     ex,
@@ -193,11 +194,11 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error while removing your vote on the comment using this emoji",
+                    CommentsAPIMessages.RestrictVoteRemove,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "DeleteVote" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
                 );
@@ -229,12 +230,12 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see voters for this comment." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid) }
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error updating comment",
+                    CommentsAPIMessages.ErrorUpdateComment,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "EditComment" }, { "CommentUid", commentUid.ToString() } }
                 );
@@ -280,11 +281,11 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to view comments." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentViewPermission }
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error retrieving comments",
+                    CommentsAPIMessages.ErrorGetComment,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "GetComments" } }
                 );
@@ -315,12 +316,12 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see voters for this comment." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error retrieving voters based on the comment and emoji",
+                    CommentsAPIMessages.ErrorGetVoterBasedOnCommentEmoji,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "GetCommentVotersByEmoji" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
                 );
@@ -352,12 +353,12 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see votes for this comment." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission},
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error retrieving votes based on the comment",
+                    CommentsAPIMessages.ErrorGetVoterBasedOnComment,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "GetCommentVotes" }, { "CommentUid", commentUid.ToString() } }
                 );
@@ -414,12 +415,12 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = "An error occured with your request. Please check your parameters and try again." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see rolled up counts by comment type." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.ErrorInvalidDatasetMessage },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.RollupCountPermission }
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error retrieving rolled up counts by comment type",
+                    CommentsAPIMessages.ErrorGetRollupCount,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "GetCountsRolledUpByCommentType" }, { "resourceId", resourceId.ToString() } }
                 );

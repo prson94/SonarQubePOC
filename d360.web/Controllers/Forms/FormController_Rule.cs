@@ -30,10 +30,7 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString() });
-
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).ToList(), 3);
-
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -52,8 +49,6 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = uid.ToString() });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString(), Value = model.Threshold.ToString() });
-
             list = (
                 loadDynamicFields(
                     SystemObjects.Rule.ToString(),
@@ -61,7 +56,7 @@ namespace d360.web.Controllers
                     list,
                     Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(),
                     Company.GetFieldRelationsByObject(SystemObjects.Rule, id).ToList(),
-                    3
+                    2
                 )
             );
 
@@ -92,7 +87,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        /// <param name="id">PolicyTypeID</param>
+        /// <param name="id">RuleTypeID</param>
         [Route("RuleType_EditFields"), NonNullableParameters]
         public JsonResult RuleType_EditFields(int id)
         {

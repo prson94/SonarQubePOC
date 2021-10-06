@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -269,11 +270,23 @@ namespace d360.core.entities
         public Guid? ExecutionItemUid { get; set; }
     }
 
+    [DataContract]
     public class AssetDataProfileMatchingAssetsModel
     {
         [DataMember]
         public Guid uid { get; set; }
+        [DataMember]
         public string path { get; set; }
+        public string tagsJson { get; set; }
+        public bool hasTagField { get; set; }
+        [DataMember]
+        public List<string> tags
+        {
+            get
+            {
+                return hasTagField ? JsonConvert.DeserializeObject<List<string>>(tagsJson ?? "[]") : null;
+            }
+        }
     }
 
     public class AssetDataProfilesMatchingAssetsApiViewModel : PagedApiBaseViewModel
@@ -294,6 +307,20 @@ namespace d360.core.entities
     {
         [DataMember]
         public IEnumerable<AssetDataProfileByTypeQualifierModel> items { get; set; }
+    }
+
+    public class DataProfileExportModel
+    {
+        public Guid AssetUid { get; set; }
+        public long AssetID { get; set; }
+        public string AssetTags { get; set; }
+        public string AssetPath { get; set; }
+        public string AssetTypePath { get; set; }
+        public string MatchedAssetTags { get; set; }
+        public string MatchedAssetPath { get; set; }
+        public string MatchedAssetTypePath { get; set; }
+        public Guid MatchedAssetUid { get; set; }
+        public long MatchedAssetID { get; set; }
     }
 
     public class ValidateSampleAttribute : ValidationAttribute

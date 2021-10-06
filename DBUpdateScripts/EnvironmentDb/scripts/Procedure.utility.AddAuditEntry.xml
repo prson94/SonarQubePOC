@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v13">
-  <comment>GOV-14559</comment>
+  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v17">
+  <comment>GOV-15612</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -35,8 +35,6 @@ begin
 
 	if @DependentObject is not null
 	begin
-		if @DependentObject = 'Fusion'				begin		select @DependentObjectName = Name from Fusion where ID = @DependentObjectID				end		
-		if @DependentObject = 'FusionType'			begin		select @DependentObjectName = Name from FusionType where ID = @DependentObjectID			end
 		if @DependentObject = 'Group'				begin		select @DependentObjectName = Name from [Group] where ID = @DependentObjectID				end				
 		if @DependentObject = 'IssueType'			begin		select @DependentObjectName = Name from IssueType where ID = @DependentObjectID				end
 		if @DependentObject = 'IntersectType'		begin		select @DependentObjectName = ITyName.Name from IntersectType O cross apply dbo.getIntersectTypeNames(O.ID) ITyName where O.ID = @DependentObjectID			end
@@ -123,47 +121,6 @@ begin
 		insert into @tbl  select 0, 'IsPrimaryFilter', [IsPrimaryFilter], 0, 0 from FieldType where ID = @MainObjectID
 		insert into @tbl  select 0, 'DefaultFormattedValue', DefaultFormattedValue, 0, 0 from FieldType where ID = @MainObjectID
 		insert into @tbl  select 0, 'ShowIfEmpty', ShowIfEmpty, 0, 0 from FieldType where ID = @MainObjectID
-	end
-	
-	if @MainObject = 'Fusion'
-	begin
-		select	@MainObjectTypeName = T.Name,
-				@MainObjectName = O.Name 
-		from	Fusion O
-				inner join FusionType T on T.ID = O.FusionTypeID
-		where	O.ID = @MainObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'Enabled', Enabled, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'Manual', Manual, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'LockPromotedItems', LockPromotedItems, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'IntervalType', IntervalType, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'Interval', Interval, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'ForceRefresh', ForceRefresh, 0, 0 from Fusion where ID = @MainObjectID
-	end
-	
-	if @MainObject = 'FusionAttributeType'
-	begin
-		select	@MainObjectTypeName = T.Name,
-				@MainObjectName = O.Name 
-		from	FusionAttributeType O
-				inner join FusionType T on T.ID = O.FusionTypeID
-		where	O.ID = @MainObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionAttributeType where ID = @MainObjectID
-		insert into @tbl  select 0, 'Assignable', Assignable, 0, 0 from FusionAttributeType where ID = @MainObjectID
-	end
-	
-	if @MainObject = 'FusionType'
-	begin
-		select	@MainObjectTypeName = 'Fusion Type',
-				@MainObjectName = O.Name 
-		from	FusionType O
-		where	O.ID = @MainObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionType where ID = @MainObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from FusionType where ID = @MainObjectID
 	end
 	
 	if @MainObject = 'Group'
@@ -437,7 +394,18 @@ begin
 				@MainObjectName = coalesce(@predicateName,'Predicate')
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID		
 		insert into @tbl  select 0, 'Inverse', Inverse, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
-		insert into @tbl  select 0, 'Functional Type', Type, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
+		insert into @tbl  select 0, 'Functional Type', [utility].[GetPredicateFunctionalTypeValue](Type), 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
+	end
+  
+	if (@Action = 'Created' and @DependentObject = 'MetricAllocation')
+	begin
+		declare @deletedAuditIds table ([ID] bigint)
+		delete from [reporting].[Global_Audit] 
+		Output deleted.ID into @deletedAuditIds
+		where [Object] = 'MetricAllocation' and [ObjectID] = @DependentObjectID;
+
+		Delete FA 
+		from [reporting].[Global_FieldAudit] FA inner join @deletedAuditIds DA on FA.AuditID=DA.ID
 	end
 
 	insert into @tbl  
@@ -720,8 +688,6 @@ begin
 
 	if @DependentObject is not null
 	begin
-		if @DependentObject = 'Fusion'				begin		select @DependentObjectName = Name from Fusion where ID = @DependentObjectID				end		
-		if @DependentObject = 'FusionType'			begin		select @DependentObjectName = Name from FusionType where ID = @DependentObjectID			end
 		if @DependentObject = 'Group'				begin		select @DependentObjectName = Name from [Group] where ID = @DependentObjectID				end				
 		if @DependentObject = 'IssueType'			begin		select @DependentObjectName = Name from IssueType where ID = @DependentObjectID				end
 		if @DependentObject = 'IntersectType'		begin		select @DependentObjectName = ITyName.Name from IntersectType O cross apply dbo.getIntersectTypeNames(O.ID) ITyName where O.ID = @DependentObjectID			end
@@ -808,47 +774,6 @@ begin
 		insert into @tbl  select 0, 'IsPrimaryFilter', [IsPrimaryFilter], 0, 0 from FieldType where ID = @MainObjectID
 		insert into @tbl  select 0, 'DefaultFormattedValue', DefaultFormattedValue, 0, 0 from FieldType where ID = @MainObjectID
 		insert into @tbl  select 0, 'ShowIfEmpty', ShowIfEmpty, 0, 0 from FieldType where ID = @MainObjectID
-	end
-	
-	if @MainObject = 'Fusion'
-	begin
-		select	@MainObjectTypeName = T.Name,
-				@MainObjectName = O.Name 
-		from	Fusion O
-				inner join FusionType T on T.ID = O.FusionTypeID
-		where	O.ID = @MainObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'Enabled', Enabled, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'Manual', Manual, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'LockPromotedItems', LockPromotedItems, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'IntervalType', IntervalType, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'Interval', Interval, 0, 0 from Fusion where ID = @MainObjectID
-		insert into @tbl  select 0, 'ForceRefresh', ForceRefresh, 0, 0 from Fusion where ID = @MainObjectID
-	end
-	
-	if @MainObject = 'FusionAttributeType'
-	begin
-		select	@MainObjectTypeName = T.Name,
-				@MainObjectName = O.Name 
-		from	FusionAttributeType O
-				inner join FusionType T on T.ID = O.FusionTypeID
-		where	O.ID = @MainObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionAttributeType where ID = @MainObjectID
-		insert into @tbl  select 0, 'Assignable', Assignable, 0, 0 from FusionAttributeType where ID = @MainObjectID
-	end
-	
-	if @MainObject = 'FusionType'
-	begin
-		select	@MainObjectTypeName = 'Fusion Type',
-				@MainObjectName = O.Name 
-		from	FusionType O
-		where	O.ID = @MainObjectID
-
-		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionType where ID = @MainObjectID
-		insert into @tbl  select 0, 'Description', Description, 0, 0 from FusionType where ID = @MainObjectID
 	end
 	
 	if @MainObject = 'Group'
@@ -1124,6 +1049,17 @@ begin
 		insert into @tbl  select 0, 'Inverse', Inverse, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
 		insert into @tbl  select 0, 'Functional Type', Type, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
 	end
+  
+	if (@Action = 'Created' and @DependentObject = 'MetricAllocation')
+	begin
+		declare @deletedAuditIds table ([ID] bigint)
+		delete from [reporting].[Global_Audit] 
+		Output deleted.ID into @deletedAuditIds
+		where [Object] = 'MetricAllocation' and [ObjectID] = @DependentObjectID;
+
+		Delete FA 
+		from [reporting].[Global_FieldAudit] FA inner join @deletedAuditIds DA on FA.AuditID=DA.ID
+	end
 
 	insert into @tbl  
 			select	FieldTypeID, 
@@ -1195,7 +1131,7 @@ begin
 	select	@max = max(ID) from @tbl
 
 	-- test if there is a previous created entry in global audit for this then it cant be a create change to update..
-	if @Action = 'Created' and exists(select 1 from reporting.Global_Audit where [Object] = @DependentObject and [ObjectID] = @DependentObjectID)
+	if (@Action = 'Created' and exists(select 1 from reporting.Global_Audit where [Object] = @DependentObject and [ObjectID] = @DependentObjectID) and (@DependentObject != 'MetricAllocation'))
 	begin
 		set @Action = 'Updated';
 	end

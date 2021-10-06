@@ -13,6 +13,7 @@ using Swashbuckle.Swagger.Annotations;
 using System.Threading.Tasks;
 using System.Web.Http.Description;
 using Resources;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.V2
 {
@@ -27,7 +28,7 @@ namespace d360.web.Controllers.V2
 
         #region DI
 
-        public CustomEndpointsController(ICommunityContext community, ICompanyContext company):base(community, company)
+        public CustomEndpointsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) :base(community, company, settingsRepository)
         {
 
         }
@@ -50,14 +51,14 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
             }
 
             var entity = Company.ApiEntities.First(x => x.EndpointVersionID == versionId);
 
             if (entity == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "API Entity Not Found")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound,ApiMessages.ApiEntryNotFound)).ConfigureAwait(false);
             }
 
             var fieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList();
@@ -83,13 +84,13 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetLookupFields(int fieldTypeId)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
 
             var fieldType = Company.GetById<FieldType>(fieldTypeId);
 
             if (fieldType == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Field Type Not Found")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.FieldTypeNotFound)).ConfigureAwait(false);
             }
 
 
@@ -128,14 +129,14 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
             }
 
             var model = Company.GetById<ApiEntityFieldType>(id);
 
             if (model == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Field Type Not Found"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.FieldTypeNotFound)).ConfigureAwait(false);
             }
 
             var entity = Company.GetById<ApiEntity>(model.EntityID);
@@ -187,12 +188,12 @@ namespace d360.web.Controllers.V2
             var prefix = "CustomEndPoints.AddCustomAPIVersionField => ";
             if (!Company.CurrentResourceIsAdmin)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
             }
 
             if (model == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "model Not Found")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
             }
 
             try
@@ -214,7 +215,7 @@ namespace d360.web.Controllers.V2
 
                     if (existing == null)
                     {
-                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "entity field type Not Found"));
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound,ApiMessages.ApiEntryNotFound));
                     }
 
                     var existingMultiSelect = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == model.ID).ToList();
@@ -247,7 +248,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
 
            

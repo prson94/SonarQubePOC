@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using Dapper;
 using System;
 using System.Collections.Generic;

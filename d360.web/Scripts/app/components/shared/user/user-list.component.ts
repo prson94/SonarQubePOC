@@ -18,8 +18,9 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { ResourceApiModel } from '../../../models/resource.model';
 import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
-import { AdvancedFilterFieldType, Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 import { isEqual } from "lodash";
+import { of } from 'rxjs';
 
 @Component({
     selector: "d3s-user-list",
@@ -62,6 +63,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     previousEvent: LazyLoadEvent;
     columnWidth: number = 0;
     columnWidthOwnedItems: number = 0;
+
+    private statusValues: string[] = ["Active", "Inactive"];
 
     get globalFilterFields(): string[] {
         let f = this.columns.map(c => c.datafield);
@@ -145,7 +148,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             this.fieldsService.getFieldsV2(this.resourceTypeUid, null, null)
         ).subscribe((forkResult) => {
             const result = forkResult[0];
-            const customFields = forkResult[1];
+            const customFields = forkResult[1] ?? [];
 
             this.columns = result.Columns;
             this.fields = result.Fields;
@@ -159,7 +162,14 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             }
             this.setAdvancedFilterFields(result.Columns, customFields);
         });
+    }
 
+    public getStatusFilterValues(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+        const values = this.statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+        return of({
+            items: values,
+            count: values.length
+        });
     }
 
     setAdvancedFilterFields(columns: GridColumn[], customFields: FieldTypeAPIModelField[]) {
@@ -171,7 +181,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                     FriendlyName: c.text,
                     Type: new FieldType("Lookup"),
                     Category: "",
-                    ValueList: [{ value: "Active", title: "Active" }, { value: "Inactive", title: "Inactive" }],
+                    ValueLoader: this.getStatusFilterValues.bind(this),
                     RemovePopulatedOperator: true
                 }
             } else if (customFields.findIndex((o) => o.Name === apiName) !== -1) {

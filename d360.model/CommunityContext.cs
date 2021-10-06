@@ -20,7 +20,6 @@ namespace d360.model
     public class CommunityContext : BaseContext, ICommunityContext
     {
         internal IQueueSource QueueSource;
-        internal string SettingsCacheKey;
 
         public CompanySsoModel CurrentCompanySsoModel { get; set; }
 
@@ -38,8 +37,6 @@ namespace d360.model
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;
             GetCompanySsoModel();
-
-            SettingsCacheKey = $"c{CurrentCompanyID}_settings";
         }
 
 
@@ -51,12 +48,10 @@ namespace d360.model
         public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
         public DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
         public DbSet<CompanyResource> CompanyResources { get; set; }
-        public DbSet<CompanySetting> CompanySettings { get; set; }
         public DbSet<DatabaseServer> DatabaseServers { get; set; }
         public DbSet<DomainCertificate> DomainCertificates { get; set; }
         public DbSet<DomainSetting> DomainSettings { get; set; }        
         public DbSet<Resource> Resources { get; set; }
-        public DbSet<Setting> Settings { get; set; }
         
         #endregion
 
@@ -138,31 +133,10 @@ namespace d360.model
         public override int SaveChanges()
         {
             int returnValue = 0;
-            bool bClearSettingsCache = false;
-
-            var changedItems = this.ChangeTracker.Entries().Where(p => p.State == EntityState.Added ||
-                    p.State == EntityState.Deleted ||
-                    p.State == EntityState.Modified);
-
-            foreach (var entry in changedItems)
-            {
-                if (entry.Entity is CompanySetting)
-                {
-                    bClearSettingsCache = true;
-                }
-            }
-           
+         
             try
             {
                 returnValue = base.SaveChanges();
-
-                // After we update the database we clear the cached copy of settings.  
-                // if we do this before we update the database it opens a period of 
-                // at which a load request would cache the old data...
-                if (bClearSettingsCache)
-                {
-                    Caching.RemoveItem(SettingsCacheKey);  // clear the settings cache for this company as the settings have changed.
-                }
             }
             catch (OptimisticConcurrencyException)
             {
@@ -181,6 +155,74 @@ namespace d360.model
 
             this.ChangeTracker.DetectChanges();
             return  (SaveChanges() > 0);            
+        }
+
+        #endregion
+
+        #region OpenId Logic
+
+        public DbSet<OpenIdRequest> OpenIdRequests { get; set; }
+
+        /// <summary>
+        /// Used to generate a state or nonce value.
+        /// </summary>
+        /// <returns></returns>
+        public string GenerateOpenIdRequestValue()
+        {
+            string val;
+
+            int length = 5;
+            var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
+            {
+                byte[] data = new byte[length];
+                byte[] buffer = null;
+                int maxRandom = byte.MaxValue - ((byte.MaxValue + 1) % chars.Length);
+
+                crypto.GetBytes(data);
+
+                char[] result = new char[length];
+
+                for (int i = 0; i < length; i++)
+                {
+                    byte value = data[i];
+
+                    while (value > maxRandom)
+                    {
+                        if (buffer == null)
+                        {
+                            buffer = new byte[1];
+                        }
+
+                        crypto.GetBytes(buffer);
+                        value = buffer[0];
+                    }
+
+                    result[i] = chars[value % chars.Length];
+                }
+
+                val = new string(result);
+            }
+
+            return val;
+        }
+
+        public OpenIdRequest GetOpenIdRequest(string state)
+        {
+            return OpenIdRequests.SingleOrDefault(o => o.State == state);
+        }
+
+        public void RemoveOpenIdRequest(OpenIdRequest request)
+        {
+            OpenIdRequests.Remove(request);
+            SaveChanges();
+        }
+
+        public void SetOpenIdRequest(OpenIdRequest request)
+        {
+            OpenIdRequests.Add(request);
+            SaveChanges();
         }
 
         #endregion
@@ -293,6 +335,7 @@ namespace d360.model
                                 cds.DomainSetting.IdpDomainCertificate,
                                 cds.DomainSetting.SpDomainCertificate,
                                 cds.DomainSetting.SignInitialSSORequest,
+                                cds.DomainSetting.AuthenticationSettings,
                                 c.Status
                             }
                             ).SingleOrDefault();
@@ -304,6 +347,7 @@ namespace d360.model
                     CurrentCompanySsoModel.IdpSsoEndpoint = model.IdpSsoEndpoint;
                     CurrentCompanySsoModel.HashAlgorithmType = model.HashAlgorithmType;
                     CurrentCompanySsoModel.SignInitialSSORequest = model.SignInitialSSORequest;
+                    CurrentCompanySsoModel.AuthenticationSettings = model.AuthenticationSettings;
                     CurrentCompanySsoModel.IsCompanyActive = model.Status != null && model.Status.ToLower() == "active" ? true : false;
 
                     if (model.IdpDomainCertificate != null)
@@ -318,7 +362,7 @@ namespace d360.model
                     }
                 }
 
-                Caching.SetItemInListByID<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain, CurrentCompanySsoModel);
+                Caching.SetItemInListByID(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain, CurrentCompanySsoModel);
             }
         }
 
@@ -411,66 +455,9 @@ namespace d360.model
             return r;
         }
 
-        public class SettingModel
-        {
-            public int SettingID { get; set; }
-
-            public string Name { get; set; }
-
-            public string FieldName { get; set; }
-
-            public string Description { get; set; }
-
-            public string Value { get; set; }
-        }
-
-        public T GetCompanySettingByKey<T>(string key)
-        {
-            var settings = GetCompanySettings();
-            if (settings.ContainsKey(key))
-            {
-                var value = settings[key];
-                try
-                {
-                    T checkType = default(T);
-                    if (checkType is Guid)
-                    {
-                        var guid = Guid.Parse(value);
-                        return (T)(Convert.ChangeType(guid, typeof(T)));
-                    }
-
-                    return (T)(Convert.ChangeType(value, typeof(T)));
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-            else throw new Exception($"Invalid settings key '{key}'");
-        }
-
-
         public string GetPrimaryUrlPrefix()
         {
             return Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
         }
-
-        public Dictionary<string, string> GetCompanySettings()
-        {
-            Dictionary<string, string> settings = Caching.GetItem<Dictionary<string, string>>(SettingsCacheKey);
-
-            if (settings == null)
-            {
-                settings = Query<SettingModel>(
-    @"select S.ID as SettingID, S.Name, S.FieldName, S.Description, coalesce(C.Value, S.DefaultValue) as Value
-from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @c
-where S.ID <> 4", new { c = CurrentCompanyID })
-    .ToDictionary(k => k.FieldName, v => v.Value);
-
-                Caching.SetItem(SettingsCacheKey, settings, false, 10);
-            }
-            return settings;
-        }
-
     }
 }

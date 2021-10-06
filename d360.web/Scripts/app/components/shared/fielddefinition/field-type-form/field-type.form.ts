@@ -68,6 +68,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() enableAllowMultipleValues: boolean = true;
     @Input() showAddToSearch: boolean = false;
 
+    @Input() showDisplayInColumn: boolean = false;
+    @Input() hasDisplayInColumn: boolean = false;
+
     @Input() actionTypeUid: string;
     @Input() assetTypeUid: string;
     @Input() relationshipTypeUid: string;
@@ -353,6 +356,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         let observables: Array<Observable<any>> = [];
         this.showDescription = true;
         this.enableAllowMultipleValues = true;
+        this.hasDisplayInColumn = true;
+
         if (value == null) {
             this.currentType = "Empty";
             this.model.FieldType.Type = new FieldType("Empty");
@@ -383,8 +388,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 try {
                     if (this.model.FieldType.Type["Relationship"].IntersectTypeUid) {
                         observables.push(this.cardinalRelationshipSelected(this.model.FieldType.Type["Relationship"].IntersectTypeUid));
-                    } else if (this.lookups.Field_Relationships.length > 0) {
-                        observables.push(this.cardinalRelationshipSelected(this.lookups.Field_Relationships[0].value));
                     }
                     if (!this.model.FieldType.Type["Relationship"].IsEditable) {
                         this.showDescription = false;
@@ -410,6 +413,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
                 break;
             case 'reflistrelationship':
+                this.hasDisplayInColumn = false;
                 try {
                     if (this.model.cardinalRelationship && (this.lookups.Field_CardinalReferenceRelationships.length > 0)
                         && (this.lookups.Field_CardinalReferenceRelationships.find(x => x.value == this.model.cardinalRelationship))) {
@@ -424,6 +428,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'complexrelationlookup':
                 this.showDescription = false;
+                this.hasDisplayInColumn = false;
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
                     let r = new FieldTypeRelationItemEditorModel();
 
@@ -442,6 +447,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.showIsEditable = false;
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
+                this.hasDisplayInColumn = false;
                 break;
             case "ownershiplookup":
                 this.showDescription = false;
@@ -450,6 +456,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'computedownershiplookup':
             case 'json':
             case 'jsonelement':
+                this.hasDisplayInColumn = false;
             case 'path':
                 this.showDescription = false;
                 break;
@@ -1428,6 +1435,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return (['Path', 'Tag'].indexOf(this.currentType) > -1 || (this.currentType == 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable));
             case 'SearchAddToResult':
                 return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag'].indexOf(this.currentType) > -1);
+            case 'isSettingDisabled':
+                return (['Json', 'JSON', 'JsonElement', 'ComplexRelationLookup', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
+            case 'DisplayInColumn':
+                if (this.currentType === "OwnershipLookup") {
+                    var isDisabled = !this.model.FieldType.Type[this.currentType].Definition.DisplayAsList;
+                    if (isDisabled) {
+                        this.model.FieldType.Type[this.currentType].DisplayInColumn = false;
+                    }
+                    return isDisabled;
+                }
+                return false;
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }
@@ -1482,8 +1500,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     onShowDetailChange(event: boolean) {
-        if (event == false && this.currentType == 'Score') {
+        if (event === false && this.currentType === 'Score') {
             this.model.FieldType.Type[this.currentType].ShowIfEmpty = false;
+        }
+        if (event === false && this.model.FieldType.Type[this.currentType].IsDisplayable) {
+            this.model.FieldType.Type[this.currentType].IsDisplayable = false;
         }
     }
 

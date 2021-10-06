@@ -13,6 +13,8 @@ import { SharedModule } from 'primeng/api';
 
 import { PipesModule } from '../../../pipes/pipes.module';
 
+import { TooltipModule } from 'primeng/tooltip';
+
 import { HeaderActionsComponent } from './header-actions.component';
 import { HeaderBreadcrumbItemComponent } from './header-breadcrumb-item.component';
 import { HeaderBreadcrumbComponent } from './header-breadcrumb.component';
@@ -29,6 +31,7 @@ import { TypeaheadSearchModule } from '../search/typeahead-search.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { CoreModule } from "../../shared/core.module";
 import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module';
+import { HeaderBackButtonComponent } from './header-back-button.component';
 
 
 @NgModule({
@@ -50,7 +53,9 @@ import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module
         TreeModule, 
         DialogModule,
         SiteModalModule,
-        ResourceApiKeyModule
+        ResourceApiKeyModule,
+
+        TooltipModule
     ],
     declarations: [
         HeaderActionsComponent,
@@ -64,7 +69,8 @@ import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module
         HeaderShoppingCartComponent,
         HeaderHomePageComponent,
         HeaderProfileComponent,
-        HeaderMiniMenuComponent
+        HeaderMiniMenuComponent,
+        HeaderBackButtonComponent,
     ],
     exports: [
         HeaderComponent

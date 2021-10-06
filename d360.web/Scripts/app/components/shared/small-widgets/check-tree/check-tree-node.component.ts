@@ -6,22 +6,16 @@ import { CheckTree } from './check-tree.component';
 
 @Component({
     selector: 'd3s-check-treeNode',
-    templateUrl: './check-tree-node.component.html'
+    templateUrl: "./check-tree-node.component.html",
+    styleUrls: ["check-tree-node.component.less"],
 })
 export class UICheckTreeNode implements OnInit {
-
     @Input() node: CheckTreeNode;
-
     @Input() parentNode: CheckTreeNode;
-
     @Input() root: boolean;
-
     @Input() index: number;
-
     @Input() firstChild: boolean;
-
     @Input() lastChild: boolean;
-
     @Input() level: number = 1;
 
     tree: CheckTree;

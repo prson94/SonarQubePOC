@@ -98,8 +98,10 @@ namespace d360.web.Models
         public bool SetIconToDefault { get; set; }
         public string CurrentCompanyIconPath { get; set; }
         public bool EnableShoppingCart { get; set; }
+        public bool EnableOrganizations { get; set; }
         public string DefaultRoute { get; set; }
         public bool EnableSearchExactMatch { get; set; }
+        public bool EnableSagacity { get; set; }
 
         public string HeaderBackgroundColor { get; set; }
 
@@ -128,6 +130,9 @@ namespace d360.web.Models
         public int MaxExcelExportRows { get; set; }
         public string AllowedOrigins { get; set; }
         public string FramingDomains { get; set; }
+        public bool HideHeaderBarControls { get; set; }
+
+        public int AssetDefinitionColumnWidth { get; set; }
 
     }
 
@@ -762,4 +767,24 @@ namespace d360.web.Models
     }
 
     #endregion
+
+
+    public class HelpMenuItem
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public string Description { get; set; }
+        public bool isEditable { get; set; }
+        public int visibilty { get; set; }
+        public int order { get; set; }
+        public Guid Uid { get; set; }
+    }
+
+
+    public class HelpMenuModel
+    {
+        public List<HelpResource> Adds { get; set; }
+        public List<HelpResource> Deletes { get; set; }
+    }
 }

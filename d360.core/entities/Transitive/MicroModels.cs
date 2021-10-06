@@ -25,22 +25,6 @@ namespace d360.core.entities
         public string Name { get; set; }
     }
 
-    public class CompanySsoModel
-    {
-        public bool AllowNewUserLogin { get; set; }
-        public AuthenticationType AuthenticationType { get; set; }
-        public byte[] IdpCertificateFile { get; set; }
-        public string IdpCertificatePassword { get; set; }
-        public string IdpSloEndpoint { get; set; }
-        public string IdpSsoEndpoint { get; set; }
-        public byte[] SpCertificateFile { get; set; }
-        public string SpCertificatePassword { get; set; }
-        public HashAlgorithmType HashAlgorithmType { get; set; }
-
-        public bool SignInitialSSORequest { get; set; }
-        public bool IsCompanyActive { get; set; }
-    }
-
     /// <summary>
     /// Used in CompanyConnectionUtils.
     /// </summary>

@@ -66,6 +66,9 @@ import { GalleryMultiInputFieldComponent } from './gallery.multi-input-field.com
 import { MultiInputFieldModule } from '../shared/controls/multi-input-field/multi-input-field.component';
 import { GalleryInputGroupComponent } from './gallery.input-group.component';
 import { GalleryModalComponent } from "./gallery.modal.component";
+import { GalleryModalDrawerComponent } from './gallery.modal-drawer.component';
+import { ModalDrawerModule } from '../shared/modal-drawer/gov-modal-drawer.module';
+import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 
 @NgModule({
     imports: [
@@ -103,7 +106,9 @@ import { GalleryModalComponent } from "./gallery.modal.component";
         DropdownModule,
         RadioButtonModule,
         FieldConditionGridModule,
-        MultiInputFieldModule
+        MultiInputFieldModule,
+        ModalDrawerModule,
+        SidePanelModule
     ],
     declarations: [
         GalleryComponent,
@@ -136,7 +141,8 @@ import { GalleryModalComponent } from "./gallery.modal.component";
         GallerySearchFieldComponent,
         GalleryMultiInputFieldComponent,
         GalleryInputGroupComponent,
-        GalleryModalComponent
+        GalleryModalComponent,
+        GalleryModalDrawerComponent
     ],
     providers: [
         GalleryGuard,

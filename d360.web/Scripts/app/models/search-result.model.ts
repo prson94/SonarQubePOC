@@ -9,6 +9,13 @@ export class SearchPathComponent {
     AssetType: string;
 }
 
+export class SearchSelecton {
+    ID: string;
+    AssetUid: string;
+    ObjectType: string;
+    HasProfiling: boolean;
+}
+
 export class SearchResult {
     Name: string;
     DisplayName: string;
@@ -23,8 +30,20 @@ export class SearchResult {
     Tags: SearchResultTags[];
 }
 
+export class AssetScore {
+    AssetUid: string;
+    EffectiveDate: string;
+    EndDate: string;
+    Value: number;
+    ScoreType: string;
+    ShortName: string;
+    RunDate: string;
+    LowerThreshold: number;
+    UpperThreshold: number;
+}
+
 export class SearchFullResult extends SearchResult {
-    ID: number;
+    ID: string;
     Description: string;
     Group: string;
     Name: string;
@@ -37,8 +56,12 @@ export class SearchFullResult extends SearchResult {
     Uid: string;
     Explanation: string;
     Fields: SearchResultFieldDisplay[];
+    Status: string;
+    Object: string;
+    ObjectId: number;
+    HasProfiling: boolean;
+    Scores: AssetScore[];
 }
-
 export class SearchCategories {
     Name: string;
     DisplayName: string;
@@ -72,15 +95,29 @@ export class SearchAggregationFilter {
     Values: string[];
     public constructor(init?: Partial<SearchAggregationFilter>) {
         Object.assign(this, init);
-    }}
+    }
+}
+
+export enum SearchConnector {
+    And,
+    Or
+}
+
+export enum SearchOperator {
+    Contains,
+    NotContains
+}
 
 export class SearchFieldFilter {
     Field: string;
-    Phrase: string;
+    Values: string[];
     MatchWords: boolean = false;
+    Connector: SearchConnector = SearchConnector.Or;
+    Operator: SearchOperator = SearchOperator.Contains;
     public constructor(init?: Partial<SearchFieldFilter>) {
         Object.assign(this, init);
-    }}
+    }
+}
 
 export class SearchQuery {
     Term: string;
@@ -89,6 +126,7 @@ export class SearchQuery {
     AggregationFilters: SearchAggregationFilter[];
     FieldFilters: SearchFieldFilter[];
     Aggregations: string[];
+    SearchConnector: SearchConnector = SearchConnector.And;
     public constructor(init?: Partial<SearchQuery>) {
         Object.assign(this, init);
     }
@@ -111,7 +149,8 @@ export class SearchState {
     From: number;
     SearchTypes: string[];
     CheckTreeKeys: SearchCheckTreeVal[];
-    AdvancedFilters: AdvancedSearchFilter[];
+    AdvancedFilters: SearchFieldFilter[];
+    SearchConnector: SearchConnector;
     Querytime: Date;
     public constructor(init?: Partial<SearchState>) {
         Object.assign(this, init);
@@ -139,18 +178,6 @@ export class SearchAssetDetail {
     Object: string;
     ObjectId: number;
     Id: number;
-}
-
-export class AssetScore {
-    AssetUid: string;
-    EffectiveDate: string;
-    EndDate: string;
-    Value: number;
-    ScoreType: string;
-    ShortName: string;
-    RunDate: string;
-    LowerThreshold: number;
-    UpperThreshold: number;
 }
 
 export class SearchDetail {

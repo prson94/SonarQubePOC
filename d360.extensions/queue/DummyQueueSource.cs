@@ -1,17 +1,17 @@
 ﻿using Azure.Messaging.ServiceBus;
 using d360.core.queue;
-using Microsoft.Azure;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.extensions.queue
 {
-    public class DummyQueueSource: IQueueSource
+    public class DummyQueueSource : IQueueSource
     {
-        public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
+        public string EventServiceBusConnectionString { get { return ConfigurationManager.AppSettings["EventServiceBus"]; } }
 
 
 
@@ -27,7 +27,7 @@ namespace d360.extensions.queue
 
         public async Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
         {
-            await Task.Run(() => {  });
+            await Task.Run(() => { });
             return true;
         }
 
@@ -54,7 +54,20 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync(EventInfo e)
         {
-            await CreateTopicMessageAsync("events", e);            
+            await CreateTopicMessageAsync("events", e);
+        }
+
+        public async Task CreateScheduledTopicMessageAsync(EventInfo e, DateTimeOffset delay)
+        {
+            var topicName = "events";
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new ServiceBusMessage(new BinaryData(eBytes));
+            bm.MessageId = Guid.NewGuid().ToString();
+
+            var client = new ServiceBusClient(EventServiceBusConnectionString);
+            var sender = client.CreateSender(topicName);
+            await sender.ScheduleMessageAsync(bm, delay);
         }
 
         public async Task CreateTopicMessageAsync(string topicName, EventInfo e)
@@ -189,7 +202,7 @@ namespace d360.extensions.queue
         }
         public string GetTopicNameBySetting(string settingName)
         {
-            return CloudConfigurationManager.GetSetting(settingName);
+            return ConfigurationManager.AppSettings[settingName];
         }
 
     }
