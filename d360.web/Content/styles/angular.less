@@ -682,9 +682,9 @@ div.relationship {
 }
 
 div.relationship .name {
-  text-transform: uppercase;
-  color: @rgba-primary-0;
-  font-weight: bold;
+  text-transform: none;
+  color: @ig-purple;
+  font-weight: normal;
 }
 
 div.relationship .count, div.relationship .empty-count {
@@ -692,6 +692,7 @@ div.relationship .count, div.relationship .empty-count {
   font-weight: bold;
   padding: 2px;
   border-radius: 3px;
+  background-color: @ig-purple-t1;
 }
 
 div.active {
@@ -4071,16 +4072,6 @@ button.tab-scroller {
     margin-left: 6px;
     cursor: pointer;
     color: @ig-midblue;
-  }
-}
-
-.p-treetable-wrapper {
-  th {
-    background-color: @ig-grey-s2 !important;
-  }
-
-  tbody > tr:nth-child(odd):not(.p-highlight) {
-    background: #f7f7f7 !important;
   }
 }
 

@@ -1,47 +1,46 @@
 ﻿@import '../../styles/infogix-ui/IgUiVariables.less';
-@import '../../styles/_Variables.less'; 
 
 p-table .p-paginator {
-  margin: 0;
-  text-align: center;
-  padding: .125em;
+    margin: 0;
+    text-align: center;
+    padding: .125em;
 }
 
 .p-paginator button:focus {
-  background-color: none;
+    background-color: none;
 }
 
 .p-paginator .p-dropdown {
-  min-width: 4em;
-  margin-left: .375em;
+    min-width: 4em;
+    margin-left: .375em;
 }
 
 .p-paginator .p-paginator-icon {
-  display: block;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 1em;
-  height: 1em;
-  margin-top: -.5em;
-  margin-left: -.5em;
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1em;
+    height: 1em;
+    margin-top: -.5em;
+    margin-left: -.5em;
 }
 
 .p-dropdown .p-dropdown-trigger {
-  border-right: none;
-  border-top: none;
-  border-bottom: none;
-  cursor: pointer;
-  width: 1.5em;
-  height: 100%;
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding: 0 .25em;
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+    cursor: pointer;
+    width: 1.5em;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0 .25em;    
 }
 
 .p-paginator .p-link {
-  color: @ig-purple;
+    color: #1e2435;
 }
 
 .p-paginator .p-paginator-page,
@@ -50,907 +49,894 @@ p-table .p-paginator {
 .p-paginator .p-paginator-first,
 .p-paginator .p-paginator-prev,
 .p-paginator .p-paginator-current {
-  display: inline-block;
-  min-width: 32px;
-  height: 32px;
-  line-height: 32px;
-  margin-left: 0;
-  margin-right: 0;
-  border-radius: 4px;
-  font-family: 'Precisely', sans-serif;
-  font-size: 14px;
-  font-weight: normal;
-}
-
-.p-paginator .p-paginator-page:hover,
-.p-paginator .p-paginator-next:hover,
-.p-paginator .p-paginator-last:hover,
-.p-paginator .p-paginator-first:hover,
-.p-paginator .p-paginator-prev:hover,
-.p-paginator .p-paginator-current:hover {
-  background: @ig-grey-t5;
+    display: inline-block;
+    min-width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5em;
+    margin-left: .063em;
+    margin-right: .063em;
+    text-decoration: none;
+    vertical-align: middle;
+    text-align: center;
+    position: relative;
 }
 
 .global-search-typeahead .p-autocomplete-input.p-inputtext {
-  border: none;
+    border: none;
 }
 
 .p-checkbox .p-checkbox-box {
-  width: 1.125em;
-  height: 1.125em;
-  line-height: 1.125em;
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 2px;
-  border-radius: 2px;
-  text-align: center;
-  border: @ig-field-border;
+    width: 1.125em;
+    height: 1.125em;
+    line-height: 1.125em;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    text-align: center;
+    border: @ig-field-border;
 }
 
 .p-checkbox {
-  display: inline-block;
-  cursor: pointer;
-  vertical-align: middle;
-  margin-right: .25em;
-  user-select: none;
-  -moz-user-select: none;
-  -webkit-user-select: none;
+    display: inline-block;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-right: .25em;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
 }
 
 .p-button, button.p-button.p-component, .p-button.p-component {
-  border: none;
-  border-radius: 0;
-  color: @ig-white;
-  font-weight: normal;
-  margin: 1px;
+    border: none;
+    border-radius: 0;
+    color: @ig-white;
+    font-weight: normal;
+    margin: 1px;
 }
 
 .p-button {
-  display: inline-block;
-  position: relative;
-  padding: 0;
-  text-decoration: none !important;
-  cursor: pointer;
-  text-align: center;
-  overflow: visible;
+    display: inline-block;
+    position: relative;
+    padding: 0;
+    text-decoration: none !important;
+    cursor: pointer;
+    text-align: center;
+    overflow: visible;
 }
 
 .p-dropdown .p-dropdown-clear-icon {
-  position: absolute;
-  right: 2em;
-  top: 50%;
-  font-size: 1em;
-  height: 1em;
-  margin-top: -.5em;
+    position: absolute;
+    right: 2em;
+    top: 50%;
+    font-size: 1em;
+    height: 1em;
+    margin-top: -.5em;
 }
 
 .p-tabview {
-  padding: .25em;
+    padding: .25em;
 }
 
 .p-tabview .p-tabview-nav {
-  margin: 0;
+    margin: 0;
 }
 
 .p-tabview .p-tabview-nav li {
-  list-style: none;
-  float: left;
-  position: relative;
-  margin: 0 .125em 1px 0;
-  padding: 0;
-  white-space: nowrap;
+    list-style: none;
+    float: left;
+    position: relative;
+    margin: 0 .125em 1px 0;
+    padding: 0;
+    white-space: nowrap;
 }
 
 .p-tabview .p-tabview-nav li a {
-  float: left;
-  padding: .5em 1em;
-  text-decoration: none;
+    float: left;
+    padding: .5em 1em;
+    text-decoration: none;
 }
 
 .p-tabview .p-tabview-nav li.p-tabview-selected a,
 .p-tabview .p-tabview-nav li.p-disabled a,
 .p-tabview .p-tabview-nav li.ui-state-processing a {
-  cursor: text;
+    cursor: text;
 }
 
 .p-tabview .p-tabview-nav li a,
 .p-tabview.p-tabview-collapsible .p-tabview-nav li.p-tabview-selected a {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .p-tabview .p-tabview-panel {
-  border-width: 0;
-  padding: 1em;
-  background: none;
+    border-width: 0;
+    padding: 1em;
+    background: none;
 }
 
 .p-tabview .p-tabview-nav li {
-  display: block;
+    display: block;
 }
 
 .p-tabview .p-tabview-nav li .p-tabview-left-icon {
-  margin-right: .25em;
-  vertical-align: middle;
+    margin-right: .25em;
+    vertical-align: middle;
 }
 
 .p-tabview .p-tabview-nav li .p-tabview-right-icon {
-  margin-left: .25em;
-  vertical-align: middle;
+    margin-left: .25em;
+    vertical-align: middle;
 }
 
 .p-tabview .p-tabview-title {
-  vertical-align: middle;
+    vertical-align: middle;
 }
 
 .p-tabview .p-tabview-nav li .p-tabview-close {
-  margin: 0.5em 0.3em 0 0;
-  cursor: pointer;
+    margin: 0.5em 0.3em 0 0;
+    cursor: pointer;
 }
 
 /* per orientation settings */
 /* top and bottom */
 .p-tabview > .p-tabview-nav li {
-  border-bottom: 0;
-  top: 1px;
+    border-bottom: 0;
+    top: 1px;
 }
 
 .p-tabview > .p-tabview-nav {
-  padding: .2em .2em 0;
+    padding: .2em .2em 0;
 }
 
 .p-tabview.p-tabview-bottom > .p-tabview-nav {
-  padding: 0 .2em .2em;
+    padding: 0 .2em .2em;
 }
 
 .p-tabview.p-tabview-bottom > .p-tabview-nav li {
-  border-top: 0;
+    border-top: 0;
 }
 
 /* left and right*/
 .p-tabview-left::after,
 .p-tabview-right::after {
-  clear: both;
-  content: ".";
-  display: block;
-  height: 0;
-  visibility: hidden;
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
 }
 
 .p-tabview-left > .p-tabview-nav {
-  float: left;
-  width: 25%;
-  height: 300px;
-  background-image: none;
-  padding-top: 1px;
+    float: left;
+    width: 25%;
+    height: 300px;
+    background-image: none;
+    padding-top: 1px;
 }
 
 .p-tabview-left > .p-tabview-panels {
-  float: right;
-  width: 75%;
+    float: right;
+    width: 75%;
 }
 
 .p-tabview.p-tabview-left > .p-tabview-nav li,
 .p-tabview.p-tabview-right > .p-tabview-nav li {
-  display: block;
-  float: right;
-  white-space: normal;
-  width: 99%;
+    display: block;
+    float: right;
+    white-space: normal;
+    width: 99%;
 }
 
 .p-tabview.p-tabview-left > .p-tabview-nav li {
-  margin: 0 0 1px 0;
-  border-right: 0 none;
+    margin: 0 0 1px 0;
+    border-right: 0 none;
 }
 
 .p-tabview.p-tabview-right > .p-tabview-nav {
-  float: right;
-  width: 25%;
-  height: 300px;
-  background-image: none;
-  padding-top: 1px;
+    float: right;
+    width: 25%;
+    height: 300px;
+    background-image: none;
+    padding-top: 1px;
 }
 
 .p-tabview.p-tabview-right > .p-tabview-panels {
-  float: left;
-  width: 75%;
+    float: left;
+    width: 75%;
 }
 
 .p-tabview.p-tabview-right > .p-tabview-nav li {
-  margin: 0 0 1px 0;
-  border-left: 0 none;
+    margin: 0 0 1px 0;
+    border-left: 0 none;
 }
 
 .ui-accordion .ui-accordion-header {
-  cursor: pointer;
-  position: relative;
-  margin-top: 1px;
+    cursor: pointer;
+    position: relative;
+    margin-top: 1px;
 }
 
 .p-toast {
-  position: fixed;
-  width: 20em;
+    position: fixed;
+    width: 20em;
 }
 
 .p-toast .p-toast-message {
-  position: relative;
-  display: block;
-  margin-bottom: .75em;
-  overflow: hidden;
+    position: relative;
+    display: block;
+    margin-bottom: .75em;
+    overflow: hidden;
 }
 
 .p-toast .p-toast-message-content {
-  padding: .5em 1em;
+    padding: .5em 1em;
 }
 
 .p-toast .p-toast-icon-close {
-  position: absolute;
-  top: .25em;
-  right: .25em;
-  cursor: pointer;
-  display: inline-block;
+    position: absolute;
+    top: .25em;
+    right: .25em;
+    cursor: pointer;
+    display: inline-block;
 }
 
 .p-toast .p-toast-summary {
-  font-weight: bold;
-  padding: 0 0 .5em 0;
-  display: block;
+    font-weight: bold;
+    padding: 0 0 .5em 0;
+    display: block;
 }
 
 .p-toast .p-toast-icon, .p-toast .p-toast-message-icon {
-  position: absolute;
-  display: inline-block;
-  left: .5em;
-  top: .25em;
-  padding: 0;
-  font-size: 2em;
+    position: absolute;
+    display: inline-block;
+    left: .5em;
+    top: .25em;
+    padding: 0;
+    font-size: 2em;
 }
 
 .p-toast .p-toast-message-text {
-  padding: 0 0 .25em 0;
-  margin-left: 2.5em;
+    padding: 0 0 .25em 0;
+    margin-left: 2.5em;
 }
 /* Positions */
 .p-toast-top-right {
-  top: 20px;
-  right: 20px;
+    top: 20px;
+    right: 20px;
 }
 
 .p-toast-top-left {
-  top: 20px;
-  left: 20px;
+    top: 20px;
+    left: 20px;
 }
 
 .p-toast-bottom-right {
-  bottom: 20px;
-  right: 20px;
+    bottom: 20px;
+    right: 20px;
 }
 
 .p-toast-bottom-left {
-  bottom: 20px;
-  left: 20px;
+    bottom: 20px;
+    left: 20px;
 }
 
 .p-toast-top-center {
-  top: 20px;
-  left: 50%;
-  margin-left: -10em;
+    top: 20px;
+    left: 50%;
+    margin-left: -10em;
 }
 
 .p-toast-bottom-center {
-  bottom: 20px;
-  left: 50%;
-  margin-left: -10em;
+    bottom: 20px;
+    left: 50%;
+    margin-left: -10em;
 }
 
 .p-toast-center {
-  left: 50%;
-  top: 50%;
-  min-width: 20vw;
-  transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    min-width: 20vw;
+    transform: translate(-50%, -50%);
 }
 
 .p-dropdown-panel {
-  position: absolute;
-  height: auto;
-  min-width: 100%;
-  max-width: 100%;
+    position: absolute;
+    height: auto;
+    min-width: 100%;
+    max-width: 100%;
 }
 
 .p-dropdown-panel .p-dropdown-filter-container {
-  position: relative;
-  margin: 0;
-  padding: .4em;
-  display: inline-block;
-  width: 100%;
+    position: relative;
+    margin: 0;
+    padding: .4em;
+    display: inline-block;
+    width: 100%;
 }
 
 .p-dropdown-panel .p-dropdown-filter {
-  width: 100%;
-  box-sizing: border-box;
-  padding-right: 1.5em;
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 1.5em;
 }
 
 .p-dropdown-panel .p-dropdown-items {
-  padding: .4em;
-  border: 0 none;
+    padding: .4em;
+    border: 0 none;
 }
 
 .p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter-icon {
-  position: absolute;
-  right: 1em;
+    position: absolute;
+    right: 1em;
 }
 
 .p-dropdown-panel .p-dropdown-item {
-  font-weight: normal;
-  border: 0 none;
-  cursor: pointer;
-  margin: 1px 0;
-  padding: .125em .25em;
-  text-align: left;
-  white-space: nowrap;
+    font-weight: normal;
+    border: 0 none;
+    cursor: pointer;
+    margin: 1px 0;
+    padding: .125em .25em;
+    text-align: left;
+    white-space: nowrap;
 }
 
 .p-autocomplete-panel .p-autocomplete-items {
-  padding: 0.4em;
-  border: 0 none;
+    padding: 0.4em;
+    border: 0 none;
 }
 
 .p-autocomplete-panel .p-autocomplete-item {
-  border-bottom: 2px solid @ig-grey-t5;
-  cursor: pointer;
-  font-weight: normal;
-  margin: 1px 0;
-  padding: 0.186em 0.313em;
-  text-align: left;
-
-  &:last-child {
-    border-bottom: none;
-  }
+    border: 0 none;
+    cursor: pointer;
+    font-weight: normal;
+    margin: 1px 0;
+    padding: 0.186em 0.313em;
+    text-align: left;
 }
 
 .p-dropdown .p-dropdown-trigger .p-dropdown-trigger-icon {
-  top: 50%;
-  left: 50%;
-  margin-top: -.5em;
-  margin-left: -.5em;
-  position: absolute;
-  color: #1e2435;
-  font-weight: bold;
-}
-
-.p-component {
-  background: @ig-white;
-}
-
-.p-paginator .p-dropdown .p-dropdown-trigger {
-  border: 1px solid #bdbfc6;
-}
-
-.p-menubar {
-  padding: .25em;
-
-  .p-menubar-root-list > .p-menuitem > .p-menuitem-link {
-    padding: .5em;
-  }
-
-  .p-menubar-root-list {
-    display: inline-block;
-
-    .p-menuitem {
-      position: relative;
-
-      .p-menuitem-link {
-        .p-submenu-icon {
-          vertical-align: middle;
-          margin-left: .25em;
-        }
-      }
-    }
-
-    .p-menuitem-active > p-menubarsub > .p-submenu-list {
-      display: block;
-    }
-  }
-
-  .p-menubar-root-list > .p-menuitem-icon {
-    margin-right: .25em;
-    vertical-align: middle;
-  }
-
-  .p-menuitem-link {
-    display: block;
-    padding: .25em;
-    position: relative;
-    text-decoration: none;
-  }
-
-  ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  a.p-menuitem-link {
-    border: none !important;
-    color: #202020;
-  }
-
-  .p-menuitem-text {
-    vertical-align: middle;
-  }
-
-  .p-submenu-list {
-    display: none;
-    position: absolute;
-    min-width: 12.5em;
-    padding: .25em;
-    background: #fff;
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
-
-    .p-menuitem {
-      margin: .125em 0;
-      position: relative;
-    }
-  }
-
-  .p-menuitem-icon {
-    margin-right: .25em;
-    vertical-align: middle;
-  }
-}
-
-.p-datepicker-calendar tbody td {
-  color: #6f7482;
-  background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,#f1f1f3),color-stop(100%,#e3e3e3));
-  box-shadow: 0 1px 0 rgba(255,255,255,.35) inset;
-}
-
-.p-datepicker {
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
-
-  table {
-    width: 100%;
-    font-size: .9em;
-    border-collapse: collapse;
-    margin: 0 0 .4em;
-  }
-
-  th {
-    padding: .5em;
-    text-align: center;
-    font-weight: bold;
-    border: 0;
-  }
-}
-
-.p-shadow {
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
-}
-
-/*p-table now uses .p-datatable styles */
-p-table .p-datatable-scrollable-wrapper {
-  position: relative;
-}
-
-p-table .p-datatable-scrollable-header,
-p-table .p-datatable-scrollable-footer {
-  overflow: hidden;
-  border: 0 none;
-}
-
-p-table .p-datatable-scrollable-body {
-  overflow: auto;
-  position: relative;
-}
-
-.p-dropdown .p-dropdown-label {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  font-weight: normal;
-  width: 100%;
-  padding-right: 2.5em;
-  font-weight: normal;
-}
-
-p-dropdown-items {
-  line-height: 1.3;
-}
-
-/* Datepicker */
-.p-datepicker {
-  width: auto;
-  padding: .2em;
-  position: absolute;
-}
-
-.p-datepicker.p-datepicker-inline {
-  display: inline-block;
-  position: static;
-}
-
-.p-datepicker .p-datepicker-group {
-  border-left-width: 0;
-  border-right-width: 0;
-  border-top-width: 0;
-  border-bottom-width: 0;
-}
-
-/* Header */
-.p-datepicker .p-datepicker-header {
-  position: relative;
-  padding: .5em 0;
-
-  a {
-    color: #1e2435;
-  }
-}
-
-.p-datepicker .p-datepicker-prev,
-.p-datepicker .p-datepicker-next {
-  position: absolute;
-  top: .5em;
-  width: 1.8em;
-  height: 1.8em;
-  color: @ig-black;
-}
-
-.p-datepicker .p-datepicker-prev {
-  left: .125em;
-}
-
-.p-datepicker .p-datepicker-next {
-  right: .125em;
-}
-
-.p-datepicker .p-datepicker-prev span,
-.p-datepicker .p-datepicker-next span {
-  display: block;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin-top: -.5em;
-  margin-left: -.5em;
-}
-
-.p-datepicker .p-datepicker-title {
-  margin: 0 2.3em;
-  line-height: 1.8em;
-  text-align: center;
-}
-
-.p-datepicker .p-datepicker-title select {
-  font-size: 1em;
-  margin: .125em 0;
-  vertical-align: middle;
-}
-
-.p-datepicker select.p-datepicker-month {
-  margin-right: .25em;
-}
-
-.p-datepicker span.p-datepicker-year {
-  margin-left: .25em;
-}
-
-/* Multiple Month DatePicker */
-.p-datepicker-multiple-month .p-datepicker-group {
-  display: table-cell;
-  border-left-width: 0;
-  border-top-width: 0;
-  border-bottom-width: 0;
-  border-right-width: 1px;
-}
-
-/* DatePicker Table */
-.p-datepicker td {
-  border: 0;
-  padding: 0;
-}
-
-.p-datepicker td > span,
-.p-datepicker td > a {
-  display: block;
-  padding: .5em;
-  text-decoration: none;
-  border: 0 none;
-  text-align: center;
-}
-
-.p-datepicker .p-datepicker-buttonbar {
-  border-left: 0 none;
-  border-right: 0 none;
-  border-bottom: 0 none;
-  padding: .5em;
-  display: flex;
-  justify-content: space-between;
-}
-
-.p-paginator .p-paginator-prev .pi-angle-left:before {
-  content: "\e904" !important;
-}
-
-.p-paginator .p-paginator-next .pi-angle-right:before {
-  content: "\e905" !important;
-}
-
-.p-paginator .p-paginator-first .pi-angle-double-left:before {
-  content: "\e916" !important;
-}
-
-.p-paginator .p-paginator-last .pi-angle-double-right:before {
-  content: "\e917" !important;
-}
-
-.p-datepicker-calendar tbody td {
-  border: 1px solid #bdbfc6;
-
-  &.p-datepicker-other-month, .p-datepicker-other-month .p-disabled {
-    background: @ig-white;
-  }
-}
-
-.p-multiselect {
-  color: @ig-black;
-  border: @ig-field-border;
-
-  .p-multiselect-panel {
-    padding: .2em;
-    position: absolute;
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
-  }
-}
-
-.p-tooltip .p-tooltip-text {
-  padding: .125em .5em;
-  background-color: rgb(76, 76, 76);
-  color: #ffffff;
-  white-space: pre-line;
-}
-
-.p-tabview .p-tabview-nav {
-  margin: 0;
-  border: 0;
-  outline: 0;
-  line-height: 1.3;
-  text-decoration: none;
-  font-size: 100%;
-  list-style: none;
-}
-
-.p-radiobutton {
-  display: inline-block;
-  cursor: pointer;
-  vertical-align: middle;
-  margin-right: .25em;
-  -webkit-user-select: none;
-  background: transparent;
-}
-
-.p-radiobutton-box,
-.p-radiobutton-box.p-component {
-  width: 1.125em;
-  height: 1.125em;
-  line-height: 1.125em;
-  border-radius: 100%;
-  text-align: center;
-  position: relative;
-  border: @ig-field-border;
-}
-
-.p-radiobutton-icon {
-  width: .6em;
-  height: .6em;
-  background: @ig-grey-t3;
-}
-
-.p-colorpicker-preview {
-  width: 2em;
-  cursor: pointer;
-  border: @ig-field-border;
-}
-
-a {
-  cursor: pointer;
-}
-
-.p-calendar .p-button.p-button-icon-only {
-  height: 100%;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  width: 2em;
-  border-left: 0 none;
-}
-
-.p-button-icon-only {
-  .p-button-icon {
-    position: absolute;
     top: 50%;
     left: 50%;
     margin-top: -.5em;
     margin-left: -.5em;
-    width: 1em;
-    height: 1em;
-  }
-
-  .p-button-label {
-    padding: .25em !important;
-    text-indent: -9999999px;
-    visibility: hidden;
-  }
+    position: absolute;
+    color: #1e2435;
+    font-weight: bold;
 }
 
-.p-dropdown-item:not([aria-label]) span, .p-dropdown-item[aria-label=""] span {
-  visibility: hidden !important;
+.p-component{
+    background: @ig-white;
+}
+.p-paginator .p-dropdown .p-dropdown-trigger  {
+    border: 1px solid #bdbfc6;
 }
 
-.p-autocomplete-loader {
-  position: absolute;
-  right: .25em;
-  top: 50%;
-  margin-top: -.5em;
+.p-menubar {
+    padding: .25em;
+
+    .p-menubar-root-list > .p-menuitem > .p-menuitem-link {
+        padding: .5em;
+    }
+
+    .p-menubar-root-list {
+        display: inline-block;
+
+        .p-menuitem {
+            position: relative;
+
+            .p-menuitem-link {
+                .p-submenu-icon {
+                    vertical-align: middle;
+                    margin-left: .25em;
+                }
+            }
+        }
+
+        .p-menuitem-active > p-menubarsub > .p-submenu-list {
+            display: block;
+        }
+    }
+
+    .p-menubar-root-list > .p-menuitem-icon {
+        margin-right: .25em;
+        vertical-align: middle;
+    }
+
+    .p-menuitem-link {
+        display: block;
+        padding: .25em;
+        position: relative;
+        text-decoration: none;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    a.p-menuitem-link {
+        border: none !important;
+        color: #202020;
+    }
+
+    .p-menuitem-text {
+        vertical-align: middle;
+    }
+
+    .p-submenu-list {
+        display: none;
+        position: absolute;
+        min-width: 12.5em;
+        padding: .25em;
+        background: #fff;
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
+
+        .p-menuitem {
+            margin: .125em 0;
+            position: relative;
+        }
+    }
+
+    .p-menuitem-icon {
+        margin-right: .25em;
+        vertical-align: middle;
+    }
+}
+
+.p-datepicker-calendar tbody td {
+    color: #6f7482;
+    background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,#f1f1f3),color-stop(100%,#e3e3e3));
+    box-shadow: 0 1px 0 rgba(255,255,255,.35) inset;
+}
+
+.p-datepicker {
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
+
+    table {
+        width: 100%;
+        font-size: .9em;
+        border-collapse: collapse;
+        margin: 0 0 .4em;
+    }
+
+    th {
+        padding: .5em;
+        text-align: center;
+        font-weight: bold;
+        border: 0;
+    }
+}
+
+.p-shadow {
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
+}
+
+/*p-table now uses .p-datatable styles */
+p-table .p-datatable-scrollable-wrapper {
+    position: relative;
+}
+
+p-table .p-datatable-scrollable-header,
+p-table .p-datatable-scrollable-footer {
+    overflow: hidden;
+    border: 0 none;
+}
+
+p-table .p-datatable-scrollable-body {
+    overflow: auto;
+    position: relative;
+}
+
+.p-dropdown .p-dropdown-label {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    font-weight: normal;
+    width: 100%;
+    padding-right: 2.5em;
+    font-weight: normal;
+}
+
+p-dropdown-items {
+    line-height: 1.3;
+}
+
+/* Datepicker */
+.p-datepicker {
+    width: auto;
+    padding: .2em;
+    position: absolute;
+}
+
+.p-datepicker.p-datepicker-inline {
+    display: inline-block;
+    position: static;
+}
+
+.p-datepicker .p-datepicker-group {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+/* Header */
+.p-datepicker .p-datepicker-header {
+    position: relative;
+    padding: .5em 0;
+
+    a {
+        color: #1e2435;
+    }
+}
+
+.p-datepicker .p-datepicker-prev,
+.p-datepicker .p-datepicker-next {
+    position: absolute;
+    top: .5em;
+    width: 1.8em;
+    height: 1.8em;
+    color: @ig-black;
+}
+
+.p-datepicker .p-datepicker-prev {
+    left: .125em;
+}
+
+.p-datepicker .p-datepicker-next {
+    right: .125em;
+}
+
+.p-datepicker .p-datepicker-prev span,
+.p-datepicker .p-datepicker-next span {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-top: -.5em;
+    margin-left: -.5em;
+}
+
+.p-datepicker .p-datepicker-title {
+    margin: 0 2.3em;
+    line-height: 1.8em;
+    text-align: center;
+}
+
+.p-datepicker .p-datepicker-title select {
+    font-size: 1em;
+    margin: .125em 0;
+    vertical-align: middle;
+}
+
+.p-datepicker select.p-datepicker-month {
+    margin-right: .25em;
+}
+
+.p-datepicker span.p-datepicker-year {
+    margin-left: .25em;
+}
+
+/* Multiple Month DatePicker */
+.p-datepicker-multiple-month .p-datepicker-group {
+    display: table-cell;
+    border-left-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-right-width: 1px;
+}
+
+/* DatePicker Table */
+.p-datepicker td {
+    border: 0;
+    padding: 0;
+}
+
+.p-datepicker td > span,
+.p-datepicker td > a {
+    display: block;
+    padding: .5em;
+    text-decoration: none;
+    border: 0 none;
+    text-align: center;
+}
+
+.p-datepicker .p-datepicker-buttonbar {
+    border-left: 0 none;
+    border-right: 0 none;
+    border-bottom: 0 none;
+    padding: .5em;
+    display: flex;
+    justify-content: space-between;
+}
+
+.p-paginator .p-paginator-prev .pi-angle-left:before {
+    content: "\e904" !important;
+}
+
+.p-paginator .p-paginator-next .pi-angle-right:before {
+    content: "\e905" !important;
+}
+
+.p-paginator .p-paginator-first .pi-angle-double-left:before {
+    content: "\e916" !important;
+}
+
+.p-paginator .p-paginator-last .pi-angle-double-right:before {
+    content: "\e917" !important;
+}
+
+.p-datepicker-calendar tbody td {
+    border: 1px solid #bdbfc6;
+
+    &.p-datepicker-other-month, .p-datepicker-other-month .p-disabled {
+        background: @ig-white;
+    }
 }
 
 .p-multiselect {
-  display: -ms-inline-flexbox;
-  display: inline-flex;
-  position: relative;
-  width: auto;
-  cursor: pointer;
-  border: @ig-field-border
+    color: @ig-black;
+    border: @ig-field-border;
+
+    .p-multiselect-panel {
+        padding: .2em;
+        position: absolute;
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
+    }
+}
+
+.p-tooltip .p-tooltip-text {
+    padding: .125em .5em;
+    background-color: rgb(76, 76, 76);
+    color: #ffffff;
+    white-space: pre-line;
+}
+
+.p-tabview .p-tabview-nav {
+    margin: 0;
+    border: 0;
+    outline: 0;
+    line-height: 1.3;
+    text-decoration: none;
+    font-size: 100%;
+    list-style: none;
+}
+
+.p-radiobutton {
+    display: inline-block;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-right: .25em;
+    -webkit-user-select: none;
+    background: transparent;
+}
+
+.p-radiobutton-box, .p-radiobutton-box.p-component{
+    width: 1.125em;
+    height: 1.125em;
+    line-height: 1.125em;
+    border-radius: 100%;
+    text-align: center;
+    position: relative;
+    border: @ig-field-border;
+}
+
+.p-radiobutton-icon {
+    display: block;
+    position: absolute;
+    width: .6em;
+    height: .6em;
+    background: @ig-grey-t3;
+}
+
+.p-colorpicker-preview {
+    width: 2em;
+    cursor: pointer;
+    border: @ig-field-border;
+}
+
+a {
+    cursor: pointer;
+}
+
+.p-calendar .p-button.p-button-icon-only {
+    height: 100%;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    width: 2em;
+    border-left: 0 none;
+}
+
+.p-button-icon-only {
+    .p-button-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -.5em;
+        margin-left: -.5em;
+        width: 1em;
+        height: 1em;
+    }
+
+    .p-button-label {
+        padding: .25em !important;
+        text-indent: -9999999px;
+        visibility: hidden;
+    }
+}
+
+.p-dropdown-item:not([aria-label]) span, .p-dropdown-item[aria-label=""] span {
+    visibility: hidden !important;
+}
+
+.p-autocomplete-loader {
+    position: absolute;
+    right: .25em;
+    top: 50%;
+    margin-top: -.5em;
+}
+
+.p-multiselect {
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+    position: relative;
+    width: auto;
+    cursor: pointer;
+    border: @ig-field-border
 }
 
 .p-multiselect .p-multiselect-trigger {
-  border-right: none;
-  border-top: none;
-  border-bottom: none;
-  cursor: pointer;
-  width: 1.5em;
-  height: 100%;
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding: 0 .25em;
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+    cursor: pointer;
+    width: 1.5em;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0 .25em;
 }
 
 .p-multiselect .p-multiselect-trigger .p-multiselect-trigger-icon {
-  top: 50%;
-  left: 50%;
-  margin-top: -.5em;
-  margin-left: -.5em;
-  position: absolute;
-  font-weight: bold;
+    top: 50%;
+    left: 50%;
+    margin-top: -.5em;
+    margin-left: -.5em;
+    position: absolute;
+    font-weight: bold;
 }
 
 .p-multiselect .p-multiselect-label-container {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 .p-multiselect .p-multiselect-label {
-  display: block;
-  padding: .25em 2em .25em .25em;
-  width: auto;
-  border: none;
-  cursor: pointer;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  font-weight: normal;
-  white-space: nowrap;
+    display: block;
+    padding: .25em 2em .25em .25em;
+    width: auto;
+    border: none;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-weight: normal;
+    white-space: nowrap;
 }
 
 .p-multiselect.p-state-disabled .p-multiselect-trigger,
 .p-multiselect.p-state-disabled .p-multiselect-label {
-  cursor: auto
+    cursor: auto
 }
 
 .p-multiselect-panel {
-  padding: 0.2em;
-  position: absolute;
-  min-width: 12em;
-  max-width: 99vw;
+    padding: 0.2em;
+    position: absolute;
+    min-width: 12em;
+    max-width: 99vw;
 }
 
 .p-multiselect .p-multiselect-panel {
-  min-width: 100%;
+    min-width: 100%;
 }
 
 .p-multiselect-panel .p-multiselect-items-wrapper {
-  overflow: auto;
-  position: relative;
-  padding: 0.2em 0;
+    overflow: auto;
+    position: relative;
+    padding: 0.2em 0;
 }
 
 .p-multiselect-panel .p-multiselect-list {
-  border: 0 none;
+    border: 0 none;
 }
 
 .p-multiselect-panel .p-multiselect-item {
-  border: 0 none;
-  cursor: pointer;
-  font-weight: normal;
-  margin: 1px 0;
-  padding: .125em .25em;
-  text-align: left;
-  white-space: nowrap;
-  display: block;
-  position: relative;
+    border: 0 none;
+    cursor: pointer;
+    font-weight: normal;
+    margin: 1px 0;
+    padding: .125em .25em;
+    text-align: left;
+    white-space: nowrap;
+    display: block;
+    position: relative;
 }
 
 .p-multiselect-panel .p-multiselect-empty-message {
-  padding: .5em;
+    padding: .5em;
 }
 
 .p-multiselect-panel .p-multiselect-item .p-checkbox {
-  display: inline-block;
-  vertical-align: middle;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .p-multiselect-panel .p-multiselect-item span {
-  display: inline-block;
-  vertical-align: middle;
-  white-space: pre-wrap;
-  max-width: 97.5vw;
+    display: inline-block;
+    vertical-align: middle;
+    white-space: pre-wrap;
+    max-width: 97.5vw;
 }
 
 .p-multiselect-header {
-  margin-bottom: 0.3em;
-  padding: .25em;
-  position: relative;
-  text-align: left;
-  min-height: 2em;
+    margin-bottom: 0.3em;
+    padding: .25em;
+    position: relative;
+    text-align: left;
+    min-height: 2em;
 }
 
 .p-multiselect-header .p-checkbox {
-  display: inline-block;
-  vertical-align: middle;
-  cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
 }
 
 .p-multiselect-header .p-multiselect-filter-container {
-  position: relative;
-  display: inline-block;
-  vertical-align: middle;
-  width: 65%;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    width: 65%;
 }
 
 .p-multiselect-header.p-multiselect-header-no-toggleall .p-multiselect-filter-container {
-  width: 85%;
+    width: 85%;
 }
 
 .p-multiselect-header .p-multiselect-filter-container .p-multiselect-filter-icon {
-  position: absolute;
-  left: .125em;
+    position: absolute;
+    left: .125em;
 }
 
 .p-multiselect-header .p-inputtext {
-  padding: .125em .125em .125em 1.25em;
-  width: 100%;
+    padding: .125em .125em .125em 1.25em;
+    width: 100%;
 }
 
 .p-multiselect-header .p-multiselect-close {
-  position: absolute;
-  right: .375em;
-  top: .375em;
-  display: block;
-  border: 0 none;
-  cursor: pointer;
+    position: absolute;
+    right: .375em;
+    top: .375em;
+    display: block;
+    border: 0 none;
+    cursor: pointer;
 }
 
 .p-multiselect-header a.p-multiselect-all,
 .p-multiselect-header a.p-multiselect-none {
-  float: left;
-  margin-right: 10px;
-  display: block;
+    float: left;
+    margin-right: 10px;
+    display: block;
 }
 
 .p-multiselect-footer {
-  padding: .25em;
+    padding: .25em;
 }
 
 .p-fluid .p-multiselect {
-  width: 100%;
-  box-sizing: border-box;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .p-datatable.p-component .p-datatable-loading-overlay {
-  z-index: 1;
+    z-index: 1;
 }

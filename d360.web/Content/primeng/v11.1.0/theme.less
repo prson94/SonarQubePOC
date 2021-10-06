@@ -1049,8 +1049,8 @@ th.p-state-default {
 }
 
 .p-tabview:not(.p-ribbon) .p-tabview-nav {
-  background: @ig-grey-t5;
-  border-bottom: @ig-field-border;
+  background: none;
+  border-bottom: none;
 }
 
 .p-tabview .p-tabview-nav > li {
@@ -1073,7 +1073,7 @@ th.p-state-default {
   border-top: none;
   border-left: none;
   border-right: none;
-  border-bottom: 4px solid @ig-midblue;
+  border-bottom: 4px solid @ig-black;
 }
 
 /*
@@ -2430,7 +2430,7 @@ p-table tbody.p-datatable-tbody > tr.p-highlight {
   background-color: @ig-purple-t4;
 }
 
-p-table tbody.p-datatable-tbody > tr:hover {
+p-table tbody.p-datatable-tbody > tr:hover:not(.p-highlight) {
   background: @ig-purple-t5;
 }
 
@@ -2507,6 +2507,34 @@ th.p-state-default, .p-treetable th.p-state-default {
   background: @ig-grey-t5;
 }
 
+
+.p-treetable-wrapper {
+  th {
+    background-color: @ig-grey-t5;
+    color: @ig-black;
+  }
+
+  td {
+    border-bottom: 2px solid @ig-grey-t5;
+    color: @ig-black;
+  }
+
+  .p-treetable-thead > tr > th,
+  .p-treetable-tfoot > tr > td {
+    background-color: @ig-grey-t5;
+  }
+
+  tr {
+    &.p-highlight {
+      background-color: @ig-purple-t4;
+    }
+
+    &:hover {
+      background-color: @ig-purple-t5;
+    }
+  }
+}
+
 p-datatable .p-datatable .p-datatable-thead > tr > th,
 p-datatable .p-datatable .p-datatable-tfoot > tr > td,
 p-datatable .p-datatable .p-datatable-data > tr > td {
@@ -2551,12 +2579,10 @@ p-multiselect .p-multiselect.p-multiselect-open {
 p-dropdown .p-dropdown-panel {
   z-index: 10;
 }
-
 /*Calendar default z index for IE issue*/
 p-calendar .p-datepicker {
   z-index: 2000 !important;
 }
-
 /*no outline for any p table headers*/
 .p-sortable-column:focus {
   outline: none !important;
@@ -2569,7 +2595,6 @@ p-calendar .p-datepicker {
 .asset-browser-window-tabs .p-tabview-panels {
   overflow: auto;
 }
-
 /*show calender under field always in case of modal to avoid clipping */
 .modal-dialog p-calendar .p-datepicker {
   top: 26px !important;
@@ -2584,8 +2609,6 @@ p-radiobutton .p-radiobutton-label {
 p-radiobutton .p-radiobutton-label.p-label-disabled {
   opacity: 0.2;
 }
-
-
 /* Toast */
 .p-toast .p-toast-message {
   -webkit-box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
@@ -2633,7 +2656,6 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
 .p-toast .p-toast-message.p-toast-message-error .p-toast-icon-close {
   color: @ig-white;
 }
-
 //allow for new line(\n) in toast messages
 .p-toast-detail {
   white-space: pre-line;
@@ -2702,9 +2724,24 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
   background-color: @ig-grey-t5;
 }
 
-.p-tabview-title {
+.p-tabview .p-tabview-nav > li .p-tabview-title {
+  font-weight: normal;
+  color: @ig-purple;
+}
+
+ 
+.p-tabview .p-tabview-nav > li.p-highlight {
+  border-bottom: 4px solid @ig-black;
+  cursor: default;
+}
+
+.p-tabview .p-tabview-nav > li.p-highlight .p-tabview-title {
   color: @ig-black;
-  font-weight: bold;
+  cursor: default;
+}
+
+a.Action {
+  color: @ig-black;
 }
 
 .relationTableRadioButton {

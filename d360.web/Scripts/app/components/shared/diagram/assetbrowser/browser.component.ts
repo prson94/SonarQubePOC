@@ -177,7 +177,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private readonly badgeFont: string = "14px 'Precisely'";
     private readonly badgeStrokeColor = "#d6d5d5";
-    private readonly badgeTextColor = "#006fc0";
+    private readonly badgeTextColor = "#6d18dd";
     private readonly ignoredPanelFieldTypes = [
         "Tag",
         "Relationship",
