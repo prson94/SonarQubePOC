@@ -9,7 +9,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     <nav class="top">  
                         <div class="logo" routerLink="/home"> <img [src]="imageSource" alt="logo"> </div>   
                         <d3s-header-back-button *ngIf="showBackButton"></d3s-header-back-button>
-                        <d3s-header-breadcrumb [controlWidth]="controlWidth"></d3s-header-breadcrumb>                                          
+                        <d3s-header-breadcrumb [controlWidth]="controlWidth"  [showBackButton]="showBackButton">></d3s-header-breadcrumb>                                          
                         <d3s-header-actions class="header-action" (controlWidthChange)="controlWidth = $event"></d3s-header-actions>
                     </nav>
                 </div>
