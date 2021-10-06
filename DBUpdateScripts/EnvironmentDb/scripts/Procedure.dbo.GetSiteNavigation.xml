@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.dbo.GetSiteNavigation-v4">
+  <changeSet author="Pappas" id="Procedure.dbo.GetSiteNavigation-v5.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -204,16 +204,16 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		n.ImageIconUrl as ImageIconUrl,
 		n.Title as Title,
 		(
-		SELECT	RT.name, 				
+		SELECT	T.name,
 				dbo.GenerateAssetTypeUrl(T.ID) As url,
 				0 as feature,
 				null AS items	
-		FROM	RuleType RT
-				inner join AssetType T on T.Object = 'RuleType' and T.ObjectID = RT.ID
+		FROM	AssetType T
+				LEFT JOIN SiteNav v on v.ObjectID = T.ObjectID and v.Object = T.Object
+		WHERE	T.Object = 'RuleType' 
+				and v.ObjectID IS NULL
 				and not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = T.ID)
-				LEFT JOIN SiteNav v on v.ObjectID = RT.ID and v.Object ='RuleType'
-		WHERE	v.ObjectID IS NULL
-		Order By RT.name
+		Order By T.Name
 		FOR XML PATH('nav'), TYPE
 		) AS Items
 	FROM SiteNav n
@@ -464,6 +464,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 				null AS items	
 		FROM	RuleType RT
 				inner join AssetType T on T.Object = 'RuleType' and T.ObjectID = RT.ID
+				and not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = T.ID)
 				LEFT JOIN SiteNav v on v.ObjectID = RT.ID and v.Object ='RuleType'
 		WHERE	v.ObjectID IS NULL
 		Order By RT.name

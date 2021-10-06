@@ -424,7 +424,6 @@
     <Compile Include="Controllers\Forms\FormController_Report.cs" />
     <Compile Include="Controllers\Forms\FormController_Resource.cs" />
     <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
-    <Compile Include="Controllers\Forms\FormController_Rule.cs" />
     <Compile Include="Controllers\Forms\FormController_Survey.cs" />
     <Compile Include="Controllers\Forms\FormController_Hierarchy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />

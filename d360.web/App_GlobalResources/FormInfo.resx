@@ -168,6 +168,9 @@
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
     <value>The Responsibility When Filter value is required.</value>
   </data>
+  <data name="RuleType" xml:space="preserve">
+    <value>Rule</value>
+  </data>
   <data name="TaxonomyType" xml:space="preserve">
     <value>Model</value>
   </data>
