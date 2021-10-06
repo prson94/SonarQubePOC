@@ -875,9 +875,9 @@ th.p-state-default {
 
 /* Overlays */
 .p-component-overlay {
-  background: @ig-grey-s3;
-  opacity: .60;
-  filter: Alpha(Opacity=60);
+  background: @ig-white;
+  opacity: 0.8;
+  filter: alpha(opacity=80);
 }
 
 /*
@@ -996,10 +996,11 @@ th.p-state-default {
   padding: .5em .5em .5em .7em;
   font-weight: bold;
   text-transform: uppercase;
-  color: @ig-grey;
+  color: @ig-black;
 }
 
 .ui-accordion .ui-accordion-header {
+  margin-top: 16px;
   border-bottom: 2px solid @ig-grey-t2;
   border-top: 0 none;
   border-left: 0 none;
@@ -1580,9 +1581,11 @@ button.p-button.p-highlight, .p-button.p-highlight {
 }
 
 .p-paginator .p-paginator-page.p-highlight {
-  background: @ig-midblue-t3;
-  color: @ig-white;
-  border-color: @ig-midblue;
+  background: none;
+  color: @ig-black;
+  border: none;
+  font-weight: bold;
+  cursor: default;
 }
 
 /* DataTable  */
@@ -1942,7 +1945,7 @@ p-datatable .p-datatable .p-datatable-thead > tr > th {
 /* Loader */
 p-table .p-datatable-loading-icon,
 .p-table-loading-icon {
-  color: @ig-white;
+  color: @ig-black;
   font-size: 25px;
 }
 
@@ -2077,7 +2080,8 @@ p-table .p-datatable-tbody > tr > td {
   margin-top: -.5em !important;
 }
 
-.p-dropdown-item.p-state-hover {
+.p-dropdown-item.p-state-hover,
+.p-dropdown-item:hover {
   background: @ig-purple-t5;
 }
 
@@ -2303,13 +2307,18 @@ p-table .p-datatable-tfoot > tr > td {
   font-weight: bold;
   text-transform: capitalize;
   border-radius: 0;
-  background-color: @ig-grey-s2;
+  background-color: @ig-grey-t5;
 }
 
 p-table thead th {
   text-align: left;
-  color: @ig-white;
+  color: @ig-black;
 }
+
+.p-sort-icon .fa {
+  color: @ig-grey-t3;
+}
+
 
 p-table tr.p-state-hover {
   border: none;
@@ -2404,12 +2413,29 @@ p-table tbody.p-datatable-tbody > tr {
   cursor: pointer;
 }
 
-p-table tbody.p-datatable-tbody > tr:nth-child(odd) {
-  background: @ig-grey-t5;
+p-table tbody.p-datatable-tbody > tr {
+  background: @ig-white;
+  border-bottom: 2px solid @ig-grey-t5;
 }
 
 p-table tbody.p-datatable-tbody > tr.p-highlight {
-  background: @ig-purple-t4;
+  background: @ig-white;
+  border-bottom: 2px solid @ig-grey-t5;
+}
+
+tr.p-highlight,
+.p-component-content .p-highlight,
+.p-component-header .p-highlight,
+p-table tbody.p-datatable-tbody > tr.p-highlight {
+  background-color: @ig-purple-t4;
+}
+
+p-table tbody.p-datatable-tbody > tr:hover {
+  background: @ig-purple-t5;
+}
+
+p-table td {
+  color: @ig-black;
 }
 
 /* workaround for issue in prime with row selection and checkbox selection*/
@@ -2421,8 +2447,8 @@ p-table .p-datatable-tbody .p-checkbox {
   background-color: @ig-white;
   padding: .25em .5em;
   text-align: center;
-  font-weight: bold;
-  color: #1e2435;
+  font-weight: normal;
+  color: @ig-black;
 }
 
 p-table .p-column-filter {
@@ -2446,21 +2472,30 @@ p-table .p-column-filter {
 }
 /* Buttons */
 .p-button, button.p-button.p-state-default, .p-button.p-state-default, .p-button:focus {
-  background: @ig-midblue-t2;
+  background: @ig-purple-t1;
 }
 
 .p-button:hover, button.p-button.p-state-default:hover, .p-button.p-state-default:hover, .p-selectbutton .p-button:hover {
-  background: #40b9f5;
+  background: @ig-purple-t1;
 }
 
 .p-button:active, button.p-button.p-state-default:active, .p-button.p-state-default:active {
-  background: #50c9ff;
+  background: @ig-purple-s3;
 }
 
 .p-button .p-button-label {
   padding: .5em 1.25em;
   display: block;
   line-height: normal;
+}
+
+.p-button:hover, button.p-button.p-state-hover {
+  background: @ig-purple;
+}
+
+ 
+.p-button, button.p-button.p-component, .p-button.p-component {
+  border-radius: 4px;
 }
 
 /* Tables */
@@ -2492,10 +2527,11 @@ button.p-button:disabled {
 }
 
 .p-paginator .p-paginator-element {
-  min-width: 1.5em;
+  min-width: 32px;
   width: auto;
-  border: @ig-field-border;
-  font-weight: bold;
+  border: none;
+  font-weight: normal;
+  text-align: center;
 }
 
 .p-paginator .p-paginator-pages {
@@ -2663,7 +2699,7 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
 }
 
 .p-datatable-scrollable-header {
-  background-color: @ig-grey-s2;
+  background-color: @ig-grey-t5;
 }
 
 .p-tabview-title {

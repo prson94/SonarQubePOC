@@ -4,14 +4,14 @@
 
 /* source-sans-pro-regular - latin */
 @font-face {
-  font-family: 'Precisely';
+  font-family: 'Precisely', sans-serif;
   font-style: normal;
   font-weight: 400;
   src: url('/fonts/precisely/Precisely-Regular.ttf') format('truetype')
 }
 
 @font-face {
-  font-family: 'Precisely Bold';
+  font-family: 'Precisely Bold', sans-serif;
   font-style: normal;
   font-weight: 700;
   src: url('/fonts/precisely/Precisely-Bold.ttf') format('truetype')
@@ -4008,9 +4008,11 @@ button.tab-scroller {
   }
 
   a.link-button {
-    margin-bottom: 6px;
-    padding: 0px 10px !important;
-    margin-left: 0px;
+    height: 24px;
+    padding: 0 8px !important;
+    max-width: 240px;
+    color: black;
+    margin-bottom: 4px;
     margin-right: 4px;
 
     &:hover {

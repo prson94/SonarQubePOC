@@ -1,4 +1,5 @@
 ﻿@import '../../styles/infogix-ui/IgUiVariables.less';
+@import '../../styles/_Variables.less'; 
 
 p-table .p-paginator {
   margin: 0;
@@ -40,7 +41,7 @@ p-table .p-paginator {
 }
 
 .p-paginator .p-link {
-  color: #1e2435;
+  color: @ig-purple;
 }
 
 .p-paginator .p-paginator-page,
@@ -50,15 +51,24 @@ p-table .p-paginator {
 .p-paginator .p-paginator-prev,
 .p-paginator .p-paginator-current {
   display: inline-block;
-  min-width: 1.5em;
-  height: 1.5em;
-  line-height: 1.5em;
-  margin-left: .063em;
-  margin-right: .063em;
-  text-decoration: none;
-  vertical-align: middle;
-  text-align: center;
-  position: relative;
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+  margin-left: 0;
+  margin-right: 0;
+  border-radius: 4px;
+  font-family: 'Precisely', sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.p-paginator .p-paginator-page:hover,
+.p-paginator .p-paginator-next:hover,
+.p-paginator .p-paginator-last:hover,
+.p-paginator .p-paginator-first:hover,
+.p-paginator .p-paginator-prev:hover,
+.p-paginator .p-paginator-current:hover {
+  background: @ig-grey-t5;
 }
 
 .global-search-typeahead .p-autocomplete-input.p-inputtext {
