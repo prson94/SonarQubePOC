@@ -24,6 +24,8 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { RelationshipsModalComponent } from './relationships-modal.component';
+import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @NgModule({
     imports: [
@@ -39,6 +41,7 @@ import { RelationshipsModalComponent } from './relationships-modal.component';
         SharedObjectDetailsModule,    
         TilesModule,
         SharedDeleteFormModule,
+        IgCheckboxModule,
         //prime
         ButtonModule,
         InputTextModule,
@@ -48,6 +51,7 @@ import { RelationshipsModalComponent } from './relationships-modal.component';
         DirectivesModule,
         TooltipModule,
         SiteModalModule,
+        CheckboxModule
     ],
     declarations: [
         ObjectRelationshipsComponent,
