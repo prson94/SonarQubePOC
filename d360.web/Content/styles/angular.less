@@ -23,6 +23,10 @@
   font-family: 'Precisely Bold';
 }
 
+a {
+  color: @ig-purple;
+}
+
 .card-box {
   background: white;
   box-shadow: @ig-box-shadow;
@@ -40,11 +44,16 @@
 }
 
 body {
-  background: #EFF2F6;
   min-height: 100vh;
   font-family: 'Precisely';
   font-size: 14px;
   overflow: hidden;
+  background-color: @ig-grey-t5;
+  background-image: url('../../Content/images/HomeBG.png');
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
 }
 
 .background-image:before {
@@ -74,8 +83,7 @@ nav.top {
   line-height: 40px;
   color: @ig-white;
   height: 40px;
-  background: @igx-nav-color;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
+  background: linear-gradient(to right, #340776, #280057);
   display: inline-flex;
   flex-wrap: nowrap;
   min-width: 800px;
@@ -85,7 +93,7 @@ nav.top {
   }
 
   .header-profile-panel a, .header-search-panel a {
-    color: #000;
+    color: @ig-black;
   }
 
   .header-back-button {
@@ -313,19 +321,23 @@ d3s-navbar-item {
   }
 }
 
-.left-side-nav.fixed a {
-  color: white;
-}
+.left-side-nav {
+  &.fixed {
+    a {
+      color: white;
+    }
+  }
 
-.left-side-nav ul.sub {
-  padding-left: 30px;
-  height: 20px;
-  line-height: 20px;
-
-  li, a {
-    font-size: x-small;
+  ul.sub {
+    padding-left: 30px;
     height: 20px;
     line-height: 20px;
+
+    li, a {
+      font-size: x-small;
+      height: 20px;
+      line-height: 20px;
+    }
   }
 }
 
@@ -517,20 +529,20 @@ div.powerbi iframe {
 /* raise issue*/
 
 .issue-button {
-  background: @ig-coral;
+  background: @ig-pink-t1;
+  border-radius: 4px;
   border: none;
-  border-radius: 3px;
   line-height: 25px;
   padding: 0 15px;
   height: 30px;
   white-space: nowrap;
 
   &:hover {
-    background: mix(black, @ig-coral, 7%)
+    background: @ig-pink;
   }
 
   &:active {
-    background: mix(black, @ig-coral, 14%)
+    background: @ig-pink-s3;
   }
 }
 
@@ -889,7 +901,7 @@ div.breadcrumbs {
     }
 
     .parent {
-      background-color: dodgerblue;
+      background-color: @ig-lightblue;
       border-radius: 3px;
       padding: 0px 5px;
       font-size: 12px;
@@ -1189,11 +1201,12 @@ a.breadcrumb {
   flex-wrap: nowrap;
   align-items: flex-start;
   padding: 4px;
+  line-height: 24px;
 
   .card-row {
     margin-left: 4px;
     display: inline-flex;
-    padding-bottom: 4px;
+    padding-bottom: 0;
     max-width: 98%;
     margin-top: 2px;
 
@@ -1204,7 +1217,7 @@ a.breadcrumb {
       line-height: 26px;
       border-radius: 13px !important;
       font-size: 14px !important;
-      background: @igx-left-side-nav;
+      background: @ig-purple-s3;
       margin-right: 4px;
       color: white;
       border-radius: 3px;
@@ -1218,7 +1231,7 @@ a.breadcrumb {
         white-space: nowrap;
         text-overflow: ellipsis;
         align-self: center;
-        color: @igx-blue-color;
+        color: @ig-black;
       }
 
       i.fa {
@@ -1235,11 +1248,15 @@ a.breadcrumb {
     &.description-row {
       .category {
         font-weight: bold;
+        color: @ig-grey-t1;
+      }
+
+      .asset-path {
+        color: @ig-black;
       }
 
       .category, .asset-path {
         white-space: nowrap;
-        color: @ig-black;
 
         i.fa {
           padding: 0 7px !important;
@@ -1277,7 +1294,7 @@ a.breadcrumb {
       padding-bottom: 0px;
 
       .search-all-res {
-        color: @igx-blue-color;
+        color: @ig-black;
 
         .folder-icon.searchall {
           background: @igx-blue-color;
@@ -1373,8 +1390,16 @@ a.breadcrumb {
 
   li.p-autocomplete-item {
 
-    &:not(.p-highlight):nth-child(even) {
-      background-color: #f7f7f7;
+    &:not(:hover):nth-child(even) {
+      background-color: @ig-white;
+    }
+
+    &:hover {
+      background-color: @ig-purple-t5;
+    }
+
+    &:active {
+      background-color: @ig-purple-t4;
     }
   }
 
@@ -1428,7 +1453,7 @@ a.breadcrumb {
     background: rgba(255, 255, 255, 0.4);
 
     .fa {
-      color: @igx-button-active-color;
+      color: @ig-white;
     }
   }
 
@@ -1475,11 +1500,11 @@ a.breadcrumb {
     }
 
     &:hover, &.hover {
-      background-color: @igx-lightblue-xlight;
+      background-color: @ig-purple-t5;
     }
 
     &:active, &.active {
-      background: @igx-lightblue-light;
+      background-color: @ig-purple-t4;
     }
 
     .mini-menu-line {
@@ -1737,16 +1762,21 @@ li.shortcut {
   margin: 12px;
   box-sizing: border-box;
   border: none;
-  color: @ig-white;
-  background: @ig-grey-s2;
   padding-top: 10px;
   min-height: 120px;
   max-height: 120px;
-  border-radius: 4px;
+  color: @ig-black;
+  background: @ig-white;
+  border-radius: 8px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.16);
 
   &:hover {
-    background: @igx-blue-light !important;
+    background: @ig-purple-t5;
     transition: all 150ms ease-out;
+  }
+
+  &:active {
+    background: @ig-purple-t4;
   }
 }
 
@@ -1754,15 +1784,15 @@ li.shortcut div.shortcut-name {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  font-size: 16px;
-  font-weight: bold;
   font-style: normal;
   font-stretch: normal;
   line-height: 1.375em;
   letter-spacing: normal;
   text-align: center;
   padding: 7px 16px 3px 16px;
-  color: @ig-white;
+  font-size: 18px;
+  font-weight: normal;
+  color: @ig-black;
 }
 
 li.shortcut .shortcut-desc {
@@ -1777,7 +1807,7 @@ li.shortcut .shortcut-desc {
   letter-spacing: normal;
   text-align: center;
   padding: 0 16px;
-  color: @ig-white;
+  color: @ig-grey-t1;
   margin: auto;
   display: block;
   display: -webkit-box;
@@ -1995,17 +2025,17 @@ div.home-image-title-text {
   }
 
   button.button.primary {
-    background: #0971b9;
+    background: @ig-purple;
     color: @ig-white;
     line-height: normal;
   }
 
   button.button.primary:not(:disabled):hover, button.button.primary.hover {
-    background: #0869ac;
+    background: @ig-purple;
   }
 
   button.button.primary:not(:disabled):active, button.button.primary.active {
-    background: #08619f;
+    background: @ig-purple-s3;
   }
 
   button.button.accent {
@@ -2524,7 +2554,7 @@ modal-overlay .modal-dialog .content {
 
 .title-bar {
   position: relative;
-  background: white;
+  background: @ig-grey-t5;
   margin-left: 40px;
   transition: all 200ms ease;
 
@@ -2547,10 +2577,25 @@ modal-overlay .modal-dialog .content {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 15px;
+    padding: 16px;
+    padding-bottom: 8px;
 
     .checkbox {
       white-space: nowrap;
+    }
+
+    button.button {
+      background: @ig-purple-t1;
+      color: @ig-white;
+      border-radius: 4px;
+
+      &:hover {
+        background: @ig-purple;
+      }
+
+      &:active {
+        background: @ig-purple-s3;
+      }
     }
   }
 
@@ -2626,15 +2671,15 @@ button.button, a.link-button {
   }
 
   &.primary {
-    background: @ig-midblue;
+    background: @ig-purple;
     color: @ig-white;
 
     &:not(:disabled):hover, &.hover {
-      background: mix(black, @ig-midblue, 7%)
+      background: @ig-purple;
     }
 
     &:not(:disabled):active, &.active {
-      background: mix(black, @ig-midblue, 14%)
+      background: @ig-purple-s3;
     }
 
     &:disabled, &.hover {
@@ -2777,7 +2822,8 @@ button.button, a.link-button {
     box-sizing: border-box;
     flex-direction: row;
     box-sizing: border-box;
-    background: white;
+    background: none;
+    align-items: center;
     height: 40px;
 
     &.left {
@@ -2786,6 +2832,14 @@ button.button, a.link-button {
 
     &.right {
       right: 0;
+    }
+
+    &:not(:disabled):hover {
+      background: rgba(0, 0, 0, 0.07);
+    }
+
+    &:active {
+      background: rgba(0, 0, 0, 0.14);
     }
   }
 
@@ -2799,7 +2853,7 @@ button.button, a.link-button {
   box-sizing: border-box;
   flex-direction: row;
   box-sizing: border-box;
-  background: white;
+  background: none;
   width: 100%;
   height: auto;
 
@@ -2831,7 +2885,7 @@ button.tab, button.tab-scroller {
   background: none;
   border: none;
   border-radius: 0;
-  color: @ig-midblue;
+  color: @ig-purple;
   border-bottom: 3px solid transparent;
   border-top: 3px solid transparent;
 
@@ -3008,13 +3062,13 @@ button.tab-scroller {
   }
 
   &.asset-icon {
-    margin: 0px;
-    height: 28px;
-    min-width: 28px;
-    max-width: 28px;
-    border-radius: 14px;
     justify-content: center;
-    background: @igx-left-side-nav;
+    margin: 0;
+    height: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    border-radius: 16px;
+    background: @ig-purple-s3;
 
     img {
       max-height: 20px;
@@ -4251,15 +4305,28 @@ p-table .p-datatable-scrollable-body {
   padding: .25em 0 .25em 0 !important;
 }
 
-.hero-search-input {
-  d3s-header-typeahead-search {
-    width: 100%;
-  }
+d3s-header-typeahead-search {
+  width: 100%;
 
+  .header-search-input {
+    border-radius: 4px;
+
+    .search-button {
+      background-color: @ig-grey-t5;
+      color: @ig-black;
+
+      .fa {
+        color: @ig-black;
+      }
+    }
+  }
+}
+
+.hero-search-input {
   display: flex;
-  background: rgba(37, 44, 65, 0.6);
+  background: @ig-purple-s3;
+  border-radius: 8px;
   padding: 42px;
-  border-radius: 4px;
   white-space: nowrap;
   margin-left: auto;
   margin-right: auto;
@@ -4320,8 +4387,8 @@ p-table .p-datatable-scrollable-body {
     }
 
     .p-multiselect-label {
-      padding: 20px;
-      margin-right: 8px;
+      padding: 0 20px;
+      line-height: 56px;
     }
 
     .p-multiselect-trigger {
@@ -4329,7 +4396,7 @@ p-table .p-datatable-scrollable-body {
       padding: 20px;
 
       .p-multiselect-trigger-icon {
-        padding-top: 2px;
+        padding-top: 0;
       }
     }
 
@@ -6559,7 +6626,7 @@ table {
 }
 
 .cell-link {
-  color: @d3s-blue-2;
+  color: @ig-purple;
 
   &:hover {
     text-decoration: underline;

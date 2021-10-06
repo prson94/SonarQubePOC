@@ -2,16 +2,25 @@
 @import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
 
 /* side menu*/
+.left-side-nav-open .menu-category, .left-side-nav .menu-category, .menu-toggle {
+  color: #202020 !important;
+}
+
 .left-side-nav-open,
 .left-side-nav {
-  left: 0;
-  top: 0;
-  z-index: 900;
-  height: 100%;
+  z-index: 1;
   position: fixed;
-  background-color: @igx-left-side-nav;
+  top: 56px;
+  bottom: 16px;
   width: 200px;
-  margin-top: 40px;
+  margin-top: 0;
+  margin-bottom: 0;
+  height: auto;
+  background-color: white;
+  box-shadow: 2px 0px 4px rgba(0, 0, 0, 0.16);
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding-top: 8px;
   overflow-y: scroll;
   transition: width 200ms ease;
   outline: none !important;
@@ -84,7 +93,7 @@
     color: white;
     font-size: 14px;
     height: 40px;
-    line-height: 36px;
+    line-height: 40px;
     position: relative;
 
     i {
@@ -106,7 +115,11 @@
     }
 
     &:hover {
-      background: @igx-gray-color;
+      background: @ig-purple-t5;
+    }
+
+    &:active {
+      background: @ig-purple-t4;
     }
   }
 }
@@ -142,28 +155,28 @@
 }
 
 .menu-toggle {
-  background-color: @igx-left-side-nav;
   position: fixed;
   z-index: 950;
-  bottom: 0;
   padding: 10px;
   padding-left: 15px;
   width: 40px;
   color: white;
   transition: all 200ms ease;
+  background-color: white;
+  bottom: 16px;
 
   &:hover {
     background: @igx-gray-color;
   }
 
   &.scroll {
-    bottom: 40px;
+    bottom: 58px;
   }
 
   &.open {
     &.scroll {
       margin-left: 160px;
-      bottom: 0;
+      bottom: 16px;
       transition: all 200ms ease;
     }
   }
@@ -189,13 +202,14 @@
 }
 
 .toggle-container {
-  background-color: #4e5466;
   position: fixed;
   z-index: 950;
-  bottom: 0;
   width: 40px;
   height: 80px;
   transition: all 200ms ease;
+  bottom: 16px;
+  background-color: white;
+  border-bottom-right-radius: 8px;
 
   &.open {
     width: 200px;
@@ -229,7 +243,9 @@
 .menu-active > .megamenu-panel {
   display: block !important;
   width: min-content;
-  background: @igx-left-side-nav;
+  background: @ig-white;
+  border-radius: 8px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.33);
 }
 
 .menu-group {
@@ -237,7 +253,7 @@
 }
 
 .menu-item {
-  color: white;
+  color: @ig-black;
   cursor: pointer;
   width: 100%;
   padding: 4px 15px !important;
@@ -257,6 +273,11 @@
       line-height: 33px;
       height: 22px;
     }
+
+    .d3s-badge {
+      background-color: @ig-grey-t5;
+      color: @ig-black;
+    }
   }
 
   &.highlight {
@@ -264,13 +285,22 @@
   }
 
   &:hover {
-    background-color: @igx-gray-color !important;
-    color: white !important;
+    background: @ig-purple-t5;
+    color: @ig-black;
+  }
+
+  &:active {
+    background: @ig-purple-t4;
   }
 
   &.dim {
     opacity: 0.5;
     height: 40px;
+
+    &:active {
+      background: @ig-white;
+      color: @ig-black;
+    }
   }
 
   i {
@@ -296,7 +326,6 @@
     text-transform: none;
     z-index: 1001;
     color: @ig-white;
-    background: #4e5466;
     display: flex;
     height: 40px;
     padding: 4px;
@@ -305,8 +334,8 @@
 
     .hide-menu-button {
       margin-left: 4px;
-      background-color: #646a7a;
-      color: white;
+      background-color: @ig-grey-t5;
+      color: @ig-black;
 
       &:hover {
         background-color: #878a98;
