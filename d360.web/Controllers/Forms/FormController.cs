@@ -354,12 +354,6 @@ namespace d360.web.Controllers
                 case "RESOURCETYPE":
                     res = Resource_EditFields(oid);
                     break;
-                //case "RULE":
-                //    res = Rule_EditFields(oid);
-                //    break;
-                //case "RULETYPE":
-                //    res = RuleType_EditFields(oid);
-                //    break;
                 case "SERVICE":
                     res = CustomAPIService_EditFields(oid);
                     break;
@@ -479,9 +473,6 @@ namespace d360.web.Controllers
                 case "RULE":
                     res = Asset_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
-                //case "RULE":
-                //    res = Rule_AddFields(objectID.GetValueOrDefault());
-                //    break;
                 case "CONTRACT":
                     res = Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
                     break;
