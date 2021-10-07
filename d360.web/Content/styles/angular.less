@@ -4179,40 +4179,6 @@ button.tab-scroller {
       border-style: inset;
       outline-color: white;
     }
-
-    .tag-tooltip {
-      display: none;
-      font-size: 12px;
-      text-align: left;
-      padding: 4px 6px;
-      line-height: 13px;
-      max-width: 400px;
-      position: absolute;
-      background-color: #fffedc;
-      border: 1px solid #adadad;
-      z-index: 1000;
-      top: -45px;
-      transform: translateX(-5%);
-
-      span {
-        display: block;
-
-        &.span-break {
-          white-space: normal;
-          word-break: break-word;
-        }
-      }
-
-      .fa {
-        padding: 0px;
-      }
-    }
-
-    &:hover {
-      .tag-tooltip {
-        display: block;
-      }
-    }
   }
 
   a.show-all-tags {
@@ -4415,25 +4381,6 @@ d3s-simple-badge + button.button:not(.icon):not(.bar):first-of-type {
 
 .score-good {
   background-color: @ig-green;
-}
-
-p-table .p-datatable-scrollable-body {
-  .p-datatable-tbody {
-    tr:first-child {
-      .tooltip-wrapper {
-        position: fixed;
-
-        .no-display {
-          top: -58px;
-          opacity: 0;
-        }
-
-        .tag-tooltip {
-          top: -58px;
-        }
-      }
-    }
-  }
 }
 
 .p-treetable-caption,
