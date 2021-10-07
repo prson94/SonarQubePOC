@@ -3,15 +3,20 @@
     Layout = "../Shared/Anonymous.cshtml";
 }
 @section TopJs {
-    
+
 }
 @section TopCss {
 
 }
 <body class="loginBody">
-    <span class="loginlogo"></span>
+    <span class="loginlogo"><span class="background"></span></span>
     <div id="loginForm">
-        <h4>You have been logged out successfully</h4>        
-        <p>Please click <a href="/">here</a> to log back in</p>
+        <span class="loginlogo form-logo"></span>
+
+        You have signed out successfully
+        <div class="actions">
+            <div></div>
+            <input type="button" value="Sign in" onClick="window.location.href = '/'" />
+        </div>
     </div>
 </body>

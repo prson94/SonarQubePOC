@@ -555,6 +555,8 @@
     <Content Include="Content\images\HomeBG.png" />
     <Content Include="Content\images\logo.mail.small.png" />
     <Content Include="Content\images\logo.new.png" />
+    <Content Include="Content\images\PreciselyLogo%402x.png" />
+    <Content Include="Content\images\PreciselyLogo.png" />
     <Content Include="Content\images\related-assets-icon.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.css" />

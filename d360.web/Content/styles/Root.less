@@ -3,6 +3,19 @@
 @import "Tooltip.less";
 @import "Diagrams.less";
 
+@font-face {
+  font-family: 'Precisely', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/precisely/Precisely-Regular.ttf') format('truetype')
+}
+
+@font-face {
+  font-family: 'Precisely Bold', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  src: url('/fonts/precisely/Precisely-Bold.ttf') format('truetype')
+}
 
 a {
   color: @d3s-blue-2;
@@ -52,15 +65,44 @@ fieldset legend {
 }
 
 #loginForm {
-  font-family: Tahoma,Helvetica,Verdana,sans-serif;
+  font-family: 'Precisely', sans-serif;
   position: relative;
   top: 100px;
-  width: 350px;
+  width: 360px;
   margin: auto;
-  background-color: @ig-white;
-  padding: 0 20px 20px 20px;
-  border-radius: 10px;
-  border: 1px solid #999;
+  background-color: @ig-purple-s3;
+  border-radius: 8px;
+  padding: 32px;
+  color: white;
+
+  h4 {
+    padding-top: 0px;
+    margin-top: 0px;
+  }
+
+  .form-logo {
+    display: block;
+    height: 49px;
+    position: relative;
+    background-size: auto 60px;
+    top: -21px;
+    left: -18px;
+    width: 320px;
+  }
+
+  .form-wrapper {
+    position: relative;
+    top: -24px;
+  }
+
+  label {
+    color: white;
+    font-size: 14px;
+    margin-bottom: 2px;
+    display: block;
+    padding-top: 12px;
+    font-weight: bold;
+  }
 
   .validation-summary-errors ul {
     list-style-type: square;
@@ -72,42 +114,67 @@ fieldset legend {
     }
   }
 
+  .actions {
+    color: white;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    padding-top: 16px;
+    line-height: 32px;
+
+    a {
+      color: white;
+      font-size: 12px;
+    }
+  }
+
   input {
     padding: 5px;
     border-radius: 5px;
     box-sizing: border-box;
-    border-style: solid;
-    border-color: #ccc;
+    background-color: @ig-purple-t1;
+    height: 32px;
+    border: none;
+    outline: none;
+    color: white;
 
     &[type="submit"], &[type="button"] {
       border: none;
-      background-color: @rgba-primary-0;
+      background-color: @ig-purple-t1;
       color: white;
+      padding: 0px 16px;
 
       &[disabled] {
-        background-color: #ccc;
-        color: #777;
+        opacity: 0.33;
       }
     }
   }
 
   #loginButton {
     color: white;
-    padding: 15px;
     border: none;
-    background-color: @rgba-primary-0;
+    background-color: @ig-purple-t1;
     font-weight: bold;
   }
 }
 
-
 .loginlogo {
-  background-color: @igx-nav-color;
   height: 40px;
   display: inline-block;
   position: absolute;
   left: 0;
   right: 0;
+
+  .background {
+    background: linear-gradient(to right, #340776, #280057);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 42px;
+    z-index: -1;
+  }
 }
 
 /*#endregion */
