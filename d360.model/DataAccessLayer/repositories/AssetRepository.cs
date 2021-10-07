@@ -2301,15 +2301,17 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.TechnicalAsset:
+                case AssetTypeClass.Rule:
                     #region
-
+                    parentType = (model.Class == AssetTypeClass.Rule) ? SystemObjects.RuleType : SystemObjects.ArtifactType;
+                    
                     at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        Object = SystemObjects.ArtifactType.ToString(),
+                        Object = parentType.ToString(),
                         State = State.Active,
                         UpdatedBy = resourceId,
                         UpdatedOn = DateTime.UtcNow,
@@ -2325,9 +2327,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CanEditParent = model.CanEditParent
                     };
                     CompanyContext.Add(at);
-                    parentType = SystemObjects.ArtifactType;
+                    
                     model.ObjectID = at.ObjectID;
-                    model.Object = SystemObjects.ArtifactType.ToString();
+                    model.Object = at.Object;
 
                     #endregion
                     break;
@@ -2424,36 +2426,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     parentType = SystemObjects.ReferenceItemType;
                     model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.ReferenceItemType.ToString();
-                    #endregion
-                    break;
-                case AssetTypeClass.Rule:
-                    #region
-                    at = new AssetType
-                    {
-                        uid = uid,
-                        Name = model.Name,
-                        DisplayFormat = model.DisplayFormat,
-                        Description = model.Description,
-                        Object = SystemObjects.RuleType.ToString(),
-                        State = State.Active,
-                        UpdatedBy = resourceId,
-                        UpdatedOn = DateTime.UtcNow,
-                        CreatedBy = resourceId,
-                        CreatedOn = DateTime.UtcNow,
-                        Hierarchical = true,
-                        Class = model.Class,
-                        AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false,
-                        Parent = parentAssetType,
-                        AutoDisplayParent = model.AutoDisplayParent,
-                        CanEditParent = model.CanEditParent
-                    };
-                    CompanyContext.Add(at);
-                    parentType = SystemObjects.RuleType;
-                    model.ObjectID = at.ObjectID;
-                    model.Object = SystemObjects.RuleType.ToString();
-
                     #endregion
                     break;
                 case AssetTypeClass.Diagram:
