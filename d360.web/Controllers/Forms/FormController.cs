@@ -470,8 +470,10 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionField_AddFields(parentID.GetValueOrDefault());
                     break;
                 case "ARTIFACT":
+                    res = Asset_AddFields(SystemObjects.ArtifactType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
                 case "RULE":
-                    res = Asset_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    res = Asset_AddFields(SystemObjects.RuleType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
                 case "CONTRACT":
                     res = Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
