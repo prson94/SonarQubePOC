@@ -167,31 +167,11 @@ namespace d360.core.entities
         public int Total { get; set; }
         [DataMember]
         public string ErrorMessage { get; set; }
+        [DataMember]
+        public Guid LoadUid { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
-    public class LoadItemDetail : BaseObject
-    {
-        [DataMember]
-        public int RowIndex { get; set; }
-        [DataMember]
-        public string Column1 { get; set; }
-        [DataMember]
-        public string Column2 { get; set; }
-        [DataMember]
-        public string Column3 { get; set; }
-        [DataMember]
-        public string Column4 { get; set; }
-        [DataMember]
-        public string Column5 { get; set; }
-        [DataMember]
-        public string Column6 { get; set; }
-        [DataMember]
-        public string Status { get; set; }
-        [DataMember]
-        public string StatusMessage { get; set; }
-        
-    }
+    
 
     public class TopNavigationItem
     {
