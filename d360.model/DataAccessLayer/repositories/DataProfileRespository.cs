@@ -665,7 +665,7 @@ namespace d360.model.DataAccessLayer
 
                 if (orderBy == "tags")
                 {
-                    orderBySQL = $@"JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]') {orderDirection}, hasTagField {orderDirection}";
+                    orderBySQL = $@"hasTagField {(orderDirection == "asc" ?  "desc" : "asc")}, JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]') {orderDirection}";
                 }               
             }
 
