@@ -2295,12 +2295,15 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 model.CanEditParent = true;
             }
 
+            AssetType at = null;
+
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.TechnicalAsset:
                     #region
-                    var a = new AssetType
+
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2321,9 +2324,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         AutoDisplayParent = model.AutoDisplayParent,
                         CanEditParent = model.CanEditParent
                     };
-                    CompanyContext.Add(a);
+                    CompanyContext.Add(at);
                     parentType = SystemObjects.ArtifactType;
-                    model.ObjectID = a.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.ArtifactType.ToString();
 
                     #endregion
@@ -2344,13 +2347,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     parentType = SystemObjects.OrganizationType;
                     model.ObjectID = org.ID;
                     model.Object = SystemObjects.OrganizationType.ToString();
-                    var orgAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    if (orgAssetType != null)
+                    at = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
+                    if (at != null)
                     {
-                        orgAssetType.AutoDisplayDescription = model.AutoDisplayDescription;
-                        orgAssetType.Notes = model.Notes;
-                        orgAssetType.uid = uid;
-                        CompanyContext.Update(orgAssetType);
+                        at.AutoDisplayDescription = model.AutoDisplayDescription;
+                        at.Notes = model.Notes;
+                        at.uid = uid;
+                        CompanyContext.Update(at);
                     }
                     #endregion
                     break;
@@ -2360,7 +2363,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     var objectType = model.Class == AssetTypeClass.Model ? SystemObjects.TaxonomyType : SystemObjects.PolicyType;
                     var errorMessage = model.Class == AssetTypeClass.Model ? AssetTypeErrors.InvalidModelDepth : AssetTypeErrors.InvalidPolicyDepth;
-                    var t = new AssetType
+                    
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2379,25 +2383,25 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CanEditParent = model.CanEditParent
                     };
 
-                    if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
+                    if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
                         return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", errorMessage);
 
-                    CompanyContext.Add(t);
+                    CompanyContext.Add(at);
 
-                    for (int i = 1; i <= t.HierarchyMaximumDepth; i++)
+                    for (int i = 1; i <= at.HierarchyMaximumDepth; i++)
                     {
-                        CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = t.ID });
+                        CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = at.ID });
                     }
                     CompanyContext.SaveChanges();
 
                     parentType = objectType;
-                    model.ObjectID = t.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = objectType.ToString();
                     #endregion
                     break;
                 case AssetTypeClass.Reference:
                     #region
-                    var rt = new AssetType
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2416,30 +2420,45 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     };
                     isNamePartOfKey = false;
                     nameFriendlyName = "Long Description";
-                    CompanyContext.Add(rt);
+                    CompanyContext.Add(at);
                     parentType = SystemObjects.ReferenceItemType;
-                    model.ObjectID = rt.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.ReferenceItemType.ToString();
                     #endregion
                     break;
                 case AssetTypeClass.Rule:
                     #region
-                    parentType = SystemObjects.Rule;
-                    var ruleAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.Name == model.Name && i.uid != model.Uid).SingleOrDefault();
-                    if (ruleAssetType != null)
+                    at = new AssetType
                     {
-                        ruleAssetType.uid = uid;
-                        CompanyContext.Update(ruleAssetType);
-                    }
-
-                    model.ObjectID = ruleAssetType.ObjectID;
+                        uid = uid,
+                        Name = model.Name,
+                        DisplayFormat = model.DisplayFormat,
+                        Description = model.Description,
+                        Object = SystemObjects.RuleType.ToString(),
+                        State = State.Active,
+                        UpdatedBy = resourceId,
+                        UpdatedOn = DateTime.UtcNow,
+                        CreatedBy = resourceId,
+                        CreatedOn = DateTime.UtcNow,
+                        Hierarchical = true,
+                        Class = model.Class,
+                        AutoDisplayDescription = model.AutoDisplayDescription,
+                        UseAsTransformation = model.UseAsTransformation,
+                        CanOwnFusion = model.CanOwnFusion ?? false,
+                        Parent = parentAssetType,
+                        AutoDisplayParent = model.AutoDisplayParent,
+                        CanEditParent = model.CanEditParent
+                    };
+                    CompanyContext.Add(at);
+                    parentType = SystemObjects.RuleType;
+                    model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.RuleType.ToString();
 
                     #endregion
                     break;
                 case AssetTypeClass.Diagram:
                     #region
-                    var diagram = new AssetType
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2461,9 +2480,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         FlowObjectType = model.FlowObjectType,
                         CanEditParent = model.CanEditParent
                     };
-                    CompanyContext.Add(diagram);
+                    CompanyContext.Add(at);
                     parentType = SystemObjects.TaskType;
-                    model.ObjectID = diagram.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.TaskType.ToString();
 
                     #endregion
