@@ -39,6 +39,7 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Value { get; set; }
         public string Type { get; set; }
+        public string Description { get; set; }
         public List<string> Values { get; set; }
     }
 }
@@ -473,7 +474,8 @@ from	FollowDetail F
                                ft.[Type] as [Type],
                                ft.AllowMultipleValues,
                                f.Value as OriginalValue,
-                               ft.ID as FieldTypeID
+                               ft.ID as FieldTypeID,
+                               ft.[DisplayDescription] as Description
                             from
                                 fieldtype ft
 
@@ -485,7 +487,7 @@ from	FollowDetail F
                         issueRes.ForEach((item) =>
                         {
                             issueId = item.IssueId;
-                            FieldTooltipValueModel resItem = new FieldTooltipValueModel { Name = item.Name, Value = item.Value, Type = item.Type };
+                            FieldTooltipValueModel resItem = new FieldTooltipValueModel { Name = item.Name, Value = item.Value, Type = item.Type, Description = item.Description };
                             if (item.AllowMultipleValues)
                             {
                                 var items = ((item.OriginalValue != null) ? item.OriginalValue.Split(',') : new string[] { });
