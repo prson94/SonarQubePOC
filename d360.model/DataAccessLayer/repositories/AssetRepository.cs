@@ -3372,9 +3372,59 @@ where	O.RowNum = 1";
             return results;
         }
 
-        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, Guid? assetTypeUid = null)
+        public async Task<AssetCountsModel> GetAssetCountOfAssetTypeUid(Guid assetTypeUid)
+        {
+            string assetPermissionWhere = @" and not exists (select 1 
+                        from #TempAssetpremission u where u.AssetId = a.id)";
+
+            string assetTypePermissionWhere = @" and not exists (select 1
+                    from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = @AssetTypeID)";
+
+            if (CompanyContext.CurrentResourceIsAdmin)
+            {
+                assetTypePermissionWhere = "";
+            }
+
+            var countsSQL = $@"
+                                declare @AssetTypeID int = (select id from assettype where uid = @assetTypeUid)
+                                drop table if exists #TempAssetpremission;
+
+                                select distinct up.assetid
+                                into #TempAssetpremission
+                                from dbo.userassetpermissions(@resourceId, @AssetTypeID) up
+                                where ((up.permissionsbitmask & @p)) = 0
+                                {assetTypePermissionWhere}
+                                
+                                IF EXISTS(SELECT 1 FROM #TempAssetpremission)
+                                    begin
+                                        create index idx_TempAssetpremission on #TempAssetpremission(assetid)
+
+                                        select count(1) [Count]
+                                        from Asset a
+                                        where a.AssetTypeID = @AssetTypeID
+                                        {assetPermissionWhere}
+                                        {assetTypePermissionWhere}
+                                    end
+                                else
+                                    begin
+                                        select count(1) [Count]
+                                        from Asset a
+                                        where a.AssetTypeID = @AssetTypeID
+                                        {assetTypePermissionWhere}
+                                    end";
+            int count = 0;
+
+            count = (await CompanyContext.QueryAsync<int>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, p = (int)Permission.ReadAsset, assetTypeUid }, ApiTimeout)).FirstOrDefault();
+
+            return new AssetCountsModel { count = count };
+        }
+
+
+        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, IEnumerable<KeyValuePair<string, string>> queryParams, Guid? assetTypeUid = null)
         {
             bool isATUidPassed = false;
+            bool isReturnCount = true;
+            string strCountstmt = " ";
 
             string assetTypePermissionWhere = @" and not exists (select 1
                     from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = att.ID)";
@@ -3390,45 +3440,70 @@ where	O.RowNum = 1";
                 isATUidPassed = true;
             }
 
-            var countsSQL = $@"
-                            {(isATUidPassed ? "declare @assetTypeUid uniqueidentifier = (select @assetTypeUidPassed);" : "")}
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "returncount"))
+                {
+                    bool returncount;
+                    var returncountString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "returncount").Value;
+                    if (bool.TryParse(returncountString, out returncount))
+                    {
+                        isReturnCount = returncount;
+                    }
+                    else
+                    {
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueReturnCount, returncountString);
+                    }
+                }
+            }
 
+            if (isReturnCount)
+            {
+                strCountstmt = $@"
                             drop table if exists #TempAssetpremission;
                             drop table if exists #TempAssetCount;
 
                             CREATE TABLE #TempAssetCount(ASSETTYPEID BIGINT,RecordCount BIGINT);
                             CREATE index idx_TempAssetCount on #TempAssetCount(ASSETTYPEID);
 
-                            select distinct att.id assettypeid,up.assetid
-                            into #TempAssetpremission
+                            select distinct att.id assettypeid, up.assetid
+                             into #TempAssetpremission
                             from assettype att
-                            cross apply dbo.userassetpermissions(@resourceId,att.id) up
-                            where att.class in @filterClasses and ((up.permissionsbitmask & @p)) = 0
-                            {assetTypePermissionWhere};
+                            cross apply dbo.userassetpermissions(@resourceId, att.id) up
+                             where att.class in @filterClasses and((up.permissionsbitmask & @p)) = 0
+                            {assetTypePermissionWhere
+                                };
 
-                            IF EXISTS(SELECT 1 FROM #TempAssetpremission)
-                            BEGIN
-                                INSERT INTO #TempAssetCount
-                                select Att.ID,count(1) RecordCount
-                                from AssetType Att
-                                inner join Asset A on Att.ID = A.AssetTypeID
-                                where att.class in @filterClasses
-                                {assetTypePermissionWhere}
-                                and NOT EXISTS (select 1 from #TempAssetpremission U
-                                where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
-                                GROUP BY Att.ID
-                            END
-                            ELSE
-                            BEGIN
-                                INSERT INTO #TempAssetCount
-                                select Att.ID ,count(1) RecordCount
-                                from AssetType Att
-                                inner join Asset A on Att.ID = A.AssetTypeID
-                                where att.class in @filterClasses
-                                {assetTypePermissionWhere}
-                                group by Att.ID
-                            END
+                                IF EXISTS(SELECT 1 FROM #TempAssetpremission)
+                                                        BEGIN
 
+                                    INSERT INTO #TempAssetCount
+                                                            select Att.ID, count(1) RecordCount
+                                                             from AssetType Att
+                                                            inner join Asset A on Att.ID = A.AssetTypeID
+                                                            where att.class in @filterClasses
+                                                            {assetTypePermissionWhere
+                            }
+                            and NOT EXISTS (select 1 from #TempAssetpremission U
+                                                            where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
+                                                            GROUP BY Att.ID
+                                                        END
+                                                        ELSE
+                                                        BEGIN
+                                                            INSERT INTO #TempAssetCount
+                                                            select Att.ID , count(1) RecordCount
+                                                            from AssetType Att
+                                                            inner join Asset A on Att.ID = A.AssetTypeID
+                                                            where att.class in @filterClasses
+                            { assetTypePermissionWhere}
+                            group by Att.ID
+                            END ";
+
+            }
+
+            var countsSQL = $@"
+                            {(isATUidPassed ? "declare @assetTypeUid uniqueidentifier = (select @assetTypeUidPassed);" : "")}
+                            {strCountstmt}                        
                             select att.uid, 
 	                        ATParent.uid as parentUid,
 	                        case att.class
@@ -3440,20 +3515,20 @@ where	O.RowNum = 1";
                              when 15 then 'Diagram'
 	                        end as class,
 	                        att.name,
-	                        att.description,
-	                        isnull(Assets.Recordcount,0) as count
+	                        att.description
+	                        {(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")}
                          from AssetType att
 						 outer apply (select ATParent.uid from IntersectType IT
 							inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
 							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
 						 where it.ObjectID = att.ObjectID and it.Object = att.Object
 						 )ATParent
-                         left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID
-                        where
-                         att.Class in @filterClasses
+                         {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID ": "")}
+                        where att.Class in @filterClasses
                          {assetTypePermissionWhere}
                     order by att.name";
-            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
+
+                    return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
         }
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
