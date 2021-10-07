@@ -555,8 +555,10 @@
     <Content Include="Content\images\HomeBG.png" />
     <Content Include="Content\images\logo.mail.small.png" />
     <Content Include="Content\images\logo.new.png" />
+    <Content Include="Content\images\PreciselyLogoPurple%402x.png" />
     <Content Include="Content\images\PreciselyLogo%402x.png" />
     <Content Include="Content\images\PreciselyLogo.png" />
+    <Content Include="Content\images\precisely_p_228.png" />
     <Content Include="Content\images\related-assets-icon.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.css" />
@@ -975,6 +977,7 @@
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\multiselect-grid.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
+    <Content Include="Scripts\app\components\shared\header\header-help.component.html" />
     <Content Include="Scripts\app\components\shared\helpmenu\helpmenu-list.component.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.html" />

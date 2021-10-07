@@ -212,7 +212,7 @@ namespace d360.core.enums
         ShowLineageSidebar = 32,
         
         [
-            DefaultValue("D3S"), 
+            DefaultValue("Data360"), 
             Description("BrowserTitlePrefix_Desc", typeof(Settings)), 
             Locked(false),
             Name("BrowserTitlePrefix_Name", typeof(Settings)),

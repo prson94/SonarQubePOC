@@ -29,7 +29,8 @@
     var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
 
     var baseUrl = "";
-    if ((useCdn ?? "").ToLower() == "true") {
+    if ((useCdn ?? "").ToLower() == "true")
+    {
         baseUrl = System.Configuration.ConfigurationManager.AppSettings["cdn:url"];
     }
 
@@ -100,9 +101,6 @@
             border-right:1px solid @(settings["HeaderBackgroundColor"]);
             border-left:1px solid @(settings["HeaderBackgroundColor"]);
         }
-        .ng-loading{position:fixed;height:100%;width:100%;top:0;left:0;background:white;}
-        .ng-loading-wrap{position:fixed;top:45%;left:50%;color:#54a4da;}
-        .ng-loading-image{background-image: url(@string.Format("{0}/content/images/govern-small.svg", baseUrl));background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-65px;}
     </style>
     @if (!string.IsNullOrEmpty(customStylesheetURL))
     {
@@ -110,7 +108,15 @@
     }
 </head>
 <body>
-    <d3s-app><div class="ng-loading"><div class="ng-loading-wrap"><div class="ng-loading-image">&nbsp;</div>Loading...</div></div></d3s-app>
+    <d3s-app>
+        <div class="ng-loading">
+            <span class="loginlogo"><span class="background"></span></span>
+            <div class="ng-loading-wrap">
+                <div class="ng-loading-image"></div>
+                <div class="loader">Loading...</div>
+            </div>
+        </div>
+    </d3s-app>
     <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
 
     <!--<script src="/scripts/dist/runtime.js" defer></script>--> <!-- the following is needed for ng build-->
