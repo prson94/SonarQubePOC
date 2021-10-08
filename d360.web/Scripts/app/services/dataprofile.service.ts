@@ -56,7 +56,7 @@ export class DataProfileService extends BaseObservableService {
             );
     }
 
-    public exportMatches(assetUid: string, matchType: string, simpleFilter: string = '', advancedFilter: string = "", assetName: string, callback: Function = null) {
+    public exportMatches(assetUid: string, matchType: string, simpleFilter: string = '', advancedFilter: string = "", assetName: string, sortField: string = "", sortOrder: number = SortOrder.Ascending, callback: Function = null) {
 
         let pageNum: number = 1;
         let pageSize: number = 200000;
@@ -73,6 +73,13 @@ export class DataProfileService extends BaseObservableService {
 
         if (advancedFilter) {
             url += `&_filter=${advancedFilter}`;
+        }
+
+        if (sortField) {
+            url += `&_order=${sortField}`;
+            if (sortOrder && sortOrder !== SortOrder.None) {
+                url += `&_direction=${sortOrder === SortOrder.Ascending ? "asc" : "desc"}`;
+            }
         }
 
         this.
