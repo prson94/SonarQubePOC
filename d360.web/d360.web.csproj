@@ -537,6 +537,9 @@
       <DependentUpon>eclipse.css</DependentUpon>
     </Content>
     <Content Include="Content\font-awesome.min.css" />
+    <Content Include="Content\images\About-Binary.png" />
+    <Content Include="Content\images\About-Govern.png" />
+    <Content Include="Content\images\About-P.png" />
     <Content Include="Content\images\aboutLogo.png" />
     <Content Include="Content\images\diagram-show-overview.svg" />
     <Content Include="Content\images\govern-small-white.svg" />
