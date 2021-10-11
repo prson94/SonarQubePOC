@@ -3,6 +3,7 @@ using Mandrill.Model;
 using Microsoft.Azure;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Configuration;
 
 namespace d360.extensions.mail
 {
@@ -28,7 +29,7 @@ namespace d360.extensions.mail
 
             GetMandrillsubAccount(ref message);
 
-            var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
+            var api = new MandrillApi(ConfigurationManager.AppSettings["MandrillApiKey"]);
 
             await api.Messages.SendAsync(message);
 
@@ -38,7 +39,7 @@ namespace d360.extensions.mail
         {
             var message = new MandrillMessage();
 
-            message.AddTo(toEmail, toName);            
+            message.AddTo(toEmail, toName);
             message.FromEmail = fromEmail;
             message.FromName = fromName;
 
@@ -55,10 +56,10 @@ namespace d360.extensions.mail
             GetMandrillsubAccount(ref message);
 
 
-            var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
+            var api = new MandrillApi(ConfigurationManager.AppSettings["MandrillApiKey"]);
 
             await api.Messages.SendAsync(message);
-            
+
         }
 
         public static void SendMessage(string subject, string toEmail, string toName,
@@ -86,7 +87,7 @@ namespace d360.extensions.mail
 
             GetMandrillsubAccount(ref message);
 
-            var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
+            var api = new MandrillApi(ConfigurationManager.AppSettings["MandrillApiKey"]);
             var result = api.Messages.SendTemplateAsync(message, templateID).Result;
             if (result == null || result.Count < 1)
             {
@@ -96,7 +97,7 @@ namespace d360.extensions.mail
 
         private static void GetMandrillsubAccount(ref MandrillMessage message)
         {
-            var subaccount = CloudConfigurationManager.GetSetting("MandrillSubAccount");
+            var subaccount = ConfigurationManager.AppSettings["MandrillSubAccount"];
 
             if (subaccount != null && subaccount.Trim() != string.Empty)
             {

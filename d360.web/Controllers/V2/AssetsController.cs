@@ -917,11 +917,6 @@ namespace d360.web.Controllers.V2
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                if (assets.Any(x => x.Uid != null && x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID parameter is not supported for {assetType.Class.GetDisplayName()} Asset Type."));
-                }
-
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid });
 
                 var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
@@ -1203,6 +1198,52 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Get Count of asset for asset type Uid
+        /// </summary>
+        /// <param name="assetTypeUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("count/{assetTypeUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "An asset type count for current user.", typeof(List<AssetCountsModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Type Uid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
+        ]
+        public async Task<HttpResponseMessage> GetAssetCountOfArtifactTypeUid(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetAssetCountOfArtifactTypeUid => ";
+            var errorMessage = "";
+
+            try
+            {
+                if (assetTypeUid == null || assetTypeUid == Guid.Empty)
+                {
+                        return ReturnApiError(HttpStatusCode.BadRequest, ActionApiMessages.AssetTypeUidIsNotValid);
+                }
+                else
+                {
+                    var assetType = this.AssetRepository.GetAssetTypeByUID(assetTypeUid);
+                    if (assetType == null)
+                    {
+                        return ReturnApiError(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
+                    }
+                }
+
+                var assettypecount = await AssetRepository.GetAssetCountOfAssetTypeUid(assetTypeUid);
+                return Request.CreateResponse(HttpStatusCode.OK, assettypecount);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                { "Endpoint Method", prefix }
+                });
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
 
         /// <summary>
         /// Retrieves a list of all asset types and asset counts for current user.
@@ -1215,7 +1256,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypeCountModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false)
+            SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("returncount", "Allows you to disable including the count of the asset type. The default is true meaning the count is included.", DataType = "boolean", ParameterType = "query", Required = false)
         ]
         public async Task<HttpResponseMessage> GetAssetTypeCountsAsync(Guid? assetTypeUid = null)
         {
@@ -1262,7 +1304,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray(), assetTypeUid);
+                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray(), param, assetTypeUid);
                 return Request.CreateResponse(HttpStatusCode.OK, classes);
             }
             catch (Exception ex)

@@ -309,12 +309,22 @@ button.WhiteButton {
 
   .modal-dialog-main-panel {
     flex: 1;
+    display: flex;
+    flex-direction: column;
 
     .title {
       padding-top: 24px;
       font-size: 18px;
       color: #202020;
       font-weight: 600;
+    }
+
+    .content {
+      flex: 1;
+    }
+
+    .action-bar {
+      flex: 0;
     }
 
     .grayed-text {

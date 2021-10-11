@@ -186,4 +186,7 @@
   <data name="UpdatedOn_Name" xml:space="preserve">
     <value>Date Last Modified</value>
   </data>
+  <data name="RuleID_Name" xml:space="preserve">
+    <value>Rule ID</value>
+  </data>
 </root>
