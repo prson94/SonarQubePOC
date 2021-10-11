@@ -199,6 +199,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
             Name: "Description", FriendlyName: "Description", Type: new FieldType("Text"), Category: "", RemovePopulatedOperator: true
         });
         fields.push({
+            Name: "Path", FriendlyName: "Asset Path", Type: new FieldType("Path"), Category: "", RemovePopulatedOperator: true
+        });
+        fields.push({
             Name: "Tags", FriendlyName: "Tags", Type: new FieldType("Tag"), Category: "", RemovePopulatedOperator: true
         });
         this.filterFieldsSubject.next(fields);
@@ -274,7 +277,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
                 .map((f) => {
                     return {
                         Field: f.field,
-                        Values: Array.isArray(f.value) ? (f.value as SelectItem[]).map((i) => i.value) : [f.value],
+                        Values: Array.isArray(f.value) ? (f.value).map((i) => { return i.value ?? i; }) : [f.value],
                         MatchWords: f.exact,
                         Operator: this.parseOperator(f.operator + ""),
                         Connector: this.parseConnector(f.connectingOperator)
