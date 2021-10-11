@@ -243,7 +243,7 @@ namespace d360.core.entities
         public string name { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Include)]
         public string description { get; set; }
-        public int count { get; set; }
+        public int? count { get; set; }
 
     }
 

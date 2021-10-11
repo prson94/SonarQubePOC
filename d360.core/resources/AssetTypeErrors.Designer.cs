@@ -259,6 +259,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [ReturnCount].
+        /// </summary>
+        public static string InvalidValueReturnCount {
+            get {
+                return ResourceManager.GetString("InvalidValueReturnCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Icon Style ForeColor and BackColor cannot be the same value..
         /// </summary>
         public static string MatchingIconStyle {

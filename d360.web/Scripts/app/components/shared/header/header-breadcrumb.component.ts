@@ -28,6 +28,7 @@ import { clearLine } from 'readline';
 
 export class HeaderBreadcrumbComponent {
     @Input() controlWidth: number;
+    @Input() showBackButton: boolean = false;
     subscriptionPop: Subscription;
     subscriptionClear: Subscription;
     subscriptionBuildFromStorage: Subscription;
@@ -122,7 +123,7 @@ export class HeaderBreadcrumbComponent {
 
         let element = this.breadcrumbUIElement.nativeElement;
         var controlsWidth = this.controlWidth ? this.controlWidth : 0; // only visible medium and up
-        let logo = element.parentElement.previousSibling;
+        let logo = this.showBackButton ? element.parentElement.previousElementSibling.previousElementSibling : element.parentElement.previousElementSibling;
         var logoWidth = logo.offsetWidth;
         var breadcrumbWidth = element.offsetWidth;
 

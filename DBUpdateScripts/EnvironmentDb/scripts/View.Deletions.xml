@@ -5,39 +5,36 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Function.utility.CalculatePassed-v2">
+  <changeSet author="Puneet Gupta" id="View.reporting.RuleImplementations_All-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-DROP FUNCTION IF EXISTS [utility].[CalculatePassed] 
+				drop view if exists [reporting].[RuleImplementations_All]
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-CREATE OR ALTER FUNCTION 
-(
-	@PassFraction decimal(18,17),
-	@RuleImplementationID int
-)
-RETURNS bit
-AS
-BEGIN
-	DECLARE @Passed bit
 
-	select	top 1
-			@Passed = case 
-						when @PassFraction >= R.Threshold then cast(1 as bit)
-						else cast(0 as bit)
-					end
-	from	RuleImplementation I
-			inner join [Rule] R on I.ID = @RuleImplementationID and I.RuleID = R.ID
-
-	RETURN @Passed
-END
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="Core" id="View.reporting.RuleImplementations_ResultQualifiers-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+      drop view if exists [reporting].[RuleImplementations_ResultQualifiers]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>  
 
 </databaseChangeLog>

@@ -4,17 +4,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using System.IO;
-using Microsoft.Azure;
 using Newtonsoft.Json;
 using Azure.Storage.Blobs.Models;
-
+using System.Configuration;
 
 namespace d360.extensions.storage
 {
     public class AzureStorageProvider : IStorageProvider
     {
-        public string StorageConnectionString { get { return CloudConfigurationManager.GetSetting("AzureStorageConnectionString"); } }
-        
+        public string StorageConnectionString { get { return ConfigurationManager.AppSettings["AzureStorageConnectionString"]; } }
+
         private BlobContainerClient GetContainer(string name)
         {
             var client = new BlobServiceClient(StorageConnectionString);
@@ -56,7 +55,7 @@ namespace d360.extensions.storage
             await CreateFile(folderName, fileName, new MemoryStream(Encoding.UTF8.GetBytes(content)), contentType, cache).ConfigureAwait(false);
         }
 
-        
+
         public async Task SerializeJsonObjectToBlobAsync(string folderName, string fileName, object obj)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -100,7 +99,7 @@ namespace d360.extensions.storage
 
         public string GetFileContentsAsString(string folderName, string fileName)
         {
-            return GetFileContentsAsString(folderName, fileName, Encoding.Default).Result;          
+            return GetFileContentsAsString(folderName, fileName, Encoding.Default).Result;
         }
 
         public async Task GetFileStream(string folderName, string fileName, Stream sr)
@@ -109,7 +108,7 @@ namespace d360.extensions.storage
 
             if (!(await blob.ExistsAsync().ConfigureAwait(false)))
             {
-                throw new FileNotFoundException();                
+                throw new FileNotFoundException();
             }
 
             await blob.DownloadToAsync(sr).ConfigureAwait(false);
@@ -121,7 +120,7 @@ namespace d360.extensions.storage
             using (var stream = new MemoryStream())
             {
                 var blob = GetBlob(folderName, fileName);
-                
+
                 if (await blob.ExistsAsync().ConfigureAwait(false))
                 {
                     using (MemoryStream ms = new MemoryStream())
@@ -139,13 +138,13 @@ namespace d360.extensions.storage
         }
 
         public async Task<DateTime> GetFileLastModifiedDate(string folderName, string fileName)
-        {            
+        {
             using (var stream = new MemoryStream())
             {
                 var blob = GetBlob(folderName, fileName);
                 var props = await blob.GetPropertiesAsync().ConfigureAwait(false);
                 return props?.Value?.LastModified.UtcDateTime ?? DateTime.MinValue;
-            }            
+            }
         }
 
         public List<string> ListFilenamesByPrefix(string folderName, string prefix)
@@ -153,7 +152,7 @@ namespace d360.extensions.storage
             var fileNames = new List<string>();
             var c = GetContainer(folderName);
 
-            foreach(BlobItem item in c.GetBlobs(BlobTraits.None, BlobStates.None, prefix))
+            foreach (BlobItem item in c.GetBlobs(BlobTraits.None, BlobStates.None, prefix))
             {
                 fileNames.Add(item.Name);
             }
@@ -165,9 +164,9 @@ namespace d360.extensions.storage
         {
             //container is the first part of the path
             var containerName = folderName.Substring(0, folderName.IndexOf('/'));
-            var files = new List<StorageFileInfo>();            
+            var files = new List<StorageFileInfo>();
             var c = GetContainer(containerName);
-            
+
             string blobPrefix = (containerName.Length < folderName.Length ? folderName.Substring(folderName.IndexOf('/'), folderName.Length - folderName.IndexOf('/')) : null);
             blobPrefix = blobPrefix.TrimStart('/');
 

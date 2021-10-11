@@ -2322,13 +2322,11 @@ for json path";
 	from	AssetResult R,
 			AssetResultEdge Oe,
 			graph.AssetNode O,
-			Asset Oa,
-			[Rule] Ru
+			Asset Oa
 	where	match(O-(Oe)->R)
 			and Oe.Class = 1
 			and O.Uid = @owningAssetUid
 			and Oa.ID = O.ID
-			and Ru.ID = Oa.ObjectID
 ),
 E as (
 	select	R.Uid as ResultUid,
