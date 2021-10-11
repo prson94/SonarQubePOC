@@ -137,5 +137,4 @@ namespace d360.core.Models
 
         public int sortOrder { get; set; }
     }
-
 }
