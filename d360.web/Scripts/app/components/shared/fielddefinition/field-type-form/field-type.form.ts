@@ -388,8 +388,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 try {
                     if (this.model.FieldType.Type["Relationship"].IntersectTypeUid) {
                         observables.push(this.cardinalRelationshipSelected(this.model.FieldType.Type["Relationship"].IntersectTypeUid));
-                    } else if (this.lookups.Field_Relationships.length > 0) {
-                        observables.push(this.cardinalRelationshipSelected(this.lookups.Field_Relationships[0].value));
                     }
                     if (!this.model.FieldType.Type["Relationship"].IsEditable) {
                         this.showDescription = false;

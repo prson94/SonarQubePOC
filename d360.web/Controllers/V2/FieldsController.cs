@@ -580,8 +580,8 @@ namespace d360.web.Controllers.V2
                     .Select(i => new
                     {
                         title = ((i.Subject == sType && i.SubjectID == id) ?
-                            $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
-                            $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                            $"{i.PredicateName} {i.ObjectAssetTypePath}" :
+                            $"{i.PredicateInverse} {i.SubjectAssetTypePath}"),
                         value = i.Uid
                     }).OrderBy(i => i.title);
 

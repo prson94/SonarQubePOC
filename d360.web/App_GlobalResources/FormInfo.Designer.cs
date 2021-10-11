@@ -214,6 +214,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Rule.
+        /// </summary>
+        public static string RuleType {
+            get {
+                return ResourceManager.GetString("RuleType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Altering a model&apos;s parent could potentially have a significant impact on ownership throughout the system..
         /// </summary>
         public static string Taxonomy_ChangeParent_Warning {

@@ -39,7 +39,7 @@ namespace d360.web.Controllers
             {
                 foreach (var el in xml.Elements("nav"))
                 {
-                    var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value, ShowChildren = showChildren };
+                    var item = new NavigationItem { Name = (el.Element("name") ?? el.Element("Name")).Value, Url = el.Element("url").Value, ShowChildren = showChildren };
                     if (el.Element("items") != null)
                     {
                         item.Items = parseXmlNavigationDocument(el.Element("items"),showChildren);
@@ -1149,7 +1149,14 @@ namespace d360.web.Controllers
                     var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
                     if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
-                        responseModel.Items.HasOwnership = true;
+                        if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+                        {
+                            responseModel.Items.HasOwnership = false;
+                        }
+                        else
+                        {
+                            responseModel.Items.HasOwnership = true;
+                        }
                     }
 
                     if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
@@ -1163,7 +1170,14 @@ namespace d360.web.Controllers
                     var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
                     if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
-                        responseModel.Items.HasOwnership = true;
+                        if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+                        {
+                            responseModel.Items.HasOwnership = false;
+                        }
+                        else
+                        {
+                            responseModel.Items.HasOwnership = true;
+                        }
                     }
                     else
                     {

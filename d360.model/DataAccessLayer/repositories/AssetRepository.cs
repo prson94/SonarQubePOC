@@ -2295,18 +2295,23 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 model.CanEditParent = true;
             }
 
+            AssetType at = null;
+
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.TechnicalAsset:
+                case AssetTypeClass.Rule:
                     #region
-                    var a = new AssetType
+                    parentType = (model.Class == AssetTypeClass.Rule) ? SystemObjects.RuleType : SystemObjects.ArtifactType;
+                    
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        Object = SystemObjects.ArtifactType.ToString(),
+                        Object = parentType.ToString(),
                         State = State.Active,
                         UpdatedBy = resourceId,
                         UpdatedOn = DateTime.UtcNow,
@@ -2321,10 +2326,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         AutoDisplayParent = model.AutoDisplayParent,
                         CanEditParent = model.CanEditParent
                     };
-                    CompanyContext.Add(a);
-                    parentType = SystemObjects.ArtifactType;
-                    model.ObjectID = a.ObjectID;
-                    model.Object = SystemObjects.ArtifactType.ToString();
+                    CompanyContext.Add(at);
+                    
+                    model.ObjectID = at.ObjectID;
+                    model.Object = at.Object;
 
                     #endregion
                     break;
@@ -2344,13 +2349,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     parentType = SystemObjects.OrganizationType;
                     model.ObjectID = org.ID;
                     model.Object = SystemObjects.OrganizationType.ToString();
-                    var orgAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    if (orgAssetType != null)
+                    at = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
+                    if (at != null)
                     {
-                        orgAssetType.AutoDisplayDescription = model.AutoDisplayDescription;
-                        orgAssetType.Notes = model.Notes;
-                        orgAssetType.uid = uid;
-                        CompanyContext.Update(orgAssetType);
+                        at.AutoDisplayDescription = model.AutoDisplayDescription;
+                        at.Notes = model.Notes;
+                        at.uid = uid;
+                        CompanyContext.Update(at);
                     }
                     #endregion
                     break;
@@ -2360,7 +2365,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     var objectType = model.Class == AssetTypeClass.Model ? SystemObjects.TaxonomyType : SystemObjects.PolicyType;
                     var errorMessage = model.Class == AssetTypeClass.Model ? AssetTypeErrors.InvalidModelDepth : AssetTypeErrors.InvalidPolicyDepth;
-                    var t = new AssetType
+                    
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2379,25 +2385,25 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CanEditParent = model.CanEditParent
                     };
 
-                    if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
+                    if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
                         return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", errorMessage);
 
-                    CompanyContext.Add(t);
+                    CompanyContext.Add(at);
 
-                    for (int i = 1; i <= t.HierarchyMaximumDepth; i++)
+                    for (int i = 1; i <= at.HierarchyMaximumDepth; i++)
                     {
-                        CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = t.ID });
+                        CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = at.ID });
                     }
                     CompanyContext.SaveChanges();
 
                     parentType = objectType;
-                    model.ObjectID = t.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = objectType.ToString();
                     #endregion
                     break;
                 case AssetTypeClass.Reference:
                     #region
-                    var rt = new AssetType
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2416,37 +2422,15 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     };
                     isNamePartOfKey = false;
                     nameFriendlyName = "Long Description";
-                    CompanyContext.Add(rt);
+                    CompanyContext.Add(at);
                     parentType = SystemObjects.ReferenceItemType;
-                    model.ObjectID = rt.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.ReferenceItemType.ToString();
-                    #endregion
-                    break;
-                case AssetTypeClass.Rule:
-                    #region
-                    var r = new RuleType
-                    {
-                        Name = model.Name,
-                        DisplayFormat = model.DisplayFormat,
-                        Description = model.Description
-                    };
-                    CompanyContext.Add(r);
-                    parentType = SystemObjects.Rule;
-                    model.ObjectID = r.ID;
-                    model.Object = SystemObjects.RuleType.ToString();
-
-                    var ruleAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    if (ruleAssetType != null)
-                    {
-                        ruleAssetType.uid = uid;
-                        CompanyContext.Update(ruleAssetType);
-                    }
-
                     #endregion
                     break;
                 case AssetTypeClass.Diagram:
                     #region
-                    var diagram = new AssetType
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2468,9 +2452,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         FlowObjectType = model.FlowObjectType,
                         CanEditParent = model.CanEditParent
                     };
-                    CompanyContext.Add(diagram);
+                    CompanyContext.Add(at);
                     parentType = SystemObjects.TaskType;
-                    model.ObjectID = diagram.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.TaskType.ToString();
 
                     #endregion
@@ -2548,11 +2532,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
+                case AssetTypeClass.Diagram:
+                case AssetTypeClass.Model:
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Reference:
-                case AssetTypeClass.Model:
+                case AssetTypeClass.Rule:
                 case AssetTypeClass.TechnicalAsset:
-                case AssetTypeClass.Diagram:
                     #region
 
                     if (assetType == null)
@@ -2624,23 +2609,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
                     assetType.Notes = model.Notes ?? assetType.Notes;
-                    assetType.CanEditParent = model.CanEditParent;
-
-                    #endregion
-                    break;
-                case AssetTypeClass.Rule:
-                    #region
-
-                    var r = CompanyContext.GetById<RuleType>(model.ObjectID);
-                    if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
-                    r.Name = model.Name;
-                    r.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-                    r.Description = model.Description;
-                    CompanyContext.Update(r);
-
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-                    assetType.Description = model.Description;
                     assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
@@ -3404,9 +3372,59 @@ where	O.RowNum = 1";
             return results;
         }
 
-        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, Guid? assetTypeUid = null)
+        public async Task<AssetCountsModel> GetAssetCountOfAssetTypeUid(Guid assetTypeUid)
+        {
+            string assetPermissionWhere = @" and not exists (select 1 
+                        from #TempAssetpremission u where u.AssetId = a.id)";
+
+            string assetTypePermissionWhere = @" and not exists (select 1
+                    from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = @AssetTypeID)";
+
+            if (CompanyContext.CurrentResourceIsAdmin)
+            {
+                assetTypePermissionWhere = "";
+            }
+
+            var countsSQL = $@"
+                                declare @AssetTypeID int = (select id from assettype where uid = @assetTypeUid)
+                                drop table if exists #TempAssetpremission;
+
+                                select distinct up.assetid
+                                into #TempAssetpremission
+                                from dbo.userassetpermissions(@resourceId, @AssetTypeID) up
+                                where ((up.permissionsbitmask & @p)) = 0
+                                {assetTypePermissionWhere}
+                                
+                                IF EXISTS(SELECT 1 FROM #TempAssetpremission)
+                                    begin
+                                        create index idx_TempAssetpremission on #TempAssetpremission(assetid)
+
+                                        select count(1) [Count]
+                                        from Asset a
+                                        where a.AssetTypeID = @AssetTypeID
+                                        {assetPermissionWhere}
+                                        {assetTypePermissionWhere}
+                                    end
+                                else
+                                    begin
+                                        select count(1) [Count]
+                                        from Asset a
+                                        where a.AssetTypeID = @AssetTypeID
+                                        {assetTypePermissionWhere}
+                                    end";
+            int count = 0;
+
+            count = (await CompanyContext.QueryAsync<int>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, p = (int)Permission.ReadAsset, assetTypeUid }, ApiTimeout)).FirstOrDefault();
+
+            return new AssetCountsModel { count = count };
+        }
+
+
+        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, IEnumerable<KeyValuePair<string, string>> queryParams, Guid? assetTypeUid = null)
         {
             bool isATUidPassed = false;
+            bool isReturnCount = true;
+            string strCountstmt = " ";
 
             string assetTypePermissionWhere = @" and not exists (select 1
                     from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = att.ID)";
@@ -3422,45 +3440,70 @@ where	O.RowNum = 1";
                 isATUidPassed = true;
             }
 
-            var countsSQL = $@"
-                            {(isATUidPassed ? "declare @assetTypeUid uniqueidentifier = (select @assetTypeUidPassed);" : "")}
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "returncount"))
+                {
+                    bool returncount;
+                    var returncountString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "returncount").Value;
+                    if (bool.TryParse(returncountString, out returncount))
+                    {
+                        isReturnCount = returncount;
+                    }
+                    else
+                    {
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueReturnCount, returncountString);
+                    }
+                }
+            }
 
+            if (isReturnCount)
+            {
+                strCountstmt = $@"
                             drop table if exists #TempAssetpremission;
                             drop table if exists #TempAssetCount;
 
                             CREATE TABLE #TempAssetCount(ASSETTYPEID BIGINT,RecordCount BIGINT);
                             CREATE index idx_TempAssetCount on #TempAssetCount(ASSETTYPEID);
 
-                            select distinct att.id assettypeid,up.assetid
-                            into #TempAssetpremission
+                            select distinct att.id assettypeid, up.assetid
+                             into #TempAssetpremission
                             from assettype att
-                            cross apply dbo.userassetpermissions(@resourceId,att.id) up
-                            where att.class in @filterClasses and ((up.permissionsbitmask & @p)) = 0
-                            {assetTypePermissionWhere};
+                            cross apply dbo.userassetpermissions(@resourceId, att.id) up
+                             where att.class in @filterClasses and((up.permissionsbitmask & @p)) = 0
+                            {assetTypePermissionWhere
+                                };
 
-                            IF EXISTS(SELECT 1 FROM #TempAssetpremission)
-                            BEGIN
-                                INSERT INTO #TempAssetCount
-                                select Att.ID,count(1) RecordCount
-                                from AssetType Att
-                                inner join Asset A on Att.ID = A.AssetTypeID
-                                where att.class in @filterClasses
-                                {assetTypePermissionWhere}
-                                and NOT EXISTS (select 1 from #TempAssetpremission U
-                                where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
-                                GROUP BY Att.ID
-                            END
-                            ELSE
-                            BEGIN
-                                INSERT INTO #TempAssetCount
-                                select Att.ID ,count(1) RecordCount
-                                from AssetType Att
-                                inner join Asset A on Att.ID = A.AssetTypeID
-                                where att.class in @filterClasses
-                                {assetTypePermissionWhere}
-                                group by Att.ID
-                            END
+                                IF EXISTS(SELECT 1 FROM #TempAssetpremission)
+                                                        BEGIN
 
+                                    INSERT INTO #TempAssetCount
+                                                            select Att.ID, count(1) RecordCount
+                                                             from AssetType Att
+                                                            inner join Asset A on Att.ID = A.AssetTypeID
+                                                            where att.class in @filterClasses
+                                                            {assetTypePermissionWhere
+                            }
+                            and NOT EXISTS (select 1 from #TempAssetpremission U
+                                                            where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
+                                                            GROUP BY Att.ID
+                                                        END
+                                                        ELSE
+                                                        BEGIN
+                                                            INSERT INTO #TempAssetCount
+                                                            select Att.ID , count(1) RecordCount
+                                                            from AssetType Att
+                                                            inner join Asset A on Att.ID = A.AssetTypeID
+                                                            where att.class in @filterClasses
+                            { assetTypePermissionWhere}
+                            group by Att.ID
+                            END ";
+
+            }
+
+            var countsSQL = $@"
+                            {(isATUidPassed ? "declare @assetTypeUid uniqueidentifier = (select @assetTypeUidPassed);" : "")}
+                            {strCountstmt}                        
                             select att.uid, 
 	                        ATParent.uid as parentUid,
 	                        case att.class
@@ -3472,20 +3515,20 @@ where	O.RowNum = 1";
                              when 15 then 'Diagram'
 	                        end as class,
 	                        att.name,
-	                        att.description,
-	                        isnull(Assets.Recordcount,0) as count
+	                        att.description
+	                        {(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")}
                          from AssetType att
 						 outer apply (select ATParent.uid from IntersectType IT
 							inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
 							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
 						 where it.ObjectID = att.ObjectID and it.Object = att.Object
 						 )ATParent
-                         left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID
-                        where
-                         att.Class in @filterClasses
+                         {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID ": "")}
+                        where att.Class in @filterClasses
                          {assetTypePermissionWhere}
                     order by att.name";
-            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
+
+                    return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
         }
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
@@ -3652,7 +3695,6 @@ from    Asset A
         inner join AssetType T on T.ID = A.AssetTypeID
         left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
         left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
-        {(assetType.Class == AssetTypeClass.Rule ? "inner join [Rule] R on R.ID = A.ObjectID" : "")}
         cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
         outer apply (
             select  T.[uid]

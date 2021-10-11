@@ -196,6 +196,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Rule ID.
+        /// </summary>
+        public static string RuleID_Name {
+            get {
+                return ResourceManager.GetString("RuleID_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The rule&apos;s type categorizes the rule according to its purpose..
         /// </summary>
         public static string RuleType_Description {

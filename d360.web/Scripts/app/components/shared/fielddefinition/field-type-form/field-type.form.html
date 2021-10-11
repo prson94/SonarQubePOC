@@ -762,6 +762,7 @@
                                 [ngModel]="model.FieldType.Type[currentType].IntersectTypeUid"
                                 (ngModelChange)="model.FieldType.Type[currentType].IntersectTypeUid=$event;cardinalRelationshipSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
+                                [placeholder]="'Select relationship'"
                                 ngDefaultControl></p-dropdown>
                 </div>
             </div>
