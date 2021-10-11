@@ -496,7 +496,7 @@ namespace d360.web.Controllers
                     new AggregationFilter
                     {
                         Field = "d3sCategory",
-                        Values = new string[] { "Resource", "Group" }
+                        Values = new string[] { AssetTypeClass.User.ToString(), AssetTypeClass.Group.ToString() }
                     }
                 );
             }

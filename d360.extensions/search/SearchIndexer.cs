@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using MoreLinq;
 using System.Data;
 using d360.extensions.queue;
+using System.Xml.Linq;
 
 namespace d360.extensions.search
 {
@@ -224,7 +225,6 @@ namespace d360.extensions.search
             {
                 _context.Close();
             }
-
         }
 
         public void IndexAssetClass(AssetTypeClass assetClass)
@@ -306,6 +306,49 @@ namespace d360.extensions.search
 
             IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, ObjectType);
             _source.AddToIndex(models);
+        }
+
+        public void IndexUpdateAssetPaths(ConcurrentBag<long> AssetIds)
+        {
+            string sql = @"select
+	            att.Class as assetclass,
+	            A.ObjectID as ID,
+	            A.ID as AssetID,
+	            cast(A.ID as varchar) as ItemUniqueID,
+	            att.Name as TypeName,
+	            a.uid as Uid,
+                att.uid as AssetTypeUid,
+	            an.Segments
+            from [dbo].[Asset] a
+            inner join [dbo].[AssetType] att on a.AssetTypeID = att.id
+            inner join [graph].[AssetNode] an on a.ID = an.id
+            inner join @ids i on a.ID = i.Id 
+            where an.segments is not null";
+
+            DynamicParameters parameters = new DynamicParameters();
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Id", typeof(long));
+            AssetIds.Distinct().ForEach(a => dt.Rows.Add(a));
+            parameters.Add("ids", dt.AsTableValuedParameter("[dbo].[Ids]"));
+
+            Func<dynamic, IndexObjectModel> shaper = (dynamic o) =>
+            {
+                return new IndexObjectModel
+                {
+                    Category = GetCategoryFromClass(o.assetclass),
+                    CompanyID = _companyID,
+                    ID = o.ID,
+                    AssetID = o.AssetID,
+                    ItemUniqueID = o.ItemUniqueID,
+                    AssetType = o.TypeName,
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
+                    AssetPath = GetPathArrayFromSegments(o.Segments),
+                };
+            };
+
+            IEnumerable<IndexObjectModel> models = getData(_context, sql, parameters, IndexMode.Basic, shaper);
+            _source.UpdateInIndex(models, true);
         }
 
         public enum SearchJobStatus
@@ -418,9 +461,25 @@ namespace d360.extensions.search
             }
         }
 
+        private string[] GetPathArrayFromSegments(string segments)
+        {
+            if (string.IsNullOrWhiteSpace(segments) || segments.IndexOf('<') < 0)
+            {
+                return null;
+            }
+
+            XElement segmentXML = XElement.Parse(segments);
+            return segmentXML
+                .Descendants("segment")
+                .OrderBy(s => { int.TryParse(s.Attribute("level")?.Value, out int l); return l; })
+                .ThenBy(s => { int.TryParse(s.Attribute("position")?.Value, out int p); return p; })
+                .Select(e => e.Value)
+                .ToArray();
+        }
+
         private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, AssetTypeClass? assetClass, Guid? AssetTypeUid, Guid? AssetUid, bool useTempTable = false, string batchTable = null)
         {
-            IndexMode mode = IndexMode.BaseQuery;
+            IndexMode mode = IndexMode.Basic;
             string sql = "";
             List<string> where = new List<string>();
             Func<dynamic, IndexObjectModel> shaper = null;
@@ -470,7 +529,7 @@ namespace d360.extensions.search
                     string whereCondition = string.Join(" and ", where.ToArray());
                     string UrlMethod = assetClass == AssetTypeClass.Diagram ? "dbo.GenerateAssetUrl(a.ID)" : "''";
 
-                    sql = $@"SELECT AssetID, ItemUniqueID, Type, ID, TypeID, DisplayValue, TypeName, AssetTypeUid, Uid, Url FROM (
+                    sql = $@"SELECT AssetID, ItemUniqueID, Type, ID, TypeID, DisplayValue, TypeName, AssetTypeUid, Uid, Url, Segments FROM (
                         SELECT
                             A.ID as AssetID,
 	                        cast(A.ID as varchar) as ItemUniqueID,
@@ -481,11 +540,13 @@ namespace d360.extensions.search
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
 	                        a.uid as Uid,
-                            {UrlMethod} as 'Url'
+                            {UrlMethod} as 'Url',
+                            an.Segments as Segments
                         from
 	                        [dbo].Asset a
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
 	                        inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
+                            left outer join [graph].[AssetNode] an on a.ID = an.ID
                             {joinBatchTable}
                         where
 	                          {whereCondition}
@@ -504,6 +565,7 @@ namespace d360.extensions.search
                             RelativeUrl = GenerateUrl(o.Type, o.TypeID, o.ID, o.Url),
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
+                            AssetPath = GetPathArrayFromSegments(o.Segments),
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.DisplayValue }
                             }
@@ -511,6 +573,7 @@ namespace d360.extensions.search
                     };
                     break;
                 case AssetTypeClass.ReferenceItemType:
+                    string pathSeperator = "||";
                     where.Add("att.[state] =  " + ((int)State.Active).ToString());
                     where.Add("att.[Class] = @assettypeclass");
                     parameters.Add("@assettypeclass", AssetTypeClass.Reference);
@@ -520,13 +583,16 @@ namespace d360.extensions.search
                         parameters.Add("@assettypeuid", AssetTypeUid);
                     }
                     whereCondition = string.Join(" and ", where.ToArray());
+
                     sql = $@"SELECT
-                        ObjectID as ID,
-                        Object,
-                        Name,
-                        Description,
-                        uid as AssetTypeUid
+                        att.ObjectID as ID,
+                        att.Object,
+                        att.Name,
+                        att.Description,
+                        att.uid as AssetTypeUid,
+                        p.Path as Path
                     FROM [dbo].[AssetType] att
+                    cross apply dbo.GetAssetTypeTextPathById(att.id, '{pathSeperator}') p
                     WHERE {whereCondition}";
                     shaper = (dynamic o) =>
                     {
@@ -538,6 +604,7 @@ namespace d360.extensions.search
                             AssetType = "Reference List",
                             RelativeUrl = $"reference/{o.ID}",
                             AssetTypeUid = o.AssetTypeUid,
+                            AssetPath = o.Path.ToString().Split(pathSeperator),
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }
@@ -828,7 +895,7 @@ namespace d360.extensions.search
                     };
                     break;
             }
-            return getData(context, sql, parameters, IndexMode.BaseQuery, shaper);
+            return getData(context, sql, parameters, IndexMode.Basic, shaper);
         }
 
         private static IEnumerable<IndexObjectModel> getData(SqlConnection context, string sql, DynamicParameters parameters, IndexMode mode, Func<dynamic, IndexObjectModel> convertToDictionary, bool useTempTable = false)
@@ -886,6 +953,7 @@ namespace d360.extensions.search
                         { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
                     };
                 }
+                item.IndexFlags = mode;
                 yield return item;
             }
         }
@@ -1037,15 +1105,6 @@ namespace d360.extensions.search
         public SearchIndexException(string message, Exception innerException)
             : base(message, innerException)
         { }
-    }
-
-    [Flags]
-    internal enum IndexMode
-    {
-        BaseQuery = 0,
-        WithFields = 1,
-        WithTags = 2,
-        WithResponsibility = 4
     }
 
     internal interface IPagedQuerySqlModel
