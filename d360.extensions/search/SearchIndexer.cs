@@ -331,7 +331,7 @@ namespace d360.extensions.search
             AssetIds.Distinct().ForEach(a => dt.Rows.Add(a));
             parameters.Add("ids", dt.AsTableValuedParameter("[dbo].[Ids]"));
 
-            Func<dynamic, IndexObjectModel> shaper = (dynamic o) =>
+            Func<dynamic, IndexObjectModel> shaper = (o) =>
             {
                 return new IndexObjectModel
                 {

@@ -170,7 +170,7 @@ namespace d360.extensions.search
             StringBuilder sb = new StringBuilder();
             Dictionary<string, string> d3sFields = new Dictionary<string, string>();
             Dictionary<string, string> d3sNoRead = new Dictionary<string, string>();
-            Dictionary<string, string> dynamicFields = item.Fields != null ? item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value) : new Dictionary<string, string>(); ;
+            Dictionary<string, string> dynamicFields = item.Fields != null ? item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value) : new Dictionary<string, string>();
 
             d3sFields.Add("Url", item.RelativeUrl);
             d3sFields.Add("AssetType", item.AssetType);
