@@ -758,9 +758,8 @@ namespace d360.model.DataAccessLayer
 								        ,t.tagString as MatchedAssetTags
 								        ,td.path MatchedAssetPath
 								        ,td.Uid as MatchedAssetUid					
-								        ,P.Path as MatchedAssetTypePath";                
-
-                
+								        ,P.Path as MatchedAssetTypePath
+                                        ,td.hasTagField";                                
             }
 
             string tempTablesSQL = $@"drop table if exists #tempadpid;
