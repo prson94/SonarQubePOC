@@ -499,7 +499,6 @@ namespace d360.web.Controllers.V2
             var queryParams = Request.GetQueryNameValuePairs();
             int _pageSize = 200;
             int _pageNum = 1;
-            string _order = "DateStarted";
             string _direction = "desc";
             string orderBySql = "";
             string offsetSql = "";
@@ -540,7 +539,7 @@ namespace d360.web.Controllers.V2
             }
             if (queryParams.Any(x => x.Key == "_direction"))
             {
-                string[] allowedDirections = new string[] { "asc", "desc" };
+                var allowedDirections = new [] { "asc", "desc" };
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                 if (!allowedDirections.Contains(order.Trim().ToLower()))
                 {
@@ -560,13 +559,15 @@ namespace d360.web.Controllers.V2
                 string[] validOrderByFields = { "datestarted", "datecompleted", "action", "assettypename",
                                                 "requestorname" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
+                }
                 orderBySql = $" order by {orderByCol} {_direction} ";
             }
             if (queryParams.Any(x => x.Key == "_simpleFilter"))
             {
                 filterValue = queryParams.FirstOrDefault(p => p.Key == "_simpleFilter").Value.ToString();
-                if (filterValue.ToString() != "")
+                if (filterValue != "")
                 {
                     filterValue = '%' + filterValue + '%';
                     whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestorName] like @filterValue
