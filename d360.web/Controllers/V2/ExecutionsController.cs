@@ -489,20 +489,22 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, Requestor. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, RequestorName. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
         ]
-        
+
         public async Task<IHttpActionResult> GetLoads()
         {
             ResourceApiViewModel model = new ResourceApiViewModel();
             var queryParams = Request.GetQueryNameValuePairs();
             int _pageSize = 200;
             int _pageNum = 1;
-            string _order = "L.DateStarted";
+            string _order = "DateStarted";
             string _direction = "desc";
             string orderBySql = "";
             string offsetSql = "";
+            string whereSql = " ";
+            string filterValue = "";
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -549,23 +551,35 @@ namespace d360.web.Controllers.V2
 
             if (!queryParams.Any(p => p.Key == "_order"))
             {
-                orderBySql = $" order by L.DateStarted {_direction} ";
+                orderBySql = $" order by DateStarted {_direction} ";
             }
             else
             {
 
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
                 string[] validOrderByFields = { "datestarted", "datecompleted", "action", "assettypename",
-                                                "requestor" };
+                                                "requestorname" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
                 orderBySql = $" order by {orderByCol} {_direction} ";
+            }
+            if (queryParams.Any(x => x.Key == "_simpleFilter"))
+            {
+                filterValue = queryParams.FirstOrDefault(p => p.Key == "_simpleFilter").Value.ToString();
+                if (filterValue.ToString() != "")
+                {
+                    filterValue = '%' + filterValue + '%';
+                    whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestorName] like @filterValue
+                        or X.AssetTypeName like @filterValue or X.ErrorMessage like @filterValue or X.ErrorMessage like @filterValue
+                        or x.Success like @filterValue or X.Error like @filterValue or X.Total like @filterValue) ";
+                }
+
             }
             #endregion
 
 
             offsetSql = $" offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only ";
-            string LoadDetailBaseSql = @"select	
+            string LoadDetailBaseSql = @"select	* from(select	
             case L.[Action]
 			when 'M' then 'Users/Groups'
             when 'P' then 'Promotion'
@@ -611,17 +625,14 @@ from	[Load] L
 
 		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
-        {0} " + orderBySql + offsetSql;
-
-            var countSql = @"
-                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-                cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T ) X " + whereSql + orderBySql + offsetSql;
 
             try
             {
-                var results = Company.Query<LoadDetailV2>(string.Format(LoadDetailBaseSql, countSql));
+                var results = Company.Query<LoadDetailV2>(LoadDetailBaseSql, new { filterValue });
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
