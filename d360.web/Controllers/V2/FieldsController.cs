@@ -2508,7 +2508,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         }
                         if (f.Type == DataType.JsonElement.ToString())
                         {
-                            c.Type.JsonElement = new FieldTypeDataTypeJsonElementApiViewModel();
+                            c.Type.Text = new FieldTypeDataTypeTextApiViewModel();
                         }
                         if (f.Type == DataType.Link.ToString())
                         {

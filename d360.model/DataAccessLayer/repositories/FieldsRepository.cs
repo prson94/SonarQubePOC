@@ -2156,16 +2156,73 @@ from	IntersectType I
                 }
             }
 
-            var itemsSQL = $@"{sql}  
+            var permissionSQL = "";
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                permissionSQL = $@"	
+                                    declare @hasPermission bit = 1
+
+                                    declare @relations table (
+		                            RowNumber int identity, RN varchar(3), 
+		                            IntersectTypeUid uniqueidentifier, AssetTypeUid uniqueidentifier, RelationType int, Direction int, 
+		                            IntersectTypeID int, Object varchar(50), ObjectID int,
+		                            FieldCount int null,
+		                            AssetTypeId int)
+
+        		                    insert into @relations (IntersectTypeUid, AssetTypeUid, RelationType, Direction, FieldCount)
+			                        select	R.*,
+					                        0
+			                        from	FieldTypeLookup O
+					                        cross apply OPENJSON(O.[Definition], N'lax $.Relations') with (
+						                        IntersectTypeUid uniqueidentifier, 
+						                        AssetTypeUid uniqueidentifier,
+						                        RelationType int, 
+						                        Direction int
+					                        ) R
+			                        where	O.FieldTypeID = @fieldTypeId;
+
+                                    update	R 
+		                            set		R.RN = cast(R.RowNumber as varchar(5)),
+				                            R.IntersectTypeID = I.ID,
+				                            R.Object = A.Object,
+				                            R.ObjectID = A.ObjectID,
+				                            R.AssetTypeId = A.ID
+		                            from	@relations R
+		                            left join IntersectType I on I.Uid = R.IntersectTypeUid
+		                            left join AssetType A on A.Uid = R.AssetTypeUid
+
+		                            drop table if exists #AssetPermission;
+		                            Create table #AssetPermission (AssetID bigint);
+		                            Create nonclustered index Ix_PermissAsset_temp on #AssetPermission(AssetID);
+
+		                            insert into #AssetPermission
+		                            select P.AssetID
+		                            from @relations r
+		                            cross apply  dbo.UserAssetPermissions(@resourceId, r.AssetTypeID) P
+		                            where (PermissionsBitMask & 1) = 0;
+
+		                        -- If resource can't read asset type of one or more hops, there should be no result. Add impossible condition.
+		                        if exists (select 1 from dbo.AssetTypesUserCantRead(@resourceId) u where u.AssetTypeID in (select AssetTypeID from @relations))
+		                        begin
+			                        set @hasPermission = 0;
+		                        end";
+
+
+                wheres.Add("not exists (select 1 from #AssetPermission p where H1.ID = p.AssetID)");
+                wheres.Add("@hasPermission = 1");
+            }
+
+            var itemsSQL = $@"{permissionSQL}
+                            {sql}  
                             {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
                             {orderByClause} {direction}
                             offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
             var countSQL = $@"{countSql}
-                                    {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+                              {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
 
             if (countOnly)
             {
-                itemsSQL = "";
+                itemsSQL = permissionSQL;
             }
 
             var reader = await Company.QueryMultipleAsync(

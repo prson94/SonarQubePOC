@@ -90,6 +90,9 @@ namespace d360.model.helpers
                             dbArgs.Add(cnt_prefix, ft.CounterPrefix);
                             selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
                             break;
+                        case "jsonelement":
+                            selects.Add($"JSON_VALUE(F_{ft.ID}.FormattedValue,'$.'+FT_JSON_{ft.ID}.Name) as [{fieldAlias}]");
+                            break;
                         default:
                             selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");
                             break;
@@ -113,6 +116,11 @@ namespace d360.model.helpers
                     else if (ft.Type == "Score")
                     {
                         joins.Add($"outer apply dbo.GetAssetScoreById(H{f.RelationIndex + 1}.ID, {ft.ScoreType}){fieldSelector}");
+                    }
+                    else if (ft.Type == "JsonElement")
+                    {
+                        joins.Add($"left join FieldType FT_JSON_{ft.ID} on FT_JSON_{ft.ID}.Id = {ft.ID}");
+                        joins.Add($"left join Field F_{ft.ID} on F_{ft.ID}.FieldTypeId = try_parse(JSON_VALUE(FT_JSON_{ft.ID}.Definition, '$.FieldTypeID') as int) and F_{ft.ID}.AssetId = H{f.RelationIndex + 1}.Id");
                     }
                     else
                     {
