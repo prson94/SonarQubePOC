@@ -1850,7 +1850,6 @@ from	IntersectType I
                         var impacted = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Field, c.ID);
                         impactedMeasureVersions.AddRange(impacted);
                     }
-                    Company.FieldTypes.Remove(c);
                     deletedFieldTypes.Add(c);
                     fieldsRemoved = true;
                 }
@@ -1858,12 +1857,22 @@ from	IntersectType I
 
             if (fieldsRemoved)
             {
-                Company.SaveChanges();
-
-                foreach (var counterFieldType in deletedFieldTypes.Where(x => x.Type == DataType.Counter.ToString()))
+                foreach (var ft in deletedFieldTypes)
                 {
-                    Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = counterFieldType.ID });
+                    if (ft.Type == DataType.Counter.ToString())
+                    {
+                        Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID });
+                    }
+                    else
+                    {
+                        Company.Connection.Execute("update field set updatedby = @CurrentResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, Company.CurrentResourceID });
+                    }
+
+                    Company.FieldTypes.Remove(ft);
+                    Company.SaveChanges();
                 }
+
+
             }
             if (shouldRefreshPath)
             {
@@ -1989,7 +1998,7 @@ from	IntersectType I
                 var definition = ftl.ParseComplexLookupDefinition();
 
                 var mappings = definition.GetFieldMapings();
-                var fieldTypeIds = definition.Fields.Where(x=> !x.FieldTypeName.StartsWith("Related Item.")).Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
+                var fieldTypeIds = definition.Fields.Where(x => !x.FieldTypeName.StartsWith("Related Item.")).Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
                 List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
                 foreach (var f in mappings)
                 {
