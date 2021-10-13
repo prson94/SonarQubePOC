@@ -137,10 +137,7 @@ export class CompanySettingsService extends BaseObservableService {
         return this.http.put('/api/v2/environment/settings', JSON.stringify(this.settingToUpdate), { headers })
             .pipe(
                 tap(_ => this.settingToUpdate = []),
-                catchError((err) => {
-                    this.handleError(err);
-                    return of({ type: "error" });
-                })
+                catchError(err => this.handleError(err))
             );
     }
 
