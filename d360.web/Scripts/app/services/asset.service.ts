@@ -111,10 +111,10 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
-    public getAssetCountsByAssetType(cs: AssetTypeClass): Observable<AssetCount[]> {
+    public getAssetCountsByAssetType(cs: AssetTypeClass, isReturnCount: boolean = true): Observable<AssetCount[]> {
 
         var qString = '';
-        if (cs === AssetTypeClass.BusinessAsset || cs === AssetTypeClass.TechnicalAsset) {
+        if (!isReturnCount && (cs === AssetTypeClass.BusinessAsset || cs === AssetTypeClass.TechnicalAsset)) {
             qString = `&returncount=false`;
         }
 
