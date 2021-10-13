@@ -29,4 +29,60 @@ DROP TABLE IF EXISTS [metrics].[Score_Backup]
     </sql>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.Deletions.Rule-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP TRIGGER IF EXISTS [dbo].[Rule_AfterDelete]
+GO
+
+DROP TRIGGER IF EXISTS [dbo].[Rule_AfterInsert]
+GO
+
+DROP TRIGGER IF EXISTS [dbo].[Rule_AfterUpdate]
+GO
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_Rule_RuleType')
+begin
+	ALTER TABLE [dbo].[Rule] DROP CONSTRAINT [FK_Rule_RuleType]
+end
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Rule]') AND type in (N'U'))
+DROP TABLE [dbo].[Rule]
+GO
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.Deletions.RuleType-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP TRIGGER IF EXISTS [dbo].[RuleType_AfterDelete]
+GO
+
+DROP TRIGGER IF EXISTS [dbo].[RuleType_AfterInsert]
+GO
+
+DROP TRIGGER IF EXISTS [dbo].[RuleType_AfterUpdate]
+GO
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_RuleType_DisplayFormat')
+begin
+	ALTER TABLE [dbo].[RuleType] DROP CONSTRAINT [DF_RuleType_DisplayFormat]
+end
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RuleType]') AND type in (N'U'))
+DROP TABLE [dbo].[RuleType]
+GO
+		]]>
+    </sql>
+  </changeSet>
+
 </databaseChangeLog>

@@ -559,7 +559,6 @@ namespace d360.model.DataAccessLayer
 
             bool includeTotal = true;
             string orderDirection = "asc";
-            string orderByField = "td.[path]";
             string filterSQL = "";
             string structureCondition = "";
             string filterJoinSQL = "";
@@ -645,17 +644,7 @@ namespace d360.model.DataAccessLayer
 								Select tagString = STRING_AGG( value ,'|')
 								 From  OpenJSON(tagsJson)
 							 ) T";
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
-            {
-                var orderBy = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
-
-                if (orderBy == "tags")
-                {
-                    orderByField = $@"JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]')";
-                }
-            }
+            }            
 
             if (queryParams.Any(q => q.Key == "_direction"))
             {
@@ -666,6 +655,18 @@ namespace d360.model.DataAccessLayer
                 {
                     orderDirection = directionFilter;
                 }
+            }
+
+            string orderBySQL = $"td.[path] {orderDirection}";
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
+            {
+                var orderBy = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
+
+                if (orderBy == "tags")
+                {
+                    orderBySQL = $@"hasTagField {(orderDirection == "asc" ?  "desc" : "asc")}, JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]') {orderDirection}";
+                }               
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
@@ -814,7 +815,7 @@ namespace d360.model.DataAccessLayer
                             from #tempdata2 td
                             {filterJoinSQL}
                             {filterSQL}
-                            order by {orderByField} {orderDirection}
+                            order by {orderBySQL}
                              {offset}
 
                             {countQuery}

@@ -127,11 +127,25 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     delete(uid: string) {
         this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
 
-        this.loadDataAndExecuteAction(() => {
-            this.isAdding = false;
-            this.isEditing = false;
-            this.isDeleting = true;
-        });
+        if (this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset) {
+            this.assetsService.getAssetCountOfArtifactTypeUid(uid)
+                .subscribe(data => {
+                    this.selectedRow.data.count = data.count;
+                    this.loadDataAndExecuteAction(() => {
+                        this.isAdding = false;
+                        this.isEditing = false;
+                        this.isDeleting = true;
+                    });
+                });
+
+        }
+        else {
+            this.loadDataAndExecuteAction(() => {
+                this.isAdding = false;
+                this.isEditing = false;
+                this.isDeleting = true;
+            });
+        }
 
     }
 

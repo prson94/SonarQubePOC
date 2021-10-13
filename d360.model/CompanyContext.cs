@@ -158,8 +158,6 @@ namespace d360.model
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
-        public DbSet<d360.core.entities.Rule> Rules { get; set; }
-
         public DbSet<SiteNav> SiteNav { get; set; }
 
         public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
@@ -1928,29 +1926,6 @@ select @err";
                 }
                 #endregion
 
-                #region Business logic : RuleType
-
-                if (entry.Entity is RuleType)
-                {
-                    var o = entry.Entity as RuleType;
-                    if (entry.State == EntityState.Added)
-                    {
-                        if (Any<RuleType>(i => i.Name == o.Name))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                    if (entry.State == EntityState.Modified)
-                    {
-                        if (Any<RuleType>(i => i.Name == o.Name && i.ID != o.ID))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                }
-
-                #endregion
-
                 #region Business logic : SurveyType
                 if (entry.Entity is SurveyType)
                 {
@@ -2850,13 +2825,22 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
 
             settings.ForEach(s =>
             {
+                var defaultValue = s.DefaultValue;
+                if (defaultValue.In("True", "False"))
+                {
+                    defaultValue = defaultValue.ToLower();
+                }
                 if (overrides.Any(o => o.ID == s.ID))
                 {
                     s.Value = overrides.First(o => o.ID == s.ID).Value;
+                    if (s.Value.In("True", "False"))
+                    {
+                        s.Value = s.Value.ToLower();
+                    }
                 }
                 else
                 {
-                    s.Value = s.DefaultValue;
+                    s.Value = defaultValue;
                 }
             });
 

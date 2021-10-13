@@ -307,7 +307,10 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionField_EditFields(oid);
                     break;
                 case "ARTIFACT":
-                    res = Artifact_EditFields(oid);
+                    res = Asset_EditFields(SystemObjects.ArtifactType, SystemObjects.Artifact, oid);
+                    break;
+                case "RULE":
+                    res = Asset_EditFields(SystemObjects.RuleType, SystemObjects.Rule, oid);
                     break;
                 case "CONTRACT":
                     res = Contract_EditFields(oid);
@@ -350,12 +353,6 @@ namespace d360.web.Controllers
                     break;
                 case "RESOURCETYPE":
                     res = Resource_EditFields(oid);
-                    break;
-                case "RULE":
-                    res = Rule_EditFields(oid);
-                    break;
-                case "RULETYPE":
-                    res = RuleType_EditFields(oid);
                     break;
                 case "SERVICE":
                     res = CustomAPIService_EditFields(oid);
@@ -473,7 +470,10 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionField_AddFields(parentID.GetValueOrDefault());
                     break;
                 case "ARTIFACT":
-                    res = Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    res = Asset_AddFields(SystemObjects.ArtifactType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
+                case "RULE":
+                    res = Asset_AddFields(SystemObjects.RuleType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
                 case "CONTRACT":
                     res = Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
@@ -519,12 +519,6 @@ namespace d360.web.Controllers
                     break;
                 case "RESOURCETYPE":
                     res = Resource_AddFields(objectID.GetValueOrDefault());
-                    break;
-                case "RULE":
-                    res = Rule_AddFields(objectID.GetValueOrDefault());
-                    break;
-                case "RULETYPE":
-                    res = RuleType_AddFields();
                     break;
                 case "SERVICE":
                     res = CustomAPIService_AddFields();
@@ -591,8 +585,6 @@ namespace d360.web.Controllers
                     return EditPolicyTypeLevel(form);
                 case "REPORT":
                     return await EditReport(form);
-                case "RULETYPE":
-                    return EditRuleType(form);
                 case "SERVICE":
                     return EditService(form);
                 case "SURVEYTYPE":
@@ -638,8 +630,6 @@ namespace d360.web.Controllers
                     return DeleteOrganizationInvitation(objectID);
                 case "REPORT":
                     return await DeleteReport(form);
-                case "RULETYPE":
-                    return DeleteRuleType(form);
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
                 case "SERVICE":
@@ -694,8 +684,6 @@ namespace d360.web.Controllers
                     return AddPolicyTypeLevel(form);
                 case "REPORT":
                     return await AddReport(form);
-                case "RULETYPE":
-                    return AddRuleType(form);
                 case "SERVICE":
                     return AddService(form);
                 case "SURVEYTYPE":
@@ -887,7 +875,6 @@ namespace d360.web.Controllers
                 #region Global Fields
 
                 settingActionValue(Setting.DisableIssueManagement, formModel.DisableIssueManagement.ToString().ToLower());
-                settingActionValue(Setting.EnableShoppingCart, formModel.EnableShoppingCart.ToString().ToLower());
                 settingActionValue(Setting.DefaultRoute, (formModel.DefaultRoute ?? "").Trim());
                 settingActionValue(Setting.SearchExactMatch, formModel.EnableSearchExactMatch.ToString().ToLower());
                 settingActionValue(Setting.HideData3SixtyUsers, formModel.HideData3SixtyUsers.ToString().ToLower());
@@ -1206,7 +1193,15 @@ order by Sort, title";
                 case "R":   // Relation
                 case "U":   // Unrelation
                     #region
-                    sql = $@"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, IName.Name as title from intersecttypedetail itd cross apply dbo.GetIntersectTypeNames(itd.ID) IName where (itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType')) and itd.predicatetype not in (3,4,{(int)PredicateType.Diagram},{(int)PredicateType.DiagramUse},{(int)PredicateType.DiagramReference}) order by IName.Name";
+                    sql = $@"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, 
+                             CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path) as title
+                             from intersecttypedetail itd 
+                                cross apply dbo.GetAssetTypeTextPathById (itd.SubjectAssetTypeId,' > ') SName 
+                                cross apply dbo.GetAssetTypeTextPathById (itd.ObjectAssetTypeId,' > ') OName 
+                                inner join [Predicate] P on P.ID = itd.PredicateID
+                             where (itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType')) 
+                             and itd.predicatetype not in (3,4,{(int)PredicateType.Diagram},{(int)PredicateType.DiagramUse},{(int)PredicateType.DiagramReference}) 
+                             order by CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path)";
                     break;
                 #endregion
                 case "M":   // Users/Groups

@@ -104,5 +104,8 @@
   <include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
   <include file="scripts/Table.dbo.DomainSetting.xml"/>
   <include file="scripts/Table.dbo.OpenIdRequest.xml"/>
+  <include file="scripts/GOV-15436.xml"/>  <!-- Rename tables dbo.Setting and dbo.CompanySetting-->
+  <include file="scripts/GOV-15830.xml"/>  <!-- Removing dbo.DatabaseServer FusionQueue column-->
+  <include file="scripts/GOV-15442.xml"/>  <!-- Drop tables dbo.GenericCommand_backup-->
 </databaseChangeLog>
 
