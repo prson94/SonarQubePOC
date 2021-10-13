@@ -4,6 +4,7 @@ import { ApiEndpoint, ApiVersion } from '../../../models/custom-api.model';
 import { CustomAPIService} from '../../../services/custom-api.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-api-endpoint-versions',
@@ -26,10 +27,11 @@ export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent imple
     constructor(
         protected customAPIService: CustomAPIService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
         private router: Router,
     ) {
-        super();
+        super(settingsService);
         this.theDeleteCallback = this.deleteService.bind(this);
     }
 

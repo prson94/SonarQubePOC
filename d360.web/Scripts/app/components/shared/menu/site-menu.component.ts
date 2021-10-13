@@ -12,8 +12,8 @@ import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from "../../../static/string-constants";
 import { ActivatedRoute } from '@angular/router';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'd3s-site-menu',
@@ -57,16 +57,17 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     constructor(
-        private ref: ChangeDetectorRef,
-        private route: ActivatedRoute,
-        private messagesService: MessagesObservableService,
-        private stateService: StateService,
-        private headerActionsService: HeaderActionsService,
         private authenticationService: AuthenticationService,
+        private favoritesService: FavoritesService,
+        private headerActionsService: HeaderActionsService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private siteMenuService: SiteMenuService,
-        private favoritesService: FavoritesService
+        private stateService: StateService,
+        private ref: ChangeDetectorRef,
+        private route: ActivatedRoute
     ) {
-        super();
+        super(settingsService);
     }    
 
     ngAfterContentInit(): void {
@@ -192,7 +193,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     loadFavorites() {
-        if (CompanySettings.ShowFavorites == 'false') {
+        if (this.getBooleanSetting(CompanySettingEnum.ShowFavorites)) {
             return;
         }
 
@@ -254,7 +255,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                                 case '#Monitor':
                                     menu.NavigationItems = [];
                                     menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
-                                    menu.ShouldDisplay = (CompanySettings.DisableIssueManagement != 'true');
+                                    menu.ShouldDisplay = (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement));
                                     break;
                                 case '#Reference':
                                     menu.NavigationItems = [];
@@ -412,8 +413,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         integrationMenu.Items = [];
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, IsHomePage: false, count: null });
         integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count: null  });
-        if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-
+        if (this.getBooleanSetting(CompanySettingEnum.ShowCustomAPIAdmin)) {
+            integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        }
         this.adminMenu.NavigationItems.push(integrationMenu);
 
         let securityMenu = new SiteMenuItem();
@@ -422,9 +424,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
-        if (CompanySettings.EnableOrganizations.toLocaleLowerCase() !== 'false')
+        if (this.getBooleanSetting(CompanySettingEnum.EnableOrganizations)) {
             securityMenu.Items.push({ Name: 'Organizations', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-
+        }
         securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 

@@ -4,25 +4,7 @@
     var VersionNumber = ViewData["VersionNumber"].ToString();
     var ResourceHomePage = ViewData["ResourceHomePage"].ToString();
 
-
-    var environmentSettings = (Dictionary<string, string>)ViewData["EnvironmentSettings"];
-    var environmentSettingsJson = "";
-    foreach (var k in environmentSettings.Keys)
-    {
-        environmentSettingsJson += (string.IsNullOrEmpty(environmentSettingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, environmentSettings[k]);
-    }
-    environmentSettingsJson = "{" + environmentSettingsJson + "}";
-
     var settings = (Dictionary<string, string>)ViewData["Settings"];
-    var removeKeys = new List<string>() { "PowerBIAccessKey", "PowerBIWorkspaceId", "AzureADTenant", "AzureGraphAPIKey", "AzureApplicationId" };
-
-    removeKeys.ForEach(k =>
-    {
-        if (settings.ContainsKey(k))
-            settings.Remove(k);
-    });
-
-    var settingsJson = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
 
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
     var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");
@@ -73,8 +55,6 @@
         </script>
     }
     <script type="text/javascript">
-        var EnvironmentSettings = @(Html.Raw(environmentSettingsJson));
-        var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
         var ResourceHomePage = '@(ResourceHomePage)';
         var SingleSignOn = @(ViewData["SingleSignOn"].ToString().ToLower());

@@ -1,6 +1,7 @@
 ﻿import { Component, Input } from "@angular/core";
 import { BaseComponent } from "../../shared/base.component";
 import { WorkflowStepRelationshipChangeDetail } from "../../../models/workflow.model";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 
 @Component({
@@ -38,5 +39,8 @@ import { WorkflowStepRelationshipChangeDetail } from "../../../models/workflow.m
 })
 export class WorkflowMonitorStepRelationshipChangeDetailsComponent extends BaseComponent {
     @Input() relationshipChange: WorkflowStepRelationshipChangeDetail;
-
+    constructor(
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 }

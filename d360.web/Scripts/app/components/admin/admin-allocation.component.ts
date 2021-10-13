@@ -1,4 +1,5 @@
 ﻿import { Component, Input } from '@angular/core';
+import { CompanySettingsService } from '../../services/settings.service';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
@@ -44,6 +45,10 @@ import { BaseComponent } from '../shared/base.component';
 export class AdminAllocationComponent extends BaseComponent {
     @Input() objectID: number;
     @Input() objectType: string;
+
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 
     public rows = [0];
 

@@ -22,6 +22,7 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 declare var CurrentResourceID;
 
@@ -106,20 +107,21 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     ];
 
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
+        private assetService: AssetService,
         private assetTypeService: AssetTypeService,
+        private dataProfileService: DataProfileService,
+        protected gridDefinitionService: GridDefinitionService,
+        private headerActionsService: HeaderActionsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
-        protected gridDefinitionService: GridDefinitionService,
         protected titleService: Title,
-        private headerActionsService: HeaderActionsService,
         protected secondaryNavService: SecondaryNavService,
-        private assetService: AssetService,
-        private dataProfileService: DataProfileService,
-        webAnalyticsService: WebAnalyticsService
+        protected settingsService: CompanySettingsService,
+        webAnalyticsService: WebAnalyticsService,
+        private route: ActivatedRoute,
+        private router: Router
     ) {
-        super();
+        super(settingsService);
 
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;

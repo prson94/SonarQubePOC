@@ -27,7 +27,7 @@ import { StringConstants } from '../../../static/string-constants';
 @Component({
     selector: 'd3s-allocation-detail',
     templateUrl: 'detail.component.html',
-    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService, ResponsibilityTypeService, RelationshipsService]
+    providers: [MetricsService, AssetTypeService, AllocationService, ResponsibilityTypeService, RelationshipsService]
 })
 
 export class ScoringDetailComponent extends AdminBaseComponent implements OnInit, OnDestroy {
@@ -72,12 +72,12 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         private metricsService: MetricsService,
         private allocationService: AllocationService,
         private assetTypeService: AssetTypeService,
-        private settingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private responsibilityService: ResponsibilityTypeService,
         private relationshipService: RelationshipsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Scoring;
     }
 

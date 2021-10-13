@@ -6,6 +6,7 @@ import { EditorField } from "../../models/editor-field.model";
 import { BaseComponent } from "./base.component";
 import { ResourcesService } from "../../services/resources.service";
 import { LazyLoadEvent } from "primeng/api";
+import { CompanySettingsService } from "../../services/settings.service";
 
 
 export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
@@ -95,8 +96,11 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
 
     public onModelTouched: Function = () => { };
 
-    constructor(private resourceService:ResourcesService, private ref: ChangeDetectorRef) {
-        super();
+    constructor(
+        private resourceService: ResourcesService,
+        protected settingsService: CompanySettingsService,
+        private ref: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange} ) {

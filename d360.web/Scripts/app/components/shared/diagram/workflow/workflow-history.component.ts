@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../../../shared/base.component';
 import { WorkflowActivityType } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-history',
@@ -25,8 +26,11 @@ export class WorkflowHistoryComponent extends BaseComponent implements OnInit, O
     formMode = FormMode.Default;
 
 
-    constructor( private workflowService: WorkflowService, private router: Router) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        private router: Router) {
+        super(settingsService);
         
     }
 

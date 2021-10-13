@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { GridFilterExpression } from '../../models/grid-definition.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -39,10 +40,11 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
     constructor(
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
         protected router: Router,
         protected route: ActivatedRoute,        
         secondaryNavService: SecondaryNavService) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
     }
     ngOnInit() {

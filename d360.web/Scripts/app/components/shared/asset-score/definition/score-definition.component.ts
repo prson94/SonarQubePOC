@@ -15,7 +15,7 @@ import { AdminMetricPassTestDetailsComponent } from '../../../admin/scoring/admi
     templateUrl: `score-definition.component.html`,
     styleUrls: ['score-definition.less'],
     encapsulation: ViewEncapsulation.None,
-    providers: [CompanySettingsService, MetricsService, ResponsibilityTypeService, RelationshipsService]
+    providers: [MetricsService, ResponsibilityTypeService, RelationshipsService]
 })
 export class ScoreDefinitionComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() selectedMetric: MetricAssetViewModel;
@@ -39,13 +39,13 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
     @ViewChild("passTestComponent", { static: false }) passTestRef: AdminMetricPassTestDetailsComponent;
 
     constructor(
-        private settingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private metricsService: MetricsService,
         private responsibilityService: ResponsibilityTypeService,
         private relationshipService: RelationshipsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
         this.screenReferences = new CommonScreenReferencesModel();
     }
 

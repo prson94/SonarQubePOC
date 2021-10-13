@@ -8,6 +8,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router, ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
@@ -33,8 +34,14 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     private isDeleting = false;
     private isAdding = false;
 
-    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService, protected messagesService: MessagesObservableService, private router: Router, private ref: ChangeDetectorRef) {
-        super();
+    constructor(
+        private responsibilityService: ResponsibilityService,
+        private permissionsService: PermissionsService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private router: Router,
+        private ref: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnInit() {

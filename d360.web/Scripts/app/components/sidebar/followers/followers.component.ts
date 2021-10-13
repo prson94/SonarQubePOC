@@ -7,6 +7,7 @@ import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {ObjectDetailService} from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-followers',
@@ -87,9 +88,10 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         private router: Router,
-        breadcrumbService: HeaderBreadcrumbService
+        breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

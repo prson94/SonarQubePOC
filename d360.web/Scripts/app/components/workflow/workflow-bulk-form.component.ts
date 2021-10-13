@@ -16,6 +16,7 @@ import { ResourcesService } from '../../services/resources.service';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-bulk-form',
@@ -157,13 +158,14 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
     private isUserAllowedToComplete: boolean = true;
     private isSubmitting = false;
 
-    constructor(private route: ActivatedRoute,
-            protected headerBreadcrumbService: HeaderBreadcrumbService,
-            protected workflowService: WorkflowService,
-            protected messagesService: MessagesObservableService
-        )
-    {
-        super();
+    constructor(
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        protected workflowService: WorkflowService,
+        private route: ActivatedRoute
+    ) {
+        super(settingsService);
     }
 
     ngOnInit() {

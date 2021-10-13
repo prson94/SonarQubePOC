@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { ICompanySettingsService, CompanySettings, CompanyImage, } from '../../../models/settings.model';
+import { CompanySettings, CompanyImage, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
@@ -31,7 +31,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
   `],
 })
 
-export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit, OnChanges {
+export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit {
     @Input() companySettings: CompanySettings;
     @Output() companySettingsChange = new EventEmitter();
     @Output() onSaveComplete = new EventEmitter();
@@ -62,22 +62,21 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private companySettingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         titleService: Title,
         private siteMenuService: SiteMenuService,
         private stateService: StateService,
         private messagesService: MessagesObservableService
     ) {
-        super(headerBreadcrumbService, titleService);
+        super(headerBreadcrumbService, titleService, settingsService);
     }
 
     ngOnInit() {             
         this.isLoading = true;
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes['companySettings'].isFirstChange)
+        this.siteMenuService.getSiteNavItems().subscribe(nav => {
+            this.companySettings.SiteNav = nav;
             this.isLoading = false;
+        });
     }
 
     changeIconType(e: any) {

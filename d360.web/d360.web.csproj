@@ -2039,7 +2039,6 @@
     <TypeScriptCompile Include="Scripts\app\services\workflowmonitor.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\advanced-filter-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\environment-settings.ts" />
-    <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\form-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-constants.ts" />
@@ -2153,7 +2152,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://integration.eng.data3sixty.local/</IISUrl>
+          <IISUrl>http://mpappas.eng.data3sixty.local/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

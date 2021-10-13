@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-shopping-cart-request',
@@ -28,9 +29,10 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
         private locationService: Location,
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
         private router: Router) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

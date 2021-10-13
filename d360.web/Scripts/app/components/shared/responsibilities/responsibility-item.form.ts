@@ -11,6 +11,7 @@ import { StringHelpers } from '../../../static/string-helpers';
 import { ResourcesService } from '../../../services/resources.service';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-responsibility-item-form',
@@ -37,8 +38,11 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private IsResponsibilityDisabled: boolean = false;
     private resouceAssigned: string;
 
-    constructor(private responsibilityService: ResponsibilityService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private responsibilityService: ResponsibilityService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

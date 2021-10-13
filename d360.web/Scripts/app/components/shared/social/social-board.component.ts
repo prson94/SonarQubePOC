@@ -2,11 +2,12 @@
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
 import { CommentDetail, CommentType } from "../../../models/social.model";
-import { CurrentCompanySettings } from "../../../static/company-settings"
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AuthenticationService } from "../../../services/authentication.service";
 import { ResourcesService } from "../../../services/resources.service";
 import { forkJoin, Observable } from "rxjs";
+import { CompanySettingsService } from "../../../services/settings.service";
+import { CompanySettingEnum } from "../../../models/settings.model";
 
 @Component({
     selector: "d3s-social-board",
@@ -41,8 +42,9 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     constructor(private authenticationService: AuthenticationService,
         private socialService: SocialService,
         protected messagesService: MessagesObservableService,
-        private resourcesService: ResourcesService) {
-        super();
+        private resourcesService: ResourcesService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
         this.newComment = new CommentDetail();
     }
 
@@ -99,7 +101,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     }
 
     allowComments(): boolean {
-        return this.hasNewInput && !CurrentCompanySettings.disableCommunityPosting;
+        return this.hasNewInput && !this.settingsService.getSettingById(CompanySettingEnum.DisableCommunityPosting).BooleanSetting.Value;
     }
 
     deleteComment(event) {

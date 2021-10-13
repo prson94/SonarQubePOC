@@ -7,6 +7,7 @@ import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-issue-types',
@@ -118,8 +119,14 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-    constructor(secondaryNavService: SecondaryNavService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+    constructor(
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        protected messagesService: MessagesObservableService,
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
+        titleService: Title,
+        private workflowService: WorkflowService) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Actions;
         this.adminHeading = StringConstants.Section_Actions;
         this.tabTitle = 'Action Types';

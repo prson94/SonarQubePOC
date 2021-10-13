@@ -7,6 +7,7 @@ import { ComplexLookupType, DetailField } from "../../../models/object-detail.mo
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
 import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 declare var CurrentResourceID;
 
@@ -52,9 +53,10 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     constructor(private router: Router,
         private assetService: AssetService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
 
     }
 

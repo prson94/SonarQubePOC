@@ -1,5 +1,6 @@
 ﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { CompanySettingsService } from '../../../services/settings.service';
 import { BaseComponent } from '../../shared/base.component';
 
 @Component({
@@ -13,10 +14,11 @@ export class DiagramComponent extends BaseComponent implements OnInit, OnDestroy
     private sub: any;
 
     constructor(
+        protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
         private router: Router
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

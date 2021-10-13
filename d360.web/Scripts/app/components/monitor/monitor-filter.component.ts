@@ -2,6 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { State } from '../../models/asset.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 
 @Component({
@@ -41,8 +42,10 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
     @Output() filterClick = new EventEmitter();
     items: any[];
 
-    constructor(protected workflowService: WorkflowService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        protected workflowService: WorkflowService) {
+        super(settingsService);
     }
 
     ngOnInit() {

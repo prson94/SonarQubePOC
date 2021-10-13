@@ -60,7 +60,7 @@ declare var VersionNumber: string;
                     </d3s-modal>
                 </span>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [CompanySettingsService, HelpMenuService],
+    providers: [HelpMenuService],
     styles: [`
         .licence-info{
             list-style: disc;

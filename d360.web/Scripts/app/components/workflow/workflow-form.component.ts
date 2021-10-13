@@ -22,6 +22,7 @@ import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
 import { FieldType } from '../../models/fields.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -72,17 +73,19 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
 
     @ViewChild('workflowForm', { static: false }) workflowFormGroup: FormGroup;
 
-    constructor(private route: ActivatedRoute,
-        private location: Location,
-        private router: Router,
-        protected titleService: Title,
+    constructor(
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected workflowService: WorkflowService,
-        protected tagService: TagService,
+        protected messagesService: MessagesObservableService,
         protected resourcesService: ResourcesService,
-        protected messagesService: MessagesObservableService
+        protected settingsService: CompanySettingsService,
+        protected tagService: TagService,
+        protected titleService: Title,
+        protected workflowService: WorkflowService,
+        private route: ActivatedRoute,
+        private location: Location,
+        private router: Router
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

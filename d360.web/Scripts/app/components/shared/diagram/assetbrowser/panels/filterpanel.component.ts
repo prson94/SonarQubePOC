@@ -10,6 +10,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
 
 import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../../base.component';
+import { CompanySettingsService } from '../../../../../services/settings.service';
 
 declare var window: any;
 
@@ -33,9 +34,10 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
 
     constructor(
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
     }
 
     public ngAfterViewInit() {

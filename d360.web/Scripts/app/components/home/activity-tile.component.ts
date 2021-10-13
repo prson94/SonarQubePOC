@@ -2,6 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { ArtifactService } from '../../services/artifacts.service';
 import { Count} from '../../models/counts.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-activity-tile',
@@ -19,8 +20,10 @@ export class ActivityTile extends BaseComponent implements OnInit {
 
     @Output() showItemDetail = new EventEmitter();
 
-    constructor(private artifactService: ArtifactService) {
-        super();
+    constructor(
+        private artifactService: ArtifactService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

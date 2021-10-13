@@ -6,6 +6,7 @@ import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -49,12 +50,13 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     private currentButtonIndex: number = -1;
 
-    constructor(private menuService: SiteMenuService,
+    constructor(
         private router: Router,
         private headerActionsService: HeaderActionsService,
+        protected settingsService: CompanySettingsService,
         private siteMenuService: SiteMenuService
     ) {
-        super();
+        super(settingsService);
     }
 
     @ViewChild('searchinput', { static: false }) searchInput: SearchFieldComponent;

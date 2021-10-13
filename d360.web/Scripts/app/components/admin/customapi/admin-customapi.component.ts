@@ -1,16 +1,14 @@
 ﻿import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {Title} from '@angular/platform-browser';
-
 import {ApiService} from '../../../models/custom-api.model';
-
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
-import {SecondaryNavService} from '../../../services/right-sidebar.service';
-
-import {AdminBaseComponent} from '../admin-base.component';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-customapi',
@@ -32,10 +30,11 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
         secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         titleService: Title,
         private router: Router
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 
         this.areaName = StringConstants.Section_CustomApi;
         this.adminHeading = 'Integration';
@@ -80,9 +79,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
         this.customAPIService.deleteService(id).subscribe(
             result => {
                 this.showMessageForResult(this.messagesService, result);
-
                 this.showDelete = false;
-
                 this.load();
             }
         );

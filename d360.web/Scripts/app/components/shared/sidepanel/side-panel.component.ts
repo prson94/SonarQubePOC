@@ -3,6 +3,7 @@ import { SidePanelButton } from '../../../models/side-panel.model';
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'side-panel',
@@ -40,8 +41,10 @@ export class SidePanelComponent extends BaseComponent {
     readonly minWidth = '400px';
     readonly maxWidth = '400px';
 
-    constructor(private stateService: StateService) {
-        super();
+    constructor(
+        private stateService: StateService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

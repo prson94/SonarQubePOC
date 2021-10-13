@@ -1,16 +1,16 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { CompanySettingsService } from '../../services/settings.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResourcesService } from '../../services/resources.service';
 import { HelpResource } from '../../models/resource.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Observable } from 'rxjs';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-help-component',
-    providers: [CompanySettingsService, HeaderBreadcrumbService, ResourcesService],
+    providers: [HeaderBreadcrumbService, ResourcesService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <div class="row">
@@ -40,12 +40,12 @@ export class HelpComponent extends BaseComponent implements OnInit {
 
     constructor(
         protected titleService: Title,
-        protected companySettingsService: CompanySettingsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected resourceService: ResourcesService,        
+        protected resourceService: ResourcesService,
+        protected settingsService: CompanySettingsService,
         protected changeDetectorRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

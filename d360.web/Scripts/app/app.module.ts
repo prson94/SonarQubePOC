@@ -35,9 +35,14 @@ import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
 import { D3SModal } from './components/shared/modal/gov-modal.component';
 import { AssetStyleService } from './services/asset-style.service';
+import { CompanySettingsService } from './services/settings.service';
 
 export function localeIdFactory() {
     return navigator.language;
+}
+
+export function settingsInitializer(provider: CompanySettingsService) {
+    return () => provider.loadSettings();
 }
 
 export function localeInitializer(localeId: string) {                  
@@ -122,6 +127,12 @@ export function localeInitializer(localeId: string) {
             multi: true,
             useFactory: localeInitializer,
             deps: [LOCALE_ID]
+        },
+        {
+            provide: APP_INITIALIZER,
+            multi: true,
+            useFactory: settingsInitializer,
+            deps: [CompanySettingsService]
         },
         ApplicationInsightsService,
         SearchService

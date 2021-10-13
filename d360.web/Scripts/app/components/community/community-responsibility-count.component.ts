@@ -6,6 +6,7 @@ import { ResponsibilityTypeService } from '../../services/responsibility-type.se
 import { ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-community-responsibility-count',
@@ -52,10 +53,12 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
 
     private users: ResourceResponsibilityTypeCount[] = [];
 
-    constructor(private responsibilityTypeService: ResponsibilityTypeService,
+    constructor(
+        private responsibilityTypeService: ResponsibilityTypeService,
+        protected settingsService: CompanySettingsService,
         private router: Router
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

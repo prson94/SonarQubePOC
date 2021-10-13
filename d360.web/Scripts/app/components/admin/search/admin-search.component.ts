@@ -8,6 +8,7 @@ import { MessagesObservableService } from "../../../services/messages-observable
 import { IndexableType, IndexableStatus } from "../../../models/search-admin.model";
 import { TreeNode } from "primeng/api";
 import { StringConstants } from "../../../static/string-constants";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 
 @Component({
@@ -25,13 +26,15 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
     readonly JobStatus: string[] = ["None", "Pending", "Processing", "Processing By Asset Type", "Error", "Completed"];
     readonly emptyguid: string = "00000000-0000-0000-0000-000000000000";
 
-    constructor(protected searchService: SearchService,
+    constructor(
+        protected searchService: SearchService,
         private messagesService: MessagesObservableService,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Search;
         this.setCommonItems();
     }

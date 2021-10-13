@@ -10,6 +10,7 @@ import { StateService } from "../../services/state.service";
 import { StringHelpers } from "../../static/string-helpers";
 import { AuthenticationService } from '../../services/authentication.service';
 import * as _ from "lodash";
+import { CompanySettingsService } from "../../services/settings.service";
 
 
 @Component({
@@ -40,8 +41,9 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     constructor(private wfMonitorService: WorkflowMonitorService,
         public stateService: StateService,
         private changeDetectorRef: ChangeDetectorRef,
+        protected settingsService: CompanySettingsService,
         private authenticationService: AuthenticationService) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit(): void {

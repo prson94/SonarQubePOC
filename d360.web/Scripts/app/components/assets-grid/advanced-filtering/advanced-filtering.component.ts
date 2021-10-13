@@ -19,7 +19,7 @@ import { Router } from "@angular/router";
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ["./advanced-filtering.component.less"],
-    providers: [FieldsObservableService, CompanySettingsService, AllocationService, RelationshipsService]
+    providers: [FieldsObservableService, AllocationService, RelationshipsService]
 })
 export class AdvancedFilteringComponent implements OnChanges {
     @Input() loadIdentifier: string = "";
@@ -108,7 +108,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     constructor(public cdRef: ChangeDetectorRef,
         private elRef: ElementRef,
         private fieldsService: FieldsObservableService,
-        private settingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private allocationService: AllocationService,
         private relationshipService: RelationshipsService,
         private datePipe: DatePipe,

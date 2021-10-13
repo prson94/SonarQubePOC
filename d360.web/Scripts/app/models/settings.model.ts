@@ -2,53 +2,45 @@
 import { Observable } from 'rxjs';
 import { StringConstants } from '../static/string-constants';
 
-export interface ICompanySettingsService {
-    getSettings(): Observable<CompanySettings>;
-    putSettings(companySettings: CompanySettings): Observable<any>;
-}
-
 export class CompanySettings {
+    AllowedOrigins: string;
+    AssetDefinitionColumnWidth: number;
+    BrowserTitlePrefix: string;
+    ClearHomePageBackgroundImage: boolean = false;
+    CompanyIcon: string;
+    CompanyLogo: string;
+    CurrentIconPath: string;
+    CurrentLogoPath: string;
+    DefaultIconPath: string = "/favicon.ico";
+    DefaultLogoPath: string = "/Content/images/govern-small-white.svg";
+    DefaultRoute: string;
+    DefaultSearchTypes: string;
     DisableCommunityPosting: boolean;
     DisableIssueManagement: boolean;
-    SubjectAreaNodeName: string;
-    IpRestrictions = new Array<IpRestriction>();
-    SiteNav = new Array<SiteNav>();
-    CompanyLogo: string;
-    SetLogoToDefault = false;
-    CompanyIcon: string;
-    SetIconToDefault = false;
-    CurrentLogoPath: string;
-    CurrentIconPath: string;
-    DefaultSearchTypes: string;
     EnableOrganizations: boolean;
-    EnableShoppingCart: boolean;
-    HideData3SixtyUsers: boolean;
-    ShowAllUsersAPIKey: boolean;
-    DefaultRoute: string;
     EnableSearchExactMatch: boolean;
-    WorkflowCatchAllGroup: number;
+    EnableShoppingCart: boolean;
+    FramingDomains: string;
+    HideData3SixtyUsers: boolean;
+    HideHeaderBarControls: boolean;
+    HomePageBackgroundImage: string;
+    HomePageTitleColor: string;
+    HomePageTitleSize: string;
+    IpRestrictions = new Array<IpRestriction>();
+    MaxDropdownItems: number;
+    MaxExcelExportRows: number;
+    SetIconToDefault = false;
+    SetLogoToDefault = false;
+    ShowAllUsersAPIKey: boolean;
+    ShowHomeActivityTile: boolean;
     ShowHomeAssignmentTile: boolean;
     ShowHomeBoardTile: boolean;
-    ShowHomeActivityTile: boolean;
     ShowHomePageTitle: boolean;
-    HomePageTitleSize: string;
-    HomePageTitleColor: string;
-    HomePageBackgroundImage: string;
-    ClearHomePageBackgroundImage: boolean = false;
-    BrowserTitlePrefix: string;
+    SiteNav = new Array<SiteNav>();
+    SubjectAreaNodeName: string;
+    WorkflowCatchAllGroup: number;
     WorkflowDigestEmailDays: number = 0;
-    MaxDropdownItems: number;
     WriteActionDescription: boolean;
-    CurrentCompanyLogoPath: string;
-    MaxExcelExportRows: number;
-    AllowedOrigins: string;
-    FramingDomains: string;
-}
-
-export class IpRestriction {
-    Name: string;
-    Start: string;
-    End: string;
 }
 
 export class CompanyImage {
@@ -95,8 +87,69 @@ export class CompanyRebuildJobStatusApiModel {
 }
 
 export enum CompanySettingEnum {
-    GovernanceRoleReferenceListUid = 73
+    DisableCommunityPosting = 1,
+    CompanyLogo = 2,
+    CompanyIcon = 3,
+    IpRestriction = 4,
+    HideData3SixtyUsers = 9,
+    HeaderBackgroundColor = 10,
+    DefaultSearchTypes = 13,
+    DisableIssueManagement = 17,
+    EnableOrganizations = 19,
+    EnableShoppingCart = 20,
+    EnableSagacity = 21,
+    DefaultRoute = 22,
+    SearchExactMatch = 23,
+    CustomCSSLocation = 24,
+    AzureADTenant = 25,
+    AzureGraphAPIKey = 26,
+    AzureApplicationId = 27,
+    ShowResources = 28,
+    ShowFollowersSidebar = 29,
+    ShowOwnersSidebar = 30,
+    ShowImpactSidebar = 31,
+    ShowLineageSidebar = 32,
+    BrowserTitlePrefix = 33,
+    SessionTimeout = 34,
+    ShowFavorites = 37,
+    ShowSocialScoreBar = 38,
+    ShowHomeAssignmentTile = 39,
+    ShowHomeBoardTile = 40,
+    ShowHomeActivityTile = 41,
+    ShowHomePageTitle = 42,
+    HomePageTitleSize = 43,
+    HomePageTitleColor = 44,
+    HomePageBackgroundImage = 45,
+    ActionMessage = 47,
+    WorkflowFromName = 48,
+    WorkflowFromEmail = 49,
+    ShowCustomAPIAdmin = 50,
+    HasRegisterLink = 52,
+    JwtAuthority = 54,
+    PowerBIClientId = 55,
+    PowerBIGroupId = 56,
+    ShowAllUsersAPIKey = 57,
+    WorkflowCatchAllGroup = 58,
+    MaxDropdownItems = 60,
+    WriteActionDescription = 61,
+    UseNewMarkitLineageGeneration = 62,
+    RequestCertificationDraft = 64,
+    UseAsTransformationLimit = 69,
+    MaxExcelExportRows = 71,
+    ShowNavigationChildren = 72,
+    GovernanceRoleReferenceListUid = 73,
+    ApiTimeout = 74,
+    EnableJsonAttribute = 75,
+    AllowedOrigins = 76,
+    FramingDomains = 77,
+    WorkflowDigestEmailDays = 78,
+    ShowChangeLogTab = 79,
+    ShowCommentsTab = 80,
+    AssetDataProfileLifespan = 81,
+    AssetDefinitionColumnWidth = 82,
+    HideHeaderBarControls = 83
 }
+
 export class StringSetting {
     Value: string;
 }
@@ -109,18 +162,32 @@ export class BooleanSetting {
     Value: boolean;
 }
 
-export class Value {
+export class IpRestriction {
     Name: string;
     Start: string;
     End: string;
 }
 
 export class IpAddressSetting {
-    Value: Value[];
+    Value: IpRestriction[];
 }
 
 export class GuidSetting {
     Value: string;
+}
+
+export class SettingsGetModel {
+    SettingID: number;
+    Locked: boolean;
+    Name: string;
+    Description: string;
+    StringSetting: StringSetting;
+    NumberSetting: NumberSetting;
+    BooleanSetting: BooleanSetting;
+    IpAddressSetting: IpAddressSetting;
+    GuidSetting: GuidSetting;
+
+    ScalarValue: any; //populated when pulled down via initializer
 }
 
 export class SettingsPutModel {
@@ -131,7 +198,6 @@ export class SettingsPutModel {
     IpAddressSetting: IpAddressSetting;
     GuidSetting: GuidSetting;
 }
-
 
 export class SearchType {
     title: string;

@@ -11,6 +11,7 @@ import { Title } from '@angular/platform-browser';
 import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../../models/secondaryNav.model';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 declare var window: any;
 
@@ -41,11 +42,12 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     constructor(
         private myElement: ElementRef,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private modelsService: ModelsService,
         protected titleService: Title,
     ) {
-        super();
+        super(settingsService);
         this.breadcrumbsService = headerBreadcrumbService;
         this.secondaryNavService = secondaryNavService;
     }

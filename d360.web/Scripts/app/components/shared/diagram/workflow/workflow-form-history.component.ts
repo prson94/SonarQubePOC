@@ -4,6 +4,7 @@ import { Resource } from '../../../../models/resource.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { ResourcesService } from '../../../../services/resources.service';
 import { map } from 'rxjs/operators';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-form-history',
@@ -21,8 +22,11 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
     selectedFormIndex: number;
     selectedForm: any;
 
-    constructor(private workflowService: WorkflowService, private resourcesService: ResourcesService) {
-        super();
+    constructor(
+        private workflowService: WorkflowService,
+        private resourcesService: ResourcesService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
 
     }
 

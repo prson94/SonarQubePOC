@@ -5,6 +5,7 @@ import { MetricsService } from '../../../services/metrics.service';
 import { TreeNode } from 'primeng/api';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'measure-history',
@@ -29,9 +30,10 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
     showPassTest: boolean;
 
     constructor(
-        private metricsService: MetricsService
+        private metricsService: MetricsService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnDestroy(): void {

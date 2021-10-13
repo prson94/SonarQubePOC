@@ -4,13 +4,14 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { Subscription } from 'rxjs';
 import { retry } from 'rxjs/operators';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 declare var CurrentResourceID;
 declare var CurrentResourceUid;
 declare var SingleSignOn;
 declare var ResourceName;
 declare var ResourceEmail;
-declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-profile',
@@ -32,22 +33,19 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private ref: ChangeDetectorRef,
-        private authenticationService: AuthenticationService
+        private authenticationService: AuthenticationService,
+        protected settingsService: CompanySettingsService
     ) { }
 
     ngOnInit() {
+        let showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
 
         this.isAdminSub = this.authenticationService.isAdmin$.subscribe(x => {
             let isAdmin: boolean = x;
-            if (isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true')) {
-                this.showAllUsersAPIKey = true;
-            }
-            else {
-                this.showAllUsersAPIKey = false;
-            }
+            this.showAllUsersAPIKey = isAdmin || showApiKey;
         });
 
-        if (this.authenticationService.isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() === 'true')) {
+        if (this.authenticationService.isAdmin || showApiKey) {
             this.showAllUsersAPIKey = true;
         }
     }

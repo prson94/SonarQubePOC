@@ -20,6 +20,7 @@ import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField, Relation } from '../../../../models/fieldtype-api.model';
 import { AssetService } from '../../../../services/asset.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 
 @Component({
@@ -142,9 +143,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     constructor(private fieldsService: FieldsObservableService,
         private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldTypeAPIModelField();
         this.booleanDefaultValueOptions = [

@@ -3,6 +3,7 @@
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'data-profile',
@@ -59,6 +60,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
     sampleChartXLabel: string = '';
 
     matchAssetUid: string = "";
+
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 
     ngOnInit() { 
         this.initialize();

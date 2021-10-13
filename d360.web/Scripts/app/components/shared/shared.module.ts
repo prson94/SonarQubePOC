@@ -106,4 +106,4 @@ import { AssetDetailModule } from './asset-detail/asset-detail.module';
     ]
 })
 
-export class D3SSharedModule { }
+export class D3SSharedModule {}

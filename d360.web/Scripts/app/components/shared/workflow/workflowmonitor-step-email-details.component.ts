@@ -2,6 +2,7 @@
 import { WorkflowStepDetail } from '../../../models/workflow.model';
 import { BaseComponent } from '../base.component';
 import { WorkflowHelpers } from '../../../static/workflow-helpers';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 
 @Component({
@@ -20,8 +21,10 @@ export class WorkflowMonitorStepEmailDetailsComponent extends BaseComponent impl
     helper = WorkflowHelpers;
     
 
-    constructor(private ref: ChangeDetectorRef) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private ref: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnInit() {

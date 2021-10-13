@@ -1,6 +1,7 @@
 ﻿import {Component, Input, OnChanges, OnInit} from '@angular/core';
 import { RelationItem } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
 import {BaseComponent} from '../../base.component';
 
 @Component({
@@ -16,8 +17,10 @@ export class LineageRelationshipsComponent extends BaseComponent implements OnIn
 
     items: RelationItem[] = [];
 
-    constructor(private relationshipsService: RelationshipsService) {
-        super();
+    constructor(
+        private relationshipsService: RelationshipsService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnChanges() {

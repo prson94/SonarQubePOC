@@ -9,6 +9,7 @@ import { DataProfileService } from '../../../services/dataprofile.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AdvancedFilterFieldType, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'match-detection',
@@ -98,10 +99,11 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     constructor(
         private assetService: AssetService,
         private dataProfileService: DataProfileService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         private router: Router      
     ) {
-        super();        
+        super(settingsService);        
 
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);

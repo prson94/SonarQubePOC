@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from "@angular/router";
 import { BaseComponent } from "../../shared/base.component";
 import { SecondaryNavService } from "../../../services/right-sidebar.service";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 declare var CurrentResourceID;
 
@@ -32,8 +33,9 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
     constructor(private route: ActivatedRoute,
         private router: Router,
         secondaryNavService: SecondaryNavService,
-        breadcrumbService: HeaderBreadcrumbService) {
-        super();
+        breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

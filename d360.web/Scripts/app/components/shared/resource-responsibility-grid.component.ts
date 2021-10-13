@@ -3,6 +3,7 @@ import { ResponsibilityDetailForResource } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
 import { Router } from '@angular/router';
 import { BaseComponent } from "../shared/base.component";
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-resource-responsibility-grid-component',
@@ -60,8 +61,11 @@ export class ResourceResponsibilityGridComponent extends BaseComponent implement
     isLoading = false;
     private items: ResponsibilityDetailForResource[] = new Array<ResponsibilityDetailForResource>();
 
-    constructor(private resourcesService: ResourcesService, private router: Router) {
-        super();
+    constructor(
+        private resourcesService: ResourcesService,
+        protected settingsService: CompanySettingsService,
+        private router: Router) {
+        super(settingsService);
     }
     
     ngOnChanges() {

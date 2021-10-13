@@ -2,6 +2,7 @@
 import { DomSanitizer } from '@angular/platform-browser';
 import { BaseComponent } from '../../shared/base.component';
 import { Dashboard } from '../../../models/dashboard.model'
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-sagacity-viewer',
@@ -20,8 +21,9 @@ export class SagacityViewerComponent extends BaseComponent implements OnInit {
 
     sagacityUrl: any;
 
-    constructor(private sanitizer: DomSanitizer) {
-        super();        
+    constructor(private sanitizer: DomSanitizer,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);        
     }
 
     ngOnInit() {
