@@ -286,6 +286,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tag field not found.
+        /// </summary>
+        internal static string TagFieldNotFound {
+            get {
+                return ResourceManager.GetString("TagFieldNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tags.
         /// </summary>
         internal static string TagsColumn {
