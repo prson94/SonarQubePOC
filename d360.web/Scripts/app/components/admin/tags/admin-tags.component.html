@@ -47,7 +47,7 @@
                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                             </td>
                             <td (click)="selectSingleItem($event,item, el);">
-                                <a class="mid-blue" (click)="openTagDetails(item);">
+                                <a (click)="openTagDetails(item);">
                                     {{item.Value}}
                                 </a>
                             </td>

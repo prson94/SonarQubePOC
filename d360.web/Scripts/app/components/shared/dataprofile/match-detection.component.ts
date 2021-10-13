@@ -235,12 +235,12 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         this.isExportInProgress = true;
         if (matchType === "similar") {
             this.dataProfileService.exportMatches(
-                this.assetUid, "Structure", this.similarSimpleFilter, this.similarAdvancedFilter, this.name,
+                this.assetUid, "Structure", this.similarSimpleFilter, this.similarAdvancedFilter, this.name, this.similarSortField, this.similarSortOrder,
                 () => { this.isExportInProgress = false; }
             );
         } else if (matchType === "data"){
             this.dataProfileService.exportMatches(
-                this.assetUid, "Data", this.duplicatesSimpleFilter, this.duplicateAdvancedFilter, this.name,
+                this.assetUid, "Data", this.duplicatesSimpleFilter, this.duplicateAdvancedFilter, this.name, this.duplicateSortField, this.duplicateSortOrder,
                 () => { this.isExportInProgress = false; }
             );
         }       

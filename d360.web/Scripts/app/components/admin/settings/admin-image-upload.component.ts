@@ -48,10 +48,20 @@ import { CompanySettingsService } from '../../../services/settings.service';
         </div>
         <div class="row" *ngIf="companySettings.CurrentLogoPath !== companySettings.DefaultLogoPath || companySettings.CurrentIconPath !== companySettings.DefaultIconPath">
             <div class="col s6">
-                <input type="checkbox" [ngModel]="companySettings.SetLogoToDefault" (ngModelChange)="companySettings.SetLogoToDefault = $event; companySettingsChange.emit(companySettings)" /> Reset to default
+                <p-checkbox igCheckbox
+                            [(ngModel)]="companySettings.SetLogoToDefault"
+                            label="Reset to default"
+                            (ngModelChange)="companySettings.SetLogoToDefault = $event; companySettingsChange.emit(companySettings)"
+                            binary="true">
+                </p-checkbox>
             </div>
             <div class="col s6">
-                <input type="checkbox" [ngModel]="companySettings.SetIconToDefault" (ngModelChange)="companySettings.SetIconToDefault = $event; companySettingsChange.emit(companySettings)" /> Reset to default
+                <p-checkbox igCheckbox
+                            [(ngModel)]="companySettings.SetIconToDefault"
+                            label="Reset to default"
+                            (ngModelChange)="companySettings.SetIconToDefault = $event; companySettingsChange.emit(companySettings)"
+                            binary="true">
+                </p-checkbox>
             </div>
         </div>
         <div class="row">

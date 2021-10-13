@@ -205,7 +205,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             chart: {
                 zoomType: 'xy',
                 style: {
-                    fontFamily: 'Source Sans Pro'
+                    fontFamily: 'Precisely'
                 },
                 height: '250px'
             },

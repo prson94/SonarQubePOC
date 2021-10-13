@@ -4,9 +4,15 @@
 </header>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading && hasRelationships && hideDelete" class="row" style="padding-left:10px;padding-bottom:5px;">
-    <label pTooltip="If you would like to see relationship types that have no relationships established click here.  In order to setup relations between types with no relations you need to enable this option also.">
-        <input type="checkbox" [(ngModel)]="showEmptyRelationshipTypes">Show relationship types with no relations established.
-    </label>
+    <p-checkbox igCheckbox
+                pTooltip="If you would like to see relationship types that have no relationships established click here.  In order to setup relations between types with no relations you need to enable this option also."
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"
+                [(ngModel)]="showEmptyRelationshipTypes"
+                label="Show relationship types with no relations established"
+                binary="true">
+    </p-checkbox>
+
 </div>
 <div class="row">
     <div *ngIf="!isLoading && hasRelationships && hideDelete" class="col l3 s12 relationship-container">

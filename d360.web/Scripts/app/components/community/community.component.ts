@@ -92,7 +92,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                         type: 'pie',
                         backgroundColor: 'transparent',
                         style: {
-                            fontFamily: 'Source Sans Pro'
+                            fontFamily: 'Precisely'
                         }
                     },
                     title: {

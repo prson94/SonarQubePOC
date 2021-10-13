@@ -146,8 +146,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Constants
 
     private readonly emptyUid: string = '00000000-0000-0000-0000-000000000000';
-    private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
-    private readonly fontContextMenuhelper_ShowDetails: string = "bold 12px 'Source Sans Pro'";
+    private readonly fontContextMenu: string = "12px 'Precisely'";
+    private readonly fontContextMenuhelper_ShowDetails: string = "bold 12px 'Precisely'";
 
     private readonly fontOwnerBackColor: string = "#FEF6F2";
     private readonly fontOwnerBadgeLabelBorderColor: string = "#DE4B00";
@@ -155,9 +155,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private readonly fontLabelIcon: string = "12px FontAwesome";
     private readonly fontLabelAlertColor: string = "#FF0000";
-    private readonly fontLabel: string = "14px 'Source Sans Pro'";
+    private readonly fontLabel: string = "14px 'Precisely'";
     private readonly fontLabelColor: string = "#404040";
-    private readonly fontLink: string = "9pt 'Source Sans Pro'";
+    private readonly fontLink: string = "9pt 'Precisely'";
     private readonly fontLinkColor: string = "#fff";
     private readonly linkBackColor: string = "#808080";
     private readonly lightenBoxColor: string = "#fff";
@@ -176,9 +176,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly selectionPathHighlightColor: string = '#F5C2FF';
     private readonly leafBackColor: string = 'transparent';
 
-    private readonly badgeFont: string = "14px 'Source Sans Pro'";
+    private readonly badgeFont: string = "14px 'Precisely'";
     private readonly badgeStrokeColor = "#d6d5d5";
-    private readonly badgeTextColor = "#006fc0";
+    private readonly badgeTextColor = "#6d18dd";
     private readonly ignoredPanelFieldTypes = [
         "Tag",
         "Relationship",

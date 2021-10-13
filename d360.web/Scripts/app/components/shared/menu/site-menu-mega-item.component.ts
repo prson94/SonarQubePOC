@@ -83,7 +83,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
             return this.item.Name;
         }
         return this.item.Name.replace(new RegExp(this.searchText, "gi"), match => {
-            return '<span style="background: #fd7e0e;">' + match + '</span>';
+            return '<span style="background: #f5eeff;">' + match + '</span>';
         });
     }
 
