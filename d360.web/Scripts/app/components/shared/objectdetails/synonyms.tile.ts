@@ -46,8 +46,8 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected selectedSynonym: SynonymItem;    
     protected customSynonymName: string = '';
     protected isLoadingItems = false;
-    enableAddBtn: boolean = false;
-    enableDeleteBtn: boolean = false;
+    protected enableAddBtn: boolean = false;
+    protected enableDeleteBtn: boolean = false;
 
     constructor(private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
