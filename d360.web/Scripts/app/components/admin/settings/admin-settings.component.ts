@@ -347,13 +347,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.settingsService.putSettings(settings)
             .subscribe(
                 (data) => {
-                    window.location.reload();
-                },
-                (err) => {
-                    this.messagesService.showError("Error occured!", err.statusMessage);
-                },
-                () => {
-                    this.isLoading = false;
+                    this.SaveButton.disabled = false;
+                    this.SaveButton.isLoading = false;
+                    if (data && data.type === "error") {
+                        this.messagesService.showError(data.title, data.message);
+                    }
+                    else {
+                        window.location.reload();
+                    }
                 }
             );
     }

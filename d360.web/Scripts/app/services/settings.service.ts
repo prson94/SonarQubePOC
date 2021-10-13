@@ -136,8 +136,14 @@ export class CompanySettingsService extends BaseObservableService {
 
         return this.http.put('/api/v2/environment/settings', JSON.stringify(this.settingToUpdate), { headers })
             .pipe(
-                tap(_ => this.settingToUpdate = []),
-                catchError(err => this.handleError(err))
+                tap((_) => {
+                    this.settingToUpdate = [];
+                    return of({ type: "success" });
+                }),
+                catchError((err) => {
+                    this.handleError(err);
+                    return of({ type: "error" });
+                })
             );
     }
 
@@ -153,10 +159,13 @@ export class CompanySettingsService extends BaseObservableService {
 
         return this.http.put('/api/v2/environment/settings/batch', JSON.stringify(this.settingToUpdate), { headers })
             .pipe(
-                tap(_ => this.settingToUpdate = []),
+                tap((_) => {
+                    this.settingToUpdate = [];
+                    return of({ type: "success" });
+                }),
                 catchError((err) => {
                     this.handleError(err);
-                    return of({ type: "error" });
+                    return of({ type: "error", title: err.error.title, message: err.error.message });
                 })
             );
     }

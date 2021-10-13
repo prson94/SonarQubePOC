@@ -12,7 +12,7 @@ export class CompanySettings {
     CurrentIconPath: string;
     CurrentLogoPath: string;
     DefaultIconPath: string = "/favicon.ico";
-    DefaultLogoPath: string = "/Content/images/govern-small-white.svg";
+    DefaultLogoPath: string = "/Content/images/PreciselyLogo@2x.png";
     DefaultRoute: string;
     DefaultSearchTypes: string;
     DisableCommunityPosting: boolean;
