@@ -904,11 +904,11 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                doc.SetCellValue(rowNumber, index++, row.AssetPath.Split('>')[0]);
+                doc.SetCellValue(rowNumber, index++, row.AssetPath.Split('>').Last());
                 doc.SetCellValue(rowNumber, index++, row.AssetTags);
                 doc.SetCellValue(rowNumber, index++, row.AssetPath);
                 doc.SetCellValue(rowNumber, index++, row.AssetTypePath);
-                doc.SetCellValue(rowNumber, index++, row.MatchedAssetPath.Split('>')[0]);
+                doc.SetCellValue(rowNumber, index++, row.MatchedAssetPath.Split('>').Last());
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetTags);
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetPath);
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetTypePath);                
