@@ -503,13 +503,12 @@ namespace d360.web.Controllers.V2
             var sqlTables = "";
             int _pageSize = 200;
             int _pageNum = 1;
-            string _order = "RowIndex";
             string _direction = "desc";
             string orderBySql = "";
             string offsetSql = "";
             string whereSql = "";
             string filterValue = "";
-            List<string> v2ApiActions = new List<string>() { "P", "R", "U" };
+            List<string> v2ApiActions = new List<string> { "P", "R", "U" };
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -527,7 +526,9 @@ namespace d360.web.Controllers.V2
             var useExecutionTable = false;
 
             if (v2ApiActions.Contains(load.Action) && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
+            {
                 useExecutionTable = true;
+            }
 
             var columns = Company.Filter<LoadColumn>(i => i.LoadID == load.ID).OrderBy(i => i.ColumnIndex).ToList();
 
@@ -553,7 +554,7 @@ namespace d360.web.Controllers.V2
             }
             if (queryParams.Any(x => x.Key == "_direction"))
             {
-                string[] allowedDirections = new string[] { "asc", "desc" };
+                var allowedDirections = new [] { "asc", "desc" };
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                 if (!allowedDirections.Contains(order.Trim().ToLower()))
                 {
@@ -576,14 +577,16 @@ namespace d360.web.Controllers.V2
                                                 "column15","column16", "column17", "column18", "column19",
                                                 "column20", "status","statusmessage" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
+                }
                 orderBySql = $" order by {orderByCol} {_direction} ";
             }
 
             if (queryParams.Any(x => x.Key == "_simpleFilter"))
             {
                 filterValue = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_simplefilter").Value.ToString();
-                if (filterValue != "") ;
+                if (filterValue != "")
                 {
                     string columnSql = "";
                     filterValue = '%' + filterValue + '%';
@@ -690,7 +693,7 @@ namespace d360.web.Controllers.V2
                 }
 
 
-                var results = Company.Query<dynamic>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue = filterValue });
+                var results = Company.Query<dynamic>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue });
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
@@ -716,7 +719,7 @@ namespace d360.web.Controllers.V2
 
                 sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
 
-                var results = Company.Query<dynamic>(sql, new { id = load.ID, filterValue = filterValue });
+                var results = Company.Query<dynamic>(sql, new { id = load.ID, filterValue });
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
