@@ -648,11 +648,11 @@ namespace d360.web.Controllers.V2
 
                         sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
                         sql += $"union all\n";
-                        sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
+                        sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R " + whereSql + orderBySql + offsetSql;
 
                         break;
                     case "R":
-                        sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+                        sqlColumns = $"select	* from(select I.RowIndex as RowIndex\n";
                         sqlTables = @"from LoadItem I
                                       left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
                                       left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid and ER.ExecutionID = @postExecutionID
@@ -668,11 +668,11 @@ namespace d360.web.Controllers.V2
                         sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
                         sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
 
-                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
+                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
 
                         break;
                     case "U":
-                        sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+                        sqlColumns = $"select	* from(select I.RowIndex as RowIndex\n";
                         sqlTables = @"from LoadItem I
                                         left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
                         columns.ForEach(c =>
@@ -685,12 +685,12 @@ namespace d360.web.Controllers.V2
                         sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
                         sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
 
-                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id\n " + whereSql + orderBySql + offsetSql;
+                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
                         break;
                 }
 
 
-                var results = Company.Query<dynamic>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
+                var results = Company.Query<dynamic>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue = filterValue });
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
