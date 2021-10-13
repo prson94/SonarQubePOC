@@ -6,19 +6,39 @@
                 Tile Options
             </div>
             <div>
-                <input type="checkbox" [ngModel]="companySettings.ShowHomeAssignmentTile" (ngModelChange)="companySettings.ShowHomeAssignmentTile = $event; companySettingsChange.emit(companySettings)" /> Show assignment tile
+                <p-checkbox igCheckbox
+                            [(ngModel)]="companySettings.ShowHomeAssignmentTile"
+                            (ngModelChange)="companySettings.ShowHomeAssignmentTile = $event; companySettingsChange.emit(companySettings)"
+                            label="Show assignment tile"
+                            binary="true">
+                </p-checkbox>
             </div>
             <div>
-                <input type="checkbox" [ngModel]="companySettings.ShowHomeBoardTile" (ngModelChange)="companySettings.ShowHomeBoardTile = $event; companySettingsChange.emit(companySettings)" /> Show board tile
+                <p-checkbox igCheckbox
+                            [(ngModel)]="companySettings.ShowHomeBoardTile"
+                            (ngModelChange)="companySettings.ShowHomeBoardTile = $event; companySettingsChange.emit(companySettings)"
+                            label="Show board tile"
+                            binary="true">
+                </p-checkbox>
             </div>
             <div>
-                <input type="checkbox" [ngModel]="companySettings.ShowHomeActivityTile" (ngModelChange)="companySettings.ShowHomeActivityTile = $event; companySettingsChange.emit(companySettings)" /> Show activity tile
+                <p-checkbox igCheckbox
+                            [(ngModel)]="companySettings.ShowHomeActivityTile"
+                            (ngModelChange)="companySettings.ShowHomeActivityTile = $event; companySettingsChange.emit(companySettings)"
+                            label="Show activity tile"
+                            binary="true">
+                </p-checkbox>
             </div>
         </div>
         <div class="col s6">
             <div class="row">
                 <div class="col s12">
-                    <input type="checkbox" [ngModel]="companySettings.ShowHomePageTitle" (ngModelChange)="companySettings.ShowHomePageTitle = $event; companySettingsChange.emit(companySettings)" /> Show site title on homepage
+                    <p-checkbox igCheckbox
+                                [(ngModel)]="companySettings.ShowHomePageTitle"
+                                (ngModelChange)="companySettings.ShowHomePageTitle = $event; companySettingsChange.emit(companySettings)"
+                                label="Show site title on homepage"
+                                binary="true">
+                    </p-checkbox>
                 </div>
             </div>
             <div class="row">

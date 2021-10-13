@@ -23,7 +23,7 @@ namespace d360.core.enums
         DisableCommunityPosting = 1,
         
         [
-            DefaultValue("/Content/images/govern-small-white.svg"),
+            DefaultValue("/Content/images/PreciselyLogo@2x.png"),
             Description("CompanyLogo_Desc", typeof(Settings)),
             Locked(false),
             Name("CompanyLogo_Name", typeof(Settings)),
@@ -212,7 +212,7 @@ namespace d360.core.enums
         ShowLineageSidebar = 32,
         
         [
-            DefaultValue("D3S"), 
+            DefaultValue("Data360"), 
             Description("BrowserTitlePrefix_Desc", typeof(Settings)), 
             Locked(false),
             Name("BrowserTitlePrefix_Name", typeof(Settings)),
