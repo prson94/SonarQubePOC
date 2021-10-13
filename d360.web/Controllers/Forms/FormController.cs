@@ -2417,8 +2417,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Add(model);
 
@@ -2441,6 +2441,13 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             try
             {
                 var list = new List<bool>();
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    list.Add(true);//Permission for Add Button
+                    list.Add(true);//Permission for Delete Button
+                    return Json(list, JsonRequestBehavior.AllowGet);
+                }
+                
                 bool addSynonyms = true;
                 if (!Company.HasAssetPermission(objectType, objectId, Permission.AddAsset) || !Company.HasAssetPermission(objectType, objectId, Permission.EditAsset))
                     addSynonyms = false;

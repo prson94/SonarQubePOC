@@ -46,6 +46,8 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected selectedSynonym: SynonymItem;    
     protected customSynonymName: string = '';
     protected isLoadingItems = false;
+    enableAddBtn: boolean = false;
+    enableDeleteBtn: boolean = false;
 
     constructor(private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
@@ -75,6 +77,18 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
                 this.isLoading = false;
             }
         );
+
+        this.isLoading = true;
+       
+        this.objectDetailService.getSynonymPermission(this.objectID, this.objectType).subscribe(
+            data => {
+                this.enableAddBtn = data[0];
+                this.enableDeleteBtn = data[1];
+
+                this.isLoading = false;
+            }
+        );
+        
     }
 
     protected deleteSynonym(item: Synonym) {

@@ -3,7 +3,7 @@
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
             <header>
-                &nbsp;<d3s-tile-actions *ngIf="!readonly"
+                &nbsp;<d3s-tile-actions *ngIf="!readonly && enableAddBtn"
                                         (addClick)="add();"
                                         [hasAdd]="hasAdd"></d3s-tile-actions>
             </header>
