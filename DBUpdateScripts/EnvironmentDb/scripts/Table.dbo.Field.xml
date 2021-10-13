@@ -461,8 +461,8 @@ AS
   </changeSet>
 
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterDelete-v3.4">
-    <comment>GOV-15755</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterDelete-v4">
+    <comment>GOV-15966</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -507,6 +507,13 @@ BEGIN
 
 	create index idx_tempdeletedUQFields on #tempdeletedUQFields(ObjectID,ObjectType);
 
+	declare @resourceId int = null
+
+	if (select count(distinct updatedby) from #tempdeletedUQFields) > 1
+	begin
+		set @resourceid = 0
+	end
+
     -- audit field delete
 	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
 				select	'Delete', 
@@ -516,7 +523,7 @@ BEGIN
 							'Delete' as Action,
 							i2.ObjectType as ActionObject,
 							i2.ObjectID as ActionObjectID,
-							coalesce(i2.UpdatedBy, 0) as ResourceID,
+							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
 							  (
 								select 
 								(select 
@@ -533,7 +540,7 @@ BEGIN
 						from 
 							#tempdeletedUQFields i2 
 						where i2.ObjectID = d.ObjectID and i2.ObjectType = d.ObjectType
-						group by ObjectType, ObjectID, UpdatedBy
+						group by ObjectType, ObjectID, coalesce(@resourceId, i2.UpdatedBy, 0)
 						for xml path('fields'))
 						,
 						coalesce(d.AssetID,0) as [AssetID]
