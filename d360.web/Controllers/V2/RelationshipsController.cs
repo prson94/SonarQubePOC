@@ -134,17 +134,17 @@ namespace d360.web.Controllers.V2
 
                 if (predicates == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
                 }
 
                 if (predicates.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided any predicates to process in this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
                 }
 
                 if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(predicates.Count);
@@ -201,28 +201,28 @@ namespace d360.web.Controllers.V2
 
                 if (predicates == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
                 }
 
                 if (predicates.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided any predicates to process in this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
                 }
 
                 if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
                 }
 
                 foreach (var pred in predicates)
                 {
                     if (pred.Name.Length > 100)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Name must be less then 100 characters.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.InvalidNameLength)).ConfigureAwait(false);
                     }
                     if (pred.Inverse.Length > 250)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Inverse must be less then 250 characters.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.InvalidInverseLength)).ConfigureAwait(false);
                     }
                 }
 
@@ -306,7 +306,7 @@ namespace d360.web.Controllers.V2
 
             if (intersectType == null)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Invalid Intersect Type Uid provided {intersectTypeUid}.");
+                return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, string.Format(RelationshipsApiMessages.InvalidIntersectTypeUid, intersectTypeUid));
             }
 
             int id = intersectType.ID;
@@ -451,13 +451,13 @@ namespace d360.web.Controllers.V2
                     Guid.TryParse(value, out RelationshipTypeUid);
                     if (RelationshipTypeUid == null || RelationshipTypeUid == Guid.Empty)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Relationship Type Uid passed in the request");
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidRelatioshipTypeUid);
                     }
                     else
                     {
                         if (!RelationshipRepository.AnyExists(RelationshipTypeUid))
                         {
-                            return ReturnApiError(HttpStatusCode.NotFound, $"Relationship Type with Uid [{RelationshipTypeUid}] could not be found.");
+                            return ReturnApiError(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, RelationshipTypeUid.ToString()));
                         }
                     }
                 }
@@ -469,13 +469,13 @@ namespace d360.web.Controllers.V2
                     Guid.TryParse(value, out PredicateUid);
                     if (PredicateUid == null || PredicateUid == Guid.Empty)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Predicate Uid passed in the request");
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidPredicateUid);
                     }
                     else
                     {
                         if (!RelationshipRepository.AnyPredicateExists(PredicateUid))
                         {
-                            return ReturnApiError(HttpStatusCode.NotFound, $"Predicate with Uid [{PredicateUid}] could not be found.");
+                            return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.PredicateUidNotFound, PredicateUid.ToString()));
                         }
                     }
                 }
@@ -487,7 +487,7 @@ namespace d360.web.Controllers.V2
                     Guid.TryParse(value, out SubjectUid);
                     if (SubjectUid == null || SubjectUid == Guid.Empty)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Subject Uid passed in the request");
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidSubjectUid);
                     }
                     else
                     {
@@ -496,7 +496,7 @@ namespace d360.web.Controllers.V2
                             var assetType = AssetRepository.GetAssetTypeByUID(SubjectUid);
                             if (assetType == null || assetType.Class != AssetTypeClass.Reference)
                             {
-                                return ReturnApiError(HttpStatusCode.NotFound, $"Subject with Uid [{SubjectUid}] could not be found.");
+                                return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.SubjectUidNotFound, SubjectUid.ToString()));
                             }
                         }
                     }
@@ -509,7 +509,7 @@ namespace d360.web.Controllers.V2
                     Guid.TryParse(value, out ObjectUid);
                     if (ObjectUid == null || ObjectUid == Guid.Empty)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Object Uid passed in the request");
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidObjectUid);
                     }
                     else
                     {
@@ -518,7 +518,7 @@ namespace d360.web.Controllers.V2
                             var assetType = AssetRepository.GetAssetTypeByUID(ObjectUid);
                             if (assetType == null || assetType.Class != AssetTypeClass.Reference)
                             {
-                                return ReturnApiError(HttpStatusCode.NotFound, $"Object with Uid [{ObjectUid}] could not be found.");
+                                return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.ObjectUidNotFound, ObjectUid.ToString()));
                             }
                         }
                     }
@@ -530,12 +530,12 @@ namespace d360.web.Controllers.V2
 
                     if (RelationshipTypeUid == Guid.Empty)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"_direction parameter is allowed only when RelationshipTypeUid is passed");
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.DirectionAllowedForRelation);
                     }
 
                     if (!new[] { "asc", "desc" }.Contains(value))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _direction value in the request");
+                        return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection);
                     }
                 }
 
@@ -543,7 +543,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (RelationshipTypeUid == Guid.Empty)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"_order parameter is allowed only when RelationshipTypeUid is passed");
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.OrderForRelation);
                     }
                     var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
@@ -553,7 +553,7 @@ namespace d360.web.Controllers.V2
 
                     if (!fieldTypes.Contains(orderValue))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _order value in the request");
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidOrderValue);
                     }
                 }
 
@@ -627,20 +627,20 @@ namespace d360.web.Controllers.V2
                 var intersect = Company.Intersects.FirstOrDefault(x => x.uid == uid);
                 if (intersect == null || uid == Guid.Empty)
                 {
-                    return ReturnApiError(HttpStatusCode.NotFound, $"Specified relationship with uid [{uid}] could not be found.");
+                    return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.RelationShipUidNotFound, uid.ToString()));
                 }
 
                 var hasObjectReadPermission = Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ReadRelationships);
                 var hasSubjectReadPermission = Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ReadRelationships);
                 if (!hasObjectReadPermission || !hasSubjectReadPermission)
                 {
-                    return ReturnApiError(HttpStatusCode.Forbidden, $"You are not allowed to view this relationship.");
+                    return ReturnApiError(HttpStatusCode.Forbidden, RelationshipsApiMessages.ViewthisRelationNotAllowed);
                 }
 
                 var result = await RelationshipRepository.GetRelationship(uid);
                 if (result == null)
                 {
-                    return ReturnApiError(HttpStatusCode.NotFound, $"Invalid GUID {uid}.");
+                    return ReturnApiError(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidGuid, uid.ToString()));
                 }
                 return Request.CreateResponse(HttpStatusCode.OK, result);
 
@@ -698,7 +698,7 @@ namespace d360.web.Controllers.V2
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value;
                     if (!long.TryParse(value, out pageNum))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageNum parameter passed in the request");
+                        return ReturnApiError(HttpStatusCode.BadRequest,  ApiMessages.Invalid_PageNum);
                     }
                 }
 
@@ -707,17 +707,17 @@ namespace d360.web.Controllers.V2
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value;
                     if (!long.TryParse(value, out pageSize))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request");
+                        return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.Invalid_PageSize);
                     }
 
                     if (pageSize > 100000)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request value is greater than the maximum supported value of 100,000.");
+                        return ReturnApiError(HttpStatusCode.BadRequest,ApiMessages._PageSizeLimit);
                     }
 
                     if (pageSize <= 0)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request value is less than or equal to zero.");
+                        return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages._PageSizePassedZeroLess);
                     }
                 }
 
@@ -726,7 +726,7 @@ namespace d360.web.Controllers.V2
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value;
                     if (!bool.TryParse(value, out includeTotal))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _includeTotal parameter passed in the request, value must be true false or not specified");
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.Invalid_includeTotal);
                     }
                 }
 
@@ -736,20 +736,20 @@ namespace d360.web.Controllers.V2
                     owner = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_owner").Value;
                     if (owner.Length > 100)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _owner parameter passed in the request, maximum length is 100 characters.");
+                        return ReturnApiError(HttpStatusCode.BadRequest,RelationshipsApiMessages.Invalid_owner);
                     }
                 }
 
                 if (RelationshipTypeUid == Guid.Empty)
                 {
-                    return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid relationship type uid specified.  Please specify a valid uid.");
+                    return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.PassedValidRelationTypeUid);
                 }
 
                 int intersectTypeID = await (Company.QueryFirstOrDefaultAsync<int>("select id from [intersecttype] where [uid] = @uid", new { uid = RelationshipTypeUid }));
 
                 if (intersectTypeID <= 0)
                 {
-                    return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid relationship type uid specified.  Please specify a valid uid for an existing relationship type.");
+                    return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.PassedValidForExistingRelationType);
                 }
 
                 var results = await RelationshipRepository.GetRelationshipsUids(intersectTypeID, pageSize, pageNum, includeTotal, owner);
@@ -803,12 +803,12 @@ namespace d360.web.Controllers.V2
 
                 if (relationshiptypes == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
                 }
 
                 if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationship types in this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(relationshiptypes.Count);
@@ -823,7 +823,7 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -860,12 +860,12 @@ namespace d360.web.Controllers.V2
 
                 if (relationshiptypes == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
                 }
 
                 if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationship types in this request.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(relationshiptypes.Count);
@@ -880,7 +880,7 @@ namespace d360.web.Controllers.V2
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -914,10 +914,10 @@ namespace d360.web.Controllers.V2
                     relationshiptypes = readRequestJsonContent<List<RelationshipTypeDelete>>(Request).Result;
 
                 if (relationshiptypes == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
 
                 if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationship types in this request."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString())));
 
                 var execution = getApiExecution(relationshiptypes.Count);
 
@@ -931,7 +931,7 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
             }
         }
         /// <summary>
@@ -1051,7 +1051,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return ReturnApiError(HttpStatusCode.BadRequest, "The type parameter is invalid.");
+                    return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidParameter);
                 }
             }
             catch (Exception ex)
@@ -1100,7 +1100,7 @@ namespace d360.web.Controllers.V2
 
                 if (intersectType == null)
                 {
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()))));
                 }
 
                 if (relationships == null)
@@ -1110,12 +1110,12 @@ namespace d360.web.Controllers.V2
 
                 if (relationships == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
                 }
 
                 if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationships in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid });
@@ -1191,7 +1191,7 @@ namespace d360.web.Controllers.V2
 
                 if (intersectType == null)
                 {
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found."))).ConfigureAwait(false);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
                 }
 
                 if (relationships == null)
@@ -1201,7 +1201,7 @@ namespace d360.web.Controllers.V2
 
                 if (relationships == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
                 }
 
                 ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, this.getApiExecution, triggerWorkflow);
@@ -1262,7 +1262,7 @@ namespace d360.web.Controllers.V2
 
                 if (dbExecutionItem == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
                 }
 
                 var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionID };
@@ -1296,14 +1296,14 @@ namespace d360.web.Controllers.V2
             }
             catch (ArgumentException)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound,ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1337,7 +1337,7 @@ namespace d360.web.Controllers.V2
 
                 if (intersectType == null)
                 {
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found."))).ConfigureAwait(false);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
                 }
 
                 if (relationships == null)
@@ -1347,7 +1347,7 @@ namespace d360.web.Controllers.V2
 
                 if (relationships == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
                 }
 
                 ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, this.getApiExecution, triggerWorkflow);
@@ -1359,7 +1359,7 @@ namespace d360.web.Controllers.V2
                             new ApiExecutionRecievedResponse
                             {
                                 ExecutionID = executionInfo.ExecutionID,
-                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Message = ApiMessages.ExecutionIDStatus,
                                 Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/relationships/executions/{executionInfo.ExecutionID}/status"
                             }
                         )
@@ -1404,7 +1404,7 @@ namespace d360.web.Controllers.V2
 
             if (intersectType == null)
             {
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()))));
             }
 
             if (relationships == null)
@@ -1414,17 +1414,17 @@ namespace d360.web.Controllers.V2
 
             if (relationships == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
             }
 
             if (relationships.Count == 0)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided any relationships to process in this request.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.RelationNotProvided)).ConfigureAwait(false);
             }
 
             if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationships in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
             }
 
             var execution = getApiExecution(relationships.Count, new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid });

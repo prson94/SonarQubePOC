@@ -117,121 +117,88 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>New {0} Raised.</value>
+  <data name="AssetAssetTypeNotFound" xml:space="preserve">
+    <value>No Asset or AsssetType found for Guid [{0}]</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Action Created</value>
+  <data name="AssetTypeAddAssetPermissionsDenied" xml:space="preserve">
+    <value>You are not allowed to add assets of this type.</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Action Type Not Found</value>
+  <data name="AssetTypeCreatedMessage" xml:space="preserve">
+    <value>Asset Type is created</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Action Type with Uid {0} could not be found.</value>
+  <data name="AutoDisplayParent" xml:space="preserve">
+    <value>Auto Display Parent</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Action with Uid {0} could not be found.</value>
+  <data name="CanEditParent" xml:space="preserve">
+    <value>Can Edit Parent</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocations added successfully</value>
+  <data name="CanOwnFusion" xml:space="preserve">
+    <value>Can Own Fusion</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocation added successfully</value>
+  <data name="ClassNotSupport" xml:space="preserve">
+    <value>Class '{0}' is not supported. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset.</value>
+  <data name="CorrectEndpoint" xml:space="preserve">
+    <value>The correct endpoint for {0}s is {1}://{2}{3}</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Asset with Uid {0} could not be found.</value>
+  <data name="EnvironmentLevelAssetCountNotAllowed" xml:space="preserve">
+    <value>You do not have permission to load environment level asset counts.</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset type.</value>
+  <data name="ExportTemplateMessage" xml:space="preserve">
+    <value>Export Template UID parameter must be used with 'Accept' header set to 'application/octet-stream'.</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Asset type has invalid class.</value>
+  <data name="ExportTemplateUidNotExist" xml:space="preserve">
+    <value>Export Template with UID '{0}' does not exist.</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Asset Type with Uid {0} could not be found.</value>
+  <data name="FieldTypeAssetNotFound" xml:space="preserve">
+    <value>Field Type '{0}' not found for asset.</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Either AssetTypeUid or AssetUid must be provided.</value>
+  <data name="FieldTypeNotSupport" xml:space="preserve">
+    <value>Field Type '{0}' is not supported. Allowed field types are ComplexRelationLookup, RefListRelationship and OwnershipLookup</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Type Uid.</value>
+  <data name="FilterResrictPredicateUid" xml:space="preserve">
+    <value>Filtering using _relationFilter cannot be used with _predicateUid parameter</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Uid.</value>
+  <data name="fusionSetBusinessClassOnly" xml:space="preserve">
+    <value>Can Own Fusion can be set only asset types that are of class Business</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Action Type has associated actions. Enable on cascade request to delete.</value>
+  <data name="GovernRoleReferListNotExists" xml:space="preserve">
+    <value>Governance Role Reference List with UID '{0}' does not exist</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>The selected action type ({0}) has associated actions, and therefore cannot be deleted.</value>
+  <data name="InvalidAssetTypeClass" xml:space="preserve">
+    <value>Invalid Asset type class '{0}'</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocation Deleted Successfully.</value>
+  <data name="InvalidExportTemplateCurrent" xml:space="preserve">
+    <value>Invalid Export Template for current Asset Type.</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>No Asset Type Uids have been provided.</value>
+  <data name="InvalidExportTemplatedUid" xml:space="preserve">
+    <value>Invalid exportTemplateUID value.</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>A valid Action Type Uid is required.</value>
+  <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
+    <value>Invalid user or group uid as non owner passed in the request</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Invalid AssetTypeUid provided.</value>
+  <data name="InvalidUserGroupRequestAsOwner" xml:space="preserve">
+    <value>Invalid user or group uid as owner passed in the request</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Invalid AssetUid provided.</value>
+  <data name="ProvidePreFilterCriteria" xml:space="preserve">
+    <value>You have provided pre-filter criteria, but none appear to be valid. You must provide at least one condition.</value>
   </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>Limit To Active Workflows value provided is not valid.</value>
+  <data name="ProvideSearchPhrase" xml:space="preserve">
+    <value>You must provide a search phrase.</value>
   </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} is an invalid responsibilityTypeUid for {1}.</value>
+  <data name="ReachedTransformationlimit" xml:space="preserve">
+    <value>Reached Transformation limit</value>
   </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Name provided must be less than 250 characters in length.</value>
+  <data name="RequestMaxAsset" xml:space="preserve">
+    <value>You may only provide a maximum of {0} assets in this request. Please call the BATCH API to submit more than {1} items.</value>
   </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Empty string provided for Name. Cannot be empty.</value>
+  <data name="RestrictReadAssettype" xml:space="preserve">
+    <value>You do not have permissions to read the specified asset type.</value>
   </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>Name is a required field.</value>
+  <data name="TransormationReationExists" xml:space="preserve">
+    <value>Transformation Relationship Exists For AssetType</value>
   </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>No Matching Allocation for '{0}' on Action Type '{1}'</value>
-  </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Order By Field Not Found</value>
-  </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>The field you specified for sorting ({0}) could not be found.</value>
-  </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Relationship Type with Uid {0} could not be found.</value>
-  </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Resource Uid provided does not exist.</value>
-  </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>Resource Uid provided is invalid.</value>
-  </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>A Valid Uid is required.</value>
-  </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>The Uid provided is invalid.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>Allocation already exists.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Name must be unique. Workflow action already exists with this name</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>Uid provided already in use.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>User with Uid {0} not found</value>
+  <data name="UseAsTransformation" xml:space="preserve">
+    <value>Use As Transformation</value>
   </data>
 </root>

@@ -117,121 +117,37 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>New {0} Raised.</value>
+  <data name="AssetTypeNotSurvey" xml:space="preserve">
+    <value>Asset type does not match with any survey.</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Action Created</value>
+  <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
+    <value>Invalid format for surveyTypeUid</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Action Type Not Found</value>
+  <data name="InvalidValueAsOfDate" xml:space="preserve">
+    <value>Invalid date value for AsOfDate parameter!</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Action Type with Uid {0} could not be found.</value>
+  <data name="NotavalidEndDateRange" xml:space="preserve">
+    <value>Not a valid EndDateRange</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Action with Uid {0} could not be found.</value>
+  <data name="NotvalidStartDateRange" xml:space="preserve">
+    <value>Not a valid StartDateRange</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocations added successfully</value>
+  <data name="ResultRemoved" xml:space="preserve">
+    <value>{0} results removed.</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocation added successfully</value>
+  <data name="SurveyInvalidForAssetType" xml:space="preserve">
+    <value>Survey not valid for this asset type</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset.</value>
+  <data name="SurveyQuestionTypeUidInvalid" xml:space="preserve">
+    <value>Survey Question Type for uid {0} contains invalid responses: [{1}]</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Asset with Uid {0} could not be found.</value>
+  <data name="SurveyQuestionTypeUidNotFound" xml:space="preserve">
+    <value>Survey Question Type for uid {0} not found</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset type.</value>
+  <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
+    <value>Either SurveyTypeUid or ResourceUid or AssetUid should populate</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Asset type has invalid class.</value>
-  </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Asset Type with Uid {0} could not be found.</value>
-  </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Either AssetTypeUid or AssetUid must be provided.</value>
-  </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Type Uid.</value>
-  </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Uid.</value>
-  </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Action Type has associated actions. Enable on cascade request to delete.</value>
-  </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>The selected action type ({0}) has associated actions, and therefore cannot be deleted.</value>
-  </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocation Deleted Successfully.</value>
-  </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>No Asset Type Uids have been provided.</value>
-  </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>A valid Action Type Uid is required.</value>
-  </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Invalid AssetTypeUid provided.</value>
-  </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Invalid AssetUid provided.</value>
-  </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>Limit To Active Workflows value provided is not valid.</value>
-  </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} is an invalid responsibilityTypeUid for {1}.</value>
-  </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Name provided must be less than 250 characters in length.</value>
-  </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Empty string provided for Name. Cannot be empty.</value>
-  </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>Name is a required field.</value>
-  </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>No Matching Allocation for '{0}' on Action Type '{1}'</value>
-  </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Order By Field Not Found</value>
-  </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>The field you specified for sorting ({0}) could not be found.</value>
-  </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Relationship Type with Uid {0} could not be found.</value>
-  </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Resource Uid provided does not exist.</value>
-  </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>Resource Uid provided is invalid.</value>
-  </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>A Valid Uid is required.</value>
-  </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>The Uid provided is invalid.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>Allocation already exists.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Name must be unique. Workflow action already exists with this name</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>Uid provided already in use.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>User with Uid {0} not found</value>
+  <data name="SurveyUidNotFound" xml:space="preserve">
+    <value>Survey Type with Uid {0} not found.</value>
   </data>
 </root>

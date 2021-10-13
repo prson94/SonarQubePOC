@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AssetIdentifierNotFound" xml:space="preserve">
+    <value>Asset corresponding with identifier of {0} could not be found.</value>
+  </data>
   <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
     <value>ConditionFieldTypeName must not be empty.</value>
   </data>
@@ -150,6 +153,15 @@
   <data name="CustomUidNotValid" xml:space="preserve">
     <value>{0} {1} is not a valid Uid</value>
   </data>
+  <data name="DescriptionLengthValidation" xml:space="preserve">
+    <value>Description length({0} characters) is too long . It must be maximum length of 4000 characters or less.</value>
+  </data>
+  <data name="Errorlocatingmetric" xml:space="preserve">
+    <value>Error locating metric</value>
+  </data>
+  <data name="ErrorRemoveMetric" xml:space="preserve">
+    <value>Error removing metric</value>
+  </data>
   <data name="ErrorRuleResult" xml:space="preserve">
     <value>Error removing rule results</value>
   </data>
@@ -160,6 +172,9 @@
     <value>Evaluated Asset not found</value>
   </data>
   <data name="GroupConditionNotFound" xml:space="preserve">
+    <value>Groups should not have conditions.</value>
+  </data>
+  <data name="GroupNotHaveCondition" xml:space="preserve">
     <value>Groups should not have conditions.</value>
   </data>
   <data name="InvalidDate" xml:space="preserve">
@@ -174,8 +189,17 @@
   <data name="IsGroupTrueParentMetric" xml:space="preserve">
     <value>Parent metric must have 'IsGroup' value set to True.</value>
   </data>
+  <data name="MetricAdded" xml:space="preserve">
+    <value>Metric Added</value>
+  </data>
+  <data name="MetricAddedSuccessfully" xml:space="preserve">
+    <value>The specified metric was successfully added</value>
+  </data>
   <data name="MetricNotFound" xml:space="preserve">
     <value>Metric not found.</value>
+  </data>
+  <data name="MetricRemoved" xml:space="preserve">
+    <value>Metric removed.</value>
   </data>
   <data name="MetricRemoveMessage" xml:space="preserve">
     <value>Metric successfully removed.</value>
@@ -186,8 +210,23 @@
   <data name="MetricUidNotFound" xml:space="preserve">
     <value>Metric with Uid of {0} not found.</value>
   </data>
+  <data name="MetricUpdated" xml:space="preserve">
+    <value>Metric Updated</value>
+  </data>
+  <data name="MetricUpdatedSuccessfully" xml:space="preserve">
+    <value>The specified metric was successfully updated</value>
+  </data>
+  <data name="NameNotEmpty" xml:space="preserve">
+    <value>Name must not be empty.</value>
+  </data>
   <data name="NoAllocationAssetTypeScoreType" xml:space="preserve">
     <value>There is no allocation for specified Asset Type UID and Score Type.</value>
+  </data>
+  <data name="NoAllocationForUid" xml:space="preserve">
+    <value>There is no allocation for specified Allocation Uid.</value>
+  </data>
+  <data name="NotAllowUpdateMetric" xml:space="preserve">
+    <value>You are not allowed to update this metric.</value>
   </data>
   <data name="ParentMetricNotFound" xml:space="preserve">
     <value>Parent metric not found.</value>
@@ -197,5 +236,8 @@
   </data>
   <data name="UseSingleCondition" xml:space="preserve">
     <value>You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition</value>
+  </data>
+  <data name="WeightDecimalValidation" xml:space="preserve">
+    <value>Weight must be a decimal greater than 0 and less than or equal to 1</value>
   </data>
 </root>

@@ -130,46 +130,46 @@ namespace d360.web.Controllers.V2
                 }
 
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"You have not provided valid assetTypeUid.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ActionApiMessages.InvalidAssetTypeUid);
 
                 List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
 
                 if (!scoreTypes.Contains(model.scoreType))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"You have not provided valid scoreType.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ApiMessages.InvalidScoreType);
                 }
 
                 var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
 
                 List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, $"AssetType with uid {model.assetTypeUid} does not exist.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, string.Format(ActionApiMessages.AssetTypeNotFound, model.assetTypeUid.ToString()));
 
                 if (!allowedClasses.Contains(assetType.Class))
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Asset type has invalid class.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ActionApiMessages.AssettypeInvalidClass);
 
                 MetricAllocation alloc = ScoringRepository.GetAllocationByModel(model);
 
                 if (alloc != null && alloc.State == State.Active)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Score Allocation already exists.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.ScoreExists);
                 }
 
                 if (model.lowerThreshold == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Lower threshold must be set.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.LowerThreshold);
                 }
                 if (model.upperThreshold == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Upper threshold must be set.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.UpperThreshold);
                 }
                 if (model.lowerThreshold >= model.upperThreshold)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Lower threshold must be smaller than Upper threshold.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.UpperGtLower);
                 }
                 if (model.lowerThreshold <= 0 || model.upperThreshold <= 0 || model.upperThreshold > 100)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Threshold values must be between 0 and 100.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.RangeLimitThreshold);
                 }
 
                 AllocationApiGetModel allocation = ScoringRepository.PostAllocation(model, ref alloc);
@@ -210,32 +210,32 @@ namespace d360.web.Controllers.V2
                 MetricAllocation alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
                 if (alloc == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, $"Allocation with uid {allocationUid} does not exist.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, ScoreApiMessages.AllocationNotExists);
 
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"You have not provided valid assetTypeUid.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ActionApiMessages.EmptyAllocationRequest);
 
                 List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
 
                 if (!scoreTypes.Contains(model.scoreType))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"You have not provided valid scoreType.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ApiMessages.InvalidScoreType);
                 }
 
                 var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
 
                 List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, $"AssetType with uid {model.assetTypeUid} does not exist.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, string.Format(ActionApiMessages.AssetTypeNotFound, model.assetTypeUid.ToString()));
 
                 if (!allowedClasses.Contains(assetType.Class))
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Asset type has invalid class.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ActionApiMessages.AssettypeInvalidClass);
 
                 bool alreadyExists = ScoringRepository.DoesAllocationExist(allocationUid, model);
 
                 if (alreadyExists)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Score Allocation already exists.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.ScoreExists);
                 }
 
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
@@ -246,24 +246,24 @@ namespace d360.web.Controllers.V2
 
                 if (!canBeEdited)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Unfortunately you are unable to update a scores Asset Type, Score Type or Externally calculated flag if score has active measures defined.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.RestrictUpdateScoreField);
                 }
 
                 if (model.lowerThreshold == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Lower threshold must be set.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.LowerThreshold);
                 }
                 if (model.upperThreshold == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Upper threshold must be set.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.UpperThreshold);
                 }
                 if (model.lowerThreshold >= model.upperThreshold)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Lower threshold must be smaller than Upper threshold.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.UpperGtLower);
                 }
                 if (model.lowerThreshold <= 0 || model.upperThreshold <= 0 || model.upperThreshold > 100)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Threshold values must be between 0 and 100.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.RangeLimitThreshold);
                 }
 
 
@@ -304,17 +304,17 @@ namespace d360.web.Controllers.V2
                 var alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
                 if (alloc == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, $"Allocation with uid {allocationUid} does not exist.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, string.Format(ScoreApiMessages.AllocationNotExists, allocationUid.ToString()));
 
                 var hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Unfortunately you are unable to delete a score with measures defined.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.RestrictDeleteScore);
                 }
 
                 ScoringRepository.DeleteAllocation(alloc);
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse() { message = "Allocation successfully deleted!" }));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse() { message = ScoreApiMessages.AllocationDeleteMessage }));
             }
             catch
             {
@@ -482,13 +482,13 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Conflict, ErrorMessage = $"Score item with Uid {scoreItemUid} is not a data quality measure." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to read the asset that is related to this score item." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Score item with Uid {scoreItemUid} does not exist." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Conflict, ErrorMessage = string.Format(ScoreApiMessages.ScoreNotDataQualityMeasure, scoreItemUid.ToString()) },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ScoreApiMessages.RestrictReadAssetScoreITem },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(ScoreApiMessages.ScoreNotExists, scoreItemUid.ToString()) }
                 };
                 return DetermineUnhandledException(
                     ex, 
-                    "Error retrieving data quality evidence for score result", 
+                    ScoreApiMessages.ErrorGetDataQualityScore, 
                     messages, 
                     new Dictionary<string, string> { { "Method Name", "GetEvidenceForDataQualityScoreItem" } } 
                 );
@@ -582,7 +582,7 @@ namespace d360.web.Controllers.V2
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error retrieving unallocated asset types",
+                    ScoreApiMessages.ErrorUnallocatedAssetType,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "GetUnallocatedAssetTypesForScoreType" } }
                 );
@@ -736,7 +736,7 @@ namespace d360.web.Controllers.V2
                     var isDistinct = m.measures.GroupBy(i => i.measureUid).Select(g => g.Key).ToList();
                     if(isDistinct.Count() != m.measures.Count())
                     {
-                        throw new GenericException(HttpStatusCode.BadRequest, "Duplicate measureUid specified in the payload.");
+                        throw new GenericException(HttpStatusCode.BadRequest, ScoreApiMessages.DuplicateMesaureUid);
                     }
                 }
 
@@ -765,8 +765,8 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Score definition with {allocationUid} could not be found." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = $"Score definition with {allocationUid} is not externally calculated." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid.ToString()) },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid.ToString()) },
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
                 };
                 return DetermineUnhandledException(
@@ -832,8 +832,8 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Score definition with {allocationUid} could not be found." },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = $"Score definition with {allocationUid} is externally calculated." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid.ToString()) },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid.ToString()) },
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
                 };
                 return DetermineUnhandledException(
@@ -871,7 +871,7 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Unauthorized, ErrorMessage = "You are not allowed to retrieve the measure version history for this measure." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Unauthorized, ErrorMessage = ScoreApiMessages.RestrictReadVersionHistory }
                 };
                 return DetermineUnhandledException(
                     ex,
@@ -919,7 +919,7 @@ namespace d360.web.Controllers.V2
             {
                 if (effectiveDate.Value.ToUniversalTime().Date > DateTime.UtcNow.Date)
                 {
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "effectiveDate must not be greater than today's date (in UTC)."));
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ScoreApiMessages.EffectiveDateNotGTToday));
                 }
             }
 
@@ -989,7 +989,7 @@ namespace d360.web.Controllers.V2
                         new ApiExecutionRecievedResponse
                         {
                             ExecutionID = executionUid,
-                            Message = "Now processing request. Please check back with this ExecutionID for status.",
+                            Message = ApiMessages.ExecutionIDStatus,
                             Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/scoring/executions/{executionUid}/status"
                         }
                     )
@@ -999,7 +999,7 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You are not allowed to recalculate score items associated with this measure." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ScoreApiMessages.RestrictRecalculateScore }
                 };
                 return DetermineUnhandledException(
                     ex,
@@ -1067,7 +1067,7 @@ namespace d360.web.Controllers.V2
                 var res = ScoringRepository.GetExecutionById(uid);
                 if (res == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
                 }
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -1080,7 +1080,7 @@ namespace d360.web.Controllers.V2
             }
             catch (ArgumentException)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1091,7 +1091,7 @@ namespace d360.web.Controllers.V2
                     { "ExecutionUid", uid.ToString() }, //left to prevent a breaking change
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1117,7 +1117,7 @@ namespace d360.web.Controllers.V2
             var res = ScoringRepository.GetExecutionById(uid);
             if (res == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
             }
             var items = ScoringRepository.GetExecutionItems(res.ID, _pageSize, _pageNum, changeType);
             return await Task.FromResult<IHttpActionResult>(
