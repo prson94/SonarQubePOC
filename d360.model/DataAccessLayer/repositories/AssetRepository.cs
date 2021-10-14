@@ -1217,6 +1217,7 @@ namespace d360.model.DataAccessLayer
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
                 {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {string.Join("\n", countJoins)}
+                left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
                 {hierarchyParentUidSelect}
                 {(includeParentInCount ? parentApplySQL : "")}
                 {whereSql}";
