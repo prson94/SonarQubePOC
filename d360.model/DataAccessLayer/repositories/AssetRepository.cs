@@ -122,22 +122,6 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
-                {
-                    bool canOwnFusion;
-                    var canOwnFusionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "canownfusion").Value;
-                    if (bool.TryParse(canOwnFusionString, out canOwnFusion))
-                    {
-
-                        condition += " and A.CanOwnFusion=@canownfusion ";
-                        dbArgs.Add("canownfusion", canOwnFusion);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Invalid value for parameter [canOwnFusion]", canOwnFusionString);
-                    }
-                }
-
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
                 {
                     bool autoDisplayParent;
@@ -221,7 +205,6 @@ namespace d360.model.DataAccessLayer
 									,A.DisplayFormat
 									,A.AutoDisplayDescription
 									,A.UseAsTransformation
-                                    ,A.CanOwnFusion
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
                                     ,A.CanEditParent
@@ -2321,7 +2304,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false,
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         CanEditParent = model.CanEditParent
@@ -2446,7 +2428,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false,
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         FlowObjectType = model.FlowObjectType,
@@ -2558,12 +2539,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
-                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
                     }
                     else
                     {
                         assetType.UseAsTransformation = false;
-                        assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
                     assetType.Notes = model.Notes;

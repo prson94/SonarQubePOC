@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettings, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState, CompanySettingEnum, SettingsPutModel } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -68,7 +68,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         secondaryNavService: SecondaryNavService,
         private helpMenuService: HelpMenuService,
         titleService: Title,
-        private messagesService: MessagesObservableService,
+        private messagesService: MessagesObservableService
     ) {
 
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);        
@@ -347,6 +347,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.settingsService.putSettings(settings)
             .subscribe(
                 (data) => {
+                    this.isLoading = false;
                     this.SaveButton.disabled = false;
                     this.SaveButton.isLoading = false;
                     if (data && data.type === "error") {

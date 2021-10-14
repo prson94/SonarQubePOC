@@ -85,10 +85,6 @@ namespace d360.core.entities
         public bool UseAsTransformation { get; set; }
 
         [DataMember]
-        public bool? CanOwnFusion { get; set; }
-        [DataMember]
-        public int? FusionID { get; set; }
-        [DataMember]
         public bool? AutoDisplayParent { get; set; }
         [DataMember]
         public FlowObjectType? FlowObjectType { get; set; }

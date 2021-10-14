@@ -399,7 +399,6 @@ END");
 			                                    ,[UpdatedBy]
 			                                    ,[Notes]
 			                                    ,[uid]
-			                                    ,[CanOwnFusion]
 			                                    ,[AutoDisplayDescription]
 			                                    ,[UseAsTransformation]
 			                                    ,F.FieldXML as FieldXml

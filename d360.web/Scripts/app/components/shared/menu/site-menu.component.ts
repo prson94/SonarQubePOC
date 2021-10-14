@@ -374,7 +374,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     if (item.menu)
                         item.menu.isActiveItem = false;
                 } else {
-                    if (item.menu.NavigationItems && item.menu.NavigationItems.length > 0) {
+                    if (item.menu && item.menu.NavigationItems && item.menu.NavigationItems.length > 0) {
                         this.isMenuActive = true;
                     }
                 }
