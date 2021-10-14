@@ -109,7 +109,6 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="Class">Allows for filtering the Asset type's by Class.The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.</param>
         /// <param name="assetTypeUid">Filter by Asset type UID.</param>
-        /// <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -123,26 +122,13 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, string FusionTypeUID = null, Guid? assetTypeUid = null)
+        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, Guid? assetTypeUid = null)
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
             var errorMessage = "";
 
             try
             {
-                Guid? fusionTypeGuid = Guid.Empty;
-                if (!string.IsNullOrEmpty(FusionTypeUID))
-                {
-                    if (Class == null)
-                    {
-                        fusionTypeGuid = Guid.Parse(FusionTypeUID);
-                    }
-                    else
-                    {
-                        throw new Exception("Invalid class type for Fusion type UID.");
-                    }
-                }
-
                 if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
                 {
                     var assetType = this.AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
@@ -151,7 +137,7 @@ namespace d360.web.Controllers.V2
                 }
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, fusionTypeGuid, assetTypeUid);
+                var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }
