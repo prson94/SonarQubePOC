@@ -14,20 +14,17 @@ import { OperatorModel } from "../models/operator.model";
     providedIn: 'root'
 })
 export class CompanySettingsService extends BaseObservableService {
-    testId: number = null;
     settings: SettingsGetModel[] = null;
     settingToUpdate: SettingsPutModel[] = [];
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     loadSettings() {
-        this.testId = 123;
         return new Promise((resolve, reject) => {
-            this.http.get('/api/v2/environment/settings').subscribe(r => {
-            //this.getSettings().subscribe(r => {
+            this.http.get('/api/v2/environment/settings').subscribe((r) => {
                 this.settings = <SettingsGetModel[]>r;
                 // now parse read-only value and load into each model
-                this.settings.forEach(s => {
+                this.settings.forEach((s) => {
                     if (s.BooleanSetting) {
                         s.ScalarValue = s.BooleanSetting.Value;
                     }
@@ -92,13 +89,13 @@ export class CompanySettingsService extends BaseObservableService {
         let settingId: number = <number>setting;
         let foundSetting: SettingsGetModel = null;
         if (this.settings && this.settings.length > 0) {
-            foundSetting = this.settings.find(s => s.SettingID == settingId);
+            foundSetting = this.settings.find((s) => s.SettingID == settingId);
         }
         return foundSetting;
     }
 
     private parseSettingChange(setting: SettingsPutModel) {
-        let currentSetting = this.settings.find(s => s.SettingID == setting.SettingID);
+        let currentSetting = this.settings.find((s) => s.SettingID == setting.SettingID);
 
         if (currentSetting.BooleanSetting && setting.BooleanSetting && currentSetting.BooleanSetting.Value !== setting.BooleanSetting.Value) {
             currentSetting.BooleanSetting.Value = setting.BooleanSetting.Value;
@@ -149,7 +146,7 @@ export class CompanySettingsService extends BaseObservableService {
 
     putSettings(settings: SettingsPutModel[]): Observable<any> {
 
-        settings.forEach(s => {
+        settings.forEach((s) => {
             this.parseSettingChange(s);
         });
 

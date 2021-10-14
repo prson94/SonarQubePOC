@@ -73,7 +73,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
     ngOnInit() {             
         this.isLoading = true;
-        this.siteMenuService.getSiteNavItems().subscribe(nav => {
+        this.siteMenuService.getSiteNavItems().subscribe((nav) => {
             this.companySettings.SiteNav = nav;
             this.isLoading = false;
         });

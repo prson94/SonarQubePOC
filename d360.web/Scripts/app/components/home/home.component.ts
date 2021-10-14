@@ -86,7 +86,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.secondaryNavService.showHeader(false);
         this.showActivityTile = this.settingsService.getSettingById(CompanySettingEnum.ShowHomeActivityTile).BooleanSetting.Value;
         this.showAssignmentTile = this.settingsService.getSettingById(CompanySettingEnum.ShowHomeAssignmentTile).BooleanSetting.Value;
-        this.showBoardTile = this.settingsService.getSettingById(CompanySettingEnum.ShowHomeBoardTile).BooleanSetting.Value;;
+        this.showBoardTile = this.settingsService.getSettingById(CompanySettingEnum.ShowHomeBoardTile).BooleanSetting.Value;
 
         this.showTitle = this.settingsService.getSettingById(CompanySettingEnum.ShowHomePageTitle).BooleanSetting.Value;
         this.title = this.settingsService.getSettingById(CompanySettingEnum.BrowserTitlePrefix).StringSetting.Value;
@@ -94,10 +94,12 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.titleColor = this.settingsService.getSettingById(CompanySettingEnum.HomePageTitleColor).StringSetting.Value;
 
         let bgImage = this.settingsService.getSettingById(CompanySettingEnum.HomePageBackgroundImage).StringSetting.Value;
-        if (bgImage != null && bgImage != "")
+        if (bgImage != null && bgImage != "") {
             this.backgroundImage = bgImage;
-        else
+        }
+        else {
             this.backgroundImage = "/content/images/home.background.new.jpg";
+        }
 
         this.numTiles = (this.showAssignmentTile ? 1 : 0)
             + (this.showBoardTile ? 1 : 0)
