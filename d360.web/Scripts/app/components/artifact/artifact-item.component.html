@@ -4,7 +4,7 @@
         <div>
             <div class="col s12" style="display:flex;">
                 <div class="tile tile-detail main-panel">
-                    <d3s-object-definition-tile [addArtifactPerm]="addArtifactPerm" [editArtifactPerm]="editArtifactPerm" [deleteArtifactPerm]="deleteArtifactPerm" [objectPermissions]="permissions" [objectID]="artifact?.ID" [useV2Api]="true" [objectType]="'Artifact'" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
+                    <d3s-object-definition-tile [synonymPermission]="synonymPermission" [objectPermissions]="permissions" [objectID]="artifact?.ID" [useV2Api]="true" [objectType]="'Artifact'" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
                 </div>
                 <div *ngIf="showDataProfile" class="tile tile-detail side-panel">
                         <side-panel (expandedChange)="sidePanelOpen=$event" [hasProfiling]="true" [storageKey]="sidePanelStorageKey">

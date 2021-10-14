@@ -8,7 +8,7 @@ export class Artifacts {
     items: any;
 }
 
-export class ArtifactPermission {
+export class SynonymPermission {
     addArtifact: boolean;
     editArtifact: boolean;
     deleteArtifact: boolean;
@@ -33,5 +33,5 @@ export class Artifact {
     Class: AssetTypeClass;
     Breadcrumbs: BreadcrumbItem[];
     NymTypes: NymType[];
-    ArtifactPermission: ArtifactPermission
+    SynonymPermission: SynonymPermission
 }

@@ -8,6 +8,7 @@ import { BaseComponent } from '../base.component';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { SynonymPermission } from '../../../models/artifacts.model';
 
 
 @Component({
@@ -34,9 +35,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     @Input() hasAdd: boolean = true;
     @Input() hasDelete: boolean = true;
 
-    @Input() addArtifactPerm: boolean = false;
-    @Input() editArtifactPerm: boolean = false;
-    @Input() deleteArtifactPerm: boolean = false;
+    @Input() synonymPermission: SynonymPermission;
 
     theDeleteCallback: Function;
 
@@ -64,7 +63,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.load();
-        if (this.addArtifactPerm || this.editArtifactPerm) {
+        if (this.synonymPermission.addArtifact || this.synonymPermission.editArtifact) {
             this.enableAddBtn = true;
         }
     }

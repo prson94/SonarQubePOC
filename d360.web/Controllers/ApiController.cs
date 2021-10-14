@@ -1099,7 +1099,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             permission["editArtifact"] = editArtifact;
             permission["deleteArtifact"] = deleteArtifact;
 
-            json.Add("ArtifactPermission", permission);
+            json.Add("SynonymPermission", permission);
             
             if (json == null)
             {
