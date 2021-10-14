@@ -51,7 +51,7 @@ namespace d360.model.DataAccessLayer
         {
             return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
         }
-        
+
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
@@ -61,16 +61,16 @@ namespace d360.model.DataAccessLayer
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
-            string optionalJoin = string.Empty;
-            string permissionsJoin = string.Empty;
-
+            string extraJoins = string.Empty;
+            var extraColumns = string.Empty;
+            
             if (Class.HasValue)
             {
                 var Id = (int)Class;
                 dbArgs.Add("@Id", Id.ToString());
                 condition = " and A.[Class]=@Id";
             }
-            var levelsSql = "";
+            
             List<string> whereStatements = new List<string>();
             if (queryParams != null)
             {
@@ -164,6 +164,20 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "includedashboardflag"))
+                {
+                    bool include;
+                    var includeString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
+                    if (bool.TryParse(includeString, out include))
+                    {
+                        extraJoins += @" cross apply (select count(1) as [Count] from Report where ObjectType = A.Object and ObjectID = A.ObjectID) D ";
+                        extraColumns += @", cast(iif(D.[Count] = 1, 1, 0) as bit) as HasDashboards";
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid value for parameter [includedashboardflag]", includeString);
+                    }
+                }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "includelevels"))
                 {
@@ -171,7 +185,7 @@ namespace d360.model.DataAccessLayer
                     var includeLevelsString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;
                     if (bool.TryParse(includeLevelsString, out includeLevels))
                     {
-                        levelsSql = @",(select Level, Name, Description from AssetTypeLevel where AssetTypeID = A.ID order by Level for json path) as LevelsJson";
+                        extraColumns += @", (select Level, Name, Description from AssetTypeLevel where AssetTypeID = A.ID order by Level for json path) as LevelsJson";
                     }
                     else
                     {
@@ -183,7 +197,7 @@ namespace d360.model.DataAccessLayer
 
             if (!CompanyContext.CurrentResourceIsAdmin)
             {
-                permissionsJoin = $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
+                extraJoins += $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
                 condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
                 dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             }
@@ -209,16 +223,15 @@ namespace d360.model.DataAccessLayer
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
                                     ,A.CanEditParent
-                                    {levelsSql} 
+                                    {extraColumns} 
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
                                     ,AT.IconForeColor as ForeColor
                         FROM        AssetType A
-                                    {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
                                     left join [dbo].[AssetTypeStyle] AT on (A.ID = AT.ID)
-                                    {permissionsJoin}
+                                    {extraJoins}
                         where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
