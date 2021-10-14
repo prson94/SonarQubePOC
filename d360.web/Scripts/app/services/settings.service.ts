@@ -37,13 +37,13 @@ export class CompanySettingsService extends BaseObservableService {
                     else if (s.BooleanSetting) {
                         s.ScalarValue = s.BooleanSetting.Value;
                     }
-                    else  {
+                    else {
                         s.ScalarValue = null;
                     }
                 });
                 resolve(true);
-            })
-        })
+            });
+        });
     }
 
     getSettings(): Observable<SettingsGetModel[]> {
@@ -95,7 +95,7 @@ export class CompanySettingsService extends BaseObservableService {
     }
 
     private parseSettingChange(setting: SettingsPutModel) {
-        let currentSetting = this.settings.find((s) => s.SettingID == setting.SettingID);
+        let currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);
 
         if (currentSetting.BooleanSetting && setting.BooleanSetting && currentSetting.BooleanSetting.Value !== setting.BooleanSetting.Value) {
             currentSetting.BooleanSetting.Value = setting.BooleanSetting.Value;

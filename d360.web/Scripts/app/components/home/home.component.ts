@@ -94,7 +94,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.titleColor = this.settingsService.getSettingById(CompanySettingEnum.HomePageTitleColor).StringSetting.Value;
 
         let bgImage = this.settingsService.getSettingById(CompanySettingEnum.HomePageBackgroundImage).StringSetting.Value;
-        if (bgImage != null && bgImage != "") {
+        if (bgImage !== null && bgImage !== "") {
             this.backgroundImage = bgImage;
         }
         else {
