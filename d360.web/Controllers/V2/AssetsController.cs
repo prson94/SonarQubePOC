@@ -113,7 +113,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("types"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerParameter("UseAsTransformation", "Filter results by Use As Transformation setting. This filter is used to show only Business and Technical asset types which have been marked as transformational asset types in their configuration. Transformational assets have special meaning in the asset browser. Please see the Govern user guide for further details about transformational assets.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("Hierarchical", "Filter results by Hierarchical setting. This value is used to show Model and Policy Types.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("AutoDisplayDescription", "Filter results by Auto Display Description setting. This value is used by the Govern UI to have the Description shown on the asset list page by default or not.", DataType = "boolean", ParameterType = "query", Required = false),            
