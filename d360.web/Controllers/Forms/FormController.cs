@@ -2434,45 +2434,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpGet,Route("synonymPermission/{objectType}/{objectId}"), ValidateInput(false)]
-        public JsonResult synonymPermission(string objectType, int objectId )
-        {
-            try
-            {
-                var list = new List<bool>();
-                if (Company.CurrentResourceIsAdmin)
-                {
-                    list.Add(true);//Permission for Add Button
-                    list.Add(true);//Permission for Delete Button
-                    return Json(list, JsonRequestBehavior.AllowGet);
-                }
-                
-                bool addSynonyms = true;
-                if (!Company.HasAssetPermission(objectType, objectId, Permission.AddAsset) || !Company.HasAssetPermission(objectType, objectId, Permission.EditAsset))
-                    addSynonyms = false;
-
-                bool deleteSynonyms = true;
-                if (!Company.HasAssetPermission(objectType, objectId, Permission.DeleteAsset))
-                    deleteSynonyms = false;
-
-                list.Add(addSynonyms);
-                list.Add(deleteSynonyms);
-
-                return Json(list, JsonRequestBehavior.AllowGet);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
+        
         [HttpDelete, Route("DeleteCustomSynonym")]
         public JsonResult DeleteCustomSynonym(FormCollection form)
         {

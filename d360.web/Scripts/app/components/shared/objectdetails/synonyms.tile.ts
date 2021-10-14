@@ -34,6 +34,10 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     @Input() hasAdd: boolean = true;
     @Input() hasDelete: boolean = true;
 
+    @Input() addArtifactPerm: boolean = false;
+    @Input() editArtifactPerm: boolean = false;
+    @Input() deleteArtifactPerm: boolean = false;
+
     theDeleteCallback: Function;
 
     protected formMode = FormMode.Default;
@@ -60,6 +64,9 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.load();
+        if (this.addArtifactPerm || this.editArtifactPerm) {
+            this.enableAddBtn = true;
+        }
     }
 
     load(): void {
@@ -79,16 +86,6 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         );
 
         this.isLoading = true;
-       
-        this.objectDetailService.getSynonymPermission(this.objectID, this.objectType).subscribe(
-            data => {
-                this.enableAddBtn = data[0];
-                this.enableDeleteBtn = data[1];
-
-                this.isLoading = false;
-            }
-        );
-        
     }
 
     protected deleteSynonym(item: Synonym) {

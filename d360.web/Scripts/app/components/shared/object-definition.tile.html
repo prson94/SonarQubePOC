@@ -11,7 +11,9 @@
                      [hasAddRelationshipsPermissions]="hasAddRelationshipsPermissions"
                      [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
                      [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions"
-                     [useAssetDetailColumnDefinition]="true">
+                     [useAssetDetailColumnDefinition]="true"
+                     [addArtifactPerm]="addArtifactPerm" [editArtifactPerm]="editArtifactPerm"
+                     [deleteArtifactPerm]="deleteArtifactPerm">
     </ig-asset-detail>
 </div>
 <d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && !useV2Api"

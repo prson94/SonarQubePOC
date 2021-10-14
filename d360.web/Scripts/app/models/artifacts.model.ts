@@ -8,6 +8,12 @@ export class Artifacts {
     items: any;
 }
 
+export class ArtifactPermission {
+    addArtifact: boolean;
+    editArtifact: boolean;
+    deleteArtifact: boolean;
+}
+
 
 export class Artifact {
     AllowAttributes: boolean;
@@ -27,4 +33,5 @@ export class Artifact {
     Class: AssetTypeClass;
     Breadcrumbs: BreadcrumbItem[];
     NymTypes: NymType[];
+    ArtifactPermission: ArtifactPermission
 }

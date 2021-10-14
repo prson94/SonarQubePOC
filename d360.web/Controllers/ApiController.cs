@@ -1079,8 +1079,28 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         [Route("artifact/{id:int}")]
         public HttpResponseMessage GetArtifact(int id)
         {
+            
             var json = Company.GetPageInformation(SystemObjects.Artifact, id);
 
+            bool addArtifact = true;
+            bool editArtifact = true;
+            bool deleteArtifact = true;
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                string objectType = SystemObjects.Artifact.ToString();
+                addArtifact = Company.HasAssetPermission(objectType, id, Permission.AddAsset);
+                editArtifact = Company.HasAssetPermission(objectType, id, Permission.EditAsset);
+                deleteArtifact = Company.HasAssetPermission(objectType, id, Permission.DeleteAsset);
+            }
+            
+            var permission = new JObject();
+            permission["addArtifact"] = addArtifact;
+            permission["editArtifact"] = editArtifact;
+            permission["deleteArtifact"] = deleteArtifact;
+
+            json.Add("ArtifactPermission", permission);
+            
             if (json == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, json);

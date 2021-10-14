@@ -21,6 +21,9 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Input() objectID: number;
     @Input() objectType: string;
     @Input() useV2Api: boolean = false;
+    @Input() addArtifactPerm: boolean = false;
+    @Input() editArtifactPerm: boolean = false;
+    @Input() deleteArtifactPerm: boolean = false;
 
     @Input() nymTypes: NymType[] = [];
 

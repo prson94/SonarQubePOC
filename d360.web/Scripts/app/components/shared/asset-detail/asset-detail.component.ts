@@ -33,6 +33,9 @@ export class AssetDetailComponent implements OnChanges {
     @Input() paddingLeft: string;
     @Input() isSidePanel: boolean = false;
     @Input() useAssetDetailColumnDefinition: boolean = false;
+    @Input() addArtifactPerm: boolean = false;
+    @Input() editArtifactPerm: boolean = false;
+    @Input() deleteArtifactPerm: boolean = false;
 
     assetUID: string;
     assetTypeUID: string;

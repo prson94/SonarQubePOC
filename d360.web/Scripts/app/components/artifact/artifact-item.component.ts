@@ -40,6 +40,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private dataProfile: any;
     private sidePanelOpen: boolean = false;
     private sidePanelStorageKey;
+    private addArtifactPerm: boolean = false;
+    private editArtifactPerm: boolean = false;
+    private deleteArtifactPerm: boolean = false;
 
     constructor(
         private route: ActivatedRoute,
@@ -94,6 +97,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
             .subscribe(
                 artifact => {
                     this.artifact = artifact;
+                    this.addArtifactPerm = artifact.ArtifactPermission.addArtifact;
+                    this.editArtifactPerm = artifact.ArtifactPermission.editArtifact;
+                    this.deleteArtifactPerm = artifact.ArtifactPermission.deleteArtifact;
 
                     this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
 
