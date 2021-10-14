@@ -228,4 +228,31 @@ END
 		]]>
     </rollback>
   </changeSet>
+
+
+  <changeSet author="kmcnamee" id="Table.dbo.AssetType-DropCanOwnFusion-v1">
+    <comment>GOV-15928 Remove CanOwnFusion</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+IF COL_LENGTH('[dbo].[AssetType]','CanOwnFusion') IS NOT NULL
+BEGIN
+  alter table [dbo].[AssetType] DROP CONSTRAINT DF_assetType_CanOwnFusion;
+  ALTER TABLE [dbo].[AssetType] DROP COLUMN [CanOwnFusion]
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+
+IF COL_LENGTH('[dbo].[AssetType]','CanOwnFusion') IS NULL
+BEGIN
+  ALTER TABLE [dbo].[AssetType] ADD [CanOwnFusion] bit 
+  ALTER TABLE [dbo].[AssetType] ADD  CONSTRAINT [DF_assetType_CanOwnFusion]  DEFAULT ((0)) FOR [CanOwnFusion]
+END
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

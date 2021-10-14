@@ -205,6 +205,7 @@ namespace d360.model.DataAccessLayer
 									,A.DisplayFormat
 									,A.AutoDisplayDescription
 									,A.UseAsTransformation
+                                    ,0 as 'CanOwnFusion'
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
                                     ,A.CanEditParent
@@ -2303,7 +2304,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Hierarchical = true,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation,
+                        UseAsTransformation = model.UseAsTransformation,                        
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         CanEditParent = model.CanEditParent
@@ -2427,7 +2428,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Hierarchical = true,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation,
+                        UseAsTransformation = model.UseAsTransformation,                        
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         FlowObjectType = model.FlowObjectType,
@@ -2538,11 +2539,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.AutoDisplayParent = model.AutoDisplayParent;
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
-                        assetType.UseAsTransformation = model.UseAsTransformation;
+                        assetType.UseAsTransformation = model.UseAsTransformation;                        
                     }
                     else
                     {
-                        assetType.UseAsTransformation = false;
+                        assetType.UseAsTransformation = false;                        
                     }
                     assetType.Class = model.Class;
                     assetType.Notes = model.Notes;

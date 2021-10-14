@@ -1104,6 +1104,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 model.Add("Name", assetType.Name);
                 model.Add("Description", assetType.Description);
                 model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
+                model.Add("CanOwnFusion", false);
                 model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
                 model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
                 model.Add("Class", assetType.Class);
