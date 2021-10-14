@@ -46,17 +46,17 @@ namespace d360.model.DataAccessLayer
         {
             return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
         }
-        
+
         public Asset GetAssetByUID(Guid assetUid)
         {
             return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
         }
-        
+
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        
+
         public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? assetTypeUid)
         {
             var dbArgs = new DynamicParameters();
@@ -119,22 +119,6 @@ namespace d360.model.DataAccessLayer
                     else
                     {
                         throw new ArgumentException("Invalid value for parameter [autoDisplayDescription]", autoDisplayDescriptionString);
-                    }
-                }
-
-                if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
-                {
-                    bool canOwnFusion;
-                    var canOwnFusionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "canownfusion").Value;
-                    if (bool.TryParse(canOwnFusionString, out canOwnFusion))
-                    {
-
-                        condition += " and A.CanOwnFusion=@canownfusion ";
-                        dbArgs.Add("canownfusion", canOwnFusion);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Invalid value for parameter [canOwnFusion]", canOwnFusionString);
                     }
                 }
 
@@ -221,7 +205,7 @@ namespace d360.model.DataAccessLayer
 									,A.DisplayFormat
 									,A.AutoDisplayDescription
 									,A.UseAsTransformation
-                                    ,A.CanOwnFusion
+                                    ,0 as 'CanOwnFusion'
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
                                     ,A.CanEditParent
@@ -1211,12 +1195,15 @@ namespace d360.model.DataAccessLayer
             if (fieldColumns.Any())
                 fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 
+            bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("kp.keypath");
+
             var countSql = $@"
                 select  count(*)
                 from    Asset A 
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
                 {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {string.Join("\n", countJoins)}
+                {(hasKeyPathCountFiltering ? "left join graph.AssetNodeKeyPath KP on KP.ID = a.ID" : "")} 
                 {hierarchyParentUidSelect}
                 {(includeParentInCount ? parentApplySQL : "")}
                 {whereSql}";
@@ -1420,7 +1407,7 @@ namespace d360.model.DataAccessLayer
                         {
                             results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
                         }
-                        catch(ArgumentException ex)
+                        catch (ArgumentException ex)
                         {
                             //If dynamic object for property orderBy does not implement IComparable (i.e. JObject,JArray), use string comparison
                             results.Sort((x, y) =>
@@ -2238,7 +2225,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 i.Name
             }).ToList();
         }
-        
+
         public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
         {
             CompanyContext.Add(execution);
@@ -2274,7 +2261,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return results;
         }
-        
+
         public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey)
         {
             var parentType = SystemObjects.ArtifactType;
@@ -2304,7 +2291,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 case AssetTypeClass.Rule:
                     #region
                     parentType = (model.Class == AssetTypeClass.Rule) ? SystemObjects.RuleType : SystemObjects.ArtifactType;
-                    
+
                     at = new AssetType
                     {
                         uid = uid,
@@ -2320,14 +2307,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Hierarchical = true,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false,
+                        UseAsTransformation = model.UseAsTransformation,                        
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         CanEditParent = model.CanEditParent
                     };
                     CompanyContext.Add(at);
-                    
+
                     model.ObjectID = at.ObjectID;
                     model.Object = at.Object;
 
@@ -2365,7 +2351,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     var objectType = model.Class == AssetTypeClass.Model ? SystemObjects.TaxonomyType : SystemObjects.PolicyType;
                     var errorMessage = model.Class == AssetTypeClass.Model ? AssetTypeErrors.InvalidModelDepth : AssetTypeErrors.InvalidPolicyDepth;
-                    
+
                     at = new AssetType
                     {
                         uid = uid,
@@ -2445,8 +2431,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Hierarchical = true,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false,
+                        UseAsTransformation = model.UseAsTransformation,                        
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         FlowObjectType = model.FlowObjectType,
@@ -2478,7 +2463,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        
+
         public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
         {
             CompanyContext.Add(execution);
@@ -2514,7 +2499,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return results;
         }
-        
+
         public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
         {
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
@@ -2557,13 +2542,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.AutoDisplayParent = model.AutoDisplayParent;
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
-                        assetType.UseAsTransformation = model.UseAsTransformation;
-                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
+                        assetType.UseAsTransformation = model.UseAsTransformation;                        
                     }
                     else
                     {
-                        assetType.UseAsTransformation = false;
-                        assetType.CanOwnFusion = false;
+                        assetType.UseAsTransformation = false;                        
                     }
                     assetType.Class = model.Class;
                     assetType.Notes = model.Notes;
@@ -2831,7 +2814,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();
         }
-        
+
         public AssetType GetArtifactTypeByID(int artifactTypeId)
         {
             return CompanyContext.Filter<AssetType>(i => i.Object.Equals("ArtifactType") && i.ObjectID == artifactTypeId).SingleOrDefault();
@@ -3523,12 +3506,12 @@ where	O.RowNum = 1";
 							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
 						 where it.ObjectID = att.ObjectID and it.Object = att.Object
 						 )ATParent
-                         {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID ": "")}
+                         {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
                         where att.Class in @filterClasses
                          {assetTypePermissionWhere}
                     order by att.name";
 
-                    return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
         }
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)

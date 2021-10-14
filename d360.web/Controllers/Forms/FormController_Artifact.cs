@@ -268,7 +268,7 @@ namespace d360.web.Controllers
                     {
                         case AssetTypeClass.BusinessAsset:
                         case AssetTypeClass.TechnicalAsset:
-                            model.AssetType.CanOwnFusion = (@class == AssetTypeClass.BusinessAsset) ? assetType.CanOwnFusion : false;
+                            model.AssetType.CanOwnFusion = false;
                             model.AssetType.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
