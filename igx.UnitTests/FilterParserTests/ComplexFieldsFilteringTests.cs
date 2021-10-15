@@ -35,114 +35,124 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "H1_00004", ID = 4, Type = "Date" });
             fieldTypes.Add(new FieldType() { Name = "H1_00005", ID = 5, Type = "Text" });
             fieldTypes.Add(new FieldType() { Name = "H1_00006", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
-            fieldTypes.Add(new FieldType() { Name = "H1_00007", ID = 7, Type = "Counter" });
+            fieldTypes.Add(new FieldType() { Name = "H1_00007", ID = 7, Type = "Counter", CounterPrefix = "CNT-" });
             fieldTypes.Add(new FieldType() { Name = "$Related:4df68f30-daa0-48da-912f-2daaea6961e0", ID = 8, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
 
             var filterDataProvider = GetFilterDataProvider();
             this.filterParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField);
-            this.filterParser.LoadFieldTypes(fieldTypes, null);
+
+            List<string> columns = new List<string>();
+            columns.Add("H1_00001.FormattedValue as [H1_00001]");
+            columns.Add("H1_00002.FormattedValue as [H1_00002]");
+            columns.Add("H1_00003.FormattedValue as [H1_00003]");
+            columns.Add("H1_00004.FormattedValue as [H1_00004]");
+            columns.Add("H1_00005.FormattedValue as [H1_00005]");
+            columns.Add("H1_00006.FormattedValue as [H1_00006]");
+            columns.Add("H1_00007.FormattedValue as [H1_00007]");
+            this.filterParser.LoadFieldTypes(fieldTypes, columns);
 
         }
 
         [Theory]
-        [InlineData("H1_00005 eq 'text'", "( h1_00005  =  'text')")]
-        [InlineData("H1_00005 ne 'text'", "( h1_00005  <>  'text')")]
-        [InlineData("H1_00005 ct 'text'", "( h1_00005  like  '%text%')")]
-        [InlineData("H1_00005 nct 'text'", "( h1_00005  not like  '%text%')")]
-        [InlineData("H1_00005 eq null", "( h1_00005  is null)")]
-        [InlineData("H1_00005 ne null", "( h1_00005  is not null)")]
-        public void TextTests(string input, string expectedOutput)
+        [InlineData("H1_00005 eq 'text'", "H1_00005.FormattedValue = @filter_1")]
+        [InlineData("H1_00005 ne 'text'", "(H1_00005.FormattedValue <> @filter_1 or H1_00005.FormattedValue is null)")]
+        [InlineData("H1_00005 ct 'text'", "H1_00005.FormattedValue like @filter_1")]
+        [InlineData("H1_00005 nct 'text'", "(H1_00005.FormattedValue not like @filter_1 or H1_00005.FormattedValue is null)")]
+        [InlineData("H1_00005 eq null", "H1_00005.FormattedValue is null", 0)]
+        [InlineData("H1_00005 ne null", "H1_00005.FormattedValue is not null", 0)]
+        public void TextTests(string input, string expectedOutput, int countOfParams = 1)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.True(result == expectedOutput, "Got:" + result);
+            Assert.True(parameters.Count == countOfParams);
+        }
+
+        [Theory]
+        [InlineData("H1_00003 eq true", "H1_00003.FormattedValue = @filter_1")]
+        [InlineData("H1_00003 eq True", "H1_00003.FormattedValue = @filter_1")]
+        [InlineData("H1_00003 eq false", "H1_00003.FormattedValue = @filter_1")]
+        [InlineData("H1_00003 eq False", "H1_00003.FormattedValue = @filter_1")]
+        [InlineData("H1_00003 eq null", "H1_00003.FormattedValue is null", 0)]
+        [InlineData("H1_00003 ne null", "H1_00003.FormattedValue is not null", 0)]
+        public void BooleanTests(string input, string expectedOutput, int countOfParams = 1)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
             Assert.True(result == expectedOutput);
-            Assert.True(parameters.Count == 0);
+            Assert.True(parameters.Count == countOfParams);
         }
 
         [Theory]
-        [InlineData("H1_00003 eq true", "( h1_00003  =  'True')")]
-        [InlineData("H1_00003 eq True", "( h1_00003  =  'True')")]
-        [InlineData("H1_00003 eq false", "( h1_00003  =  'False')")]
-        [InlineData("H1_00003 eq False", "( h1_00003  =  'False')")]
-        [InlineData("H1_00003 eq null", "( h1_00003  is null)")]
-        [InlineData("H1_00003 ne null", "( h1_00003  is not null)")]
-        public void BooleanTests(string input, string expectedOutput)
+        [InlineData("H1_00001 eq 5", "H1_00001.FormattedValue = @filter_1")]
+        [InlineData("H1_00001 ne 8", "(H1_00001.FormattedValue <> @filter_1 or H1_00001.FormattedValue is null)")]
+        [InlineData("H1_00001 gt 10", "H1_00001.FormattedValue > @filter_1")]
+        [InlineData("H1_00001 ge 20", "H1_00001.FormattedValue >= @filter_1")]
+        [InlineData("H1_00001 le 10", "H1_00001.FormattedValue <= @filter_1")]
+        [InlineData("H1_00001 lt 20", "H1_00001.FormattedValue < @filter_1")]
+        [InlineData("H1_00001 eq null", "H1_00001.FormattedValue is null", 0)]
+        [InlineData("H1_00001 ne null", "H1_00001.FormattedValue is not null", 0)]
+        [InlineData("h1_00002 eq 5", "H1_00002.FormattedValue = @filter_1")]
+        [InlineData("h1_00002 ne 8", "(H1_00002.FormattedValue <> @filter_1 or H1_00002.FormattedValue is null)")]
+        [InlineData("h1_00002 gt 10", "H1_00002.FormattedValue > @filter_1")]
+        [InlineData("h1_00002 ge 20", "H1_00002.FormattedValue >= @filter_1")]
+        [InlineData("h1_00002 le 10", "H1_00002.FormattedValue <= @filter_1")]
+        [InlineData("h1_00002 lt 20", "H1_00002.FormattedValue < @filter_1")]
+        [InlineData("h1_00002 eq null", "H1_00002.FormattedValue is null", 0)]
+        [InlineData("h1_00002 ne null", "H1_00002.FormattedValue is not null", 0)]
+        public void NumberAndDecimalTests(string input, string expectedOutput, int countOfParams = 1)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
-            Assert.True(result == expectedOutput);
-            Assert.True(parameters.Count == 0);
+            Assert.True(result == expectedOutput, "Got:" + result);
+            Assert.True(parameters.Count == countOfParams);
         }
 
         [Theory]
-        [InlineData("H1_00001 eq 5", "( h1_00001  =  '5')")]
-        [InlineData("H1_00001 ne 8", "( h1_00001  <>  '8')")]
-        [InlineData("H1_00001 gt 10", "( h1_00001  >  '10')")]
-        [InlineData("H1_00001 ge 20", "( h1_00001  >=  '20')")]
-        [InlineData("H1_00001 le 10", "( h1_00001  <=  '10')")]
-        [InlineData("H1_00001 lt 20", "( h1_00001  <  '20')")]
-        [InlineData("H1_00001 eq null", "( h1_00001  is null)")]
-        [InlineData("H1_00001 ne null", "( h1_00001  is not null)")]
-        [InlineData("h1_00002 eq 5", "( h1_00002  =  '5')")]
-        [InlineData("h1_00002 ne 8", "( h1_00002  <>  '8')")]
-        [InlineData("h1_00002 gt 10", "( h1_00002  >  '10')")]
-        [InlineData("h1_00002 ge 20", "( h1_00002  >=  '20')")]
-        [InlineData("h1_00002 le 10", "( h1_00002  <=  '10')")]
-        [InlineData("h1_00002 lt 20", "( h1_00002  <  '20')")]
-        [InlineData("h1_00002 eq null", "( h1_00002  is null)")]
-        [InlineData("h1_00002 ne null", "( h1_00002  is not null)")]
-        public void NumberAndDecimalTests(string input, string expectedOutput)
+        [InlineData("h1_00007 eq 5", "F7.FormattedValue = @filter_1")]
+        [InlineData("h1_00007 ne 8", "(F7.FormattedValue <> @filter_1 or F7.FormattedValue is null)")]
+        [InlineData("h1_00007 gt 10", "F7.FormattedValue > @filter_1")]
+        [InlineData("h1_00007 ge 20", "F7.FormattedValue >= @filter_1")]
+        [InlineData("h1_00007 le 10", "F7.FormattedValue <= @filter_1")]
+        [InlineData("h1_00007 lt 20", "F7.FormattedValue < @filter_1")]
+        [InlineData("h1_00007 eq null", "F7.FormattedValue is null", 0)]
+        [InlineData("h1_00007 ne null", "F7.FormattedValue is not null", 0)]
+        public void CounterTests(string input, string expectedOutput, int countOfParams = 1)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
-            Assert.True(result == expectedOutput);
-            Assert.True(parameters.Count == 0);
-        }
-
-        [InlineData("h1_00007 eq 5", "( h1_00007  =  '5')")]
-        [InlineData("h1_00007 ne 8", "( h1_00007  <>  '8')")]
-        [InlineData("h1_00007 gt 10", "( h1_00007  >  '10')")]
-        [InlineData("h1_00007 ge 20", "( h1_00007  >=  '20')")]
-        [InlineData("h1_00007 le 10", "( h1_00007  <=  '10')")]
-        [InlineData("h1_00007 lt 20", "( h1_00007  <  '20')")]
-        [InlineData("h1_00007 eq null", "( h1_00007  is null)")]
-        [InlineData("h1_00007 ne null", "( h1_00007  is not null)")]
-        public void CounterTests(string input, string expectedOutput)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
-            var result = this.filterParser.Parse(input, out parameters, out _);
-            Assert.True(result == expectedOutput);
-            Assert.True(parameters.Count == 0);
+            Assert.True(result == expectedOutput, "Got:" + result);
+            Assert.True(parameters.Count == countOfParams);
         }
 
         [Theory]
-        [InlineData("h1_00004 eq '02-10-2020'")]
-        [InlineData("h1_00004 ne '02-10-2020'")]
-        [InlineData("h1_00004 gt '02-10-2020'")]
-        [InlineData("h1_00004 ge '02-10-2020'")]
-        [InlineData("h1_00004 le '02-10-2020'")]
-        [InlineData("h1_00004 lt '02-10-2020'")]
-        [InlineData("h1_00004 eq null")]
-        [InlineData("h1_00004 ne null")]
-        public void DateTests(string input)
+        [InlineData("h1_00004 eq '02-10-2020'", "H1_00004.FormattedValue = @filter_1")]
+        [InlineData("h1_00004 ne '02-10-2020'", "(H1_00004.FormattedValue <> @filter_1 or H1_00004.FormattedValue is null)")]
+        [InlineData("h1_00004 gt '02-10-2020'", "H1_00004.FormattedValue > @filter_1")]
+        [InlineData("h1_00004 ge '02-10-2020'", "H1_00004.FormattedValue >= @filter_1")]
+        [InlineData("h1_00004 le '02-10-2020'", "H1_00004.FormattedValue <= @filter_1")]
+        [InlineData("h1_00004 lt '02-10-2020'", "H1_00004.FormattedValue < @filter_1")]
+        [InlineData("h1_00004 eq null", "H1_00004.FormattedValue is null", 0)]
+        [InlineData("h1_00004 ne null", "H1_00004.FormattedValue is not null", 0)]
+        public void DateTests(string input, string expectedQuery, int countOfParams = 1)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
-            Assert.True(parameters.Count == 0);
+            Assert.True(result == expectedQuery, "Got:" + result);
+            Assert.True(parameters.Count == countOfParams);
         }
 
         [Theory]
-        [InlineData("((h1_00006 eq 'France') or (h1_00006 eq 'Brand new country'))", "((( h1_00006  like  '%France%')) or (( h1_00006  like  '%Brand new country%')))")]
-        [InlineData("((h1_00006 ne 'France') or (h1_00006 eq 'Brand new country'))", "((( h1_00006  not like  '%France%')) or (( h1_00006  like  '%Brand new country%')))")]
-        [InlineData("((h1_00006 eq 'France') and (h1_00006 eq 'Brand new country'))", "((( h1_00006  like  '%France%')) and (( h1_00006  like  '%Brand new country%')))")]
-        [InlineData("h1_00006 eq null", "( h1_00006  is null)")]
-        [InlineData("h1_00006 ne null", "( h1_00006  is not null)")]
+        [InlineData("((h1_00006 eq 'France') or (h1_00006 eq 'Brand new country'))", "((H1_00006.FormattedValue = @filter_1) or (H1_00006.FormattedValue = @filter_2))")]
+        [InlineData("((h1_00006 ne 'France') or (h1_00006 eq 'Brand new country'))", "(((H1_00006.FormattedValue <> @filter_1 or H1_00006.FormattedValue is null)) or (H1_00006.FormattedValue = @filter_2))")]
+        [InlineData("((h1_00006 eq 'France') and (h1_00006 eq 'Brand new country'))", "((H1_00006.FormattedValue = @filter_1) and (H1_00006.FormattedValue = @filter_2))")]
+        [InlineData("h1_00006 eq null", "H1_00006.FormattedValue is null")]
+        [InlineData("h1_00006 ne null", "H1_00006.FormattedValue is not null")]
         public void LookupTests(string input, string expectedOutput)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
-            Assert.True(result == expectedOutput);
-            Assert.True(parameters.Count == 0);
+            Assert.True(result == expectedOutput, "Got:" + result);
         }
 
         [Theory]

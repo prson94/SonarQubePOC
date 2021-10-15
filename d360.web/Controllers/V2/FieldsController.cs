@@ -290,7 +290,7 @@ namespace d360.web.Controllers.V2
                         {
                             if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
                             {
-                                throw new RestApiException(HttpStatusCode.BadRequest,ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
+                                throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
                             }
                         }
                     });
@@ -403,7 +403,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
                     {
-                        throw new RestApiException(HttpStatusCode.BadRequest,ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
+                        throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
                     }
                 }
 
@@ -2443,7 +2443,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                         var assettypeid = fields.Where(x => x.AssetTypeID != null).FirstOrDefault()?.AssetTypeID;
                         if (assettypeid.HasValue)
-                        {                            
+                        {
                             assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid)?.uid;
                         }
                     }
@@ -2508,7 +2508,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         }
                         if (f.Type == DataType.JsonElement.ToString())
                         {
-                            c.Type.JsonElement = new FieldTypeDataTypeJsonElementApiViewModel();
+                            c.Type.Text = new FieldTypeDataTypeTextApiViewModel();
                         }
                         if (f.Type == DataType.Link.ToString())
                         {
@@ -2521,6 +2521,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         if (f.Type == DataType.Score.ToString())
                         {
                             c.Type.Score = new FieldTypeDataTypeComputedScoreApiViewModel();
+                            c.Type.Score.ScoreType = (f.ScoreType.HasValue && f.ScoreType == 1) ? ScoreType.Governance : ScoreType.DataQuality;
                         }
                         if (f.Type == DataType.Tag.ToString())
                         {

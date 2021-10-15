@@ -78,7 +78,7 @@ namespace d360.model.helpers.filters
             }
         }
 
-        protected void UpdateTokenValueForType(bool skipLookupCheck = false)
+        protected void UpdateTokenValueForType(bool skipLookupCheck = false, bool complexField = false)
         {
             if (@operator == "ct" || @operator == "nct")
             {
@@ -99,7 +99,7 @@ namespace d360.model.helpers.filters
 
             string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
 
-            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
+            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()) && !complexField)
             {
                 if (fieldType.LookupObjectID == null)
                 {
@@ -129,6 +129,10 @@ namespace d360.model.helpers.filters
             if (!this.isLookupField && fieldType.Type != DataType.Color.ToString())
             {
                 var fieldSql = GetColumnValueSyntax(fieldType.ID);
+                if (@operator == "ct" && complexField && fieldType.Type != "Text")
+                {
+                    fieldSql = $"CONVERT(NVARCHAR(max),{fieldSql})";
+                }
 
                 if (this.ConvertToNvarChar)
                 {
@@ -162,6 +166,13 @@ namespace d360.model.helpers.filters
                 }
 
                 this.field = "ISNULL(ACJ.ColorJson,'')";
+
+                if (complexField)
+                {
+                    stringBuilder.Append("ISNULL(ACJ.ColorJson,'')");
+                    stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
+                    stringBuilder.Append($"@filter_{parameterIdx}");
+                }
             }
 
             if (sqlParamsRef != null)
@@ -272,11 +283,11 @@ namespace d360.model.helpers.filters
             }
             else
             {
-                if (fieldColumn == null || fieldColumn.LastIndexOf(" as ", StringComparison.InvariantCulture) <= 0)
+                if (fieldColumn == null || fieldColumn.ToLowerInvariant().LastIndexOf(" as ", StringComparison.InvariantCulture) <= 0)
                 {
                     return $"F{fieldTypeId}.FormattedValue";
                 }
-                return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as ", StringComparison.InvariantCulture));
+                return fieldColumn.Substring(0, fieldColumn.ToLowerInvariant().LastIndexOf(" as ", StringComparison.InvariantCulture));
             }
         }
 

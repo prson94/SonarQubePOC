@@ -27,6 +27,7 @@ using d360.core.resources;
 using d360.model.DataAccessLayer;
 using d360.web.Extensions;
 using Resources;
+using d360.core.Models;
 
 namespace d360.web.Controllers
 {
@@ -39,7 +40,9 @@ namespace d360.web.Controllers
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
         IConnectorLabelRepository connectorLabelRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
+        IFieldsRepository fieldsRepository;
+
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider, IFieldsRepository fieldsRepository)
             : base(community, company, settingsRepository)
         {
 #if DEBUG
@@ -48,6 +51,7 @@ namespace d360.web.Controllers
             SecProvider = secProvider;
             commentsRepository = comments;
             this.tagRepository = tagRepository;
+            this.fieldsRepository = fieldsRepository;
             this.connectorLabelRepository = connectorLabelRepository;
         }
 
@@ -756,7 +760,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
                 where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
 
-            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new {type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault();
+            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault();
 
             switch (type)
             {
@@ -1378,15 +1382,55 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
             try
             {
-                any = await Company.QueryFirstOrDefaultAsync<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly, @checkExists",
-                    new { @object = new DbString { Value = type, IsAnsi = true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true, checkExists = true }
-                );
+                var qparams = Request.GetQueryNameValuePairs();
+                var result = new Dictionary<string, object>();
+                var asset = Company.Assets.FirstOrDefault(x => x.Object == type && x.ObjectID == id);
+
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == fieldTypeId);
+
+                List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, asset.uid);
+                FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+
+                List<dynamic> Values = new List<dynamic>();
+                List<GridColumn> Columns = new List<GridColumn>();
+                List<GridField> Fields = new List<GridField>();
+                List<dynamic> scoringInfo = new List<dynamic>();
+
+                int count = 0;
+                var dbArgs = new DynamicParameters();
+
+                dbArgs.Add("resourceId", Company.CurrentResourceID);
+                dbArgs.Add("assetUid", asset.uid);
+                dbArgs.Add("object", asset.Object);
+                dbArgs.Add("objectId", asset.ObjectID);
+                dbArgs.Add("fieldTypeId", fieldType.ID);
+
+                if (fieldType.Type == "ComplexRelationLookup")
+                {
+                    (Columns, Fields, Values, count, scoringInfo) =
+                       await fieldsRepository.GetComplexRelationLookupGrid(ftl, fields, dbArgs, "", "", "", "", countOnly: true);
+
+                }
+
+                if (fieldType.Type == "RefListRelationship")
+                {
+                    (Columns, Fields, Values, count) =
+                       await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, "", "", "", "", countOnly: true);
+                }
+
+                if (fieldType.Type == "OwnershipLookup")
+                {
+                    (Columns, Fields, Values, count) =
+                       await fieldsRepository.GetOwnershipLookupGrid(ftl, fields, dbArgs, "", "", "", "", countOnly: true);
+                }
+
+                return count > 0;
             }
             catch (Exception ex)
             {
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", "ApiController.AnyComplexLookupGridValues" },
-                    { "SQL Satetment", $"exec GetComplexLookupByAsset '{type}', {id}, {fieldTypeId}, {Company.CurrentResourceID}, 1, 1" }
+                    { "SQL Satetment", $"ComplexLookupByAsset '{type}', {id}, {fieldTypeId}, {Company.CurrentResourceID}, 1, 1" }
                 });
             }
 

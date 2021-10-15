@@ -14,7 +14,7 @@
     </div>
 </div>
 <div class="ig-lookup-grid-filter-container" *ngIf="filtersLoadIdentifier">
-    <div class="grid-actions-header" [style.padding]="hideFilter ? '0 0 5px 0' : null">
+    <div class="grid-actions-header" [style.padding]="hideFilter ? '0 0 0 0' : null">
         <ng-container *ngIf="!hideFilter">
             <div class="simple-search">
                 <ig-search-field mode="Keypress"
@@ -24,18 +24,22 @@
                                  [infoTooltip]="simpleSearchTooltipHTML">
                 </ig-search-field>
             </div>
-            <advanced-filtering *ngIf="showAdvancedFilterField" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+            <advanced-filtering *ngIf="showAdvancedFilterField" [externalAllocations]="externalAllocations" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+
+            <div *ngIf="hideFilter" class="ig-lookup-grid-filter-placeholder">&nbsp;</div>
+            <div class="grid-action-buttons">
+                <button igButton
+                        class="ig-lookup-grid-button"
+                        icon="fa-download"
+                        (click)="export()"
+                        pTooltip="Export to Excel"
+                        tooltipPosition="top"
+                        tooltipStyleClass="ig-tooltip"></button>
+            </div>
         </ng-container>
-        <div *ngIf="hideFilter" class="ig-lookup-grid-filter-placeholder">&nbsp;</div>
-        <div class="grid-action-buttons">
-            <button igButton
-                    class="ig-lookup-grid-button"
-                    icon="fa-download"
-                    (click)="export()"
-                    pTooltip="Export to Excel"
-                    tooltipPosition="top"
-                    tooltipStyleClass="ig-tooltip"></button>
-        </div>
+    </div>
+    <div class="asset-grid-export-link" *ngIf="hideFilter">
+        <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>
     </div>
 </div>
 <div>
