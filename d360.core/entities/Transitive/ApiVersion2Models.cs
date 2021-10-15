@@ -47,12 +47,10 @@ namespace d360.core.entities
         [DataMember]
         public Guid Uid { get; set; }
 
-        [DataMember]
-        [MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+        [DataMember, MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
         public string Name { get; set; }
 
-        [DataMember]
-        [JsonConverter(typeof(EnumConverter))]
+        [DataMember, JsonConverter(typeof(EnumConverter))]
         public AssetTypeClass Class { get; set; }
 
         [DataMember]
@@ -61,8 +59,7 @@ namespace d360.core.entities
         [DataMember]
         public bool AutoDisplayDescription { get; set; }
 
-        [DataMember]
-        [MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+        [DataMember, MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
         public string DisplayFormat { get; set; }
 
         public HierarchyInsert Hierarchy { get; set; }
@@ -85,13 +82,11 @@ namespace d360.core.entities
         public bool UseAsTransformation { get; set; }
 
         [DataMember]
-        public bool? CanOwnFusion { get; set; }
-        [DataMember]
-        public int? FusionID { get; set; }
-        [DataMember]
         public bool? AutoDisplayParent { get; set; }
+
         [DataMember]
         public FlowObjectType? FlowObjectType { get; set; }
+
         [DataMember]
         public bool? CanEditParent { get; set; }
     }

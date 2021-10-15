@@ -108,7 +108,7 @@ namespace d360.web.Controllers.V2
         /// GET a list of asset types.
         /// </summary>
         /// <param name="Class">Allows for filtering the Asset type's by Class.The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.</param>
-        /// <param name="assetTypeUid">Filter by Asset type UID.</param>        
+        /// <param name="assetTypeUid">Filter by Asset type UID.</param>
         /// <returns></returns>
         [
             HttpGet,

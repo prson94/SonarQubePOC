@@ -2317,7 +2317,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         UpdatedOn = DateTime.UtcNow,
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
-                        Hierarchical = true,
+                        Hierarchical = false,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation,                        
