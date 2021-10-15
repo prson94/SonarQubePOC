@@ -296,6 +296,29 @@ namespace d360.web.Controllers.V2
                     });
                 }
 
+                if (model.Fields.Any(x => x.Type.Lookup != null))
+                {
+                    foreach (var ft in model.Fields.Where(x => x.Type.Lookup != null))
+                    {
+                        var exFt = existingFields.FirstOrDefault(x => x.Name == ft.Name);
+                        if (exFt == null)
+                        {
+                            continue;
+                        }
+                        var hasFields = Company.Query<int>("select count(1) from field where fieldtypeid = @ftid", new { ftid = exFt.ID }).FirstOrDefault() > 0;
+                        if (hasFields)
+                        {
+                            var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
+                                .Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+                            if (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID)
+                            {
+                                throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+                            }
+                        }
+
+                    }
+                }
+
                 if (model.Action == FieldTypesApiEditAction.Replace)
                 {
                     // This is a full replace, so we need to validate that there are no current assets before we allow this.

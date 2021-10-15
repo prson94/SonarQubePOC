@@ -368,16 +368,6 @@ namespace Resources {
         
         /// <summary>
         ///   Looks up a localized string similar to Could not cast score type value {0} to a valid score type.
-        ///   Looks up a localized string similar to Filter expression parse error.
-        /// </summary>
-        internal static string FilterExpressionParseError {
-            get {
-                return ResourceManager.GetString("FilterExpressionParseError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         internal static string ErrorScoreCasting {
             get {
@@ -571,6 +561,15 @@ namespace Resources {
         internal static string FileUploadMessage {
             get {
                 return ResourceManager.GetString("FileUploadMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filter expression parse error.
+        /// </summary>
+        internal static string FilterExpressionParseError {
+            get {
+                return ResourceManager.GetString("FilterExpressionParseError", resourceCulture);
             }
         }
         
@@ -958,6 +957,15 @@ namespace Resources {
         internal static string JSONValidMessage {
             get {
                 return ResourceManager.GetString("JSONValidMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are existing assets in your environment with values on field &apos;{0}&apos;. You may not change &apos;Type of List&apos; property until those field values are removed..
+        /// </summary>
+        internal static string LookupFieldTypeInUse {
+            get {
+                return ResourceManager.GetString("LookupFieldTypeInUse", resourceCulture);
             }
         }
         
