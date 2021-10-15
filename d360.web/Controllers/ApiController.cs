@@ -1079,8 +1079,25 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         [Route("artifact/{id:int}")]
         public HttpResponseMessage GetArtifact(int id)
         {
+            
             var json = Company.GetPageInformation(SystemObjects.Artifact, id);
 
+            bool addModifySynonym = true;
+            bool deleteSynonym = true;
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                string objectType = SystemObjects.Artifact.ToString();
+                addModifySynonym = Company.HasAssetPermission(objectType, id, Permission.AddRelationships)|| Company.HasAssetPermission(objectType, id, Permission.EditRelationships);
+                deleteSynonym = Company.HasAssetPermission(objectType, id, Permission.DeleteRelationships);
+            }
+            
+            var permission = new JObject();
+            permission["addModifySynonym"] = addModifySynonym;
+            permission["deleteSynonym"] = deleteSynonym;
+
+            json.Add("SynonymPermission", permission);
+            
             if (json == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, json);

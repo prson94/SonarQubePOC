@@ -125,7 +125,7 @@ export class ObjectDetailService extends BaseObservableService {
 
         return this.postDynamic(this.http, 'customsynonym', synonym);
     }
-
+    
     getNymAllocations(
         objectID: number,
         object: string

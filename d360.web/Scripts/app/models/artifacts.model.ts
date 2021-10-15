@@ -8,6 +8,11 @@ export class Artifacts {
     items: any;
 }
 
+export class SynonymPermission {
+    addModifySynonym: boolean;
+    deleteSynonym: boolean;
+}
+
 
 export class Artifact {
     AllowAttributes: boolean;
@@ -27,4 +32,5 @@ export class Artifact {
     Class: AssetTypeClass;
     Breadcrumbs: BreadcrumbItem[];
     NymTypes: NymType[];
+    SynonymPermission: SynonymPermission
 }
