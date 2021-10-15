@@ -290,10 +290,33 @@ namespace d360.web.Controllers.V2
                         {
                             if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
                             {
-                                throw new RestApiException(HttpStatusCode.BadRequest,ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
+                                throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
                             }
                         }
                     });
+                }
+
+                if (model.Fields.Any(x => x.Type.Lookup != null))
+                {
+                    foreach (var ft in model.Fields.Where(x => x.Type.Lookup != null))
+                    {
+                        var exFt = existingFields.FirstOrDefault(x => x.Name == ft.Name);
+                        if (exFt == null)
+                        {
+                            continue;
+                        }
+                        var hasFields = Company.Query<int>("select count(1) from field where fieldtypeid = @ftid", new { ftid = exFt.ID }).FirstOrDefault() > 0;
+                        if (hasFields)
+                        {
+                            var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
+                                .Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+                            if (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID)
+                            {
+                                throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+                            }
+                        }
+
+                    }
                 }
 
                 if (model.Action == FieldTypesApiEditAction.Replace)
@@ -403,7 +426,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
                     {
-                        throw new RestApiException(HttpStatusCode.BadRequest,ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
+                        throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
                     }
                 }
 
@@ -2443,7 +2466,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                         var assettypeid = fields.Where(x => x.AssetTypeID != null).FirstOrDefault()?.AssetTypeID;
                         if (assettypeid.HasValue)
-                        {                            
+                        {
                             assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid)?.uid;
                         }
                     }
