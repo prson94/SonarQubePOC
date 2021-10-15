@@ -150,6 +150,9 @@ namespace d360.core.entities
         [DataMember]
         public bool? CanEditParent { get; set; }
 
+        [DataMember]
+        public bool? HasDashboards { get; set; }
+
         [IgnoreDataMember]
         public string LevelsJson { get; set; }
 
