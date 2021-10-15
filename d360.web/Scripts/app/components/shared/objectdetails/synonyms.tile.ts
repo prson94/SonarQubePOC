@@ -49,9 +49,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected selectedSynonym: SynonymItem;    
     protected customSynonymName: string = '';
     protected isLoadingItems = false;
-    protected enableAddBtn: boolean = false;
-    protected enableDeleteBtn: boolean = false;
-
+    
     constructor(private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
         private relationshipsService: RelationshipsService,
@@ -63,10 +61,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.load();
-        if (this.synonymPermission.addArtifact || this.synonymPermission.editArtifact) {
-            this.enableAddBtn = true;
-        }
-    }
+     }
 
     load(): void {
         if (this.objectType == null || this.objectID == null) {

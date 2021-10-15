@@ -9,9 +9,8 @@ export class Artifacts {
 }
 
 export class SynonymPermission {
-    addArtifact: boolean;
-    editArtifact: boolean;
-    deleteArtifact: boolean;
+    addModifySynonym: boolean;
+    deleteSynonym: boolean;
 }
 
 
