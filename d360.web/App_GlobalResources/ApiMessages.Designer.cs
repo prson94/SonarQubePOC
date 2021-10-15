@@ -538,6 +538,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to authenticate. Oidc State not found in ..
+        /// </summary>
+        public static string FailedAuthentication {
+            get {
+                return ResourceManager.GetString("FailedAuthentication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to authenticate. Nonces do not match..
+        /// </summary>
+        public static string FailedAuthenticationNonces {
+            get {
+                return ResourceManager.GetString("FailedAuthenticationNonces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field moved successfully..
         /// </summary>
         public static string FieldMovedSuccessfully {
@@ -952,6 +970,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid sort field specified.
+        /// </summary>
+        public static string InvalidSortField {
+            get {
+                return ResourceManager.GetString("InvalidSortField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid sort order specified.
+        /// </summary>
+        public static string InvalidSortOrder {
+            get {
+                return ResourceManager.GetString("InvalidSortOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid _startDate provided.
         /// </summary>
         public static string InvalidStartDate {
@@ -1047,6 +1083,15 @@ namespace Resources {
         public static string MinLengthCheckGTZero {
             get {
                 return ResourceManager.GetString("MinLengthCheckGTZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority..
+        /// </summary>
+        public static string MissingConfigInfo {
+            get {
+                return ResourceManager.GetString("MissingConfigInfo", resourceCulture);
             }
         }
         

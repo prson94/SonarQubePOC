@@ -70,6 +70,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AssetCount.
+        /// </summary>
+        internal static string AssetCount {
+            get {
+                return ResourceManager.GetString("AssetCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset/Tag Association failed. Tag field may not be assigned to Asset..
+        /// </summary>
+        internal static string AssetTagAssociationFailed {
+            get {
+                return ResourceManager.GetString("AssetTagAssociationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are not allowed to add assets of this type..
         /// </summary>
         internal static string AssetTypeAddAssetPermissionsDenied {
@@ -84,6 +102,24 @@ namespace Resources {
         internal static string AssetTypeCreatedMessage {
             get {
                 return ResourceManager.GetString("AssetTypeCreatedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deletion of Asset Type with UID {0} already in progress..
+        /// </summary>
+        internal static string AssetTypeInProcessNotDelete {
+            get {
+                return ResourceManager.GetString("AssetTypeInProcessNotDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AssetTypeUid.
+        /// </summary>
+        internal static string AssetTypeUid {
+            get {
+                return ResourceManager.GetString("AssetTypeUid", resourceCulture);
             }
         }
         
@@ -138,6 +174,24 @@ namespace Resources {
         internal static string EnvironmentLevelAssetCountNotAllowed {
             get {
                 return ResourceManager.GetString("EnvironmentLevelAssetCountNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ExecutionID.
+        /// </summary>
+        internal static string ExecutionID {
+            get {
+                return ResourceManager.GetString("ExecutionID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ExecutionUid.
+        /// </summary>
+        internal static string ExecutionUid {
+            get {
+                return ResourceManager.GetString("ExecutionUid", resourceCulture);
             }
         }
         
@@ -205,11 +259,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Asset.
+        /// </summary>
+        internal static string InvalidAsset {
+            get {
+                return ResourceManager.GetString("InvalidAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Asset type class &apos;{0}&apos;.
         /// </summary>
         internal static string InvalidAssetTypeClass {
             get {
                 return ResourceManager.GetString("InvalidAssetTypeClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid class type for Fusion type UID..
+        /// </summary>
+        internal static string InvalidClassFusionTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidClassFusionTypeUid", resourceCulture);
             }
         }
         
@@ -232,6 +304,123 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to INVALID EXPORT VIEW TYPE SPECIFIED.
+        /// </summary>
+        internal static string InvalidExportViewType {
+            get {
+                return ResourceManager.GetString("InvalidExportViewType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not a valid _order field.
+        /// </summary>
+        internal static string InvalidOrder {
+            get {
+                return ResourceManager.GetString("InvalidOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page num is not a valid number..
+        /// </summary>
+        internal static string InvalidPageNumber {
+            get {
+                return ResourceManager.GetString("InvalidPageNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page num is invalid, must be greater than 0..
+        /// </summary>
+        internal static string InvalidPageNumberGT0 {
+            get {
+                return ResourceManager.GetString("InvalidPageNumberGT0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid boolean value for parameter &apos;forUI&apos;.
+        /// </summary>
+        internal static string InvalidParameteforUI {
+            get {
+                return ResourceManager.GetString("InvalidParameteforUI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include total is not a valid boolean..
+        /// </summary>
+        internal static string InvalidParameterIncludeTotal {
+            get {
+                return ResourceManager.GetString("InvalidParameterIncludeTotal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid boolean value for parameter &apos;useUidUrls&apos;.
+        /// </summary>
+        internal static string InvalidParameteruseUidUrls {
+            get {
+                return ResourceManager.GetString("InvalidParameteruseUidUrls", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid boolean value for parameter &apos;useUnflattedStructure&apos;.
+        /// </summary>
+        internal static string InvalidParameteruseUnflattedStructure {
+            get {
+                return ResourceManager.GetString("InvalidParameteruseUnflattedStructure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid boolean value for parameter &apos;useFriendlyNames&apos;.
+        /// </summary>
+        internal static string InvalidParameteruseuseFriendlyNames {
+            get {
+                return ResourceManager.GetString("InvalidParameteruseuseFriendlyNames", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid field value for parameter &apos;_order&apos;..
+        /// </summary>
+        internal static string InvalidParameter_order {
+            get {
+                return ResourceManager.GetString("InvalidParameter_order", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid integer value for parameter &apos;_pageNum&apos;.
+        /// </summary>
+        internal static string InvalidParameter_pageNum {
+            get {
+                return ResourceManager.GetString("InvalidParameter_pageNum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid integer value for parameter &apos;_pageSize&apos;.
+        /// </summary>
+        internal static string InvalidParameter_pageSize {
+            get {
+                return ResourceManager.GetString("InvalidParameter_pageSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid resourceUid provided.
+        /// </summary>
+        internal static string InvalidResourceUID {
+            get {
+                return ResourceManager.GetString("InvalidResourceUID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid user or group uid as non owner passed in the request.
         /// </summary>
         internal static string InvalidUserGroupRequestAsNonOwner {
@@ -246,6 +435,33 @@ namespace Resources {
         internal static string InvalidUserGroupRequestAsOwner {
             get {
                 return ResourceManager.GetString("InvalidUserGroupRequestAsOwner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to model.
+        /// </summary>
+        internal static string model {
+            get {
+                return ResourceManager.GetString("model", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page size is not a valid number..
+        /// </summary>
+        internal static string PageSizeNotNumber {
+            get {
+                return ResourceManager.GetString("PageSizeNotNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page size must be between 1 and 100,000..
+        /// </summary>
+        internal static string PageSizeRange {
+            get {
+                return ResourceManager.GetString("PageSizeRange", resourceCulture);
             }
         }
         
@@ -277,6 +493,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UID {0} is a reference list and is configured as the Governance Role and cannot be deleted..
+        /// </summary>
+        internal static string ReferenceUIDConfigureAsGovernRole {
+            get {
+                return ResourceManager.GetString("ReferenceUIDConfigureAsGovernRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are not allowed to remove asset types..
+        /// </summary>
+        internal static string RemoveAssetTypeNotAllowed {
+            get {
+                return ResourceManager.GetString("RemoveAssetTypeNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request successfully created.
+        /// </summary>
+        internal static string RequestCreatedMsg {
+            get {
+                return ResourceManager.GetString("RequestCreatedMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may only provide a maximum of {0} assets in this request. Please call the BATCH API to submit more than {1} items..
         /// </summary>
         internal static string RequestMaxAsset {
@@ -291,6 +534,15 @@ namespace Resources {
         internal static string RestrictReadAssettype {
             get {
                 return ResourceManager.GetString("RestrictReadAssettype", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TagUID {0} and AssetUID {1} association  does not exists.
+        /// </summary>
+        internal static string TagUIDAssetUIDNotExists {
+            get {
+                return ResourceManager.GetString("TagUIDAssetUIDNotExists", resourceCulture);
             }
         }
         

@@ -355,7 +355,7 @@ namespace d360.web.Controllers
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
-                throw new ArgumentException("Invalid sort field specified");
+                throw new ArgumentException(ApiMessages.InvalidSortField);
             }
 
             if ((sortFieldType ?? "").ToUpperInvariant() == "NUMBER")
@@ -1829,13 +1829,13 @@ namespace d360.web.Controllers
             //validate inputs            
             if ((!string.IsNullOrEmpty(sortOrder)) && sortOrder != "asc" && sortOrder != "desc")
             {
-                throw new Exception("Invalid sort order specified");
+                throw new Exception(ApiMessages.InvalidSortOrder);
             }
 
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
-                throw new Exception("Invalid sort field specified");
+                throw new Exception(ApiMessages.InvalidSortField);
             }
 
             if ((sortFieldType ?? "").ToUpper() == "NUMBER")

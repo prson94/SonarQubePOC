@@ -597,4 +597,19 @@
   <data name="InvalidType" xml:space="preserve">
     <value>Invalid Type</value>
   </data>
+  <data name="FailedAuthentication" xml:space="preserve">
+    <value>Failed to authenticate. Oidc State not found in .</value>
+  </data>
+  <data name="FailedAuthenticationNonces" xml:space="preserve">
+    <value>Failed to authenticate. Nonces do not match.</value>
+  </data>
+  <data name="InvalidSortField" xml:space="preserve">
+    <value>Invalid sort field specified</value>
+  </data>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>Invalid sort order specified</value>
+  </data>
+  <data name="MissingConfigInfo" xml:space="preserve">
+    <value>Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority.</value>
+  </data>
 </root>

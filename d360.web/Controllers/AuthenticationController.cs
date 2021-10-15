@@ -33,7 +33,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using System.Xml;
-
+using Resources;
 namespace d360.web.Controllers
 {
     [RoutePrefix(""), ValidateContracts(Ignore = true)]
@@ -575,7 +575,7 @@ namespace d360.web.Controllers
 
                     if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId))
                     {
-                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority.");
+                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
                     }
                     var state = Community.GenerateOpenIdRequestValue();
                     var nonce = Community.GenerateOpenIdRequestValue();
@@ -748,14 +748,14 @@ namespace d360.web.Controllers
 
             if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId) || string.IsNullOrEmpty(authenticationSettings.clientSecret) || string.IsNullOrEmpty(authenticationSettings.audience))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority.");
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
             }
 
             var baseUri = authenticationSettings.baseUri;
             var openIdRequest = Community.GetOpenIdRequest(state);
             if (openIdRequest == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Failed to authenticate. Oidc State not found in .");
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthentication);
             }
 
             var client = new HttpClient();
@@ -784,7 +784,7 @@ namespace d360.web.Controllers
             var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
             if (openIdRequest.Nonce != incomingNonce)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Failed to authenticate. Nonces do not match.");
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthenticationNonces);
             }
 
             #region Claims processing
