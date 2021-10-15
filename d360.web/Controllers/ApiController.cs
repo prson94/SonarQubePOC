@@ -1088,7 +1088,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             if (!Company.CurrentResourceIsAdmin)
             {
                 string objectType = SystemObjects.Artifact.ToString();
-                addModifySynonym = Company.HasAssetPermission(objectType, id, Permission.ModifyRelationships);
+                addModifySynonym = Company.HasAssetPermission(objectType, id, Permission.AddRelationships)|| Company.HasAssetPermission(objectType, id, Permission.EditRelationships);
                 deleteSynonym = Company.HasAssetPermission(objectType, id, Permission.DeleteRelationships);
             }
             
