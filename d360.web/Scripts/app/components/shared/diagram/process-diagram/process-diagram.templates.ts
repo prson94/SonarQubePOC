@@ -7,8 +7,8 @@ import { ProcessDiagramComponent } from './process-diagram.component';
 
 export class ProcessDiagramTemplates {
     private static fontColor: string = '#202020';
-    private static textFont: string = `14px 'Source Sans Pro',sans-serif`;
-    private static textFont12: string = `12px 'Source Sans Pro',sans-serif`;
+    private static textFont: string = `14px 'Precisely'`;
+    private static textFont12: string = `12px 'Precisely'`;
 
     //event
     private static eventNodeRadius = 48;

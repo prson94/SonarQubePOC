@@ -12,6 +12,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     @Input() isVisible: false;
     @Input() showConfirm: false;
     @Input() showTitle: boolean = true;
+    @Input() includePreciselyLogo: boolean = false;
     @Input() subtitle: string;
 
     @Input() appendToBody: boolean = false;

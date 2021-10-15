@@ -1,5 +1,6 @@
 ﻿<div #popupBox class="modal-overlay" tabindex=-1 (keydown)="checkKey($event)" pFocusTrap>
-    <div class="modal-dialog {{additionalClasses}}">
+    <div class="modal-dialog {{additionalClasses}} {{(includePreciselyLogo ? 'modal-with-background' : '')}}">
+        <div *ngIf="includePreciselyLogo" class="white-background"></div>
         <div *ngIf="showTitle" class="modal-title-bar">
             <div style="display:block">
                 <h1>{{title}}</h1>
@@ -11,9 +12,11 @@
         <div *ngIf="showConfirm" class="action-bar">
             <button class="button" (click)="closePopUp()">Cancel</button>
             <span class="grow"></span>
-            <button class="button primary" (click)="confirm()">Confirm
+            <button class="button primary" (click)="confirm()">
+                Confirm
                 <span class="loader"><span class="spinner light"></span></span>
             </button>
         </div>
+        <img *ngIf="includePreciselyLogo" class="about-binary" src="../../../../../Content/images/About-Binary.png" />
     </div>
 </div>

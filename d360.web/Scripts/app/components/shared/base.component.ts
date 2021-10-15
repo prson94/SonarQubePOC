@@ -90,7 +90,7 @@ export class BaseComponent {
     private getSecondaryNavigationSub: Subscription;
 
     protected setBrowserTitle(tileService: Title, area: string) {
-        tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} - ${area}`);
+        tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} : ${area}`);
     }
 
     logAction(actionName: string, objectName: string, objectId: number) {

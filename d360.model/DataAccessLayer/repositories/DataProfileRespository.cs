@@ -665,7 +665,7 @@ namespace d360.model.DataAccessLayer
 
                 if (orderBy == "tags")
                 {
-                    orderBySQL = $@"hasTagField {(orderDirection == "asc" ?  "desc" : "asc")}, JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]') {orderDirection}";
+                    orderBySQL = $@"hasTagField {(orderDirection == "asc" ?  "desc" : "asc")}, JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]') {orderDirection}, td.[path] {orderDirection}";
                 }               
             }
 
@@ -758,9 +758,8 @@ namespace d360.model.DataAccessLayer
 								        ,t.tagString as MatchedAssetTags
 								        ,td.path MatchedAssetPath
 								        ,td.Uid as MatchedAssetUid					
-								        ,P.Path as MatchedAssetTypePath";                
-
-                
+								        ,P.Path as MatchedAssetTypePath
+                                        ,td.hasTagField";                                
             }
 
             string tempTablesSQL = $@"drop table if exists #tempadpid;

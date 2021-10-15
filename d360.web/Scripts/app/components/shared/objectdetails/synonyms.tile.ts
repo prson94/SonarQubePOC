@@ -8,6 +8,7 @@ import { BaseComponent } from '../base.component';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { SynonymPermission } from '../../../models/artifacts.model';
 
 
 @Component({
@@ -34,6 +35,8 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     @Input() hasAdd: boolean = true;
     @Input() hasDelete: boolean = true;
 
+    @Input() synonymPermission: SynonymPermission;
+
     theDeleteCallback: Function;
 
     protected formMode = FormMode.Default;
@@ -46,7 +49,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected selectedSynonym: SynonymItem;    
     protected customSynonymName: string = '';
     protected isLoadingItems = false;
-
+    
     constructor(private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
         private relationshipsService: RelationshipsService,
@@ -58,7 +61,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.load();
-    }
+     }
 
     load(): void {
         if (this.objectType == null || this.objectID == null) {
@@ -75,6 +78,8 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
                 this.isLoading = false;
             }
         );
+
+        this.isLoading = true;
     }
 
     protected deleteSynonym(item: Synonym) {

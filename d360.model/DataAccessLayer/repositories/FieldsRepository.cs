@@ -1852,7 +1852,6 @@ from	IntersectType I
                         var impacted = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Field, c.ID);
                         impactedMeasureVersions.AddRange(impacted);
                     }
-                    Company.FieldTypes.Remove(c);
                     deletedFieldTypes.Add(c);
                     fieldsRemoved = true;
                 }
@@ -1860,12 +1859,22 @@ from	IntersectType I
 
             if (fieldsRemoved)
             {
-                Company.SaveChanges();
-
-                foreach (var counterFieldType in deletedFieldTypes.Where(x => x.Type == DataType.Counter.ToString()))
+                foreach (var ft in deletedFieldTypes)
                 {
-                    Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = counterFieldType.ID });
+                    if (ft.Type == DataType.Counter.ToString())
+                    {
+                        Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID });
+                    }
+                    else
+                    {
+                        Company.Connection.Execute("update field set updatedby = @CurrentResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, Company.CurrentResourceID });
+                    }
+
+                    Company.FieldTypes.Remove(ft);
+                    Company.SaveChanges();
                 }
+
+
             }
             if (shouldRefreshPath)
             {

@@ -1193,7 +1193,15 @@ order by Sort, title";
                 case "R":   // Relation
                 case "U":   // Unrelation
                     #region
-                    sql = $@"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, IName.Name as title from intersecttypedetail itd cross apply dbo.GetIntersectTypeNames(itd.ID) IName where (itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType')) and itd.predicatetype not in (3,4,{(int)PredicateType.Diagram},{(int)PredicateType.DiagramUse},{(int)PredicateType.DiagramReference}) order by IName.Name";
+                    sql = $@"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, 
+                             CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path) as title
+                             from intersecttypedetail itd 
+                                cross apply dbo.GetAssetTypeTextPathById (itd.SubjectAssetTypeId,' > ') SName 
+                                cross apply dbo.GetAssetTypeTextPathById (itd.ObjectAssetTypeId,' > ') OName 
+                                inner join [Predicate] P on P.ID = itd.PredicateID
+                             where (itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType')) 
+                             and itd.predicatetype not in (3,4,{(int)PredicateType.Diagram},{(int)PredicateType.DiagramUse},{(int)PredicateType.DiagramReference}) 
+                             order by CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path)";
                     break;
                 #endregion
                 case "M":   // Users/Groups
@@ -2409,8 +2417,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Add(model);
 
@@ -2426,7 +2434,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
+        
         [HttpDelete, Route("DeleteCustomSynonym")]
         public JsonResult DeleteCustomSynonym(FormCollection form)
         {
