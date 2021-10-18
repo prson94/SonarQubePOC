@@ -14,7 +14,7 @@
 		<![CDATA[
 IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionOwner_backup')
 BEGIN
-	drop table dbo.FusionOwner_backup;
+	 drop table dbo.FusionOwner_backup;
 END
 		]]>
     </sql>

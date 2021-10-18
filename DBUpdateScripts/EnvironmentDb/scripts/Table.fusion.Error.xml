@@ -14,7 +14,7 @@
 		<![CDATA[
 IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Error_backup')
 BEGIN
-	drop table fusion.Error_backup;
+	 drop table fusion.Error_backup;
 END
 		]]>
     </sql>
