@@ -22,10 +22,8 @@ import { BaseComponent } from '../shared/base.component';
                         </ng-template>
                         <ng-template pTemplate="body" let-item let-expanded="expanded">
                             <tr [pSelectableRow]="item">
-                                <td>
-                                    <a style="cursor: pointer" [pRowToggler]="item">
-                                        <i [ngClass]="expanded ? 'fa fa-chevron-circle-down' : 'fa fa-chevron-circle-right'"></i>
-                                    </a>
+                                <td [pRowToggler]="item">
+                                    <i [ngClass]="expanded ? 'fa fa-chevron-circle-down' : 'fa fa-chevron-circle-right'" style="pointer:cursor;"></i>
                                 </td>
                                 <td>{{item.Name}}</td>
                             </tr>

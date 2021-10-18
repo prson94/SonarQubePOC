@@ -2411,7 +2411,6 @@ p-table tbody.p-datatable-tbody > tr {
 }
 
 p-table tbody.p-datatable-tbody > tr.p-highlight {
-  background: @ig-white;
   border-bottom: 2px solid @ig-grey-t5;
 }
 
@@ -2419,7 +2418,7 @@ tr.p-highlight,
 .p-component-content .p-highlight,
 .p-component-header .p-highlight,
 p-table tbody.p-datatable-tbody > tr.p-highlight {
-  background-color: @ig-purple-t4;
+  background: @ig-purple-t4;
 }
 
 p-table tbody.p-datatable-tbody > tr:hover:not(.p-highlight) {
@@ -2521,7 +2520,7 @@ th.p-state-default, .p-treetable th.p-state-default {
       background-color: @ig-purple-t4;
     }
 
-    &:hover {
+    &:hover:not(.p-highlight) {
       background-color: @ig-purple-t5;
     }
   }
@@ -2552,6 +2551,8 @@ button.p-button:disabled {
   border: none;
   font-weight: normal;
   text-align: center;
+  height: 32px;
+  border-radius: 4px;
 }
 
 .p-paginator .p-paginator-pages {
