@@ -5,24 +5,38 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.fusion.Execution-Rename-v1">
-  <comment>GOV-11726</comment>
+  <changeSet author="Puneet Gupta" id="Table.fusion.Execution-Drop-v1">
+  <comment>GOV-11727</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Execution')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Execution_backup')
 BEGIN
-	exec sp_rename 'fusion.Execution', 'Execution_backup';
+	drop table fusion.Execution_backup;
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Execution_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Execution_backup')
 BEGIN
-	exec sp_rename 'fusion.Execution_backup', 'Execution';
+	CREATE TABLE [fusion].[Execution_backup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[QueueID] [uniqueidentifier] NULL,
+		[FusionID] [int] NOT NULL,
+		[RawLogFileName] [nvarchar](500) NULL,
+		[DateStarted] [datetime] NULL,
+		[DateCompleted] [datetime] NULL,
+		[Adds] [int] NULL,
+		[Updates] [int] NULL,
+		[Deletes] [int] NULL,
+		[LoadIsNew] [bit] CONSTRAINT [DF_FusionExecution_LoadIsNew] DEFAULT (0) NULL,
+		[DateToUseForHistory] [datetime] CONSTRAINT [DF_FusionExecution_DateToUseForHistory] DEFAULT (getutcdate()) NOT NULL,
+		[Version] [varchar](250) CONSTRAINT [DF_FusionExecution_Version] DEFAULT ('unknown') NOT NULL,
+		CONSTRAINT [PK_FusionExecution] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
 END
 		]]>
 	</rollback>

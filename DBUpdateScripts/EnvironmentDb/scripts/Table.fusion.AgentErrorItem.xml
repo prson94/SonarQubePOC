@@ -5,31 +5,30 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.fusion.AgentErrorItem-Rename-v1">
-  <comment>GOV-11726</comment>
+  <changeSet author="Puneet Gupta" id="Table.fusion.AgentErrorItem-drop-v1">
+  <comment>GOV-11727</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'AgentErrorItem')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'AgentErrorItem_backup')
 BEGIN
-	IF EXISTS (select * 
-			   from sys.foreign_keys where name = 'FK_FusionAgentErrorItem_FusionAgentError' 
-			   and object_name(parent_object_id) = 'AgentErrorItem' and schema_name(schema_id) = 'fusion'
-			   )
-	BEGIN	
-		ALTER TABLE [fusion].[AgentErrorItem] DROP CONSTRAINT [FK_FusionAgentErrorItem_FusionAgentError]
-	END
-	exec sp_rename 'fusion.AgentErrorItem', 'AgentErrorItem_backup';
+	drop table fusion.AgentErrorItem_backup;
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'AgentErrorItem_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'AgentErrorItem_backup')
 BEGIN
-	exec sp_rename 'fusion.AgentErrorItem_backup', 'AgentErrorItem';
+	CREATE TABLE [fusion].[AgentErrorItem_backup](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[AgentErrorID] [bigint] NOT NULL,
+		[Date] [datetime] CONSTRAINT [DF_FusionAgentErrorItem_Date] DEFAULT (getutcdate()) NOT NULL,
+		[Message] [nvarchar](max) NOT NULL,
+		CONSTRAINT [PK_FusionAgentErrorItem] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
 END
 		]]>
 	</rollback>

@@ -5,24 +5,29 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.fusion.Error-Rename-v1">
-  <comment>GOV-11726</comment>
+  <changeSet author="Puneet Gupta" id="Table.fusion.Error-drop-v1">
+  <comment>GOV-11727</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Error')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Error_backup')
 BEGIN
-	exec sp_rename 'fusion.Error', 'Error_backup';
+	drop table fusion.Error_backup;
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Error_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Error_backup')
 BEGIN
-	exec sp_rename 'fusion.Error_backup', 'Error';
+	CREATE TABLE [fusion].[Error_backup](
+		[ExecutionID] [int] NOT NULL,
+		[Date] [datetime] NOT NULL,
+		[Error] [nvarchar](max) NULL,
+		CONSTRAINT [PK_FusionError] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [Date] ASC )
+	)
 END
 		]]>
 	</rollback>
