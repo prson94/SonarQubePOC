@@ -28,6 +28,7 @@ using d360.model.DataAccessLayer;
 using d360.web.Extensions;
 using Resources;
 using d360.core.Models;
+using SmartFormat;
 
 namespace d360.web.Controllers
 {
@@ -1083,7 +1084,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         [Route("artifact/{id:int}")]
         public HttpResponseMessage GetArtifact(int id)
         {
-            
+
             var json = Company.GetPageInformation(SystemObjects.Artifact, id);
 
             bool addModifySynonym = true;
@@ -1092,16 +1093,16 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             if (!Company.CurrentResourceIsAdmin)
             {
                 string objectType = SystemObjects.Artifact.ToString();
-                addModifySynonym = Company.HasAssetPermission(objectType, id, Permission.AddRelationships)|| Company.HasAssetPermission(objectType, id, Permission.EditRelationships);
+                addModifySynonym = Company.HasAssetPermission(objectType, id, Permission.AddRelationships) || Company.HasAssetPermission(objectType, id, Permission.EditRelationships);
                 deleteSynonym = Company.HasAssetPermission(objectType, id, Permission.DeleteRelationships);
             }
-            
+
             var permission = new JObject();
             permission["addModifySynonym"] = addModifySynonym;
             permission["deleteSynonym"] = deleteSynonym;
 
             json.Add("SynonymPermission", permission);
-            
+
             if (json == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, json);
@@ -1662,7 +1663,12 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
             if (selected.ContainsKey("RelationshipError"))
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, (string)selected["RelationshipError"]);
+                var errorMessage = Smart.Format(AssetTypeErrors.InvalidRelationshipFieldType, new
+                {
+                    FriendlyName = (string)selected["RelationshipError"]
+                });
+
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, errorMessage);
             }
 
             List<System.Web.Mvc.SelectListItem> selection = new List<System.Web.Mvc.SelectListItem>();
@@ -2481,7 +2487,7 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                     {
                         var sType = type.ToString();
                         var asset = Company.Filter<Asset>(
-                            x => x.ObjectID == id && x.Object == sType, 
+                            x => x.ObjectID == id && x.Object == sType,
                             x => x.AssetType).FirstOrDefault();
 
                         if (asset != null)
@@ -2510,7 +2516,7 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             }
 
                             if (type == SystemObjects.Artifact)
-                            { 
+                            {
                                 var parent = Company.GetParentObject(id, type);
 
                                 if (parent != null)
@@ -2526,7 +2532,7 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                                     },
                                         Category = Resources.FieldInfo.SystemNoCategory
                                     });
-                                }                            
+                                }
                             }
 
                             model.rows.Add(new DetailReadOnlyRowModel
@@ -3164,7 +3170,7 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                     policy = null;
                     break;
                 #endregion
-               
+
                 case SystemObjects.RuleType:
                     #region Fields
                     var ruleType = Company.Filter<AssetType>(i => i.ObjectID == id && i.Object == "RuleType").SingleOrDefault();
