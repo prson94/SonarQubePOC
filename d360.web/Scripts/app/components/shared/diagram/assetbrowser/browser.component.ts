@@ -3290,7 +3290,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             $(go.TextBlock,
                 {
                     editable: false,
-                    margin: new go.Margin(4, 0, 0, 6),
+                    margin: new go.Margin(0, 0, 0, 6),
                     font: this.fontLabel,
                     maxLines: this.textMaxLines,
                     overflow: this.textOverflowStyle,
