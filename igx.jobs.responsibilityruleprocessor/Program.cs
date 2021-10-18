@@ -38,6 +38,9 @@ namespace igx.jobs.responsibilityruleprocessor
         {
             try
             {
+                // increase the default dapper timeout from 30 to 90 seconds
+                Dapper.SqlMapper.Settings.CommandTimeout = 90;
+
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
