@@ -184,30 +184,30 @@ export class SearchStateService extends BaseObservableService {
         let categories = [];
 
         if (this._initial) {
-            if (this._checkTreeKeys == null) {
+            if (this._checkTreeKeys === null) {
                 this._checkTreeKeys = this._searchTypes.map(k => new SearchCheckTreeVal(k, "category"));
             }
             this._initial = false;
             types = this._checkTreeKeys
-                .filter((x) => x.type == "subCategory")
+                .filter((x) => x.type === "subCategory")
                 .map((x) => x.key.split(this.subCategoryKeySeparator)[1]);
             categories = this._checkTreeKeys
-                .filter((x) => x.type == "category").map((x) => x.key)
+                .filter((x) => x.type === "category").map((x) => x.key)
                 .concat(this._checkTreeKeys
-                    .filter((x) => x.type == "subCategory")
+                    .filter((x) => x.type === "subCategory")
                     .map((x) => x.key.split(this.subCategoryKeySeparator)[0])
                 );
         } else {
             //Get selected Classes and AssetTypes from checkbox tree
-            types = this.selectedFilters.filter((x) => x.type == "subCategory").map((x) => x.data);
-            categories = this.selectedFilters.filter((x) => x.type == "category").map((x) => x.data);
+            types = this.selectedFilters.filter((x) => x.type === "subCategory").map((x) => x.data);
+            categories = this.selectedFilters.filter((x) => x.type === "category").map((x) => x.data);
             if (types.length > 0) {
                 //Semi-marked classes are not "selected", so they must be added separately
                 categories = categories.concat(
                     this.currentCategories
                         .find((x) => x.type === "root")
                         .children
-                        .filter((x) => x.type == "category" && x.partialSelected == true)
+                        .filter((x) => x.type === "category" && x.partialSelected === true)
                         .map((x) => x.data)
                 );
             }
