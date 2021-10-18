@@ -3612,7 +3612,7 @@ button.tab-scroller {
   display: inline-block;
 
   .title {
-    color: @ig-midblue;
+    color: @ig-purple;
     padding: 0px;
     display: inline-block;
   }
@@ -3682,8 +3682,8 @@ button.tab-scroller {
             padding-right: 40px;
           }
 
-          &.name {
-            color: #006ab3;
+          &.name a {
+            color: @ig-purple;
             padding-right: 30px;
             max-width: 200px;
           }
@@ -3768,15 +3768,12 @@ button.tab-scroller {
       }
 
       .p-checkbox {
-        background-color: white;
-
         .p-checkbox-box {
+          border: 1px solid @ig-purple;
           border-radius: 2px !important;
-          background-color: white;
         }
 
         .p-checkbox-icon {
-          color: black;
           font-weight: bold;
           position: relative;
           top: -1px;
@@ -3957,11 +3954,6 @@ button.tab-scroller {
 
   p-autocomplete {
     width: 100%;
-  }
-
-  &.required {
-    background: @igx-orange-xlight;
-    border: 1px solid @igx-orange;
   }
 
   &.error {
