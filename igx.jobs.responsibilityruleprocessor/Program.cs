@@ -92,7 +92,6 @@ namespace igx.jobs.responsibilityruleprocessor
                 CoreFunction.AITrackException(functionName, ex);
                 log.WriteLine($"General Exception: {ex.GetFullExceptionData()}");
             }
-
             CoreFunction.AIFlush();
         }
     }
