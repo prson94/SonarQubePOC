@@ -207,7 +207,7 @@ namespace igx.UnitTests
             var mockRepo = new Mock<IAssetRepository>();
             var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity());
 
-            mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
+            mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
                 Task.FromResult<IEnumerable<AssetTypeApiViewModel>>(new List<AssetTypeApiViewModel>() { new AssetTypeApiViewModel() })
             );

@@ -84,7 +84,11 @@ namespace igx.jobs.databasetaskprocessor
                             {
                                 if (!SearchIndexer.IsIndexable(o)) return string.Empty;
 
-                                if (a == "D") //Delete - asset is no longer present, so we can only use given parameters
+                                if(a == "Path")
+                                {
+                                    indexCollectionModel.UpsertPathByAssetId.Add(givenAssetId);
+                                }
+                                else if (a == "D") //Delete - asset is no longer present, so we can only use given parameters
                                 {
                                     IndexObjectModel indexObject = new IndexObjectModel
                                     {
@@ -495,7 +499,7 @@ from    [queue].[Task] T
                             {
                                 search.UpdateInIndex(indexCollectionModel.Updates);
                             }
-                            if(indexCollectionModel.UpsertByObject.Any() || indexCollectionModel.UpsertByUid.Any())
+                            if(indexCollectionModel.ContainsIndexerCollections())
                             {
                                 try
                                 {
@@ -505,10 +509,19 @@ from    [queue].[Task] T
                                         SearchIndexer indexer = new SearchIndexer(companyConnection, c.CompanyID, search);
 
                                         if (indexCollectionModel.UpsertByUid.Any())
+                                        {
                                             indexer.IndexAssets(indexCollectionModel.UpsertByUid);
+                                        }
 
-                                        if(indexCollectionModel.UpsertByObject.Any())
+                                        if (indexCollectionModel.UpsertByObject.Any())
+                                        {
                                             indexer.IndexAssets(indexCollectionModel.UpsertByObject);
+                                        }
+
+                                        if(indexCollectionModel.UpsertPathByAssetId.Any())
+                                        {
+                                            indexer.IndexUpdateAssetPaths(indexCollectionModel.UpsertPathByAssetId);
+                                        }
 
                                         indexer = null;
                                     }

@@ -56,8 +56,7 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("AssetTypeID")]
         public virtual ICollection<Asset> Assets { get; set; }
-        [DataMember]
-        public bool CanOwnFusion { get; set; }
+        
         [DataMember]
         public bool AutoDisplayDescription { get; set; }
 
@@ -137,8 +136,10 @@ namespace d360.core.entities
         public bool AutoDisplayDescription { get; set; }
         [DataMember]
         public bool UseAsTransformation { get; set; }
+
         [DataMember]
-        public bool CanOwnFusion { get; set; }
+        public bool CanOwnFusion { get; set; }   // left for backward compatibility so as to not introduce a breaking api change.
+
         [DataMember]
         public string Path { get; set; }
 
@@ -151,6 +152,10 @@ namespace d360.core.entities
         public FlowObjectType? FlowObjectType { get; set; }
         [DataMember]
         public bool? CanEditParent { get; set; }
+
+        [DataMember]
+        public bool? HasDashboards { get; set; }
+                
 
         [IgnoreDataMember]
         public string LevelsJson { get; set; }

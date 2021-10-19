@@ -4,6 +4,14 @@ using d360.core.enums;
 
 namespace d360.core.queue
 {
+    public enum IndexMode
+    {
+        Basic = 0,
+        WithFields = 1,
+        WithTags = 2,
+        WithResponsibility = 4
+    }
+
     public class IndexObjectModel : QueueObject
     {
         public int ID { get; set; }
@@ -36,6 +44,10 @@ namespace d360.core.queue
         public Dictionary<string, string> Tags { get; set; }
 
         public Dictionary<string, List<int>> NoRead { get; set; }
+
+        public string[] AssetPath { get; set; }
+
+        public IndexMode IndexFlags { get; set; } = IndexMode.Basic;
 
         /// <summary>
         /// Returns the unique id for this search item

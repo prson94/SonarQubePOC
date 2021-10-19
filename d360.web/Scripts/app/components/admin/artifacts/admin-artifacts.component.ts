@@ -93,7 +93,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     load(uid: string = '') {
-        this.assetsService.getAssetCountsByAssetType(this.assetTypeClass)
+        this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false)
             .subscribe(data => {
                 let temp: TreeNode[] = [];
                 data.forEach(n => {

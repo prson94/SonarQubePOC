@@ -74,6 +74,14 @@ namespace d360.core.entities
         public string ConfigurationJSON { get; set; }
     }
 
+    public class APIExecutionBulkLoadModel
+    {
+        public int total { get; set; }
+        public int pageNum { get; set; }
+        public int pageSize { get; set; }
+        public IEnumerable<LoadDetailV2> items { get; set; }
+    }
+
     public class APIExecutionBulkLoadItemDetailsModel
     {
         public int total { get; set; }

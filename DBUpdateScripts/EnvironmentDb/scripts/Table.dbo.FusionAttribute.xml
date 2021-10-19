@@ -5,40 +5,34 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.FusionAttribute-Rename-v1">
-  <comment>GOV-11726</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.FusionAttribute-Drop-v1">
+  <comment>GOV-11727</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttribute')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttribute_backup')
 BEGIN
-	IF EXISTS (select * 
-			   from sys.foreign_keys where name = 'FK_FusionAttribute_Fusion' 
-			   and object_name(parent_object_id) = 'FusionAttribute' and schema_name(schema_id) = 'dbo'
-			   )
-	BEGIN	
-		ALTER TABLE [dbo].[FusionAttribute] DROP CONSTRAINT [FK_FusionAttribute_Fusion]
-	END
-
-	IF EXISTS (select * 
-			   from sys.foreign_keys where name = 'FK_FusionAttribute_FusionAttributeType' 
-			   and object_name(parent_object_id) = 'FusionAttribute' and schema_name(schema_id) = 'dbo'
-			   )
-	BEGIN	
-		ALTER TABLE [dbo].[FusionAttribute] DROP CONSTRAINT [FK_FusionAttribute_FusionAttributeType]
-	END
-
-	exec sp_rename 'dbo.FusionAttribute', 'FusionAttribute_backup';
+	 drop table dbo.FusionAttribute_backup;
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttribute_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttribute_backup')
 BEGIN
-	exec sp_rename 'dbo.FusionAttribute_backup', 'FusionAttribute';
+	CREATE TABLE [dbo].[FusionAttribute_backup](
+		[ParentID] [int] NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[FusionID] [int] NOT NULL,
+		[FusionAttributeTypeID] [int] NOT NULL,
+		[SourceID] [varchar](250) NULL,
+		[Deleted] [bit] CONSTRAINT [DF_FusionAttribute_Deleted] DEFAULT (0) NOT NULL,
+		[TextPath] [nvarchar](2500) NULL,
+		[ID] [int] CONSTRAINT [Const_FusionAttributeSeq] DEFAULT (NEXT VALUE FOR [dbo].[FusionAttribute_Seq]) NOT NULL,
+		CONSTRAINT [PK_FusionAttribute] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
 END
 		]]>
 	</rollback>

@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
+import { DatePipe } from '@angular/common';
 
 declare var CurrentResourceID;
 
@@ -47,6 +48,8 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     timeouthandle: any;
     resizeSub: any;
 
+    tooltipValue = '';
+
     private tagTooltip: TagType;
     private isTooltipLoaded: boolean = false;
 
@@ -55,7 +58,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         private stateService: StateService,
         private messagesService: MessagesObservableService,
         private ref: ChangeDetectorRef,
-        private auth: AuthenticationService) {
+        private auth: AuthenticationService,
+        private datePipe: DatePipe
+    ) {
         super();
     }
 
@@ -80,10 +85,10 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                     });
                 } else {
                     this.tags = this.data;
-                }            
+                }
             }
             if (this.tags) {
-                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));                               
+                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
             }
             this.selected = this.tags;
         }
@@ -385,6 +390,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
+        this.tooltipValue = `<i class="fa fa-spinner fa-spin fa-2x"></i>`;
         this.tagService.getTagTooltip(tag.uid, this.assetUID, tag.Value)
             .subscribe(t => {
                 if (t.length > 0) {
@@ -402,6 +408,8 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 });
 
                 this.isTooltipLoaded = true;
+                this.tooltipValue = `<span class="span-break">${this.tagTooltip.Value}</span>
+                            <span>Tag added by ${this.tagTooltip.CreatedBy} on ${(this.datePipe.transform(this.tagTooltip.CreatedOn, 'short'))}</span>`;
                 this.ref.markForCheck();
             });
     }

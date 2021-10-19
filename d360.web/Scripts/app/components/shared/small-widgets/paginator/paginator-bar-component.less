@@ -1,9 +1,10 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+@import "../../../../../../Content/styles/_Variables.less";
 
 .paging-bar {
   display: flex;
   flex-shrink: 0;
-  height: 30px;
+  height: 40px;
   align-items: center;
   padding: 0 12px;
   box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 2px;
@@ -32,15 +33,15 @@
     line-height: 32px;
 
     span {
-      color: #0971b9;
+      color: @ig-purple;
       padding: 0 12px;
       cursor: pointer;
-      height: 25px;
-      margin-bottom: 5px;
+      height: 32px;
+      border-radius: 4px;
 
       &.angle {
         font-size: 28px;
-        margin-bottom: 11px;
+        line-height: 24px;
       }
 
       &.disabled {
@@ -52,6 +53,14 @@
         color: @ig-black;
         font-weight: bold;
         cursor: default;
+      }
+
+      &:hover {
+        background: @ig-grey-t5;
+      }
+
+      &:active {
+        background: @ig-grey-t4;
       }
     }
   }

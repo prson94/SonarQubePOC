@@ -474,6 +474,187 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
+        /// Gets bulk load info.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("bulkload"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets bulk load info.", typeof(APIExecutionBulkLoadModel)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, RequestorName. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+
+        public async Task<IHttpActionResult> GetLoads()
+        {
+            ResourceApiViewModel model = new ResourceApiViewModel();
+            var queryParams = Request.GetQueryNameValuePairs();
+            int _pageSize = 200;
+            int _pageNum = 1;
+            string _direction = "desc";
+            string orderBySql = "";
+            string offsetSql = "";
+            string whereSql = " ";
+            string filterValue = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+            }
+
+            #region "Filter Condition"
+            if (queryParams.Any(x => x.Key == "_pageSize"))
+            {
+                int _temppageSize;
+                if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value, out _temppageSize))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageSize value provided.");
+                }
+                _pageSize = _temppageSize;
+            }
+
+            if (queryParams.Any(x => x.Key == "_pageNum"))
+            {
+                int _temppageNum;
+                if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value, out _temppageNum))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageNum value provided.");
+                }
+                _pageNum = _temppageNum;
+            }
+            if (queryParams.Any(x => x.Key == "_direction"))
+            {
+                var allowedDirections = new [] { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid direction passed in the request.");
+                }
+                _direction = allowedDirections.Contains(order.Trim().ToLower()) ? order : "desc";
+            }
+
+            if (!queryParams.Any(p => p.Key == "_order"))
+            {
+                orderBySql = $" order by DateStarted {_direction} ";
+            }
+            else
+            {
+
+                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                string[] validOrderByFields = { "datestarted", "datecompleted", "action", "assettypename",
+                                                "requestorname" };
+                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
+                }
+                orderBySql = $" order by {orderByCol} {_direction} ";
+            }
+            if (queryParams.Any(x => x.Key == "_simpleFilter"))
+            {
+                filterValue = queryParams.FirstOrDefault(p => p.Key == "_simpleFilter").Value.ToString();
+                if (filterValue != "")
+                {
+                    filterValue = '%' + filterValue + '%';
+                    whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestorName] like @filterValue
+                        or X.AssetTypeName like @filterValue or X.ErrorMessage like @filterValue or X.ErrorMessage like @filterValue
+                        or x.Success like @filterValue or X.Error like @filterValue or X.Total like @filterValue) ";
+                }
+
+            }
+            #endregion
+
+
+            offsetSql = $" offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only ";
+            string LoadDetailBaseSql = @"select	* from(select	
+            case L.[Action]
+			when 'M' then 'Users/Groups'
+            when 'P' then 'Promotion'
+			when 'R' then 'Relation'
+			when 'U' then 'Unrelation'
+            when 'L' then 'Lineage'
+            when 'O' then 'Responsibilities'
+            when 'T' then 'Lineage : Technical'
+            when 'S' then 'Synonyms'
+			when 'W' then 'Promotion (via Propose Workflow)'
+		end as [Action],
+        case when L.Action in ('P','R','U') and L.[File] is null then
+            case when (select count(*) from LoadItem where LoadID = L.ID) = (select count(*) from LoadItem where LoadID = L.ID and Status = 0) then
+                L.DateCompleted
+            when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
+                null
+            when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
+                EE.CompletedOn
+            else
+                EA.CompletedOn      
+            end
+        else 
+            L.DateCompleted 
+        end as DateCompleted,
+        coalesce(C_D.[Name], 'Default') as AssetTypeName,
+        C_D.[uid] as AssetTypeUid,
+        L.DateStarted as DateStarted,
+        coalesce(EA.ErrorMessage, '' ) + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
+        S.C as Success,
+        E.C as Error,
+		T.C as Total,
+        R.FirstName + ' ' + R.LastName as RequestorName,
+        R.uid as RequestorUid,
+        L.uid as LoadUid
+from	[Load] L
+        left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
+        left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
+		left join (
+			select [Name],[uid], [Object] ,ObjectID from AssetType
+			union all
+			select ITN.[Name] as [Name], [uid] as uid, 'IntersectType' as [Object], ID as ObjectID from IntersectType IT
+			cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
+
+		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
+		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T ) X " + whereSql + orderBySql + offsetSql;
+
+            try
+            {
+                var results = Company.Query<LoadDetailV2>(LoadDetailBaseSql, new { filterValue });
+                model.pageNum = _pageNum;
+                model.pageSize = _pageSize;
+                model.items = results;
+                model.total = results.Count();
+
+                return await Task.FromResult<IHttpActionResult>(
+                            ResponseMessage(
+                                Request.CreateResponse(
+                                    HttpStatusCode.OK, model
+                                )
+                            )
+                        );
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
+        #endregion
+
+        /// <summary>
         /// Gets bulk load items details.
         /// </summary>
         /// /// <param name="uid">The unique identifier of the load which details are returned for.</param>

@@ -45,6 +45,7 @@ namespace igx.jobs.databasetaskprocessor
             Updates = new ConcurrentBag<IndexObjectModel>();
             UpsertByUid = new ConcurrentBag<Guid>();
             UpsertByObject = new ConcurrentBag<Tuple<string, long>>();
+            UpsertPathByAssetId = new ConcurrentBag<long>();
         }
 
         public ConcurrentBag<IndexObjectModel> Adds { get; set; }
@@ -52,6 +53,12 @@ namespace igx.jobs.databasetaskprocessor
         public ConcurrentBag<IndexObjectModel> Updates { get; set; }
         public ConcurrentBag<Guid> UpsertByUid { get; set; }
         public ConcurrentBag<Tuple<string, long>> UpsertByObject { get; set; }
+        public ConcurrentBag<long> UpsertPathByAssetId { get; set; }
+
+        public bool ContainsIndexerCollections()
+        {
+            return UpsertByObject.Any() || UpsertByUid.Any() || UpsertPathByAssetId.Any();
+        }
     }
 
     public class QueueTask

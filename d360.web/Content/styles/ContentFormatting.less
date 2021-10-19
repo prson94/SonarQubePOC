@@ -3,143 +3,143 @@
 /*#region Common Page Structure */
 
 body {
-    margin: 0px;
-    background-color: #f1f1f1;
-    font-family: @body-font-family;
-    text-rendering: optimizeLegibility;
-    font-size: @font-size-base;
+  margin: 0px;
+  background-color: #f1f1f1;
+  font-family: @body-font-family;
+  text-rendering: optimizeLegibility;
+  font-size: @font-size-base;
 }
 
 /*#endregion*/
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: @headings-font-family;
-    font-weight: normal;
-    margin: 2px;
+  font-family: @headings-font-family;
+  font-weight: normal;
+  margin: 2px;
 }
 
 h1 {
-    font-size: @font-size-h1;
-    line-height: floor((@font-size-h1 * 1.1));
+  font-size: @font-size-h1;
+  line-height: floor((@font-size-h1 * 1.1));
 }
 
 h2 {
-    font-size: @font-size-h2;
-    line-height: floor((@font-size-h2 * 1.1));
+  font-size: @font-size-h2;
+  line-height: floor((@font-size-h2 * 1.1));
 }
 
 h3 {
-    font-size: @font-size-h3;
-    line-height: floor((@font-size-h3 * 1.1));
+  font-size: @font-size-h3;
+  line-height: floor((@font-size-h3 * 1.1));
 }
 
 h4 {
-    font-size: @font-size-h4;
-    line-height: floor((@font-size-h4 * 1.1));
+  font-size: @font-size-h4;
+  line-height: floor((@font-size-h4 * 1.1));
 }
 
 h5 {
-    font-size: @font-size-h5;
-    line-height: floor((@font-size-h5 * 1.1));
+  font-size: @font-size-h5;
+  line-height: floor((@font-size-h5 * 1.1));
 }
 
 h6 {
-    font-size: @font-size-h6;
-    line-height: floor((@font-size-h6 * 1.1));
+  font-size: @font-size-h6;
+  line-height: floor((@font-size-h6 * 1.1));
 }
 
 .form-instructions {
-    font-size: 90%;
-    color: @d3s-gray-2;
-    margin-bottom: 10px;
-    margin-top: 15px;
+  font-size: 90%;
+  color: @d3s-gray-2;
+  margin-bottom: 10px;
+  margin-top: 15px;
 }
 
 .form-instructions-nospacing {
-    font-size: 90%;
-    color: @d3s-gray-2;
-    margin-left: 10px;
-    margin-top: 5px;
+  font-size: 90%;
+  color: @d3s-gray-2;
+  margin-left: 10px;
+  margin-top: 5px;
 }
 
 .FieldNameRequired,
 .FieldName {
-    font-weight: 600;
-    display: block;
-    overflow-wrap: break-word;    
-    word-wrap:break-word;
-    overflow: hidden;
+  font-weight: 600;
+  display: block;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  overflow: hidden;
 }
 
 .FieldNameRequired {
-    color: @d3s-blue-2;
+  color: @d3s-blue-2;
 }
 
 .FieldInstructions {
-    font-size: 90%;
-    color: @d3s-gray-2;
+  font-size: 90%;
+  color: @d3s-gray-2;
 }
 
 .FieldInstructionsTooltip {
-    align-items: center;
-    display: inline-flex;
-    vertical-align: bottom;
-    margin-left: 5px;
+  align-items: center;
+  display: inline-flex;
+  vertical-align: bottom;
+  margin-left: 5px;
 
-    i.fa-info-circle {
-        color: #006fc0;
-    }
+  i.fa-info-circle {
+    color: @ig-purple;
+  }
 
-    &.disabled {
-        opacity: 0.33;
-    }
+  &.disabled {
+    opacity: 0.33;
+  }
 }
 
 button.WhiteButton {
-    color: #000;
-    border: none;
-    background-color: transparent;
+  color: #000;
+  border: none;
+  background-color: transparent;
 
-    &[disabled] {
-        color: @d3s-gray-3;
-    }
+  &[disabled] {
+    color: @d3s-gray-3;
+  }
 }
 
 .FieldName {
-    color: @d3s-gray-2;
+  color: @d3s-gray-2;
 }
 
 .FieldDisplayName {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .FieldDisplayContent {
-    overflow: hidden;
-    text-overflow: ellipsis;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-    &.ql-editor {
-        padding: 0px;
-    }
+  &.ql-editor {
+    padding: 0px;
+  }
 
-    p {
-        display: block;
-        margin: 0px;
-    }
-    /* override materialize list formatting */
-    ul {
-        list-style-type: disc;
-        margin: 0px;
-        padding: 5px 5%;
+  p {
+    display: block;
+    margin: 0px;
+  }
+  /* override materialize list formatting */
+  ul {
+    list-style-type: disc;
+    margin: 0px;
+    padding: 5px 5%;
 
-        li {
-            list-style-type: disc;
-        }
+    li {
+      list-style-type: disc;
     }
+  }
 
-    ol {
-        margin: 0px;
-    }
-    /*img {
+  ol {
+    margin: 0px;
+  }
+  /*img {
         width:100%;
     }*/
 }
@@ -149,16 +149,16 @@ button.WhiteButton {
 ---------------------*/
 
 .ui.form {
-    position: relative;
-    max-width: 100%;
+  position: relative;
+  max-width: 100%;
 }
 
 .ui.form :first-child {
-    margin-top: 0em;
+  margin-top: 0em;
 }
 
 .ui.form :last-child {
-    margin-bottom: 0em;
+  margin-bottom: 0em;
 }
 
 /*--------------------
@@ -168,140 +168,139 @@ button.WhiteButton {
 .ui.form .info.message,
 .ui.form .warning.message,
 .ui.form .error.message {
-    display: none;
+  display: none;
 }
 
 /* Assumptions */
 .ui.form .message:first-child {
-    margin-top: 0px;
+  margin-top: 0px;
 }
 
 .clear {
-    clear: both;
+  clear: both;
 }
 
 .root-tile {
-    position: relative;
-    margin-bottom: 25px;
-    padding-right: 3px;
-    width: 100%;
+  position: relative;
+  margin-bottom: 25px;
+  padding-right: 3px;
+  width: 100%;
 
-    .TileTools {
-        position: absolute;
-        right: 5px;
-        top: -10px;
-        z-index: 900;
-        color: @d3s-gray-1;
-        font-size: 15px;
-        line-height: 16px;
-    }
+  .TileTools {
+    position: absolute;
+    right: 5px;
+    top: -10px;
+    z-index: 900;
+    color: @d3s-gray-1;
+    font-size: 15px;
+    line-height: 16px;
+  }
 }
 
 .tile {
+  position: relative;
+  margin-bottom: 25px;
+  width: 100%;
+  padding: 0 5px;
+
+  .header,
+  header {
+    background-color: transparent !important;
+    border: none !important;
     position: relative;
-    margin-bottom: 25px;
+    text-transform: none;
+    padding: 10px 0 15px 10px !important;
+    color: @ig-black;
+    font-weight: bold;
+    font-size: 18px;
+
+    .TileTools {
+      position: absolute;
+      right: 5px;
+      top: 0px;
+      z-index: 899;
+      color: @d3s-gray-1;
+      font-size: 15px;
+      line-height: 16px;
+    }
+  }
+
+  footer {
+    position: relative;
+
+    .TileTools {
+      position: absolute;
+      right: -5px;
+      bottom: 10px;
+      z-index: 900;
+      color: @d3s-gray-1;
+      font-size: 15px;
+      line-height: 16px;
+    }
+  }
+
+  .tiletools {
     width: 100%;
-    padding: 0 5px;
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    text-align: right;
 
-    .header,
-    header {
-        color: @d3s-gray-1 !important;
-        background-color: transparent !important;
-        border: none !important;
-        position: relative;
-        font-family: 'Source Sans Pro', sans-serif !important;
-        font-weight: 600 !important;
-        font-size: 18px !important;
-        text-transform: none;
-        padding: 10px 0 15px 10px !important;
+    button {
+      color: @d3s-gray-3;
+      font-size: @font-size-h4 !important;
+      border: none;
+      background-color: transparent;
 
-        .TileTools {
-            position: absolute;
-            right: 5px;
-            top: 0px;
-            z-index: 899;
-            color: @d3s-gray-1;
-            font-size: 15px;
-            line-height: 16px;
-        }
-    }
-
-    footer {
-        position: relative;
-
-        .TileTools {
-            position: absolute;
-            right: -5px;
-            bottom: 10px;
-            z-index: 900;
-            color: @d3s-gray-1;
-            font-size: 15px;
-            line-height: 16px;
-        }
-    }
-
-    .tiletools {
-        width: 100%;
-        position: absolute;
-        top: 3px;
-        right: 5px;
-        text-align: right;
-
-        button {
-            color: @d3s-gray-3;
-            font-size: @font-size-h4 !important;
-            border: none;
-            background-color: transparent;
-
-            :hover {
-                color: @d3s-gray-2;
-            }
-        }
-    }
-
-    .form-instructions {
-        margin-left: 10px;
-    }
-
-    .directions {
-        padding: 3px 0px 5px 5px !important;
+      :hover {
         color: @d3s-gray-2;
-        font-size: .8em;
+      }
     }
+  }
 
-    .tile-tabs {
-        margin-top: 15px;
-        margin-bottom: 15px;
-        width: 98%;
-    }
+  .form-instructions {
+    margin-left: 10px;
+  }
 
-    .content {
-    }
+  .directions {
+    padding: 3px 0px 5px 5px !important;
+    color: @d3s-gray-2;
+    font-size: .8em;
+  }
 
-    .footnote {
-        position: absolute;
-        bottom: 5px;
-        width: 100%;
-        color: @d3s-blue-4;
-    }
+  .tile-tabs {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    width: 98%;
+  }
 
-    a:hover {
-        text-decoration: underline;
-    }
+  .content {
+  }
+
+  .footnote {
+    position: absolute;
+    bottom: 5px;
+    width: 100%;
+    color: @d3s-blue-4;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
 }
 
 .tile-detail {
-    background-color: @ig-white;
-    border: 0;
-    border-radius: 0;
-    padding-bottom: 10px;
-    box-shadow: 2px 2px 1px 0px rgba(0,0,0,0.15);
+  background-color: @ig-white;
+  border: 0;
+  border-radius: 0;
+  padding-bottom: 10px;
+  box-shadow: 2px 2px 1px 0px rgba(0,0,0,0.15);
 }
 
 .main-panel {
-    flex: 1;
-    height: calc(100vh - 190px);
-    overflow:auto;
+  flex: 1;
+  height: calc(100vh - 190px);
+  overflow: auto;
 }
 
 
@@ -404,69 +403,69 @@ button.WhiteButton {
       font-stretch: normal;
       font-style: normal;
     }
-  }  
+  }
 }
 
 .tile-clickable {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .tile-disabled {
-    fill-opacity: 0.1;
-    opacity: 0.1;
+  fill-opacity: 0.1;
+  opacity: 0.1;
 }
 
 .tile-stat-large {
-    font-size: 175%;
+  font-size: 175%;
 }
 
 .tile-stat-name {
-    font-size: 125%;
-    font-weight: 600;
-    width: 70%;
+  font-size: 125%;
+  font-weight: 600;
+  width: 70%;
 
-    :hover {
-        text-decoration: underline;
-        cursor: pointer;
-    }
+  :hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
 }
 
 .tile-stat-value {
-    font-size: 125%;
-    font-weight: 700;
-    text-align: right;
+  font-size: 125%;
+  font-weight: 700;
+  text-align: right;
 }
 
 .tile-stat-value-highlight:before {
-    content: "(";
+  content: "(";
 }
 
 .tile-stat-value-highlight:after {
-    content: ")";
+  content: ")";
 }
 
 .tile-stat-value-highlight {
-    color: @d3s-blue-4;
-    font-size: 150%;
-    font-weight: 400;
+  color: @d3s-blue-4;
+  font-size: 150%;
+  font-weight: 400;
 }
 
 .tile-stat-value-red {
-    color: red;
-    font-size: 150%;
-    font-weight: 700;
+  color: red;
+  font-size: 150%;
+  font-weight: 700;
 }
 
 .tile-stat-value-yellow {
-    color: yellow;
-    font-size: 150%;
-    font-weight: 700;
+  color: yellow;
+  font-size: 150%;
+  font-weight: 700;
 }
 
 .tile-stat-value-green {
-    color: lightgreen;
-    font-size: 150%;
-    font-weight: 700;
+  color: lightgreen;
+  font-size: 150%;
+  font-weight: 700;
 }
 
 /*-----------------------
@@ -474,93 +473,93 @@ button.WhiteButton {
 ------------------------*/
 
 .cell-value-name {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .cell-value-type {
-    font-size: 0.7em;
+  font-size: 0.7em;
 }
 
 .FormFieldContent {
-    p {
-        display: block;
-        margin: 0px;
-    }
+  p {
+    display: block;
+    margin: 0px;
+  }
 
-    ul {
-        list-style-type: disc;
-        margin: 0px;
-        padding: 10px 10%;
+  ul {
+    list-style-type: disc;
+    margin: 0px;
+    padding: 10px 10%;
 
-        li {
-            list-style-type: disc;
-        }
+    li {
+      list-style-type: disc;
     }
+  }
 
-    ol {
-        margin: 0px;
-    }
+  ol {
+    margin: 0px;
+  }
 }
 
 .p-dropdown .p-dropdown-label {
-    white-space: pre-wrap !important;
+  white-space: pre-wrap !important;
 }
 
 .detail-panel {
-    .row {
-        padding-bottom: 5px;
-    }
+  .row {
+    padding-bottom: 5px;
+  }
 }
 
 .panel-section {
-    background: #f0f0f0;
-    margin: 5px;
-    padding: 5px;
-    overflow-x: auto;
+  background: #f0f0f0;
+  margin: 5px;
+  padding: 5px;
+  overflow-x: auto;
 
-    &.warning {
-        background: #f7dfa9;
-    }
+  &.warning {
+    background: #f7dfa9;
+  }
 }
 
 /*-----------------------
    Types of Margins
 ------------------------*/
 .ml8 {
-    margin-left: 8px;
+  margin-left: 8px;
 }
 
 .mr8 {
-    margin-right: 8px;
+  margin-right: 8px;
 }
 
 .rebuild-panel {
-    .link-button {
-        border: none;
-        background-color: @ig-white;
-        color: @ig-midblue;
-    }
+  .link-button {
+    border: none;
+    background-color: @ig-white;
+    color: @ig-purple;
+  }
 
-    .link-button:active {
-        color: @ig-midblue;
-    }
+  .link-button:active {
+    color: @ig-purple;
+  }
 
-    .link-button:hover {
-        color: @igx-light-blue-2;
-    }
+  .link-button:hover {
+    color: @ig-purple;
+  }
 
-    .link-button:disabled {
-        color: @ig-midblue;
-        opacity: 0.33;
-    }
+  .link-button:disabled {
+    color: @ig-purple;
+    opacity: 0.33;
+  }
 
-    .description {
-        margin: 0 6px 0 6px;
-    }
+  .description {
+    margin: 0 6px 0 6px;
+  }
 
-    .status {
-        margin: 0 6px 0 6px;
-        color: #000;
-        font-weight: 600;
-    }
+  .status {
+    margin: 0 6px 0 6px;
+    color: #000;
+    font-weight: 600;
+  }
 }
