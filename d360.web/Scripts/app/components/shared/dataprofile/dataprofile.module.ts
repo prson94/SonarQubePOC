@@ -19,7 +19,8 @@ import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/adva
 import { SidePanelModule } from "../sidepanel/side-panel.module";
 import { CoreModule } from "../core.module";
 import { AssetDetailModule } from "../asset-detail/asset-detail.module";
-
+import { ModalDrawerModule } from '../modal-drawer/gov-modal-drawer.module';
+import { TagPickerModule } from '../controls/tag-picker/tag-picker';
 
 @NgModule({
     imports: [        
@@ -39,7 +40,9 @@ import { AssetDetailModule } from "../asset-detail/asset-detail.module";
         AdvancedFiltersModule,
         SidePanelModule,
         CoreModule,
-        AssetDetailModule
+        AssetDetailModule,
+        ModalDrawerModule,
+        TagPickerModule
     ],
     declarations: [
         DataProfileComponent,
