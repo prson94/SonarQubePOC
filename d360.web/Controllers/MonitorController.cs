@@ -41,7 +41,8 @@ namespace d360.web.Controllers
             var list = Company.Query<dynamic>(sql,dbArgs);
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
+
             #region Create the list sheet
 
             #region Header
