@@ -64,7 +64,7 @@ namespace d360.web.Controllers
         public FileResult ExportFollowsByResourceByType(int resourceID, string type, int id)
         {
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             string sql = @"
 select	TextPath as [Path],
@@ -111,7 +111,7 @@ from	FollowDetail F
             }
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             string sql = $@"
         select 
