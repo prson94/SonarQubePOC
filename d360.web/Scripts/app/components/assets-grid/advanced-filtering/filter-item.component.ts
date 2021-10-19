@@ -1104,6 +1104,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.numberMax = this.currentField.Type.Decimal?.Validation?.MaximumValue ?? 9223372036854775807;
             this.numberMin = this.currentField.Type.Decimal?.Validation?.MinimumValue ?? -9223372036854775808;
         }
+        if (type === "Score") {
+            this.numberMax = 100;
+            this.numberMin = 0;
+        }
         if (type === "Number" || type === "Decimal" || type === "Score") {
 
             if (this.currentOperator.toString() === "IsInBand") {
