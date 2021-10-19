@@ -652,7 +652,6 @@ from	[Load] L
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
             }
         }
-        #endregion
 
         /// <summary>
         /// Gets bulk load items details.
