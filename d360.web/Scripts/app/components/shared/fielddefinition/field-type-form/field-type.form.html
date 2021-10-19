@@ -640,19 +640,22 @@
                                     style="vertical-align: top">
                                     <div *ngIf="x == 0">
                                         <div>
-                                            <input [ngModelOptions]="{standalone: true}"
-                                                   type="checkbox"
-                                                   [(ngModel)]="model.FieldType.Type[currentType].HideFooter" /> Hide Footer?
+                                            <p-checkbox binary="true"
+                                                        [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
+                                                        label="Hide Footer?"
+                                                        [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                         <div>
-                                            <input [ngModelOptions]="{standalone: true}"
-                                                   type="checkbox"
-                                                   [(ngModel)]="model.FieldType.Type[currentType].HideHeader" /> Hide Header?
+                                            <p-checkbox binary="true"
+                                                        [(ngModel)]="model.FieldType.Type[currentType].HideHeader"
+                                                        label="Hide Header?"
+                                                        [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                         <div>
-                                            <input [ngModelOptions]="{standalone: true}"
-                                                   type="checkbox"
-                                                   [(ngModel)]="model.FieldType.Type[currentType].HideFilter" /> Hide Search?
+                                            <p-checkbox binary="true"
+                                                        [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
+                                                        label="Hide Search?"
+                                                        [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                     </div>
                                     <div class="RowTools">
@@ -695,11 +698,11 @@
                                                            style="width:95%" />
                                                 </td>
                                                 <td style="width: 10%; max-width: 64px">
-                                                    <input [ngModelOptions]="{standalone: true}"
-                                                           type="checkbox"
-                                                           [ngModel]="d.Show"
-                                                           (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);"
-                                                           style="width:95%" />
+                                                    <p-checkbox binary="true"
+                                                                [(ngModel)]="d.Show"
+                                                                label=""
+                                                                (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);"
+                                                                [ngModelOptions]="{standalone: true}"></p-checkbox>
                                                 </td>
                                                 <td style="width: 10%; max-width: 64px">
                                                     <input [ngModelOptions]="{standalone: true}"

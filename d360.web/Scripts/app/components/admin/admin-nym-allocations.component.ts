@@ -9,7 +9,6 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 @Component({
     selector: 'd3s-admin-nym-allocations',
     providers: [ObjectDetailService],
-    encapsulation: ViewEncapsulation.None,
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
@@ -39,11 +38,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
                         (click)="save()"></button>
             </div>
         </div>
-    `,
-    styles: [`
-        .nym-row:hover { background-color:white !important; }
-        .nym-row .p-checkbox { pointer-events: all !important; }
-    `]
+    `
 })
 
 export class AdminNymAllocationsComponent extends BaseComponent implements OnChanges {
