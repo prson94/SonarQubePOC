@@ -53,8 +53,6 @@ import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { IconService } from '../../../services/icon.service';
-import { LineageObjectDetailComponent } from './lineage/lineage-object-detail.component';
-import { LineageRelationshipsComponent } from './lineage/lineage-relationships.component';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
 import { SiteModalModule } from '../modal/gov-modal.module';
@@ -76,6 +74,7 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
 import { DirectivesModule } from '../../../directives/directives.module';
 import { SharedResponsibilitiesModule } from '../responsibilities/shared-responsibilities.module';
 import { AssetDetailModule } from '../asset-detail/asset-detail.module';
+import { SidePanelModule } from '../sidepanel/side-panel.module';
 
 
 @NgModule({
@@ -103,6 +102,7 @@ import { AssetDetailModule } from '../asset-detail/asset-detail.module';
         SharedObjectDetailsModule,
         SharedResponsibilitiesModule,
         AssetDetailModule,
+        SidePanelModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,
@@ -147,8 +147,6 @@ import { AssetDetailModule } from '../asset-detail/asset-detail.module';
         AssetBrowserZoomComponent,
         
         AssetBrowserComponent,
-        LineageObjectDetailComponent,
-        LineageRelationshipsComponent,
         ModelDiagramComponent,
         ProcessDiagramComponent,
         ProcessDiagramAssetEditorComponent,

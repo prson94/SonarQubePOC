@@ -203,10 +203,29 @@ button.WhiteButton {
   width: 100%;
   padding: 0 5px;
 
+  .diagram-top-header {
+    border-bottom: 1px solid @ig-color-field-border;
+    padding: 16px !important;
+
+    .flex-row {
+      display: flex;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 40px;
+    }
+
+    .button-wrapper {
+      line-height: 40px;
+    }
+  }
+
   .header,
   header {
     background-color: transparent !important;
-    border: none !important;
+    border: none;
     position: relative;
     text-transform: none;
     padding: 10px 0 15px 10px !important;
