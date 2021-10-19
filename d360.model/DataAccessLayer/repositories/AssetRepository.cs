@@ -643,8 +643,9 @@ namespace d360.model.DataAccessLayer
                               ,[SecurityAssetId]
                               ,[SecurityAssetUid]
                         FROM [dbo].[ResponsibilityDetail] rd
-                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id
-                        union all
+                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id;
+
+					insert into #OwnershipLookupAssets
                         select a.[ID] as AssetID
                              ,rd.[ResponsibilityTypeID]
                              ,rd.[ResponsibilityTypeName]
@@ -658,8 +659,9 @@ namespace d360.model.DataAccessLayer
                              ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assettypeid = a.assettypeid
-                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id
-                        union all
+                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id;
+
+					insert into #OwnershipLookupAssets
                         select a.[ID] as AssetID
                              ,rd.[ResponsibilityTypeID]
                              ,rd.[ResponsibilityTypeName]
