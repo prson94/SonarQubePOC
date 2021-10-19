@@ -1,28 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using d360.model;
 using d360.web.Models;
 using d360.core;
-using d360.core.exceptions;
 using System.Xml.Linq;
 using d360.core.entities;
-using System.Security.Cryptography;
 using System.Text;
-using System.Net;
 using Newtonsoft.Json;
 using d360.core.enums;
 using d360.core.entities.Views;
-using SpreadsheetLight;
-using System.IO;
 using d360.web.Models.Attributes;
 using d360.web.Filters;
 using Dapper;
-using Resources;
 using System.Threading.Tasks;
 using d360.model.DataAccessLayer;
+using d360.utils.excel;
 
 namespace d360.web.Models
 {
@@ -63,9 +57,6 @@ namespace d360.web.Controllers
         [HttpGet, Route("{resourceID:int}/following/{type}/{id:int}.xlsx")]
         public FileResult ExportFollowsByResourceByType(int resourceID, string type, int id)
         {
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
-
             string sql = @"
 select	TextPath as [Path],
 		A.ID as AssetID
@@ -76,30 +67,27 @@ from	FollowDetail F
 
             var query = Company.Query<dynamic>(sql, new { r = resourceID, type, id });
 
-            #region Create the list sheet
-
-            #region Header
-
-            document.SetCellValue(1, 0, "Asset ID");
-            document.SetCellValue(1, 1, "Asset Path");
-
-            #endregion
-
-            int r = 1;
-            foreach (var item in query)
+            var document = new ExcelDocument($"Followed Items as of {DateTime.Now.ToShortDateString()}")
             {
-                r++;
-                document.SetCellValue(r, 0, item.AssetID);
-                document.SetCellValue(r, 1, item.Path);
-            }
+                new ExcelSheet("Items")
+                {
+                    HeaderRows = {
+                        new ExcelRow()
+                        {
+                            "Asset ID",
+                            "Asset Path"
+                        }
+                    },
 
-            query = null;
+                    ValueRows = query.Select(row => new ExcelRow
+                    {
+                        row.AssetID,
+                        row.Path
+                    }).ToList()
+                }
+            };
 
-            #endregion
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"Followed Items as of {DateTime.Now.ToShortDateString()}.xlsx");
+            return ExcelDocumentAsFile(document);
         }
 
         [HttpGet, Route("{resourceID:int}/ownership/{type}/{id:int}.xlsx")]
@@ -109,9 +97,6 @@ from	FollowDetail F
             {
                 responsibilityTypeId = Company.ResponsibilityTypes.Where(t => t.UID == responsibilityTypeUid).Select(t => t.ID).FirstOrDefault();
             }
-
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             string sql = $@"
         select 
@@ -155,38 +140,35 @@ from	FollowDetail F
 
             var query = Company.Query<dynamic>(sql, new { resourceID, type = new DbString { Value = type, IsFixedLength = true, Length = 20, IsAnsi = true }, id, responsibilityTypeId });
 
-            #region Create the list sheet
-
-            #region Header
-
-            document.SetCellValue(1, 1, "Role");
-            document.SetCellValue(1, 2, "Name");
-            document.SetCellValue(1, 3, "Via");
-            document.SetCellValue(1, 4, "Via Type");
-            document.SetCellValue(1, 5, "Asset UID");
-            document.SetCellValue(1, 6, "Asset ID");
-
-            #endregion
-
-            int r = 1;
-            foreach (var item in query)
+            var document = new ExcelDocument($"Owned Items as of {DateTime.Now.ToShortDateString()}")
             {
-                r++;
-                document.SetCellValue(r, 1, item.ResponsibilityType);
-                document.SetCellValue(r, 2, item.Path);
-                document.SetCellValue(r, 3, item.Via);
-                document.SetCellValue(r, 4, item.ViaType);
-                document.SetCellValue(r, 5, item.UID.ToString());
-                document.SetCellValue(r, 6, item.AssetID);
-            }
+                new ExcelSheet("Items")
+                {
+                    HeaderRows = {
+                        new ExcelRow()
+                        {
+                            "Role",
+                            "Name",
+                            "Via",
+                            "Via Type",
+                            "Asset UID",
+                            "Asset ID"
+                        }
+                    },
 
-            query = null;
+                    ValueRows = query.Select(row => new ExcelRow
+                    {
+                        row.ResponsibilityType,
+                        row.Path,
+                        row.Via,
+                        row.ViaType,
+                        row.UID.ToString(),
+                        row.AssetID
+                    }).ToList()
+                }
+            };
 
-            #endregion
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"Owned Items as of {DateTime.Now.ToShortDateString()}.xlsx");
+            return ExcelDocumentAsFile(document);
         }
 
         #endregion

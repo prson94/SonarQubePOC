@@ -4,14 +4,11 @@ using System.Web.Mvc;
 using d360.model;
 using d360.core.entities;
 using d360.web.Models.Attributes;
-using SpreadsheetLight;
-using System.IO;
-using Newtonsoft.Json;
-using d360.web.Models;
 using Dapper;
 using d360.core.enums;
 using System.Collections.Generic;
 using d360.model.DataAccessLayer;
+using d360.utils.excel;
 
 namespace d360.web.Controllers
 {
@@ -36,62 +33,53 @@ namespace d360.web.Controllers
             sortDataField = string.IsNullOrEmpty(sortDataField) ? "StartedOn" : sortDataField;
             var stFieldType = sortDataField == "StartedOn" || sortDataField == "CompletedOn" ? "DateTime" : "string";
             var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "DateTime", "desc", sortFieldType: stFieldType);
-  
+
             sql = $@"Select * from ({sql}) as A {sortsql} ";
-            var list = Company.Query<dynamic>(sql,dbArgs);
+            var list = Company.Query<dynamic>(sql, dbArgs);
 
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
-
-            #region Create the list sheet
-
-            #region Header
-
-            document.SetCellValue(1, 1, "Workflow Name");
-            document.SetCellValue(1, 2, "Type");
-            document.SetCellValue(1, 3, "Type Name");
-            document.SetCellValue(1, 4, "Asset");
-            document.SetCellValue(1, 5, "Initiator");
-            document.SetCellValue(1, 6, "Started");
-            document.SetCellValue(1, 7, "Completed");
-            document.SetCellValue(1, 8, "Status");
-            document.SetCellValue(1, 9, "Workflow Instance UID");
-            document.SetCellValue(1, 10, "Url");
-            
-
-            #endregion
-
-            int rowIndex = 1;
-            foreach (var row in list)
+            var dateStyle = ExcelCell.MakeStyle(style => style.FormatCode = "mm/dd/yyyy");
+            var document = new ExcelDocument($"WorkflowItems {DateTime.Now.ToShortDateString()}")
             {
-                rowIndex++;
+                new ExcelSheet("Items")
+                {
+                    HeaderRows = {
+                        new ExcelRow()
+                        {
+                            "Workflow Name",
+                            "Type",
+                            "Type Name",
+                            "Asset",
+                            "Initiator",
+                            "Started",
+                            "Completed",
+                            "Status",
+                            "Workflow Instance UID",
+                            "Url"
+                        }
+                    },
 
-                document.SetCellValue(rowIndex, 1, row.WorkflowName);
-                document.SetCellValue(rowIndex, 2, row.Type ?? "");
-                document.SetCellValue(rowIndex, 3, row.TypeName ?? "");
-                document.SetCellValue(rowIndex, 4, row.Asset ?? "");
-                document.SetCellValue(rowIndex, 5, row.Initiator ?? "");
-                document.SetCellValue(rowIndex, 6, row.StartedOn??"");
-                SLStyle style = document.CreateStyle();
-                style.FormatCode = "mm/dd/yyyy";
-                document.SetCellStyle(rowIndex, 6, style);
+                    ValueRows = list.Select(row => new ExcelRow
+                    {
+                        row.WorkflowName,
+                        row.Type,
+                        row.TypeName,
+                        row.Asset,
+                        row.Initiator,
+                        new ExcelCell(row.StartedOn, dateStyle),
+                        new ExcelCell(row.CompletedOn, dateStyle),
+                        row.Status,
+                        row.UID.ToString(),
+                        "/workflow/details/" + (row.UID.ToString() ?? "")
+                    }).ToList(),
 
-                document.SetCellValue(rowIndex, 7, row.CompletedOn??"");
-                SLStyle style1 = document.CreateStyle();
-                style1.FormatCode = "mm/dd/yyyy";
-                document.SetCellStyle(rowIndex, 7, style1);
+                    ColumnSettings =
+                    {
+                        { 4, new ExcelColumnSettings { Autofit = false } }
+                    }
+                }
+            };
 
-                document.SetCellValue(rowIndex, 8, row.Status ?? "");
-                document.SetCellValue(rowIndex, 9, row.UID.ToString() ?? "");
-                document.SetCellValue(rowIndex, 10, "/workflow/details/" + (row.UID.ToString() ?? ""));
-
-            }
-
-            #endregion
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"WorkflowItems {System.DateTime.Now.ToShortDateString()}.xlsx");
+            return ExcelDocumentAsFile(document);
         }
 
         private string getAssetType(string obj)
@@ -106,19 +94,19 @@ namespace d360.web.Controllers
                     break;
                 case "Policy":
                     objType = "PolicyType";
-                        break;
+                    break;
                 case "Model":
                     objType = "TaxonomyType";
-                        break;
+                    break;
                 case "Action":
                     objType = "IssueType";
-                      break;
+                    break;
                 case "Relationship":
                     objType = "IntersectType";
-                     break;                
+                    break;
                 case "Reference List":
                     objType = "ReferenceItemType";
-                     break;
+                    break;
                 case "Rule":
                     objType = "RuleType";
                     break;
@@ -146,7 +134,7 @@ namespace d360.web.Controllers
                 switch (ff.FieldName)
                 {
                     case "WorkflowId":
-                        var types=  Array.ConvertAll(ff.RawValue.Trim().TrimEnd(',').Split(','), s => int.Parse(s));
+                        var types = Array.ConvertAll(ff.RawValue.Trim().TrimEnd(',').Split(','), s => int.Parse(s));
                         dbArgs.Add($"{ff.FieldName}{count}", types);
                         typeClause.Add($@"wt.id in @{ff.FieldName}{count}");
                         break;
@@ -303,7 +291,7 @@ namespace d360.web.Controllers
             return sql;
         }
         [Route("workflowmonitor/items"), HttpGet, NonNullableParameters]
-        public JsonNetResult GetWorkflowMonitor( int pagenum, int pagesize, string sortDataField, string sortOrder)
+        public JsonNetResult GetWorkflowMonitor(int pagenum, int pagesize, string sortDataField, string sortOrder)
         {
             try
             {
@@ -314,15 +302,15 @@ namespace d360.web.Controllers
                 var stFieldType = sortDataField == "StartedOn" || sortDataField == "CompletedOn" ? "DateTime" : "string";
                 var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "DateTime", "desc", sortFieldType: stFieldType);
                 var pagingSql = applyPagingSuffix(string.Empty, pagenum, pagesize);
-                                
+
 
                 var countSql = $@"Select count(1) from ({sql}) as A ";
 
                 sql = $@"Select * from ({sql}) as A {sortsql} 
                         {pagingSql}";
-                               
-                var list = Company.Query<dynamic>(sql,dbArgs);
-                var totalCount = Company.Query<int>(countSql,dbArgs);
+
+                var list = Company.Query<dynamic>(sql, dbArgs);
+                var totalCount = Company.Query<int>(countSql, dbArgs);
 
                 return new JsonNetResult
                 {

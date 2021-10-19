@@ -1491,6 +1491,10 @@
       <Project>{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}</Project>
       <Name>d360.utils.company</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.utils.excel\d360.utils.excel.csproj">
+      <Project>{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}</Project>
+      <Name>d360.utils.excel</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
