@@ -19,6 +19,7 @@ using d360.extensions;
 using Newtonsoft.Json;
 using Resources;
 using d360.core.enums;
+using static d360.core.entities.Resource;
 
 namespace d360.web.Controllers.V2
 {
@@ -471,5 +472,81 @@ namespace d360.web.Controllers.V2
             }
         }
         #endregion
+
+        /// <summary>
+        /// Gets bulk load info.
+        /// </summary>
+        /// <param name="loadUid">The unique identifier of the load which details are returned for.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("bulkload/{loadUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets bulk load info.", typeof(LoadDetailV2)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+
+        public async Task<IHttpActionResult> GetLoads(Guid loadUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            string LoadDetailBaseSql = @"select	* from(select	
+            case L.[Action]
+			when 'M' then 'Users/Groups'
+            when 'P' then 'Promotion'
+			when 'R' then 'Relation'
+			when 'U' then 'Unrelation'
+            when 'L' then 'Lineage'
+            when 'O' then 'Responsibilities'
+            when 'T' then 'Lineage : Technical'
+            when 'S' then 'Synonyms'
+			when 'W' then 'Promotion (via Propose Workflow)'
+		end as [Action],
+        coalesce(C_D.[Name], 'Default') as AssetTypeName,
+        C_D.[uid] as AssetTypeUid,
+        E.C as Error,
+		T.C as Total,
+        case LI.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
+        R.FirstName + ' ' + R.LastName as RequestorName,
+        R.uid as RequestorUid
+from	[Load] L
+        left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
+        left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
+		left join (
+			select [Name],[uid], [Object] ,ObjectID from AssetType
+			union all
+			select ITN.[Name] as [Name], [uid] as uid, 'IntersectType' as [Object], ID as ObjectID from IntersectType IT
+			cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
+		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
+		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy 
+        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI 
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T where L.uid = @loadUid ) X";
+
+            try
+            {
+                var results = Company.Query<LoadDetailV2>(LoadDetailBaseSql, new { loadUid });
+
+                return await Task.FromResult<IHttpActionResult>(
+                            ResponseMessage(
+                                Request.CreateResponse(
+                                    HttpStatusCode.OK, results
+                                )
+                            )
+                        );
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
     }
 }
