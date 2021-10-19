@@ -73,4 +73,12 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public string ConfigurationJSON { get; set; }
     }
+
+    public class APIExecutionBulkLoadModel
+    {
+        public int total { get; set; }
+        public int pageNum { get; set; }
+        public int pageSize { get; set; }
+        public IEnumerable<LoadDetailV2> items { get; set; }
+    }
 }
