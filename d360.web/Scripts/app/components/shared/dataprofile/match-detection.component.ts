@@ -353,20 +353,20 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }
    
     get selectedAssetUids(): string[] {
-        return this.selectedTagItems.filter(t => t.tags !== undefined).map(t => t.uid);
+        return this.selectedTagItems.filter((t) => t.tags !== undefined).map((t) => t.uid);
     }
 
     get selectedAssetsWithoutTagField(): any[] {
-        return this.selectedTagItems.filter(t => t.tags === undefined);
+        return this.selectedTagItems.filter((t) => t.tags === undefined);
     }
 
     get selectedAssetsWithTagField(): any[] {
-        return this.selectedTagItems.filter(t => t.tags !== undefined);
+        return this.selectedTagItems.filter((t) => t.tags !== undefined);
     }
 
     get getCommonTags(): string[] {
         var a = this.selectedAssetsWithTagField[0].tags;
-        return a.filter(t => this.selectedAssetsWithTagField.every(c => c.tags.includes(t)));
+        return a.filter((t) => this.selectedAssetsWithTagField.every((c) => c.tags.includes(t)));
     }
 
     private closeModalDrawer() {
@@ -399,7 +399,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                     this.duplicatesSelection = [];
                 }
                 this.duplicatesSelection.push(item);
-                this.duplicatesSelection = this.duplicatesSelection.filter((x)=>x===x);//required for rows to highlight correctly
+                this.duplicatesSelection = this.duplicatesSelection.filter((x) => x === x);//required for rows to highlight correctly
             }
             this.selectMatch(this.duplicatesSelection);
             
