@@ -545,7 +545,7 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
                     break;
                 default:
-                    throw new Exception(FormControllerApiMessage.InvalidEditorType);
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
 
             }
             res.MaxJsonLength = int.MaxValue;
@@ -2238,7 +2238,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var shortcut = Company.GetById<Shortcut>(id);
                 if (shortcut == null)
                 {
-                    throw new Exception($"Shortcut Id ${id} not found");
+                    throw new ArgumentNullException($"Shortcut Id ${id} not found");
                 }
 
                 direction = moveUp ? "up" : "down";
@@ -2253,7 +2253,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 }
 
                 if (adjacentShortcut == null)
-                    throw new Exception($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
+                    throw new ArgumentNullException($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
 
 
                 int newOrder = adjacentShortcut.DisplayOrder;
