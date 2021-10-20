@@ -2043,8 +2043,6 @@ select @err";
                 {
                     //surpress error in error handling
                 }
-
-                Console.WriteLine(e.Message);
             }
 
             // create events for the objects this needs to be done after save changes so we have new objects id's
