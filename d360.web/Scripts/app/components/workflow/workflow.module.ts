@@ -22,6 +22,7 @@ import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 import { WorkflowBulkReassignComponent } from './workflow-bulk-reassign.component';
+import { WorkflowFormFieldsComponent } from './workflow-form-fields.component';
 
 
 import { WorkflowRoutingModule } from './workflow.routes';
@@ -87,6 +88,7 @@ import { ResourceMultiSelectGridModule } from '../shared/resource-multiselect-gr
         WorkflowNewDetailComponent,
         WorkflowBulkFormComponent,
         WorkflowBulkReassignComponent,
+        WorkflowFormFieldsComponent,
     ],
     exports: [                        
         WorkflowRaiseIssueComponent,           
