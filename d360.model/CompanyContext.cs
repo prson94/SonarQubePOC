@@ -2029,8 +2029,7 @@ select @err";
             }
             catch (OptimisticConcurrencyException e)
             {
-                // We really should 
-                // Resolve the concurrency conflict by refreshing the
+                // We really should Resolve the concurrency conflict by refreshing the
                 // object context before re-saving changes.
                 // see https://stackoverflow.com/questions/12402826/entity-framework-optimisticconcurrencyexception-rethrown-after-refresh 
                 // and https://docs.microsoft.com/en-us/ef/ef6/saving/concurrency
