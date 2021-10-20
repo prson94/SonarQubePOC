@@ -3772,6 +3772,12 @@ button.tab-scroller {
 }
 
 .tile-detail {
+  &.step-list {
+    .ui-accordion .ui-accordion-header:first-child {
+      margin-top: 0px;
+    }
+  }
+
   &.theme-new {
     .p-datatable {
 
@@ -5589,8 +5595,14 @@ d3s-header-typeahead-search {
     position: absolute;
     width: 127px;
     padding: 8px;
-    border: 1px solid #dde0e3;
-    background-color: rgb(255,251,226);
+    background-color: white;
+    color: #202020;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    line-height: 21px;
+    word-break: break-word;
     z-index: 100;
     top: -72px;
     right: -62px;
@@ -6518,7 +6530,7 @@ table {
 
   &.ig-value-complex-field {
     position: relative;
-    top: -10px;
+    top: -2px;
   }
 }
 
@@ -6726,4 +6738,3 @@ table {
     }
   }
 }
-
