@@ -17,7 +17,7 @@ namespace d360.core.entities
         public string Url { get; set; }
 
         [DataMember]
-        public Guid uid { get; set; }
+        public Guid? uid { get; set; }
 
         [DataMember]
         public int SortIndex { get; set; }
