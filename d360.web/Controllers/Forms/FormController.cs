@@ -377,7 +377,7 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionUri_EditFields(oid);
                     break;
                 default:
-                    throw new Exception(FormControllerApiMessage.InvalidEditorType);
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
             }
 
 
