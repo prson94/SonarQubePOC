@@ -29,6 +29,7 @@ using d360.core.entities.Metric;
 using d360.model.helpers;
 using System.Text;
 using d360.model.helpers.filters;
+using Microsoft.ApplicationInsights;
 
 namespace d360.model
 {
@@ -2028,6 +2029,22 @@ select @err";
             }
             catch (OptimisticConcurrencyException e)
             {
+                // We really should 
+                // Resolve the concurrency conflict by refreshing the
+                // object context before re-saving changes.
+                // see https://stackoverflow.com/questions/12402826/entity-framework-optimisticconcurrencyexception-rethrown-after-refresh 
+                // and https://docs.microsoft.com/en-us/ef/ef6/saving/concurrency
+                // for now we are gonna log when this happens.  It means the db and ef are out of sync
+                try
+                {
+                    TelemetryClient client = new TelemetryClient();
+                    client.TrackException(e);
+                }
+                catch
+                {
+                    //surpress error in error handling
+                }
+
                 Console.WriteLine(e.Message);
             }
 
