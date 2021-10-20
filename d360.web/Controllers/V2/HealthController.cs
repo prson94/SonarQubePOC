@@ -23,12 +23,8 @@ namespace d360.web.Controllers.V2
     ]
     public class HealthController : BaseV2ApiController
     {
-
-        ICompanyContext company;
-        public HealthController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public HealthController(CoreComponentSet set): base(set)
         {
-            this.Community = community;
-            this.company = company;
         }
 
         /// <summary>
@@ -47,10 +43,10 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
             try
             {
-                if (this.company.Connection.State != System.Data.ConnectionState.Open)
+                if (Company.Connection.State != System.Data.ConnectionState.Open)
                 {
-                    this.company.Connection.Open();
-                    this.company.Connection.Close();
+                    Company.Connection.Open();
+                    Company.Connection.Close();
                 }
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK))).ConfigureAwait(false);

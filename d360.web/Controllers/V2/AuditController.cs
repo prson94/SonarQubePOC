@@ -37,7 +37,7 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController : BaseV2ApiController
     {
-        public AuditController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public AuditController(CoreComponentSet set): base(set)
         {
 
         }

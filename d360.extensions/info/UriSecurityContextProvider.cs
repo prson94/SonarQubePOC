@@ -10,6 +10,8 @@ namespace d360.extensions.info
         {
             
         }
+        
+        public int ClientID { get; set; }
 
         public int CompanyID { get; set; }
 

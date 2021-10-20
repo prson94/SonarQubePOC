@@ -43,9 +43,8 @@ namespace d360.web.Controllers.V2
         IResponsibilityRepository ResponsibilityRepository;
 
         IAssetRepository AssetRepository;
-
-        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository, IMediator mediator, IApplicationUriProvider applicationUriProvider)
-            : base(community, company, settingsRepository)
+        public ResponsibilitiesController(CoreComponentSet set, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository)
+            : base(set)
         {
             Mediator = mediator;
             ApplicationUriProvider = applicationUriProvider;

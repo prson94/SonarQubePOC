@@ -61,6 +61,8 @@ namespace d360.web
 
             builder.RegisterModelModule();
 
+            builder.RegisterType<CoreComponentSet>().As<CoreComponentSet>().InstancePerRequest();
+
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()
                 .OnActivating(i => {
@@ -71,6 +73,7 @@ namespace d360.web
                         {
                             var ctx = req.GetOwinContext();
                             i.Instance.CompanyPrefix = ctx.Get<string>("CompanyDomain");
+                            i.Instance.ClientID = ctx.Get<int>("ClientID");
                             i.Instance.CompanyID = ctx.Get<int>("CompanyID");
                             i.Instance.DomainSettingID = ctx.Get<int>("DomainSettingID");
                             i.Instance.ResourceID= ctx.Get<int>("ResourceID");

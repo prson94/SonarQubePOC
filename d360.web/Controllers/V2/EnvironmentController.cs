@@ -41,7 +41,8 @@ namespace d360.web.Controllers.V2
         IAssetRepository _assetRepository;
         readonly ICompanyContext _company;
 
-        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public EnvironmentController(CoreComponentSet set, IStorageProvider storage, IAssetRepository assetRepository)
+            : base(set)
         {
             _storage = storage;
             _assetRepository = assetRepository;

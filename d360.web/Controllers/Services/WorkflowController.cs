@@ -39,8 +39,7 @@ namespace d360.web.Controllers.Services
 
         #region DI
 
-        public WorkflowController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public WorkflowController(CoreComponentSet set): base(set)
         {
         }
 
