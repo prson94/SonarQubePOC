@@ -1,9 +1,7 @@
 ﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter} from '@angular/core';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
-import { StringConstants } from '../../../static/string-constants';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetService } from '../../../services/asset.service';
 
@@ -20,7 +18,6 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     @Output() linkClicked = new EventEmitter();
     
     constructor(
-        private objectDetailService: ObjectDetailService,
         private assetTypeService: AssetTypeService,
         private assetService: AssetService) {
         super();
@@ -84,7 +81,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             this.assetService.getAsset(this.dataProfile.assetUid)
                 .subscribe((res) => {
                     this.assetName = res.Name;
-                    uriParams.assetTypeUid = res.AssetTypeUid
+                    uriParams.assetTypeUid = res.AssetTypeUid;
                     this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
                         this.assetTypeName = result[0].Name;
                         this.isLoading = false;
