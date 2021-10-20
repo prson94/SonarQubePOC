@@ -2,789 +2,789 @@
 @import "_Variables";
 
 .asset-browser {
-    .menu-wrapper {
-        display: inline-block;
+  .menu-wrapper {
+    display: inline-block;
+  }
+
+  .button-spacer {
+    display: inline-flex;
+    margin: 0px 16px 0px 16px;
+    width: 1px;
+    height: 32px;
+    background-color: @igx-grey-xlight;
+    line-height: 32px;
+  }
+
+  .error-panel {
+    position: relative;
+    top: 75px;
+    z-index: 1000;
+    text-align: center;
+    color: @ig-red-t1;
+  }
+
+  .diagram-container {
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .asset-browser-header {
+    background-color: #eceded;
+    display: flex;
+    flex-direction: row;
+    padding-bottom: 16px;
+    border-radius: 4px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+
+    &.expanded {
+      padding-top: 16px;
     }
 
-    .button-spacer {
-        display: inline-flex;
-        margin: 0px 16px 0px 16px;
-        width: 1px;
-        height: 32px;
-        background-color: @igx-grey-xlight;
-        line-height: 32px;
+    .diagram-type-picker {
+      width: 180px;
     }
 
-    .error-panel {
-        position: relative;
-        top: 75px;
-        z-index: 1000;
-        text-align: center;
-        color: @ig-red-t1;
+    .controls-left {
+      z-index: 50;
+      height: 32px;
+      display: flex;
     }
 
-    .diagram-container {
-        padding: 0;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-    }
+    .controls-right {
+      position: absolute;
+      z-index: 50;
+      right: 8px;
+      display: flex;
 
-    .asset-browser-header {
-        background-color: #eceded;
-        display: flex;
-        flex-direction: row;
-        padding-bottom: 16px;
-        border-radius: 4px;
-        border-bottom-left-radius: 0px;
-        border-bottom-right-radius: 0px;
-
-        &.expanded {
-            padding-top: 16px;
-        }
-
-        .diagram-type-picker {
-            width: 180px;
-        }
-
-        .controls-left {
-            z-index: 50;
-            height: 32px;
-            display: flex;
-        }
-
-        .controls-right {
-            position: absolute;
-            z-index: 50;
-            right: 8px;
-            display: flex;
-
-            span {
-                padding: 8px;
-                cursor: pointer;
-            }
-        }
-    }
-
-    .asset-browser-controls-bottom {
-        position: fixed;
-        right: 40px;
-        bottom: 40px;
-        z-index: 10001;
-
-        .diagram-zoom {
-            min-width: 34px;
-            text-align: center;
-        }
-
-        &.info-panel-opened {
-            right: 348px;
-        }
-    }
-
-    button.asset-browser-button,
-    .asset-browser-button-group > button {
-        display: inline-flex;
-        position: relative;
-        box-sizing: border-box;
-        flex-wrap: nowrap;
-        justify-content: center;
-        align-items: center;
-        user-select: none;
+      span {
+        padding: 8px;
         cursor: pointer;
-        flex-shrink: 0;
-        height: 32px;
-        font-size: 14px;
-        text-align: center;
-        white-space: nowrap;
-        background: #f0f0f0;
-        color: @ig-black;
-        border: none;
-        border-radius: 4px;
+      }
+    }
+  }
 
-        .has-alerts-label {
-            color: #cf1d49;
-            display: inline !important;
-        }
+  .asset-browser-controls-bottom {
+    position: fixed;
+    right: 40px;
+    bottom: 40px;
+    z-index: 10001;
 
-        .has-alerts-count {
-            padding: 1px 3px 1px 3px !important;
-            background-color: #cf1d49;
-            border-radius: 2px;
-            color: white;
-            font-size: 10px;
-            font-weight: 600;
-            display: inline;
-            margin-left: 5px;
-        }
-
-        &:not(.icon) {
-            padding: 0 16px;
-
-            i.fa {
-                padding-right: 8px;
-            }
-        }
-
-        &.icon {
-            font-size: 16px;
-            width: 32px;
-        }
-
-        &.right-margin-4 {
-            margin-right: 4px;
-        }
+    .diagram-zoom {
+      min-width: 34px;
+      text-align: center;
     }
 
-    &.btn-small {
-        button {
-            line-height: 12px;
-            font-size: 12px;
-        }
+    &.info-panel-opened {
+      right: 348px;
+    }
+  }
+
+  button.asset-browser-button,
+  .asset-browser-button-group > button {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 32px;
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    background: #f0f0f0;
+    color: @ig-black;
+    border: none;
+    border-radius: 4px;
+
+    .has-alerts-label {
+      color: #cf1d49;
+      display: inline !important;
     }
 
-    button:active {
-        background-color: #ccc;
+    .has-alerts-count {
+      padding: 1px 3px 1px 3px !important;
+      background-color: #cf1d49;
+      border-radius: 2px;
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      display: inline;
+      margin-left: 5px;
     }
 
-    button:focus {
-        background: #f1f1f2;
-        outline: 0 none;
-        outline-offset: 0;
-        -webkit-box-shadow: 0 0 0 2px @ig-midblue-t3;
-        -moz-box-shadow: 0 0 0 2px @ig-midblue-t3;
-        box-shadow: 0 0 0 2px @ig-midblue-t3;
+    &:not(.icon) {
+      padding: 0 16px;
+
+      i.fa {
+        padding-right: 8px;
+      }
     }
 
-    button:hover, button.dark:hover {
-        background-color: rgba(185, 192, 197, 0.5);
+    &.icon {
+      font-size: 16px;
+      width: 32px;
     }
 
-    button.selected {
-        background: @ig-purple-t4;
+    &.right-margin-4 {
+      margin-right: 4px;
+    }
+  }
+
+  &.btn-small {
+    button {
+      line-height: 12px;
+      font-size: 12px;
+    }
+  }
+
+  button:active {
+    background-color: #ccc;
+  }
+
+  button:focus {
+    background: #f1f1f2;
+    outline: 0 none;
+    outline-offset: 0;
+    -webkit-box-shadow: 0 0 0 2px @ig-midblue-t3;
+    -moz-box-shadow: 0 0 0 2px @ig-midblue-t3;
+    box-shadow: 0 0 0 2px @ig-midblue-t3;
+  }
+
+  button:hover, button.dark:hover {
+    background-color: rgba(185, 192, 197, 0.5);
+  }
+
+  button.selected {
+    background: @ig-purple-t4;
+  }
+
+  button.disabled,
+  button:disabled {
+    opacity: 0.33;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  button.disabled:hover {
+    background-color: transparent;
+  }
+
+  button.dark {
+    background: none;
+    color: @ig-black;
+  }
+
+  .diagram {
+    flex: 1;
+    overflow: hidden;
+    background: @ig-white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
+  }
+
+  .asset-browser-window-container {
+    border-radius: 4px;
+    box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
+    background: @ig-white;
+  }
+
+  .asset-browser-window {
+    flex: 0 0 415px;
+    background-color: @ig-grey-t5;
+    max-width: 415px;
+    padding-left: 15px;
+
+    .asset-browser-window-header {
+      width: 100%;
+
+      .controls {
+        float: right;
+        margin: 8px;
+        display: flex;
+      }
+
+      .info {
+        padding: 19px 8px 4px 16px;
+        margin: 0;
+
+        .class-name {
+          height: 24px;
+          font-size: 14px;
+          font-weight: normal;
+          font-stretch: normal;
+          font-style: normal;
+          line-height: 1.14;
+          letter-spacing: normal;
+          color: @ig-grey;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          padding-right: 8px;
+        }
+
+        .asset-name {
+          height: 24px;
+          font-size: 18px;
+          font-weight: 600;
+          font-stretch: normal;
+          font-style: normal;
+          line-height: 0.89;
+          letter-spacing: normal;
+          color: @ig-slate;
+          word-break: break-word;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          padding-right: 8px;
+        }
+      }
+
+      .scores {
+        float: right;
+        margin-right: 16px;
+        margin-top: 16px;
+      }
     }
 
-    button.disabled,
-    button:disabled {
-        opacity: 0.33;
-        cursor: default;
-        pointer-events: none;
-    }
+    .asset-browser-window-content {
+      width: 100%;
 
-    button.disabled:hover {
-        background-color: transparent;
-    }
+      section {
+        padding: 0 16px 0 16px;
 
-    button.dark {
-        background: none;
-        color: @ig-black;
-    }
+        &.detail {
+          padding: 0 0 0 16px;
 
-    .diagram {
-        flex: 1;
-        overflow: hidden;
-        background: @ig-white;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
-    }
-
-    .asset-browser-window-container {
-        border-radius: 4px;
-        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
-        background: @ig-white;
-    }
-
-    .asset-browser-window {
-        flex: 0 0 415px;
-        background-color: @ig-grey-t5;
-        max-width: 415px;
-        padding-left: 15px;
-
-        .asset-browser-window-header {
-            width: 100%;
-
-            .controls {
-                float: right;
-                margin: 8px;
-                display: flex;
-            }
-
-            .info {
-                padding: 19px 8px 4px 16px;
-                margin: 0;
-
-                .class-name {
-                    height: 24px;
-                    font-size: 14px;
-                    font-weight: normal;
-                    font-stretch: normal;
-                    font-style: normal;
-                    line-height: 1.14;
-                    letter-spacing: normal;
-                    color: @ig-grey;
-                    text-overflow: ellipsis;
-                    overflow: hidden;
-                    padding-right: 8px;
-                }
-
-                .asset-name {
-                    height: 24px;
-                    font-size: 18px;
-                    font-weight: 600;
-                    font-stretch: normal;
-                    font-style: normal;
-                    line-height: 0.89;
-                    letter-spacing: normal;
-                    color: @ig-slate;
-                    word-break: break-word;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    padding-right: 8px;
-                }
-            }
-
-            .scores {
-                float: right;
-                margin-right: 16px;
-                margin-top: 16px;
-            }
+          .scroll-panel {
+            padding-right: 16px;
+          }
         }
 
-        .asset-browser-window-content {
-            width: 100%;
+        .scroll-panel {
+          overflow-y: auto;
+          overflow-x: hidden;
 
-            section {
-                padding: 0 16px 0 16px;
-
-                &.detail {
-                    padding: 0 0 0 16px;
-
-                    .scroll-panel {
-                        padding-right: 16px;
-                    }
-                }
-
-                .scroll-panel {
-                    overflow-y: auto;
-                    overflow-x: hidden;
-
-                    &.no-tabs {
-                        padding-top: 8px;
-                    }
-                }
-
-                .filter-row {
-                    margin-bottom: 9px;
-
-                    .filter-row-label,
-                    .filter-row-short-label {
-                        vertical-align: top;
-                        height: 24px;
-                        font-size: 14px;
-                        font-weight: bold;
-                        font-stretch: normal;
-                        font-style: normal;
-                        line-height: normal;
-                        letter-spacing: normal;
-                        color: @ig-black;
-                    }
-
-                    .filter-row-short-label {
-                        width: 100px;
-                    }
-
-                    .filter-row-label {
-                        width: 142px;
-                    }
-
-                    .filter-row-control {
-                        vertical-align: top;
-                        font-size: 14px;
-                        font-weight: normal;
-                        font-stretch: normal;
-                        font-style: normal;
-                        line-height: normal;
-                        letter-spacing: normal;
-                        color: @ig-black;
-                        padding-bottom: 9px;
-
-                        .filter-dropdown {
-                            width: 90%;
-                        }
-                    }
-                }
-            }
-
-            &.popup-opened {
-                z-index: auto;
-            }
-
-            .browser-relationship-editor {
-                .title {
-                    color: gray;
-                    margin: 6px 0;
-                    display: block;
-                }
-
-                .transformation-block {
-                    .generic-asset-search {
-                        min-width: 300px;
-                        margin-right: 16px;
-                    }
-
-                    button {
-                        border: 1px solid #ccc;
-                        border-radius: 4px;
-                        display: block;
-                        clear: both;
-                        background-color: #f0f0f0;
-                        padding: 5px 10px;
-                        line-height: 22px;
-
-                        &:disabled {
-                            opacity: 0.5;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    .alert-selected {
-        border: 2px solid #000 !important;
-    }
-
-    .asset-browser-window-tabs-content-alert {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        padding: 3px 10px 3px 10px;
-        border: 2px solid #c09b9c;
-        border-radius: 3px;
-        background-color: #ffdfdf;
-        color: #000;
-
-        &:hover {
-            border: 2px solid #000;
-            cursor: pointer;
+          &.no-tabs {
+            padding-top: 8px;
+          }
         }
 
-        .asset {
-            margin-bottom: 10px;
+        .filter-row {
+          margin-bottom: 9px;
 
-            .icon {
-                margin-right: 5px;
-            }
-
-            .settings-menu {
-                width: 32px;
-                line-height: 32px;
-                background-color: transparent;
-                border: 1px solid #ffcfcf;
-                stroke-opacity: 0.4;
-                border-radius: 2px;
-                height: 32px;
-                float: right;
-                position: relative;
-                text-align: center;
-                vertical-align: middle;
-
-                .popup-menu {
-                    display: none;
-
-                    ul {
-                        & > li {
-                            & > span {
-                                padding-left: 10px;
-                                width: 200px;
-                                text-align: left;
-                            }
-                        }
-                    }
-                }
-
-                &:hover {
-                    background-color: #c8c8c8;
-                    cursor: pointer;
-                    border-top-left-radius: 2px;
-                    border-top-right-radius: 2px;
-                    border-bottom-left-radius: 0px;
-                    border-bottom-right-radius: 0px;
-                    border-bottom: none;
-
-                    .popup-menu {
-                        display: inline-block;
-                        top: 1px;
-                        width: 160px;
-                        z-index: 100;
-
-                        &.place-right {
-                            right: 128px;
-                        }
-                    }
-                }
-            }
-        }
-
-        .action {
-            margin-bottom: 5px;
-
-            .label {
-                margin-right: 6px;
-            }
-
-            .type {
-                border-radius: 2px;
-                background-color: @ig-purple;
-                color: @ig-white;
-                padding: 2px 3px 2px 3px;
-            }
-
-            .content {
-                margin-top: 10px;
-            }
-        }
-
-        .score {
-            .label {
-                margin-right: 6px;
-            }
-
-            .type {
-                border-radius: 2px;
-                color: @ig-white;
-                padding: 2px 3px 2px 3px;
-            }
-        }
-    }
-
-    .asset-browser-button-group {
-        display: inline-flex;
-        height: 32px;
-
-        &.zoom-controls {
-            border-radius: 4px;
-            background-color: @ig-grey-t5;
-            height: initial;
-            padding: 4px;
-            line-height: 32px;
-
-            button {
-                margin: 0;
-            }
-
-            .diagram-zoom {
-                display: inline-block;
-                position: relative;
-                color: @igx-grey;
-                font-weight: 600;
-                margin: 0 4px;
-                font-size: 14px;
-                top: -1px;
-                -webkit-touch-callout: none; /* iOS Safari */
-                -webkit-user-select: none; /* Safari */
-                -moz-user-select: none; /* Firefox */
-                -ms-user-select: none; /* Internet Explorer/Edge */
-                user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
-            }
-        }
-
-        input[type="text"] {
-            border: none;
-            height: 25px;
-            padding: 3px;
-        }
-    }
-
-    .asset-browser-search {
-        position: relative;
-        display: inline-flex;
-        flex-direction: row;
-        align-items: center;
-        box-sizing: border-box;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        height: 32px;
-        width: 200px;
-        top: -2px;
-
-        input {
-            background: none;
-            border: none;
-            flex-grow: 1;
-            outline: none;
-            min-width: 50px;
-            padding: 0 10px;
-
-            &.has-text {
-                padding-right: 80px;
-            }
-        }
-
-        .input-actions {
-            position: absolute;
-            top: 5px;
-            right: 28px;
-
-            .fa-times-circle {
-                margin: 0 8px;
-                color: @ig-midblue;
-                cursor: pointer;
-            }
-
-            .search-item-location {
-                color: #bbb;
-            }
-
-            .fa-search {
-                background-color: @ig-grey-t5;
-                height: 24px;
-                width: 24px;
-                border-radius: 2px;
-                color: @ig-black;
-                line-height: 24px;
-                position: absolute;
-                padding: 0 5px;
-                top: -2px;
-            }
-        }
-    }
-
-    .asset-browser-body {
-        .tile {
-            margin-bottom: 0;
-        }
-    }
-
-    .relationship-editor {
-        max-width: 380px;
-
-        .asset-browser-window-content {
-            top: 54px !important;
-            padding: 10px;
-            padding-top: 0;
-        }
-
-        span.title {
-            margin-top: 15px !important;
-            font-weight: bold;
-        }
-
-        .asset-browser-window-header {
-            height: 85px;
-
-            .asset-browser-window-header-name {
-                margin-bottom: 4px;
-            }
-
-            .switcher {
-                button {
-                    background: none;
-                    border: none;
-                    border-bottom: 4px rgba(255, 255, 255, 0);
-                    color: #006fc0;
-                    padding: 5px 10px;
-
-                    &.selected,
-                    &:hover {
-                        border-bottom: 3px solid #006fc0;
-                    }
-                }
-            }
-        }
-
-        .asset-browser-window-content {
-            top: 85px;
-        }
-
-        .actions {
-            padding: 16px 0;
-            display: flex;
-            flex-direction: row;
-
-            button {
-                border: 1px solid #ccc;
-                margin-left: 0;
-
-                &:disabled {
-                    opacity: 0.5;
-                }
-            }
-        }
-
-        .info-message {
-            margin-top: 15px;
-        }
-
-        .warningMessage {
-            background-color: @igx-orange-xlight;
-            border: 1px solid @igx-orange-light;
-            border-radius: 2px;
-            width: 100%;
-            padding: 10px 20px;
-            margin-top: 15px;
-            color: #000;
-            font-weight: normal;
-        }
-
-        .err-message {
-            background-color: @igx-coral-xlight;
-            border: 1px solid @igx-coral;
-            border-radius: 2px;
-            width: 100%;
-            padding: 10px 20px;
-            color: #000;
-            font-weight: normal;
-            position: relative;
-            padding-left: 28px;
-            padding-top: 4px;
-            padding-bottom: 4px;
-            margin: 10px 0;
-
-            .warning-icon {
-                position: absolute;
-                left: 8px;
-                top: 8px;
-            }
-
-            .segments {
-                .arrow-right {
-                    font-size: 9px;
-                    margin: 0 5px;
-                }
-            }
-
-            span.title {
-                margin: 0;
-                margin-top: 6px !important;
-            }
-        }
-    }
-
-    .controls-bottom-left {
-        .overview canvas {
-            outline: none;
-        }
-    }
-
-    .relationship-badges-overlay {
-        position: absolute;
-        z-index: 1000;
-
-        .item-icon {
-            margin-right: 4px;
-            width: 13px;
-        }
-
-        .item-name {
-            flex-grow: 1;
-            margin-right: 4px;
-        }
-
-        .count-badge {
-            width: 32px;
-            height: 21px;
-            background: @ig-purple;
-            color: white;
-            line-height: 21px;
-            text-align: center;
-            border-radius: 2px;
-        }
-
-        .relation-item {
-            background: white;
-            cursor: pointer;
-            display: flex;
-            color: @ig-purple;
-            border: 1px solid @igx-grey-xlight;
-            border-radius: 4px;
-            padding: 2px 2px 2px 4px;
+          .filter-row-label,
+          .filter-row-short-label {
+            vertical-align: top;
+            height: 24px;
             font-size: 14px;
-            margin-bottom: -1px;
-            max-height: 26px;
-            position: relative;
+            font-weight: bold;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: normal;
+            letter-spacing: normal;
+            color: @ig-black;
+          }
 
-            &.expanded {
-                background: @ig-grey-t5;
+          .filter-row-short-label {
+            width: 100px;
+          }
 
-                .count-badge {
-                    background: @ig-slate-t1;
-                }
+          .filter-row-label {
+            width: 142px;
+          }
+
+          .filter-row-control {
+            vertical-align: top;
+            font-size: 14px;
+            font-weight: normal;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: normal;
+            letter-spacing: normal;
+            color: @ig-black;
+            padding-bottom: 9px;
+
+            .filter-dropdown {
+              width: 90%;
             }
+          }
         }
-    }
+      }
 
-    .empty-overlay {
-        .content {
-            text-align: center;
-            top: 100px;
-            position: relative;
-            max-width: 210px;
-            margin: 0 auto;
-            color: @ig-slate;
+      &.popup-opened {
+        z-index: auto;
+      }
 
-            span {
-                font-size: 14px;
-                line-height: 18px;
-            }
-
-            .icon-holder {
-                background-color: @ig-grey-t5;
-                height: 128px;
-                width: 128px;
-                text-align: center;
-                margin: 0 auto;
-                border-radius: 50%;
-                margin-bottom: 16px;
-
-                .fa {
-                    font-size: 56px;
-                    line-height: 128px;
-                }
-            }
+      .browser-relationship-editor {
+        .title {
+          color: gray;
+          margin: 6px 0;
+          display: block;
         }
-    }
 
-    .windowtabs {
-        height: 32px;
-        background-color: @ig-white;
+        .transformation-block {
+          .generic-asset-search {
+            min-width: 300px;
+            margin-right: 16px;
+          }
 
-        button.tab {
-            box-sizing: border-box;
-            padding: 0 15px;
-            height: 32px;
-            cursor: pointer;
-            flex-shrink: 0;
-            background: none;
-            border: none;
-            border-radius: 0;
-            color: @ig-purple;
-            border-bottom: 3px solid transparent;
-            outline: none;
+          button {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: block;
+            clear: both;
+            background-color: #f0f0f0;
+            padding: 5px 10px;
+            line-height: 22px;
 
             &:disabled {
-                color: @d3s-gray-7;
-                cursor: not-allowed;
+              opacity: 0.5;
             }
-
-            &:not(:disabled):hover,
-            &.hover {
-                background: rgba(20, 20, 20, 0.05);
-            }
+          }
         }
-
-        button.tab-selected {
-            box-sizing: border-box;
-            padding: 0 15px;
-            height: 32px;
-            cursor: pointer;
-            flex-shrink: 0;
-            background: none;
-            border: none;
-            border-radius: 0;
-            border-bottom: 3px solid black;
-            color: @ig-black;
-        }
+      }
     }
+  }
+
+  .alert-selected {
+    border: 2px solid #000 !important;
+  }
+
+  .asset-browser-window-tabs-content-alert {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 3px 10px 3px 10px;
+    border: 2px solid #c09b9c;
+    border-radius: 3px;
+    background-color: #ffdfdf;
+    color: #000;
+
+    &:hover {
+      border: 2px solid #000;
+      cursor: pointer;
+    }
+
+    .asset {
+      margin-bottom: 10px;
+
+      .icon {
+        margin-right: 5px;
+      }
+
+      .settings-menu {
+        width: 32px;
+        line-height: 32px;
+        background-color: transparent;
+        border: 1px solid #ffcfcf;
+        stroke-opacity: 0.4;
+        border-radius: 2px;
+        height: 32px;
+        float: right;
+        position: relative;
+        text-align: center;
+        vertical-align: middle;
+
+        .popup-menu {
+          display: none;
+
+          ul {
+            & > li {
+              & > span {
+                padding-left: 10px;
+                width: 200px;
+                text-align: left;
+              }
+            }
+          }
+        }
+
+        &:hover {
+          background-color: #c8c8c8;
+          cursor: pointer;
+          border-top-left-radius: 2px;
+          border-top-right-radius: 2px;
+          border-bottom-left-radius: 0px;
+          border-bottom-right-radius: 0px;
+          border-bottom: none;
+
+          .popup-menu {
+            display: inline-block;
+            top: 1px;
+            width: 160px;
+            z-index: 100;
+
+            &.place-right {
+              right: 128px;
+            }
+          }
+        }
+      }
+    }
+
+    .action {
+      margin-bottom: 5px;
+
+      .label {
+        margin-right: 6px;
+      }
+
+      .type {
+        border-radius: 2px;
+        background-color: @ig-purple;
+        color: @ig-white;
+        padding: 2px 3px 2px 3px;
+      }
+
+      .content {
+        margin-top: 10px;
+      }
+    }
+
+    .score {
+      .label {
+        margin-right: 6px;
+      }
+
+      .type {
+        border-radius: 2px;
+        color: @ig-white;
+        padding: 2px 3px 2px 3px;
+      }
+    }
+  }
+
+  .asset-browser-button-group {
+    display: inline-flex;
+    height: 32px;
+
+    &.zoom-controls {
+      border-radius: 4px;
+      background-color: @ig-grey-t5;
+      height: initial;
+      padding: 4px;
+      line-height: 32px;
+
+      button {
+        margin: 0;
+      }
+
+      .diagram-zoom {
+        display: inline-block;
+        position: relative;
+        color: @igx-grey;
+        font-weight: 600;
+        margin: 0 4px;
+        font-size: 14px;
+        top: -1px;
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+      }
+    }
+
+    input[type="text"] {
+      border: none;
+      height: 25px;
+      padding: 3px;
+    }
+  }
+
+  .asset-browser-search {
+    position: relative;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    box-sizing: border-box;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    height: 32px;
+    width: 200px;
+    top: -2px;
+
+    input {
+      background: none;
+      border: none;
+      flex-grow: 1;
+      outline: none;
+      min-width: 50px;
+      padding: 0 10px;
+
+      &.has-text {
+        padding-right: 80px;
+      }
+    }
+
+    .input-actions {
+      position: absolute;
+      top: 5px;
+      right: 28px;
+
+      .fa-times-circle {
+        margin: 0 8px;
+        color: @ig-midblue;
+        cursor: pointer;
+      }
+
+      .search-item-location {
+        color: #bbb;
+      }
+
+      .fa-search {
+        background-color: @ig-grey-t5;
+        height: 24px;
+        width: 24px;
+        border-radius: 2px;
+        color: @ig-black;
+        line-height: 24px;
+        position: absolute;
+        padding: 0 5px;
+        top: -2px;
+      }
+    }
+  }
+
+  .asset-browser-body {
+    .tile {
+      margin-bottom: 0;
+    }
+  }
+
+  .relationship-editor {
+    max-width: 380px;
+
+    .asset-browser-window-content {
+      top: 54px !important;
+      padding: 10px;
+      padding-top: 0;
+    }
+
+    span.title {
+      margin-top: 15px !important;
+      font-weight: bold;
+    }
+
+    .asset-browser-window-header {
+      height: 85px;
+
+      .asset-browser-window-header-name {
+        margin-bottom: 4px;
+      }
+
+      .switcher {
+        button {
+          background: none;
+          border: none;
+          border-bottom: 4px rgba(255, 255, 255, 0);
+          color: #006fc0;
+          padding: 5px 10px;
+
+          &.selected,
+          &:hover {
+            border-bottom: 3px solid #006fc0;
+          }
+        }
+      }
+    }
+
+    .asset-browser-window-content {
+      top: 85px;
+    }
+
+    .actions {
+      padding: 16px 0;
+      display: flex;
+      flex-direction: row;
+
+      button {
+        border: 1px solid #ccc;
+        margin-left: 0;
+
+        &:disabled {
+          opacity: 0.5;
+        }
+      }
+    }
+
+    .info-message {
+      margin-top: 15px;
+    }
+
+    .warningMessage {
+      background-color: @igx-orange-xlight;
+      border: 1px solid @igx-orange-light;
+      border-radius: 2px;
+      width: 100%;
+      padding: 10px 20px;
+      margin-top: 15px;
+      color: #000;
+      font-weight: normal;
+    }
+
+    .err-message {
+      background-color: @igx-coral-xlight;
+      border: 1px solid @igx-coral;
+      border-radius: 2px;
+      width: 100%;
+      padding: 10px 20px;
+      color: #000;
+      font-weight: normal;
+      position: relative;
+      padding-left: 28px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      margin: 10px 0;
+
+      .warning-icon {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+
+      .segments {
+        .arrow-right {
+          font-size: 9px;
+          margin: 0 5px;
+        }
+      }
+
+      span.title {
+        margin: 0;
+        margin-top: 6px !important;
+      }
+    }
+  }
+
+  .controls-bottom-left {
+    .overview canvas {
+      outline: none;
+    }
+  }
+
+  .relationship-badges-overlay {
+    position: absolute;
+    z-index: 1000;
+
+    .item-icon {
+      margin-right: 4px;
+      width: 13px;
+    }
+
+    .item-name {
+      flex-grow: 1;
+      margin-right: 4px;
+    }
+
+    .count-badge {
+      width: 32px;
+      height: 21px;
+      background: @ig-purple;
+      color: white;
+      line-height: 21px;
+      text-align: center;
+      border-radius: 2px;
+    }
+
+    .relation-item {
+      background: white;
+      cursor: pointer;
+      display: flex;
+      color: @ig-purple;
+      border: 1px solid @igx-grey-xlight;
+      border-radius: 4px;
+      padding: 2px 2px 2px 4px;
+      font-size: 14px;
+      margin-bottom: -1px;
+      max-height: 26px;
+      position: relative;
+
+      &.expanded {
+        background: @ig-grey-t5;
+
+        .count-badge {
+          background: @ig-slate-t1;
+        }
+      }
+    }
+  }
+
+  .empty-overlay {
+    .content {
+      text-align: center;
+      top: 100px;
+      position: relative;
+      max-width: 210px;
+      margin: 0 auto;
+      color: @ig-slate;
+
+      span {
+        font-size: 14px;
+        line-height: 18px;
+      }
+
+      .icon-holder {
+        background-color: @ig-grey-t5;
+        height: 128px;
+        width: 128px;
+        text-align: center;
+        margin: 0 auto;
+        border-radius: 50%;
+        margin-bottom: 16px;
+
+        .fa {
+          font-size: 56px;
+          line-height: 128px;
+        }
+      }
+    }
+  }
+
+  .windowtabs {
+    height: 32px;
+    background-color: @ig-white;
+
+    button.tab {
+      box-sizing: border-box;
+      padding: 0 15px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-radius: 0;
+      color: @ig-purple;
+      border-bottom: 3px solid transparent;
+      outline: none;
+
+      &:disabled {
+        color: @d3s-gray-7;
+        cursor: not-allowed;
+      }
+
+      &:not(:disabled):hover,
+      &.hover {
+        background: rgba(20, 20, 20, 0.05);
+      }
+    }
+
+    button.tab-selected {
+      box-sizing: border-box;
+      padding: 0 15px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-radius: 0;
+      border-bottom: 3px solid black;
+      color: @ig-black;
+    }
+  }
 }
