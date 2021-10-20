@@ -1421,6 +1421,7 @@
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.less" />
     <Content Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.less" />
     <Content Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.less" />
+    <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
