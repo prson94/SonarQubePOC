@@ -1,0 +1,75 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="row" *ngIf="!isLoading">
+    <div class="col s12">
+        <div class="tile tile-detail" *ngIf="!isCompleted && hasItems && !isSubmitting">
+            <header>{{title}}</header>
+            <div class="row" style="margin-bottom: 5px">
+                <div class="col l4 m6 s12">
+                    <span class="FieldName FieldDisplayName">Workflow:&nbsp;</span>
+                    <span class="FieldDisplayContent">{{workflowName}}</span>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom: 5px">
+                <div class="col l2 m4 s12">
+                    <span class="FieldName FieldDisplayName">Version:&nbsp;</span>
+                    <span class="FieldDisplayContent">{{version}}</span>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom: 5px">
+                <div class="col l4 m6 s12">
+                    <span class="FieldName FieldDisplayName">Object:&nbsp;</span>
+                    <span class="FieldDisplayContent">{{objName}}</span>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom: 5px">
+                <div class="col l4 m6 s12">
+                    <span class="FieldName FieldDisplayName">Type:&nbsp;</span>
+                    <span class="FieldDisplayContent">{{typeName}}</span>
+                </div>
+            </div>
+            <div class="form-instructions">Please complete this form for the {{itemSteps?.length}} selected items</div>
+            <div *ngIf="omittedCount > 0" class="form-instructions">{{omittedCount}} items were excluded because they were deleted, already completed, or you do not have permission to complete them.</div>
+            <div [innerHtml]="description"></div>
+            <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">
+                <div class="row">
+                    <div class="col l6 s12">
+                        <d3s-workflow-form-fields [fields]="fields" [form]="workflowForm" #fieldsComponent></d3s-workflow-form-fields>
+                    </div>
+                    <div class="col s12">&nbsp;</div>
+                    <div class="col s12">
+                        <button pButton type="submit" [disabled]="!workflowForm.valid" style="width: 150px;" label="Submit"></button>
+                        <button pButton type="button" (click)="close()" label="Cancel" style="width: 150px;"></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div *ngIf="isCompleted && !isSubmitting" class="tile tile-detail">
+            <header>{{title}}</header>
+            <div class="row">
+                <div class="col s12">Thank you, your responses have been submitted and are being processed.</div>
+                <div *ngIf="omittedCount > 0" class="col s12">{{omittedCount}} items were omitted because they were deleted, already completed, or you do not have permission to complete them.</div>
+                <div class="col s12">&nbsp;</div>
+                <div class="col s12">
+                    <button pButton type="button" (click)="complete();" label="Close" style="width: 150px;"></button>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="!isCompleted && !hasItems" class="tile tile-detail">
+            <header>{{title}}</header>
+            <div class="row">
+                <div class="col s12">All the selected items have been omitted because they were deleted, already completed, or you do not have permission to complete them.</div>
+                <div class="col s12">&nbsp;</div>
+                <div class="col s12">
+                    <button pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="isSubmitting" class="tile tile-detail">
+            <header>{{title}}</header>
+            <div class="row">
+                <div class="col s12">Processing, please wait...</div>
+                <d3s-loading isLoading="true"></d3s-loading>
+            </div>
+        </div>
+    </div>
+</div>

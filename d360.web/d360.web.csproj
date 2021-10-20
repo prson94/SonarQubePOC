@@ -1139,7 +1139,9 @@
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
+    <Content Include="Scripts\app\components\workflow\workflow-bulk-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
+    <Content Include="Scripts\app\components\workflow\workflow-form-fields.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
@@ -1520,6 +1522,7 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-form-fields.component.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\models\helpmenu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />

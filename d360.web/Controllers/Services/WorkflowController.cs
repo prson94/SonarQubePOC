@@ -990,7 +990,15 @@ order by wi.StartedOn desc";
 
                 List<WorkflowFormModelField> properties = (
                                      from s in XElement.Parse(xml).Element("form").Elements()
-                                     select new WorkflowFormModelField { Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"), IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"), FieldType = (WorkflowFormModelFieldType)Enum.Parse(typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                     select new WorkflowFormModelField {
+                                         Value = (string)s.Attribute("value"),
+                                         ID = (string)s.Attribute("id"),
+                                         Label = (string)s.Attribute("label"),
+                                         ReferenceFieldID = (string)s.Attribute("referenceFieldId"),
+                                         Required = s.Attribute("required") == null ? false : (bool)s.Attribute("required"),
+                                         IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"),
+                                         FieldType = (WorkflowFormModelFieldType)Enum.Parse(typeof(WorkflowFormModelFieldType), (string)s.Attribute("type"))
+                                     }
                                      ).ToList();
 
 
