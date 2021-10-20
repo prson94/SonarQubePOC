@@ -88,7 +88,7 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
         this.isLoading = true;
         this.workflowService.getWorkflowBulkForm(this.model)
             .pipe(
-                map(res => {
+                map((res) => {
                     this.title = res.Title;
                     this.description = res.Description;
                     this.fields = res.Fields;
@@ -114,9 +114,9 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
                     window.setTimeout(() => {
                         this.fieldsComponent.setValidators();
                     }, 500);
-                })).subscribe(() => { }, error => {
+                })).subscribe(() => { }, (error) => {
                     this.isLoading = false;
-                })
+                });
     }
 
     private close() {

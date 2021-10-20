@@ -23,40 +23,38 @@ export class WorkflowFormFieldsComponent extends BaseComponent {
     }
 
     public setValidators() {
-        if (this.isSetValidatior) return false;
-        if (!(this.form?.form && this.form.form.controls)) return true;
-        let count: number = 0;
+        if (this.isSetValidatior) {
+            return false;
+        }
+        if (!(this.form?.form && this.form.form.controls)) {
+            return true;
+        }
         let assignValidation: boolean = false;
         this.isSetValidatior = true;
-        this.fields.forEach(x => {
-            if (x.Required && x.FieldType == WorkflowFormFieldType.Link) {
+        this.fields.forEach((x, i) => {
+            if (x.Required) {
                 assignValidation = true;
-                this.form.form.controls[`inputUrl_${count}`].setValidators([Validators.required]);
-                this.form.form.controls[`inputUrl_${count}`].updateValueAndValidity();
+                if (x.FieldType === WorkflowFormFieldType.Link) {
+                    this.form.form.controls[`inputUrl_${i}`].setValidators([Validators.required]);
+                    this.form.form.controls[`inputUrl_${i}`].updateValueAndValidity();
+                } else if (x.FieldType !== WorkflowFormFieldType.Boolean) {
+                    this.form.form.controls[`input_${i}`].setValidators([Validators.required]);
+                    this.form.form.controls[`input_${i}`].updateValueAndValidity();
+                }
             }
-            else if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
-                assignValidation = true;
-                this.form.form.controls[`input_${count}`].setValidators([Validators.required]);
-                this.form.form.controls[`input_${count}`].updateValueAndValidity();
-            }
-            count++;
         });
         return assignValidation;
     }
 
     public prepareValuesForSubmit() {
-        for (var i = 0; i < this.fields.length; i++) {
-            var isLink = this.fields[i].FieldType == WorkflowFormFieldType.Link;
-            if (isLink) {
-                let name = this.form.form.controls[`inputName_${i}`].value;
-                let url = this.form.form.controls[`inputUrl_${i}`].value;
-                var linkString = name + '|' + url;
-                this.fields[i].Value = linkString;
+        this.fields.forEach((x, i) => {
+            if (x.FieldType === WorkflowFormFieldType.Link) {
+                const name = this.form.form.controls[`inputName_${i}`].value;
+                const url = this.form.form.controls[`inputUrl_${i}`].value;
+                x.Value = name + '|' + url;
+            } else if (Array.isArray(x.Value)) {
+                x.Value = x.Value.join();
             }
-            else if (Array.isArray(this.fields[i].Value)) {
-                this.fields[i].Value = this.fields[i].Value.join();
-            }
-        }
+        });
     }
-
-};
+}
