@@ -1,13 +1,38 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
-import { ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService, ResponsibilityItemDetailV2 } from '../../../models/responsibility.model';
-import { FormMessage } from '../../../models/form.model';
+﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, NgModule } from '@angular/core';
+import { ResponsibilityItemDetailV2 } from '../../../models/responsibility.model';
 import { ResponsibilityService } from '../../../services/responsibility.service';
 import { PermissionsService } from '../../../services/permissions.service';
 import { BaseComponent } from '../../shared/base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { TableModule } from 'primeng/table';
+import { SharedModule } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { DropdownModule } from 'primeng/dropdown';
+import { ButtonModule } from 'primeng/button';
+import { TreeTableModule } from 'primeng/treetable';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { ToastModule } from 'primeng/toast';
+import { CoreModule } from '../core.module';
+import { PipesModule } from '../../../pipes/pipes.module';
+import { SharedDeleteFormModule } from '../delete.form';
+import { ResourceMultiSelectGridModule } from '../resource-multiselect-grid.component';
+import { TilesModule } from '../tiles/tiles.module';
+import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
+import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
+import { SearchFieldModule } from '../controls/search-field/search-field.component';
+import { ResponsibilityItemFormModule } from './responsibility-item.form';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
@@ -125,3 +150,49 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         return `Are you sure you want to delete the ${this.selectedRow.Responsibility} - ${ this.selectedRow.Group ?? this.selectedRow.Resource }?`
     }
 }
+
+@NgModule({
+    declarations: [
+        PeopleResponsibilitiesTile
+    ],
+    exports: [
+        PeopleResponsibilitiesTile
+    ]
+    , imports: [
+        CommonModule,
+        FormsModule,
+        HttpClientModule,
+        RouterModule,
+
+        //primeng
+        ToastModule,
+        InputSwitchModule,
+        InputTextModule,
+        TreeTableModule,
+        ButtonModule,
+        DropdownModule,
+        SelectButtonModule,
+        AutoCompleteModule,
+        MultiSelectModule,
+        EditorModule,
+        TooltipModule,
+        SharedModule,
+        TableModule,
+
+        //d3s
+        CoreModule,
+        PipesModule,
+        SharedDynamicGridEditorModule,
+        SharedGridPagingInfoModule,
+        SharedObjectDetailsModule,
+        TilesModule,
+        AdvancedFiltersModule,
+        SearchFieldModule,
+        ResourceMultiSelectGridModule,
+        ResponsibilityItemFormModule,
+        SharedDeleteFormModule
+    ],
+    providers: []
+})
+
+export class PeopleResponsibilitiesModule { }

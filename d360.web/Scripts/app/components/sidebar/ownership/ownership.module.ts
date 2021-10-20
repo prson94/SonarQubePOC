@@ -15,6 +15,7 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
 import { OwnershipRoutingModule } from './ownership.routes';
 
 import { OwnershipComponent } from './ownership.component';
+import { PeopleResponsibilitiesModule } from '../../shared/responsibilities/people-responsibilities.tile';
 
 @NgModule({
     imports: [
@@ -30,6 +31,7 @@ import { OwnershipComponent } from './ownership.component';
         CoreModule,
         SharedResponsibilitiesModule,
         TilesModule,
+        PeopleResponsibilitiesModule,
 
         //prime        
         SharedModule,

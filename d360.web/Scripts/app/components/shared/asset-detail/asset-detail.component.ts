@@ -323,4 +323,8 @@ export class AssetDetailComponent implements OnChanges {
             }
         }
     }
+
+    clickTab(key: string) {
+        this.tab = key;
+    }
 }

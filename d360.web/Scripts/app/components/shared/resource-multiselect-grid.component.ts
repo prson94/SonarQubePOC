@@ -1,11 +1,34 @@
-﻿import { Input, Component, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange  } from "@angular/core";
+﻿import { Input, Component, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, NgModule  } from "@angular/core";
 import * as _ from "lodash";
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from "@angular/forms";
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from "@angular/forms";
 import { SortOrder } from "../../models/enums.model";
 import { EditorField } from "../../models/editor-field.model";
 import { BaseComponent } from "./base.component";
 import { ResourcesService } from "../../services/resources.service";
-import { LazyLoadEvent } from "primeng/api";
+import { LazyLoadEvent, SharedModule } from "primeng/api";
+import { CommonModule } from "@angular/common";
+import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
+import { RouterModule } from "@angular/router";
+import { MultiSelectModule } from "primeng/multiselect";
+import { InputSwitchModule } from "primeng/inputswitch";
+import { InputTextModule } from "primeng/inputtext";
+import { TreeTableModule } from "primeng/treetable";
+import { ButtonModule } from "primeng/button";
+import { DropdownModule } from "primeng/dropdown";
+import { SelectButtonModule } from "primeng/selectbutton";
+import { AutoCompleteModule } from "primeng/autocomplete";
+import { TableModule } from "primeng/table";
+import { EditorModule } from "primeng/editor";
+import { TooltipModule } from "primeng/tooltip";
+import { ToastModule } from "primeng/toast";
+import { CoreModule } from "./core.module";
+import { PipesModule } from "../../pipes/pipes.module";
+import { SharedDynamicGridEditorModule } from "./dynamicgrideditor/shared-dynamic-grid-editor.module";
+import { SharedGridPagingInfoModule } from "./grid-paging-info.component";
+import { TilesModule } from "./tiles/tiles.module";
+import { SiteModalModule } from "./modal/gov-modal.module";
+import { SharedObjectDetailsModule } from "./objectdetails/shared-object-details.module";
+import { SimpleAccordionModule } from "./simple-accordion.part";
 
 
 export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
@@ -168,3 +191,46 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
         this.onModelTouched = fn;
     }
 }
+
+@NgModule({
+    declarations: [
+        ResourceMultiSelectGridComponent
+    ],
+    exports: [
+        ResourceMultiSelectGridComponent
+    ]
+    , imports: [
+        CommonModule,
+        FormsModule,
+        HttpClientModule,
+        RouterModule,
+
+        //primeng
+        ToastModule,
+        InputSwitchModule,
+        InputTextModule,
+        TreeTableModule,
+        ButtonModule,
+        DropdownModule,
+        SelectButtonModule,
+        AutoCompleteModule,
+        MultiSelectModule,
+        EditorModule,
+        TooltipModule,
+        SharedModule,
+        TableModule,
+
+        //d3s
+        CoreModule,
+        PipesModule,
+        SharedDynamicGridEditorModule,
+        SharedGridPagingInfoModule,
+        SharedObjectDetailsModule,
+        SimpleAccordionModule,
+        TilesModule,
+        SiteModalModule,
+    ],
+    providers: []
+})
+
+export class ResourceMultiSelectGridModule { }

@@ -1185,6 +1185,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\sidepanel\side-panel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\sidepanel\side-panel.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.module.ts" />
@@ -1796,7 +1797,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\overlay-window.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\shared-object-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\shared-relationship.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tiles.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\relationships\relationships.component.ts" />

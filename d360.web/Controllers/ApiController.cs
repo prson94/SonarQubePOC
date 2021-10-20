@@ -2423,41 +2423,65 @@ from    (
             model.Object = type.ToString();
             model.ObjectID = id;
 
+            var metadata = Company.Query<dynamic>(@"
+                    select  V.DisplayValue as AssetName, 
+                            T.Name as AssetTypeName, 
+                            T.Object as ObjectType, 
+                            T.ObjectID as ObjectTypeID,
+                            A.Uid as AssetUid,
+                            A.ID as AssetID,
+                            case	when P.AssetID is null then cast(1 as bit)
+                                    when (P.AssetID = 0 and P.PermissionsBitMask & 32 = 32) then cast(1 as bit)
+									when (P.AssetID = A.ID and P.PermissionsBitMask & 32 = 32) then cast(1 as bit)
+									else cast(0 as bit) 
+							end as HasResponsibilityReadAccess
+                    from    Asset A 
+                            inner join AssetDisplayValue V on V.AssetID = A.ID 
+                            inner join AssetType T on T.ID = A.AssetTypeID 
+                            outer apply dbo.UserAssetPermissions(@resourceId, T.ID) P 
+                    where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID }).FirstOrDefault();
+
+            if (metadata != null)
+            {
+                model.AssetUid = metadata.AssetUid;
+                model.AssetID = metadata.AssetID;
+
+                model.AssetName = metadata.AssetName;
+                model.AssetTypeName = metadata.AssetTypeName;
+
+                model.ObjectType = metadata.ObjectType;
+                model.ObjectTypeID = metadata.ObjectTypeID;
+
+                model.HasResponsibilityReadAccess = metadata.HasResponsibilityReadAccess;
+            }
+
             if (includeHeader)
             {
-                var metadata = Company.Query<dynamic>("select V.DisplayValue as AssetName, T.Name as AssetTypeName, T.Object as ObjectType, T.ObjectID as ObjectTypeID  from Asset A inner join AssetDisplayValue V on V.AssetID = A.ID inner join AssetType T on T.ID = A.AssetTypeID where A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id }).FirstOrDefault();
-                model.Scores = Company.Query<dynamic>(@"select	*
-from	(
-		select  S.EffectiveDate,
-				S.EndDate,
-				S.RunDate,
-				case 
-					when AL.ScoreType = 1 then 'GV'
-					when AL.ScoreType = 2 then 'DQ'
-				end as ShortName,
-				case 
-					when AL.ScoreType = 1 then 'Governance'
-					when AL.ScoreType = 2 then 'Data Quality'
-				end as ScoreType,
-				ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
-				S.Value, 
-				AL.LowerThreshold, 
-				AL.UpperThreshold 
-		from    metrics.Score S
-				inner join Asset A on A.Uid = S.AssetUid and A.Object = @Object and A.ObjectID = @ObjectID and S.EffectiveDate <= @date 
-				inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
-		) O
-where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow }).ToList();
-
-                if (metadata != null)
-                {
-                    model.AssetName = metadata.AssetName;
-                    model.AssetTypeName = metadata.AssetTypeName;
-
-                    model.ObjectType = metadata.ObjectType;
-                    model.ObjectTypeID = metadata.ObjectTypeID;
-                }
+                model.Scores = Company.Query<dynamic>(@"
+                    select	*
+                    from	(
+		                    select  S.EffectiveDate,
+				                    S.EndDate,
+				                    S.RunDate,
+				                    case 
+					                    when AL.ScoreType = 1 then 'GV'
+					                    when AL.ScoreType = 2 then 'DQ'
+				                    end as ShortName,
+				                    case 
+					                    when AL.ScoreType = 1 then 'Governance'
+					                    when AL.ScoreType = 2 then 'Data Quality'
+				                    end as ScoreType,
+				                    ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
+				                    S.Value, 
+				                    AL.LowerThreshold, 
+				                    AL.UpperThreshold 
+		                    from    metrics.Score S
+				                    inner join Asset A on A.Uid = S.AssetUid and A.Object = @Object and A.ObjectID = @ObjectID and S.EffectiveDate <= @date 
+				                    inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
+		                    ) O
+                    where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow }).ToList();
             }
+
             FieldColumnMapper fcMapper = null;
 
             if (useAssetDetailColumnDefinition)
