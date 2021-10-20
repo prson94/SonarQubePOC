@@ -259,7 +259,7 @@ namespace d360.web.Controllers
             var o = assetType.Object;
             return this.DynamicEditorEditFields(o, assetUid);
 
-            throw new Exception(FormControllerApiMessage.InvalidEditorType);
+            throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
         }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
@@ -596,7 +596,7 @@ namespace d360.web.Controllers
                 case "URI":
                     return EditServiceEndpointVersionUri(form);
                 default:
-                    throw new Exception(FormControllerApiMessage.InvalidEditType);
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditType);
             }
         }
 
@@ -645,7 +645,7 @@ namespace d360.web.Controllers
                 case "VERSION":
                     return DeleteCustomAPIVersion(form);
                 default:
-                    throw new Exception(FormControllerApiMessage.InvalidDeleteType);
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidDeleteType);
             }
         }
 
@@ -695,7 +695,7 @@ namespace d360.web.Controllers
                 case "URI":
                     return AddServiceEndpointVersionUri(form);
                 default:
-                    throw new Exception(FormControllerApiMessage.InvalidCreateType);
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidCreateType);
             }
         }
 

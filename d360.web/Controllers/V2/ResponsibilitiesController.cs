@@ -414,7 +414,9 @@ namespace d360.web.Controllers.V2
 
                 ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
                 if (responsibility == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidResponsibilityUid));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
+                }
 
                 foreach (var allocation in model)
                 {
@@ -830,17 +832,17 @@ namespace d360.web.Controllers.V2
 
                 if (responsibilityTypes == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
                 }
 
                 if (responsibilityTypes.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
                 }
 
                 if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
                 }
 
                 foreach (var type in responsibilityTypes)
@@ -996,7 +998,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
                 }
 
                 if (responsibilityTypes == null)
@@ -1006,7 +1008,7 @@ namespace d360.web.Controllers.V2
 
                 if (responsibilityTypes == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
                 }
 
                 if (responsibilityTypes.Count == 0)
@@ -1290,12 +1292,12 @@ namespace d360.web.Controllers.V2
 
                 if (resourceUids.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ResourceUidNotEmpty));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ResourceUidNotEmpty)).ConfigureAwait(false);
                 }
 
                 if (resourceUids.Any(x => x.ResourceUid == Guid.Empty))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ResourceUidInvalid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ResourceUidInvalid)).ConfigureAwait(false);
                 }
 
                 var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(resourceUids.Select(x => x.ResourceUid).ToList(), asset.uid, responsibility.UID).ToList();
@@ -1463,12 +1465,16 @@ namespace d360.web.Controllers.V2
             {
 
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+                }
 
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
 
                 if (responsibility == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ResponsibilityApiMessages.InvalidResponsibilityUid));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
+                }
 
                 var execution = getApiExecution(responsibilityRules.Count);
 
@@ -1544,14 +1550,14 @@ namespace d360.web.Controllers.V2
             {
                 var results = await Company.QueryAsync<ResponsibilityBreakdownResponse>(@"exec [dbo].[GetResponsibilityTypeBreakdown]");
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
 
         }

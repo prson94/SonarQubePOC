@@ -1829,13 +1829,13 @@ namespace d360.web.Controllers
             //validate inputs            
             if ((!string.IsNullOrEmpty(sortOrder)) && sortOrder != "asc" && sortOrder != "desc")
             {
-                throw new Exception(ApiMessages.InvalidSortOrder);
+                throw new ArgumentNullException(ApiMessages.InvalidSortOrder);
             }
 
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
-                throw new Exception(ApiMessages.InvalidSortField);
+                throw new ArgumentNullException(ApiMessages.InvalidSortField);
             }
 
             if ((sortFieldType ?? "").ToUpper() == "NUMBER")

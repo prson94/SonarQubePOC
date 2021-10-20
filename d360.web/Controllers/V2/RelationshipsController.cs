@@ -803,7 +803,7 @@ namespace d360.web.Controllers.V2
 
                 if (relationshiptypes == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
                 }
 
                 if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
@@ -911,13 +911,19 @@ namespace d360.web.Controllers.V2
                 }
 
                 if (relationshiptypes == null)
+                {
                     relationshiptypes = readRequestJsonContent<List<RelationshipTypeDelete>>(Request).Result;
+                }
 
                 if (relationshiptypes == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
+                }
 
                 if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString())));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
+                }
 
                 var execution = getApiExecution(relationshiptypes.Count);
 
@@ -1100,7 +1106,7 @@ namespace d360.web.Controllers.V2
 
                 if (intersectType == null)
                 {
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()))));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
                 }
 
                 if (relationships == null)
@@ -1404,7 +1410,7 @@ namespace d360.web.Controllers.V2
 
             if (intersectType == null)
             {
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()))));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
             }
 
             if (relationships == null)

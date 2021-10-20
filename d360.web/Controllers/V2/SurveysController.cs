@@ -261,7 +261,7 @@ namespace d360.web.Controllers.V2
                 var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
                 if (survey == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, surveyTypeUid)));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, surveyTypeUid))).ConfigureAwait(false);
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -270,7 +270,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
@@ -280,7 +280,7 @@ namespace d360.web.Controllers.V2
                     var asset = AssetRepository.GetAssetByUID(uid);
                     if (asset == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString())));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString()))).ConfigureAwait(false);
                     }
                     if(asset.AssetType.Object != survey.Object || asset.AssetType.ObjectID != survey.ObjectID)
                     {
@@ -294,7 +294,7 @@ namespace d360.web.Controllers.V2
                     var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
                     if (!DateTime.TryParse(paramDate, out date))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidValueAsOfDate));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidValueAsOfDate)).ConfigureAwait(false);
                     }
                 }
 
@@ -398,7 +398,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 int count = this.SurveyRepository.DeleteSurveyResults(queryParams);
-                var result = new SurveyAPIDeleteResultsResponseModel() { Message = string.Format(SurverysApiMessages.ResultRemoved, count.ToString()), Success=true };
+                var result = new SurveyAPIDeleteResultsResponseModel { Message = string.Format(SurverysApiMessages.ResultRemoved, count.ToString()), Success=true };
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
 
             }
@@ -411,7 +411,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
 
         }
@@ -444,7 +444,7 @@ namespace d360.web.Controllers.V2
 
             if (asset == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, ActionApiMessages.InvalidAssetUid));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
             }
 
             try

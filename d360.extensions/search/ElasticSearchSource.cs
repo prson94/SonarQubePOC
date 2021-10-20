@@ -1998,14 +1998,14 @@ namespace d360.extensions.search
 
             if (result == null)
             {
-                throw new Exception(OthersError.InvalidResponseData);
+                throw new ArgumentNullException(OthersError.InvalidResponseData);
             }
 
             var hasErrors = result.GetValue("errors");
 
             if (hasErrors.Value<bool>())
             {
-                throw new Exception(bulkResponse.Body);
+                throw new ArgumentNullException(bulkResponse.Body);
             }
         }
 
@@ -2051,7 +2051,9 @@ namespace d360.extensions.search
 
             var result = JObject.Parse(bulkResponse.Body);
 
-            if (result == null) throw new Exception(OthersError.InvalidResponseData);
+            if (result == null) {
+                throw new ArgumentNullException(OthersError.InvalidResponseData);
+            }
 
             var hasErrors = result.GetValue("errors");
 
@@ -2069,7 +2071,7 @@ namespace d360.extensions.search
                 }
                 if (postingErrors.Count > 0)
                 {
-                    throw new Exception(OthersError.UpdateIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                    throw new ArgumentNullException(OthersError.UpdateIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
                 }
             }
         }

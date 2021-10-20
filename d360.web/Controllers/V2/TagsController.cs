@@ -194,7 +194,7 @@ namespace d360.web.Controllers.V2
                 //make sure no tag with the same name exists
                 if (tagRepository.DoesTagExists(model.Value))
                 {
-                    throw new Exception(TagsApiMessages.TagExists);
+                    throw new ArgumentNullException(TagsApiMessages.TagExists);
                 }
 
 
@@ -244,12 +244,12 @@ namespace d360.web.Controllers.V2
 
                 if (existingTag == null)
                 {
-                    throw new Exception(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+                    throw new ArgumentNullException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
                 }
 
                 if (tagRepository.DoesTagExists(tagUid, model))
                 {
-                    throw new Exception(TagsApiMessages.TagExists);
+                    throw new ArgumentNullException(TagsApiMessages.TagExists);
                 }
 
                 result = tagRepository.UpdateTag(tagUid, model, existingTag);
