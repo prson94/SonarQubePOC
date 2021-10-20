@@ -27,10 +27,7 @@
         <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
             <tr [pSelectableRow]="item">
                 <td class="front-elide">
-                    <div *ngIf="!multiple" class="relationTableRadioButton">
-                        <input type="radio" [attr.name]="name"
-                               [checked]="rowIndex == selectedRelationRowIndex" (click)="handleItemSelection(item);" value="{{item.Value}}">
-                    </div>
+                    <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
                     <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                 </td>
                 <td class="front-elide">
