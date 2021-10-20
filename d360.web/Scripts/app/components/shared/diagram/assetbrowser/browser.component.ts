@@ -1471,21 +1471,25 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (data) {
                     this.diagramData = data;
                     this.loadingText = "Determining links and meaning...";
-
+                    this.cdRef.detectChanges();
                     if (isLineage && this.diagramData.dataLimitReached === true) {
                         this.errorText = `Sorry, we cannot display an asset with more than 500 descendants.`;
                         this.isError = true;
                         this.isLoading = false;
                     }
                     else {
-                        this.helper_ParseTranslatedData(data);
+                        //if there are a lot of descendants helper_ParseTranslatedData will take too much cpu
+                        //and loadingText wont change, adding a slight delay of 10ms to allow angular detecting text change
+                        setTimeout(() => {
+                            this.helper_ParseTranslatedData(data);
 
-                        this.helper_ResizeDiagram();
-                        this.helper_ScaleDiagram(1);
-                        this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-                        this.loadingText = "";
-                        this.isLoading = false;
-                        this.loadOwnerCounts();
+                            this.helper_ResizeDiagram();
+                            this.helper_ScaleDiagram(1);
+                            this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                            this.loadingText = "";
+                            this.isLoading = false;
+                            this.loadOwnerCounts();
+                        }, 10);
                     }
                 }
                 else {
