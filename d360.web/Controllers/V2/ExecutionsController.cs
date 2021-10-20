@@ -913,8 +913,6 @@ from	[Load] L
                     );
             }
         }
-        }
-        #endregion
 
         /// <summary>
         /// Gets bulk load info.
@@ -926,7 +924,7 @@ from	[Load] L
             MapToApiVersion("2.0"),
             Route("bulkload/{loadUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Gets bulk load info.", typeof(LoadDetailV2)),
+            SwaggerResponse(HttpStatusCode.OK, "Gets bulk load info.", typeof(SingleLoadDetail)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -976,7 +974,18 @@ from	[Load] L
 
             try
             {
-                var results = Company.Query<LoadDetailV2>(LoadDetailBaseSql, new { loadUid });
+                var load =  Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
+
+                var results = Company.Query<SingleLoadDetail>(LoadDetailBaseSql, new { loadUid }).ToList();
+
+                if (load != null && load.DateCompleted.HasValue && load.DateStarted.HasValue)
+                {
+                    var minutes = Math.Round((load.DateCompleted.Value - load.DateStarted.Value).TotalMinutes);
+
+                    var minutesMessage = (minutes == 0 ? "less than a minute" : minutes + " minute(s)");
+
+                    results[0].ElapsedTime = minutesMessage;
+                }
 
                 return await Task.FromResult<IHttpActionResult>(
                             ResponseMessage(
