@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Resources {
+namespace d360.core.resources {
     using System;
     
     
@@ -22,14 +22,14 @@ namespace Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class FormControllerApiMessage {
+    public class OthersError {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal FormControllerApiMessage() {
+        internal OthersError() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("d360.web.App_GlobalResources.FormControllerApiMessage", typeof(FormControllerApiMessage).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("d360.core.resources.OthersError", typeof(OthersError).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,65 +61,65 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Asset Type found for given Guid.
+        ///   Looks up a localized string similar to Add to index individual errors: .
         /// </summary>
-        public static string AssetTypeNotFound {
+        public static string AddIndexIndividualErrors {
             get {
-                return ResourceManager.GetString("AssetTypeNotFound", resourceCulture);
+                return ResourceManager.GetString("AddIndexIndividualErrors", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid / unsupported create type.
+        ///   Looks up a localized string similar to Cannot use a search strategy of none.
         /// </summary>
-        public static string InvalidCreateType {
+        public static string CannotUseSearch {
             get {
-                return ResourceManager.GetString("InvalidCreateType", resourceCulture);
+                return ResourceManager.GetString("CannotUseSearch", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid/unsupported delete type.
+        ///   Looks up a localized string similar to Invalid response no data.
         /// </summary>
-        public static string InvalidDeleteType {
+        public static string InvalidResponseData {
             get {
-                return ResourceManager.GetString("InvalidDeleteType", resourceCulture);
+                return ResourceManager.GetString("InvalidResponseData", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid or non implemented editor type.
+        ///   Looks up a localized string similar to DEV ERROR - NO SEARCH BASE URL SPECIFIED..
         /// </summary>
-        public static string InvalidEditorType {
+        public static string NoSearchUrlError {
             get {
-                return ResourceManager.GetString("InvalidEditorType", resourceCulture);
+                return ResourceManager.GetString("NoSearchUrlError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid/unsupported edit type.
+        ///   Looks up a localized string similar to Could not determine server version.
         /// </summary>
-        public static string InvalidEditType {
+        public static string NotDetermineServerVersion {
             get {
-                return ResourceManager.GetString("InvalidEditType", resourceCulture);
+                return ResourceManager.GetString("NotDetermineServerVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not valid Intersect Type Uid or Target Type Uid.
+        ///   Looks up a localized string similar to Unknown search strategy: .
         /// </summary>
-        public static string InvalidIntersectTypeAndTargetUID {
+        public static string UnknownSearchStrategy {
             get {
-                return ResourceManager.GetString("InvalidIntersectTypeAndTargetUID", resourceCulture);
+                return ResourceManager.GetString("UnknownSearchStrategy", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Issue Type found for given Guid.
+        ///   Looks up a localized string similar to Update index individual errors:.
         /// </summary>
-        public static string IssueTypeNotFound {
+        public static string UpdateIndexIndividualErrors {
             get {
-                return ResourceManager.GetString("IssueTypeNotFound", resourceCulture);
+                return ResourceManager.GetString("UpdateIndexIndividualErrors", resourceCulture);
             }
         }
     }
