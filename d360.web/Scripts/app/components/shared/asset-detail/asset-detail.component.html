@@ -9,10 +9,10 @@
                     <d3s-score-badge *ngFor="let score of model?.Scores" [score]="score" [precision]="1" [useMiniBadge]="true"></d3s-score-badge>
                 </div>
                 <div class="asset-name">
-                    {{model.AssetName}}
+                    {{model?.AssetName}}
                 </div>
                 <div class="class-name">
-                    {{model.AssetTypeName}}
+                    {{model?.AssetTypeName}}
                 </div>
                 <div>
                     <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a>

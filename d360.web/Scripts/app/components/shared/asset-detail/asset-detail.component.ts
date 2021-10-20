@@ -36,6 +36,8 @@ export class AssetDetailComponent implements OnChanges {
     @Input() useAssetDetailColumnDefinition: boolean = false;
     @Input() synonymPermission: SynonymPermission;
     
+    @Input() assetDetail: any;
+
     assetUID: string;
     assetTypeUID: string;
     isLoading = false;
@@ -76,14 +78,17 @@ export class AssetDetailComponent implements OnChanges {
 
     public load(): void {
         let detailSub = null;
+        if (this.assetDetail) {
+            detailSub = this.assetDetail;
+        } else {
+            if (this.objectType && this.objectID) {
+                detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+            }
 
-        if (this.objectType && this.objectID) {
-            detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
-        }
-
-        if (this.objectType && this.objectUID) {
-            detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
-        }
+            if (this.objectType && this.objectUID) {
+                detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+            }
+        }        
 
         if (detailSub) {
             this.isLoading = true;
