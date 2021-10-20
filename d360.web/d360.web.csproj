@@ -1050,7 +1050,6 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\viewchange.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\search.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\alertpanel.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\ownerpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
@@ -1274,6 +1273,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\sidepanel\side-panel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\sidepanel\side-panel.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.module.ts" />
@@ -1648,7 +1648,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\viewchange.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\alertpanel.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\ownerpanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.ts" />
@@ -1890,7 +1889,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\overlay-window.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\shared-object-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\shared-relationship.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tiles.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\relationships\relationships.component.ts" />

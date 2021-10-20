@@ -109,7 +109,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     panel_Loading = false;
     panel_InformationDisabled = false;
     panel_InformationHasReadAccess = false;
-    panel_OwnershipHasReadAccess = false;
     panel_TabIndex = 0;
     linkMenuItems: any[] = [
         { title: "Open" },
@@ -337,16 +336,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.panelModel.InformationVisible ||
             this.panelModel.SettingsVisible
         );
-    }
-
-    private ownershipTabEnabled() {
-        let enabled = false;
-
-        if (this.selectedDiagramAsset && this.selectedDiagramAsset.Object !== 'Resource') {
-            enabled = true;
-        }
-
-        return enabled;
     }
 
     //#region Session storage
@@ -888,7 +877,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (uid !== '' && uid != this.emptyUid) {
                         this.panel_InformationDisabled = false;
                         this.panel_InformationHasReadAccess = data.hasAssetReadAccess;
-                        this.panel_OwnershipHasReadAccess = data.hasResponsibilityReadAccess;
 
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.panelModel.AlertVisible) {
@@ -936,16 +924,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         }
-    }
-
-    private event_Information_DetailTabClick() {
-        this.panel_TabIndex = 0;
-        this.cdRef.markForCheck();
-    }
-
-    private event_Information_OwnerTabClick() {
-        this.panel_TabIndex = 1;
-        this.cdRef.markForCheck();
     }
 
     private event_ViewportBoundsChanged(e: go.DiagramEvent) {

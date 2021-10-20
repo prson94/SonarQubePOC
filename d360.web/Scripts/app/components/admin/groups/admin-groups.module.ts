@@ -23,6 +23,7 @@ import { EditorModule } from 'primeng/editor';
 import { InputTextModule } from 'primeng/inputtext';
 
 import { TableModule } from 'primeng/table';
+import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
 
 @NgModule({
     imports: [
@@ -42,7 +43,8 @@ import { TableModule } from 'primeng/table';
 
         //d3s        
         CoreModule,  
-        D3SSharedModule,      
+        D3SSharedModule,  
+        ResourceMultiSelectGridModule,
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
         SharedFieldDefinitionModule,

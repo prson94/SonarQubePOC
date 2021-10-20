@@ -6652,38 +6652,113 @@ table {
   }
 }
 
-.asset-detail-header {
-  padding: 19px 8px 4px 0;
-  margin: 0;
+.asset-detail {
+  .asset-detail-header {
+    padding: 19px 8px 4px 0;
+    margin: 0;
 
-  .asset-name {
-    height: 24px;
-    font-size: 18px;
-    font-weight: 600;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 0.89;
-    letter-spacing: normal;
-    color: @ig-slate;
-    word-break: break-word;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding-right: 8px;
+    .asset-name {
+      height: 24px;
+      font-size: 18px;
+      font-weight: 600;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: 0.89;
+      letter-spacing: normal;
+      color: @ig-slate;
+      word-break: break-word;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 8px;
+    }
+
+    .class-name {
+      height: 24px;
+      font-size: 14px;
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: 1.14;
+      letter-spacing: normal;
+      color: @ig-grey;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      padding-right: 8px;
+    }
   }
 
-  .class-name {
-    height: 24px;
-    font-size: 14px;
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 1.14;
-    letter-spacing: normal;
-    color: @ig-grey;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding-right: 8px;
+  .windowtabs {
+    height: 32px;
+    background-color: @ig-white;
+
+    button.tab {
+      box-sizing: border-box;
+      padding: 0 15px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-radius: 0;
+      color: @ig-purple;
+      border-bottom: 3px solid transparent;
+      outline: none;
+
+      &:disabled {
+        color: @d3s-gray-7;
+        cursor: not-allowed;
+      }
+
+      &:not(:disabled):hover,
+      &.hover {
+        background: rgba(20, 20, 20, 0.05);
+      }
+    }
+
+    button.tab-selected {
+      box-sizing: border-box;
+      padding: 0 15px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-radius: 0;
+      border-bottom: 3px solid black;
+      color: @ig-black;
+    }
+  }
+
+  .empty-overlay {
+    .content {
+      text-align: center;
+      top: 100px;
+      position: relative;
+      max-width: 210px;
+      margin: 0 auto;
+      color: @ig-slate;
+
+      span {
+        font-size: 14px;
+        line-height: 18px;
+      }
+
+      .icon-holder {
+        background-color: @ig-grey-t5;
+        height: 128px;
+        width: 128px;
+        text-align: center;
+        margin: 0 auto;
+        border-radius: 50%;
+        margin-bottom: 16px;
+
+        .fa {
+          font-size: 56px;
+          line-height: 128px;
+        }
+      }
+    }
   }
 }
 

@@ -40,6 +40,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { EditorModule } from 'primeng/editor';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.module';
+import { ResourceMultiSelectGridModule } from '../shared/resource-multiselect-grid.component';
 
 @NgModule({
     imports: [
@@ -72,6 +73,7 @@ import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.
         PipesModule,
         TilesModule,
         D3SSharedModule,
+        ResourceMultiSelectGridModule,
         SharedGridPagingInfoModule,
         SharedGridSelectionInfoModule,
         SharedDynamicGridEditorModule,
