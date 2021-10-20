@@ -258,12 +258,6 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean) {
-        criticalOnly = (criticalOnly == undefined ? false : criticalOnly);
-
-        window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls?${queryString}`);
-    }
-
     deleteRelationshipItem(id: number): Observable<any> {
         let url = `/api/relationships/${id}`;
 
