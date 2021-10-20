@@ -194,24 +194,6 @@
                                             </div>
                                         </ng-container>
                                     </ng-container>
-
-                                    <div #ownerDetailPanel class="scroll-panel" *ngIf="panel_TabIndex == 1">
-                                        <ng-container *ngIf="panel_OwnershipHasReadAccess == true">
-                                            <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                            <d3s-assetbrowser-ownerpanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-ownerpanel>
-                                        </ng-container>
-                                        <ng-container *ngIf="panel_OwnershipHasReadAccess == false">
-                                            <div #infoDetailPanel class="empty-overlay">
-                                                <div class="content">
-                                                    <div class="icon-holder">
-                                                        <i class="fa fa-ban"></i>
-                                                    </div>
-                                                    <span>You do not have permission to view ownership information for the selected item</span>
-                                                </div>
-                                            </div>
-                                        </ng-container>
-
-                                    </div>
                                 </section>
 
                                 <section *ngIf="panelModel.SettingsVisible">

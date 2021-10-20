@@ -30,7 +30,6 @@ import { AssetBrowserAddPanelComponent } from './assetbrowser/panels/addpanel.co
 import { AssetBrowserAlertPanelComponent } from './assetbrowser/panels/alertpanel.component';
 import { AssetBrowserFilterPanelComponent } from './assetbrowser/panels/filterpanel.component';
 import { AssetBrowserInfoPanelComponent } from './assetbrowser/panels/infopanel.component';
-import { AssetBrowserOwnerPanelComponent } from './assetbrowser/panels/ownerpanel.component';
 import { AssetBrowserSettingsPanelComponent } from './assetbrowser/panels/settingspanel.component';
 
 import { AssetBrowserOverviewComponent } from './assetbrowser/tools/overview.component';
@@ -136,7 +135,6 @@ import { SidePanelModule } from '../sidepanel/side-panel.module';
         AssetBrowserAlertPanelComponent,
         AssetBrowserFilterPanelComponent,
         AssetBrowserInfoPanelComponent,
-        AssetBrowserOwnerPanelComponent,
         AssetBrowserSettingsPanelComponent,
 
         AssetBrowserOverviewComponent,

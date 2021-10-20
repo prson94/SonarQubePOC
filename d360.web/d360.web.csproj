@@ -958,7 +958,6 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\viewchange.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\search.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\alertpanel.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\ownerpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
@@ -1553,7 +1552,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\viewchange.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\alertpanel.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\ownerpanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.ts" />
