@@ -9,6 +9,8 @@ using d360.core.enums;
 using System.Collections.Generic;
 using d360.model.DataAccessLayer;
 using d360.utils.excel;
+using d360.core.resources;
+using SmartFormat;
 
 namespace d360.web.Controllers
 {
@@ -37,24 +39,24 @@ namespace d360.web.Controllers
             sql = $@"Select * from ({sql}) as A {sortsql} ";
             var list = Company.Query<dynamic>(sql, dbArgs);
 
-            var dateStyle = ExcelCell.MakeStyle(style => style.FormatCode = "mm/dd/yyyy");
-            var document = new ExcelDocument($"WorkflowItems {DateTime.Now.ToShortDateString()}")
+            var dateStyle = ExcelCell.MakeStyle(style => style.FormatCode = ExcelExports.Common_ExcelDateFormat);
+            var document = new ExcelDocument(Smart.Format(ExcelExports.WorkflowMonitor_DocumentName, new { DateTime.Now }))
             {
-                new ExcelSheet("Items")
+                new ExcelSheet(ExcelExports.Common_ItemsSheetName)
                 {
                     HeaderRows = {
                         new ExcelRow()
                         {
-                            "Workflow Name",
-                            "Type",
-                            "Type Name",
-                            "Asset",
-                            "Initiator",
-                            "Started",
-                            "Completed",
-                            "Status",
-                            "Workflow Instance UID",
-                            "Url"
+                            ExcelExports.WorkflowMonitor_WorkflowName,
+                            ExcelExports.WorkflowMonitor_Type,
+                            ExcelExports.WorkflowMonitor_TypeName,
+                            ExcelExports.WorkflowMonitor_Asset,
+                            ExcelExports.WorkflowMonitor_Initiator,
+                            ExcelExports.WorkflowMonitor_Started,
+                            ExcelExports.WorkflowMonitor_Completed,
+                            ExcelExports.WorkflowMonitor_Status,
+                            ExcelExports.WorkflowMonitor_WorkflowInstanceUID,
+                            ExcelExports.WorkflowMonitor_Url
                         }
                     },
 

@@ -80,6 +80,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="resources\ExcelExports.Designer.cs">
+      <DependentUpon>ExcelExports.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -129,6 +134,10 @@
     <EmbeddedResource Update="resources\Types.resx">
       <SubType>Designer</SubType>
       <LastGenOutput>Types.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\ExcelExports.resx">
+      <LastGenOutput>ExcelExports.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Values.resx">

@@ -17,6 +17,8 @@ using Dapper;
 using System.Threading.Tasks;
 using d360.model.DataAccessLayer;
 using d360.utils.excel;
+using d360.core.resources;
+using SmartFormat;
 
 namespace d360.web.Models
 {
@@ -67,15 +69,15 @@ from	FollowDetail F
 
             var query = Company.Query<dynamic>(sql, new { r = resourceID, type, id });
 
-            var document = new ExcelDocument($"Followed Items as of {DateTime.Now.ToShortDateString()}")
+            var document = new ExcelDocument(Smart.Format(ExcelExports.FollowedResources_DocumentName, new { DateTime.Now }))
             {
-                new ExcelSheet("Items")
+                new ExcelSheet(ExcelExports.Common_ItemsSheetName)
                 {
                     HeaderRows = {
                         new ExcelRow()
                         {
-                            "Asset ID",
-                            "Asset Path"
+                            ExcelExports.FollowedResources_AssetID,
+                            ExcelExports.FollowedResources_AssetPath
                         }
                     },
 
@@ -140,19 +142,19 @@ from	FollowDetail F
 
             var query = Company.Query<dynamic>(sql, new { resourceID, type = new DbString { Value = type, IsFixedLength = true, Length = 20, IsAnsi = true }, id, responsibilityTypeId });
 
-            var document = new ExcelDocument($"Owned Items as of {DateTime.Now.ToShortDateString()}")
+            var document = new ExcelDocument(Smart.Format(ExcelExports.OwnedResources_DocumentName, new { DateTime.Now }))
             {
-                new ExcelSheet("Items")
+                new ExcelSheet(ExcelExports.Common_ItemsSheetName)
                 {
                     HeaderRows = {
                         new ExcelRow()
                         {
-                            "Role",
-                            "Name",
-                            "Via",
-                            "Via Type",
-                            "Asset UID",
-                            "Asset ID"
+                            ExcelExports.OwnedResources_Role,
+                            ExcelExports.OwnedResources_Name,
+                            ExcelExports.OwnedResources_Via,
+                            ExcelExports.OwnedResources_ViaType,
+                            ExcelExports.OwnedResources_AssetUID,
+                            ExcelExports.OwnedResources_AssetID
                         }
                     },
 
@@ -665,7 +667,7 @@ Order by ColumnOrder,Name
                         if (det.UID.HasValue)
                             det.Url = Company.GetDiagramUrlForDiagramAsset(det.UID.Value);
 
-                        if(det.UID.HasValue)
+                        if (det.UID.HasValue)
                             levels = GetFieldLevelPathFromAssetNodeSegment(det.UID ?? Guid.Empty);
                     }
                     else if (objectType == "ConnectorLabel")
@@ -764,7 +766,8 @@ Order by ColumnOrder,Name
             }
         }
 
-        private List<TooltipFieldLevelPathModel> GetFieldLevelPathFromAssetNodeSegment(Guid uid) {
+        private List<TooltipFieldLevelPathModel> GetFieldLevelPathFromAssetNodeSegment(Guid uid)
+        {
             List<TooltipFieldLevelPathModel> levels = new List<TooltipFieldLevelPathModel>();
             string segments = Company.Query<string>($@"SELECT Segments FROM graph.AssetNode WHERE Uid = @assetUid", new { assetUid = uid }).FirstOrDefault();
             if (!string.IsNullOrWhiteSpace(segments) && segments.IndexOf('<') >= 0)
