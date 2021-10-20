@@ -26,12 +26,10 @@ namespace d360.web.Controllers.V2
     ]
     public class HelpMenuController : BaseV2ApiController
     {
-        readonly ICompanyContext _company;
         readonly IAssetRepository assetRepository;
-        public HelpMenuController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public HelpMenuController(CoreComponentSet set, IAssetRepository assetRepository)
+            : base(set)
         {
-            _company = company;
             this.assetRepository = assetRepository;
         }
 
@@ -78,14 +76,14 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var item in deleteRecords)
                 {
-                    var helpItem = _company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
+                    var helpItem = Company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
                     if (helpItem != null && helpItem.isSystem)
                     {
                         throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorDeletingDefaultHelpItem));
                     }
                     if (helpItem != null && !helpItem.isSystem)
                     {
-                        _company.HelpResources.Remove(helpItem);
+                        Company.HelpResources.Remove(helpItem);
                     }
                 }
             }
@@ -93,7 +91,7 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var item in records)
                 {
-                    HelpResource helpItem = _company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
+                    HelpResource helpItem = Company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
 
                     if (item.Name.Trim() == "")
                     {
@@ -115,7 +113,7 @@ namespace d360.web.Controllers.V2
                     if (helpItem == null)
                     {
                         var uid = Guid.NewGuid();
-                        _company.HelpResources.Add(new HelpResource { Name = item.Name, Description = item.Description, 
+                        Company.HelpResources.Add(new HelpResource { Name = item.Name, Description = item.Description, 
                         Url = item.Url,uid = uid, isEditable = item.isEditable, visibilty = item.visibilty, 
                         order = item.order,isSystem = item.isSystem});
                     }
@@ -133,7 +131,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
             }
-            _company.SaveChanges();
+            Company.SaveChanges();
             var response = Request.CreateResponse(HttpStatusCode.OK);
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
         }

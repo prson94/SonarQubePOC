@@ -20,8 +20,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public MonitorController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public MonitorController(CoreComponentSet set)
+            : base(set)
         {
         }
 

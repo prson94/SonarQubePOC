@@ -62,6 +62,7 @@ namespace d360.model
             QueueSource = queueSource;
             Storage = storage;
 
+            CurrentClientID = context.ClientID;
             CurrentCompanyID = context.CompanyID;
             CurrentDomainSettingID = context.DomainSettingID;
             CurrentResourceID = context.ResourceID;

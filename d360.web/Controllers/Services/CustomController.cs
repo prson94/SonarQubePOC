@@ -179,8 +179,7 @@ namespace d360.web.Controllers.Services
 
         #region DI
 
-        public CustomController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public CustomController(CoreComponentSet set): base(set)
         {
 
         }

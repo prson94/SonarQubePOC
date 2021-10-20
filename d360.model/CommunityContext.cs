@@ -31,6 +31,7 @@ namespace d360.model
             Caching = caching;
             QueueSource = queueSource;
 
+            CurrentClientID = context.ClientID;
             CurrentCompanyID = context.CompanyID;
             CurrentDomainSettingID = context.DomainSettingID;
             CurrentResourceID = context.ResourceID;
@@ -226,6 +227,26 @@ namespace d360.model
         }
 
         #endregion
+
+        public void AddItemToCachedList<T>(string cacheKey, string itemId, T item)
+        {
+            if (!Caching.ListItemExists<T, string>(cacheKey, itemId))
+            {
+                Caching.SetItemInListByID(cacheKey, itemId, item, true, 5);
+            }
+        }
+
+        public T GetItemInCachedList<T>(string cacheKey, string itemId)
+        {
+            if (Caching.ListItemExists<T, string>(cacheKey, itemId))
+            {
+                return Caching.GetItemInListByID<T, string>(cacheKey, itemId);
+            }
+            else
+            {
+                return default;
+            }
+        }
 
         public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses()
         {

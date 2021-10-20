@@ -42,11 +42,11 @@ namespace d360.web.Controllers
         IConnectorLabelRepository connectorLabelRepository;
         IFieldsRepository fieldsRepository;
 
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider, IFieldsRepository fieldsRepository)
-            : base(community, company, settingsRepository)
+        public D3SApiController(CoreComponentSet set, ICommentRepository comments, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider, IFieldsRepository fieldsRepository)
+            : base(set)
         {
 #if DEBUG
-            company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
+            Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
             SecProvider = secProvider;
             commentsRepository = comments;

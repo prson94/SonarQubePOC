@@ -36,13 +36,13 @@ namespace d360.web.Controllers
         readonly IStorageProvider Storage;
         readonly IResponsibilityRepository ResponsibilityRepository;
 
-        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public FormController(CoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
+            : base(set)
         {
             Storage = storage;
             ResponsibilityRepository = responsibilityRepository;
 #if DEBUG
-            company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
+            Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
 
         }

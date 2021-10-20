@@ -19,12 +19,8 @@ namespace d360.web.Controllers.V2
     [ValidateCompanyState]
     public class BaseV2ApiController : BaseApiController
     {
-        ICompanyContext _company;
-        public BaseV2ApiController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
-
+        public BaseV2ApiController(CoreComponentSet set): base(set)
         {
-            _company = company;
         }
 
         public int ApiTimeout
@@ -65,7 +61,7 @@ namespace d360.web.Controllers.V2
                         return;
                     }
 
-                    var relatedField = _company.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
+                    var relatedField = Company.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
                     if (relatedField == null)
                     {
                         return;

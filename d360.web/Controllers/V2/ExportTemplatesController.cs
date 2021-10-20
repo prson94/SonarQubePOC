@@ -32,8 +32,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
         private IAssetRepository assetRepository;
-        public ExportTemplatesController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public ExportTemplatesController(CoreComponentSet set, IAssetRepository assetRepository): base(set)
         {
             this.assetRepository = assetRepository;
         }

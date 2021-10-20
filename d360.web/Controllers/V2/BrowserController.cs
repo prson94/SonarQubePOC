@@ -36,7 +36,7 @@ namespace d360.web.Controllers.V2
     {
         IGraphFilterRepository GraphFilterRepository;
 
-        public BrowserController(ICommunityContext community, ICompanyContext company, IGraphFilterRepository graphFilterRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public BrowserController(CoreComponentSet set, IGraphFilterRepository graphFilterRepository): base(set)
         {
             GraphFilterRepository = graphFilterRepository;
         }

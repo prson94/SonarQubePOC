@@ -16,6 +16,7 @@ namespace d360.model
         string CompanyConnectionString { get; set; }
         SqlConnection Connection { get; }
         string CurrentCompanyDomain { get; set; }
+        int CurrentClientID { get; set; }
         int CurrentCompanyID { get; set; }
         int CurrentDomainSettingID { get; set; }
         int CurrentResourceID { get; set; }
