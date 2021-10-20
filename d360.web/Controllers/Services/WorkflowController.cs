@@ -3420,34 +3420,7 @@ order by wi.StartedOn desc";
 
                         if (detail.CompletedOn == null)
                         {
-                            if (detail.Settings.MessageRecipientType == "Initiator")
-                            {
-                                var assignment = Company.WorkflowItemAssignments.FirstOrDefault(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null));
-
-                                if (assignment != null)
-                                {
-                                    var initiator = Company.GlobalReportingResources.FirstOrDefault(u => u.ResourceID == assignment.ResourceObjectID);
-                                    if (initiator != null)
-                                        users.Add(initiator);
-                                }
-                            }
-                            else if (detail.Settings.MessageRecipientType == "None" || detail.Settings.MessageRecipientType == "Responsibility")
-                            {
-                                users = Company.GetWorkflowUsersBasedOnResponsibility(detail.TypeID, detail.StepID, detail.ItemID).ToList();
-
-                            }
-                            else if (detail.Settings.MessageRecipientType == EmailTaskRecipientType.Group.ToString())
-                            {
-                                int recipientGroup = Company.Query<int>(@"select ObjectID from [dbo].[Asset] a
-                                        inner join workflow.VersionStep vs
-	                                        on a.[Object] = 'Group' and a.uid = vs.Settings.query('settings/MessageToGroup').value('.', 'uniqueidentifier')
-                                        where vs.id = @stepId;", new { stepId = detail.StepID }).FirstOrDefault();
-                                if (recipientGroup > 0)
-                                {
-                                    users = Company.GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
-                                }
-                            }
-                            else if (detail.Settings.MessageRecipientType == "SpecificUser")
+                            if (detail.Settings.MessageRecipientType == "SpecificUser")
                             {
                                 users = new List<GlobalReportingResource>();
                                 foreach (var email in ((string)detail.Settings.MessageToUser).Split(';'))
@@ -3457,28 +3430,35 @@ order by wi.StartedOn desc";
                                         users.Add(user);
                                 }
                             }
+                            else
+                            {
+                                users = Company.Query<GlobalReportingResource>(@"
+                                select  distinct R.* 
+                                from    reporting.Global_Resource R 
+                                        inner join workflow.ItemAssignment IA on IA.ResourceObjectID = R.ResourceID and IA.ResourceObject = 'Resource'
+                                where   IA.ItemID = @ItemID and (IA.ItemStepID = @ItemStepID or IA.ItemStepID is null)"
+                                , new { detail.ItemID, detail.ItemStepID })
+                                .ToList();
+                            }
 
                             foreach (var res in itemFields.Reassignments)
                             {
                                 if (res.ByResourceID == 0)
+                                {
                                     continue;
+                                }
 
                                 var ix = users.FindIndex(u => u.ResourceID == res.FromResourceID);
                                 if (ix > -1) users.RemoveAt(ix);
 
                                 var dx = users.FindIndex(u => u.ResourceID == res.ToResourceID);
-                                if (dx == -1) {
-                                    var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == res.ToResourceID);
-                                    if (assignee != null)
-                                        users.Add(assignee);
-                                }
-
-                                if(res.ReassignType == "Resource")
+                                if (dx == -1) 
                                 {
-                                    users = new List<GlobalReportingResource>();
                                     var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == res.ToResourceID);
                                     if (assignee != null)
+                                    {
                                         users.Add(assignee);
+                                    }
                                 }
                             }
 
