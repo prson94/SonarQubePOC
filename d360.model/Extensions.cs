@@ -54,7 +54,7 @@ namespace d360.model
                 {
                     throw new ArgumentException("Ordered list of column names must be provided when TVP contains more than one column");
                 }
-    
+
                 var columnNames = (orderedColumnNames ??
                     readableProperties.Select(s => s.Name)).ToArray();
                 foreach (string name in columnNames)
@@ -93,7 +93,7 @@ namespace d360.model
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Where",
-                    new [] { source.ElementType },
+                    new[] { source.ElementType },
                     source.Expression, Expression.Quote(lambda)));
         }
 
@@ -103,15 +103,15 @@ namespace d360.model
             {
                 throw new ArgumentNullException("source");
             }
-            if (selector == null) 
-            { 
-                throw new ArgumentNullException("selector"); 
+            if (selector == null)
+            {
+                throw new ArgumentNullException("selector");
             }
             LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, null, selector, values);
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Select",
-                    new [] { source.ElementType, lambda.Body.Type },
+                    new[] { source.ElementType, lambda.Body.Type },
                     source.Expression, Expression.Quote(lambda)));
         }
 
@@ -138,7 +138,7 @@ namespace d360.model
             {
                 queryExpr = Expression.Call(
                     typeof(Queryable), o.Ascending ? methodAsc : methodDesc,
-                    new [] { source.ElementType, o.Selector.Type },
+                    new[] { source.ElementType, o.Selector.Type },
                     queryExpr, Expression.Quote(Expression.Lambda(o.Selector, parameters)));
                 methodAsc = "ThenBy";
                 methodDesc = "ThenByDescending";
@@ -155,20 +155,20 @@ namespace d360.model
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Take",
-                    new [] { source.ElementType },
+                    new[] { source.ElementType },
                     source.Expression, Expression.Constant(count)));
         }
 
         public static IQueryable Skip(this IQueryable source, int count)
         {
-            if (source == null) 
+            if (source == null)
             {
                 throw new ArgumentNullException("source");
             }
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Skip",
-                    new [] { source.ElementType },
+                    new[] { source.ElementType },
                     source.Expression, Expression.Constant(count)));
         }
 
@@ -185,7 +185,7 @@ namespace d360.model
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "GroupBy",
-                    new [] { source.ElementType, keyLambda.Body.Type, elementLambda.Body.Type },
+                    new[] { source.ElementType, keyLambda.Body.Type, elementLambda.Body.Type },
                     source.Expression, Expression.Quote(keyLambda), Expression.Quote(elementLambda)));
         }
 
@@ -198,7 +198,7 @@ namespace d360.model
             return (bool)source.Provider.Execute(
                 Expression.Call(
                     typeof(Queryable), "Any",
-                    new [] { source.ElementType }, source.Expression));
+                    new[] { source.ElementType }, source.Expression));
         }
 
         public static int Count(this IQueryable source)
@@ -210,7 +210,7 @@ namespace d360.model
             return (int)source.Provider.Execute(
                 Expression.Call(
                     typeof(Queryable), "Count",
-                    new [] { source.ElementType }, source.Expression));
+                    new[] { source.ElementType }, source.Expression));
         }
     }
 
@@ -448,7 +448,7 @@ namespace d360.model
                 genGet.Emit(OpCodes.Ret);
                 MethodBuilder mbSet = tb.DefineMethod("set_" + dp.Name,
                     MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
-                    null, new [] { dp.Type });
+                    null, new[] { dp.Type });
                 ILGenerator genSet = mbSet.GetILGenerator();
                 genSet.Emit(OpCodes.Ldarg_0);
                 genSet.Emit(OpCodes.Ldarg_1);
@@ -466,7 +466,7 @@ namespace d360.model
             MethodBuilder mb = tb.DefineMethod("Equals",
                 MethodAttributes.Public | MethodAttributes.ReuseSlot |
                 MethodAttributes.Virtual | MethodAttributes.HideBySig,
-                typeof(bool), new [] { typeof(object) });
+                typeof(bool), new[] { typeof(object) });
             ILGenerator gen = mb.GetILGenerator();
             LocalBuilder other = gen.DeclareLocal(tb);
             Label next = gen.DefineLabel();
@@ -488,7 +488,7 @@ namespace d360.model
                 gen.Emit(OpCodes.Ldfld, field);
                 gen.Emit(OpCodes.Ldloc, other);
                 gen.Emit(OpCodes.Ldfld, field);
-                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("Equals", new [] { ft, ft }), null);
+                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("Equals", new[] { ft, ft }), null);
                 gen.Emit(OpCodes.Brtrue_S, next);
                 gen.Emit(OpCodes.Ldc_I4_0);
                 gen.Emit(OpCodes.Ret);
@@ -513,7 +513,7 @@ namespace d360.model
                 gen.EmitCall(OpCodes.Call, ct.GetMethod("get_Default"), null);
                 gen.Emit(OpCodes.Ldarg_0);
                 gen.Emit(OpCodes.Ldfld, field);
-                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("GetHashCode", new [] { ft }), null);
+                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("GetHashCode", new[] { ft }), null);
                 gen.Emit(OpCodes.Xor);
             }
             gen.Emit(OpCodes.Ret);
@@ -747,7 +747,7 @@ namespace d360.model
             {
                 throw new ArgumentNullException("expression");
             }
-          
+
             symbols = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             literals = new Dictionary<Expression, string>();
             if (parameters != null)
@@ -773,8 +773,8 @@ namespace d360.model
                     AddSymbol(pe.Name, pe);
                 }
             }
-            if (parameters.Length == 1 && String.IsNullOrEmpty(parameters[0].Name)) 
-            { 
+            if (parameters.Length == 1 && String.IsNullOrEmpty(parameters[0].Name))
+            {
                 it = parameters[0];
             }
         }
@@ -1153,9 +1153,9 @@ namespace d360.model
                 if (!UInt64.TryParse(text, out value))
                     throw ParseError(Res.InvalidIntegerLiteral, text);
                 NextToken();
-                if (value <= (ulong)Int32.MaxValue) 
-                { 
-                    return CreateLiteral((int)value, text); 
+                if (value <= (ulong)Int32.MaxValue)
+                {
+                    return CreateLiteral((int)value, text);
                 }
                 if (value <= (ulong)UInt32.MaxValue)
                 {
@@ -1477,11 +1477,11 @@ namespace d360.model
             Type[] typeArgs;
             if (signature.Name == "Min" || signature.Name == "Max")
             {
-                typeArgs = new [] { elementType, args[0].Type };
+                typeArgs = new[] { elementType, args[0].Type };
             }
             else
             {
-                typeArgs = new [] { elementType };
+                typeArgs = new[] { elementType };
             }
             if (args.Length == 0)
             {
@@ -2483,7 +2483,7 @@ namespace d360.model
         /// <param name="namespaces">An optional dictionary of available namespaces</param>
         /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
         /// <returns>Returns an Xml representation of the dynamic object.</returns>
-        public static XElement ConvertToXml(dynamic dynamicObject, string element, Dictionary<string,string> namespaces = null, XElement parent = null)
+        public static XElement ConvertToXml(dynamic dynamicObject, string element, Dictionary<string, string> namespaces = null, XElement parent = null)
         {
             if (namespaces == null)
                 namespaces = new Dictionary<string, string>();
@@ -2533,7 +2533,7 @@ namespace d360.model
 
                 }
             }
-            
+
             return ret;
         }
 
@@ -2653,7 +2653,7 @@ namespace d360.model
         /// <param name="parent">An optional parent XElement to inherit a namespace from if none is directly applied</param>
         /// <param name="content">Content for the XElement</param>
         /// <returns></returns>
-        public static XElement GetXElement(string name, Dictionary<string,string> namespaces = null, XElement parent = null, params object[] content)
+        public static XElement GetXElement(string name, Dictionary<string, string> namespaces = null, XElement parent = null, params object[] content)
         {
             if (namespaces == null)
                 namespaces = new Dictionary<string, string>();

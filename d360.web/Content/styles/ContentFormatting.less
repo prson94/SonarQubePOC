@@ -87,7 +87,7 @@ h6 {
   margin-left: 5px;
 
   i.fa-info-circle {
-    color: #006fc0;
+    color: @ig-purple;
   }
 
   &.disabled {
@@ -203,10 +203,29 @@ button.WhiteButton {
   width: 100%;
   padding: 0 5px;
 
+  .diagram-top-header {
+    border-bottom: 1px solid @ig-color-field-border;
+    padding: 16px !important;
+
+    .flex-row {
+      display: flex;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 40px;
+    }
+
+    .button-wrapper {
+      line-height: 40px;
+    }
+  }
+
   .header,
   header {
     background-color: transparent !important;
-    border: none !important;
+    border: none;
     position: relative;
     text-transform: none;
     padding: 10px 0 15px 10px !important;
@@ -537,19 +556,19 @@ button.WhiteButton {
   .link-button {
     border: none;
     background-color: @ig-white;
-    color: @ig-midblue;
+    color: @ig-purple;
   }
 
   .link-button:active {
-    color: @ig-midblue;
+    color: @ig-purple;
   }
 
   .link-button:hover {
-    color: @igx-light-blue-2;
+    color: @ig-purple;
   }
 
   .link-button:disabled {
-    color: @ig-midblue;
+    color: @ig-purple;
     opacity: 0.33;
   }
 

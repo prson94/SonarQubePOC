@@ -567,4 +567,7 @@
   <data name="FilterExpressionParseError" xml:space="preserve">
     <value>Filter expression parse error</value>
   </data>
+  <data name="LookupFieldTypeInUse" xml:space="preserve">
+    <value>There are existing assets in your environment with values on field '{0}'. You may not change 'Type of List' property until those field values are removed.</value>
+  </data>
 </root>

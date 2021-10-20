@@ -1538,7 +1538,8 @@ button.p-button.p-highlight, .p-button.p-highlight {
 /* Checkbox and Radio */
 .p-checkbox-box.p-checkbox-checked,
 .p-checkbox-box.p-focus.p-checkbox-checked,
-.p-checkbox-box.p-highlight {
+.p-checkbox-box.p-highlight,
+.p-checkbox-box.p-state-active {
   border: 1px solid @ig-black;
   background: @ig-purple-t1;
   color: @ig-white;
@@ -1555,13 +1556,13 @@ button.p-button.p-highlight, .p-button.p-highlight {
 
 .p-radiobutton-box.p-highlight,
 .p-radiobutton-box.p-focus.p-highlight {
-  border: 1px solid #006fc0;
-  background: #9d53ff;
-  color: #006fc0;
+  border: 1px solid @ig-purple-t1;
+  background: white;
+  color: @ig-purple-t1;
   line-height: 1px;
 
   .p-radiobutton-icon {
-    background: #9d53ff;
+    background: @ig-purple-t1;
   }
 }
 
@@ -2411,7 +2412,6 @@ p-table tbody.p-datatable-tbody > tr {
 }
 
 p-table tbody.p-datatable-tbody > tr.p-highlight {
-  background: @ig-white;
   border-bottom: 2px solid @ig-grey-t5;
 }
 
@@ -2419,7 +2419,7 @@ tr.p-highlight,
 .p-component-content .p-highlight,
 .p-component-header .p-highlight,
 p-table tbody.p-datatable-tbody > tr.p-highlight {
-  background-color: @ig-purple-t4;
+  background: @ig-purple-t4;
 }
 
 p-table tbody.p-datatable-tbody > tr:hover:not(.p-highlight) {
@@ -2448,6 +2448,7 @@ p-table .p-column-filter {
   width: 100%;
   box-sizing: border-box;
   margin-top: .25em;
+  border: none;
 }
 
 
@@ -2521,7 +2522,7 @@ th.p-state-default, .p-treetable th.p-state-default {
       background-color: @ig-purple-t4;
     }
 
-    &:hover {
+    &:hover:not(.p-highlight) {
       background-color: @ig-purple-t5;
     }
   }
@@ -2552,6 +2553,8 @@ button.p-button:disabled {
   border: none;
   font-weight: normal;
   text-align: center;
+  height: 32px;
+  border-radius: 4px;
 }
 
 .p-paginator .p-paginator-pages {

@@ -7,6 +7,8 @@ import { ComplexLookupType, DetailField } from "../../../models/object-detail.mo
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
 import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
+import { AssetTypeClass, State } from "../../../models/asset.model";
 
 declare var CurrentResourceID;
 
@@ -36,6 +38,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     isColumnsLoaded = false;
 
     visibleColumns: GridFilterColumn[] = [];
+    externalAllocations: ScoreTypeAllocation[] = [];
     loadSubscription: Subscription;
     currentFilters: any;
 
@@ -114,6 +117,27 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
             });
 
         this.visibleColumns = this.data.Columns.filter((c) => c.type !== 'hidden');
+
+        if (this.data && this.data.ScoringInfo) {
+            this.data.ScoringInfo.forEach((si) => {
+                this.externalAllocations.push(
+                    {
+                        scoreType: si.ScoreType === 1 ? ScoreType.Governance : ScoreType.DataQuality,
+                        lowerThreshold: si.LowerThreshold,
+                        upperThreshold: si.UpperThreshold,
+                        assetClassName: AssetTypeClass.BusinessAsset,
+                        assetTypePath: '',
+                        assetTypeUid: '',
+                        hasDisabledMeasure: false,
+                        hasField: false,
+                        hasMeasure: false,
+                        icon: '',
+                        isExternallyCalculated: false,
+                        state: State.Active,
+                        uid:''
+                    });
+            });
+        }
 
         this.isColumnsLoaded = true;
     }

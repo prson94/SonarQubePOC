@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace d360.web.Models
@@ -14,6 +15,12 @@ namespace d360.web.Models
         public int? ParentID { get; set; }
         [DataMember(Name = "name")]
         public string Name { get; set; }
+        [DataMember(Name = "objectId")]
+        public int? ObjectID { get; set; }
+        [DataMember(Name = "object")]
+        public string Object { get; set; }
+        [DataMember(Name = "uid")]
+        public Guid uid { get; set; }
         [DataMember(Name = "url")]
         public string Url { get; set; }
         [DataMember]

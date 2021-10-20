@@ -30,6 +30,8 @@ import { AdminComponent } from './admin.component';
 import { AdminNymAllocationsComponent } from './admin-nym-allocations.component';
 import { SimpleAccordionModule } from "../shared/simple-accordion.part";
 import { DialogModule } from 'primeng/dialog';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DirectivesModule } from '../../directives/directives.module';
 
 
 @NgModule({
@@ -61,6 +63,7 @@ import { DialogModule } from 'primeng/dialog';
         SharedModule,
         TableModule,
         DialogModule,
+        CheckboxModule,
         
         //d3s        
         CoreModule,                                      
@@ -69,6 +72,7 @@ import { DialogModule } from 'primeng/dialog';
         SharedGridPagingInfoModule,
         SharedAssetTypeEditorModule,
         TilesModule,
+        DirectivesModule
     ],
     providers: [
         {

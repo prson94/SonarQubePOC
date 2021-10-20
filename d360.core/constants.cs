@@ -28,9 +28,9 @@ namespace d360.core
         public static readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
 
         public const string TITLE_PREFIX = "Data360";
-        public const string COMPANY = "Infogix, Inc.";
+        public const string COMPANY = "Precisely.";
         public const string PRODUCT = "Data360 Govern";
-        public const string COPYRIGHT = "Copyright © Infogix, Inc. 2021";
+        public const string COPYRIGHT = "Copyright © Precisely. 2021";
         public const string PRODUCT_VERSION = "2021.11.05.*";
         public const string PRODUCT_VERSION_NOREVISION = "2021.11.05";
 

@@ -2417,8 +2417,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Add(model);
 
@@ -2434,7 +2434,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
+        
         [HttpDelete, Route("DeleteCustomSynonym")]
         public JsonResult DeleteCustomSynonym(FormCollection form)
         {

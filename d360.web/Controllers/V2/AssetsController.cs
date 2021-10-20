@@ -14,12 +14,10 @@ using Newtonsoft.Json.Linq;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using d360.model.DataAccessLayer;
@@ -30,12 +28,13 @@ using Resources;
 using System.IO;
 using d360.model.helpers.filters;
 using System.Data.Entity;
-using System.Dynamic;
-using System.Configuration;
 using SpreadsheetLight;
 using d360.model.helpers;
 using System.Data;
 using System.Threading;
+using d360.core.Models;
+using d360.model.helpers;
+using System.Web;
 
 namespace d360.web.Controllers.V2
 {
@@ -108,7 +107,7 @@ namespace d360.web.Controllers.V2
         /// GET a list of asset types.
         /// </summary>
         /// <param name="Class">Allows for filtering the Asset type's by Class.The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.</param>
-        /// <param name="assetTypeUid">Filter by Asset type UID.</param>        
+        /// <param name="assetTypeUid">Filter by Asset type UID.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -600,7 +599,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.ObjectID > 0)
                 {
-                    if ( model.Class != AssetTypeClass.Reference)
+                    if (model.Class != AssetTypeClass.Reference)
                     {
                         var nameFieldType = new FieldType
                         {
@@ -1236,7 +1235,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("returncount", "Allows you to disable including the count of the asset type. The default is true meaning the count is included.", DataType = "boolean", ParameterType = "query", Required = false)
+            SwaggerParameter("returncount", "Allows you to include or exclude the count of the asset type. The default is true which means the count is included.", DataType = "boolean", ParameterType = "query", Required = false)
         ]
         public async Task<HttpResponseMessage> GetAssetTypeCountsAsync(Guid? assetTypeUid = null)
         {
@@ -1329,6 +1328,7 @@ namespace d360.web.Controllers.V2
                 int pageSize = 10;
                 int pageNum = 1;
                 string simpleFilter = string.Empty;
+                string advancedFilter = string.Empty;
 
                 if (asset == null)
                 {
@@ -1353,7 +1353,17 @@ namespace d360.web.Controllers.V2
                 bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
-                string filters = string.Empty;
+
+                List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
+                FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+
+                List<dynamic> Values = new List<dynamic>();
+                List<GridColumn> Columns = new List<GridColumn>();
+                List<GridField> Fields = new List<GridField>();
+                List<dynamic> scoringInfo = new List<dynamic>();
+
+                int count = 0;
+                var dbArgs = new DynamicParameters();
 
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
@@ -1403,28 +1413,14 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                //to be removed with new filtering UI component
-                //current(sprint 5/2021) filtering uses contains on all fields, so we need to avoid value checks on numbers, decimals etc...
-                bool handleFiltersAsString = false;
-                if (qparams.Any(x => x.Key.ToLower() == "handlefiltersasstring"))
-                {
-                    bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "handlefiltersasstring").Value, out handleFiltersAsString);
-                }
-
                 if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
                 {
-                    simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
+                    simpleFilter = qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value;
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "filter"))
                 {
-                    List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
-
-                    var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
-                    var filterDataProvider = new FilterDataProvider(this.Company);
-                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
-                    filterExpressionParser.LoadFieldTypes(fields, null);
-                    filters = filterExpressionParser.Parse(filter, out _, out _);
+                    advancedFilter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
@@ -1440,13 +1436,6 @@ namespace d360.web.Controllers.V2
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'."));
                     }
-                }
-
-                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                if (isStreamResponse)
-                {
-                    pageNum = 1;
-                    pageSize = 10000;
                 }
 
                 if (!string.IsNullOrEmpty(orderBy))
@@ -1466,7 +1455,6 @@ namespace d360.web.Controllers.V2
 
                     if (fieldType.Type == "ComplexRelationLookup")
                     {
-                        var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                         var definition = ftl.ParseComplexLookupDefinition();
 
                         var mappings = definition.GetFriendlyNamesMapping();
@@ -1487,56 +1475,39 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var dbArgs = new DynamicParameters();
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+                if (isStreamResponse)
+                {
+                    pageNum = 1;
+                    pageSize = 10000;
+                }
 
-                dbArgs.Add("object", asset.Object, DbType.AnsiString, size: 50);
-                dbArgs.Add("objectId", asset.ObjectID);
-                dbArgs.Add("fieldTypeId", fieldType.ID);
                 dbArgs.Add("resourceId", Company.CurrentResourceID);
                 dbArgs.Add("pageSize", pageSize);
                 dbArgs.Add("pageNum", pageNum);
-                dbArgs.Add("simpleFilter", simpleFilter);
-                dbArgs.Add("orderBy", orderBy);
-                dbArgs.Add("orderDirection", direction);
                 dbArgs.Add("useUidUrls", returnuseUidUrls);
-                dbArgs.Add("filters", filters);
+                dbArgs.Add("assetUid", assetUid);
+                dbArgs.Add("object", asset.Object);
+                dbArgs.Add("objectId", asset.ObjectID);
+                dbArgs.Add("fieldTypeId", fieldType.ID);
 
-                var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
-                       dbArgs
-                    );
-
-                var Columns = reader.Read<GridColumn>().ToList();
-                var Fields = reader.Read<GridField>().ToList();
-
-                List<dynamic> Values = new List<dynamic>();
-                try
+                if (fieldType.Type == "ComplexRelationLookup")
                 {
-                    Values = reader.Read<dynamic>().ToList();
-                }
-                catch (Exception ex)
-                {
-                    //if reader is disposed there are no results returned
-                    if (!ex.Message.Contains("has been disposed"))
-                    {
-                        throw ex;
-                    }
+                    (Columns, Fields, Values, count, scoringInfo) =
+                       await fieldsRepository.GetComplexRelationLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
 
                 }
 
-                //additional data e.g. scoring allocation data
-                List<dynamic> scoringInfo = new List<dynamic>();
-                try
+                if (fieldType.Type == "RefListRelationship")
                 {
-                    scoringInfo = reader.Read<dynamic>().ToList();
+                    (Columns, Fields, Values, count) =
+                       await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
                 }
-                catch (Exception ex)
+
+                if (fieldType.Type == "OwnershipLookup")
                 {
-                    //if reader is disposed there are no additional data returned
-                    if (!ex.Message.Contains("has been disposed"))
-                    {
-                        throw ex;
-                    }
+                    (Columns, Fields, Values, count) =
+                       await fieldsRepository.GetOwnershipLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
                 }
 
                 foreach (IDictionary<string, object> value in Values)
@@ -1557,7 +1528,6 @@ namespace d360.web.Controllers.V2
 
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
-                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var definition = ftl.ParseComplexLookupDefinition();
 
                     if (useFriendlyNames)
@@ -1576,22 +1546,6 @@ namespace d360.web.Controllers.V2
                     }
 
                 }
-
-                var dbArgsCount = new DynamicParameters();
-
-                dbArgsCount.Add("object", asset.Object, DbType.AnsiString, size: 50);
-                dbArgsCount.Add("objectId", asset.ObjectID);
-                dbArgsCount.Add("fieldTypeId", fieldType.ID);
-                dbArgsCount.Add("resourceId", Company.CurrentResourceID);
-                dbArgsCount.Add("pageSize", pageSize);
-                dbArgsCount.Add("pageNum", pageNum);
-                dbArgsCount.Add("simpleFilter", simpleFilter);
-                dbArgsCount.Add("filters", filters);
-
-                var count = Company.Query<int>(
-                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, 0, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
-                     dbArgsCount
-                     ).First();
 
                 if (isStreamResponse)
                 {

@@ -19,7 +19,7 @@ import { State } from '../../models/asset.model';
                                     <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)" selectedItemsLabel="{0} items selected"></p-multiSelect>
                                 </td>
                                 <td *ngIf="showFilter" style="width:32px">
-                                    <a style="font-size:1.1em" [style.color]="filterMode ? null : '#f00'" (click)="filterModeChange.emit(!filterMode)"><i class="fa fa-filter"></i></a>
+                                    <a style="font-size:1.1em" [style.color]="filterMode ? '#000' : '#f00'" (click)="filterModeChange.emit(!filterMode)"><i class="fa fa-filter"></i></a>
                                 </td>
                             </tr>
                         </tbody>
