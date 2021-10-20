@@ -117,121 +117,73 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>New {0} Raised.</value>
+  <data name="AddRelationshipValidation_Predicate" xml:space="preserve">
+    <value>Not allowed to add a relationship type with this predicate.</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Action Created</value>
+  <data name="AssetUidNotFound" xml:space="preserve">
+    <value>Asset not found based on uid '{0}'</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Action Type Not Found</value>
+  <data name="IntersectType" xml:space="preserve">
+    <value>Intersect Type</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Action Type with Uid {0} could not be found.</value>
+  <data name="InvalidRelationShipField" xml:space="preserve">
+    <value>Invalid Relationship field encountered no relationship type to lookup found in definition.</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Action with Uid {0} could not be found.</value>
+  <data name="InvalidTypeIdentifierInfoModel" xml:space="preserve">
+    <value>Invalid TypeIdentifierInfoModel.</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocations added successfully</value>
+  <data name="MultiRelationshipsReferRelationship" xml:space="preserve">
+    <value>One or more relationships reference this relationship.</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocation added successfully</value>
+  <data name="MutliReferenceRelationNotAllowed" xml:space="preserve">
+    <value>One or more fields reference this relationship.</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset.</value>
+  <data name="Object" xml:space="preserve">
+    <value>Object</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Asset with Uid {0} could not be found.</value>
+  <data name="ObjectAlreadyExists" xml:space="preserve">
+    <value>{0} already exists.</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset type.</value>
+  <data name="ObjectNotPartAssetTable" xml:space="preserve">
+    <value>Object not part of assets table</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Asset type has invalid class.</value>
+  <data name="Relationship" xml:space="preserve">
+    <value>Relationship</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Asset Type with Uid {0} could not be found.</value>
+  <data name="RelationShipTypeNotCreated" xml:space="preserve">
+    <value>Relationship Type Cannot Be Created</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Either AssetTypeUid or AssetUid must be provided.</value>
+  <data name="RelationShipTypeNotUpdated" xml:space="preserve">
+    <value>Relationship Type Cannot Be Updated</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Type Uid.</value>
+  <data name="Subject" xml:space="preserve">
+    <value>Subject</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Uid.</value>
+  <data name="SubjectAssetTypeNotExists" xml:space="preserve">
+    <value>Subject asset type does not exist.</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Action Type has associated actions. Enable on cascade request to delete.</value>
+  <data name="SubjectObjectNotSameThisPredicate" xml:space="preserve">
+    <value>The subject and object may not be the same when using this Predicate.</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>The selected action type ({0}) has associated actions, and therefore cannot be deleted.</value>
+  <data name="SubjectObjectSameThisPredicate" xml:space="preserve">
+    <value>The subject and object must be the same when using this Predicate.</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocation Deleted Successfully.</value>
+  <data name="ThisPrediateUseTransormationNotBoth" xml:space="preserve">
+    <value>When using this predicate either your subject or object must support being used as a transformation, but not both.</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>No Asset Type Uids have been provided.</value>
+  <data name="ThisPrediateUseTransormationSubjOrObj" xml:space="preserve">
+    <value>When using this predicate either your subject or object must support being used as a transformation.</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>A valid Action Type Uid is required.</value>
+  <data name="TitleRelationNotRemoved" xml:space="preserve">
+    <value>Relationship Could not be Removed</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Invalid AssetTypeUid provided.</value>
+  <data name="UnexpectedObjectType" xml:space="preserve">
+    <value>Unexpected object type {0}</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Invalid AssetUid provided.</value>
+  <data name="WhenPredicateObjectOfClass" xml:space="preserve">
+    <value>When using this predicate your object must be one of the following classes : {0}.</value>
   </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>Limit To Active Workflows value provided is not valid.</value>
-  </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} is an invalid responsibilityTypeUid for {1}.</value>
-  </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Name provided must be less than 250 characters in length.</value>
-  </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Empty string provided for Name. Cannot be empty.</value>
-  </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>Name is a required field.</value>
-  </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>No Matching Allocation for '{0}' on Action Type '{1}'</value>
-  </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Order By Field Not Found</value>
-  </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>The field you specified for sorting ({0}) could not be found.</value>
-  </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Relationship Type with Uid {0} could not be found.</value>
-  </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Resource Uid provided does not exist.</value>
-  </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>Resource Uid provided is invalid.</value>
-  </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>A Valid Uid is required.</value>
-  </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>The Uid provided is invalid.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>Allocation already exists.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Name must be unique. Workflow action already exists with this name</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>Uid provided already in use.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>User with Uid {0} not found</value>
+  <data name="WhenPredicateSubjectOfClass" xml:space="preserve">
+    <value>When using this predicate your subject must be one of the following classes : {0}.</value>
   </data>
 </root>

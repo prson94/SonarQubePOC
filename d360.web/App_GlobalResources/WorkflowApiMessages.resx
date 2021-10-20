@@ -117,121 +117,112 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>New {0} Raised.</value>
+  <data name="InvalidFormSetting" xml:space="preserve">
+    <value>Form settings is missing or invalid</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Action Created</value>
+  <data name="InvalidModelNoFieldPassed" xml:space="preserve">
+    <value>INVALID MODEL NO FIELDS PASSED</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Action Type Not Found</value>
+  <data name="InvalidOrderParameterPassed" xml:space="preserve">
+    <value>Invalid order passed in the request. Valid values are: StartedOn and CompletedOn</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Action Type with Uid {0} could not be found.</value>
+  <data name="InvalidParameterWorkflowVersion" xml:space="preserve">
+    <value>Invalid order passed in the request. Valid values are: VersionNumber, State, CreatedOn, and UpdatedOn</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Action with Uid {0} could not be found.</value>
+  <data name="InvalidResourceID" xml:space="preserve">
+    <value>Invalid resource id</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocations added successfully</value>
+  <data name="InvalidSpecificID" xml:space="preserve">
+    <value>INVALID WORKFLOW ITEM ID,  CANNOT FIND WORKFLOWITEMSTEP WITH SPECIFIED ID.</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocation added successfully</value>
+  <data name="InvalidTypeWorkflowVersionRequest" xml:space="preserve">
+    <value>Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset.</value>
+  <data name="InvalidTypeWorkflowVersionRequestIncWF" xml:space="preserve">
+    <value>Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Asset with Uid {0} could not be found.</value>
+  <data name="InvalidUidWorkflowVersionRequest" xml:space="preserve">
+    <value>Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionUid / AssetUid / RelationshipUid / WorkflowTypeUid / WorkflowVerionUid</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset type.</value>
+  <data name="InvalidWorkflowID" xml:space="preserve">
+    <value>Invalid Workflow item id.</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Asset type has invalid class.</value>
+  <data name="InvalidWorkflowRegistration" xml:space="preserve">
+    <value>Workflow registration is missing or invalid</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Asset Type with Uid {0} could not be found.</value>
+  <data name="InvalidWorkflowStepID" xml:space="preserve">
+    <value>Invalid Workflow item step id.</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Either AssetTypeUid or AssetUid must be provided.</value>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>Item not found</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Type Uid.</value>
+  <data name="ItemStepNotFound" xml:space="preserve">
+    <value>CANNOT FIND THE ITEM STEP FOR THE SPECIFIED PARAMETERS</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Uid.</value>
+  <data name="ItemStepUnableFound" xml:space="preserve">
+    <value>Unable to find item step</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Action Type has associated actions. Enable on cascade request to delete.</value>
+  <data name="MoreThanOneTypeUidPassed" xml:space="preserve">
+    <value>More than one uid is passed in the request, either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>The selected action type ({0}) has associated actions, and therefore cannot be deleted.</value>
+  <data name="MoreThanOneTypeUidPassedInclWorkflow" xml:space="preserve">
+    <value>More than one uid is passed in the request , either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid or WorkflowTypeUid</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocation Deleted Successfully.</value>
+  <data name="MoreThanOneUidPassed" xml:space="preserve">
+    <value>More than one uid is passed in the request, either ActionUid OR AssetUid OR RelationshipUid</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>No Asset Type Uids have been provided.</value>
+  <data name="MultiVersionFound" xml:space="preserve">
+    <value>MULTIPLE VERION STEPS SPECIFIED</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>A valid Action Type Uid is required.</value>
+  <data name="NoPermissionBulkReassign" xml:space="preserve">
+    <value>You do not have permission to bulk reassign.</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Invalid AssetTypeUid provided.</value>
+  <data name="NoValidItemStep" xml:space="preserve">
+    <value>NO VALID ITEM STEPS FOUND</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Invalid AssetUid provided.</value>
+  <data name="RelationNotFoundIntersectType" xml:space="preserve">
+    <value>"RELATIONSHIP INPUT CANNOT FIND THE SPECIFIED INTERSECT TYPE</value>
   </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>Limit To Active Workflows value provided is not valid.</value>
+  <data name="RelationNotFoundIssueObject" xml:space="preserve">
+    <value>RELATIONSHIP INPUT CANNOT IDENTIFY ISSUE OBJECT</value>
   </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} is an invalid responsibilityTypeUid for {1}.</value>
+  <data name="RelationNotFoundRegistration" xml:space="preserve">
+    <value>RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION</value>
   </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Name provided must be less than 250 characters in length.</value>
+  <data name="RelatioshipInvalid" xml:space="preserve">
+    <value>RELATIONSHIP INPUT HAS AN INVALID INTERSECTTYPE ID VALUE</value>
   </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Empty string provided for Name. Cannot be empty.</value>
+  <data name="StepNotFound" xml:space="preserve">
+    <value>step not found</value>
   </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>Name is a required field.</value>
+  <data name="VersionStepIDNotFound" xml:space="preserve">
+    <value>Workflow with specified version step id not found</value>
   </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>No Matching Allocation for '{0}' on Action Type '{1}'</value>
+  <data name="WofkFlowXMLNull" xml:space="preserve">
+    <value>INVALID WORKFLOW FORM DEFINITION,  FORM XML IS NULL.</value>
   </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Order By Field Not Found</value>
+  <data name="WorkflowIDAlreadyDeleted" xml:space="preserve">
+    <value>Workflow type ID {0} is already deleted</value>
   </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>The field you specified for sorting ({0}) could not be found.</value>
+  <data name="WorkflowInstanceNotFound" xml:space="preserve">
+    <value>Cannot find the specified workflow instance.</value>
   </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Relationship Type with Uid {0} could not be found.</value>
+  <data name="WorkflowItemDeleted" xml:space="preserve">
+    <value>Workflow item has been deleted.</value>
   </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Resource Uid provided does not exist.</value>
+  <data name="WorkflowReassignSuccess" xml:space="preserve">
+    <value>Workflow forms reassigned successfully</value>
   </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>Resource Uid provided is invalid.</value>
+  <data name="WorkflowtypeidNotFound" xml:space="preserve">
+    <value>Workflow type id {0} could not be found</value>
   </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>A Valid Uid is required.</value>
+  <data name="WorkflowtypeUIDNotFound" xml:space="preserve">
+    <value>Workflow type Uid {0} could not be found</value>
   </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>The Uid provided is invalid.</value>
+  <data name="WorkflowUIDNotFound" xml:space="preserve">
+    <value>Workflow Uid {0} could not be found.</value>
   </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>Allocation already exists.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Name must be unique. Workflow action already exists with this name</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>Uid provided already in use.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>User with Uid {0} not found</value>
+  <data name="WorkflowVersionUIDNotFound" xml:space="preserve">
+    <value>Workflow Version with Uid {0} could not be found.</value>
   </data>
 </root>

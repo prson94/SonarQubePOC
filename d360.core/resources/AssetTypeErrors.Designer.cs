@@ -61,6 +61,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to _parentUid with value {0} does not correspond to a valid asset!.
+        /// </summary>
+        public static string _parentuidNotValidAsset {
+            get {
+                return ResourceManager.GetString("_parentuidNotValidAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _parentUid parameter must be a valid Guid, be set to null, or not be present!.
+        /// </summary>
+        public static string _parentUidNotValidUid {
+            get {
+                return ResourceManager.GetString("_parentUidNotValidUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Assets already exist with assigned parents. You may not change the parent of this asset type..
         /// </summary>
         public static string AssetsWithAssignedParents {
@@ -106,6 +124,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bad Request.
+        /// </summary>
+        public static string BadRequest {
+            get {
+                return ResourceManager.GetString("BadRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Can Edit Parent can be set only asset types that are a Business or Technical class and are the child of another asset type..
         /// </summary>
         public static string CanEditParentClassRestriction {
@@ -133,6 +160,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate Found.
+        /// </summary>
+        public static string DuplicateFound {
+            get {
+                return ResourceManager.GetString("DuplicateFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate Name Found.
+        /// </summary>
+        public static string DuplicateNameFound {
+            get {
+                return ResourceManager.GetString("DuplicateNameFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The name is taken. Please try another name..
         /// </summary>
         public static string ErrorNameTaken {
@@ -142,11 +187,29 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Execution unique identifier not found..
+        /// </summary>
+        public static string ExecutionUIDNotFound {
+            get {
+                return ResourceManager.GetString("ExecutionUIDNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There is already an organization type with that name..
         /// </summary>
         public static string ExistingOrganizationType {
             get {
                 return ResourceManager.GetString("ExistingOrganizationType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forbidden.
+        /// </summary>
+        public static string Forbidden {
+            get {
+                return ResourceManager.GetString("Forbidden", resourceCulture);
             }
         }
         
@@ -178,11 +241,83 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Internal Server Error.
+        /// </summary>
+        public static string InternalServerError {
+            get {
+                return ResourceManager.GetString("InternalServerError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid assetType specified.
+        /// </summary>
+        public static string InvalidAssetType {
+            get {
+                return ResourceManager.GetString("InvalidAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid asset Uid in parameters!.
+        /// </summary>
+        public static string InvalidAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid {0} provided..
+        /// </summary>
+        public static string InvalidClass {
+            get {
+                return ResourceManager.GetString("InvalidClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid order direction passed in the request..
+        /// </summary>
+        public static string InvalidDirection {
+            get {
+                return ResourceManager.GetString("InvalidDirection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to DisplayFormat provided is invalid..
         /// </summary>
         public static string InvalidDisplayFormat {
             get {
                 return ResourceManager.GetString("InvalidDisplayFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Field Entry.
+        /// </summary>
+        public static string InvalidFieldEntry {
+            get {
+                return ResourceManager.GetString("InvalidFieldEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} could not be updated because it is {1}..
+        /// </summary>
+        public static string InvalidFieldMessage {
+            get {
+                return ResourceManager.GetString("InvalidFieldMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Maximum Depth.
+        /// </summary>
+        public static string InvalidMaximumDepthTitle {
+            get {
+                return ResourceManager.GetString("InvalidMaximumDepthTitle", resourceCulture);
             }
         }
         
@@ -205,6 +340,33 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid order by passed in the request..
+        /// </summary>
+        public static string InvalidOrderPassed {
+            get {
+                return ResourceManager.GetString("InvalidOrderPassed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Organization provided..
+        /// </summary>
+        public static string InvalidOrganization {
+            get {
+                return ResourceManager.GetString("InvalidOrganization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Owner Uid in parameters!.
+        /// </summary>
+        public static string InvalidOwnerUid {
+            get {
+                return ResourceManager.GetString("InvalidOwnerUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid {0} provided.
         /// </summary>
         public static string InvalidParameterProvided {
@@ -219,6 +381,15 @@ namespace d360.core.resources {
         public static string InvalidParentForClass {
             get {
                 return ResourceManager.GetString("InvalidParentForClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Parent Selected.
+        /// </summary>
+        public static string InvalidParentSelected {
+            get {
+                return ResourceManager.GetString("InvalidParentSelected", resourceCulture);
             }
         }
         
@@ -259,6 +430,96 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [autoDisplayDescription].
+        /// </summary>
+        public static string InvalidValueautoDisplayDescription {
+            get {
+                return ResourceManager.GetString("InvalidValueautoDisplayDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [autoDisplayParent].
+        /// </summary>
+        public static string InvalidValueAutoDisplayParent {
+            get {
+                return ResourceManager.GetString("InvalidValueAutoDisplayParent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [useastransformation].
+        /// </summary>
+        public static string InvalidValueForuseastransformation {
+            get {
+                return ResourceManager.GetString("InvalidValueForuseastransformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [hierarchical].
+        /// </summary>
+        public static string InvalidValueHierachical {
+            get {
+                return ResourceManager.GetString("InvalidValueHierachical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [includeLevels].
+        /// </summary>
+        public static string InvalidValueincludeLevels {
+            get {
+                return ResourceManager.GetString("InvalidValueincludeLevels", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [obj].
+        /// </summary>
+        public static string InvalidValueObj {
+            get {
+                return ResourceManager.GetString("InvalidValueObj", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [objID].
+        /// </summary>
+        public static string InvalidValueObjID {
+            get {
+                return ResourceManager.GetString("InvalidValueObjID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value {0} in _includeFields parameter, field with this name not found..
+        /// </summary>
+        public static string InvalueValue_includeFields {
+            get {
+                return ResourceManager.GetString("InvalueValue_includeFields", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} could not be added or updated because an existing item already found..
+        /// </summary>
+        public static string ItemConflicit {
+            get {
+                return ResourceManager.GetString("ItemConflicit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} could not be found..
+        /// </summary>
+        public static string ItemNotFound {
+            get {
+                return ResourceManager.GetString("ItemNotFound", resourceCulture);
+              }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter [ReturnCount].
         /// </summary>
         public static string InvalidValueReturnCount {
@@ -286,11 +547,74 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Maximum number of asset types for this method is 1..
+        /// </summary>
+        public static string MaxNumberAllowedAssetType {
+            get {
+                return ResourceManager.GetString("MaxNumberAllowedAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to FlowObjectType is required field for Asset Type with class Diagram..
         /// </summary>
         public static string MissingFlowObjectType {
             get {
                 return ResourceManager.GetString("MissingFlowObjectType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is missing required properties for the request to proceed..
+        /// </summary>
+        public static string MissingPropertyMessage {
+            get {
+                return ResourceManager.GetString("MissingPropertyMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item Missing Properties.
+        /// </summary>
+        public static string MissingPropertyTitle {
+            get {
+                return ResourceManager.GetString("MissingPropertyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} could not be added or updated because an item with the same name already exists..
+        /// </summary>
+        public static string NameConflicit {
+            get {
+                return ResourceManager.GetString("NameConflicit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No form data present to created {0}..
+        /// </summary>
+        public static string NoFormDataMessage {
+            get {
+                return ResourceManager.GetString("NoFormDataMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No Form Data.
+        /// </summary>
+        public static string NoFormDataTitle {
+            get {
+                return ResourceManager.GetString("NoFormDataTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not Found.
+        /// </summary>
+        public static string NotFound {
+            get {
+                return ResourceManager.GetString("NotFound", resourceCulture);
             }
         }
         
@@ -322,11 +646,47 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are existing parent/child relationships for assets of this type. You may not alter the parent type until these relationships are removed..
+        /// </summary>
+        public static string ParentChildRelationExists {
+            get {
+                return ResourceManager.GetString("ParentChildRelationExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Predicate.
+        /// </summary>
+        public static string PredicateHttpErrorTitle {
+            get {
+                return ResourceManager.GetString("PredicateHttpErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Relationship OR Relationship type exists with this the asset type or any asset under this type participates in the relationship..
         /// </summary>
         public static string RelationshipExistsForAssetType {
             get {
                 return ResourceManager.GetString("RelationshipExistsForAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scores Message Already Being Processed.
+        /// </summary>
+        public static string ScoreAlreadyProcessed {
+            get {
+                return ResourceManager.GetString("ScoreAlreadyProcessed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong Organization.
+        /// </summary>
+        public static string TitleWrongOrganization {
+            get {
+                return ResourceManager.GetString("TitleWrongOrganization", resourceCulture);
             }
         }
         
@@ -349,6 +709,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not parse value of _includeFields.
+        /// </summary>
+        public static string UnableParse_IncludeFields {
+            get {
+                return ResourceManager.GetString("UnableParse_IncludeFields", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unsupported asset class..
         /// </summary>
         public static string UnsupportedAssetClass {
@@ -367,11 +736,38 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UseAsAdmin parameter can be used only with _assetUid specified!.
+        /// </summary>
+        public static string UseAsAdminUseWithAssetUid {
+            get {
+                return ResourceManager.GetString("UseAsAdminUseWithAssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /api/v2/membership/users.
         /// </summary>
         public static string UserEndPoint {
             get {
                 return ResourceManager.GetString("UserEndPoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong {0}.
+        /// </summary>
+        public static string WrongClass {
+            get {
+                return ResourceManager.GetString("WrongClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong Name.
+        /// </summary>
+        public static string WrongNameHttpErrorTitle {
+            get {
+                return ResourceManager.GetString("WrongNameHttpErrorTitle", resourceCulture);
             }
         }
     }

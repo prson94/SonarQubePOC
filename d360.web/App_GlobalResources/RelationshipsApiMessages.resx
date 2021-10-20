@@ -117,121 +117,79 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>New {0} Raised.</value>
+  <data name="DirectionAllowedForRelation" xml:space="preserve">
+    <value>_direction parameter is allowed only when RelationshipTypeUid is passed</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Action Created</value>
+  <data name="InvalidIntersectTypeUid" xml:space="preserve">
+    <value>Invalid Intersect Type Uid provided {0}.</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Action Type Not Found</value>
+  <data name="InvalidInverseLength" xml:space="preserve">
+    <value>Inverse must be less then 250 characters.</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Action Type with Uid {0} could not be found.</value>
+  <data name="InvalidNameLength" xml:space="preserve">
+    <value>Name must be less then 100 characters.</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Action with Uid {0} could not be found.</value>
+  <data name="InvalidObjectUid" xml:space="preserve">
+    <value>Invalid Object Uid passed in the request</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocations added successfully</value>
+  <data name="InvalidOrderValue" xml:space="preserve">
+    <value>Invalid _order value in the request</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocation added successfully</value>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>The type parameter is invalid.</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset.</value>
+  <data name="InvalidPredicateUid" xml:space="preserve">
+    <value>Invalid Predicate Uid passed in the request</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Asset with Uid {0} could not be found.</value>
+  <data name="InvalidRelatioshipTypeUid" xml:space="preserve">
+    <value>Invalid Relationship Type Uid passed in the request</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>You are not allowed to add actions on this asset type.</value>
+  <data name="InvalidSubjectUid" xml:space="preserve">
+    <value>Invalid Subject Uid passed in the request</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Asset type has invalid class.</value>
+  <data name="Invalid_includeTotal" xml:space="preserve">
+    <value>Invalid _includeTotal parameter passed in the request, value must be true false or not specified</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Asset Type with Uid {0} could not be found.</value>
+  <data name="Invalid_owner" xml:space="preserve">
+    <value>Invalid _owner parameter passed in the request, maximum length is 100 characters.</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Either AssetTypeUid or AssetUid must be provided.</value>
+  <data name="MaxRelationShipLimit" xml:space="preserve">
+    <value>You may only provide a maximum of {0} relationships in this request. Please call the BATCH API to submit more than {1} items.</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Type Uid.</value>
+  <data name="ObjectUidNotFound" xml:space="preserve">
+    <value>Object with Uid [{0}] could not be found.</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Uid.</value>
+  <data name="OrderForRelation" xml:space="preserve">
+    <value>_order parameter is allowed only when RelationshipTypeUid is passed</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Action Type has associated actions. Enable on cascade request to delete.</value>
+  <data name="PassedValidForExistingRelationType" xml:space="preserve">
+    <value>Invalid relationship type uid specified.  Please specify a valid uid for an existing relationship type.</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>The selected action type ({0}) has associated actions, and therefore cannot be deleted.</value>
+  <data name="PassedValidRelationTypeUid" xml:space="preserve">
+    <value>Invalid relationship type uid specified.  Please specify a valid uid.</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocation Deleted Successfully.</value>
+  <data name="PredicateLimit" xml:space="preserve">
+    <value>You may only provide a maximum of {0} predicates in this request.</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>No Asset Type Uids have been provided.</value>
+  <data name="PredicateRequired" xml:space="preserve">
+    <value>You have not provided any predicates to process in this request.</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>A valid Action Type Uid is required.</value>
+  <data name="PredicateUidNotFound" xml:space="preserve">
+    <value>Predicate with Uid [{0}] could not be found.</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Invalid AssetTypeUid provided.</value>
+  <data name="RelationNotProvided" xml:space="preserve">
+    <value>You have not provided any relationships to process in this request.</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Invalid AssetUid provided.</value>
+  <data name="RelationshipTypeLimit" xml:space="preserve">
+    <value>You may only provide a maximum of {0} relationship types in this request.</value>
   </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>Limit To Active Workflows value provided is not valid.</value>
+  <data name="RelationShipUidNotFound" xml:space="preserve">
+    <value>Specified relationship with uid [{0}] could not be found.</value>
   </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} is an invalid responsibilityTypeUid for {1}.</value>
+  <data name="SubjectUidNotFound" xml:space="preserve">
+    <value>Subject with Uid [{0}] could not be found.</value>
   </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Name provided must be less than 250 characters in length.</value>
-  </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Empty string provided for Name. Cannot be empty.</value>
-  </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>Name is a required field.</value>
-  </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>No Matching Allocation for '{0}' on Action Type '{1}'</value>
-  </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Order By Field Not Found</value>
-  </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>The field you specified for sorting ({0}) could not be found.</value>
-  </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Relationship Type with Uid {0} could not be found.</value>
-  </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Resource Uid provided does not exist.</value>
-  </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>Resource Uid provided is invalid.</value>
-  </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>A Valid Uid is required.</value>
-  </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>The Uid provided is invalid.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>Allocation already exists.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Name must be unique. Workflow action already exists with this name</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>Uid provided already in use.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>User with Uid {0} not found</value>
+  <data name="ViewthisRelationNotAllowed" xml:space="preserve">
+    <value>You are not allowed to view this relationship.</value>
   </data>
 </root>

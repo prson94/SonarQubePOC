@@ -28,6 +28,7 @@ using System.Web.Http.Description;
 using System.Xml.Serialization;
 using d360.core.helpers;
 using d360.model.DataAccessLayer;
+using Resources;
 using d360.core.Models;
 
 namespace d360.web.Controllers.Services
@@ -325,7 +326,7 @@ order by wi.StartedOn desc";
             {
                 var itemStep = Company.WorkflowItemSteps.FirstOrDefault(x => x.ID == itemStepId);
                 if (itemStep == null)
-                    throw new Exception("item step id not found");
+                    throw new Exception(WorkflowApiMessages.InvalidWorkflowStepID);
                 else
                 {
                     var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
@@ -347,7 +348,7 @@ order by wi.StartedOn desc";
                 //look up change event registration
                 var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == workflowId).FirstOrDefault();
 
-                if (reg == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow registration is missing or invalid");
+                if (reg == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowRegistration);
 
                 //add new event for the requested object and change type                
                 var issue = Company.AssignActivityWorkflowToNewObject(reg, itemId, workflowId, objectId, objectType);
@@ -358,7 +359,7 @@ order by wi.StartedOn desc";
 
                 if (workflowItem == null)
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item id.");
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowID);
                 }
 
                 workflowItem.CompletedBy = Company.CurrentResourceID;
@@ -370,7 +371,7 @@ order by wi.StartedOn desc";
 
                 if (workflowItemStep == null)
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item step id.");
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowStepID);
                 }
 
                 var isResourceReassignment = objectType.ToLower() == "resource";
@@ -423,11 +424,11 @@ order by wi.StartedOn desc";
 
                 if (itemStepsModel == null)
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "CANNOT FIND THE ITEM STEP FOR THE SPECIFIED PARAMETERS");
+                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemStepNotFound);
                 }
 
                 if (string.IsNullOrEmpty(itemStepsModel.Settings))
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Form settings is missing or invalid");
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidFormSetting);
 
                 var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Settings));
                 var isCompleted = false;
@@ -523,7 +524,7 @@ order by wi.StartedOn desc";
 
                 if (itemStepsModel == null)
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Unable to find item step");
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.ItemStepUnableFound);
                 }
 
                 // check the settings for the form.  If the form is set to first response then we mark the step as complete and fire off its transitions
@@ -608,25 +609,25 @@ order by wi.StartedOn desc";
             //model validation
 
             if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "INVALID MODEL, MODEL IS NULL OR MISSING ITEM STEP IDS");
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 
             var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).ToList();
 
             if (itemSteps == null || itemSteps.Count < 1)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "NO VALID ITEM STEPS FOUND");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.NoValidItemStep);
 
             var stepID = itemSteps.First().StepID;
 
             if (itemSteps.Any(i => i.StepID != stepID))
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "MULTIPLE VERION STEPS SPECIFIED");
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.MultiVersionFound);
 
             var versionStep = Company.WorkflowVersionSteps.Where(x => x.ID == stepID).Include(x => x.Version).FirstOrDefault();
 
             if (versionStep == null)
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW ITEM ID,  CANNOT FIND WORKFLOWITEMSTEP WITH SPECIFIED ID.");
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.InvalidSpecificID);
 
             if (model.Fields == null)
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "INVALID MODEL NO FIELDS PASSED");
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidModelNoFieldPassed);
 
 
             try
@@ -711,7 +712,7 @@ order by wi.StartedOn desc";
 
             if (itemStep == null)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow item has been deleted.");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowItemDeleted);
             }
 
             string sql = @"
@@ -726,7 +727,7 @@ order by wi.StartedOn desc";
 
             if (string.IsNullOrEmpty(xml))
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW FORM DEFINITION,  FORM XML IS NULL.");
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.WofkFlowXMLNull);
             }
 
             var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
@@ -735,7 +736,7 @@ order by wi.StartedOn desc";
             bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignObject"), out bool allowReassignObject);
 
             if (string.IsNullOrEmpty(xml))
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow with specified version step id not found");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.VersionStepIDNotFound);
 
             List<WorkflowFormModelField> properties = (
                                  from s in XElement.Parse(xml).Element("form").Elements()
@@ -766,8 +767,10 @@ order by wi.StartedOn desc";
 
                 if (item.FieldType == WorkflowFormModelFieldType.relationshipType)
                 {
-                    if (item.IntersectTypeID <= 0) throw new Exception("RELATIONSHIP INPUT HAS AN INVALID INTERSECTTYPE ID VALUE");
-
+                    if (item.IntersectTypeID <= 0)
+                    {
+                        throw new Exception(WorkflowApiMessages.RelatioshipInvalid);
+                    }
                     //load the possible options for this relationship type into values array
                     var intersectType = Company.IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
 
@@ -779,7 +782,10 @@ order by wi.StartedOn desc";
 
                     var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == typeID).FirstOrDefault();
 
-                    if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
+                    if (reg == null) 
+                    {
+                        throw new Exception(WorkflowApiMessages.RelationNotFoundRegistration);
+                    }
 
                     var obj = reg.Object;
                     var objId = reg.ObjectID;
@@ -944,20 +950,20 @@ order by wi.StartedOn desc";
                 //model validation
 
                 if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "INVALID MODEL, MODEL IS NULL OR MISSING ITEM STEP IDS");
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 
                 var itemStepID = model.ItemStepIDs.First();
                 var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x => x.Item).Include(x => x.Step).FirstOrDefault();
 
                 if (itemStep == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "NO VALID ITEM STEPS FOUND");
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.NoValidItemStep);
 
                 var stepID = itemStep.StepID;
 
                 var versionStep = Company.WorkflowVersionSteps.Where(x => x.ID == stepID).Include(x => x.Version).FirstOrDefault();
 
                 if (versionStep == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW ITEM ID,  CANNOT FIND WORKFLOWITEMSTEP WITH SPECIFIED ID.");
+                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.InvalidSpecificID);
 
 
                 var typeID = versionStep.Version.TypeID;
@@ -974,13 +980,13 @@ order by wi.StartedOn desc";
                 var xml = (await Company.QueryAsync<string>(sql, new { id = stepID })).FirstOrDefault();
 
                 if (string.IsNullOrEmpty(xml))
-                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW FORM DEFINITION,  FORM XML IS NULL.");
+                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.WofkFlowXMLNull);
 
                 var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
                 var title = (string)XElement.Parse(xml).Element("form").Attribute("title");
 
                 if (string.IsNullOrEmpty(xml))
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow with specified version step id not found");
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.VersionStepIDNotFound);
 
                 List<WorkflowFormModelField> properties = (
                                      from s in XElement.Parse(xml).Element("form").Elements()
@@ -999,16 +1005,24 @@ order by wi.StartedOn desc";
 
                     if (item.FieldType == WorkflowFormModelFieldType.relationshipType)
                     {
-                        if (item.IntersectTypeID <= 0) throw new Exception("RELATIONSHIP INPUT HAS AN INVALID INTERSECTTYPE ID VALUE");
-
+                        if (item.IntersectTypeID <= 0)
+                        {
+                            throw new Exception(WorkflowApiMessages.RelatioshipInvalid);
+                        }
                         //load the possible options for this relationship type into values array
                         var intersectType = Company.IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
 
-                        if (intersectType == null) throw new Exception("RELATIONSHIP INPUT CANNOT FIND THE SPECIFIED INTERSECT TYPE");
+                        if (intersectType == null) 
+                        {
+                            throw new Exception(WorkflowApiMessages.RelationNotFoundIntersectType);
+                        }
 
                         var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == typeID).FirstOrDefault();
 
-                        if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
+                        if (reg == null)
+                        {
+                            throw new Exception(WorkflowApiMessages.RelationNotFoundRegistration);
+                        }
 
                         var obj = reg.Object;
                         var objId = reg.ObjectID;
@@ -1016,7 +1030,10 @@ order by wi.StartedOn desc";
                         if (reg.Object == "IssueType")
                         {
                             var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
-                            if (issue == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY ISSUE OBJECT");
+                            if (issue == null) 
+                            {
+                                throw new Exception(WorkflowApiMessages.RelationNotFoundIssueObject);
+                            }
 
                             obj = issue.ObjectType;
                             objId = issue.ObjectTypeID;
@@ -1275,7 +1292,7 @@ order by wi.StartedOn desc";
             var item = Company.WorkflowItems.Include(x => x.Version).Where(x => x.ID == itemId).FirstOrDefault();
 
             if (item == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance.");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowInstanceNotFound);
 
             // get the itemsteps for this workflow instance
             var sql = @"
@@ -1434,7 +1451,7 @@ order by wi.StartedOn desc";
 
 
             if (type == null || (type.State != core.enums.State.Active && type.State != core.enums.State.InActive))
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString()));
 
 
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
@@ -1490,7 +1507,7 @@ order by wi.StartedOn desc";
             {
                 var otype = Company.Filter<core.entities.Workflow.Type>(i => i.UID == workflowType.UID).SingleOrDefault();
                 if (otype == null || (otype.State != core.enums.State.Active && otype.State != core.enums.State.InActive))
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type Uid {workflowType.UID} could not be found");
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, workflowType.UID.ToString()));
 
                 //Workflow type creation
 
@@ -2218,10 +2235,10 @@ order by wi.StartedOn desc";
                 type = Company.WorkflowTypes.Find(id);
 
             if (type == null)
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type ID {id} could not be found");
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString()));
 
             if (type.State == core.enums.State.Deleted)
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type ID {id} is already deleted");
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowIDAlreadyDeleted, id.ToString()));
 
             type.State = core.enums.State.Deleted;
             type.UpdatedOn = DateTime.UtcNow;
@@ -2577,13 +2594,15 @@ order by wi.StartedOn desc";
         public HttpResponseMessage DeleteLastExecution(int id, Guid? uid)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Forbidden, new Exception("Access Denied"));
+                return Request.CreateErrorResponse(HttpStatusCode.Forbidden, new Exception(ApiMessages.AccessDenied));
 
             if (id == 0 && uid.HasValue && uid.Value != Guid.Empty)
                 id = Company.Filter<core.entities.Workflow.Type>(i => i.UID == uid.Value).SingleOrDefault().ID;
 
             if (!Company.WorkflowEventRegistrations.Any(x => x.TypeID == id))
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Workflow not found"));
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString())));
+            }
 
             var workflow = Company.WorkflowEventRegistrations.First(x => x.TypeID == id);
 
@@ -2601,7 +2620,9 @@ order by wi.StartedOn desc";
             var item = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
 
             if (item == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Item not found"));
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(WorkflowApiMessages.ItemNotFound));
+            }
 
             var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
@@ -3099,7 +3120,7 @@ order by wi.StartedOn desc";
             var detail = Company.Query<WorkflowStepDetail>(sql, new { itemStepId }).FirstOrDefault();
 
             if (detail == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("step not found"));
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(WorkflowApiMessages.StepNotFound));
 
             //TODO: refactor to convert to directly to a model instead of xml to json to dynamic
             detail.Settings = XmlToDynamic(detail.SettingsXml);
@@ -3530,7 +3551,7 @@ order by wi.StartedOn desc";
             var item = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
 
             if (item == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Item not found"));
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(WorkflowApiMessages.ItemNotFound));
 
             var results = Company.Query<dynamic>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
@@ -3632,15 +3653,17 @@ order by wi.StartedOn desc";
         public async Task<HttpResponseMessage> BulkReassignForm(BulkWorkflowReassignModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Forbidden, "You do not have permission to bulk reassign.");
+                return Request.CreateErrorResponse(HttpStatusCode.Forbidden, WorkflowApiMessages.NoPermissionBulkReassign);
 
             if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "The model is not valid.");
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+            }
 
             var resource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == model.NewAssigneeResourceID);
 
             if (model.NewAssigneeResourceID < 0 || resource == null)
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid resource id");
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
 
             var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).ToList();
 
@@ -3653,7 +3676,7 @@ order by wi.StartedOn desc";
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, new { type = "success", message = "Workflow forms reassigned successfully", title = "Success" });
+            return Request.CreateResponse(HttpStatusCode.OK, new { type =ApiMessages.Success, message = WorkflowApiMessages.WorkflowReassignSuccess, title = ApiMessages.Success });
         }
 
         #region Helper Methods
