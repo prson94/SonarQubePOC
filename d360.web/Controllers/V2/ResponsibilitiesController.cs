@@ -1319,7 +1319,7 @@ namespace d360.web.Controllers.V2
                     var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
                     if (sas == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString())));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()))).ConfigureAwait(false);
                     }
                 }
 
@@ -1486,7 +1486,7 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1518,7 +1518,9 @@ namespace d360.web.Controllers.V2
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
 
                 if (responsibility == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ResponsibilityApiMessages.InvalidResponsibilityUid));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
+                }
 
                 var results = await ResponsibilityRepository.DeleteResponsibilityRules(responsibilityTypeUid, responsibilityRulesDeletes.Select(x => x.Uid).ToList());
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -1528,7 +1530,7 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 

@@ -860,7 +860,7 @@ namespace d360.web.Controllers.V2
 
                 if (relationshiptypes == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
                 }
 
                 if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
@@ -937,7 +937,7 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
         /// <summary>

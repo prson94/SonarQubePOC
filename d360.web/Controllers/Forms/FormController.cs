@@ -294,7 +294,7 @@ namespace d360.web.Controllers
                     }
                     return DynamicEditorEditFields(o, objectId);
             }
-            throw new Exception(FormControllerApiMessage.InvalidEditorType);
+            throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
         }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
