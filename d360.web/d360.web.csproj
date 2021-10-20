@@ -962,7 +962,6 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.html" />
@@ -1149,8 +1148,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-object-detail.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.ts" />
@@ -1425,6 +1422,7 @@
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.less" />
     <Content Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.less" />
     <Content Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.less" />
+    <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

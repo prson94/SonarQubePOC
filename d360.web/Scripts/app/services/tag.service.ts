@@ -90,6 +90,14 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
+
+    getAssetTagOwnerByName(tagName: string, assetUid: string): Observable<any> {
+        let url = `api/v2/tags/AssetTagOwnerByName?tagName=${tagName}&assetUID=${assetUid}`;
+        return this.http.get(url)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+    
     deleteAssetTag(tags: TagApiModel[]): Observable<any> {
 
         const httpHeaders = {
