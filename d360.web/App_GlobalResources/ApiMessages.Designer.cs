@@ -1080,7 +1080,7 @@ namespace Resources {
         /// <summary>
         ///   Looks up a localized string similar to There are existing assets in your environment with values on field &apos;{0}&apos;. You may not change &apos;Type of List&apos; property until those field values are removed..
         /// </summary>
-        publi static string LookupFieldTypeInUse {
+        public static string LookupFieldTypeInUse {
             get {
                 return ResourceManager.GetString("LookupFieldTypeInUse", resourceCulture);
             }
