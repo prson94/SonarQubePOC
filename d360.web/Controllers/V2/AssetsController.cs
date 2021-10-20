@@ -14,12 +14,10 @@ using Newtonsoft.Json.Linq;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using d360.model.DataAccessLayer;
@@ -30,12 +28,13 @@ using Resources;
 using System.IO;
 using d360.model.helpers.filters;
 using System.Data.Entity;
-using System.Dynamic;
-using System.Configuration;
 using SpreadsheetLight;
 using d360.model.helpers;
 using System.Data;
 using System.Threading;
+using d360.core.Models;
+using d360.model.helpers;
+using System.Web;
 
 namespace d360.web.Controllers.V2
 {
@@ -109,41 +108,26 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="Class">Allows for filtering the Asset type's by Class.The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.</param>
         /// <param name="assetTypeUid">Filter by Asset type UID.</param>
-        /// <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
         /// <returns></returns>
         [
             HttpGet,
             Route("types"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerParameter("UseAsTransformation", "Filter results by Use As Transformation setting. This filter is used to show only Business and Technical asset types which have been marked as transformational asset types in their configuration. Transformational assets have special meaning in the asset browser. Please see the Govern user guide for further details about transformational assets.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("Hierarchical", "Filter results by Hierarchical setting. This value is used to show Model and Policy Types.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("AutoDisplayDescription", "Filter results by Auto Display Description setting. This value is used by the Govern UI to have the Description shown on the asset list page by default or not.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("CanOwnFusion", "Filter by Can Own Fusion setting. This option is for assets that can be used to set the owner of a fusion configuration.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("AutoDisplayDescription", "Filter results by Auto Display Description setting. This value is used by the Govern UI to have the Description shown on the asset list page by default or not.", DataType = "boolean", ParameterType = "query", Required = false),            
             SwaggerParameter("AutoDisplayParent", "Filter results by AutoDisplayParent setting. The value is used by the Govern UI to display or hide the parent column on the data grids.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, string FusionTypeUID = null, Guid? assetTypeUid = null)
+        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, Guid? assetTypeUid = null)
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
             var errorMessage = "";
 
             try
             {
-                Guid? fusionTypeGuid = Guid.Empty;
-                if (!string.IsNullOrEmpty(FusionTypeUID))
-                {
-                    if (Class == null)
-                    {
-                        fusionTypeGuid = Guid.Parse(FusionTypeUID);
-                    }
-                    else
-                    {
-                        throw new Exception(AssetsApiMessages.InvalidClassFusionTypeUid);
-                    }
-                }
-
                 if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
                 {
                     var assetType = this.AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
@@ -152,7 +136,7 @@ namespace d360.web.Controllers.V2
                 }
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, fusionTypeGuid, assetTypeUid);
+                var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }
@@ -589,9 +573,6 @@ namespace d360.web.Controllers.V2
                 if (model.CanEditParent.HasValue && ((model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset) || parentAssetType == null))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.CanEditParent, AssetTypeErrors.CanEditParentClassRestriction));
 
-                if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.BusinessAsset)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.CanOwnFusion, AssetsApiMessages.fusionSetBusinessClassOnly));
-
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.ReachedTransformationlimit, AssetTypeErrors.TransformationLimitExceeded));
 
@@ -618,7 +599,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.ObjectID > 0)
                 {
-                    if ( model.Class != AssetTypeClass.Reference)
+                    if (model.Class != AssetTypeClass.Reference)
                     {
                         var nameFieldType = new FieldType
                         {
@@ -808,9 +789,6 @@ namespace d360.web.Controllers.V2
 
                 if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.UseAsTransformation, AssetTypeErrors.TransformationClassRestriction));
-
-                if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.BusinessAsset)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.CanOwnFusion, AssetsApiMessages.fusionSetBusinessClassOnly));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.ReachedTransformationlimit, AssetTypeErrors.TransformationLimitExceeded));
@@ -1198,6 +1176,52 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Get Count of asset for asset type Uid
+        /// </summary>
+        /// <param name="assetTypeUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("count/{assetTypeUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "An asset type count for current user.", typeof(List<AssetCountsModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Type Uid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
+        ]
+        public async Task<HttpResponseMessage> GetAssetCountOfArtifactTypeUid(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetAssetCountOfArtifactTypeUid => ";
+            var errorMessage = "";
+
+            try
+            {
+                if (assetTypeUid == null || assetTypeUid == Guid.Empty)
+                {
+                        return ReturnApiError(HttpStatusCode.BadRequest, ActionApiMessages.AssetTypeUidIsNotValid);
+                }
+                else
+                {
+                    var assetType = this.AssetRepository.GetAssetTypeByUID(assetTypeUid);
+                    if (assetType == null)
+                    {
+                        return ReturnApiError(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
+                    }
+                }
+
+                var assettypecount = await AssetRepository.GetAssetCountOfAssetTypeUid(assetTypeUid);
+                return Request.CreateResponse(HttpStatusCode.OK, assettypecount);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                { "Endpoint Method", prefix }
+                });
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
 
         /// <summary>
         /// Retrieves a list of all asset types and asset counts for current user.
@@ -1210,7 +1234,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypeCountModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false)
+            SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("returncount", "Allows you to include or exclude the count of the asset type. The default is true which means the count is included.", DataType = "boolean", ParameterType = "query", Required = false)
         ]
         public async Task<HttpResponseMessage> GetAssetTypeCountsAsync(Guid? assetTypeUid = null)
         {
@@ -1257,7 +1282,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray(), assetTypeUid);
+                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray(), param, assetTypeUid);
                 return Request.CreateResponse(HttpStatusCode.OK, classes);
             }
             catch (Exception ex)
@@ -1303,6 +1328,7 @@ namespace d360.web.Controllers.V2
                 int pageSize = 10;
                 int pageNum = 1;
                 string simpleFilter = string.Empty;
+                string advancedFilter = string.Empty;
 
                 if (asset == null)
                 {
@@ -1327,7 +1353,17 @@ namespace d360.web.Controllers.V2
                 bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
-                string filters = string.Empty;
+
+                List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
+                FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+
+                List<dynamic> Values = new List<dynamic>();
+                List<GridColumn> Columns = new List<GridColumn>();
+                List<GridField> Fields = new List<GridField>();
+                List<dynamic> scoringInfo = new List<dynamic>();
+
+                int count = 0;
+                var dbArgs = new DynamicParameters();
 
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
@@ -1377,28 +1413,14 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                //to be removed with new filtering UI component
-                //current(sprint 5/2021) filtering uses contains on all fields, so we need to avoid value checks on numbers, decimals etc...
-                bool handleFiltersAsString = false;
-                if (qparams.Any(x => x.Key.ToLower() == "handlefiltersasstring"))
-                {
-                    bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "handlefiltersasstring").Value, out handleFiltersAsString);
-                }
-
                 if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
                 {
-                    simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
+                    simpleFilter = qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value;
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "filter"))
                 {
-                    List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
-
-                    var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
-                    var filterDataProvider = new FilterDataProvider(this.Company);
-                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
-                    filterExpressionParser.LoadFieldTypes(fields, null);
-                    filters = filterExpressionParser.Parse(filter, out _, out _);
+                    advancedFilter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
@@ -1414,13 +1436,6 @@ namespace d360.web.Controllers.V2
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidDirection));
                     }
-                }
-
-                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                if (isStreamResponse)
-                {
-                    pageNum = 1;
-                    pageSize = 10000;
                 }
 
                 if (!string.IsNullOrEmpty(orderBy))
@@ -1440,7 +1455,6 @@ namespace d360.web.Controllers.V2
 
                     if (fieldType.Type == "ComplexRelationLookup")
                     {
-                        var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                         var definition = ftl.ParseComplexLookupDefinition();
 
                         var mappings = definition.GetFriendlyNamesMapping();
@@ -1461,56 +1475,39 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var dbArgs = new DynamicParameters();
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+                if (isStreamResponse)
+                {
+                    pageNum = 1;
+                    pageSize = 10000;
+                }
 
-                dbArgs.Add("object", asset.Object, DbType.AnsiString, size: 50);
-                dbArgs.Add("objectId", asset.ObjectID);
-                dbArgs.Add("fieldTypeId", fieldType.ID);
                 dbArgs.Add("resourceId", Company.CurrentResourceID);
                 dbArgs.Add("pageSize", pageSize);
                 dbArgs.Add("pageNum", pageNum);
-                dbArgs.Add("simpleFilter", simpleFilter);
-                dbArgs.Add("orderBy", orderBy);
-                dbArgs.Add("orderDirection", direction);
                 dbArgs.Add("useUidUrls", returnuseUidUrls);
-                dbArgs.Add("filters", filters);
+                dbArgs.Add("assetUid", assetUid);
+                dbArgs.Add("object", asset.Object);
+                dbArgs.Add("objectId", asset.ObjectID);
+                dbArgs.Add("fieldTypeId", fieldType.ID);
 
-                var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
-                       dbArgs
-                    );
-
-                var Columns = reader.Read<GridColumn>().ToList();
-                var Fields = reader.Read<GridField>().ToList();
-
-                List<dynamic> Values = new List<dynamic>();
-                try
+                if (fieldType.Type == "ComplexRelationLookup")
                 {
-                    Values = reader.Read<dynamic>().ToList();
-                }
-                catch (Exception ex)
-                {
-                    //if reader is disposed there are no results returned
-                    if (!ex.Message.Contains("has been disposed"))
-                    {
-                        throw ex;
-                    }
+                    (Columns, Fields, Values, count, scoringInfo) =
+                       await fieldsRepository.GetComplexRelationLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
 
                 }
 
-                //additional data e.g. scoring allocation data
-                List<dynamic> scoringInfo = new List<dynamic>();
-                try
+                if (fieldType.Type == "RefListRelationship")
                 {
-                    scoringInfo = reader.Read<dynamic>().ToList();
+                    (Columns, Fields, Values, count) =
+                       await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
                 }
-                catch (Exception ex)
+
+                if (fieldType.Type == "OwnershipLookup")
                 {
-                    //if reader is disposed there are no additional data returned
-                    if (!ex.Message.Contains("has been disposed"))
-                    {
-                        throw ex;
-                    }
+                    (Columns, Fields, Values, count) =
+                       await fieldsRepository.GetOwnershipLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
                 }
 
                 foreach (IDictionary<string, object> value in Values)
@@ -1531,7 +1528,6 @@ namespace d360.web.Controllers.V2
 
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
-                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var definition = ftl.ParseComplexLookupDefinition();
 
                     if (useFriendlyNames)
@@ -1550,22 +1546,6 @@ namespace d360.web.Controllers.V2
                     }
 
                 }
-
-                var dbArgsCount = new DynamicParameters();
-
-                dbArgsCount.Add("object", asset.Object, DbType.AnsiString, size: 50);
-                dbArgsCount.Add("objectId", asset.ObjectID);
-                dbArgsCount.Add("fieldTypeId", fieldType.ID);
-                dbArgsCount.Add("resourceId", Company.CurrentResourceID);
-                dbArgsCount.Add("pageSize", pageSize);
-                dbArgsCount.Add("pageNum", pageNum);
-                dbArgsCount.Add("simpleFilter", simpleFilter);
-                dbArgsCount.Add("filters", filters);
-
-                var count = Company.Query<int>(
-                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, 0, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
-                     dbArgsCount
-                     ).First();
 
                 if (isStreamResponse)
                 {

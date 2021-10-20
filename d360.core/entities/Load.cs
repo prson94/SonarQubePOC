@@ -52,6 +52,9 @@ namespace d360.core.entities
         [DataMember]
         public Guid? PostExecutionID { get; set; }
 
+        [DataMember]
+        public Guid? uid { get; set; }
+
         #endregion
 
 

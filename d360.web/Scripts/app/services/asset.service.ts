@@ -111,9 +111,21 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
-    public getAssetCountsByAssetType(cs: AssetTypeClass): Observable<AssetCount[]> {
-        return this.http.get(`/api/v2/assets/counts/byAssetType?class=${cs.toString()}`)
+    public getAssetCountsByAssetType(cs: AssetTypeClass, isReturnCount: boolean = true): Observable<AssetCount[]> {
+
+        var qString = '';
+        if (!isReturnCount && (cs === AssetTypeClass.BusinessAsset || cs === AssetTypeClass.TechnicalAsset)) {
+            qString = `&returncount=false`;
+        }
+
+        return this.http.get(`/api/v2/assets/counts/byAssetType?class=${cs.toString()}` + qString)
             .pipe(map(res => { return <AssetCount[]>res }),
+                catchError(err => this.handleError(err, true)));
+        }
+
+    public getAssetCountOfArtifactTypeUid(uid: string): Observable<any> {
+        return this.http.get(`/api/v2/assets/count/${uid}`)
+            .pipe(map(res => { return <any>res }),
                 catchError(err => this.handleError(err, true)));
     }
 

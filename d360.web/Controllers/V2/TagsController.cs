@@ -766,6 +766,28 @@ namespace d360.web.Controllers.V2
 
         }
 
+        [HttpGet,
+       Route("AssetTagOwnerByName"),
+       ApiExplorerSettings(IgnoreApi = true)]
+        public IHttpActionResult getAssetTagOwnerByName(string tagName, Guid assetUID)
+        {
+            try
+            {
+                tagName = tagName.Replace("&amp;", "&");
+                var tag = tagRepository.GetTagByName(tagName);
+                var asset = assetRepository.GetAssetByUID(assetUID);
+                var result = tagRepository.GetAssetTagDetails(tag.ID, asset.ID);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting asset tag details", e.Message);
+            }
+
+        }
+
     }
 }
 

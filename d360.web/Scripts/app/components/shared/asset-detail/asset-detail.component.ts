@@ -5,6 +5,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AssetService } from '../../../services/asset.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
+import { SynonymPermission } from '../../../models/artifacts.model';
 
 declare var CurrentResourceID;
 
@@ -33,7 +34,8 @@ export class AssetDetailComponent implements OnChanges {
     @Input() paddingLeft: string;
     @Input() isSidePanel: boolean = false;
     @Input() useAssetDetailColumnDefinition: boolean = false;
-
+    @Input() synonymPermission: SynonymPermission;
+    
     assetUID: string;
     assetTypeUID: string;
     isLoading = false;

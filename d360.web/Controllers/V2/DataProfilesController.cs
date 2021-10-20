@@ -879,6 +879,9 @@ namespace d360.web.Controllers.V2
 
             #region Create the list sheet
 
+            SLStyle noTagFieldStyle = new SLStyle();
+            noTagFieldStyle.Font.FontColor = System.Drawing.ColorTranslator.FromHtml("#a0a3ad");
+
             #region Header
             int index = 1;
             int rowNumber = 1;
@@ -904,12 +907,22 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                doc.SetCellValue(rowNumber, index++, row.AssetPath.Split('>')[0]);
+                doc.SetCellValue(rowNumber, index++, row.AssetPath.Split('>').Last());
                 doc.SetCellValue(rowNumber, index++, row.AssetTags);
                 doc.SetCellValue(rowNumber, index++, row.AssetPath);
                 doc.SetCellValue(rowNumber, index++, row.AssetTypePath);
-                doc.SetCellValue(rowNumber, index++, row.MatchedAssetPath.Split('>')[0]);
-                doc.SetCellValue(rowNumber, index++, row.MatchedAssetTags);
+                doc.SetCellValue(rowNumber, index++, row.MatchedAssetPath.Split('>').Last());
+               
+                if (row.hasTagField)
+                {
+                    doc.SetCellValue(rowNumber, index++, row.MatchedAssetTags);                    
+                }
+                else
+                {
+                    doc.SetCellValue(rowNumber, index, DataProfileAPIMessages.TagFieldNotFound);
+                    doc.SetCellStyle(rowNumber, index++, noTagFieldStyle);
+                }
+                
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetPath);
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetTypePath);                
                 doc.SetCellValue(rowNumber, index++, row.AssetUid.ToString());
@@ -917,7 +930,8 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, $"asset/{row.AssetUid}");
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetUid.ToString());
                 doc.SetCellValue(rowNumber, index++, row.MatchedAssetID);
-                doc.SetCellValue(rowNumber, index, $"asset/{row.MatchedAssetUid}");
+                doc.SetCellValue(rowNumber, index, $"asset/{row.MatchedAssetUid}");                
+                
             }
             doc.AutoFitColumn(1, 14);
             #endregion

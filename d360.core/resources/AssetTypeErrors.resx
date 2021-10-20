@@ -351,4 +351,7 @@
   <data name="ScoreAlreadyProcessed" xml:space="preserve">
     <value>Scores Message Already Being Processed</value>
   </data>
+  <data name="InvalidValueReturnCount" xml:space="preserve">
+    <value>Invalid value for parameter [ReturnCount]</value>
+  </data>
 </root>

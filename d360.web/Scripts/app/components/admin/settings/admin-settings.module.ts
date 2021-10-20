@@ -29,6 +29,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { TableModule } from 'primeng/table';
+import { CheckboxModule } from 'primeng/checkbox';
+import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 
 
 @NgModule({
@@ -46,6 +48,7 @@ import { TableModule } from 'primeng/table';
         HelpMenuModule,
         ColorPickerModule,
         TableModule,
+        CheckboxModule,
 
         //d3s        
         CoreModule,        
@@ -55,7 +58,8 @@ import { TableModule } from 'primeng/table';
         IconPickerModule,
         DayOfWeekInputModule,
         D3SSharedModule,
-        PipesModule
+        PipesModule,
+        IgCheckboxModule
     ],
     declarations: [
 //        IconPickerComponent,

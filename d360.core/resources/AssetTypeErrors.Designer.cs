@@ -516,6 +516,15 @@ namespace d360.core.resources {
         public static string ItemNotFound {
             get {
                 return ResourceManager.GetString("ItemNotFound", resourceCulture);
+              }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [ReturnCount].
+        /// </summary>
+        public static string InvalidValueReturnCount {
+            get {
+                return ResourceManager.GetString("InvalidValueReturnCount", resourceCulture);
             }
         }
         

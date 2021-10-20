@@ -1,93 +1,83 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
 
 .tag-picker {
-    outline: none;
+  outline: none;
 
-    .selected-tags {
-        display: inline-block;
-        max-width: 100%;
+  .selected-tags {
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .add-tag-wrapper {
+    display: inline-block;
+  }
+
+  .selected-tag {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+    height: 32px;
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    background: #f0f0f0;
+    color: @ig-black;
+    border: none;
+    border-radius: 3px;
+    margin-bottom: 6px;
+    padding: 0px 10px !important;
+    margin-left: 0px;
+    margin-right: 4px;
+    max-width: 100%;
+
+    .tag-value {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .p-autocomplete-panel {
+    margin-left: 5px;
+    min-width: 200px;
+    max-width: 600px !important;
+  }
+
+  .p-autocomplete-item {
+    border-bottom: none;
+  }
+
+  .p-highlight {
+    background: @igx-lightblue-xlight !important;
+  }
+
+  .tooltip-wrapper {
+    position: fixed;
+    display: none;
+    z-index: 200002;
+  }
+
+  .tag-tooltip {
+    span.span-break {
+      white-space: normal;
+      word-break: break-word;
     }
 
-    .add-tag-wrapper {
-        display: inline-block;
+    span {
+      display: block;
     }
+  }
+
+  &.disabled {
+    opacity: 0.33;
 
     .selected-tag {
-        display: inline-flex;
-        position: relative;
-        box-sizing: border-box;
-        flex-wrap: nowrap;
-        justify-content: center;
-        align-items: center;
-        user-select: none;
-        cursor: pointer;
-        height: 32px;
-        font-size: 14px;
-        text-align: center;
-        white-space: nowrap;
-        background: #f0f0f0;
-        color: @ig-black;
-        border: none;
-        border-radius: 3px;
-        margin-bottom: 6px;
-        padding: 0px 10px !important;
-        margin-left: 0px;
-        margin-right: 4px;
-        max-width: 100%;
-
-        .tag-value {
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
+      cursor: default;
     }
-
-    .p-autocomplete-panel {
-        margin-left: 5px;
-        min-width: 200px;
-        max-width: 600px !important;
-    }
-
-    .p-autocomplete-item {
-        border-bottom: none;
-    }
-
-    .p-highlight {
-        background: @igx-lightblue-xlight !important;
-    }
-
-    .tooltip-wrapper {
-        position: fixed;
-        display: none;
-        z-index: 1000;
-
-        .tag-tooltip {
-            font-size: 12px;
-            text-align: left;
-            padding: 4px 6px;
-            line-height: 13px;
-            max-width: 400px;
-            background-color: #fffedc;
-            border: 1px solid #adadad;
-        }
-    }
-
-    .tag-tooltip {
-        span.span-break {
-            white-space: normal;
-            word-break: break-word;
-        }
-
-        span {
-            display: block;
-        }
-    }
-
-    &.disabled {
-        opacity: 0.33;
-
-        .selected-tag {
-            cursor: default;
-        }
-    }
+  }
 }

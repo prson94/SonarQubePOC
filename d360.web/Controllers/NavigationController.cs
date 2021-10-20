@@ -42,7 +42,7 @@ namespace d360.web.Controllers
                     var item = new NavigationItem { Name = (el.Element("name") ?? el.Element("Name")).Value, Url = el.Element("url").Value, ShowChildren = showChildren };
                     if (el.Element("items") != null)
                     {
-                        item.Items = parseXmlNavigationDocument(el.Element("items"),showChildren);
+                        item.Items = parseXmlNavigationDocument(el.Element("items"), showChildren);
                     }
                     items.Add(item);
                 }
@@ -67,7 +67,7 @@ namespace d360.web.Controllers
                 {
                     n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
                         new List<NavigationItem>() :
-                        parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)),showChildren);
+                        parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)), showChildren);
 
 
                     var urls = n.NavigationItems.Select(x => x.Url).ToList();
@@ -92,7 +92,7 @@ namespace d360.web.Controllers
 
         [ValidateContracts(Ignore = true), Route("sitemenu")]
         public JsonNetResult SiteMenu()
-        {            
+        {
             var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
             var showChildren = SettingsRepository.GetSettingValue<bool>(Setting.ShowNavigationChildren);
 
@@ -107,7 +107,7 @@ namespace d360.web.Controllers
             };
         }
 
-        
+
 
         [Route("GetAvailableSiteNavigation")]
         public JsonNetResult GetAvailableSiteNavigation()
@@ -1117,7 +1117,7 @@ namespace d360.web.Controllers
 
                     if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
                     {
-                        var apiCtrlr = new D3SApiController(this.Community, this.Company, null, SettingsRepository, null, null, null);
+                        var apiCtrlr = new D3SApiController(this.Community, this.Company, null, SettingsRepository, null, null, null, null);
                         apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
                         responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
                     }
@@ -1149,7 +1149,14 @@ namespace d360.web.Controllers
                     var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
                     if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
-                        responseModel.Items.HasOwnership = true;
+                        if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+                        {
+                            responseModel.Items.HasOwnership = false;
+                        }
+                        else
+                        {
+                            responseModel.Items.HasOwnership = true;
+                        }
                     }
 
                     if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
@@ -1163,7 +1170,14 @@ namespace d360.web.Controllers
                     var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
                     if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
-                        responseModel.Items.HasOwnership = true;
+                        if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+                        {
+                            responseModel.Items.HasOwnership = false;
+                        }
+                        else
+                        {
+                            responseModel.Items.HasOwnership = true;
+                        }
                     }
                     else
                     {

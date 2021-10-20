@@ -368,7 +368,7 @@ namespace d360.extensions
         void RemoveFromIndex(IndexObjectModel item);
         void RemoveFromIndex(IEnumerable<IndexObjectModel> items);
 
-        void UpdateInIndex(IndexObjectModel item);
-        void UpdateInIndex(IEnumerable<IndexObjectModel> items);
+        void UpdateInIndex(IndexObjectModel item, bool withUpsert = false);
+        void UpdateInIndex(IEnumerable<IndexObjectModel> items, bool withUpsert = false);
     }
 }

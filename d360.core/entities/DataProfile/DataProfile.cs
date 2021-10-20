@@ -321,6 +321,7 @@ namespace d360.core.entities
         public string MatchedAssetTypePath { get; set; }
         public Guid MatchedAssetUid { get; set; }
         public long MatchedAssetID { get; set; }
+        public bool hasTagField { get; set; }
     }
 
     public class ValidateSampleAttribute : ValidationAttribute

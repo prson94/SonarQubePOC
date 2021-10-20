@@ -612,4 +612,7 @@
   <data name="MissingConfigInfo" xml:space="preserve">
     <value>Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority.</value>
   </data>
+  <data name="LookupFieldTypeInUse" xml:space="preserve">
+    <value>There are existing assets in your environment with values on field '{0}'. You may not change 'Type of List' property until those field values are removed.</value>
+  </data>
 </root>

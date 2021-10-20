@@ -170,12 +170,7 @@ namespace d360.extensions.search
             StringBuilder sb = new StringBuilder();
             Dictionary<string, string> d3sFields = new Dictionary<string, string>();
             Dictionary<string, string> d3sNoRead = new Dictionary<string, string>();
-            Dictionary<string, string> dynamicFields = item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value);
-            string[] tags = new string[] { };
-            if (item.Tags != null && item.Tags.Any())
-            {
-                tags = item.Tags.Select(t => "{ \"Uid\": \"" + t.Key + "\", \"Value\": \"" + EscapeValueForDoc(t.Value) + "\"}").ToArray();
-            }
+            Dictionary<string, string> dynamicFields = item.Fields != null ? item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value) : new Dictionary<string, string>();
 
             d3sFields.Add("Url", item.RelativeUrl);
             d3sFields.Add("AssetType", item.AssetType);
@@ -189,39 +184,58 @@ namespace d360.extensions.search
                 d3sFields.Add("AssetTypeUid", item.AssetTypeUid.ToString());
             }
 
-            foreach (KeyValuePair<string, string> entry in NoReadMapping)
-            {
-                string val = "[";
-                if (item.NoRead != null && item.NoRead.ContainsKey(entry.Key) && item.NoRead[entry.Key].Count > 0)
-                {
-                    val += string.Join(",", item.NoRead[entry.Key].ToArray());
-                }
-                val += "]";
-                d3sNoRead.Add(entry.Value, val);
-            }
-
             //For users move Data3SixtyUser from Fields to d3sFields
-            if (item.Category == "Resource" && item.AssetType == "User" && dynamicFields.ContainsKey("Data3SixtyUser"))
+            if (item.Category == AssetTypeClass.User.ToString() && item.AssetType == "User" && dynamicFields.ContainsKey("Data3SixtyUser"))
             {
                 d3sFields.Add("Data3SixtyUser", dynamicFields["Data3SixtyUser"] == "1" ? "true" : "false");
                 dynamicFields.Remove("Data3SixtyUser");
             }
 
+            //Start d3s section
             sb.Append("{\"" + D3S_FIELD + "\": {");
             sb.Append(string.Join(",", d3sFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value) + "\"").ToArray()));
-            if (d3sNoRead.Count > 0)
+
+            if (item.AssetPath?.Length > 0)
             {
-                sb.Append("," + string.Join(",", d3sNoRead.Select(i => "\"" + i.Key + "\": " + EscapeValueForDoc(i.Value)).ToArray()));
+                sb.Append($", \"Path\" : [{string.Join(",", item.AssetPath.Select(p => $"\"{EscapeValueForDoc(p)}\""))}]");
             }
 
-            //In case of update, so if there are no tags, we need to be explicit, so they will be removed (if any) on the document
-            if (forUpdate || tags.Count() > 0)
+            if(item.IndexFlags.HasFlag(IndexMode.WithResponsibility))
             {
-                sb.Append(", \"Tags\":[");
-                sb.Append(string.Join(",", tags));
-                sb.Append("]");
+                foreach (KeyValuePair<string, string> entry in NoReadMapping)
+                {
+                    string val = "[";
+                    if (item.NoRead != null && item.NoRead.ContainsKey(entry.Key) && item.NoRead[entry.Key].Count > 0)
+                    {
+                        val += string.Join(",", item.NoRead[entry.Key].ToArray());
+                    }
+                    val += "]";
+                    d3sNoRead.Add(entry.Value, val);
+                }
+                if (d3sNoRead.Count > 0)
+                {
+                    sb.Append("," + string.Join(",", d3sNoRead.Select(i => "\"" + i.Key + "\": " + EscapeValueForDoc(i.Value)).ToArray()));
+                }
             }
-            sb.Append("  },");
+
+            if (item.IndexFlags.HasFlag(IndexMode.WithTags))
+            {
+                string[] tags = new string[] { };
+                if (item.Tags != null && item.Tags.Any())
+                {
+                    tags = item.Tags.Select(t => "{ \"Uid\": \"" + t.Key + "\", \"Value\": \"" + EscapeValueForDoc(t.Value) + "\"}").ToArray();
+                }
+
+                //In case of update, so if there are no tags, we need to be explicit, so they will be removed (if any) on the document
+                if (forUpdate || tags.Count() > 0)
+                {
+                    sb.Append(", \"Tags\":[");
+                    sb.Append(string.Join(",", tags));
+                    sb.Append("]");
+                }
+            }
+            sb.Append("  },"); //End d3s section
+
             sb.Append("  \"" + DYNAMIC_FIELD + "\": {");
             sb.Append(string.Join(",", dynamicFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value, i.Key.ToLower() != "name") + "\"").ToArray()));
             sb.Append("  }");
@@ -322,6 +336,7 @@ namespace d360.extensions.search
                                         .Keyword(s => s.Name("NoReadGroupID"))
                                         .Keyword(s => s.Name("NoReadOrgID"))
                                         .Boolean(b => b.Name("Data3SixtyUser"))
+                                        .Text(s => s.Name("Path"))
                                     )
                                 )
                             )
@@ -659,6 +674,7 @@ namespace d360.extensions.search
         private const char STRATEGY_FullUID = 'U';
         private const char STRATEGY_PartialUID = 'W';
         private const char STRATEGY_Experimental = 'X';
+        private const char STRATEGY_MatchAll = '*';
 
         private TextQueryType MapStrategyToType(char strategy)
         {
@@ -730,6 +746,10 @@ namespace d360.extensions.search
                 {
                     strategy = STRATEGY_FullUID;
                 }
+                else if (queryRequest.Term == "*")
+                {
+                    strategy = STRATEGY_MatchAll;
+                }
                 else if (queryRequest.Term.StartsWith("'") && queryRequest.Term.EndsWith("'")) //Use term and not escaped phrase, need to remove encapsulation '`s
                 {
                     strategy = STRATEGY_MatchPhrase;
@@ -766,6 +786,9 @@ namespace d360.extensions.search
                         Field = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid"),
                         Value = queryRequest.Term.ToLower()
                     });
+                    break;
+                case STRATEGY_MatchAll:
+                    mainQueries.Add(new MatchAllQuery());
                     break;
                 case STRATEGY_FullUID:
                     mainQueries.Add(new TermQuery
@@ -1010,7 +1033,36 @@ namespace d360.extensions.search
                             }
                         };
                     }
-                } else
+                }
+                else if (fieldFilter.Field == "Path")
+                {
+                    Nest.Field fldPath = new Nest.Field(D3S_FIELD_PREFIX + "Path");
+                    var segmentQueries = values.Select(v => {
+                        QueryContainer q = new MatchQuery
+                        {
+                            Field = fldPath,
+                            Query = v
+                        };
+                        return q;
+                    });
+
+                    if (fieldFilter.Connector == SearchConnector.And)
+                    {
+                        qry = new BoolQuery
+                        {
+                            Must = segmentQueries
+                        };
+                    }
+                    else
+                    {
+                        qry = new BoolQuery
+                        {
+                            Should = segmentQueries,
+                            MinimumShouldMatch = 1
+                        };
+                    }
+                }
+                else
                 {
                     Nest.Field fld = new Nest.Field(DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
                     if(fieldFilter.MatchWords)
@@ -1052,10 +1104,12 @@ namespace d360.extensions.search
                 if (fieldFilter.Operator == SearchOperator.NotContains)
                 {
                     mustNotQueries.Add(qry);
-                } else if (queryRequest.SearchConnector == SearchConnector.Or)
+                }
+                else if (queryRequest.SearchConnector == SearchConnector.Or)
                 {
                     shouldQueries.Add(qry);
-                } else
+                }
+                else
                 {
                     mustQueries.Add(qry);
                 }
@@ -1386,7 +1440,7 @@ namespace d360.extensions.search
                     Must = new QueryContainer[] {
                             new TermQuery {
                                 Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
-                                Value = "Resource"
+                                Value = AssetTypeClass.User.ToString()
                             },
                             new TermQuery
                             {
@@ -1830,7 +1884,7 @@ namespace d360.extensions.search
             List<IndexTag> tags = new List<IndexTag>();
             List<IndexTag> highlights = new List<IndexTag>();
 
-            if (h._source == null || (onlyHits && h.inner_hits == null))
+            if (h._source == null || h.inner_hits == null)
             {
                 return tags;
             }
@@ -1955,20 +2009,14 @@ namespace d360.extensions.search
             }
         }
 
-        public void UpdateInIndex(IndexObjectModel item)
+        public void UpdateInIndex(IndexObjectModel item, bool withUpsert = false)
         {
             if (item == null) return;
 
-            CreateIndexIfNotExists(item.CompanyID);
-
-            var client = GetElasticClient(item.CompanyID).LowLevel;
-            var response = client.Update<StringResponse>(GetCompanyIndexName(item.CompanyID), "_doc", item.getObjectID(), CreateDocument(item, true));
-
-            if (!response.Success)
-                throw new ArgumentException(response.OriginalException.Message);
+            UpdateInIndex(new List<IndexObjectModel> { item }, withUpsert);
         }
 
-        public void UpdateInIndex(IEnumerable<IndexObjectModel> items)
+        public void UpdateInIndex(IEnumerable<IndexObjectModel> items, bool withUpsert = false)
         {
             var firstItem = items.FirstOrDefault();
 
@@ -1985,7 +2033,7 @@ namespace d360.extensions.search
             foreach (var item in items)
             {
                 sb.AppendLine("{ \"update\" : { \"_type\" : \"_doc\", \"_id\" : \"" + item.getObjectID() + "\"}}");
-                sb.AppendLine("{ \"doc\": " + CreateDocument(item, true) + "}");
+                sb.AppendLine("{ \"doc\": " + CreateDocument(item, true) + (withUpsert ? ", \"doc_as_upsert\" : true" : "" ) + "}");
             }
 
             var client = GetElasticClient(companyId).LowLevel;

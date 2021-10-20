@@ -58,9 +58,10 @@ namespace d360.web.Controllers
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
         [Route("Asset_AddFields"), NonNullableParameters]
-        public JsonResult Asset_AddFields(int at, int p)
+        public JsonResult Asset_AddFields(SystemObjects type, int at, int p)
         {
-            if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, at, Permission.AddAsset))
+            var sType = type.ToString();
+            if (!Company.HasAssetTypePermission(type, at, Permission.AddAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
             }
@@ -68,12 +69,12 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
 
             var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                i.Object == "ArtifactType" &&
+                i.Object == sType &&
                 i.ObjectID == at &&
                 i.PredicateType.Value == PredicateType.InterTypeHierarchy
             ).SingleOrDefault();
 
-            var parentType = Company.GetParentType(at, SystemObjects.ArtifactType);
+            var parentType = Company.GetParentType(at, type);
             if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
@@ -87,7 +88,7 @@ namespace d360.web.Controllers
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
             }
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(type, at).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -267,7 +268,6 @@ namespace d360.web.Controllers
                     {
                         case AssetTypeClass.BusinessAsset:
                         case AssetTypeClass.TechnicalAsset:
-                            model.AssetType.CanOwnFusion = (@class == AssetTypeClass.BusinessAsset) ? assetType.CanOwnFusion : false;
                             model.AssetType.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;

@@ -32,6 +32,8 @@ import { CalendarModule } from 'primeng/calendar';
 import { ToastModule } from 'primeng/toast';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
+import { CheckboxModule } from 'primeng/checkbox';
+import { CheckboxDirective } from '../../../directives/ig-checkbox-directive';
 
 
 @NgModule({
@@ -51,7 +53,8 @@ import { TableModule } from 'primeng/table';
         EditorModule,
         DropdownModule,
         TableModule,
-
+        CheckboxModule,
+ 
         //d3s                
         CoreModule,
         SharedDeleteFormModule,        
@@ -63,7 +66,7 @@ import { TableModule } from 'primeng/table';
         DirectivesModule,
         D3SSortIconModule,
         D3SColumnFilterModule,
-        DayOfWeekInputModule,
+        DayOfWeekInputModule
     ],
     declarations: [        
         AdminWorkflowComponent,

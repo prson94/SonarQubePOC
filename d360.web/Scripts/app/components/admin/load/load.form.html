@@ -13,7 +13,22 @@
                 <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
             </div>
             <div *ngIf="!isLoadingTypes" class="d3s-type-dropdown">
-                <p-dropdown [filter]="true" [options]="types" [(ngModel)]="selectedType" [style]="{'width':'98%'}" (onChange)="loadColumns()" name="Type"></p-dropdown>
+                <p-dropdown [filter]="true"
+                            [options]="types"
+                            [(ngModel)]="selectedType"
+                            [style]="{'width':'98%'}"
+                            (onChange)="loadColumns()"
+                            name="Type">
+                    <ng-template let-item pTemplate="item">
+                        <div *ngIf="selectedAction !== 'R'">{{item.label}}</div>
+                        <div *ngIf="selectedAction === 'R'" [innerHTML]="item.label"></div>
+                    </ng-template>
+
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div *ngIf="selectedAction !== 'R'">{{item.label}}</div>
+                        <div *ngIf="selectedAction === 'R'" [innerHTML]="item.label"></div>
+                    </ng-template>
+                </p-dropdown>
             </div>
         </div>
         <div class="col s12" *ngIf="showDetail()">
@@ -32,7 +47,7 @@
                     </tr>
                 </table>
             </div>
-            <br/><br/>
+            <br /><br />
             <a [href]="getTemplateDownloadUri()">Download Spreadsheet</a>. (Bold columns are required.  If you do not want to populate an optional column remove the column from the spreadsheet.)
         </div>
         <div class="col s12" *ngIf="showDetail()">
@@ -46,7 +61,7 @@
             <span style="color:maroon;">An error occurred while uploading the file: {{errorMessage}}</span>
         </div>
         <div class="col s12" style="padding-top:15px;">
-            <button pButton  type="submit" label="Save" [disabled]="!file || !showDetail() || isSaving"></button><button pButton label="Cancel" (click)="cancel()"></button><i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
+            <button pButton type="submit" label="Save" [disabled]="!file || !showDetail() || isSaving"></button><button pButton label="Cancel" (click)="cancel()"></button><i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
         </div>
     </div>
 </form>

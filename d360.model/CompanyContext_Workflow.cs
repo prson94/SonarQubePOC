@@ -1839,7 +1839,7 @@ namespace d360.model
                 else
                     currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).ToList();
 
-                if (currentAssignments.Any())
+                if (currentAssignments.Any() && clearAssignments)
                 {
                     WorkflowItemAssignments.RemoveRange(currentAssignments);
                 }

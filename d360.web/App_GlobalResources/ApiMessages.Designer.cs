@@ -1078,6 +1078,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are existing assets in your environment with values on field &apos;{0}&apos;. You may not change &apos;Type of List&apos; property until those field values are removed..
+        /// </summary>
+        publi static string LookupFieldTypeInUse {
+            get {
+                return ResourceManager.GetString("LookupFieldTypeInUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid {0} value provided. Value must be greater than 0..
         /// </summary>
         public static string MinLengthCheckGTZero {
