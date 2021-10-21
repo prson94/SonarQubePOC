@@ -212,7 +212,7 @@
                     </ng-template>
                     <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                         <tr [pSelectableRow]="item">
-                            <td>
+                            <td class="disable-pointer-events">
                                 <p-tableRadioButton *ngIf="!field?.MultiSelect" [value]="item"></p-tableRadioButton>
                                 <p-tableCheckbox *ngIf="field?.MultiSelect" [value]="item"></p-tableCheckbox>
                             </td>

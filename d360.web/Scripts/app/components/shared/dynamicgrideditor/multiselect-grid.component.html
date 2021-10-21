@@ -26,7 +26,7 @@
         </ng-template>
         <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
             <tr [pSelectableRow]="item">
-                <td class="front-elide">
+                <td class="front-elide disable-pointer-events">
                     <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
                     <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                 </td>
