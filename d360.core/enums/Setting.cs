@@ -559,7 +559,15 @@ namespace d360.core.enums
             Name("HideHeaderBarControls_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
-        HideHeaderBarControls = 83
+        HideHeaderBarControls = 83,
+        [
+            DefaultValue(250),
+            Description("DiagramMaxAvoidNodesLinkCount_Desc", typeof(Settings)),
+            Locked(false),
+            Name("DiagramMaxAvoidNodesLinkCount_Name", typeof(Settings)),
+            Type(SettingType.Number)
+        ]
+        DiagramMaxAvoidNodesLinkCount = 84
     }
 
     public class SettingInfo

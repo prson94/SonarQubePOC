@@ -134,6 +134,7 @@ namespace d360.web.Models
 
         public int AssetDefinitionColumnWidth { get; set; }
 
+        public int DiagramMaxAvoidNodesLinkCount { get; set; }
     }
 
     public class DataQualityResult
