@@ -303,7 +303,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             this.tagService.getTagsList().subscribe(
                 (res) => {
                     this.populateTagUids(res);
-                    selectedTag = this.tags.filter(x => x.Value === selectedTag.Value)[0];
+                    selectedTag = this.tags.filter((x) => x.Value === selectedTag.Value)[0];
                     this.populateAndSendDeleteRequest(selectedTag);
                 });
         } else {
