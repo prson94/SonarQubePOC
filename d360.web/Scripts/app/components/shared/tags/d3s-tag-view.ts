@@ -106,7 +106,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         if (taglist && taglist.length > 0) {
             this.tags.forEach(
                 (t) => { t.uid = taglist.filter((r) => r.Value === t.Value)[0].uid; }
-            )
+            );
         }
         this.selected = this.tags;
     }
@@ -316,7 +316,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         if (this.assetUIDList) {
             this.assetUIDList.forEach((uid) => {
                 tags.push(this.getTagsApiModel(selectedTag, uid));
-            })
+            });
         } else {
             tags.push(this.getTagsApiModel(selectedTag, this.assetUID));
         }
