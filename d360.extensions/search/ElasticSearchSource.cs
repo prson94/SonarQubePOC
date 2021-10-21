@@ -172,7 +172,10 @@ namespace d360.extensions.search
             Dictionary<string, string> d3sNoRead = new Dictionary<string, string>();
             Dictionary<string, string> dynamicFields = item.Fields != null ? item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value) : new Dictionary<string, string>();
 
-            d3sFields.Add("Url", item.RelativeUrl);
+            if (!string.IsNullOrEmpty(item.RelativeUrl))
+            {
+                d3sFields.Add("Url", item.RelativeUrl);
+            }
             d3sFields.Add("AssetType", item.AssetType);
             d3sFields.Add("Category", item.Category);
             if (item.Uid.HasValue && item.Uid != Guid.Empty)
