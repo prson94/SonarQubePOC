@@ -56,6 +56,7 @@ namespace d360.model.helpers
                     var index = f.RelationIndex + 1;
 
                     selects.Add($"H{index}_A{f.FieldTypeID}.Uid AS [H{index}_{f.FieldTypeID}_Uid]");
+                    selects.Add($"concat('asset/', H{index}_A{f.FieldTypeID}.Uid) AS [H{index}_{f.FieldTypeID}_Url]");
                     selects.Add($"H{index}_A{f.FieldTypeID}_DV.DisplayValue AS [H{index}_{f.FieldTypeID}_DisplayValue]");
                     selects.Add($"H{index}_R{f.FieldTypeID}.IntersectTypeUid AS [H{index}_{f.FieldTypeID}_IntersectTypeUid]");
 
@@ -247,7 +248,7 @@ namespace d360.model.helpers
                             break;
                     }
 
-                    if (currentRel == f.RelationIndex)
+                    if ((currentRel == f.RelationIndex && gField.type != "html") || gField.apiName.ToLowerInvariant() == "name")
                     {
                         gField.type = gColumn.columntype = "preview";
                         gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
@@ -367,7 +368,7 @@ namespace d360.model.helpers
                 joins.Clear();
                 selects.Clear();
             }
-
+            selects.Add("A.[uid] as [Uid]");
             foreach (var ft in fields)
             {
 

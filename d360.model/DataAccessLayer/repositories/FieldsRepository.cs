@@ -2376,6 +2376,7 @@ from	IntersectType I
 
             selects.Add("r.context AS [Context]");
             selects.Add("r.responsibilitytypename AS [ResponsibilityTypeName]");
+            selects.Add("SecurityAssetUid AS [SecurityAssetUid]");
 
             if (definition.ExpandGroupMembership != false)
             {
