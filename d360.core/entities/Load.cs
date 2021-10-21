@@ -53,7 +53,7 @@ namespace d360.core.entities
         public Guid? PostExecutionID { get; set; }
 
         [DataMember]
-        public Guid? uid { get; set; }
+        public Guid uid { get; set; } = Guid.NewGuid();
 
         #endregion
 
