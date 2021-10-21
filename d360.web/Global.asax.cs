@@ -63,7 +63,7 @@ namespace d360.web
 
             builder.RegisterType<LaunchDarkly.Sdk.Server.LdClient>().As<LaunchDarkly.Sdk.Server.LdClient>()
                 .SingleInstance()
-                .WithParameter("sdkKey", "sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68");
+                .WithParameter("sdkKey", Config.GetValue<string>("LaunchDarklySdkKey"));
 
             builder.RegisterType<CoreComponentSet>().As<CoreComponentSet>().InstancePerRequest();
 

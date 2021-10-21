@@ -13,6 +13,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { StringConstants } from '../../../static/string-constants';
 import { HelpMenu } from '../../../models/helpmenu.model';
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
+import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
 @Component({
     selector: 'admin-settings',
@@ -61,9 +62,13 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     
     SaveButton: DynamicButton;
 
+    distributedCacheEnabled: boolean;
+    _featureFlagSubscription: any;
+
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,
+        private featureFlagService: FeatureFlagsService,
         private searchService: SearchService,
         secondaryNavService: SecondaryNavService,
         private helpMenuService: HelpMenuService,
@@ -74,6 +79,13 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         super(headerBreadcrumbService, titleService, secondaryNavService);        
         this.areaName = StringConstants.Section_Settings;
         this.setCommonItems();
+
+        this.distributedCacheEnabled = featureFlagService.flags[FeatureFlags.DistributedCacheFlag];
+        console.log("Cache Feature Value Is: " + this.distributedCacheEnabled);
+        this._featureFlagSubscription = featureFlagService.flagChange.subscribe((flags) => {
+            this.distributedCacheEnabled = flags[FeatureFlags.DistributedCacheFlag].current;
+            console.log("Cache Feature Changed: " + this.distributedCacheEnabled);
+        })
 
         this.load();
     }

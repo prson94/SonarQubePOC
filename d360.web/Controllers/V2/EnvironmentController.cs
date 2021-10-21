@@ -835,5 +835,40 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
+
+        /// <summary>
+        /// Retrieves environment licensing info. 
+        /// Infogix users are excluded from user counts.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("featureflaginfo"),
+            SwaggerConsumes("application/json"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetFeatureFlagInfo()
+        {
+            try
+            {
+                var user = GetClientFeatureFlagUser();
+                var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
+                return await Task.FromResult(
+                    ResponseMessage(
+                        Request.CreateResponse(HttpStatusCode.OK, new {
+                            clientId = ClientId,
+                            user = user
+                        }))
+                    ).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetLicensingDetails => " } });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+            }
+        }
     }
 }

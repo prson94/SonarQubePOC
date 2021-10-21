@@ -538,6 +538,7 @@
     <Compile Include="Models\ClientUserModel.cs" />
     <Compile Include="Models\FeatureFlagExtensions.cs" />
     <Compile Include="Models\Diagram Models.cs" />
+    <Compile Include="Models\FeatureFlagUser.cs" />
     <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
@@ -1466,6 +1467,7 @@
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\side-panel.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dataprofile.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\featureflags.service.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
