@@ -6,6 +6,7 @@ import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -42,6 +43,11 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
 
+    public deactivateMenu() {
+        this.menu.isActiveItem = false;
+        this.cdRef.detectChanges();
+    }
+
     public showing: boolean = false;
     private viewReady: boolean;
     private maxMenuHeight: number;
@@ -52,7 +58,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     constructor(private menuService: SiteMenuService,
         private router: Router,
         private headerActionsService: HeaderActionsService,
-        private siteMenuService: SiteMenuService
+        private siteMenuService: SiteMenuService,
+        private cdRef: ChangeDetectorRef
     ) {
         super();
     }
