@@ -605,7 +605,7 @@ export class AdvancedFilterFieldConditionCollection {
             let maxValue: number = 100;
 
             var scoreType = cond.type.Type.Score.ScoreType;
-
+            var scoreTypeString = cond.type.Type.Score.ScoreType.toString();
             if (scoreType.toString() === "Governance") {
                 scoreType = 1;
             }
@@ -614,8 +614,7 @@ export class AdvancedFilterFieldConditionCollection {
                 scoreType = 2;
             }
 
-            
-            let alloc = this.allocations.filter((x) => x.scoreType === scoreType)[0];
+            let alloc = this.allocations.filter((x) => x.scoreType === scoreType || x.scoreType.toString() === scoreTypeString)[0];
 
             switch (cond.value) {
                 case "poor":
