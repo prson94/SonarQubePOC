@@ -880,7 +880,7 @@ from	IntersectType I
                             new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }
                         ).SingleOrDefault();
 
-                        if (relationInfo == null || i.RelationType == null)
+                        if (relationInfo == null)
                         {
                             hasDefinitionError = true;
                             return;
