@@ -1399,8 +1399,9 @@ order by Sort, title";
                             DateStarted = DateTime.UtcNow,
                             UpdatedBy = Company.CurrentResourceID,
                             AssetTypeUid = assetTypeUid,
-                            IntersectTypeUid = intersectTypeUid
-                        };
+                            IntersectTypeUid = intersectTypeUid,
+                            uid = Guid.NewGuid()
+                    };
 
                         xls = new SLDocument(stream);
 
