@@ -775,33 +775,66 @@ from	[Load] L
                             if ((calculateParentHashByUid || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
                             {
                                 await Connection.ExecuteAsync(@"
-                                drop table if exists #AssetActiveKey;
+                                    declare @assetttypeID int = (select @atID);
+                                    declare @fieldtypeid int = 0;
 
-                                select		A.Uid,
-                                            utility.GetHash(cast(@atID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
-                                into		#AssetActiveKey
-                                from		Asset A 
-                                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.Object = A.Object and I.ObjectID = A.ObjectID
-			                                left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-			                                inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-			                                left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-                                where	    A.AssetTypeID = @atID
-                                group by    A.Uid, P.Uid
- 
-                                Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
+                                    drop table if exists #tempfielddata;
+                                    drop table if exists tempcalasset;
+                                    drop table if exists #AssetActiveKey;
 
-                                update T                                  
-                                set T.AssetUid = K.Uid                                  
-                                from #BulkExecutionAsset T                                   
-                                inner join  #AssetActiveKey K
-                                on K.ActiveKey = T.ProposedKey;
+                                    ----Below statement to get first fieldtypeid primary key column order by columnorder
+                                    select top 1    @fieldtypeid =  ft.ID
+                                    from            #BulkExecutionField f
+                                                    inner join FieldType ft on f.FieldTypeID = ft.id and FT.IsPartOfKey = 1
+                                    order by        ft.ColumnOrder,FT.Name;
 
-                                update L
-                                set L.AssetUid = T.AssetUid
-                                from LoadItem L
-                                inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
-                                where L.LoadID = @ID
-                            ", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans, commandTimeout: timeout);
+                                    -- getting field value of above query getting fieldtypeid. No need to calculate hash. 
+                                    -- Calculate only for requested data only.
+                                    -- Later it help to get qualified asset
+
+                                    select distinct     TRIM(FieldValue) FieldValue
+                                    into                #tempfielddata
+                                    from                #BulkExecutionField
+                                    where               FieldTypeID = @fieldtypeid;
+
+                                    -- getting asset information of qualified fieldvalue with fieldtypeid.
+                                    select  a.uid [AssetUid],
+                                            a.Object,
+                                            a.ObjectID,
+                                            a.ID
+                                    into    #tempcalasset
+                                    from    Field f
+                                            inner join asset a on a.ID = f.AssetID
+                                    where   FieldTypeID = @fieldtypeid
+                                            and exists (select 1 from #tempfielddata t where t.FieldValue = trim(f.FormattedValue));
+
+                                    -- create clustered index on AssetUid because no further insert,delete,update on temporary table
+                                    create clustered index idx_tempasset on #tempcalasset([AssetUid]);
+
+                                    -- hash value only required asset only with all primary key 
+                                    select		t.AssetUid [Uid],
+			                                    utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+                                    into		#AssetActiveKey
+                                    from		#tempcalasset t
+			                                    left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.Object = t.Object and I.ObjectID = t.ObjectID
+			                                    left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+			                                    inner join FieldType FT on FT.AssetTypeID = @assetttypeID and FT.IsPartOfKey = 1
+			                                    left join Field F on FT.ID = F.FieldTypeID and F.AssetID = T.ID
+                                    group by    t.AssetUid, P.Uid
+
+                                    Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
+
+                                    update  T                                  
+                                    set     T.AssetUid = K.Uid                                  
+                                    from    #BulkExecutionAsset T                                   
+                                            inner join  #AssetActiveKey K on K.ActiveKey = T.ProposedKey;
+
+                                    update  L
+                                    set     L.AssetUid = T.AssetUid
+                                    from    LoadItem L
+                                            inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
+                                    where   L.LoadID = @ID
+                                    ", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans, commandTimeout: timeout);
 
                             }
                             else
