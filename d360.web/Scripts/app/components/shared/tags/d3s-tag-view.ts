@@ -94,30 +94,21 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             if (this.tags) {
                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
             }            
-            this.populateTagUids();            
+            this.selected = this.tags;      
         }
 
         this.resizeSub = this.stateService.recalculateTagSize$.subscribe(() => {
             setTimeout(() => this.manageWidth(), 200);
         });
     }
-
-    populateTagUids() {
-        if (this.tags.some(x => x.uid === null)) {
-            this.isLoading = true;
-            this.tagService.getTagsList().subscribe(
-                (res) => {
-                    if (res && res.length > 0) {
-                        this.tags.forEach(
-                            (t) => { t.uid = res.filter((r) => r.Value === t.Value)[0].uid; }
-                        )
-                    }
-                    this.selected = this.tags;
-                    this.isLoading = false;
-                });  
-        } else {
-            this.selected = this.tags;
+  
+    populateTagUids(taglist: TagType[]) {
+        if (taglist && taglist.length > 0) {
+            this.tags.forEach(
+                (t) => { t.uid = taglist.filter((r) => r.Value === t.Value)[0].uid; }
+            );
         }
+        this.selected = this.tags;
     }
 
     ngOnDestroy() {
@@ -185,7 +176,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     openDeleteModal(tag: any) {
         if (this.isEditable == true) {
-            this.deleteTags(tag);
+            this.deleteTags(tag);            
         }
     }
 
@@ -308,24 +299,37 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     deleteTags(selectedTag) {    
         this.deletingTag = true;
+        if (!selectedTag.uid || selectedTag.uid === null) {
+            this.tagService.getTagsList().subscribe(
+                (res) => {
+                    this.populateTagUids(res);
+                    selectedTag = this.tags.filter((x) => x.Value === selectedTag.Value)[0];
+                    this.populateAndSendDeleteRequest(selectedTag);
+                });
+        } else {
+            this.populateAndSendDeleteRequest(selectedTag);
+        }
+    }
+
+    populateAndSendDeleteRequest(selectedTag) {
         var tags = Array<TagApiModel>();
         if (this.assetUIDList) {
             this.assetUIDList.forEach((uid) => {
                 tags.push(this.getTagsApiModel(selectedTag, uid));
-            })
-        } else {                        
+            });
+        } else {
             tags.push(this.getTagsApiModel(selectedTag, this.assetUID));
-        }        
+        }
         this.tagID = selectedTag.uid;
 
         this.tagService.deleteAssetTag(tags).
             subscribe(result => {
                 let msg: string = '';
-                msg = `Tag succesfully removed`;
+                msg = `Tag successfully removed`;
                 this.showMessageForResult(this.messagesService, result, msg);
                 //remove the template with this id from the grid
-                if (result.type != 'error') {
-                    this.tags.splice(this.findTagIndex1(selectedTag.uid), 1);
+                if (result.type != 'error') {                    
+                    this.tags = this.tags.filter((x) => x.Value !== selectedTag.Value);
                 }
                 this.tagsChanged.emit();
                 this.deletingTag = false;
@@ -333,12 +337,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             }, err => {
                 this.showMessageForResult(this.messagesService, err);
                 this.deletingTag = false;
-            });        
+            }); 
     }
 
     private getTagsApiModel(selectedTag, assetUid)  {
         let tag = new TagApiModel();
         tag.AssetUID = assetUid;
+        tag.TagName = selectedTag.Value;
         tag.TagUID = selectedTag.uid;
         return tag;
     }

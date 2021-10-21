@@ -34,6 +34,9 @@ namespace d360.web.Models
         public string ObjectType { get; set; }
         public string AssetName { get; set; }
         public string AssetTypeName { get; set; }
+        public Guid AssetUid { get; set; }
+        public long AssetID { get; set; }
+        public bool HasResponsibilityReadAccess { get; set; }
 
         public List<dynamic> Scores { get; set; }
         public int columns { get; set; }

@@ -389,4 +389,27 @@ namespace d360.core.entities
 
     }
 
+    [DataContract(Namespace = NAMESPACE)]
+    public class SingleLoadDetail : BaseObject
+    {
+        [DataMember]
+        public int Total { get; set; }
+        [DataMember]
+        public int Error { get; set; }     
+        [DataMember]
+        public string Action { get; set; }
+        [DataMember]
+        public string AssetTypeName { get; set; }
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+        [DataMember]
+        public string ElapsedTime { get; set; }
+        [DataMember]
+        public string Status { get; set; }
+        [DataMember]
+        public string RequestorName { get; set; }
+        [DataMember]
+        public Guid RequestorUid { get; set; }
+    }
+
 }

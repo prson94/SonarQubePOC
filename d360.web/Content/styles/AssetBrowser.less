@@ -249,60 +249,6 @@
         margin-right: 16px;
         margin-top: 16px;
       }
-
-      .windowtabs {
-        height: 32px;
-        background-color: @ig-white;
-
-        button.tab {
-          box-sizing: border-box;
-          padding: 0 15px;
-          height: 32px;
-          cursor: pointer;
-          flex-shrink: 0;
-          background: none;
-          border: none;
-          border-radius: 0;
-          color: @ig-midblue;
-          border-bottom: 3px solid transparent;
-          outline: none;
-
-          &:disabled {
-            color: @d3s-gray-7;
-            cursor: not-allowed;
-          }
-
-          &:not(:disabled):hover,
-          &.hover {
-            background: rgba(20, 20, 20, 0.05);
-          }
-        }
-
-        button.tab-selected {
-          box-sizing: border-box;
-          padding: 0 15px;
-          height: 32px;
-          cursor: pointer;
-          flex-shrink: 0;
-          background: none;
-          border: none;
-          border-radius: 0;
-          border-bottom: 3px solid black;
-          color: @ig-black;
-        }
-
-        .saved-filter-controls {
-          display: flex;
-          justify-content: space-between;
-          margin: 0 16px;
-
-          button {
-            font-weight: normal;
-            background-color: #ccc;
-            color: #333;
-          }
-        }
-      }
     }
 
     .asset-browser-window-content {
@@ -797,6 +743,48 @@
           line-height: 128px;
         }
       }
+    }
+  }
+
+  .windowtabs {
+    height: 32px;
+    background-color: @ig-white;
+
+    button.tab {
+      box-sizing: border-box;
+      padding: 0 15px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-radius: 0;
+      color: @ig-purple;
+      border-bottom: 3px solid transparent;
+      outline: none;
+
+      &:disabled {
+        color: @d3s-gray-7;
+        cursor: not-allowed;
+      }
+
+      &:not(:disabled):hover,
+      &.hover {
+        background: rgba(20, 20, 20, 0.05);
+      }
+    }
+
+    button.tab-selected {
+      box-sizing: border-box;
+      padding: 0 15px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-radius: 0;
+      border-bottom: 3px solid black;
+      color: @ig-black;
     }
   }
 }

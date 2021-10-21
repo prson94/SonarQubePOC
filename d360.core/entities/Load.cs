@@ -32,7 +32,7 @@ namespace d360.core.entities
         public string Notes { get; set; }
 
         [DataMember]
-        public DateTime DateStarted { get; set; }
+        public DateTime? DateStarted { get; set; }
 
         [DataMember]
         public DateTime? DateCompleted { get; set; }

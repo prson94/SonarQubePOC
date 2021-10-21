@@ -129,6 +129,9 @@
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
     <value>Action Type with Uid {0} could not be found.</value>
   </data>
+  <data name="ActionUidNotFound" xml:space="preserve">
+    <value>Action with Uid {0} could not be found.</value>
+  </data>
   <data name="AddAllocationsSuccessful" xml:space="preserve">
     <value>Allocations added successfully</value>
   </data>
@@ -143,6 +146,9 @@
   </data>
   <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
     <value>You are not allowed to add actions on this asset type.</value>
+  </data>
+  <data name="AssettypeInvalidClass" xml:space="preserve">
+    <value>Asset type has invalid class.</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>Asset Type with Uid {0} could not be found.</value>
@@ -184,7 +190,7 @@
     <value>{0} is an invalid responsibilityTypeUid for {1}.</value>
   </data>
   <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Name provided must be less then 250 characters in length.</value>
+    <value>Name provided must be less than 250 characters in length.</value>
   </data>
   <data name="NameNotEmptyAndRequired" xml:space="preserve">
     <value>Empty string provided for Name. Cannot be empty.</value>
@@ -224,5 +230,8 @@
   </data>
   <data name="UniqueUid" xml:space="preserve">
     <value>Uid provided already in use.</value>
+  </data>
+  <data name="UserUidNotFound" xml:space="preserve">
+    <value>User with Uid {0} not found</value>
   </data>
 </root>

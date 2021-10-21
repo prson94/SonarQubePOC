@@ -9,6 +9,8 @@ import { DataProfileService } from '../../../services/dataprofile.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AdvancedFilterFieldType, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
+import { ObjectDetailService } from '../../../services/object-detail.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'match-detection',
@@ -75,6 +77,9 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     selectedTagItems: any[] = [];
     tagsChanged: boolean = false;
 
+    assetDetail = null;
+    assetData: any;
+
     menuItems = [
         {
             title: 'Open'
@@ -122,6 +127,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     constructor(
         private assetService: AssetService,
         private dataProfileService: DataProfileService,
+        private objectDetailService: ObjectDetailService,
         private cdRef: ChangeDetectorRef,
         private router: Router      
     ) {
@@ -293,23 +299,27 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             if (this.selection !== selectedAssets[0]) {
                 this.selection = selectedAssets[0];
                 this.sidePanelLoading = true;
-                this.dataProfileService.getDataProfiles(this.selection.uid).subscribe(
-                    (r) => {
-                        if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
-                            this.dataProfile = r.items[0];
+                this.assetDetail = this.objectDetailService.getObjectDetailByUid(this.selection.uid, StringConstants.ObjectArtifact, true, true, false);
+                this.assetDetail.subscribe((data) => {
+                    this.assetData = data;
+                    this.dataProfileService.getDataProfiles(this.selection.uid).subscribe(
+                        (r) => {
+                            if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                                this.dataProfile = r.items[0];
 
-                            forkJoin(
-                                this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                                this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                            ).subscribe((res) => {
-                                this.dataProfile['matches'] = {
-                                    structure: res[0],
-                                    data: res[1]
-                                };
-                            });
-                        }
+                                forkJoin(
+                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                                ).subscribe((res) => {
+                                    this.dataProfile['matches'] = {
+                                        structure: res[0],
+                                        data: res[1]
+                                    };
+                                });
+                            }
                             this.sidePanelLoading = false;
-                    });
+                        });
+                });                
             }                                    
         } else {
             this.selection = null;
@@ -340,12 +350,12 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }   
 
     private setSelectedMatch() {
-        if (this.matchType === "data") {            
+        if (this.matchType === "data") {
                 this.duplicatesSelection = this.duplicatesData.slice(0, 1);
                 this.selectMatch(this.duplicatesSelection);
                 this.similarSelection = [];
         }
-        if (this.matchType === "similar") {            
+        if (this.matchType === "similar") {
                 this.similarSelection = this.similarData.slice(0, 1);
                 this.selectMatch(this.similarSelection);
                 this.duplicatesSelection = [];

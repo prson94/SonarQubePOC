@@ -1,26 +1,21 @@
 
-import { debounceTime, catchError } from 'rxjs/operators';
 import { Input, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Subject, Subscription, SubscriptionLike as ISubscription } from 'rxjs';
-import { close } from 'fs';
 import { map } from 'rxjs/operators';
 
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowFormField, WorkflowFormFieldType, WorkflowReassignmentAsset } from '../../models/workflow.model';
+import { WorkflowFormFieldsComponent } from "./workflow-form-fields.component";
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { Tag } from '../../models/tag.model';
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 import { TagService } from '../../services/tag.service';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
-import { FieldType } from '../../models/fields.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
@@ -63,14 +58,13 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private clearAssignments: boolean = false;
     private searchSub: ISubscription;
     @Input() hasCloseButton: boolean = true;
-    private isSetValidatior: boolean = false;
 
     private filteredAssetsSource = new Subject<any>();
     private filteredAssetsSub: Subscription;
     private filteredAssets: WorkflowReassignmentAsset[] = [];
     private selectedReassignmentAsset: WorkflowReassignmentAsset;
 
-    @ViewChild('workflowForm', { static: false }) workflowFormGroup: FormGroup;
+    @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent
 
     constructor(private route: ActivatedRoute,
         private location: Location,
@@ -108,32 +102,6 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             });
     }
 
-
-
-
-
-    private setValidators() {
-        if (this.isSetValidatior) return false;
-        if (!(this.workflowFormGroup && this.workflowFormGroup.controls)) return true;
-        let count: number = 0;
-        let assignValidation: boolean = false;
-        this.isSetValidatior = true;
-        this.fields.forEach(x => {
-            if (x.Required && x.FieldType == WorkflowFormFieldType.Link) {
-                assignValidation = true;
-                this.workflowFormGroup.controls[`inputUrl_${count}`].setValidators([Validators.required]);
-                this.workflowFormGroup.controls[`inputUrl_${count}`].updateValueAndValidity();
-            }
-            else if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
-                assignValidation = true;
-                this.workflowFormGroup.controls[`input_${count}`].setValidators([Validators.required]);
-                this.workflowFormGroup.controls[`input_${count}`].updateValueAndValidity();
-            }
-            count++;
-        });
-        return assignValidation;
-    }
-
     ngOnDestroy() {
         if (this.sub) {
             this.sub.unsubscribe();
@@ -152,22 +120,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private onSubmit() {
-   
-        if (this.setValidators()) {
+
+        if (this.fieldsComponent.setValidators()) {
            return false;
-        } 
-        for (var i = 0; i < this.fields.length; i++) {
-            var isLink = this.fields[i].FieldType == WorkflowFormFieldType.Link;
-            if (isLink) {
-                let name = this.workflowFormGroup.controls[`inputName_${i}`].value;
-                let url = this.workflowFormGroup.controls[`inputUrl_${i}`].value;
-                var linkString = name + '|' + url;
-                this.fields[i].Value = linkString;
-            }
-            else if (Array.isArray(this.fields[i].Value)) {
-                this.fields[i].Value = this.fields[i].Value.join();
-            }
         }
+        this.fieldsComponent.prepareValuesForSubmit();
+
         //save form values with stepid and itemid
         this.workflowService.submitWorkflowForm(this.workflowItemId, this.workflowItemStepId, this.fields).subscribe();
 
@@ -207,7 +165,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
             }),map(() => {
                 window.setTimeout(() => {
-                    this.setValidators();
+                    this.fieldsComponent.setValidators();
                 }, 500);
             })).subscribe(() => { },error => {
                 this.isLoading = false;
