@@ -36,6 +36,7 @@ import { DialogModule } from 'primeng/dialog';
 import { D3SModal } from './components/shared/modal/gov-modal.component';
 import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
+import { FeatureFlagsService } from './services/featureflags.service';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -43,6 +44,12 @@ export function localeIdFactory() {
 
 export function settingsInitializer(provider: CompanySettingsService) {
     return () => provider.loadSettings().then((r) => { provider.loadApplicationSettings(); });
+}
+
+export function featureFlagServiceInitializer(provider: FeatureFlagsService) {
+    return () => provider.initialize().subscribe((s) => {
+        provider.createClientConnection();
+    });
 }
 
 export function localeInitializer(localeId: string) {                  
@@ -127,6 +134,12 @@ export function localeInitializer(localeId: string) {
             multi: true,
             useFactory: localeInitializer,
             deps: [LOCALE_ID]
+        },
+        {
+            provide: APP_INITIALIZER,
+            multi: true,
+            useFactory: featureFlagServiceInitializer,
+            deps: [FeatureFlagsService]
         },
         {
             provide: APP_INITIALIZER,

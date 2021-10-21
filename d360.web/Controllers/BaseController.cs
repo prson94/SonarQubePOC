@@ -129,7 +129,7 @@ namespace d360.web.Controllers
 
         #region Feature Flag Logic
 
-        private LaunchDarkly.Sdk.User GetFeatureFlagUser()
+        private ClientUserModel GetFeatureFlagUser()
         {
             var listKey = "ClientUserModels";
             var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
@@ -155,6 +155,14 @@ from	CompanyResource CR
                 }
             }
 
+            return userModel;
+        }
+
+        internal LaunchDarkly.Sdk.User GetSdkFeatureFlagUser()
+        {
+            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+            var userModel = GetFeatureFlagUser();
+
             var b = LaunchDarkly.Sdk.User.Builder(itemKey);
             if (userModel != null)
             {
@@ -168,24 +176,45 @@ from	CompanyResource CR
             return b.Build();
         }
 
+        internal FeatureFlagUser GetClientFeatureFlagUser()
+        {
+            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+            var userModel = GetFeatureFlagUser();
+
+            var b = new FeatureFlagUser
+            {
+                key = itemKey,
+                anonymous = false,
+                firstName = userModel.FirstName,
+                lastName = userModel.LastName,
+                email = userModel.Email,
+                custom = new Dictionary<string, string>() {
+                 { "tenantId", userModel.TenantId.ToString() },
+                 { "tenantName", userModel.TenantName }
+             }
+            };
+
+            return b;
+        }
+
         internal bool GetBoolFlag(string flag, bool defaultValue = false)
         {
-            return Ld.BoolVariation(flag, GetFeatureFlagUser(), defaultValue);
+            return Ld.BoolVariation(flag, GetSdkFeatureFlagUser(), defaultValue);
         }
 
         internal int GetIntFlag(string flag, int defaultValue = 0)
         {
-            return Ld.IntVariation(flag, GetFeatureFlagUser(), defaultValue);
+            return Ld.IntVariation(flag, GetSdkFeatureFlagUser(), defaultValue);
         }
 
         internal string GetJsonFlag(string flag, string defaultValue = "{}")
         {
-            return Ld.JsonVariation(flag, GetFeatureFlagUser(), LdValue.Parse(defaultValue)).AsString;
+            return Ld.JsonVariation(flag, GetSdkFeatureFlagUser(), LdValue.Parse(defaultValue)).AsString;
         }
 
         internal string GetStringFlag(string flag, string defaultValue = null)
         {
-            return Ld.StringVariation(flag, GetFeatureFlagUser(), defaultValue);
+            return Ld.StringVariation(flag, GetSdkFeatureFlagUser(), defaultValue);
         }
 
         #endregion
