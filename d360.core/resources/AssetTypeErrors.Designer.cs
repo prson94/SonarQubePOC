@@ -205,6 +205,33 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} should not be empty..
+        /// </summary>
+        public static string FieldIsEmpty {
+            get {
+                return ResourceManager.GetString("FieldIsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is invalid..
+        /// </summary>
+        public static string FieldIsInvalid {
+            get {
+                return ResourceManager.GetString("FieldIsInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please provide valid value..
+        /// </summary>
+        public static string FieldProvideCorrectValue {
+            get {
+                return ResourceManager.GetString("FieldProvideCorrectValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         public static string Forbidden {
@@ -327,15 +354,6 @@ namespace d360.core.resources {
         public static string InvalidModelDepth {
             get {
                 return ResourceManager.GetString("InvalidModelDepth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No valid Name provided..
-        /// </summary>
-        public static string InvalidName {
-            get {
-                return ResourceManager.GetString("InvalidName", resourceCulture);
             }
         }
         

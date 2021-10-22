@@ -147,9 +147,6 @@
   <data name="InvalidPolicyDepth" xml:space="preserve">
     <value>Invalid maximum depth. Policy level specified must be a value between 1 and 10.</value>
   </data>
-  <data name="InvalidName" xml:space="preserve">
-    <value>No valid Name provided.</value>
-  </data>
   <data name="InvalidParentForClass" xml:space="preserve">
     <value>Not valid ParentUid for the Class.</value>
   </data>
@@ -353,5 +350,17 @@
   </data>
   <data name="InvalidValueReturnCount" xml:space="preserve">
     <value>Invalid value for parameter [ReturnCount]</value>
+  </data>
+  <data name="FieldIsEmpty" xml:space="preserve">
+    <value>{0} should not be empty.</value>
+  </data>
+  <data name="FieldIsInvalid" xml:space="preserve">
+    <value>{0} is invalid.</value>
+  </data>
+  <data name="FieldProvideCorrectValue" xml:space="preserve">
+    <value>Please provide valid value.</value>
+  </data>
+  <data name="NameContainInvalidCharacters" xml:space="preserve">
+    <value>Invalid character(-s) provided in the asset type name. Please fix content of asset type name field.</value>
   </data>
 </root>
