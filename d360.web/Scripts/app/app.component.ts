@@ -29,7 +29,7 @@ declare var CurrentResourceID;
                         </div>
                     </div>
                 </main>
-                <p-toast [baseZIndex]="20000"></p-toast>
+                <p-toast [baseZIndex]="200001"></p-toast>
               `,
     providers: [MessageService]
 })

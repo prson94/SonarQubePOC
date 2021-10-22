@@ -9,10 +9,13 @@ import { DataProfileService } from '../../../services/dataprofile.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AdvancedFilterFieldType, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
+import { ObjectDetailService } from '../../../services/object-detail.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'match-detection',
     templateUrl: './match-detection.component.html',
+    styleUrls: ["match-detection.less"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [AssetService, DataProfileService]
 })
@@ -32,7 +35,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     duplicatesData: any[] = [];
     duplicatesDataTotalCount: number = 0;
-    duplicatesSelection: any;
+    duplicatesSelection: any[];
     duplicatesDataLoading: boolean = true;
     duplicatesSimpleFilter: string = '';
     duplicateAdvancedFilter: string = "";
@@ -41,7 +44,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     similarData: any[] = [];
     similarDataTotalCount: number = 0;
-    similarSelection: any;
+    similarSelection: any[];
     similarDataLoading: boolean = true;
     similarSimpleFilter: string = '';
     similarAdvancedFilter: string = "";
@@ -69,12 +72,38 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     similarSortField: string;
     similarSortOrder: number;
 
+    isTagDrawerVisible: boolean = false;
+    tagMatchType: string;
+    selectedTagItems: any[] = [];
+    tagsChanged: boolean = false;
+
+    assetDetail = null;
+    assetData: any;
+
     menuItems = [
         {
             title: 'Open'
         },
         {
             title: 'Open in New Tab'
+        }
+    ]
+
+    menuItemsWithTags = [
+        {
+            title: 'Open'
+        },
+        {
+            title: 'Open in New Tab'
+        },
+        {
+            title: 'Edit Tags'
+        }
+    ]
+
+    multiselectMenuItems = [        
+        {
+            title: 'Edit Tags'
         }
     ]
 
@@ -98,6 +127,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     constructor(
         private assetService: AssetService,
         private dataProfileService: DataProfileService,
+        private objectDetailService: ObjectDetailService,
         private cdRef: ChangeDetectorRef,
         private router: Router      
     ) {
@@ -160,13 +190,30 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         this.getData('similar');
     }
 
-    onMenuSelect(event, item) {
+    onMenuSelect(event, item, matchType, isMultiSelect=false) {
+        if (!isMultiSelect && matchType === "duplicate") {
+            this.duplicatesSelection = [];
+            this.duplicatesSelection.push(item);
+        } else if (!isMultiSelect && matchType === "similar") {
+            this.similarSelection = [];
+            this.similarSelection.push(item);
+        }
         if (event.value === "Open") {
             this.router.navigate([`${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${item.uid}`]);
         }
 
         if (event.value === "Open in New Tab") {
             window.open(`${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${item.uid}`, '_blank');
+        }
+
+        if (event.value === "Edit Tags") {
+            if (Array.isArray(item)) {
+                this.selectedTagItems = item;
+            } else {
+                this.selectedTagItems.push(item);
+            }
+            this.tagMatchType = matchType.toLowerCase()==="similar" ? "Similar": "Duplicate";
+            this.isTagDrawerVisible = true;            
         }
     }
 
@@ -252,28 +299,32 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             if (this.selection !== selectedAssets[0]) {
                 this.selection = selectedAssets[0];
                 this.sidePanelLoading = true;
-                this.dataProfileService.getDataProfiles(this.selection.uid).subscribe(
-                    (r) => {
-                        if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
-                            this.dataProfile = r.items[0];
+                this.assetDetail = this.objectDetailService.getObjectDetailByUid(this.selection.uid, StringConstants.ObjectArtifact, true, true, false);
+                this.assetDetail.subscribe((data) => {
+                    this.assetData = data;
+                    this.dataProfileService.getDataProfiles(this.selection.uid).subscribe(
+                        (r) => {
+                            if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                                this.dataProfile = r.items[0];
 
-                            forkJoin(
-                                this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                                this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                            ).subscribe((res) => {
-                                this.dataProfile['matches'] = {
-                                    structure: res[0],
-                                    data: res[1]
-                                };
-                            });
-                        }
+                                forkJoin(
+                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                                ).subscribe((res) => {
+                                    this.dataProfile['matches'] = {
+                                        structure: res[0],
+                                        data: res[1]
+                                    };
+                                });
+                            }
                             this.sidePanelLoading = false;
-                    });
+                        });
+                });                
             }                                    
         } else {
             this.selection = null;
             if (selectedAssets && selectedAssets.length > 1) {
-                this.multipleItemsSelected = true;
+                this.multipleItemsSelected = true;                                
             }
             this.sidePanelLoading = false;
         }
@@ -299,16 +350,92 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }   
 
     private setSelectedMatch() {
-        if (this.matchType === "data") {            
+        if (this.matchType === "data") {
                 this.duplicatesSelection = this.duplicatesData.slice(0, 1);
                 this.selectMatch(this.duplicatesSelection);
-                this.similarSelection = null;
+                this.similarSelection = [];
         }
-        if (this.matchType === "similar") {            
+        if (this.matchType === "similar") {
                 this.similarSelection = this.similarData.slice(0, 1);
                 this.selectMatch(this.similarSelection);
-                this.duplicatesSelection = null;
+                this.duplicatesSelection = [];
+        }        
+    }
+   
+    get selectedAssetUids(): string[] {
+        return this.selectedTagItems.filter((t) => t.tags !== undefined).map((t) => t.uid);
+    }
+
+    get selectedAssetsWithoutTagField(): any[] {
+        return this.selectedTagItems.filter((t) => t.tags === undefined);
+    }
+
+    get selectedAssetsWithTagField(): any[] {
+        return this.selectedTagItems.filter((t) => t.tags !== undefined);
+    }
+
+    get getCommonTags(): string[] {
+        var a = this.selectedAssetsWithTagField[0].tags;
+        return a.filter((t) => this.selectedAssetsWithTagField.every((c) => c.tags.includes(t)));
+    }
+
+    private closeModalDrawer() {
+        this.isTagDrawerVisible = false;
+        this.selectedTagItems = [];
+        this.onTagsChanged();
+    }
+
+    private onTagsChanged() {        
+        if (this.isTagDrawerVisible === false && this.tagsChanged === true) {
+            this.getData('data');
+            this.getData('similar');
         }
     }
 
+    itemSelected(item: any, matchType: string, event: MouseEvent) {
+        if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+            this.itemMultiSelect(item, matchType);
+        } else {
+            this.itemSingleSelect(item, matchType);
+        }
+    }
+
+    itemMultiSelect(item: any, matchType: string) {
+        if (matchType === "duplicate") {
+            if (this.duplicatesSelection?.find((x) => x === item)) {
+                this.duplicatesSelection = this.duplicatesSelection.filter((x) => x !== item);
+            } else {
+                if (!this.duplicatesSelection) {
+                    this.duplicatesSelection = [];
+                }
+                this.duplicatesSelection.push(item);
+                this.duplicatesSelection = this.duplicatesSelection.filter((x) => x === x);//required for rows to highlight correctly
+            }
+            this.selectMatch(this.duplicatesSelection);
+            
+        } else if (matchType === "similar") {    
+            if (this.similarSelection?.find((x) => x === item)) {
+                this.similarSelection = this.similarSelection.filter((x) => x !== item);
+            } else {
+                if (!this.similarSelection) {
+                    this.similarSelection = [];
+                }
+                this.similarSelection.push(item);
+                this.similarSelection = this.similarSelection.filter((x) => x === x);//required for rows to highlight correctly
+            }
+            this.selectMatch(this.similarSelection);
+        }
+    }
+
+    itemSingleSelect(item: any, matchType: string) {
+        if (matchType === "duplicate") {
+            this.duplicatesSelection = [];
+            this.duplicatesSelection.push(item);
+            this.selectMatch(this.duplicatesSelection);
+        } else if (matchType === "similar") {
+            this.similarSelection = [];
+            this.similarSelection.push(item);
+            this.selectMatch(this.similarSelection);
+        }
+    }    
 }

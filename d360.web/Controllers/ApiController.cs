@@ -2429,41 +2429,65 @@ from    (
             model.Object = type.ToString();
             model.ObjectID = id;
 
+            var metadata = Company.Query<dynamic>(@"
+                    select  V.DisplayValue as AssetName, 
+                            T.Name as AssetTypeName, 
+                            T.Object as ObjectType, 
+                            T.ObjectID as ObjectTypeID,
+                            A.Uid as AssetUid,
+                            A.ID as AssetID,
+                            case	when P.AssetID is null then cast(1 as bit)
+                                    when (P.AssetID = 0 and P.PermissionsBitMask & 32 = 32) then cast(1 as bit)
+									when (P.AssetID = A.ID and P.PermissionsBitMask & 32 = 32) then cast(1 as bit)
+									else cast(0 as bit) 
+							end as HasResponsibilityReadAccess
+                    from    Asset A 
+                            inner join AssetDisplayValue V on V.AssetID = A.ID 
+                            inner join AssetType T on T.ID = A.AssetTypeID 
+                            outer apply dbo.UserAssetPermissions(@resourceId, T.ID) P 
+                    where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID }).FirstOrDefault();
+
+            if (metadata != null)
+            {
+                model.AssetUid = metadata.AssetUid;
+                model.AssetID = metadata.AssetID;
+
+                model.AssetName = metadata.AssetName;
+                model.AssetTypeName = metadata.AssetTypeName;
+
+                model.ObjectType = metadata.ObjectType;
+                model.ObjectTypeID = metadata.ObjectTypeID;
+
+                model.HasResponsibilityReadAccess = metadata.HasResponsibilityReadAccess;
+            }
+
             if (includeHeader)
             {
-                var metadata = Company.Query<dynamic>("select V.DisplayValue as AssetName, T.Name as AssetTypeName, T.Object as ObjectType, T.ObjectID as ObjectTypeID  from Asset A inner join AssetDisplayValue V on V.AssetID = A.ID inner join AssetType T on T.ID = A.AssetTypeID where A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id }).FirstOrDefault();
-                model.Scores = Company.Query<dynamic>(@"select	*
-from	(
-		select  S.EffectiveDate,
-				S.EndDate,
-				S.RunDate,
-				case 
-					when AL.ScoreType = 1 then 'GV'
-					when AL.ScoreType = 2 then 'DQ'
-				end as ShortName,
-				case 
-					when AL.ScoreType = 1 then 'Governance'
-					when AL.ScoreType = 2 then 'Data Quality'
-				end as ScoreType,
-				ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
-				S.Value, 
-				AL.LowerThreshold, 
-				AL.UpperThreshold 
-		from    metrics.Score S
-				inner join Asset A on A.Uid = S.AssetUid and A.Object = @Object and A.ObjectID = @ObjectID and S.EffectiveDate <= @date 
-				inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
-		) O
-where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow }).ToList();
-
-                if (metadata != null)
-                {
-                    model.AssetName = metadata.AssetName;
-                    model.AssetTypeName = metadata.AssetTypeName;
-
-                    model.ObjectType = metadata.ObjectType;
-                    model.ObjectTypeID = metadata.ObjectTypeID;
-                }
+                model.Scores = Company.Query<dynamic>(@"
+                    select	*
+                    from	(
+		                    select  S.EffectiveDate,
+				                    S.EndDate,
+				                    S.RunDate,
+				                    case 
+					                    when AL.ScoreType = 1 then 'GV'
+					                    when AL.ScoreType = 2 then 'DQ'
+				                    end as ShortName,
+				                    case 
+					                    when AL.ScoreType = 1 then 'Governance'
+					                    when AL.ScoreType = 2 then 'Data Quality'
+				                    end as ScoreType,
+				                    ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
+				                    S.Value, 
+				                    AL.LowerThreshold, 
+				                    AL.UpperThreshold 
+		                    from    metrics.Score S
+				                    inner join Asset A on A.Uid = S.AssetUid and A.Object = @Object and A.ObjectID = @ObjectID and S.EffectiveDate <= @date 
+				                    inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
+		                    ) O
+                    where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow }).ToList();
             }
+
             FieldColumnMapper fcMapper = null;
 
             if (useAssetDetailColumnDefinition)
@@ -4330,79 +4354,6 @@ where   (
                     id,
                     targetAssetTypeId = targetAssetType.ID
                 });
-        }
-
-        [Route("export/{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/excel.xls"), HttpGet]
-        public HttpResponseMessage RelationshipsForObjectByTargetTypeExportExcel(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID)
-        {
-            var results = this.RelationshipsForObjectByTargetType(type, id, targetType, targetID, intersectTypeID);
-
-            //get the fields for the spreadsheet
-            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && i.ObjectID == intersectTypeID && i.IsListable).ToList().OrderBy(x => x.SortOrder);
-
-            var document = new SLDocument();
-            document.AddWorksheet("Items");
-
-            #region Create the list sheet
-
-            #region Header
-
-            var colIndex = 0;
-
-            document.SetCellValue(1, ++colIndex, "Name");
-
-            //add fields for this relation
-            foreach (var field in fields)
-            {
-                document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
-            }
-
-            document.SetCellValue(1, ++colIndex, "Relationship UID");
-
-            #endregion
-
-            int rowIndex = 1;
-            foreach (var row in results)
-            {
-                var dataColIndex = 0;
-                rowIndex++;
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
-
-                var rowDict = ((IDictionary<string, object>)row);
-                foreach (var field in fields)
-                {
-                    var fieldKey = $"Field{field.ID}";
-
-                    if (rowDict.ContainsKey(fieldKey))
-                    {
-                        if (rowDict[fieldKey] != null)
-                            document.SetCellValue(rowIndex, ++dataColIndex, rowDict[fieldKey].ToString());
-                    }
-                }
-
-                document.SetCellValue(rowIndex, ++dataColIndex, (row.Uid ?? "").ToString());
-
-            }
-
-            #endregion
-
-            var detail = Company.GetObjectDetail(type.ToString(), id);
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            stream.Position = 0;
-            HttpResponseMessage result = null;
-            // serve the file to the client      
-            result = Request.CreateResponse(HttpStatusCode.OK);
-            result.Content = new StreamContent(stream);
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"{detail.Name.GetSafeFilename()} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
-            };
-            return result;
         }
 
         [Route("{type}/{id:int}/{predicateId:int}/synonyms")]

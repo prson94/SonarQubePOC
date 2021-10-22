@@ -5,6 +5,7 @@ using d360.core.exceptions;
 using d360.core.helpers;
 using d360.model;
 using d360.model.DataAccessLayer;
+using d360.utils.excel;
 using d360.web.Models;
 using Dapper;
 using Microsoft.ApplicationInsights;
@@ -12,7 +13,7 @@ using Newtonsoft.Json;
 using Resources;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -355,7 +356,7 @@ namespace d360.web.Controllers
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
-                throw new ArgumentException("Invalid sort field specified");
+                throw new ArgumentException(ApiMessages.InvalidSortField);
             }
 
             if ((sortFieldType ?? "").ToUpperInvariant() == "NUMBER")
@@ -1829,13 +1830,13 @@ namespace d360.web.Controllers
             //validate inputs            
             if ((!string.IsNullOrEmpty(sortOrder)) && sortOrder != "asc" && sortOrder != "desc")
             {
-                throw new Exception("Invalid sort order specified");
+                throw new ArgumentNullException(ApiMessages.InvalidSortOrder);
             }
 
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
-                throw new Exception("Invalid sort field specified");
+                throw new ArgumentNullException(ApiMessages.InvalidSortField);
             }
 
             if ((sortFieldType ?? "").ToUpper() == "NUMBER")
@@ -1882,6 +1883,18 @@ namespace d360.web.Controllers
             var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
 
             return !(authModel == AuthenticationType.Forms);
+        }
+
+        protected FileContentResult ExcelDocumentAsFile(ExcelDocument document)
+        {
+            using (var stream = new MemoryStream())
+            {
+                using (var slDocument = document.ToSLDocument())
+                {
+                    slDocument.SaveAs(stream);
+                    return File(stream.ToArray(), "application/vnd.ms-excel", $"{document.Name.GetSafeFilename()}.xlsx");
+                }
+            }
         }
     }
 }

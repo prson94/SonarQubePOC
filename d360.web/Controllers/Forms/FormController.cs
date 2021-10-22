@@ -259,7 +259,7 @@ namespace d360.web.Controllers
             var o = assetType.Object;
             return this.DynamicEditorEditFields(o, assetUid);
 
-            throw new Exception("Invalid or non implemented editor type");
+            throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
         }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
@@ -294,7 +294,7 @@ namespace d360.web.Controllers
                     }
                     return DynamicEditorEditFields(o, objectId);
             }
-            throw new Exception("Invalid or non implemented editor type");
+            throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
         }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
@@ -377,7 +377,7 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionUri_EditFields(oid);
                     break;
                 default:
-                    throw new Exception("Invalid or non implemented editor type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
             }
 
 
@@ -406,7 +406,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Issue Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.IssueTypeNotFound);
                     }
                 }
                 else if (objectType == SystemObjects.IssueTypeRelation.ToString())
@@ -418,7 +418,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Issue Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.IssueTypeNotFound);
                     }
                 }
                 else if (objectType == SystemObjects.IntersectType.ToString())
@@ -439,7 +439,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("Not valid Intersect Type Uid or Target Type Uid");
+                        throw new ArgumentException(FormControllerApiMessage.InvalidIntersectTypeAndTargetUID);
                     }
 
                 }
@@ -452,11 +452,11 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Asset Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.AssetTypeNotFound);
                     }
                 }
             }
-            throw new ArgumentException("Invalid Guid");
+            throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, ""));
 
         }
 
@@ -545,7 +545,7 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
                     break;
                 default:
-                    throw new Exception("Invalid or non implemented editor type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
 
             }
             res.MaxJsonLength = int.MaxValue;
@@ -596,7 +596,7 @@ namespace d360.web.Controllers
                 case "URI":
                     return EditServiceEndpointVersionUri(form);
                 default:
-                    throw new Exception("Invalid / unsupported edit type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditType);
             }
         }
 
@@ -645,7 +645,7 @@ namespace d360.web.Controllers
                 case "VERSION":
                     return DeleteCustomAPIVersion(form);
                 default:
-                    throw new Exception("Invalid / unsupported delete type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidDeleteType);
             }
         }
 
@@ -695,7 +695,7 @@ namespace d360.web.Controllers
                 case "URI":
                     return AddServiceEndpointVersionUri(form);
                 default:
-                    throw new Exception("Invalid / unsupported create type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidCreateType);
             }
         }
 
@@ -2238,7 +2238,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var shortcut = Company.GetById<Shortcut>(id);
                 if (shortcut == null)
                 {
-                    throw new Exception($"Shortcut Id ${id} not found");
+                    throw new ArgumentNullException($"Shortcut Id ${id} not found");
                 }
 
                 direction = moveUp ? "up" : "down";
@@ -2253,7 +2253,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 }
 
                 if (adjacentShortcut == null)
-                    throw new Exception($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
+                    throw new ArgumentNullException($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
 
 
                 int newOrder = adjacentShortcut.DisplayOrder;

@@ -6,12 +6,11 @@
                                       [objectName]="objectName"
                                       [objectPermissions]="permissions"
                                       [isModal]="true"></d3s-object-relationships>
-        </div>   
-        <button class="modal-button-position button right"
-                type="button"
-                (click)="cancel()"
-                label="Close">
-            Close
+        </div>
+        <button class="ig-button-primary modal-button-position right"
+                igButton
+                label="Close"
+                (click)="cancel()">
         </button>
-    </div>    
+    </div>
 </d3s-modal>
