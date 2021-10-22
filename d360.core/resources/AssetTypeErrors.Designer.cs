@@ -430,6 +430,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid or deleted relationship type encountered on Relationship field with friendly name &quot;{FriendlyName}&quot;..
+        /// </summary>
+        public static string InvalidRelationshipFieldType {
+            get {
+                return ResourceManager.GetString("InvalidRelationshipFieldType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid request.
         /// </summary>
         public static string InvalidRequestHttpErrorTitle {
