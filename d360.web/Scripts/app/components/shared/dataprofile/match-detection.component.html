@@ -182,7 +182,7 @@
                                     <tr>
                                         <th style="width: 30px">
                                             <p-tableHeaderCheckbox #similarCheckBox
-                                                                   pTooltip="{{(similarSelection && similarSelection.length == dtSimi.rows ? 'Deselect all items' : 'Select all items in the current page')}}"
+                                                                   pTooltip="{{(similarSelection && (similarSelection.length == similarData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
                                                                    tooltipPosition="top"
                                                                    tooltipStyleClass="ig-tooltip">
                                             </p-tableHeaderCheckbox>                                            
