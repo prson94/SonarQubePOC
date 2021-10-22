@@ -86,6 +86,12 @@
             </div>
             <input type="number" min="100" max="1000" [(ngModel)]="companySettings.AssetDefinitionColumnWidth" style="width: 95%" /> <br />
 
+            <div class="FieldName">Maximum count of Diagram links to use 'AvoidNodes' render template</div>
+            <div class="directions">
+                Maximum number of links on Lineage diagram that will use 'AvoidNodes' render setting. If higher, links will render without corners and as a straight line between 2 nodes. This improves render performance on diagrams with more data.
+            </div>
+            <input type="number" min="0" max="100000" [(ngModel)]="companySettings.DiagramMaxAvoidNodesLinkCount" style="width: 95%" /> <br />
+
         </div>
         <div class="tile tile-detail">
             <header>Workflow</header>

@@ -47,7 +47,7 @@ import { ResponsibilityService } from '../../../../services/responsibility.servi
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
 
 declare var window: any;
-
+declare var CompanySettings;
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
@@ -129,6 +129,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
 
     autoCollapseRelationshipCount: number = 3;
+    performanceLinkMode: boolean = false;
+    maxLinkCountToAvoidNodesTemplate: number = 2;
 
     popupMenuItems = [
         {
@@ -214,6 +216,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         super();
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
+
+        this.maxLinkCountToAvoidNodesTemplate = +CompanySettings["DiagramMaxAvoidNodesLinkCount"];
     }
 
     public ngOnInit() {
@@ -1310,6 +1314,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.diagram.linkTemplateMap.add("", this.template_ImpactLink());
         }
 
+        this.diagram.linkTemplateMap.add("NoAvoid", this.template_LineageLinkNoAvoid());
+
         this.diagram.addDiagramListener('ChangedSelection', e => this.event_DiagramSelectionChanged(e));
         this.diagram.addDiagramListener('ViewportBoundsChanged', e => this.event_ViewportBoundsChanged(e));
 
@@ -1356,6 +1362,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         trans.nodes.forEach(n => {
             n.showIcon = this.displayConfiguration.DisplayIcons;
         });
+
+        if (this.performanceLinkMode) {
+            trans.links.forEach((l) => l['category'] = 'NoAvoid');
+        }
 
         if (append) {
             trans.nodes.forEach(n => {
@@ -1449,21 +1459,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (data) {
                     this.diagramData = data;
                     this.loadingText = "Determining links and meaning...";
-
+                    if (this.diagramData && this.diagramData.links && this.diagramData.links.length > this.maxLinkCountToAvoidNodesTemplate) {
+                        this.performanceLinkMode = true;
+                    }
+                    this.cdRef.detectChanges();
                     if (isLineage && this.diagramData.dataLimitReached === true) {
                         this.errorText = `Sorry, we cannot display an asset with more than 500 descendants.`;
                         this.isError = true;
                         this.isLoading = false;
                     }
                     else {
-                        this.helper_ParseTranslatedData(data);
+                        //if there are a lot of descendants helper_ParseTranslatedData will take too much cpu
+                        //and loadingText wont change, adding a slight delay of 10ms to allow angular detecting text change
+                        setTimeout(() => {
+                            this.helper_ParseTranslatedData(data);
 
-                        this.helper_ResizeDiagram();
-                        this.helper_ScaleDiagram(1);
-                        this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-                        this.loadingText = "";
-                        this.isLoading = false;
-                        this.loadOwnerCounts();
+                            this.helper_ResizeDiagram();
+                            this.helper_ScaleDiagram(1);
+                            this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                            this.loadingText = "";
+                            this.isLoading = false;
+                            this.loadOwnerCounts();
+                        }, 10);
                     }
                 }
                 else {
@@ -2796,6 +2813,55 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.g(
             go.Link, {
             routing: go.Link.AvoidsNodes,
+            corner: 5,
+            relinkableFrom: false,
+            relinkableTo: false,
+            click: (e, obj) => this.helper_HighlightPath(e, obj as any),
+            zOrder: 1000
+        },
+            // the whole link panel
+            this.g(go.Shape,
+                { stroke: this.linkBackColor, strokeWidth: 1 },
+                new go.Binding("strokeWidth", "hasProperties", function (h) {
+                    return h ? 3 : 2;
+                }),
+                new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
+            ), // the link shape
+            this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
+            this.g(go.Panel, "Auto",
+                this.g(
+                    go.Shape,
+                    {
+                        visible: false,
+                        fill: this.linkDefaultBackColor,
+                        stroke: this.linkDefaultBorderColor
+                    },
+                    new go.Binding("background", "back"),
+                    //only visible if there's a label
+                    new go.Binding("visible", "text", function (a) {
+                        return !!a
+                    })
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center",
+                    font: this.fontLink,
+                    stroke: this.fontLinkColor,
+                    margin: 4,
+                    overflow: go.TextBlock.OverflowEllipsis,
+                    wrap: go.TextBlock.WrapFit,
+                    maxSize: new go.Size(100, 70)
+                },
+                    // the label
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        );
+    }
+
+    private template_LineageLinkNoAvoid(): go.Link {
+        return this.g(
+            go.Link, {
+            routing: go.Link.Default,
             corner: 5,
             relinkableFrom: false,
             relinkableTo: false,

@@ -32,7 +32,7 @@ namespace igx.UnitTests.HelperTests
             string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects);
 
             Assert.NotEmpty(selects);
-            Assert.True(selects.Count == 35);
+            Assert.True(selects.Count == 36);
             Assert.NotEqual("", sql);
             Assert.True(selects.Any(x => x.ToLowerInvariant().Contains("dbo.generateasseturl")));
             Assert.True(selects.Any(x => x.ToLowerInvariant().Contains(".formattedvalue")));

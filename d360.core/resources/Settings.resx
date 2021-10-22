@@ -201,6 +201,12 @@
   <data name="DefaultSearchTypes_Name" xml:space="preserve">
     <value>Default types to use for search</value>
   </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Desc" xml:space="preserve">
+    <value>Maximum number of links on Lineage diagram that will use 'AvoidNodes' render setting. If higher, links will render without corners and as a straight line between 2 nodes. This improves render performance on diagrams with more data.</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Name" xml:space="preserve">
+    <value>Maximum count of Diagram links to use 'AvoidNodes' render template</value>
+  </data>
   <data name="DisableCommunityPosting_Desc" xml:space="preserve">
     <value>This allows for the disabling of posting comments and replies on all Community Boards throughout the system.  Users will still be able to see Community Boards and all system-level comments.</value>
   </data>

@@ -313,6 +313,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Maximum number of links on Lineage diagram that will use &apos;AvoidNodes&apos; render setting. If higher, links will render without corners and as a straight line between 2 nodes. This improves render performance on diagrams with more data..
+        /// </summary>
+        internal static string DiagramMaxAvoidNodesLinkCount_Desc {
+            get {
+                return ResourceManager.GetString("DiagramMaxAvoidNodesLinkCount_Desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum count of Diagram links to use &apos;AvoidNodes&apos; render template.
+        /// </summary>
+        internal static string DiagramMaxAvoidNodesLinkCount_Name {
+            get {
+                return ResourceManager.GetString("DiagramMaxAvoidNodesLinkCount_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This allows for the disabling of posting comments and replies on all Community Boards throughout the system.  Users will still be able to see Community Boards and all system-level comments..
         /// </summary>
         internal static string DisableCommunityPosting_Desc {

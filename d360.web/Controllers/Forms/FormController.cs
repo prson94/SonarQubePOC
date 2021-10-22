@@ -753,7 +753,8 @@ namespace d360.web.Controllers
                 AllowedOrigins = settings.GetValue(Setting.AllowedOrigins),
                 FramingDomains = settings.GetValue(Setting.FramingDomains),
                 AssetDefinitionColumnWidth = settings.GetValue<int>(Setting.AssetDefinitionColumnWidth),
-                HideHeaderBarControls = settings.GetValue<bool>(Setting.HideHeaderBarControls)
+                HideHeaderBarControls = settings.GetValue<bool>(Setting.HideHeaderBarControls),
+                DiagramMaxAvoidNodesLinkCount = settings.GetValue<int>(Setting.DiagramMaxAvoidNodesLinkCount)
             };
             var ipRaw = settings.GetValue(Setting.IpRestriction);
             if (!string.IsNullOrEmpty(ipRaw))
@@ -895,6 +896,19 @@ namespace d360.web.Controllers
                 }
 
                 settingActionValue(Setting.AssetDefinitionColumnWidth, Math.Abs(formModel.AssetDefinitionColumnWidth).ToString());
+
+
+                if (formModel.DiagramMaxAvoidNodesLinkCount < 0)
+                {
+                    formModel.DiagramMaxAvoidNodesLinkCount = 0;
+                }
+                if (formModel.DiagramMaxAvoidNodesLinkCount > 100000)
+                {
+                    formModel.DiagramMaxAvoidNodesLinkCount = 100000;
+                }
+
+                settingActionValue(Setting.DiagramMaxAvoidNodesLinkCount, Math.Abs(formModel.DiagramMaxAvoidNodesLinkCount).ToString());
+
 
                 #endregion
 
@@ -1400,7 +1414,7 @@ order by Sort, title";
                             UpdatedBy = Company.CurrentResourceID,
                             AssetTypeUid = assetTypeUid,
                             IntersectTypeUid = intersectTypeUid
-                        };
+                    };
 
                         xls = new SLDocument(stream);
 

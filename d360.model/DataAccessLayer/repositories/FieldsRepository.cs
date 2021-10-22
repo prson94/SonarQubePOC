@@ -880,7 +880,7 @@ from	IntersectType I
                             new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }
                         ).SingleOrDefault();
 
-                        if (relationInfo == null || i.RelationType == null)
+                        if (relationInfo == null)
                         {
                             hasDefinitionError = true;
                             return;
@@ -2376,6 +2376,7 @@ from	IntersectType I
 
             selects.Add("r.context AS [Context]");
             selects.Add("r.responsibilitytypename AS [ResponsibilityTypeName]");
+            selects.Add("SecurityAssetUid AS [SecurityAssetUid]");
 
             if (definition.ExpandGroupMembership != false)
             {
