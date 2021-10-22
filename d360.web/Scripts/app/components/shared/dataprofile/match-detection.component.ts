@@ -447,8 +447,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     private populateHeaderCheckBoxStyle(matchType: string) {
         if (matchType === this.duplicateStr) {
-            var checkBoxElement = this.duplicateCheckBox.boxViewChild.nativeElement;
-            if (this.duplicatesSelection && this.duplicatesSelection.length > 0 && this.duplicatesSelection.length != this.duplicatesData.length) {
+            let checkBoxElement = this.duplicateCheckBox.boxViewChild.nativeElement;
+            if (this.duplicatesSelection && this.duplicatesSelection.length > 0 && this.duplicatesSelection.length !== this.duplicatesData.length) {
                 checkBoxElement.classList.add('p-highlight');
                 this.duplicateCheckBox.checked = true;
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi');
@@ -462,9 +462,9 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');                
             }
-        } else if (matchType = this.similarStr) {
-            var checkBoxElement = this.similarCheckBox.boxViewChild.nativeElement;
-            if (this.similarSelection && this.similarSelection.length > 0 && this.similarSelection.length != this.similarData.length) {
+        } else if (matchType === this.similarStr) {
+            let checkBoxElement = this.similarCheckBox.boxViewChild.nativeElement;
+            if (this.similarSelection && this.similarSelection.length > 0 && this.similarSelection.length !== this.similarData.length) {
                 checkBoxElement.classList.add('p-highlight');
                 this.similarCheckBox.checked = true;
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi');
