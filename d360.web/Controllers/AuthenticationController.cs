@@ -951,12 +951,12 @@ namespace d360.web.Controllers
                 else
                 {
                     ModelState.AddModelError("Unauthorized", "The user name or password provided is incorrect.");
-                    return View(model);
+                    return View("Login", model);
                 }
             }
 
             ModelState.AddModelError("UnknownError", UNKNOWN_ERROR_MESSAGE);
-            return View(model);
+            return View("Login", model);
         }
 
         [AllowAnonymous, Route("slo-callback")]
