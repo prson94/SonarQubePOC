@@ -69,12 +69,13 @@
                                      (onLazyLoad)="lazyLoad($event,'Data')"
                                      [loading]="duplicatesDataLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'"
-                                     (selectionChange)="selectMatch($event)">
+                                     (selectionChange)="selectMatch($event, 'duplicate')">
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th style="width: 30px">
-                                            <p-tableHeaderCheckbox 
-                                                pTooltip="{{(duplicatesSelection && duplicatesSelection.length == dtDupli.rows ? 'Deselect all items' : 'Select all items in the current page')}}"
+                                            <p-tableHeaderCheckbox  
+                                                #duplicateCheckBox
+                                                pTooltip="{{(duplicatesSelection && (duplicatesSelection.length == duplicatesData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
                                                 tooltipPosition="top"
                                                 tooltipStyleClass="ig-tooltip">
                                             </p-tableHeaderCheckbox>                                            
@@ -176,15 +177,15 @@
                                      (onLazyLoad)="lazyLoad($event,'Structure')"
                                      [loading]="similarDataLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'"
-                                     (selectionChange)="selectMatch($event)">
+                                     (selectionChange)="selectMatch($event, 'similar')">
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th style="width: 30px">
-                                            <p-tableHeaderCheckbox pTooltip="{{(similarSelection && similarSelection.length == dtSimi.rows ? 'Deselect all items' : 'Select all items in the current page')}}"
+                                            <p-tableHeaderCheckbox #similarCheckBox
+                                                                   pTooltip="{{(similarSelection && similarSelection.length == dtSimi.rows ? 'Deselect all items' : 'Select all items in the current page')}}"
                                                                    tooltipPosition="top"
                                                                    tooltipStyleClass="ig-tooltip">
-                                            </p-tableHeaderCheckbox>
-                                            <!--<p-tableHeaderCheckbox></p-tableHeaderCheckbox>-->
+                                            </p-tableHeaderCheckbox>                                            
                                         </th>
                                         <th [pSortableColumn]="'Path'">
                                             Asset Path
