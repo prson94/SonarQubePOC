@@ -1,5 +1,5 @@
 <d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
-<div *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns && isDefinitionLoaded" >
+<div *ngIf="!showDelete && !isEditing && !hasNoListableColumns && isDefinitionLoaded">
     <div class="header-description">
         <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
              [innerHtml]="gridObject.Description | safeHtml"
@@ -14,9 +14,9 @@
     </div>
 </div>
 
-<div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
+<div class="grid-actions-header {{(this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
     <div class="simple-search">
-        <ig-search-field mode="Keypress" 
+        <ig-search-field mode="Keypress"
                          [debounce]="600"
                          (onSearch)="onSimpleSearch($event)"
                          [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
@@ -54,7 +54,7 @@
     </ng-container>
 </div>
 
-<div class="row asset-grid-wrapper" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
+<div class="row asset-grid-wrapper" *ngIf="!showDelete && !isEditing && !hasNoListableColumns">
     <div #rightMenu
          [ngClass]="{ 'artifact-context-menu': isMenuOpen, 'artifact-context-menu-closed': !isMenuOpen }">
         <a [href]="itemUrl" target="_blank">Open in new window</a>
@@ -117,8 +117,7 @@
                 <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
                     <td *ngFor="let col of columns; let i=index">
                         <ng-container *ngIf="i != linkColumnIndex; else linked">
-                            <div
-                                 style="display:block; word-wrap:break-word">
+                            <div style="display:block; word-wrap:break-word">
                                 <d3s-dynamic-field-value [column]="col"
                                                          [fields]="fields"
                                                          [item]="item"
@@ -127,8 +126,7 @@
                             </div>
                         </ng-container>
                         <ng-template #linked>
-                            <a
-                               (click)="selectArtifact(item)"
+                            <a (click)="selectArtifact(item)"
                                style="word-wrap:break-word;">
                                 <d3s-dynamic-field-value [column]="col"
                                                          [fields]="fields"
@@ -165,16 +163,24 @@
         </p-table>
     </div>
 </div>
-<d3s-dynamic-editor *ngIf="showEditor"
-                    [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
-                    [objectType]="gridObject.Object"
-                    [title]="selected?.Name ? selected?.Name : gridObject?.Name + ' Item'"
-                    [selection]="selected"
-                    [rowID]="rowID"
-                    [objectTypeUid]="gridObject?.AssetTypeUID"
-                    (saveClick)="saveItem($event)"
-                    [isV2API]="true"
-                    (closeClick)="closeEditor()"></d3s-dynamic-editor>
+<d3s-modal [title]="modalTitle" 
+           additionalClasses="modal-dyn-editor large-dialog asset-editor" 
+           (onClose)="showEditor=false" 
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <d3s-dynamic-editor-v2 
+                        [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
+                        [objectType]="gridObject.Object"
+                        [title]="selected?.Name ? selected?.Name : gridObject?.Name + ' Item'"
+                        [selection]="selected"
+                        [rowID]="rowID"
+                        [objectTypeUid]="gridObject?.AssetTypeUID"
+                        (saveClick)="saveItem($event)"
+                        [isV2API]="true"
+                        (closeClick)="closeEditor()"></d3s-dynamic-editor-v2>
+
+</d3s-modal>
+
 <d3s-asset-delete-editor *ngIf="showDelete"
                          [uid]="selected?.AssetUid"
                          [assetTypeUid]="gridObject?.AssetTypeUID"

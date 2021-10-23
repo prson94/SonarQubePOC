@@ -32,6 +32,8 @@ import { AssetGridComponent } from "./asset-grid.component";
 import { SharedAssetScoreModule } from "../shared/asset-score/shared-asset-score.module";
 import { AdvancedFiltersModule } from "./advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
+import { SiteModalModule } from "../shared/modal/gov-modal.module";
+import { SharedDynamicGridEditorModuleV2 } from "../shared/dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module";
 
 
 @NgModule({
@@ -58,9 +60,11 @@ import { SearchFieldModule } from "../shared/controls/search-field/search-field.
         CoreModule,
         PipesModule,
         PopupMenuModule,
+        SiteModalModule,
 
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
+        SharedDynamicGridEditorModuleV2,
         SharedDynamicGridEditorModule,
         SharedAssetScoreModule,
         SharedAssetEditorsModule,

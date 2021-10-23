@@ -10,60 +10,61 @@
             <div class="err-message">{{isInErrorMessage}}</div>
         </div>
         <div class="row"
-                *ngIf="!isLoading">
+             *ngIf="!isLoading">
             <div class="form-instructions" *ngIf="hasDirections">
                 {{directions}}
             </div>
             <form (ngSubmit)="onSubmit()"
-                    [formGroup]="form">
+                  [formGroup]="form">
                 <ng-template ngFor
-                                let-category
-                                [ngForOf]="categories">
-                    <simple-accordion *ngIf="category.name"
-                                        [header]="category.name"
-                                        [active]="true">
-                        <div class="row"
-                                *ngFor="let row of category.rows">
-                            <div *ngFor="let field of row.Fields"
-                                    [class]="'field-col col ' + row.getColClass()"
-                                    style="padding-bottom:10px;">
-                                <d3s-dynamic-field-v2 *ngIf="field.FieldType !== 'no-display'" [field]="field"
-                                                    [form]="form"
-                                                    (listItemChange)="listSelectionChanged($event)"
-                                                    [editorChange]="editorChange"
-                                                    [object]="objectType"
-                                                    [objectID]="objectID"
-                                                    [selectedObject]="selectedObject"
-                                                    [disallowedNames]="disallowedNames"
-                                                    [assetUid]="assetUid"
-                                                    [diagramNodeKey]="diagramNodeKey"
-                                                    [selectedObjectID]="selectedObjectID"></d3s-dynamic-field-v2>
+                             let-category
+                             [ngForOf]="categories">
+                    <ig-property-group [igformGroup]="form" [title]="category.name">
+                        <div inputs>
+                            <div class="row"
+                                 *ngFor="let row of category.rows">
+                                <div *ngFor="let field of row.Fields"
+                                     [class]="'field-col col ' + row.getColClass()"
+                                     style="padding-bottom:10px;">
+                                    <d3s-dynamic-field-v2 *ngIf="field.FieldType !== 'no-display'" [field]="field"
+                                                          [form]="form"
+                                                          (listItemChange)="listSelectionChanged($event)"
+                                                          [editorChange]="editorChange"
+                                                          [object]="objectType"
+                                                          [objectID]="objectID"
+                                                          [selectedObject]="selectedObject"
+                                                          [disallowedNames]="disallowedNames"
+                                                          [assetUid]="assetUid"
+                                                          [diagramNodeKey]="diagramNodeKey"
+                                                          [selectedObjectID]="selectedObjectID"></d3s-dynamic-field-v2>
+                                </div>
                             </div>
                         </div>
-                    </simple-accordion>
+                    </ig-property-group>
+
                     <span *ngIf="!category.name">
                         <div class="row"
-                                *ngFor="let row of category.rows">
+                             *ngFor="let row of category.rows">
                             <div *ngFor="let field of row.Fields"
-                                    [class]="'field-col col ' + row.getColClass()"
-                                    style="padding-bottom:10px;">
+                                 [class]="'field-col col ' + row.getColClass()"
+                                 style="padding-bottom:10px;">
                                 <d3s-dynamic-field-v2 *ngIf="field.FieldType !== 'no-display'" [field]="field"
-                                                    [form]="form"
-                                                    (listItemChange)="listSelectionChanged($event)"
-                                                    [editorChange]="editorChange"
-                                                    [object]="objectType"
-                                                    [objectID]="objectID"
-                                                    [disallowedNames]="disallowedNames"
-                                                    [selectedObject]="selectedObject"
-                                                    [assetUid]="assetUid"
-                                                    [diagramNodeKey]="diagramNodeKey"
-                                                    [selectedObjectID]="selectedObjectID"></d3s-dynamic-field-v2>
+                                                      [form]="form"
+                                                      (listItemChange)="listSelectionChanged($event)"
+                                                      [editorChange]="editorChange"
+                                                      [object]="objectType"
+                                                      [objectID]="objectID"
+                                                      [disallowedNames]="disallowedNames"
+                                                      [selectedObject]="selectedObject"
+                                                      [assetUid]="assetUid"
+                                                      [diagramNodeKey]="diagramNodeKey"
+                                                      [selectedObjectID]="selectedObjectID"></d3s-dynamic-field-v2>
                             </div>
                         </div>
                     </span>
                 </ng-template>
                 <div *ngIf="hasIconFields && fore.Value == back.Value"
-                        class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
+                     class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
                 <div class="col s12">&nbsp;</div>
                 <div *ngIf="showActions && !useModelBinding" class="col s12">
                     <button pButton
@@ -108,14 +109,14 @@
                                  *ngFor="let row of category.rows">
                                 <div *ngFor="let field of row.Fields" [class]="'form-row'">
                                     <d3s-dynamic-field-v2 *ngIf="field.FieldType !== 'no-display'" [useNewUI]="true"
-                                                       [field]="field"
-                                                       [form]="form"
-                                                       (listItemChange)="listSelectionChanged($event)"
-                                                       [editorChange]="editorChange"
-                                                       [object]="objectType"
-                                                       [objectID]="objectID"
-                                                       [selectedObject]="selectedObject"
-                                                       [selectedObjectID]="selectedObjectID"></d3s-dynamic-field-v2>
+                                                          [field]="field"
+                                                          [form]="form"
+                                                          (listItemChange)="listSelectionChanged($event)"
+                                                          [editorChange]="editorChange"
+                                                          [object]="objectType"
+                                                          [objectID]="objectID"
+                                                          [selectedObject]="selectedObject"
+                                                          [selectedObjectID]="selectedObjectID"></d3s-dynamic-field-v2>
                                 </div>
                             </div>
                         </simple-accordion>
@@ -124,15 +125,15 @@
                                  *ngFor="let row of category.rows">
                                 <div *ngFor="let field of row.Fields" [class]="'form-row'">
                                     <d3s-dynamic-field-v2 *ngIf="field.FieldType !== 'no-display'" [useNewUI]="true"
-                                                       [field]="field"
-                                                       [form]="form"
-                                                       (listItemChange)="listSelectionChanged($event)"
-                                                       [editorChange]="editorChange"
-                                                       (autoCompleteSelected)="autoCompleteSelected($event)"
-                                                       [object]="objectType"
-                                                       [objectID]="objectID"
-                                                       [selectedObject]="selectedObject"
-                                                       [selectedObjectID]="selectedObjectID"></d3s-dynamic-field-v2>
+                                                          [field]="field"
+                                                          [form]="form"
+                                                          (listItemChange)="listSelectionChanged($event)"
+                                                          [editorChange]="editorChange"
+                                                          (autoCompleteSelected)="autoCompleteSelected($event)"
+                                                          [object]="objectType"
+                                                          [objectID]="objectID"
+                                                          [selectedObject]="selectedObject"
+                                                          [selectedObjectID]="selectedObjectID"></d3s-dynamic-field-v2>
                                 </div>
                             </div>
                         </span>

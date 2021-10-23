@@ -39,6 +39,7 @@ import { TagPickerModule } from '../controls/tag-picker/tag-picker';
 import { SwitchModule } from '../controls/switch/switch';
 import { IgDateModule } from '../controls/date/date';
 import { IgNumberFieldModule } from '../controls/number-picker/number-input.component';
+import { PropertyGroupModule } from '../controls/property-group/property-group.component';
 
 @NgModule({
     imports: [
@@ -47,7 +48,6 @@ import { IgNumberFieldModule } from '../controls/number-picker/number-input.comp
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
-
         //d3s
         CoreModule,
         SharedDeleteFormModule,
@@ -61,6 +61,7 @@ import { IgNumberFieldModule } from '../controls/number-picker/number-input.comp
         IgColorPickerModule,
         IgDateModule,
         IgNumberFieldModule,
+        PropertyGroupModule,
         //prime        
         CalendarModule,
         DropdownModule,
