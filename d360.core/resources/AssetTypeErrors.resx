@@ -364,6 +364,6 @@
     <value>Invalid character(-s) provided in the asset type name. Please fix content of asset type name field.</value>
   </data>
   <data name="InvalidRelationshipFieldType" xml:space="preserve">
-    <value>Invalid or deleted relationship type encountered on Relationship field with friendly name "{FriendlyName}".</value>
+    <value>Invalid or deleted relationship type encountered on Relationship field with friendly name "{0}".</value>
   </data>
 </root>
