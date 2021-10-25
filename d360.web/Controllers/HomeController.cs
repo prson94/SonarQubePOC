@@ -13,6 +13,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using d360.web.caching;
 using d360.model.DataAccessLayer;
+using d360.extensions;
 
 namespace d360.web.Controllers
 {
@@ -21,9 +22,13 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public HomeController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+        ICachingProvider Cache;
+
+        public HomeController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository, ICachingProvider cache)
             : base(community, company, settingsRepository)
-        { }
+        {
+            Cache = cache;
+        }
 
         #endregion
 
@@ -257,9 +262,8 @@ namespace d360.web.Controllers
         private bool updateContractValidationCache()
         {
             var key = ContractValidationCacheModel.cacheKey;
-            var cache = new MemoryCachingProvider();
             var time = ContractValidationCacheModel.cacheDuration;
-            var cacheResources = cache.GetItem<ConcurrentBag<ContractValidationCacheModel.User>>(key);
+            var cacheResources = Cache.GetItem<ConcurrentBag<ContractValidationCacheModel.User>>(key);
             ContractValidationCacheModel.User cacheRes = null;
             var contractCount = Company.Query<int>(@"select count(*) from dbo.GetContractValidations(@ResourceID) where accepted = 0 and ((contractType = 1 and isFirstUser = 1) or contractType = 2 or organizationId is null)", new { ResourceID = Company.CurrentResourceID }).FirstOrDefault();
             var contractsAccepted = contractCount == 0;
@@ -279,21 +283,21 @@ namespace d360.web.Controllers
                         contractsAccepted = contractCount == 0;
                         com.ContractsAccepted = contractCount == 0;
 
-                        cache.SetItem(key, cacheResources, true, time);
+                        Cache.SetItem(key, cacheResources, true, time);
                     }
                 }
                 else
                 {
                     cacheRes.Companies.Add(new ContractValidationCacheModel.Company() { ID = Company.CurrentCompanyID, ContractsAccepted = contractCount == 0 });
 
-                    cache.SetItem(key, cacheResources, true, time);
+                    Cache.SetItem(key, cacheResources, true, time);
                 }
             }
             else
             {
                 cacheRes = new ContractValidationCacheModel.User();
                 cacheRes.Companies.Add(new ContractValidationCacheModel.Company() { ID = Company.CurrentCompanyID, ContractsAccepted = contractCount == 0 });
-                cache.SetItem(key, cacheResources, true, time);
+                Cache.SetItem(key, cacheResources, true, time);
 
             }
 

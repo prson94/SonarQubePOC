@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using System.Data;
 using d360.core.resources;
+using System.Configuration;
 
 namespace igx.jobs.databasetaskprocessor
 {
@@ -317,7 +318,7 @@ from    [queue].[Task] T
                                                         if (q.Object == "TaggedComment")
                                                             {
                                                                 var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
-
+                                                                var mail = new MandrillMailProvider { ApiKey = ConfigurationManager.AppSettings["MandrillApiKey"] };
                                                                 if (comment.AssetID > 0)
                                                                 {
                                                                     CommentNotification notification = JsonSerializer.Deserialize<CommentNotification>(q.Custom);
@@ -396,7 +397,7 @@ from    [queue].[Task] T
                                                                                     </body>
                                                                                     </html>                                                                                        
                                                                                     ";
-                                                                        SimpleMessage.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml);
+                                                                        mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
                                                                     }
                                                                 }
                                                             }

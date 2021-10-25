@@ -38,32 +38,19 @@ namespace igx.jobs.displayvalueupdateprocessor
 
             try
             {
-                #region Create EF connection
-                var _c = CoreFunction.GetCompaniesByCurrentSlot()
-                    .FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
-
-                var sec = new UriSecurityContextProvider()
-                {
-                    CompanyID = updateInfo.CompanyID,
-                    ResourceID = 0,
-                    CompanyPrefix = _c.UrlPrefix,
-                    IsAdministrator = true
-                };
-                var cache = new DummyCachingProvider();
-                var queue = new AzureQueueSource();
-                var community = new CommunityContext(cache, queue, sec);
-                var storage = new AzureStorageProvider();
-                var company = new CompanyContext(community, cache, queue, sec, storage, true);
-
-                #endregion
+                var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
+                var community = JobDbContextCreator.CreateCommunityContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true);
 
                 using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID))
                 {
+                    await companyConnection.OpenIfClosed();
+
                     var assetTypeID = updateInfo.AssetTypeID;
                     if (updateInfo.ObjectTypeID > 0)
                     {
-                        assetTypeID = await company.Database.Connection.QueryFirstOrDefaultAsync<int>($"select id from assettype where [object] = @obj and [objectid] = @objId", new { obj = new DbString { Value = updateInfo.ObjectType, IsFixedLength = true, Length = 20, IsAnsi = true }, objId = updateInfo.ObjectTypeID });
+                        assetTypeID = await companyConnection.QueryFirstOrDefaultAsync<int>($"select id from assettype where [object] = @obj and [objectid] = @objId", new { obj = new DbString { Value = updateInfo.ObjectType, IsFixedLength = true, Length = 20, IsAnsi = true }, objId = updateInfo.ObjectTypeID });
                     }
+
                     //if its an asset call the asset update proc
                     //if its a asset type call the asset type update proc
                     if (updateInfo.AssetID > 0)

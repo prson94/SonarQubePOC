@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
+using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.utils.excel;
@@ -426,6 +427,7 @@ namespace d360.web.Controllers
     {
         internal ICompanyContext Company;
         internal ICommunityContext Community;
+        internal IMailProvider Mail;
         internal ISettingsRepository SettingsRepository;
 
         internal List<string> limitedFieldTypes = new List<string> {
@@ -1873,7 +1875,7 @@ namespace d360.web.Controllers
             templateValues["request_url"] = strUrl;
 
             //email user 
-            extensions.mail.SimpleMessage.SendMessage("Data360 Password Reset", email, fullName, templateValues, "forms-password-reset");
+            Mail.SendMessage("Data360 Password Reset", email, fullName, templateValues, "forms-password-reset");
         }
 
         #endregion

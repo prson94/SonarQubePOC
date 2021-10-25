@@ -14,11 +14,11 @@ using System.Threading.Tasks;
 
 namespace d360.web
 {
-    public class ContractValidationMiddleware
+    public class ContractValidationMiddleware : BaseMiddleware
     {
 
         Func<IDictionary<string, object>, Task> _next;
-        public ContractValidationMiddleware(Func<IDictionary<string, object>, Task> next)
+        public ContractValidationMiddleware(Func<IDictionary<string, object>, Task> next): base()
         {
             _next = next;
         }
@@ -27,10 +27,9 @@ namespace d360.web
         {
             var key = ContractValidationCacheModel.cacheKey;
             var time = ContractValidationCacheModel.cacheDuration;
-            var cache = new MemoryCachingProvider();
 
             ContractValidationCacheModel.User resource;
-            var resources = cache.GetItem<ConcurrentBag<ContractValidationCacheModel.User>>(key);
+            var resources = Cache.GetItem<ConcurrentBag<ContractValidationCacheModel.User>>(key);
 
             if (resources == null)
             {
@@ -39,7 +38,7 @@ namespace d360.web
                 resource.Companies = new ConcurrentBag<ContractValidationCacheModel.Company>();
                 resource.ID = resourceId;
                 resources.Add(resource);
-                cache.SetItem(key, resources, true, time);
+                Cache.SetItem(key, resources, true, time);
             }
             else
             {
@@ -51,7 +50,7 @@ namespace d360.web
                 resource = new ContractValidationCacheModel.User();
                 resource.ID = resourceId;
                 resource.Companies = new ConcurrentBag<ContractValidationCacheModel.Company>();
-                cache.SetItem(key, resources, true, time);
+                Cache.SetItem(key, resources, true, time);
             }
             else
             {
@@ -62,7 +61,7 @@ namespace d360.web
                 var res = comp.FirstOrDefault(c => c.ID == companyId);
                 if (res != null)
                 {
-                    cache.SetItem(key, resources, true, time);
+                    Cache.SetItem(key, resources, true, time);
                     return res.ContractsAccepted;
                 }
             }
@@ -104,7 +103,7 @@ namespace d360.web
                     }
                     resourceCompany.ContractsAccepted = contractCount == 0;
                     resource.Companies.Add(resourceCompany);
-                    cache.SetItem(key, resources, true, time);
+                    Cache.SetItem(key, resources, true, time);
 
                     return resourceCompany.ContractsAccepted;
 
@@ -122,9 +121,7 @@ namespace d360.web
 
         public async Task<SqlConnection> GetCompanyConnection(int companyId)
         {
-            var cache = new MemoryCachingProvider();
-
-            var str = cache.GetItemInListByID<string, int>("Company_ConnectionStrings", companyId);
+            var str = Cache.GetItemInListByID<string, int>("Company_ConnectionStrings", companyId);
             if (str == null)
             {
                 using (var comm = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))

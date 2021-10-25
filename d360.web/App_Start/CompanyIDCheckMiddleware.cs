@@ -13,7 +13,7 @@ using d360.core.entities;
 
 namespace d360.web
 {
-    public class CompanyIDCheckMiddleware
+    public class CompanyIDCheckMiddleware: BaseMiddleware
     {
         public class cd
         {
@@ -23,7 +23,7 @@ namespace d360.web
         }
 
         Func<IDictionary<string, object>, Task> _next;
-        public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next)
+        public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base()
         {
             _next = next;
         }
@@ -31,8 +31,7 @@ namespace d360.web
         async Task<List<cd>> loadCache()
         {
             var key = "CompanyPrefixes";
-            var cache = new MemoryCachingProvider();//RedisCachingProvider();
-            var dict = cache.GetItem<List<cd>>(key);
+            var dict = Cache.GetItem<List<cd>>(key);
 
             if (dict == null)
             {
@@ -41,7 +40,7 @@ namespace d360.web
                     cnn.Open();
                     dict = (await cnn.QueryAsync<cd>("select CompanyID, DomainSettingID, UrlPrefix from CompanyDomainSetting")).ToList();                                        
                 }
-                cache.SetItem(key, dict, true, 5);
+                Cache.SetItem(key, dict, true, 5);
             }
             return dict;
         }
