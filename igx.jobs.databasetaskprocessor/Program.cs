@@ -184,7 +184,7 @@ namespace igx.jobs.databasetaskprocessor
                                 //by this processor, so the error is muted.
                                 if(ex.Message != "Invalid object name 'queue.task'.")
                                 {
-                                    throw ex;
+                                    throw;
                                 }
                             }
 
