@@ -954,8 +954,8 @@ from	[Load] L
         E.C as Error,
 		T.C as Total,
         case LI.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
-        R.FirstName + ' ' + R.LastName as RequestorName,
-        R.uid as RequestorUid
+        R.FirstName + ' ' + R.LastName as RequestedByName,
+        R.uid as RequestedByUid
 from	[Load] L
         left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
         left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
