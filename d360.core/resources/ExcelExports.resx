@@ -130,7 +130,7 @@
     <value>Asset Path</value>
   </data>
   <data name="FollowedResources_DocumentName" xml:space="preserve">
-    <value>Followed Items as of {Now:d}</value>
+    <value>Followed Items as of {0:d}</value>
   </data>
   <data name="OwnedResources_AssetID" xml:space="preserve">
     <value>Asset ID</value>
@@ -139,7 +139,7 @@
     <value>Asset UID</value>
   </data>
   <data name="OwnedResources_DocumentName" xml:space="preserve">
-    <value>Owned Items as of {Now:d}</value>
+    <value>Owned Items as of {0:d}</value>
   </data>
   <data name="OwnedResources_Name" xml:space="preserve">
     <value>Name</value>
@@ -160,7 +160,7 @@
     <value>Completed</value>
   </data>
   <data name="WorkflowMonitor_DocumentName" xml:space="preserve">
-    <value>Workflow items as of {Now:d}</value>
+    <value>Workflow items as of {0:d}</value>
   </data>
   <data name="WorkflowMonitor_Initiator" xml:space="preserve">
     <value>Initiator</value>

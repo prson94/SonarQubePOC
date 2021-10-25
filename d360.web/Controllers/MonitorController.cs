@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using d360.model.DataAccessLayer;
 using d360.utils.excel;
 using d360.core.resources;
-using SmartFormat;
 
 namespace d360.web.Controllers
 {
@@ -40,7 +39,7 @@ namespace d360.web.Controllers
             var list = Company.Query<dynamic>(sql, dbArgs);
 
             var dateStyle = ExcelCell.MakeStyle(style => style.FormatCode = ExcelExports.Common_ExcelDateFormat);
-            var document = new ExcelDocument(Smart.Format(ExcelExports.WorkflowMonitor_DocumentName, new { DateTime.Now }))
+            var document = new ExcelDocument(string.Format(ExcelExports.WorkflowMonitor_DocumentName, DateTime.Now))
             {
                 new ExcelSheet(ExcelExports.Common_ItemsSheetName)
                 {
