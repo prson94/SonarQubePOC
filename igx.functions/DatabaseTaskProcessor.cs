@@ -159,7 +159,21 @@ namespace igx.functions.databasetaskprocessor
                                                    select 0;
                                                 END";
 
-                            bool hasWork = outerCompanyConnection.QuerySingle<Boolean>(existsSql);
+                            bool hasWork = false;
+                            try
+                            {
+                                hasWork = outerCompanyConnection.QuerySingle<bool>(existsSql);
+                            }
+                            catch (SqlException ex)
+                            {
+                                //When doing a clean DB install, the queue.task table will not exist
+                                //for some time. If the table is not present, there is no work to be done
+                                //by this processor, so the error is muted.
+                                if (ex.Message != "Invalid object name 'queue.task'.")
+                                {
+                                    throw;
+                                }
+                            }
 
                             if (hasWork)
                             {
