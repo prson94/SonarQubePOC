@@ -27,6 +27,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     @Input() gridType: string = "List";
     @Input() fieldsObserver: Observable<AdvancedFilterFieldType[]>;
     @Input() externalStorage: string;
+    @Input() externalAllocations: ScoreTypeAllocation[] = [];
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
@@ -167,6 +168,10 @@ export class AdvancedFilteringComponent implements OnChanges {
             let res = response[1] as AdvancedFilterFieldType[];
             this.allocations = response[2];
             this.relationshipTypes = response[3];
+
+            if (this.externalAllocations && this.externalAllocations.length > 0) {
+                this.allocations = this.externalAllocations;
+            }
 
             if (res.some((f) => f.Type.ComputedRelationshipField)) {
                 try {
@@ -321,9 +326,9 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         loadedFilters.filter((f) => f !== null).forEach((f) => {
             this.conditions.filters.push(f);
-        });        
+        });
 
-        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));        
+        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
         this.visible = true;
 
         this.onItemChange();

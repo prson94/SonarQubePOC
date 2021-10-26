@@ -1,11 +1,21 @@
 ﻿<div *ngIf="dataProfile" style="width: 400px;height:100%">
-    <div *ngIf="isLoading" style="width:100%; text-align:center;">
-        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-    </div>
-    <div *ngIf="!isLoading" style="height:100%; display:-webkit-flex;-webkit-flex-direction: column;">
 
+    <div style="height:100%; display:-webkit-flex;-webkit-flex-direction: column;">
         <ng-container>
-            <div class="summarySection">
+            <div class="summarySection asset-detail">
+                <div class="asset-detail-header">
+                    <div *ngIf="isLoading" style="width:100%; text-align:center;">
+                        <div><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                    </div>
+                    <div *ngIf="!isLoading">
+                        <div class="asset-name">
+                            {{assetName}}
+                        </div>
+                        <div class="class-name">
+                            {{assetTypeName}}
+                        </div>
+                    </div> 
+                </div>
                 <div *ngIf="dataProfile.profileSetDate" class="effectiveDate">
                     <span class="ig-value">Effective Date: {{dataProfile.profileSetDate | utcDate | date: 'dd MMM yyyy'}}</span>
                 </div>

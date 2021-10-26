@@ -164,7 +164,7 @@ namespace d360.web.Controllers.V2
 
                 if (model == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error locating metric", $"Metric with Uid of {uid} not found.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, MetricsApiMessages.Errorlocatingmetric, string.Format(MetricsApiMessages.MetricUidNotFound, uid.ToString()));
                 }
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
@@ -255,36 +255,36 @@ namespace d360.web.Controllers.V2
 
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    throw new WorkStatusException(HttpStatusCode.Unauthorized, "You are not allowed to update this metric.");
+                    throw new WorkStatusException(HttpStatusCode.Unauthorized, MetricsApiMessages.NotAllowUpdateMetric);
                 }
 
                 if (string.IsNullOrEmpty(model.Name) || (model.Name + "").Trim() == "")
                 {
-                    throw new WorkStatusException(HttpStatusCode.BadRequest, $"Name must not be empty.");
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.NameNotEmpty);
                 }
 
                 if (model.Description != null)
                 {
                     if (model.Description?.Length > 4000)
                     {
-                        throw new WorkStatusException(HttpStatusCode.BadRequest, $"Description length({model.Description.Length} characters) is too long . It must be maximum length of 4000 characters or less.");
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(MetricsApiMessages.DescriptionLengthValidation, model.Description.Length));
                     }
                 }
 
                 if (model.ParentUid.HasValue && model.IsGroup)
                 {
-                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Maximum number of levels for measures is 2.");
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(Validation.MaxLevelForMeasure, 2));
                 }
 
                 if (model.AllocationUid == Guid.Empty)
                 {
-                    throw new WorkStatusException(HttpStatusCode.BadRequest, "There is no allocation for specified Asset Type UID and Score Type.");
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.NoAllocationAssetTypeScoreType);
                 }
 
                 var allocation = Company.GetByUid<MetricAllocation>(model.AllocationUid);
                 if (allocation == null)
                 {
-                    throw new WorkStatusException(HttpStatusCode.BadRequest, "There is no allocation for specified Allocation Uid.");
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.NoAllocationForUid);
                 }
                 else
                 {
@@ -293,7 +293,7 @@ namespace d360.web.Controllers.V2
 
                 if (!model.Allocation.IsExternallyCalculated && model.Weight <= 0 || model.Weight > 1)
                 {
-                    throw new WorkStatusException(HttpStatusCode.BadRequest, $"Weight must be a decimal greater than 0 and less than or equal to 1.");
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.WeightDecimalValidation);
                 }
 
                 if (model.ParentUid != null && model.ParentUid != Guid.Empty)
@@ -302,7 +302,7 @@ namespace d360.web.Controllers.V2
 
                     if (parent == null)
                     {
-                        throw new WorkStatusException(HttpStatusCode.NotFound, "Parent metric not found.");
+                        throw new WorkStatusException(HttpStatusCode.NotFound, MetricsApiMessages.ParentMetricNotFound);
                     }
 
                     if (!parent.IsGroup)
@@ -312,7 +312,7 @@ namespace d360.web.Controllers.V2
 
                     if (model.IsGroup || parent.ParentUid != null)
                     {
-                        throw new WorkStatusException(HttpStatusCode.BadRequest, "Maximum number of levels for measures is 2.");
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(Validation.MaxLevelForMeasure, 2));
                     }
                 }
 
@@ -343,7 +343,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.IsGroup && model.ConditionGroups.Count > 0)
                 {
-                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Groups should not have conditions.");
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.GroupNotHaveCondition);
                 }
 
                 foreach (var cond in model.ConditionGroups)
@@ -352,22 +352,22 @@ namespace d360.web.Controllers.V2
                     {
                         if (!string.IsNullOrEmpty(item.ConditionFieldTypeName) && item.ConditionIntersectTypeUid.HasValue)
                         {
-                            throw new WorkStatusException(HttpStatusCode.BadRequest, "You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition.");
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.UseSingleCondition);
                         }
                         else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
                         {
-                            throw new WorkStatusException(HttpStatusCode.BadRequest, "You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.");
+                            throw new WorkStatusException(HttpStatusCode.BadRequest,MetricsApiMessages.ConditionNotEmpty);
                         }
                         else
                         {
                             if (string.IsNullOrEmpty(item.ConditionFieldTypeName) || string.IsNullOrWhiteSpace(item.ConditionFieldTypeName))
                             {
-                                throw new WorkStatusException(HttpStatusCode.BadRequest, "ConditionFieldTypeName must not be empty.");
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.ConditionFieldTypeNameNotEmpty);
                             }
 
                             if (item.ConditionIntersectTypeUid.HasValue && item.ConditionIntersectTypeUid != Guid.Empty)
                             {
-                                throw new WorkStatusException(HttpStatusCode.BadRequest, "ConditionIntersectTypeUid must be valid.");
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.ConditionIntersectTypeUidNotValid);
                             }
                         }
 
@@ -375,7 +375,7 @@ namespace d360.web.Controllers.V2
                         {
                             if (item.Values.Any(v => !string.IsNullOrEmpty(v) && v.Length > 250))
                             {
-                                throw new WorkStatusException(HttpStatusCode.BadRequest, "Condition Value must not be longer than 250 characters.");
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.ConditionValueMaxChar250);
                             }
                         }
                     }
@@ -398,8 +398,8 @@ namespace d360.web.Controllers.V2
             var isNew = (result.StatusCode == HttpStatusCode.Created);
             return successMessageResponse(
                     result.StatusCode,
-                    $"Metric {(isNew ? "added" : "updated")}.",
-                    $"The specified metric was successfully {(isNew ? "added" : "updated")}."
+                    $"{(isNew ? MetricsApiMessages.MetricAdded : MetricsApiMessages.MetricUpdated)}.",
+                    $"{(isNew ? MetricsApiMessages.MetricAddedSuccessfully : MetricsApiMessages.MetricUpdatedSuccessfully)}."
             );
         }
 
@@ -422,19 +422,19 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this metric."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, MetricsApiMessages.MetricRemoveNotAllowed));
             }
 
             MetricAsset model = MetricsRepository.GetActiveMetric(uid);
 
             if (model == null)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing metric", "Metric not found.");
+                return errorMessageResponse(HttpStatusCode.NotFound, MetricsApiMessages.ErrorRemoveMetric, MetricsApiMessages.MetricNotFound);
             }
 
             MetricsRepository.DeleteMetric(model);
 
-            return successMessageResponse(HttpStatusCode.OK, "Metric removed.", "Metric successfully removed.");
+            return successMessageResponse(HttpStatusCode.OK, MetricsApiMessages.MetricRemoved, MetricsApiMessages.MetricRemoveMessage);
         }
 
 
@@ -463,7 +463,7 @@ namespace d360.web.Controllers.V2
 
                 if (assetType == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
                 }
 
                 var result = MetricsRepository.GetMetricDefinitionHierarchyByAssetType(assetTypeUid, effectiveDate);
@@ -587,7 +587,7 @@ namespace d360.web.Controllers.V2
                     var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
                     if (!DateTime.TryParse(value, out effectiveDate))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Invalid Effective date provided!")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, MetricsApiMessages.InvalidEffectiveDate)).ConfigureAwait(false);
                     }
                 }
                 else
@@ -598,7 +598,7 @@ namespace d360.web.Controllers.V2
                 var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
                 if (assetDetail == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset corresponding with identifier of {assetUid} could not be found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, MetricsApiMessages.AssetIdentifierNotFound)).ConfigureAwait(false);
                 }
 
                 var allocation = Company.Filter<MetricAllocation>(al =>
@@ -609,7 +609,7 @@ namespace d360.web.Controllers.V2
 
                 if (allocation == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Score Allocation corresponding to asset with identifier of {assetUid} could not be found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(MetricsApiMessages.ScoreAllocationCorrespondingAssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
                 }
 
                 var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate);
@@ -651,7 +651,7 @@ namespace d360.web.Controllers.V2
                 var allocationStatus = validateScoreAllocation(allocationUid, out _allocationUid);
                 if (allocationStatus.StatusCode != HttpStatusCode.OK)
                 {
-                    return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, "Bad request", allocationStatus.Message)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode,ApiMessages.BadRequest, allocationStatus.Message)).ConfigureAwait(false);
                 }
 
                 var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out _assetUid);
@@ -667,7 +667,7 @@ namespace d360.web.Controllers.V2
                     var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
                     if (!DateTime.TryParse(value, out effectiveDate))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", MetricsApiMessages.InvalidEffectiveDate)).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, MetricsApiMessages.InvalidEffectiveDate)).ConfigureAwait(false);
                     }
                 }
                 else

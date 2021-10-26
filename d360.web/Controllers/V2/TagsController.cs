@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Data.Entity;
 using d360.core.enums;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -66,7 +67,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while fetching tags", ex.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorFetchTags, ex.Message);
 
             }
         }
@@ -100,7 +101,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 var tags = await tagRepository.GetTags(queryParams);
@@ -109,11 +110,11 @@ namespace d360.web.Controllers.V2
             }
             catch(ArgumentException e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, e.Message);
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while fetching tags", ex.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorFetchTags, ex.Message);
 
             }
         }
@@ -138,28 +139,28 @@ namespace d360.web.Controllers.V2
         {
             if (!tagRepository.DoesTagExists(tagUid))
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", $"Tag with uid {tagUid} not found.");
+                return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
             }
 
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
             }
 
             try
             {
                 if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = tagUid, cascade = cascade } }))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, TagsApiMessages.TagNotFound);
                 }
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while deleting tag", ex.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorDeleteTag, ex.Message);
 
             }
 
-            return successMessageResponse(HttpStatusCode.OK, "Tag removed.", "Tag successfully removed.");
+            return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoved, TagsApiMessages.TagRemoveMessage);
         }
 
 
@@ -180,7 +181,7 @@ namespace d360.web.Controllers.V2
         {
             if (model == null)
             {
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
             }
 
             TagApiModel result = new TagApiModel();
@@ -193,7 +194,7 @@ namespace d360.web.Controllers.V2
                 //make sure no tag with the same name exists
                 if (tagRepository.DoesTagExists(model.Value))
                 {
-                    throw new Exception("Invalid tag specified [same tag already exists].");
+                    throw new ArgumentNullException(TagsApiMessages.TagExists);
                 }
 
 
@@ -201,7 +202,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating tag", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorCreateTag, e.Message);
             }
 
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
@@ -228,10 +229,10 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult Put(Guid tagUid, TagApiUpsertModel model)
         {
             if (!tagRepository.DoesTagExists(tagUid))
-                return errorMessageResponse(HttpStatusCode.NotFound, "Error updating tag", $"Tag with uid {tagUid} not found.");
+                return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorUpdateTag, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
 
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
 
             TagApiModel result = new TagApiModel();
             try
@@ -243,19 +244,19 @@ namespace d360.web.Controllers.V2
 
                 if (existingTag == null)
                 {
-                    throw new Exception("Invalid uid no tag exists with the specified uid.");
+                    throw new ArgumentNullException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
                 }
 
                 if (tagRepository.DoesTagExists(tagUid, model))
                 {
-                    throw new Exception("Invalid tag specified [same tag already exists].");
+                    throw new ArgumentNullException(TagsApiMessages.TagExists);
                 }
 
                 result = tagRepository.UpdateTag(tagUid, model, existingTag);
             }
             catch (Exception e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while updating tag", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorUpdateTag, e.Message);
             }
 
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
@@ -282,18 +283,18 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult DeleteTags(List<TagApiDeleteModel> model)
         {
             if (model == null)
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error removing tags", $"Invalid request.");
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorRemoveTag, ApiMessages.ErrorInvalidDatasetMessage);
 
             foreach (var item in model)
             {
                 if (!tagRepository.DoesTagExists(item.uid))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", $"Tag with uid {item.uid} not found.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, string.Format(TagsApiMessages.TagUidNotFound, item.uid.ToString()));
                 }
 
                 if (!tagRepository.IsAuthorizedToEditTag(item.uid))
                 {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
                 }
             }
 
@@ -303,17 +304,17 @@ namespace d360.web.Controllers.V2
 
                 if (!tagRepository.DeleteTags(model))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tags", "Tag not found.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, TagsApiMessages.TagNotFound);
                 }
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while deleting tags", ex.Message);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, TagsApiMessages.ErrorRemoveTag, ex.Message);
 
             }
 
 
-            return successMessageResponse(HttpStatusCode.OK, "Tags removed.", "Tags successfully removed.");
+            return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoveTitle, TagsApiMessages.TagRemoveMessage);
         }
 
 
@@ -337,7 +338,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
             }
 
             try
@@ -345,20 +346,20 @@ namespace d360.web.Controllers.V2
 
                 if (Guid.Parse(parentUid) == Guid.Empty)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", $"{parentUid} is not valid uid!");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorConsolodateTags, string.Format(ApiMessages.CustomUidNotValid, parentUid));
                 }
 
                 foreach (var item in childrenUids)
                 {
                     if (Guid.Parse(item) == Guid.Empty)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", $"{item} is not valid uid!");
+                        return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorConsolodateTags, string.Format(ApiMessages.CustomUidNotValid, item));
                     }
                 }
 
                 if (childrenUids.Contains(parentUid))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", "Parent tag should not be included in children tags!");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorConsolodateTags, TagsApiMessages.ParentNotIncludeInChild);
                 }
 
                 IEnumerable<TagApiModel> result = tagRepository.ConsolidateTags(parentUid, childrenUids);
@@ -367,7 +368,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while consolidating tags", ex.Message);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, TagsApiMessages.ErrorConsolodateTags, ex.Message);
 
             }
         }
@@ -387,7 +388,7 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting assets path", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.UnknownError, e.Message);
             }
 
         }
@@ -501,7 +502,7 @@ namespace d360.web.Controllers.V2
 
                 if (!tagRepository.DoesTagExists(tagUid))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", $"Tag with uid {tagUid} not found.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidRequest, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -510,26 +511,26 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
                 }
 
                 if (queryParams.Any(q => q.Key.ToLower() == "assettypeuid"))
                 {
                     if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower(), out AssetTypeUid))
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset type uid.");
+                        return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeID);
                     }
                     if (AssetTypeUid != null && AssetTypeUid != Guid.Empty)
                     {
                         var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == AssetTypeUid);
                         if (assetType == null)
                         {
-                            return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset type uid.");
+                            return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
                         }
                     }
                     else
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset type uid.");
+                        return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeID);
                     }
                 }
 
@@ -539,7 +540,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting tag details", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorTagFetch, e.Message);
             }
 
 
@@ -628,7 +629,7 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting tag tooltip", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorTagToolTip, e.Message);
             }
 
         }
@@ -646,7 +647,7 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting tag tooltip", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorTagToolTip, e.Message);
             }
 
         }
@@ -680,7 +681,7 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorCheckTagExists, e.Message);
             }
 
         }
@@ -700,7 +701,7 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting asset tag details", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorAssetTagDetail, e.Message);
             }
 
         }
@@ -760,7 +761,29 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting asset tag permission details", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorTagPermissionDetail, e.Message);
+            }
+
+        }
+
+        [HttpGet,
+       Route("AssetTagOwnerByName"),
+       ApiExplorerSettings(IgnoreApi = true)]
+        public IHttpActionResult getAssetTagOwnerByName(string tagName, Guid assetUID)
+        {
+            try
+            {
+                tagName = tagName.Replace("&amp;", "&");
+                var tag = tagRepository.GetTagByName(tagName);
+                var asset = assetRepository.GetAssetByUID(assetUID);
+                var result = tagRepository.GetAssetTagDetails(tag.ID, asset.ID);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting asset tag details", e.Message);
             }
 
         }

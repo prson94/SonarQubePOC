@@ -54,7 +54,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     <div class="col s12 m6">
         <ng-container *ngIf="tabIsLoaded('items')">
             <div [hidden]="!tabIsActive('items') || !itemVisible">
-                <div class="tile tile-detail" [hidden]="itemId == null">
+                <div class="tile tile-detail step-list" [hidden]="itemId == null">
                     <d3s-workflow-monitor-step-list [itemId]="itemId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
                 </div>
                 <div class="tile tile-detail" [hidden]="!detailVisible">

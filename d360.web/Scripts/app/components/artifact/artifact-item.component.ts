@@ -7,7 +7,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { Artifact } from '../../models/artifacts.model';
+import { Artifact, SynonymPermission } from '../../models/artifacts.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
@@ -41,7 +41,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private dataProfile: any;
     private sidePanelOpen: boolean = false;
     private sidePanelStorageKey;
-
+    private synonymPermission: SynonymPermission;
+   
     constructor(
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
@@ -93,9 +94,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
             .subscribe(
                 artifact => {
                     this.artifact = artifact;
-
+                    this.synonymPermission = artifact.SynonymPermission;
+                     
                     this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
-
 
                     this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
 

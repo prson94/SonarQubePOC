@@ -6,7 +6,6 @@ import {
     FieldTypeEditorModel,
     Lookups,
     FieldTypeRelationItemEditorModel,
-    ComplexLookupRelationType,
     FieldTypeItemDisplayFieldEditorModel,
     Direction
 } from '../../../../models/fields.model';
@@ -298,7 +297,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 let item = this.model.RelationItems[i];
 
                 //load cascading dropdowns
-                this.changeRefType(i).subscribe(
+                this.loadRelationItems(i).subscribe(
                     () => {
                         item.selectedRelationItemID = item.IntersectTypeUid.toUpperCase() + '|' + item.AssetTypeUid.toUpperCase() + '|' + item.Direction;
                         this.changeRel(i).subscribe(() => {
@@ -435,13 +434,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     let r = new FieldTypeRelationItemEditorModel();
 
                     r.DisplayFields = [];
-                    r.ReferenceType = ComplexLookupRelationType.StandardRelationship;
                     r.AssetTypeUid = this.GetCurrentUid()
 
                     this.model.RelationItems = [];
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
-                    this.changeRefType(this.model.RelationItems.length - 1).subscribe();
+                    this.loadRelationItems(this.model.RelationItems.length - 1).subscribe();
                 }
                 break;
             case 'tag':
@@ -885,49 +883,23 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     //#region dropdown functions
 
-    private changeRefType(index: number, selected: string = null): Observable<any> {
+    private loadRelationItems(index: number): Observable<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
         item.relationsLoading = true;
         item.DisplayFields = [];
-        item.selectedRelationItemID = selected;
         let uid = this.GetCurrentUid();
         if (index !== 0) {
             uid = last.AssetTypeUid;
         }
 
-        switch (item.ReferenceType.toString()) {
-            case ComplexLookupRelationType.ChildItem.toString(): //child item
-                return this.fieldsService.getChildRelations(uid)
-                    .pipe(map(
-                        x => { item.relationItems = x; }
-                    ), map(() => item.relationsLoading = false));
-            case ComplexLookupRelationType.ChildRelationship.toString(): //child relationship
-                let intersectIdToGetChildrenFor = item.IntersectTypeUid;
-
-                if (last) {
-                    intersectIdToGetChildrenFor = last.IntersectTypeUid;
+        return this.fieldsService.getStandardRelations(uid)
+            .pipe(map(
+                x => {
+                    item.relationItems = x;
                 }
-
-                return this.fieldsService.getTechnicalRelations(intersectIdToGetChildrenFor)
-                    .pipe(map(
-                        x => { item.relationItems = x; }
-                    ), map(() => item.relationsLoading = false));
-            case ComplexLookupRelationType.ParentItem.toString():
-                return this.fieldsService.getParentRelations(uid)
-                    .pipe(map(
-                        x => { item.relationItems = x; }
-                    ), map(() => item.relationsLoading = false));
-            case ComplexLookupRelationType.StandardRelationship.toString():
-                return this.fieldsService.getStandardRelations(uid)
-                    .pipe(map(
-                        x => {
-                            item.relationItems = x;
-                        }
-                    ), map(() => item.relationsLoading = false));
-            default:
-                console.error("No ReferenceType");
-        }
+            ), map(() => item.relationsLoading = false));
+        
     }
     private GetCurrentUid() {
         if (this.assetTypeUid != null)
@@ -1339,6 +1311,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         this.model.RelationItems.push(i);
         this.relationItemCount = this.model.RelationItems.length;
+        this.loadRelationItems(this.relationItemCount - 1).subscribe();
     }
 
     private removeRelation(item: FieldTypeRelationItemEditorModel) {
@@ -1463,7 +1436,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
                 AssetTypeUid: x.AssetTypeUid,
-                RelationType: ComplexLookupRelationType[x.ReferenceType],
+                RelationType: null, //deprecated
                 Direction: Direction[x.Direction]
             };
 

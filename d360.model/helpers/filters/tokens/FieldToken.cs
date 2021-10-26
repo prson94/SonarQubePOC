@@ -160,6 +160,10 @@ namespace d360.model.helpers.filters
             {
                 fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
             }
+            if (fieldColumn == null)
+            {
+                fieldColumn = fieldColumns.FirstOrDefault(x => x.ToLowerInvariant().Contains($"[{fieldType.Name.ToLowerInvariant()}]"));
+            }
 
             this.fieldValueValidator = GetValueValidator();
         }

@@ -43,6 +43,7 @@ import { PipesModule } from "../../../../pipes/pipes.module";
 
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
 import { DirectivesModule } from "../../../../directives/directives.module";
+import { CheckboxModule } from "primeng/checkbox";
 
 
 @NgModule({
@@ -71,7 +72,8 @@ import { DirectivesModule } from "../../../../directives/directives.module";
         AutoCompleteModule,
         MultiSelectModule,
         TableModule,
-        PipesModule
+        PipesModule,
+        CheckboxModule
     ],
     declarations: [
         WorkflowDiagramComponent,

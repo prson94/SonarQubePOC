@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, ViewChildren, QueryList, ViewEncapsulation, ViewChild, ElementRef, HostListener, AfterContentInit} from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, ViewChildren, QueryList, ViewEncapsulation, ViewChild, ElementRef, HostListener, AfterContentInit } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { StateService } from '../../../services/state.service';
@@ -22,7 +22,7 @@ import { CompanySettingEnum } from '../../../models/settings.model';
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./site-menu.less'],
-    
+
 })
 
 export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy, AfterContentInit {
@@ -33,7 +33,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     public isAdmin: boolean = false;
     public siteMenu: SiteMenu[] = [];
     public favorites: SiteMenu;
-    
+
     private adminMenu: SiteMenu;
     private configMenu: SiteMenu;
     private subSiteNav: any;
@@ -43,7 +43,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private subReloadCounts: any;
     protected countData: any[];
 
-    isScrollerVisable: boolean = false; 
+    isScrollerVisable: boolean = false;
     scrollingUp: boolean = false;
     scrollTitle: string = "Scroll down";
 
@@ -53,7 +53,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     @HostListener('document:click', ['$event'])
     documentClick(event: MouseEvent) {
-            this.isMenuActive = false;        
+        this.isMenuActive = false;
     }
 
     constructor(
@@ -128,8 +128,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     clearSearches($event) {
 
-        this.menuRefs.forEach((item) =>
-        {
+        this.menuRefs.forEach((item) => {
             if ($event.item.title != item.title) {
                 if (item.menu)
                     item.menu.isActiveItem = false;
@@ -156,24 +155,24 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     checkScrollerPos() {
         let elem = this.menu.nativeElement;
-            let top = elem.scrollTop;
-            let max = this.menuOpen ? (elem.scrollHeight - elem.offsetHeight) - 5 : (elem.scrollHeight - elem.offsetHeight) - 45;
-            if (this.scrollingUp == true) {
-                top = Math.ceil(top);
-                max = Math.ceil(max);
-            } else {
-                top = Math.floor(top);
-                max = Math.floor(max);
-            }
-            if (top >= (max) && top != 0) {
-                this.scrollingUp = true;
-                this.scrollTitle = "Scroll up";
-                this.ref.markForCheck();
-            } else if (top <= 0) {
-                this.scrollingUp = false;
-                this.scrollTitle = "Scroll down";
-                this.ref.markForCheck();
-            }
+        let top = elem.scrollTop;
+        let max = this.menuOpen ? (elem.scrollHeight - elem.offsetHeight) - 5 : (elem.scrollHeight - elem.offsetHeight) - 45;
+        if (this.scrollingUp == true) {
+            top = Math.ceil(top);
+            max = Math.ceil(max);
+        } else {
+            top = Math.floor(top);
+            max = Math.floor(max);
+        }
+        if (top >= (max) && top != 0) {
+            this.scrollingUp = true;
+            this.scrollTitle = "Scroll up";
+            this.ref.markForCheck();
+        } else if (top <= 0) {
+            this.scrollingUp = false;
+            this.scrollTitle = "Scroll down";
+            this.ref.markForCheck();
+        }
 
     }
 
@@ -221,21 +220,21 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     loadMenu() {
-        
-            let navigationState: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu")) ? JSON.parse(localStorage.getItem("NavigationMenu")) : [];        
 
-            this.siteMenuService.getMenu().subscribe(
-                result => {                          
+        let navigationState: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu")) ? JSON.parse(localStorage.getItem("NavigationMenu")) : [];
 
-                        // used to enable guard that allows access to administrative routes                                
-                        this.authenticationService.isAdmin = result.IsAdmin;
-                        this.isAdmin = result.IsAdmin;
+        this.siteMenuService.getMenu().subscribe(
+            result => {
 
-                        result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
+                // used to enable guard that allows access to administrative routes                                
+                this.authenticationService.isAdmin = result.IsAdmin;
+                this.isAdmin = result.IsAdmin;
 
-                        // add properties we need to add to the burned in menus
-                        for (let menu of result.MenuItems) {
-                            menu.ShouldDisplay = true;
+                result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
+
+                // add properties we need to add to the burned in menus
+                for (let menu of result.MenuItems) {
+                    menu.ShouldDisplay = true;
 
                             switch (menu.MenuID) {
                                 case '#Business':
@@ -279,62 +278,62 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                                 menu.Icon = 'fa-folder';
                             }
 
-                        }
-                        
-                        this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order                                                
-                        
-                    if (result.IsAdmin) {
-                        this.buildConfigMenu();
-                        this.buildAdminMenu();
+                }
 
-                        //add logic around the admin menus starting as expanded
-                        //only add if it doesn't already exist.
-                        if (!navigationState.some(x => x.SiteMenuID == this.adminMenu.MenuID)) {
-                            navigationState.push(
-                                {
-                                    SiteMenuID: this.adminMenu.MenuID,
-                                    DisplayElements: [
-                                        { ParentUrl: null, Url: this.adminMenu.NavigationItems.find(item => item.Name == "Integration").Name },
-                                        { ParentUrl: null, Url: this.adminMenu.NavigationItems.find(item => item.Name == "Security").Name }
-                                    ]
-                                });
-                        }
-                    }                    
-                   
-                    localStorage.setItem("NavigationMenu", JSON.stringify(navigationState));
-                    window.setTimeout(() => { this.checkScroller(); this.ref.markForCheck(); }, 250);
-                    this.ref.markForCheck();
-                }).add(() => {
-                    //set the nav state for each of the siteMenu elements
-                    this.siteMenuService.getCounts().subscribe((res) => {                        
-                        this.siteMenu.forEach(menu => {
-                            this.setNavState(navigationState, menu.NavigationItems, menu.MenuID, menu.ngUrl);
-                            this.loadCounts(menu, res);
-                        });
-                        //set the nav state for the admin menu elements
-                        if (this.adminMenu)
-                            this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);
-                        else
-                            this.setNavState(navigationState, [], null, null);
+                this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order                                                
+
+                if (result.IsAdmin) {
+                    this.buildConfigMenu();
+                    this.buildAdminMenu();
+
+                    //add logic around the admin menus starting as expanded
+                    //only add if it doesn't already exist.
+                    if (!navigationState.some(x => x.SiteMenuID == this.adminMenu.MenuID)) {
+                        navigationState.push(
+                            {
+                                SiteMenuID: this.adminMenu.MenuID,
+                                DisplayElements: [
+                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find(item => item.Name == "Integration").Name },
+                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find(item => item.Name == "Security").Name }
+                                ]
+                            });
+                    }
+                }
+
+                localStorage.setItem("NavigationMenu", JSON.stringify(navigationState));
+                window.setTimeout(() => { this.checkScroller(); this.ref.markForCheck(); }, 250);
+                this.ref.markForCheck();
+            }).add(() => {
+                //set the nav state for each of the siteMenu elements
+                this.siteMenuService.getCounts().subscribe((res) => {
+                    this.siteMenu.forEach(menu => {
+                        this.setNavState(navigationState, menu.NavigationItems, menu.MenuID, menu.ngUrl);
+                        this.loadCounts(menu, res);
                     });
+                    //set the nav state for the admin menu elements
+                    if (this.adminMenu)
+                        this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);
+                    else
+                        this.setNavState(navigationState, [], null, null);
                 });
+            });
     }
 
     loadCounts(menu: any, items: any[]) {
         if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
-                menu.NavigationItems.forEach((item) => this.getAllCounts(item, items));
+            menu.NavigationItems.forEach((item) => this.getAllCounts(item, items));
         }
     }
 
-    getAllCounts(items, arr: any[]) {        
+    getAllCounts(items, arr: any[]) {
         if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') !== -1) {
             //get count for item
             var id = _.findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
                 currentURL = items.Url.replace('model', 'taxonomy');
                 return o.Name == items.Name
-                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))                    
-                    && _.includes(currentURL, '/' +o.ObjectID);
+                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
+                    && _.includes(currentURL, '/' + o.ObjectID);
             });
             if (id !== -1) {
                 items.count = arr[id].count;
@@ -379,9 +378,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     }
                 }
             });
-        }        
+        }
         this.ref.detectChanges();
-    }    
+    }
 
     buildConfigMenu() {
 
@@ -390,15 +389,15 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.configMenu.NavigationItems = [];
 
         this.configMenu.NavigationItems.push({ Name: 'Business Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Technical Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`, Items: null, IsLink: false, IsHomePage: false, count: null });        
-        this.configMenu.NavigationItems.push({ Name: 'Diagram Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS}`, Items: null, IsLink: false, IsHomePage: false, count: null });        
+        this.configMenu.NavigationItems.push({ Name: 'Technical Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Diagram Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Models', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Policies', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Rules', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Relationships', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Workflows', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Workflow Actions', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false, count: null });        
+        this.configMenu.NavigationItems.push({ Name: 'Workflow Actions', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Scoring Definitions', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
     }
@@ -407,7 +406,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu = new SiteMenu();
         this.adminMenu.MenuID = '-Admin';
         this.adminMenu.NavigationItems = [];
-        
+
         let integrationMenu = new SiteMenuItem();
         integrationMenu.Name = "Integration";
         integrationMenu.Items = [];
@@ -437,14 +436,14 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push({ Name: 'Dashboards', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-               
+
         this.adminMenu.NavigationItems.push({ Name: 'Branding', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push({ Name: 'Tags', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, IsHomePage: false, count: null });
 
     }
 
-    private setNavState(currentNavState: NavigationState[], menuItems: SiteMenuItem[], siteMenuID: string, parentUrl: string) {        
+    private setNavState(currentNavState: NavigationState[], menuItems: SiteMenuItem[], siteMenuID: string, parentUrl: string) {
         menuItems.forEach(menuItem => {
             if (!menuItem.ShowChildren) {
                 menuItem.ShowChildren = currentNavState.some(y => y.SiteMenuID == siteMenuID && y.DisplayElements.findIndex(element => (element.Url == menuItem.Url) || (!element.ParentUrl && element.Url == menuItem.Name)) >= 0);

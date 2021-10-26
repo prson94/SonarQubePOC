@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Table.dbo.Load-v2">
+  <changeSet author="sDooley" id="Table.dbo.Load-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -40,11 +40,20 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [dbo].[Load] ADD [IntersectTypeUid] uniqueidentifier
 END
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Load' and COLUMN_NAME = 'uid')
+begin
+	alter table [dbo].[Load] add [uid] UniqueIdentifier not null constraint DF_Load_Uid default(NewID());
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+if  exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Load' and COLUMN_NAME = 'uid')
+begin
+	alter table [Load] drop constraint DF_Load_Uid;
+	alter table [Load] drop column [uid];
+end
 		]]>
 	</rollback>
   </changeSet>

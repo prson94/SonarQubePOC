@@ -11,9 +11,11 @@ import { Title } from '@angular/platform-browser';
 import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../../models/secondaryNav.model';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 declare var window: any;
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-model-diagram',
@@ -39,6 +41,8 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     currentAreaName: any;
     assetType: Model;
 
+    sidePanelOpen: boolean = false;
+    sidePanelStorageKey: string = '';
     constructor(
         private myElement: ElementRef,
         secondaryNavService: SecondaryNavService,
@@ -59,6 +63,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         );
 
         this.initializeDiagram();
+        this.sidePanelStorageKey = 'detail_' + AssetTypeClass.Model + '_' + CurrentResourceID;
     }
 
     public ngAfterViewInit() {
@@ -206,10 +211,10 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     private createNodeTemplate(): go.Node {
         return this.g(go.Node, "Auto",
-            {deletable: false},
+            { deletable: false },
             new go.Binding("text", "name"),
             this.g(go.Shape, "Rectangle",
-                {fill: "lightgray", stroke: "black", stretch: go.GraphObject.Fill, alignment: go.Spot.Center}
+                { fill: "lightgray", stroke: "black", stretch: go.GraphObject.Fill, alignment: go.Spot.Center }
             ),
             this.g(go.TextBlock,
                 {
@@ -225,7 +230,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     private createLinkTemplate(): go.Link {
         return this.g(go.Link,
-            {routing: go.Link.Orthogonal, corner: 5, selectable: false},
+            { routing: go.Link.Orthogonal, corner: 5, selectable: false },
             this.g(go.Shape)
         );
     }
@@ -235,7 +240,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.breadcrumbsService
             .getAreaName(this.objectType, this.id)
             .subscribe(result => {
-                this.currentAreaName = result  
+                this.currentAreaName = result
                 this.breadcrumbsService.getFolderTitle(this.navFolderName).then((res) => {
                     this.breadcrumbsService.clearBreadcrumbs();
                     this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `TaxonomyType/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`));
@@ -261,7 +266,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                     this.setBrowserTitle(this.titleService, this.assetType.Name);
                     this.isLoading = false;
                 });
-        });
+            });
     }
 
     //#endregion

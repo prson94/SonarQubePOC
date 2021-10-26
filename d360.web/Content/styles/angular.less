@@ -11,7 +11,7 @@
 }
 
 @font-face {
-  font-family: 'Precisely Bold';
+  font-family: 'Precisely';
   font-style: normal;
   font-weight: 700;
   src: url('/fonts/precisely/Precisely-Bold.ttf') format('truetype')
@@ -1151,17 +1151,12 @@ a.breadcrumb {
 
 .autoInputBox {
   position: relative;
-  top: 5px;
   display: inline-block;
 
   .p-autocomplete-panel {
     margin-left: 5px;
     min-width: 200px;
     max-width: 600px !important;
-  }
-
-  .p-autocomplete-panel .p-highlight {
-    background-color: @igx-lightblue-xlight !important;
   }
 
   .p-autocomplete-panel .p-autocomplete-item {
@@ -1307,6 +1302,7 @@ a.breadcrumb {
   align-items: flex-start;
   padding: 4px;
   line-height: 24px;
+
 
   .card-row {
     margin-left: 4px;
@@ -1708,6 +1704,18 @@ a.breadcrumb {
 .grid-simple-filter {
   margin-bottom: 10px !important;
   width: 100%;
+}
+
+.nym-table {
+  .p-datatable-tbody {
+    tr, td, tr:hover {
+      background-color: white;
+    }
+
+    .p-checkbox {
+      pointer-events: all !important;
+    }
+  }
 }
 
 /* permission tile header styles*/
@@ -2831,7 +2839,7 @@ button.button, a.link-button {
     }
 
     &:disabled, &.hover {
-      background: mix(black, @ig-midblue, 21%)
+      background: @ig-purple;
     }
   }
 
@@ -3129,7 +3137,7 @@ button.tab-scroller {
   text-align: center;
   white-space: nowrap;
   line-height: 1;
-  background: #6c7884;
+  background: @ig-purple;
   color: white;
   border: none;
   border-radius: 3px;
@@ -3148,27 +3156,6 @@ button.tab-scroller {
 
   &.clickable {
     cursor: pointer;
-  }
-
-  &.bad {
-    background: @ig-coral;
-  }
-
-  &.ok {
-    background: @igx-orange-light;
-  }
-
-  &.good {
-    background: @ig-green;
-  }
-
-  &.fail {
-    background: @ig-red;
-  }
-
-
-  &.primary {
-    background: @ig-midblue;
   }
 
   &.light {
@@ -3390,10 +3377,6 @@ button.tab-scroller {
         color: black;
         border: 0px;
         padding: 10px;
-
-        &.p-highlight {
-          background-color: @igx-lightblue-xlight;
-        }
       }
     }
   }
@@ -3641,7 +3624,7 @@ button.tab-scroller {
   display: inline-block;
 
   .title {
-    color: @ig-midblue;
+    color: @ig-purple;
     padding: 0px;
     display: inline-block;
   }
@@ -3711,8 +3694,8 @@ button.tab-scroller {
             padding-right: 40px;
           }
 
-          &.name {
-            color: #006ab3;
+          &.name a {
+            color: @ig-purple;
             padding-right: 30px;
             max-width: 200px;
           }
@@ -3789,6 +3772,12 @@ button.tab-scroller {
 }
 
 .tile-detail {
+  &.step-list {
+    .ui-accordion .ui-accordion-header:first-child {
+      margin-top: 0px;
+    }
+  }
+
   &.theme-new {
     .p-datatable {
 
@@ -3797,15 +3786,12 @@ button.tab-scroller {
       }
 
       .p-checkbox {
-        background-color: white;
-
         .p-checkbox-box {
+          border: 1px solid @ig-purple;
           border-radius: 2px !important;
-          background-color: white;
         }
 
         .p-checkbox-icon {
-          color: black;
           font-weight: bold;
           position: relative;
           top: -1px;
@@ -3988,11 +3974,6 @@ button.tab-scroller {
     width: 100%;
   }
 
-  &.required {
-    background: @igx-orange-xlight;
-    border: 1px solid @igx-orange;
-  }
-
   &.error {
     background: #f3c7d1;
     border: 1px solid #b21a3e;
@@ -4070,6 +4051,12 @@ button.tab-scroller {
   }
 }
 
+.disable-pointer-events {
+  .p-radiobutton {
+    pointer-events: none;
+  }
+}
+
 .gov-detail-page {
   .tile-detail {
     padding: 5px 18px;
@@ -4121,7 +4108,7 @@ button.tab-scroller {
 .action-tile-span {
   padding-right: 5px;
   cursor: pointer;
-  color: @igx-blue-xlight;
+  color: @ig-purple;
   font-weight: normal;
   font-size: 14px;
 }
@@ -4132,6 +4119,10 @@ button.tab-scroller {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    &.savingTag{
+      color:@igx-gray-color;
+    }
 
     &.too-long {
       text-overflow: ellipsis;
@@ -5543,7 +5534,7 @@ d3s-header-typeahead-search {
 
   .value {
     font-size: 14px;
-    color: @igx-light-blue-2;
+    color: @ig-purple;
     text-decoration: underline;
     font-weight: normal;
   }
@@ -5614,8 +5605,14 @@ d3s-header-typeahead-search {
     position: absolute;
     width: 127px;
     padding: 8px;
-    border: 1px solid #dde0e3;
-    background-color: rgb(255,251,226);
+    background-color: white;
+    color: #202020;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    line-height: 21px;
+    word-break: break-word;
     z-index: 100;
     top: -72px;
     right: -62px;
@@ -5915,16 +5912,6 @@ table {
     padding: 0;
 
     .p-dropdown-item {
-      &:not(.p-highlight):not(.p-disabled):hover {
-        color: @ig-black;
-        background-color: @ig-lightblue-t4;
-      }
-
-      &.p-highlight {
-        color: @ig-black;
-        background-color: @ig-lightblue-t2;
-      }
-
       color: @ig-black;
       padding: 0 8px;
       height: 32px;
@@ -6129,7 +6116,7 @@ table {
         position: relative;
         font-size: 14px;
         width: initial;
-        color: @ig-midblue;
+        color: @ig-purple;
         line-height: 11px;
         background: none;
       }
@@ -6550,6 +6537,11 @@ table {
       }
     }
   }
+
+  &.ig-value-complex-field {
+    position: relative;
+    top: -2px;
+  }
 }
 
 .front-elide {
@@ -6670,38 +6662,113 @@ table {
   }
 }
 
-.asset-detail-header {
-  padding: 19px 8px 4px 0;
-  margin: 0;
+.asset-detail {
+  .asset-detail-header {
+    padding: 19px 8px 4px 0;
+    margin: 0;
 
-  .asset-name {
-    height: 24px;
-    font-size: 18px;
-    font-weight: 600;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 0.89;
-    letter-spacing: normal;
-    color: @ig-slate;
-    word-break: break-word;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding-right: 8px;
+    .asset-name {
+      height: 24px;
+      font-size: 18px;
+      font-weight: 600;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: 0.89;
+      letter-spacing: normal;
+      color: @ig-slate;
+      word-break: break-word;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 8px;
+    }
+
+    .class-name {
+      height: 24px;
+      font-size: 14px;
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: 1.14;
+      letter-spacing: normal;
+      color: @ig-grey;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      padding-right: 8px;
+    }
   }
 
-  .class-name {
-    height: 24px;
-    font-size: 14px;
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 1.14;
-    letter-spacing: normal;
-    color: @ig-grey;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding-right: 8px;
+  .windowtabs {
+    height: 32px;
+    background-color: @ig-white;
+
+    button.tab {
+      box-sizing: border-box;
+      padding: 0 15px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-radius: 0;
+      color: @ig-purple;
+      border-bottom: 3px solid transparent;
+      outline: none;
+
+      &:disabled {
+        color: @d3s-gray-7;
+        cursor: not-allowed;
+      }
+
+      &:not(:disabled):hover,
+      &.hover {
+        background: rgba(20, 20, 20, 0.05);
+      }
+    }
+
+    button.tab-selected {
+      box-sizing: border-box;
+      padding: 0 15px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-radius: 0;
+      border-bottom: 3px solid black;
+      color: @ig-black;
+    }
+  }
+
+  .empty-overlay {
+    .content {
+      text-align: center;
+      top: 100px;
+      position: relative;
+      max-width: 210px;
+      margin: 0 auto;
+      color: @ig-slate;
+
+      span {
+        font-size: 14px;
+        line-height: 18px;
+      }
+
+      .icon-holder {
+        background-color: @ig-grey-t5;
+        height: 128px;
+        width: 128px;
+        text-align: center;
+        margin: 0 auto;
+        border-radius: 50%;
+        margin-bottom: 16px;
+
+        .fa {
+          font-size: 56px;
+          line-height: 128px;
+        }
+      }
+    }
   }
 }
 
@@ -6747,4 +6814,12 @@ table {
 .p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options .ql-picker-item {
   min-height: 16px;
   min-width: 16px;
+}
+
+.tag-drawer {
+  .modal-drawer-wrapper {
+    .modal-drawer-content {
+      overflow: visible !important;
+    }
+  }
 }

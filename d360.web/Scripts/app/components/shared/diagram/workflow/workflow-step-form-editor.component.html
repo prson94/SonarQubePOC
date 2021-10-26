@@ -16,15 +16,15 @@
                 Description
             </div>
             <div style="width: 95%">
-                <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="mapHTMLToFormProperty($event, '@description'); stepChange.emit(step)"  #fed>
+                <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="mapHTMLToFormProperty($event, '@description'); stepChange.emit(step)" #fed>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
                         <d3s-workflow-template-tool [step]="step"
                                                     [diagram]="diagram"
-                                                    [issueObject]="issueObject" 
-                                                    [objectType]="objectType" 
-                                                    [objectId]="objectId" 
-                                                    (onItemClick)="appendFieldDescription($event)" ></d3s-workflow-template-tool>
+                                                    [issueObject]="issueObject"
+                                                    [objectType]="objectType"
+                                                    [objectId]="objectId"
+                                                    (onItemClick)="appendFieldDescription($event)"></d3s-workflow-template-tool>
                     </p-header>
                 </p-editor>
             </div>
@@ -65,10 +65,10 @@
         </div>
         <div *ngIf="step.settings.MessageRecipientType == 'Responsibility'" class="col s12">
             <d3s-workflow-responsibility-selector [step]="step"
-                                                 (stepChange)="step = $event; stepChange.emit(step)" 
-                                                 [objectType]="objectType"
-                                                 [objectId]="objectId" >
-            </d3s-workflow-responsibility-selector>     
+                                                  (stepChange)="step = $event; stepChange.emit(step)"
+                                                  [objectType]="objectType"
+                                                  [objectId]="objectId">
+            </d3s-workflow-responsibility-selector>
         </div>
         <div *ngIf="step.settings.MessageRecipientType == 'Group'" class="col s12">
             <div class="FieldName">
@@ -86,18 +86,18 @@
         <div class="col s12">
             <ng-container *ngIf="objectType == 'IssueType'">
                 <div>
-                    <input type="checkbox" [ngModel]="allowReassignResource" (ngModelChange)="allowReassignResource = $event; step.fields.form['@allowReassignResource'] = $event; stepChange.emit(step);" /> Allow resource reassignment?
+                    <p-checkbox igCheckbox binary="true" label="Allow resource reassignment?" [ngModel]="allowReassignResource" (ngModelChange)="allowReassignResource = $event; step.fields.form['@allowReassignResource'] = $event; stepChange.emit(step);"></p-checkbox>
                 </div>
                 <div>
-                    <input type="checkbox" [ngModel]="allowReassignObject" (ngModelChange)="allowReassignObject = $event; step.fields.form['@allowReassignObject'] = $event; stepChange.emit(step);" /> Allow object reassignment?
+                    <p-checkbox igCheckbox binary="true" label="Allow object reassignment?" [ngModel]="allowReassignObject" (ngModelChange)="allowReassignObject = $event; step.fields.form['@allowReassignObject'] = $event; stepChange.emit(step);"></p-checkbox>
                 </div>
             </ng-container>
             <div>
-                <input type="checkbox" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);" /> Send form email?
+                <p-checkbox igCheckbox binary="true" label="Send form email?" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);"></p-checkbox>
             </div>
             <div>
                 <div>
-                    <input type="checkbox" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)" /> Include previous form responses
+                    <p-checkbox igCheckbox binary="true" label="Include previous form responses" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)"></p-checkbox>
                 </div>
             </div>
         </div>
@@ -119,12 +119,11 @@
                 <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
-                        <d3s-workflow-template-tool 
-                                                    [issueObject]="issueObject" 
-                                                    [objectType]="objectType" 
-                                                    [objectId]="objectId" 
-                                                    (onItemClick)="appendField($event)" 
-                                                    [step]="step" 
+                        <d3s-workflow-template-tool [issueObject]="issueObject"
+                                                    [objectType]="objectType"
+                                                    [objectId]="objectId"
+                                                    (onItemClick)="appendField($event)"
+                                                    [step]="step"
                                                     [diagram]="diagram"></d3s-workflow-template-tool>
                     </p-header>
                 </p-editor>
@@ -138,13 +137,13 @@
                 <d3s-tile-actions hideTooltip="true" hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
 
-            <p-table #dt 
-                     [value]="step.fields.form.field" 
-                     selectionMode="single" 
-                     [metaKeySelection]="true" 
-                     [pageLinks]="3" 
-                     [paginator]="true" 
-                     [rows]="10" 
+            <p-table #dt
+                     [value]="step.fields.form.field"
+                     selectionMode="single"
+                     [metaKeySelection]="true"
+                     [pageLinks]="3"
+                     [paginator]="true"
+                     [rows]="10"
                      [rowsPerPageOptions]="defaultPagingOptions"
                      [selection]="selectedRow"
                      (onRowSelect)="select($event.index)">
@@ -164,7 +163,7 @@
                         </td>
                         <td>
                             <i *ngIf="(item['@required']=='true'|| item['@required']==true || (item['@type']=='boolean')); else elseBlock" class="fa fa-check enabled" title="True"></i>
-                            <ng-template #elseBlock><i  class="fa fa-times disabled" title="False"></i></ng-template>
+                            <ng-template #elseBlock><i class="fa fa-times disabled" title="False"></i></ng-template>
 
                         </td>
                         <td>
@@ -239,7 +238,7 @@
         <div class="row">
             <div class="col s12">
                 <div class="FieldName">
-                     <input type="checkbox" [disabled]="newField['@type'] =='boolean'"  [(ngModel)]="newField['@required']" />&nbsp;Is Required?
+                    <p-checkbox igCheckbox binary="true" [disabled]="newField['@type'] =='boolean'" label="Is Required?" [(ngModel)]="newField['@required']"></p-checkbox>
                 </div>
             </div>
         </div>
@@ -315,7 +314,7 @@
         <div class="row">
             <div class="col s12">
                 <div class="FieldName">
-                    <input type="checkbox" [disabled]="newField['@type'] =='boolean'" [(ngModel)]="newField['@required']" />&nbsp;Is Required?
+                    <p-checkbox igCheckbox binary="true" [disabled]="newField['@type'] =='boolean'" label="Is Required?" [(ngModel)]="newField['@required']"></p-checkbox>
                 </div>
             </div>
         </div>

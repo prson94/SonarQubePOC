@@ -10,6 +10,7 @@ import { FormMode } from '../../models/form.model';
 import { AssetService } from '../../services/asset.service';
 import { AssetEditorModel } from '../../models/asset.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { SynonymPermission } from '../../models/artifacts.model';
 import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
@@ -22,6 +23,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Input() objectID: number;
     @Input() objectType: string;
     @Input() useV2Api: boolean = false;
+    @Input() synonymPermission: SynonymPermission;
 
     @Input() nymTypes: NymType[] = [];
 

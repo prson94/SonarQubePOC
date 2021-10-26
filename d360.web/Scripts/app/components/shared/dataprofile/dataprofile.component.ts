@@ -1,8 +1,9 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter } from '@angular/core';
-
+﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter} from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
+import { AssetTypeService } from '../../../services/asset-type.service';
+import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -11,10 +12,17 @@ import { CompanySettingsService } from '../../../services/settings.service';
     styleUrls: ['dataprofile.less']
 })
 
-export class DataProfileComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class DataProfileComponent extends BaseComponent implements OnInit {
     @Input() dataProfile: any;
-    @Input() isModal: boolean = false;
+    @Input() isModal: boolean = false;  
+    @Input() assetData: any;
     @Output() linkClicked = new EventEmitter();
+    
+    constructor(
+        private assetTypeService: AssetTypeService,
+        private assetService: AssetService) {
+        super();
+    }
 
     private sampleCountPercentage: number;
     private nullBlankCountTotal: number;
@@ -52,6 +60,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
     private invalidCount: number;
     private showDuplicates: boolean = true;
     private showSimilar: boolean = true;
+    private assetName: string;
+    private assetTypeName: string;
 
     isMatchDetectionPopupVisible: boolean = false;
     matchType: string = "";
@@ -67,15 +77,31 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
 
     ngOnInit() { 
         this.initialize();
+        if (this.assetData) {
+            this.assetName = this.assetData.AssetName;
+            this.assetTypeName = this.assetData.AssetTypeName;
+        } else {
+            let uriParams: any = {};
+            this.isLoading = true;
+            this.assetService.getAsset(this.dataProfile.assetUid)
+                .subscribe((res) => {
+                    this.assetName = res.Name;
+                    uriParams.assetTypeUid = res.AssetTypeUid;
+                    this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+                        this.assetTypeName = result[0].Name;
+                        this.isLoading = false;
+                    });
+                });
+        }        
     }    
-
+    
     ngAfterViewInit() {
-    if (!this.sampleDistributionChart) {
-        setTimeout(() => this.renderSampleDistributionChart(), 10);
+        if (!this.sampleDistributionChart) {
+            setTimeout(() => this.renderSampleDistributionChart(), 10);
         }            
     }
 
-    initialize() {
+    initialize() {                        
         this.validPercentage = ((this.dataProfile.matchCount / this.dataProfile.totalCount) * 100);
 
         this.nullBlankCountTotal = ((this.dataProfile.nullCount ?? 0) + (this.dataProfile.blankCount ?? 0));
@@ -94,7 +120,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
 
         this.checkVisibility();
 
-        this.setMinAndMaxText();        
+        this.setMinAndMaxText();             
     }
 
     private showSidePanel() {
@@ -125,7 +151,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
 
         if (this.dataProfile.shapesDetail) {
             this.dataProfile.shapesDetail = this.dataProfile.shapesDetail.sort((a, b) => (b.count - a.count));
-        }
+        }      
     }
 
     private getBackgroundSize(size: number, total: number) {
@@ -244,7 +270,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
     getMatchTooltip(type: string, count: number): string {
         let assetCountStr: string = count > 1 ? `${count} assets` : '1 asset';
         let descStr: string = type === 'duplicates' ? 'same type and matching data' : 'same type but different data';
-        return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate.`;
+        return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate and add tags.`;
     }
 
     matchDetectionLinkClicked(type: string) {        
@@ -266,8 +292,6 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
         if (this.showSampleDistribution === false) {
             return;
         }
-
-
         //use of var here is to allow access to the dataProfile object inside Highcharts specific functions
         var dataProfile: any = this.dataProfile;
 

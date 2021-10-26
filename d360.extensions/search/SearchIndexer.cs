@@ -604,7 +604,7 @@ namespace d360.extensions.search
                             AssetType = "Reference List",
                             RelativeUrl = $"reference/{o.ID}",
                             AssetTypeUid = o.AssetTypeUid,
-                            AssetPath = o.Path.ToString().Split(pathSeperator),
+                            AssetPath = o.Path.Split(new [] { pathSeperator }, StringSplitOptions.RemoveEmptyEntries),
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }

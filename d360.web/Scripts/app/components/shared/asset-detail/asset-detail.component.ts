@@ -5,6 +5,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AssetService } from '../../../services/asset.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
+import { SynonymPermission } from '../../../models/artifacts.model';
 
 declare var CurrentResourceID;
 
@@ -33,6 +34,9 @@ export class AssetDetailComponent implements OnChanges {
     @Input() paddingLeft: string;
     @Input() isSidePanel: boolean = false;
     @Input() useAssetDetailColumnDefinition: boolean = false;
+    @Input() synonymPermission: SynonymPermission;
+    
+    @Input() assetDetail: any;
 
     assetUID: string;
     assetTypeUID: string;
@@ -74,14 +78,17 @@ export class AssetDetailComponent implements OnChanges {
 
     public load(): void {
         let detailSub = null;
+        if (this.assetDetail) {
+            detailSub = this.assetDetail;
+        } else {
+            if (this.objectType && this.objectID) {
+                detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+            }
 
-        if (this.objectType && this.objectID) {
-            detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
-        }
-
-        if (this.objectType && this.objectUID) {
-            detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
-        }
+            if (this.objectType && this.objectUID) {
+                detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+            }
+        }        
 
         if (detailSub) {
             this.isLoading = true;
@@ -320,5 +327,9 @@ export class AssetDetailComponent implements OnChanges {
                 score.Class = 'good';
             }
         }
+    }
+
+    clickTab(key: string) {
+        this.tab = key;
     }
 }

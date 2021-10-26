@@ -173,6 +173,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 uriParams.obj = this.objectType;
                 uriParams.objId = this.objectTypeId;
                 uriParams.includelevels = "true";
+                uriParams.includedashboardflag = "true";
                 this.logAction("open", this.objectType, this.objectTypeId);
 
                 this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {

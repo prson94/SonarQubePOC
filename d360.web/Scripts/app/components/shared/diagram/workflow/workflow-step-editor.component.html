@@ -33,7 +33,7 @@
                                                       [objectId]="objectId">
                 </d3s-workflow-responsibility-selector>
                 <div>
-                    <input type="checkbox" [ngModel]="step.settings.SendToDefaultUsers" (ngModelChange)="step.settings.SendToDefaultUsers = $event; stepChange.emit(step)" /> Send to default users when no responsibility exists
+                    <p-checkbox igCheckbox binary="true" label="Send to default users when no responsibility exists" [ngModel]="step.settings.SendToDefaultUsers" (ngModelChange)="step.settings.SendToDefaultUsers = $event; stepChange.emit(step)"></p-checkbox>
                 </div>
             </div>
             <div *ngIf="step.settings.MessageRecipientType == 'Group'" class="col s12">
@@ -75,7 +75,7 @@
             </div>
             <div class="col s12" style="padding-top:8px;">
                 <div>
-                    <input type="checkbox" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)" /> Include previous form responses
+                    <p-checkbox igCheckbox binary="true" label="Include previous form responses" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)"></p-checkbox>
                 </div>
             </div>
         </div>
@@ -139,12 +139,12 @@
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.HTTPResponse">
             <d3s-workflow-step-http-response [formFields]="formFields"
-                                    [step]="step"
-                                    [diagram]="diagram"
-                                    (stepChange)="step = $event; stepChange.emit(step)"
-                                    [objectId]="objectId"
-                                    [objectType]="objectType"
-                                    [issueObject]="issueObject">
+                                             [step]="step"
+                                             [diagram]="diagram"
+                                             (stepChange)="step = $event; stepChange.emit(step)"
+                                             [objectId]="objectId"
+                                             [objectType]="objectType"
+                                             [issueObject]="issueObject">
             </d3s-workflow-step-http-response>
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
@@ -159,10 +159,10 @@
                     </select>
                 </div>
                 <div style="padding-top: 10px">
-                    <input type="checkbox" [ngModel]="step.settings.RelationshipUpdate.Relationship['@AppendValue']" (ngModelChange)="changeValueType($event, '@AppendValue');" /> Append relationships?
+                    <p-checkbox igCheckbox binary="true" label="Append relationships?" [ngModel]="step.settings.RelationshipUpdate.Relationship['@AppendValue']" (ngModelChange)="changeValueType($event, '@AppendValue');"></p-checkbox>
                 </div>
                 <div style="padding-top: 10px">
-                    <input type="checkbox" [ngModel]="step.settings.RelationshipUpdate.Relationship['@ClearValue']" (ngModelChange)="changeValueType($event, '@ClearValue');" /> Clear relationships?
+                    <p-checkbox igCheckbox binary="true" label="Clear relationships?" [ngModel]="step.settings.RelationshipUpdate.Relationship['@ClearValue']" (ngModelChange)="changeValueType($event, '@ClearValue');"></p-checkbox>
                 </div>
             </div>
         </div>
@@ -187,6 +187,6 @@
         </ng-container>
     </div>
     <div *ngIf="step.hasMultipleInputs" class="col s12" style="padding-top: 8px">
-        <input type="checkbox" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)" /> Wait for all transitions to complete?
+        <p-checkbox igCheckbox binary="true" label="Wait for all transitions to complete??" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)"></p-checkbox>
     </div>
 </div>

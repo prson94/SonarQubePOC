@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using System.Data;
 using d360.core.resources;
+using System.Configuration;
 
 namespace igx.jobs.databasetaskprocessor
 {
@@ -173,7 +174,20 @@ namespace igx.jobs.databasetaskprocessor
                                                    select 0;
                                                 END";
 
-                            bool hasWork = outerCompanyConnection.QuerySingle<Boolean>(existsSql);
+                            bool hasWork = false;
+                            try
+                            {
+                                hasWork = outerCompanyConnection.QuerySingle<bool>(existsSql);
+                            } catch (SqlException ex)
+                            {
+                                //When doing a clean DB install, the queue.task table will not exist
+                                //for some time. If the table is not present, there is no work to be done
+                                //by this processor, so the error is muted.
+                                if(ex.Message != "Invalid object name 'queue.task'.")
+                                {
+                                    throw;
+                                }
+                            }
 
                             if (hasWork)
                             {
@@ -317,7 +331,7 @@ from    [queue].[Task] T
                                                         if (q.Object == "TaggedComment")
                                                             {
                                                                 var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
-
+                                                                var mail = new MandrillMailProvider { ApiKey = ConfigurationManager.AppSettings["MandrillApiKey"] };
                                                                 if (comment.AssetID > 0)
                                                                 {
                                                                     CommentNotification notification = JsonSerializer.Deserialize<CommentNotification>(q.Custom);
@@ -396,7 +410,7 @@ from    [queue].[Task] T
                                                                                     </body>
                                                                                     </html>                                                                                        
                                                                                     ";
-                                                                        SimpleMessage.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml);
+                                                                        mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
                                                                     }
                                                                 }
                                                             }

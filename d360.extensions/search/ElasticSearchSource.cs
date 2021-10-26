@@ -172,7 +172,10 @@ namespace d360.extensions.search
             Dictionary<string, string> d3sNoRead = new Dictionary<string, string>();
             Dictionary<string, string> dynamicFields = item.Fields != null ? item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value) : new Dictionary<string, string>();
 
-            d3sFields.Add("Url", item.RelativeUrl);
+            if (!string.IsNullOrEmpty(item.RelativeUrl))
+            {
+                d3sFields.Add("Url", item.RelativeUrl);
+            }
             d3sFields.Add("AssetType", item.AssetType);
             d3sFields.Add("Category", item.Category);
             if (item.Uid.HasValue && item.Uid != Guid.Empty)
@@ -277,7 +280,7 @@ namespace d360.extensions.search
 
             if (string.IsNullOrEmpty(SearchServerUrl))
             {
-                throw new ArgumentException("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
+                throw new ArgumentException(OthersError.NoSearchUrlError);
             }
 
             var uri = new Uri("http://" + SearchServerUrl);
@@ -369,7 +372,7 @@ namespace d360.extensions.search
                 JObject result = JObject.Parse(response.Body);
                 if (!Version.TryParse((string)result.SelectToken("version.number"), out ver))
                 {
-                    throw new ArgumentException("Could not determine server version");
+                    throw new ArgumentException(OthersError.NotDetermineServerVersion);
                 }
             }
             return ver;
@@ -486,7 +489,7 @@ namespace d360.extensions.search
 
                 if (result == null)
                 {
-                    throw new ArgumentException("Invalid response no data");
+                    throw new ArgumentException(OthersError.InvalidResponseData);
                 }
 
                 var hasErrors = result.GetValue("errors");
@@ -508,7 +511,7 @@ namespace d360.extensions.search
             }
             if (postingErrors.Count > 0)
             {
-                throw new ArgumentException("Add to index individual errors: " + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                throw new ArgumentException(OthersError.AddIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
             }
         }
 
@@ -774,7 +777,7 @@ namespace d360.extensions.search
             switch (strategy)
             {
                 case STRATEGY_NONE:
-                    throw new ArgumentException("Cannot use a search strategy of none");
+                    throw new ArgumentException(OthersError.CannotUseSearch);
                 case STRATEGY_PartialUID:
                     mainQueries.Add(new PrefixQuery
                     {
@@ -905,7 +908,7 @@ namespace d360.extensions.search
                     });
                     break;
                 default:
-                    throw new ArgumentException("Unknown search strategy: " + strategy);
+                    throw new ArgumentException(OthersError.UnknownSearchStrategy + strategy);
             }
 
             double? tagBoost = null;
@@ -1998,14 +2001,14 @@ namespace d360.extensions.search
 
             if (result == null)
             {
-                throw new Exception("Invalid response no data");
+                throw new ArgumentNullException(OthersError.InvalidResponseData);
             }
 
             var hasErrors = result.GetValue("errors");
 
             if (hasErrors.Value<bool>())
             {
-                throw new Exception(bulkResponse.Body);
+                throw new ArgumentNullException(bulkResponse.Body);
             }
         }
 
@@ -2051,7 +2054,9 @@ namespace d360.extensions.search
 
             var result = JObject.Parse(bulkResponse.Body);
 
-            if (result == null) throw new Exception("Invalid response no data");
+            if (result == null) {
+                throw new ArgumentNullException(OthersError.InvalidResponseData);
+            }
 
             var hasErrors = result.GetValue("errors");
 
@@ -2069,7 +2074,7 @@ namespace d360.extensions.search
                 }
                 if (postingErrors.Count > 0)
                 {
-                    throw new Exception("Update index individual errors: " + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                    throw new ArgumentNullException(OthersError.UpdateIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
                 }
             }
         }

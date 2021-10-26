@@ -1,7 +1,7 @@
-﻿import {Input, Component, OnInit, OnChanges, SimpleChange} from '@angular/core';
-import {ObjectDetailService} from '../../services/object-detail.service';
-import {BaseComponent} from '../shared/base.component';
-import {NymType} from '../../models/object-detail.model';
+﻿import { Input, Component, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
+import { ObjectDetailService } from '../../services/object-detail.service';
+import { BaseComponent } from '../shared/base.component';
+import { NymType } from '../../models/object-detail.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { CompanySettingsService } from '../../services/settings.service';
 
@@ -23,12 +23,10 @@ import { CompanySettingsService } from '../../services/settings.service';
                 </tr>
                 </thead>
                 <tbody>
-                <tr *ngFor="let nym of nyms">
+                <tr *ngFor="let nym of nyms" class="nym-row">
                     <td>{{nym.Name}}</td>
                     <td>
-                        <input type="checkbox"
-                               [disabled]="readonly"
-                               [(ngModel)]="nym.Enabled"/>
+                    <p-checkbox igCheckbox [(ngModel)]="nym.Enabled" [disabled]="readonly"></p-checkbox>
                     </td>
                 </tr>
                 </tbody>
@@ -41,7 +39,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                         (click)="save()"></button>
             </div>
         </div>
-    `,
+    `
 })
 
 export class AdminNymAllocationsComponent extends BaseComponent implements OnChanges {

@@ -120,9 +120,6 @@
   <data name="ConsolidateSucessfully" xml:space="preserve">
     <value>Connector labels consolidated successfully</value>
   </data>
-  <data name="CustomUidNotValid" xml:space="preserve">
-    <value>{0} is not valid uid!</value>
-  </data>
   <data name="ErrorConsolidateLabel" xml:space="preserve">
     <value>Error while consolidating connector labels</value>
   </data>

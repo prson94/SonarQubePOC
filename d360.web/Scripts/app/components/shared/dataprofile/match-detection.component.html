@@ -6,198 +6,231 @@
            tabindex=-1>
     <div class="modal-with-side-panel">
         <div class="modal-dialog-main-panel">
-        <div class="content condensed-table">
-            <div class="modal-edit-form">
-                <div class="title">
-                    Match Detection
-                </div>
-                <div class="grayed-text">
-                    <span [innerHtml]="assetPathText"></span>
-                </div>
-            </div>
-            <div class="scrollable-content">
-            <ig-property-group *ngIf="showDuplicates"
-                               [title]="'Duplicate Fields (Same Type and Matching Data)'"
-                               [showHeaderLine]="false"
-                               [shouldBePadded]="false"
-                               [showMoreInfo]="true"
-                               [expanded]="matchType=='data'" 
-                               [moreInfoHtml]="'Data is determined to be a match if the total row count, and a small representative sample from each data set are found to be matching.'">
-                <div readonly>                    
-                    <div class="search-bar">
-                        <div class="simple-search">
-                            <ig-search-field mode="Keypress"
-                                             [(ngModel)]="duplicatesSimpleFilter"
-                                             [debounce]="300"
-                                             (onSearch)="dtDupli.filterGlobal($event.value, 'contains')">
-                            </ig-search-field>
-                        </div>
-                        <advanced-filtering [loadIdentifier]="getLoadIdentifier('data')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('data')" (onChange)="advancedFiltersChanged($event, 'data')"></advanced-filtering>
-                        <div class="grid-action-buttons">
-                            <div pTooltip="{{(canExportRecords(duplicatesDataTotalCount) ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-                                 tooltipPosition="left"
-                                 tooltipStyleClass="ig-tooltip">
-                                <button igButton
-                                        [disabled]="!canExportRecords(duplicatesDataTotalCount) || isExportInProgress"
-                                        icon="fa-download"
-                                        [loading]="isExportInProgress"
-                                        (click)="export('data')">
-                                </button>
-                            </div>
-                        </div>
+            <div class="content condensed-table">
+                <div class="modal-edit-form">
+                    <div class="title">
+                        Match Detection
                     </div>
-                    <p-table #dtDupli
-                             [metaKeySelection]="true"
-                             selectionMode="multiple"
-                             [value]="duplicatesData"
-                             [(selection)]="duplicatesSelection"
-                             [totalRecords]="duplicatesDataTotalCount"
-                             [globalFilterFields]="['Path', 'Tag']"
-                             dataKey="uid"
-                             [lazy]="true"
-                             [pageLinks]="3"
-                             [paginator]="true"
-                             paginatorDropdownAppendTo="body"
-                             [rows]="duplicateRows"
-                             [rowsPerPageOptions]="defaultPagingOptions"
-                             (onLazyLoad)="lazyLoad($event,'Data')"
-                             [loading]="duplicatesDataLoading"
-                             [loadingIcon]="'fa fa-spinner fa-spin'"
-                             (selectionChange)="selectMatch($event)">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th [pSortableColumn]="'Path'">
-                                    Asset Path
-                                    <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Tags'">
-                                    Tags
-                                    <d3s-sortIcon [field]="'Tags'"></d3s-sortIcon>
-                                </th>
-                                <th width="50"></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td>
-                                    <span class="item-value" [innerHTML]="formatPath(item.path)"></span>
-                                </td>
-                                <td *ngIf="item.tags">
-                                    <d3s-tag-view [data]="item.tags" [assetUID]="item.uid"></d3s-tag-view>
-                                </td>
-                                <td *ngIf="!item.tags">
-                                    Tag field not found
-                                </td>
-                                <td>
-                                    <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" [darkMode]="true"></button>
-                                    <ig-popup-menu (onSelect)="duplicatesSelection=item;onMenuSelect($event, item)" #menu [tabIndex]="1" [items]="menuItems"></ig-popup-menu>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dtDupli.first"
-                                                  [rows]="dtDupli.rows"
-                                                  [totalRecords]="duplicatesDataTotalCount"></d3s-grid-paging-info>
-                        </ng-template>
-                        <ng-template pTemplate="emptymessage" let-columns>
-                            <tr>
-                                <td colspan="4">
-                                    No results match your search criteria
-                                </td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
+                    <div class="grayed-text">
+                        <span [innerHtml]="assetPathText"></span>
+                    </div>
                 </div>
-            </ig-property-group>
-
-            <ig-property-group *ngIf="showSimilar"
-                               [title]="'Similar Fields (Same Type)'"
-                               [showHeaderLine]="false"
-                               [shouldBePadded]="false"
-                               [expanded]="matchType=='similar'">
-                <div readonly>
-                    <div class="search-bar">
-                        <div class="simple-search">
-                            <ig-search-field mode="Keypress"
-                                             [(ngModel)]="similarSimpleFilter"
-                                             [debounce]="300"
-                                             (onSearch)="dtSimi.filterGlobal($event.value, 'contains')">
-                            </ig-search-field>
-                        </div>
-                        <advanced-filtering [loadIdentifier]="getLoadIdentifier('similar')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('similar')" (onChange)="advancedFiltersChanged($event, 'similar')"></advanced-filtering>
-                        <div class="grid-action-buttons">
-                            <div pTooltip="{{(canExportRecords(similarDataTotalCount) ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-                                 tooltipPosition="left"
-                                 tooltipStyleClass="ig-tooltip">
-                                <button igButton
-                                        [disabled]="!canExportRecords(similarDataTotalCount) || isExportInProgress"
-                                        icon="fa-download"
-                                        [loading]="isExportInProgress"
-                                        (click)="export('similar')">
-                                </button>
+                <div class="scrollable-content">
+                    <ig-property-group *ngIf="showDuplicates"
+                                       [title]="'Duplicate Fields (Same Type and Matching Data)'"
+                                       [showHeaderLine]="false"
+                                       [shouldBePadded]="false"
+                                       [showMoreInfo]="true"
+                                       [expanded]="matchType=='data'"
+                                       [moreInfoHtml]="'Data is determined to be a match if the total row count, and a small representative sample from each data set are found to be matching.'">
+                        <div readonly>
+                            <div class="search-bar">
+                                <div class="simple-search">
+                                    <ig-search-field mode="Keypress"
+                                                     [(ngModel)]="duplicatesSimpleFilter"
+                                                     [debounce]="300"
+                                                     (onSearch)="dtDupli.filterGlobal($event.value, 'contains')">
+                                    </ig-search-field>
+                                </div>
+                                <advanced-filtering [loadIdentifier]="getLoadIdentifier('data')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('data')" (onChange)="advancedFiltersChanged($event, 'data')"></advanced-filtering>
+                                <div *ngIf="duplicatesSelection && duplicatesSelection.length > 1">
+                                    <div style="background: #f1f1f3;display: inline-flex; margin-left: 8px; height: 32px; align-items: center;">
+                                        <span style="padding-left: 16px;padding-right: 8px;">{{duplicatesSelection.length}} items selected</span>
+                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu4.toggle($event)" [darkMode]="true"></button>
+                                        <ig-popup-menu (onSelect)="onMenuSelect($event, duplicatesSelection, 'duplicate', true)" #menu4 [tabIndex]="1" [items]="multiselectMenuItems"></ig-popup-menu>
+                                    </div>
+                                </div>                                
+                                <div class="grid-action-buttons">
+                                    <div pTooltip="{{(canExportRecords(duplicatesDataTotalCount) ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                                         tooltipPosition="left"
+                                         tooltipStyleClass="ig-tooltip">
+                                        <button igButton
+                                                [disabled]="!canExportRecords(duplicatesDataTotalCount) || isExportInProgress"
+                                                icon="fa-download"
+                                                [loading]="isExportInProgress"
+                                                (click)="export('data')">
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+                            <p-table #dtDupli
+                                     [metaKeySelection]="true"
+                                     [value]="duplicatesData"
+                                     [(selection)]="duplicatesSelection"
+                                     [totalRecords]="duplicatesDataTotalCount"
+                                     [globalFilterFields]="['Path', 'Tag']"
+                                     dataKey="uid"
+                                     [lazy]="true"
+                                     [pageLinks]="3"
+                                     [paginator]="true"
+                                     paginatorDropdownAppendTo="body"
+                                     [rows]="duplicateRows"
+                                     [rowsPerPageOptions]="defaultPagingOptions"
+                                     (onLazyLoad)="lazyLoad($event,'Data')"
+                                     [loading]="duplicatesDataLoading"
+                                     [loadingIcon]="'fa fa-spinner fa-spin'"
+                                     (selectionChange)="selectMatch($event, 'duplicate')">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 30px">
+                                            <p-tableHeaderCheckbox  
+                                                #duplicateCheckBox
+                                                pTooltip="{{(duplicatesSelection && (duplicatesSelection.length == duplicatesData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
+                                                tooltipPosition="top"
+                                                tooltipStyleClass="ig-tooltip">
+                                            </p-tableHeaderCheckbox>                                            
+                                        </th>
+                                        <th [pSortableColumn]="'Path'">
+                                            Asset Path
+                                            <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'Tags'">
+                                            Tags
+                                            <d3s-sortIcon [field]="'Tags'"></d3s-sortIcon>
+                                        </th>
+                                        <th width="50"></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td style="width: 30px">
+                                            <p-tableCheckbox [value]="item" (click)="itemMultiSelect(item, 'duplicate')"></p-tableCheckbox>
+                                        </td>
+                                        <td (click)="itemSelected(item, 'duplicate', $event)">
+                                            <span class="item-value" [innerHTML]="formatPath(item.path)"></span>
+                                        </td>
+                                        <td *ngIf="item.tags" (click)="itemSelected(item, 'duplicate', $event)">
+                                            <d3s-tag-view [data]="item.tags" [assetUID]="item.uid"></d3s-tag-view>
+                                        </td>
+                                        <td *ngIf="!item.tags" (click)="itemSelected(item, 'duplicate', $event)">
+                                            Tag field not found
+                                        </td>
+                                        <td (click)="itemSelected(item, 'duplicate', $event)">
+                                            <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" [darkMode]="true"></button>
+                                            <ig-popup-menu (onSelect)="duplicatesSelection=item;onMenuSelect($event, item, 'duplicate')" #menu [tabIndex]="1" [items]="item.tags ? menuItemsWithTags : menuItems"></ig-popup-menu>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dtDupli.first"
+                                                          [rows]="dtDupli.rows"
+                                                          [totalRecords]="duplicatesDataTotalCount"></d3s-grid-paging-info>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage" let-columns>
+                                    <tr>
+                                        <td colspan="4">
+                                            No results match your search criteria
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
                         </div>
-                    </div>                        
-                    <p-table #dtSimi [metaKeySelection]="true"
-                             selectionMode="multiple"
-                             [value]="similarData"
-                             [(selection)]="similarSelection"
-                             [totalRecords]="similarDataTotalCount"
-                             [globalFilterFields]="['Path','Tag']"
-                             dataKey="uid"
-                             [rows]="similarRows"
-                             [lazy]="true"
-                             [pageLinks]="3"
-                             [paginator]="true"
-                             paginatorDropdownAppendTo="body"
-                             [rowsPerPageOptions]="defaultPagingOptions"
-                             (onLazyLoad)="lazyLoad($event,'Structure')"
-                             [loading]="similarDataLoading"
-                             [loadingIcon]="'fa fa-spinner fa-spin'"
-                             (selectionChange)="selectMatch($event)">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th [pSortableColumn]="'Path'">
-                                    Asset Path
-                                    <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Tags'">
-                                    Tags
-                                    <d3s-sortIcon [field]="'Tags'"></d3s-sortIcon>
-                                </th>
-                                <th width="50"></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td>
-                                    <span class="item-value" [innerHTML]="item.path"></span>
-                                </td>
-                                <td *ngIf="item.tags">
-                                    <d3s-tag-view [data]="item.tags" [assetUID]="item.uid"></d3s-tag-view>
-                                </td>
-                                <td *ngIf="!item.tags">
-                                    Tag field not found
-                                </td>
-                                <td>
-                                    <button type="button" icon="fa-ellipsis-v" igButton (click)="menu2.toggle($event)" [darkMode]="true"></button>
-                                    <ig-popup-menu (onSelect)="similarSelection=item;onMenuSelect($event, item)" #menu2 [tabIndex]="1" [items]="menuItems"></ig-popup-menu>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dtSimi.first"
-                                                  [rows]="dtSimi.rows"
-                                                  [totalRecords]="similarDataTotalCount"></d3s-grid-paging-info>
-                        </ng-template>
-                        <ng-template pTemplate="emptymessage" let-columns>
-                            <tr>
-                                <td colspan="4">
-                                    No results match your search criteria
-                                </td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
+                    </ig-property-group>
+
+                    <ig-property-group *ngIf="showSimilar"
+                                       [title]="'Similar Fields (Same Type)'"
+                                       [showHeaderLine]="false"
+                                       [shouldBePadded]="false"
+                                       [expanded]="matchType=='similar'">
+                        <div readonly>
+                            <div class="search-bar">
+                                <div class="simple-search">
+                                    <ig-search-field mode="Keypress"
+                                                     [(ngModel)]="similarSimpleFilter"
+                                                     [debounce]="300"
+                                                     (onSearch)="dtSimi.filterGlobal($event.value, 'contains')">
+                                    </ig-search-field>
+                                </div>
+                                <advanced-filtering [loadIdentifier]="getLoadIdentifier('similar')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('similar')" (onChange)="advancedFiltersChanged($event, 'similar')"></advanced-filtering>
+                                <div *ngIf="similarSelection && similarSelection.length>1" >                                          
+                                    <div style="background: #f1f1f3;display: inline-flex; margin-left: 8px; height: 32px; align-items: center;">
+                                        <span style="padding-left: 16px;padding-right: 8px;">{{similarSelection.length}} items selected</span>
+                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu3.toggle($event)" [darkMode]="true"></button>
+                                        <ig-popup-menu (onSelect)="onMenuSelect($event, similarSelection, 'similar', true)" #menu3 [tabIndex]="1" [items]="multiselectMenuItems"></ig-popup-menu>
+                                    </div>
+                                </div>
+                                <div class="grid-action-buttons">
+                                    <div pTooltip="{{(canExportRecords(similarDataTotalCount) ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                                         tooltipPosition="left"
+                                         tooltipStyleClass="ig-tooltip">
+                                        <button igButton
+                                                [disabled]="!canExportRecords(similarDataTotalCount) || isExportInProgress"
+                                                icon="fa-download"
+                                                [loading]="isExportInProgress"
+                                                (click)="export('similar')">
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <p-table #dtSimi [metaKeySelection]="true"
+                                     [value]="similarData"
+                                     [(selection)]="similarSelection"
+                                     [totalRecords]="similarDataTotalCount"
+                                     [globalFilterFields]="['Path','Tag']"
+                                     dataKey="uid"
+                                     [rows]="similarRows"
+                                     [lazy]="true"
+                                     [pageLinks]="3"
+                                     [paginator]="true"
+                                     paginatorDropdownAppendTo="body"
+                                     [rowsPerPageOptions]="defaultPagingOptions"
+                                     (onLazyLoad)="lazyLoad($event,'Structure')"
+                                     [loading]="similarDataLoading"
+                                     [loadingIcon]="'fa fa-spinner fa-spin'"
+                                     (selectionChange)="selectMatch($event, 'similar')">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 30px">
+                                            <p-tableHeaderCheckbox #similarCheckBox
+                                                                   pTooltip="{{(similarSelection && (similarSelection.length == similarData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
+                                                                   tooltipPosition="top"
+                                                                   tooltipStyleClass="ig-tooltip">
+                                            </p-tableHeaderCheckbox>                                            
+                                        </th>
+                                        <th [pSortableColumn]="'Path'">
+                                            Asset Path
+                                            <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>                                            
+                                        </th>
+                                        <th [pSortableColumn]="'Tags'">
+                                            Tags
+                                            <d3s-sortIcon [field]="'Tags'"></d3s-sortIcon>
+                                        </th>
+                                        <th width="50"></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td style="width: 30px">
+                                            <p-tableCheckbox [value]="item" (click)="itemMultiSelect(item, 'similar')"></p-tableCheckbox>
+                                        </td>
+                                        <td (click)="itemSelected(item, 'similar', $event)">
+                                            <span class="item-value" [innerHTML]="item.path"></span>
+                                        </td>
+                                        <td *ngIf="item.tags" (click)="itemSelected(item, 'similar', $event)">
+                                            <d3s-tag-view [data]="item.tags" [assetUID]="item.uid"></d3s-tag-view>
+                                        </td>
+                                        <td *ngIf="!item.tags" (click)="itemSelected(item, 'similar', $event)">
+                                            Tag field not found
+                                        </td>
+                                        <td (click)="itemSelected(item, 'similar', $event)">
+                                            <button type="button" icon="fa-ellipsis-v" igButton (click)="menu2.toggle($event)" [darkMode]="true"></button>
+                                            <ig-popup-menu (onSelect)="similarSelection=item;onMenuSelect($event, item, 'similar')" #menu2 [tabIndex]="1" [items]="item.tags ? menuItemsWithTags : menuItems"></ig-popup-menu>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dtSimi.first"
+                                                          [rows]="dtSimi.rows"
+                                                          [totalRecords]="similarDataTotalCount"></d3s-grid-paging-info>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage" let-columns>
+                                    <tr>
+                                        <td colspan="4">
+                                            No results match your search criteria
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
 
                         </div>
                     </ig-property-group>
@@ -207,7 +240,7 @@
                 <span class="grow"></span>
                 <button igButton (click)="onClose.emit()" class="ig-button-primary" label="Close"></button>
             </div>
-        </div>       
+        </div>
         <div class="side-panel" *ngIf="!isLoading">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         [expanded]="sidePanelOpen"
@@ -225,7 +258,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile'">
-                        <data-profile [dataProfile]="dataProfile" [isModal]="true" (linkClicked)="changeMatchAsset($event)"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" [isModal]="true" (linkClicked)="changeMatchAsset($event)" [assetData]="assetData"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selection.uid"
@@ -240,10 +273,64 @@
                                             [isSidePanel]="true"
                                             [hasAddRelationshipsPermissions]="false"
                                             [hasModifyRelationshipsPermissions]="false"
-                                            [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                            [hasDeleteRelationshipsPermissions]="false"
+                                            [assetDetail]="assetDetail"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
             </side-panel>
-        </div>        
+        </div>
+
+        <d3s-modal-drawer *ngIf="selectedTagItems" [title]="'Title'"
+                          [appendToBody]="true"
+                          [isVisible]="isTagDrawerVisible"
+                          [additionalClasses]="'tag-drawer'"
+                          (onClose)="isTagDrawerVisible=false">
+
+            <ng-container header>
+                Edit Tags
+            </ng-container>
+            <ng-container content>
+                <div *ngIf="isDrawerLoading">
+                    <d3s-loading [isLoading]="isDrawerLoading"></d3s-loading>
+                </div>                
+                <div *ngIf="!isDrawerLoading">
+                    <div *ngIf="!selectedAssetUids || selectedAssetUids.length === 0">
+                        <span>
+                            None of the selected items has a tag field.<br />
+                            If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field.
+                        </span>
+                    </div>
+                    <div *ngIf="selectedAssetUids && selectedAssetUids.length > 0">
+                        Showing {{selectedAssetUids.length>1 ? 'common' : ''}} tags for the {{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1 ? (selectedAssetUids.length + selectedAssetsWithoutTagField.length) : ''}} selected item{{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1? 's' : ''}} in <b>{{tagMatchType}} Fields</b>
+                        <div *ngIf="selectedAssetUids.length > 1">
+                            <d3s-tag-view [data]="getCommonTags" [assetUIDList]="selectedAssetUids" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
+                        </div>
+                        <div *ngIf="selectedAssetUids.length == 1">
+                            <d3s-tag-view [data]="selectedAssetsWithTagField[0].tags" [assetUID]="selectedAssetsWithTagField[0].uid" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
+                        </div>
+                        <div class="no-tags-note" *ngIf="selectedAssetsWithoutTagField && selectedAssetsWithoutTagField.length>0">
+                            Please note that {{selectedAssetsWithoutTagField.length}} of the selected items {{(selectedAssetsWithoutTagField.length === 1? 'does' : 'do')}} not have a <b>Tag</b> field. These items will remain unchanged.<br />
+                            If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field to the following <b>Asset Types</b>:
+                            <div *ngIf="assetTypePathsforNonTagged.length == 1" class="no-tags-single-type">
+                                {{this.assetTypePathsforNonTagged[0]}}
+                            </div>
+                            <div *ngIf="assetTypePathsforNonTagged.length > 1" class="no-tags-asset-list">
+                                <ul>
+                                    <li class="no-tags-asset-list-item" *ngFor="let path of assetTypePathsforNonTagged">
+                                        {{path}}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>                
+            </ng-container>
+            <ng-container action>                
+                <span class="grow"></span>
+                <button class="button primary" (click)="closeModalDrawer()">
+                    Close
+                </button>
+            </ng-container>
+        </d3s-modal-drawer>
     </div>        
 </d3s-modal>

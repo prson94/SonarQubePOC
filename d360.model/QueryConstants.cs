@@ -90,14 +90,20 @@ from    [Group] G
 select	0 as ID, 
 		null as AssetID,
         null as ParentID,
-		Name
+		Name,
+		null as ObjectID,
+		null as Object,
+		null as uid
 from	AssetType
 where	ObjectID = @ID and Object ='TaxonomyType'
 union
 select	A.ObjectID as ID, 
         A.ID as AssetID,
         coalesce(P.SubjectID, 0) as ParentID, 
-        A.DisplayValue as Name
+        A.DisplayValue as Name,
+		A.ObjectID,
+		A.Object,	
+		A.uid
 from	AssetDetail A
 		outer apply (
 					select	I.SubjectID

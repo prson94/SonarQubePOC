@@ -1,11 +1,12 @@
 ﻿using System.Net;
+using d360.core.resources;
 
 namespace d360.core.exceptions
 {
     public class DuplicateNameException : BaseException
     {
         public DuplicateNameException(string objectName)
-            :base(HttpStatusCode.Conflict, "Duplicate Name Found", string.Format("{0} could not be added or updated because an item with the same name already exists.", objectName))
+            :base(HttpStatusCode.Conflict, AssetTypeErrors.DuplicateNameFound, string.Format(AssetTypeErrors.NameConflicit, objectName))
         {
         }
     }
@@ -13,7 +14,7 @@ namespace d360.core.exceptions
     public class DuplicateObjectException : BaseException
     {
         public DuplicateObjectException(string objectName)
-            : base(HttpStatusCode.Conflict, "Duplicate Found", string.Format("{0} could not be added or updated because an existing item already found.", objectName))
+            : base(HttpStatusCode.Conflict, AssetTypeErrors.DuplicateFound, string.Format(AssetTypeErrors.ItemConflicit, objectName))
         {
         }
     }
