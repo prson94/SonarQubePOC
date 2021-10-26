@@ -50,7 +50,7 @@ namespace igx.jobs.workflowdigestprocessor
                     try
                     {
                         // Create EF connection
-                        var company = JobDbContextCreator.CreateWebjobCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
+                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
 
                         await company.SendDigestEmails(c.EnvironmentLevel);
                     }

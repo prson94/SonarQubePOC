@@ -73,7 +73,7 @@ namespace igx.jobs.workflowsubscriber
 
             // Create EF connection
             companyId = info.CompanyID;
-            company = JobDbContextCreator.CreateWebjobCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true);
+            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true);
 
             try
             {
