@@ -932,9 +932,104 @@ from	[Load] L
 
         public async Task<IHttpActionResult> GetLoads(Guid loadUid)
         {
+            List<string> v2ApiActions = new List<string> { "P", "R", "U" };
+            string countSql = "";
+
             if (!Company.CurrentResourceIsAdmin)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            var load = Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
+            var useExecutionTable = false;
+
+            if (v2ApiActions.Contains(load.Action) && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
+            {
+                useExecutionTable = true;
+            }
+
+            if (useExecutionTable)
+            {
+                switch (load.Action)
+                {
+                    case "P":
+                        countSql = @"
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 0
+				                    union all
+				                    select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success is null
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    union all
+				                    select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    ) R
+			                    ) T";
+                        break;
+                    case "R":
+                        countSql = @"		
+                            cross apply (
+				                    select count(*) as C from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select Error as I from api.Execution where ExecutionID = L.PostExecutionID
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                select case when CompletedOn is null then (Total - Processed) else 0 end as C from api.Execution where ExecutionID = L.PostExecutionID
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select Total as I from api.Execution where ExecutionID = L.PostExecutionID
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+				                    ) R
+			                    ) T";
+                        break;
+                    case "U":
+                        countSql = @"
+                            cross apply (
+				                    select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 0
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success is null
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+				                    ) R
+			                    ) T";
+                        break;
+                }
+            }
+            else
+            {
+                countSql = @"
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
             }
 
             string LoadDetailBaseSql = @"select	* from(select	
@@ -951,9 +1046,11 @@ from	[Load] L
 		end as [Action],
         coalesce(C_D.[Name], 'Default') as AssetTypeName,
         C_D.[uid] as AssetTypeUid,
+        S.C as Success,
         E.C as Error,
+        I.C as Incomplete,
 		T.C as Total,
-        case LI.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
+        case coalesce(M.Status,LI.[Status]) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
         R.FirstName + ' ' + R.LastName as RequestedByName,
         R.uid as RequestedByUid
 from	[Load] L
@@ -966,16 +1063,12 @@ from	[Load] L
 			cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
 		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy 
-        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI 
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T where L.uid = @loadUid ) X";
+        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI
+        cross apply (select top(1) Success as Status from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)) M "
+        + countSql + " where L.uid = @loadUid ) X ";
 
             try
             {
-                var load =  Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
-
                 var results = Company.Query<SingleLoadDetail>(LoadDetailBaseSql, new { loadUid }).ToList();
 
                 if (load != null && load.DateCompleted.HasValue && load.DateStarted.HasValue)
