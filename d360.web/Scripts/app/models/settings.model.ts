@@ -147,7 +147,8 @@ export enum CompanySettingEnum {
     ShowCommentsTab = 80,
     AssetDataProfileLifespan = 81,
     AssetDefinitionColumnWidth = 82,
-    HideHeaderBarControls = 83
+    HideHeaderBarControls = 83,
+    DiagramMaxAvoidNodesLinkCount = 84
 }
 
 export class StringSetting {

@@ -29,7 +29,6 @@ import { TilesModule } from "./tiles/tiles.module";
 import { SiteModalModule } from "./modal/gov-modal.module";
 import { SharedObjectDetailsModule } from "./objectdetails/shared-object-details.module";
 import { SimpleAccordionModule } from "./simple-accordion.part";
-import { LazyLoadEvent } from "primeng/api";
 import { CompanySettingsService } from "../../services/settings.service";
 
 

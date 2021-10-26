@@ -19,9 +19,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     @Output() linkClicked = new EventEmitter();
     
     constructor(
+        private assetService: AssetService,
         private assetTypeService: AssetTypeService,
-        private assetService: AssetService) {
-        super();
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
     }
 
     private sampleCountPercentage: number;
@@ -70,10 +72,6 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     sampleChartXLabel: string = '';
 
     matchAssetUid: string = "";
-
-    constructor(protected settingsService: CompanySettingsService) {
-        super(settingsService);
-    }
 
     ngOnInit() { 
         this.initialize();

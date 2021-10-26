@@ -3,6 +3,7 @@ import { NgForm, FormGroup, FormBuilder, Validators, FormControl, ControlContain
 
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-form-fields',
@@ -18,8 +19,8 @@ export class WorkflowFormFieldsComponent extends BaseComponent {
 
     private isSetValidatior: boolean = false;
 
-    constructor() {
-        super();
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     public setValidators() {

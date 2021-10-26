@@ -57,11 +57,11 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     private currentButtonIndex: number = -1;
 
     constructor(
-        private router: Router,
         private headerActionsService: HeaderActionsService,
         protected settingsService: CompanySettingsService,
-        private siteMenuService: SiteMenuService
-        private cdRef: ChangeDetectorRef
+        private siteMenuService: SiteMenuService,
+        private cdRef: ChangeDetectorRef,
+        private router: Router
     ) {
         super(settingsService);
     }

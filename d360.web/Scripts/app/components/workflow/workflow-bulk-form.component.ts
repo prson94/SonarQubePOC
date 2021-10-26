@@ -44,7 +44,7 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
     private isUserAllowedToComplete: boolean = true;
     private isSubmitting = false;
 
-    @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent
+    @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
     constructor(
         protected headerBreadcrumbService: HeaderBreadcrumbService,
