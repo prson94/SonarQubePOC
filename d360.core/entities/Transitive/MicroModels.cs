@@ -160,10 +160,6 @@ namespace d360.core.entities
         [DataMember]
         public Guid RequestorUid { get; set; }
         [DataMember]
-        public int Success { get; set; }
-        [DataMember]
-        public int Error { get; set; }
-        [DataMember]
         public int Total { get; set; }
         [DataMember]
         public string ErrorMessage { get; set; }
@@ -395,7 +391,11 @@ namespace d360.core.entities
         [DataMember]
         public int Total { get; set; }
         [DataMember]
-        public int Error { get; set; }     
+        public int Success { get; set; }
+        [DataMember]
+        public int Error { get; set; }
+        [DataMember]
+        public int Incomplete { get; set; }
         [DataMember]
         public string Action { get; set; }
         [DataMember]
