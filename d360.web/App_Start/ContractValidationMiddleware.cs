@@ -18,7 +18,7 @@ namespace d360.web
     {
 
         Func<IDictionary<string, object>, Task> _next;
-        public ContractValidationMiddleware(Func<IDictionary<string, object>, Task> next): base()
+        public ContractValidationMiddleware(Func<IDictionary<string, object>, Task> next)
         {
             _next = next;
         }

@@ -23,7 +23,7 @@ namespace d360.web
         }
 
         Func<IDictionary<string, object>, Task> _next;
-        public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base()
+        public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next)
         {
             _next = next;
         }

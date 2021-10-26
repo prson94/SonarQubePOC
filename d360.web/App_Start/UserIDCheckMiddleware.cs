@@ -107,7 +107,7 @@ namespace d360.web
         }
 
         Func<IDictionary<string, object>, Task> _next;
-        public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base()
+        public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next)
         {
             _next = next;
         }
