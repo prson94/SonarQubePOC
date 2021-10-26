@@ -11,6 +11,7 @@ import { AdvancedFilterFieldType, Filters } from '../../assets-grid/advanced-fil
 import { BaseComponent } from '../base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { StringConstants } from '../../../static/string-constants';
+import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
     selector: 'match-detection',
@@ -79,6 +80,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     assetDetail = null;
     assetData: any;
+    assetTypePathsforNonTagged: string[];
+    isDrawerLoading = false;
 
     duplicateStr: string = "duplicate";
     similarStr: string = "similar";
@@ -128,10 +131,11 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             Category: "",            
             RemovePopulatedOperator: true
         }
-    ]        
+    ]            
 
     constructor(
         private assetService: AssetService,
+        private assetTypeService: AssetTypeService,
         private dataProfileService: DataProfileService,
         private objectDetailService: ObjectDetailService,
         private cdRef: ChangeDetectorRef,
@@ -218,7 +222,10 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             } else {
                 this.selectedTagItems.push(item);
             }
-            this.tagMatchType = matchType.toLowerCase()===this.similarStr ? "Similar": "Duplicate";
+            this.tagMatchType = matchType.toLowerCase() === this.similarStr ? "Similar" : "Duplicate";
+            if (this.selectedAssetsWithoutTagField.length > 0) {
+                this.getAssetTypePaths(this.selectedAssetsWithoutTagField.map((t) => t.uid))
+            }
             this.isTagDrawerVisible = true;            
         }
     }
@@ -481,5 +488,27 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         }
         
 
-    }    
+    } 
+
+    private getAssetTypePaths(selectedUids: string[]) {
+        let assetTypePaths: string[] = [];
+        let uriParams: any = {};
+        this.isDrawerLoading = true;
+        this.assetTypePathsforNonTagged = [];
+        selectedUids.forEach((uid) => {
+            this.assetService.getAsset(uid)
+                .subscribe((res) => {
+                    uriParams.assetTypeUid = res.AssetTypeUid;
+                    this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+                        let path = result[0].Path.replace(/\//g, '>')
+                        assetTypePaths.push(path);
+                        if (this.assetTypePathsforNonTagged.indexOf(path) < 0) {
+                            this.assetTypePathsforNonTagged.push(path);
+                        }
+
+                        this.isDrawerLoading = !(assetTypePaths.length == selectedUids.length);
+                    });
+                });
+            });
+    }
 }
