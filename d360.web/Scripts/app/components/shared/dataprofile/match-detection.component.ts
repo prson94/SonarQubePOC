@@ -224,7 +224,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             }
             this.tagMatchType = matchType.toLowerCase() === this.similarStr ? "Similar" : "Duplicate";
             if (this.selectedAssetsWithoutTagField.length > 0) {
-                this.getAssetTypePaths(this.selectedAssetsWithoutTagField.map((t) => t.uid))
+                this.getAssetTypePaths(this.selectedAssetsWithoutTagField.map((t) => t.uid));
             }
             this.isTagDrawerVisible = true;            
         }
@@ -500,13 +500,13 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 .subscribe((res) => {
                     uriParams.assetTypeUid = res.AssetTypeUid;
                     this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
-                        let path = result[0].Path.replace(/\//g, '>')
+                        let path = result[0].Path.replace(/\//g, '>');
                         assetTypePaths.push(path);
                         if (this.assetTypePathsforNonTagged.indexOf(path) < 0) {
                             this.assetTypePathsforNonTagged.push(path);
                         }
 
-                        this.isDrawerLoading = !(assetTypePaths.length == selectedUids.length);
+                        this.isDrawerLoading = !(assetTypePaths.length === selectedUids.length);
                     });
                 });
             });
