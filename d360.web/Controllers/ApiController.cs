@@ -28,6 +28,7 @@ using d360.model.DataAccessLayer;
 using d360.web.Extensions;
 using Resources;
 using d360.core.Models;
+using SmartFormat;
 
 namespace d360.web.Controllers
 {
@@ -1662,7 +1663,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
             if (selected.ContainsKey("RelationshipError"))
             {
-                var errorMessage = string.Format(AssetTypeErrors.InvalidRelationshipFieldType, (string)selected["RelationshipError"]);
+                var errorMessage = Smart.Format(AssetTypeErrors.InvalidRelationshipFieldType, new
+                {
+                    FriendlyName = (string)selected["RelationshipError"]
+                });
 
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, errorMessage);
             }

@@ -97,7 +97,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Followed Items as of {0:d}.
+        ///   Looks up a localized string similar to Followed Items as of {Now:d}.
         /// </summary>
         public static string FollowedResources_DocumentName {
             get {
@@ -124,7 +124,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Owned Items as of {0:d}.
+        ///   Looks up a localized string similar to Owned Items as of {Now:d}.
         /// </summary>
         public static string OwnedResources_DocumentName {
             get {
@@ -187,7 +187,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Workflow items as of {0:d}.
+        ///   Looks up a localized string similar to Workflow items as of {Now:d}.
         /// </summary>
         public static string WorkflowMonitor_DocumentName {
             get {
