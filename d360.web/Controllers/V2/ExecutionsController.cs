@@ -489,7 +489,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, RequestorName. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, RequestedName. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
         ]
 
@@ -559,7 +559,7 @@ namespace d360.web.Controllers.V2
 
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
                 string[] validOrderByFields = { "datestarted", "datecompleted", "action", "assettypename",
-                                                "requestorname" };
+                                                "requestedbyname" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
@@ -572,7 +572,7 @@ namespace d360.web.Controllers.V2
                 if (filterValue != "")
                 {
                     filterValue = '%' + filterValue + '%';
-                    whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestorName] like @filterValue
+                    whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestedByName] like @filterValue
                         or X.AssetTypeName like @filterValue or X.ErrorMessage like @filterValue or X.ErrorMessage like @filterValue
                         or x.Success like @filterValue or X.Error like @filterValue or X.Total like @filterValue) ";
                 }
@@ -614,8 +614,8 @@ namespace d360.web.Controllers.V2
         S.C as Success,
         E.C as Error,
 		T.C as Total,
-        R.FirstName + ' ' + R.LastName as RequestorName,
-        R.uid as RequestorUid,
+        R.FirstName + ' ' + R.LastName as RequestedByName,
+        R.uid as RequestedByUid,
         L.uid as LoadUid
 from	[Load] L
         left join api.Execution EE on EE.ExecutionId = L.PutExecutionID

@@ -156,9 +156,9 @@ namespace d360.core.entities
         [DataMember]
         public string AssetTypeName { get; set; }
         [DataMember]
-        public string RequestorName { get; set; }
+        public string RequestedByName { get; set; }
         [DataMember]
-        public Guid RequestorUid { get; set; }
+        public Guid RequestedByUid { get; set; }
         [DataMember]
         public int Total { get; set; }
         [DataMember]
