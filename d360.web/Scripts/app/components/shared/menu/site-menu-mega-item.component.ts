@@ -13,7 +13,8 @@ import { StringConstants } from "../../../static/string-constants";
                         <div class="caret" (click)="handleArrowClick($event)">
                             <i *ngIf="item.Items" [class]="!item.ShowChildren ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
                         </div>
-                        <div class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
+                        <div *ngIf="searchText" class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
+                        <div *ngIf="!searchText" class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerText]="highlight()"></div>
                         <div *ngIf="count > 0" class="d3s-badge pull-right">{{count}}</div>
                         <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home home-icon"></span></ng-container>
                     </div>
