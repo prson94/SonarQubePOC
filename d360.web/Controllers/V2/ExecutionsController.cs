@@ -572,7 +572,7 @@ namespace d360.web.Controllers.V2
                 if (filterValue != "")
                 {
                     filterValue = '%' + filterValue + '%';
-                    whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestorName] like @filterValue
+                    whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestedByName] like @filterValue
                         or X.AssetTypeName like @filterValue or X.ErrorMessage like @filterValue or X.ErrorMessage like @filterValue
                         or x.Success like @filterValue or X.Error like @filterValue or X.Total like @filterValue) ";
                 }
