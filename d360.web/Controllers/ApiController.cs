@@ -2432,11 +2432,7 @@ from    (
                             T.ObjectID as ObjectTypeID,
                             A.Uid as AssetUid,
                             A.ID as AssetID,
-                            case	when P.AssetID is null then cast(1 as bit)
-                                    when (P.AssetID = 0 and P.PermissionsBitMask & 32 = 32) then cast(1 as bit)
-									when (P.AssetID = A.ID and P.PermissionsBitMask & 32 = 32) then cast(1 as bit)
-									else cast(0 as bit) 
-							end as HasResponsibilityReadAccess
+                            T.ID as AssetTypeID
                     from    Asset A 
                             inner join AssetDisplayValue V on V.AssetID = A.ID 
                             inner join AssetType T on T.ID = A.AssetTypeID 
@@ -2445,6 +2441,17 @@ from    (
 
             if (metadata != null)
             {
+                var perms = Company.GetPermissions((long)metadata.AssetID, (int)metadata.AssetTypeID);
+
+                if (perms.Any(x => x.ID == Permission.ReadResponsibilities) || perms.Count == 0 || Company.CurrentResourceIsAdmin)
+                {
+                    model.HasResponsibilityReadAccess = true;
+                }
+                else
+                {
+                    model.HasResponsibilityReadAccess = false;
+                }
+
                 model.AssetUid = metadata.AssetUid;
                 model.AssetID = metadata.AssetID;
 
@@ -2453,8 +2460,6 @@ from    (
 
                 model.ObjectType = metadata.ObjectType;
                 model.ObjectTypeID = metadata.ObjectTypeID;
-
-                model.HasResponsibilityReadAccess = metadata.HasResponsibilityReadAccess;
             }
 
             if (includeHeader)
