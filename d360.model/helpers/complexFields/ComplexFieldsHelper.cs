@@ -351,8 +351,8 @@ namespace d360.model.helpers
                     Columns.Add(gColumn);
                     Fields.Add(gField);
 
-                    Fields.Add(new GridField() { name = $"H{(f.RelationIndex + 1)}_Uid", type = "text" });
-                    Fields.Add(new GridField() { name = $"H{(f.RelationIndex + 1)}_Url", type = "text" });
+                    Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Uid", type = "text" });
+                    Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Url", type = "text" });
                 }
             }
 
