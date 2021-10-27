@@ -1,0 +1,62 @@
+@import '../../../../../Content/styles/_Variables.less';
+
+.add-asset-form {
+  padding: 24px;
+
+  .form-header {
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 16px;
+
+    .sub-header {
+      color: @igx-gray-color;
+      font-size: 12px;
+      font-weight: normal;
+    }
+  }
+
+  .form-wrapper {
+    overflow: auto;
+    max-height: 400px;
+
+    .ig-property-group:first-child {
+      .ig-pg-header-line {
+        border: none;
+      }
+    }
+
+    .col {
+      padding: 0px;
+    }
+
+    .FieldName {
+      color: @ig-black;
+    }
+
+    .field-wrapper-type-Link {
+      .flex-grid-link {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 8px 0px;
+
+        .link-input {
+          flex-grow: 1;
+        }
+
+        .label {
+          line-height: 32px;
+          padding-right: 16px;
+          width: 58px;
+        }
+      }
+
+      .error-message {
+        margin-left: 58px;
+      }
+    }
+  }
+
+  .action-buttons {
+    padding: 24px 0px 0px 0px;
+  }
+}

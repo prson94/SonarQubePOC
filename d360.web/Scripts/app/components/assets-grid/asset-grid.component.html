@@ -27,7 +27,7 @@
     <div class="grid-action-buttons">
         <button *ngIf="showAddButton && hasAddAssetPermissions()"
                 igButton
-                pTooltip="Add new asset"
+                pTooltip="Create new asset"
                 tooltipPosition="top"
                 tooltipStyleClass="ig-tooltip"
                 class="ig-button-primary"
@@ -171,7 +171,7 @@
     <d3s-dynamic-editor-v2 
                         [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
                         [objectType]="gridObject.Object"
-                        [title]="selected?.Name ? selected?.Name : gridObject?.Name + ' Item'"
+                        [title]="selected ? 'Edit Asset' : 'Create New Asset'"
                         [selection]="selected"
                         [rowID]="rowID"
                         [objectTypeUid]="gridObject?.AssetTypeUID"

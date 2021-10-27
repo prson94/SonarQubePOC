@@ -1,4 +1,4 @@
-﻿<div class="field-wrapper {{(!isValid ? 'invalid' : '')}} {{(isRequired() ? 'required-field' : '')}} {{(!field.Value || field.Value.length == 0) ? 'empty-field' : '' }}">
+﻿<div class="field-wrapper-type-{{field.FieldType}} field-wrapper {{(!isValid ? 'invalid' : '')}} {{(isRequired() ? 'required-field' : '')}} {{(!field.Value || field.Value.length == 0) ? 'empty-field' : '' }}">
     <div [formGroup]="form">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'">
@@ -236,10 +236,18 @@
                 <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
             </div>
             <div *ngSwitchCase="'Link'">
-                <input igInput igSize="full" [formControlName]="field.FieldName + '_Name'" type="text">
-                <div>(Link Name)</div>
-                <input igInput igSize="full" [formControlName]="field.FieldName + '_Url'" type="text">
-                <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+                <div class="flex-grid-link">
+                    <div class="label">Name</div>
+                    <div class="link-input">
+                        <input igInput igSize="full" [formControlName]="field.FieldName + '_Name'" type="text">
+                    </div>
+                </div>
+                <div class="flex-grid-link">
+                    <div class="label">URL</div>
+                    <div class="link-input">
+                        <input igInput igSize="full" [formControlName]="field.FieldName + '_Url'" type="text">
+                    </div>
+                </div>
             </div>
             <div class="error-message" *ngIf="!isValid && isDirty">{{errorMessage}}</div>
         </div>

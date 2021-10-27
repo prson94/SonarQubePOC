@@ -403,7 +403,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         if (this.field.UseColorControl) {
             this.field.Items = this.getColorItemsAsSelectItem(this.field.Items);
         }
-        this.isDirty = true;
     }
 
     ngOnChanges() {

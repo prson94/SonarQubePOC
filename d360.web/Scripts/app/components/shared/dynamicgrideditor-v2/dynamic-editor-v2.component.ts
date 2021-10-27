@@ -30,7 +30,6 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
-import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
@@ -41,13 +40,7 @@ import { SelectItem } from 'primeng/api';
     providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    styles: [
-        `
-            .p-multiselect-panel,.p-dropdown-panel {
-                z-index: 10000 !important;
-            }
-        `
-    ],
+    styleUrls: ['dynamic-editor-v2.component.less']
 })
 
 export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges, OnInit {
