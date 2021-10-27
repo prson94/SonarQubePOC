@@ -10,6 +10,10 @@
             <div class="FieldName">
                 <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
                 <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
+                <span *ngIf="field.IsPartOfKey" pTooltip="Key field used to uniquely identify records"
+                    tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                    <img src="/Content/images/field-key.svg"  [style.verticalAlign]="'sub'">
+                </span>
             </div>
             <div *ngSwitchCase="'Text'" style="width:100%;">
                 <input igInput igSize="full" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" type="text" [required]="isRequired()">

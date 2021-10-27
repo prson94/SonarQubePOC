@@ -9,6 +9,10 @@
                     <div *ngFor="let field of row.FirstColumnFields">
                         <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
                         <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="FieldName FieldDisplayName">{{field.Name}}</div>
+                        <span *ngIf="field.IsPartOfKey" pTooltip="Key field used to uniquely identify records"
+                            tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                            <img src="/Content/images/field-key.svg"  [style.verticalAlign]="'sub'">
+                        </span>
                     </div>
                 </div>
                 <div class="col l10 m9 s12">
@@ -22,6 +26,10 @@
                     <div *ngFor="let field of row.FirstColumnFields">
                         <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
                         <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="FieldName FieldDisplayName">{{field.Name}}</div>
+                        <span *ngIf="field.IsPartOfKey" pTooltip="Key field used to uniquely identify records"
+                            tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                            <img src="/Content/images/field-key.svg"  [style.verticalAlign]="'sub'">
+                        </span>
                     </div>
                 </div>
                 <div class="col l4 m3 s12">
@@ -33,6 +41,10 @@
                     <div *ngFor="let field of row.SecondColumnFields">
                         <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
                         <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="FieldName FieldDisplayName">{{field.Name}}</div>
+                        <span *ngIf="field.IsPartOfKey" pTooltip="Key field used to uniquely identify records"
+                            tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                            <img src="/Content/images/field-key.svg"  [style.verticalAlign]="'sub'">
+                        </span>
                     </div>
                 </div>
                 <div class="col l4 m3 s12">

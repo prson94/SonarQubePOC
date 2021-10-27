@@ -4,18 +4,26 @@
 <div *ngIf="category.loaded">
     <div *ngFor="let row of category.rows; let last=last">
         <div class="row" attr.data-category="{{row.Category}}">
-            <div *ngFor="let field of row.FirstColumnFields" class="{{getRowClass(row.FirstColumnFields)}}" [style.width.px]="getColumnWidth(row.FirstColumnFields)">
-                <label *ngIf="field.FieldDescription && field.FieldDescription != ''" class="ig-label">
-                    <span [pTooltip]="field.FieldDescription" tooltipPosition="top">
-                        {{field.Name}}
+            <div *ngFor="let field of row.FirstColumnFields" class="{{getRowClass(row.FirstColumnFields)}}"
+                [style.width.px]="getColumnWidth(row.FirstColumnFields)">
+                <label class="ig-label">
+                    <ng-container *ngIf="field.FieldDescription && field.FieldDescription != ''">
+                        <span [pTooltip]="field.FieldDescription" tooltipPosition="top">
+                            {{field.Name}}
+                        </span>
+                    </ng-container>
+                    <ng-container *ngIf="!field.FieldDescription || field.FieldDescription == ''">
+                        <span>
+                            {{field.Name}}
+                        </span>
+                    </ng-container>
+                    <span *ngIf="field.IsPartOfKey" pTooltip="Key field used to uniquely identify records"
+                        tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                        <img src="/Content/images/field-key.svg" [style.verticalAlign]="'sub'">
                     </span>
                 </label>
-                <label *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="ig-label">
-                    <span>
-                        {{field.Name}}
-                    </span>
-                </label>
-                <ig-asset-detail-field [field]="field" [assetUid]="assetUID" [tooltipAlign]="tooltipAlign" [isSidePanel]="isSidePanel"></ig-asset-detail-field>
+                <ig-asset-detail-field [field]="field" [assetUid]="assetUID" [tooltipAlign]="tooltipAlign"
+                    [isSidePanel]="isSidePanel"></ig-asset-detail-field>
             </div>
             <div *ngIf="last" [style.height]="spacerHeight">
                 &nbsp;
