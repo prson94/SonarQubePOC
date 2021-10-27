@@ -22,14 +22,14 @@ namespace d360.core.resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class OthersError {
+    public class TagErrors {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal OthersError() {
+        internal TagErrors() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace d360.core.resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("d360.core.resources.OthersError", typeof(OthersError).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("d360.core.resources.TagErrors", typeof(TagErrors).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,101 +61,110 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add to index individual errors: .
+        ///   Looks up a localized string similar to Tag with uid &apos;{0}&apos; have related assets. Use cascade=&apos;true&apos; to delete this tag!.
         /// </summary>
-        public static string AddIndexIndividualErrors {
+        public static string DeleteCascadeTagRelateAsset {
             get {
-                return ResourceManager.GetString("AddIndexIndividualErrors", resourceCulture);
+                return ResourceManager.GetString("DeleteCascadeTagRelateAsset", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot use a search strategy of none.
+        ///   Looks up a localized string similar to Invalid value [{0}] provided for _includetotal parameter in the request..
         /// </summary>
-        public static string CannotUseSearch {
+        public static string Invalid_IncludeTotal {
             get {
-                return ResourceManager.GetString("CannotUseSearch", resourceCulture);
+                return ResourceManager.GetString("Invalid_IncludeTotal", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Measure Found.
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request..
         /// </summary>
-        public static string InvalidMeasureFound {
+        public static string InvalidDirection {
             get {
-                return ResourceManager.GetString("InvalidMeasureFound", resourceCulture);
+                return ResourceManager.GetString("InvalidDirection", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid response no data.
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request.
         /// </summary>
-        public static string InvalidResponseData {
+        public static string InvalidOrderBy {
             get {
-                return ResourceManager.GetString("InvalidResponseData", resourceCulture);
+                return ResourceManager.GetString("InvalidOrderBy", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DEV ERROR - NO SEARCH BASE URL SPECIFIED..
+        ///   Looks up a localized string similar to Invalid value for page number parametar!.
         /// </summary>
-        public static string NoSearchUrlError {
+        public static string InvalidPageNumber {
             get {
-                return ResourceManager.GetString("NoSearchUrlError", resourceCulture);
+                return ResourceManager.GetString("InvalidPageNumber", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not determine server version.
+        ///   Looks up a localized string similar to Invalid value for page size parametar!.
         /// </summary>
-        public static string NotDetermineServerVersion {
+        public static string InvalidPageSize {
             get {
-                return ResourceManager.GetString("NotDetermineServerVersion", resourceCulture);
+                return ResourceManager.GetString("InvalidPageSize", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Profile record does not exist for provided Uid..
+        ///   Looks up a localized string similar to Invalid parameters supplied. Parameter DisplayValue, AssetType, TagsasString not allowed to used when globalSearch parameter is present..
         /// </summary>
-        public static string ProfileRecordNotExists {
+        public static string InvalidParaMeter {
             get {
-                return ResourceManager.GetString("ProfileRecordNotExists", resourceCulture);
+                return ResourceManager.GetString("InvalidParaMeter", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signature Type is invalid..
+        ///   Looks up a localized string similar to Invalid sortby value provided in the request..
         /// </summary>
-        public static string SignatureTypeInvalid {
+        public static string InvalidSortBy {
             get {
-                return ResourceManager.GetString("SignatureTypeInvalid", resourceCulture);
+                return ResourceManager.GetString("InvalidSortBy", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signature Type is required..
+        ///   Looks up a localized string similar to Invalid sort order value provided in the request..
         /// </summary>
-        public static string SignatureTypeRequired {
+        public static string InvalidSortOrder {
             get {
-                return ResourceManager.GetString("SignatureTypeRequired", resourceCulture);
+                return ResourceManager.GetString("InvalidSortOrder", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unknown search strategy: .
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request.
         /// </summary>
-        public static string UnknownSearchStrategy {
+        public static string InvalidTagUid {
             get {
-                return ResourceManager.GetString("UnknownSearchStrategy", resourceCulture);
+                return ResourceManager.GetString("InvalidTagUid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Update index individual errors:.
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request..
         /// </summary>
-        public static string UpdateIndexIndividualErrors {
+        public static string InvalueTotalValue {
             get {
-                return ResourceManager.GetString("UpdateIndexIndividualErrors", resourceCulture);
+                return ResourceManager.GetString("InvalueTotalValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag with uid &apos;{0}&apos; does not exists!.
+        /// </summary>
+        public static string TagUidNotExists {
+            get {
+                return ResourceManager.GetString("TagUidNotExists", resourceCulture);
             }
         }
     }

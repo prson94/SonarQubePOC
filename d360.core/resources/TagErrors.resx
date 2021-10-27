@@ -117,37 +117,40 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddIndexIndividualErrors" xml:space="preserve">
-    <value>Add to index individual errors: </value>
+  <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
+    <value>Tag with uid '{0}' have related assets. Use cascade='true' to delete this tag!</value>
   </data>
-  <data name="CannotUseSearch" xml:space="preserve">
-    <value>Cannot use a search strategy of none</value>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>Invalid value [{0}] passed in the request.</value>
   </data>
-  <data name="InvalidMeasureFound" xml:space="preserve">
-    <value>Invalid Measure Found</value>
+  <data name="InvalidOrderBy" xml:space="preserve">
+    <value>Invalid value [{0}] passed in the request</value>
   </data>
-  <data name="InvalidResponseData" xml:space="preserve">
-    <value>Invalid response no data</value>
+  <data name="InvalidPageNumber" xml:space="preserve">
+    <value>Invalid value for page number parametar!</value>
   </data>
-  <data name="NoSearchUrlError" xml:space="preserve">
-    <value>DEV ERROR - NO SEARCH BASE URL SPECIFIED.</value>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Invalid value for page size parametar!</value>
   </data>
-  <data name="NotDetermineServerVersion" xml:space="preserve">
-    <value>Could not determine server version</value>
+  <data name="InvalidParaMeter" xml:space="preserve">
+    <value>Invalid parameters supplied. Parameter DisplayValue, AssetType, TagsasString not allowed to used when globalSearch parameter is present.</value>
   </data>
-  <data name="ProfileRecordNotExists" xml:space="preserve">
-    <value>Profile record does not exist for provided Uid.</value>
+  <data name="InvalidSortBy" xml:space="preserve">
+    <value>Invalid sortby value provided in the request.</value>
   </data>
-  <data name="SignatureTypeInvalid" xml:space="preserve">
-    <value>Signature Type is invalid.</value>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>Invalid sort order value provided in the request.</value>
   </data>
-  <data name="SignatureTypeRequired" xml:space="preserve">
-    <value>Signature Type is required.</value>
+  <data name="InvalidTagUid" xml:space="preserve">
+    <value>Invalid value [{0}] passed in the request</value>
   </data>
-  <data name="UnknownSearchStrategy" xml:space="preserve">
-    <value>Unknown search strategy: </value>
+  <data name="Invalid_IncludeTotal" xml:space="preserve">
+    <value>Invalid value [{0}] provided for _includetotal parameter in the request.</value>
   </data>
-  <data name="UpdateIndexIndividualErrors" xml:space="preserve">
-    <value>Update index individual errors:</value>
+  <data name="InvalueTotalValue" xml:space="preserve">
+    <value>Invalid value [{0}] passed in the request.</value>
+  </data>
+  <data name="TagUidNotExists" xml:space="preserve">
+    <value>Tag with uid '{0}' does not exists!</value>
   </data>
 </root>

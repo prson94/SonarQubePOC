@@ -117,20 +117,254 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ActionNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
+    <value>Action Types cannot have field property 'IsPartOfKey' set to true.</value>
+  </data>
+  <data name="ActionNotAllowedScoreFieldType" xml:space="preserve">
+    <value>Actions cannot have Score field type</value>
+  </data>
+  <data name="ActionNotAllowedTagFieldType" xml:space="preserve">
+    <value>Actions cannot have Tag field type!</value>
+  </data>
+  <data name="ActionNotSupportPath" xml:space="preserve">
+    <value>Actions cannot have Path field type!</value>
+  </data>
+  <data name="ActionTypeUidNotFound" xml:space="preserve">
+    <value>Action Type not found based on Uid provided [{0}].</value>
+  </data>
+  <data name="AssetTypeError" xml:space="preserve">
+    <value>Asset type error</value>
+  </data>
+  <data name="AssetTypeNotFoundField" xml:space="preserve">
+    <value>Asset Type not found for field [{0}].</value>
+  </data>
+  <data name="AssetTypeNotHaveKeyField" xml:space="preserve">
+    <value>This asset type may not have a key fields defined!</value>
+  </data>
+  <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
+    <value>This asset type may not have a Score field type!</value>
+  </data>
+  <data name="AssetTypeUidNotFound" xml:space="preserve">
+    <value>Asset Type not found based on Uid provided [{0}].</value>
+  </data>
+  <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
+    <value>You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.</value>
+  </data>
   <data name="DefaultValueError" xml:space="preserve">
     <value>Default value must be between {1} and {2}</value>
+  </data>
+  <data name="DuplicateFieldNames" xml:space="preserve">
+    <value>Duplicate field names</value>
+  </data>
+  <data name="DuplicateRelationship" xml:space="preserve">
+    <value>Duplicate relationship on same asset type</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>Existing items in system</value>
+  </data>
+  <data name="FieldConversionError" xml:space="preserve">
+    <value>Field conversion error</value>
+  </data>
+  <data name="FieldPropertyError" xml:space="preserve">
+    <value>Field property error</value>
+  </data>
+  <data name="FieldsContainErrors" xml:space="preserve">
+    <value>Fields contain errors</value>
+  </data>
+  <data name="FieldTypeConversionError" xml:space="preserve">
+    <value>You may not convert field {0} from a {1} to a {2} or a field with the same name and different type may already exist.</value>
   </data>
   <data name="FieldTypeError" xml:space="preserve">
     <value>Field type error</value>
   </data>
+  <data name="FieldTypeListNotSpecified" xml:space="preserve">
+    <value>Field Type - list not specified</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>Field Type Not Found</value>
+  </data>
+  <data name="FieldTypeNotFoundByName" xml:space="preserve">
+    <value>Field Type not found based on Name provided [{0}].</value>
+  </data>
+  <data name="FriendNameCannotBe" xml:space="preserve">
+    <value>FriendlyName cannot be [{0}].</value>
+  </data>
   <data name="GreaterThanError" xml:space="preserve">
     <value>{0} must be greater than {1}</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>Invalid Asset Type Uid provided [{0}].</value>
+  </data>
+  <data name="InvalidField" xml:space="preserve">
+    <value>Invalid Field {0}</value>
+  </data>
+  <data name="InvalidFieldFriendlyName" xml:space="preserve">
+    <value>Invalid Field FriendlyName</value>
+  </data>
+  <data name="InvalidFieldName" xml:space="preserve">
+    <value>Invalid Field Name</value>
+  </data>
+  <data name="InvalidFields" xml:space="preserve">
+    <value>Invalid fields</value>
+  </data>
+  <data name="InvalidJsonFieldType" xml:space="preserve">
+    <value>Invalid Json attribute field type. Allowed values are {0}!"</value>
+  </data>
+  <data name="InvalidLookupDisplayFormat" xml:space="preserve">
+    <value>Invalid Lookup display Format</value>
+  </data>
+  <data name="InvalidparentField" xml:space="preserve">
+    <value>Invalid parent Field</value>
+  </data>
+  <data name="IsDisplayAbleTrueReferenceItemListForRelationship" xml:space="preserve">
+    <value>Field {0}. IsDisplayable parameter value must be true for type Reference Item List from Relationship.</value>
+  </data>
+  <data name="IsDisplayAbleTrueRelationshipLookup" xml:space="preserve">
+    <value>Field {0}. IsDisplayable parameter value must be true for type Relation Lookup.</value>
+  </data>
+  <data name="JsonElementFieldTypeNotenabled" xml:space="preserve">
+    <value>JsonElement field types are not enabled in this environment.  In order to use JsonElement field type you must enable system setting 75.</value>
+  </data>
+  <data name="JsonFiledNotPartAssetType" xml:space="preserve">
+    <value>JSON field {0} does not exist or is not part of this asset type!</value>
   </data>
   <data name="LessThanError" xml:space="preserve">
     <value>{0} must be less than {1}</value>
   </data>
+  <data name="ListAssetTypeNotFound" xml:space="preserve">
+    <value>List Asset Type not found</value>
+  </data>
+  <data name="LookupFieldTypeIsIncomplete" xml:space="preserve">
+    <value>Lookup Field Type is incomplete as it does not have a valid class specified.</value>
+  </data>
+  <data name="LookupNotSpecifiedList" xml:space="preserve">
+    <value>Lookup Field Type is incomplete as it does not have a List specified.</value>
+  </data>
   <data name="MaxDecimalFieldValue" xml:space="preserve">
     <value>10000000000</value>
+  </data>
+  <data name="MissingJsonAttribute" xml:space="preserve">
+    <value>Missing Json attribute definition!</value>
+  </data>
+  <data name="MissingListDisplayFormat" xml:space="preserve">
+    <value>List Display Format is required for Lookup Field Type.</value>
+  </data>
+  <data name="MustProvideLinkTextValue" xml:space="preserve">
+    <value>You must provide a link Text value if setting a default value for {0}.</value>
+  </data>
+  <data name="MustProvideLinkUrlValue" xml:space="preserve">
+    <value>You must provide a link Url value if setting a default value for {0}.</value>
+  </data>
+  <data name="NameCannotBe" xml:space="preserve">
+    <value>Name cannot be [{0}].</value>
+  </data>
+  <data name="NameReservedword" xml:space="preserve">
+    <value>You may not use {f.Name} as the Name of your field because it is a reserved word.</value>
+  </data>
+  <data name="NoModelFound" xml:space="preserve">
+    <value>No model found</value>
+  </data>
+  <data name="NoPrimaryKeyDefined" xml:space="preserve">
+    <value>No primary key defined</value>
+  </data>
+  <data name="NotIncludedValidTypeFieldType" xml:space="preserve">
+    <value>You have not included a valid type for the field type [{0}].</value>
+  </data>
+  <data name="NotUseComputedRelationshipLookuptypeField" xml:space="preserve">
+    <value>You may not use a ComputedRelationshipLookup type on an asset of type {0} for field {1}.</value>
+  </data>
+  <data name="NotUseJSONonActionType" xml:space="preserve">
+    <value>You may not use a JSON type on an action type or relationship type for field {0}.</value>
+  </data>
+  <data name="NotUseReferenceListItemList" xml:space="preserve">
+    <value>You may not use a Reference Item List from Relationship type on an action type or relationship type for field {0}.</value>
+  </data>
+  <data name="NotUseRelationshipLookupField" xml:space="preserve">
+    <value>You may not use a Relationship Lookup type on an action type or relationship type for field {0}.</value>
+  </data>
+  <data name="NotUserOwnershipLookup" xml:space="preserve">
+    <value>You may not use a Ownership Lookup type on an action type or relationship type for field {0}.</value>
+  </data>
+  <data name="NotUseSCoreTypeAssetForField" xml:space="preserve">
+    <value>You may not use a Score type on an asset of type {0} for field {1}.</value>
+  </data>
+  <data name="NotUseScoreTypeOnActionAndRelationshipType" xml:space="preserve">
+    <value>You may not use a Score type on an action type or relationship type for field {0}.</value>
+  </data>
+  <data name="NoUidFound" xml:space="preserve">
+    <value>No Uid found</value>
+  </data>
+  <data name="NoValidTypeDefined" xml:space="preserve">
+    <value>No valid type defined</value>
+  </data>
+  <data name="OnlyOneTagFieldAllowed" xml:space="preserve">
+    <value>Asset type can have only one Tag field type!</value>
+  </data>
+  <data name="ParameterError" xml:space="preserve">
+    <value>Parameter error</value>
+  </data>
+  <data name="ParentFieldRefernceItemNotfound" xml:space="preserve">
+    <value>Parent field [{0}] of type ReferenceItem not found on this asset.</value>
+  </data>
+  <data name="ProvideComputedRealtionshipLookupField" xml:space="preserve">
+    <value>You must provide a definition for the computed relationship lookup field {0}.</value>
+  </data>
+  <data name="ReferenceItemIsPartOfKeyNotAllowedTrue" xml:space="preserve">
+    <value>Reference item types cannot have field property 'IsPartOfKey' set to true.</value>
+  </data>
+  <data name="ReferenceItemNotSupportJsonElement" xml:space="preserve">
+    <value>Field type JsonElement not support for reference item type!</value>
+  </data>
+  <data name="ReferenceListNotSupportJson" xml:space="preserve">
+    <value>Field type Json not support for reference item type!</value>
+  </data>
+  <data name="ReferenceListNotSupportTag" xml:space="preserve">
+    <value>Field type Tag not support for reference item type</value>
+  </data>
+  <data name="RelationNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
+    <value>Relationship Types cannot have field property 'IsPartOfKey' set to true.</value>
+  </data>
+  <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
+    <value>Relationships cannot have Score field type!</value>
+  </data>
+  <data name="RelationshipNotSupportPath" xml:space="preserve">
+    <value>Relationships cannot have Path field type!</value>
+  </data>
+  <data name="RelationshipsNotAllowedTagFieldType" xml:space="preserve">
+    <value>Relationships cannot have Tag field type!</value>
+  </data>
+  <data name="RelationshipTypeFieldNotFound" xml:space="preserve">
+    <value>Relationship Type/Field not found</value>
+  </data>
+  <data name="RelationshipTypeNotFound" xml:space="preserve">
+    <value>Relationship Type not found</value>
+  </data>
+  <data name="RelationshipTypeNotFoundBasedOnUid" xml:space="preserve">
+    <value>Relationship Type or Field Type not found based on Uid provided [{0}].</value>
+  </data>
+  <data name="RelationshipTypeOrFieldTypeNotFound" xml:space="preserve">
+    <value>Relationship Type or Field Type not found based on Uid provided [{0}].</value>
+  </data>
+  <data name="RelationshipTypeUIdNotFound" xml:space="preserve">
+    <value>Relationship Type not found based on Uid provided [{0}].</value>
+  </data>
+  <data name="RelationShipTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
+    <value>You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.</value>
+  </data>
+  <data name="RelationShipTypeUidNotRequiredIfAssetTypeUidProvided" xml:space="preserve">
+    <value>You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.</value>
+  </data>
+  <data name="ScoreTypeCannotAllocateAssetType" xml:space="preserve">
+    <value>Score type {0} cannot be allocated to this asset type for field {1}.</value>
+  </data>
+  <data name="SpecificHaveTagFieldType" xml:space="preserve">
+    <value>Only Artifacts, Policies, Models and Rules are allowed to have Tag field type!</value>
+  </data>
+  <data name="ThisAssetTypeNotSupportPath" xml:space="preserve">
+    <value>This asset type may not have a Path field type!</value>
+  </data>
+  <data name="TypeObjectMissing" xml:space="preserve">
+    <value>The 'Type' object is missing from one or more field type definitions.</value>
   </data>
   <data name="WholeNumberError" xml:space="preserve">
     <value>{0} must be a whole number</value>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using d360.core.enums;
+using d360.core.resources;
 using System.Net;
 using System.Data;
 using System.Text.RegularExpressions;
@@ -124,19 +125,19 @@ namespace d360.model.DataAccessLayer
 
                     if (model.Resource == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Not Found", $"User for uid [{model.Uid}] not found.");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.NotFound, string.Format(MemberShipErrors.UserUidNotFound, model.Uid));
                     }
 
                     if (model.Resource.ResourceID < 1)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid User", $"User for uid [{model.Uid}] is a system user and cannot be deleted.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidUser, string.Format(MemberShipErrors.UserUidSystemUser, model.Uid));
                     }
 
                     model.CompanyResource = CommunityContext.CompanyResources.SingleOrDefault(r => r.CompanyID == CompanyContext.CurrentCompanyID && r.ResourceID == model.Resource.ResourceID && r.State != CompanyResourceState.Deleted);
 
                     if (model.CompanyResource == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Not Found", $"User for uid [{model.Uid}] not found.");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound,AssetTypeErrors.NotFound, string.Format(MemberShipErrors.UserUidNotFound, model.Uid));
                     }
                 }
 
@@ -185,10 +186,10 @@ namespace d360.model.DataAccessLayer
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
 
-                return new WorkHttpStatus(HttpStatusCode.InternalServerError, "Internal Server Error", $"An internal server error occurred");
+                return new WorkHttpStatus(HttpStatusCode.InternalServerError,AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
             }
 
-            return new WorkHttpStatus(HttpStatusCode.OK, "Success", "User(s) successfully deleted");
+            return new WorkHttpStatus(HttpStatusCode.OK,AssetTypeErrors.Success, MemberShipErrors.UserDeletedMessage);
         }
         public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
         {
@@ -382,14 +383,14 @@ namespace d360.model.DataAccessLayer
                         if (user.CompanyResourceState.HasValue && user.CompanyResourceState != CompanyResourceState.Deleted)
                         {
                             success = false;
-                            messages.Add("Resource for this Username already exists");
+                            messages.Add(MemberShipErrors.ResourceUserNameExists);
                         }
                     }
 
                     if (user.State.HasValue)
                     {
                         success = false;
-                        messages.Add("Cannot provide State for a new user");
+                        messages.Add(MemberShipErrors.CanNotProvideStateOfNewUser);
                     }
 
                     if (!string.IsNullOrEmpty(user.Password))
@@ -397,18 +398,18 @@ namespace d360.model.DataAccessLayer
                         if (!validatePassword(user.Password))
                         {
                             success = false;
-                            messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
+                            messages.Add(MemberShipErrors.PasswordRule);
                         }
                     }
                     if (string.IsNullOrEmpty(user.FirstName))
                     {
                         success = false;
-                        messages.Add("Must provide a First Name");
+                        messages.Add(MemberShipErrors.FirstNameMissing);
                     }
                     if (string.IsNullOrEmpty(user.LastName))
                     {
                         success = false;
-                        messages.Add("Must provide a Last Name");
+                        messages.Add(MemberShipErrors.LastNameMissing);
                     }
                 }
                 else
@@ -416,13 +417,13 @@ namespace d360.model.DataAccessLayer
                     if (!user.uid.HasValue)
                     {
                         success = false;
-                        messages.Add("Must provide Uid for updated user");
+                        messages.Add(MemberShipErrors.ProvideUserUid);
                     }
 
                     if (!user.ResourceID.HasValue && user.uid.HasValue)
                     {
                         success = false;
-                        messages.Add("Resource not found for this Uid");
+                        messages.Add(MemberShipErrors.ResourceUidNotFound);
                     }
 
                     //Password Change
@@ -433,7 +434,7 @@ namespace d360.model.DataAccessLayer
                         if (NewPassword == null)
                         {
                             success = false;
-                            messages.Add("NewPassword parameter value missing.");
+                            messages.Add(MemberShipErrors.ResourceUidNotFound);
                         }
                         else
                         {
@@ -443,7 +444,7 @@ namespace d360.model.DataAccessLayer
                         if (CurrPassword == null)
                         {
                             success = false;
-                            messages.Add("CurrentPassword parameter value missing.");
+                            messages.Add(MemberShipErrors.MissingCurrentPasswordParameter);
                         }
 
                         var CurrPasswordHash = PasswordHelper.HashPassword(CurrPassword);
@@ -451,13 +452,13 @@ namespace d360.model.DataAccessLayer
                         if (existing == null)
                         {
                             success = false;
-                            messages.Add("Your password was not updated, since the provided current password does not match.");
+                            messages.Add(MemberShipErrors.CurrentPasswordWrong);
                         }
 
                         if (NewPassword == CurrPassword)
                         {
                             success = false;
-                            messages.Add("New password may not be the same as current password");
+                            messages.Add(MemberShipErrors.NewAndCurrentNotSame);
                         }
                     }
 
@@ -466,7 +467,7 @@ namespace d360.model.DataAccessLayer
                         if (!validatePassword(user.Password))
                         {
                             success = false;
-                            messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
+                            messages.Add(MemberShipErrors.PasswordRule);
                         }
                     }
 
@@ -478,31 +479,31 @@ namespace d360.model.DataAccessLayer
                         if (isUser == null || isUser.Object != "Resource")
                         {
                             success = false;
-                            messages.Add($"User for uid [{user.uid}] not found");
+                            messages.Add(string.Format(MemberShipErrors.UserUidNotFound,user.uid));
                         }
                     }
 
                     if (string.IsNullOrEmpty(user.FirstName))
                     {
                         success = false;
-                        messages.Add("Must provide a First Name");
+                        messages.Add(MemberShipErrors.FirstNameMissing);
                     }
                     if (string.IsNullOrEmpty(user.LastName))
                     {
                         success = false;
-                        messages.Add("Must provide a Last Name");
+                        messages.Add(MemberShipErrors.LastNameMissing);
                     }
                 }
 
                 if (string.IsNullOrEmpty(user.Username) || !Regex.IsMatch(user.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
                 {
                     success = false;
-                    messages.Add("Username is not in a valid email format");
+                    messages.Add( MemberShipErrors.InvalidEmail);
                 }
                 else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
                 {
                     success = false;
-                    messages.Add("Username must be unique within the request");
+                    messages.Add(MemberShipErrors.UsernameDuplicate);
                 }
 
 
@@ -555,7 +556,7 @@ namespace d360.model.DataAccessLayer
                         if (fieldType == null)
                         {
                             success = false;
-                            messages.Add($"Field type for key [{field}] not found on this asset");
+                            messages.Add(string.Format(MemberShipErrors.FieldTypeKeyNotFound, field));
                         }
 
                         var fieldRow = fieldTable.NewRow();
@@ -1576,11 +1577,11 @@ order by	q.SortOrder";
             try
             {
                 CompanyContext.Delete<Favorite>(i => i.ResourceID == resourceID && !i.IsHomePage);
-                return new WorkHttpStatus(HttpStatusCode.OK, "Success", "Favorites List Cleared.");
+                return new WorkHttpStatus(HttpStatusCode.OK,AssetTypeErrors.Success, MemberShipErrors.FavoritesListCleared);
             }
             catch
             {
-                return new WorkHttpStatus(HttpStatusCode.InternalServerError, "Internal Server Error", $"An internal server error occurred");
+                return new WorkHttpStatus(HttpStatusCode.InternalServerError,AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
             }
         }
 

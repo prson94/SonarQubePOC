@@ -48,7 +48,7 @@ namespace d360.model.DataAccessLayer
             var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
             if (asset == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
             }
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
@@ -576,18 +576,18 @@ namespace d360.model.DataAccessLayer
             
             if (asset == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", CommentErrors.AssetUidNotFound);
             }
 
             AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
             if (dataprofile == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Profile record does not exist for provided Uid.");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.ProfileRecordNotExists );
             }
 
             if (similarType == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Signature Type is required.");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.SignatureTypeRequired);
             }
             else
             {
@@ -608,7 +608,7 @@ namespace d360.model.DataAccessLayer
                 }
                 else
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Signature Type is invalid.");
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.SignatureTypeInvalid);
                 }
             }
 

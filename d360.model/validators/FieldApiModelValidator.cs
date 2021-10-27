@@ -36,7 +36,7 @@ namespace d360.model.validators
                 isValid = Validator.TryValidateObject(field, new ValidationContext(field, serviceProvider: null, items: null), validationResults, true);
                 if (!isValid)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Invalid Field {validationResults.First().MemberNames.First()}", validationResults.First().ErrorMessage);
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, string.Format(FieldErrors.InvalidField, validationResults.First().MemberNames.First()), validationResults.First().ErrorMessage);
                 }
 
                 #endregion
@@ -45,7 +45,7 @@ namespace d360.model.validators
 
                 if (!IsFieldNameAllowed(field.Name.Trim(), relationshipTypeIdentifierInfoModel != null, assetTypeIdentifierInfoModel))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Name cannot be [{field.Name.Trim().ToUpper()}].");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidFieldName, string.Format(FieldErrors.NameCannotBe, field.Name.Trim().ToUpper()));
                 }
 
                 #endregion
@@ -54,14 +54,14 @@ namespace d360.model.validators
 
                 if (!IsFieldNameAllowed(field.FriendlyName.Trim(), assetTypeIdentifierInfoModel: assetTypeIdentifierInfoModel))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName cannot be [{field.FriendlyName.Trim().ToUpper()}].");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidFieldFriendlyName, string.Format(FieldErrors.FriendNameCannotBe, field.FriendlyName.Trim().ToUpper()));
                 }
 
                 #endregion
 
                 if (field.Type == null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"The 'Type' object is missing from one or more field type definitions.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.TypeObjectMissing);
                 }
 
 
@@ -80,27 +80,27 @@ namespace d360.model.validators
 
                 if (!isJsonAttributeFieldTypeEnabled && field.Type.JsonElement != null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"JsonElement field types are not enabled in this environment.  In order to use JsonElement field type you must enable system setting 75.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.JsonElementFieldTypeNotenabled);
                 }
 
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.ReferenceItemType.ToString())
                 {
                     if (field.Type.IsPartOfKey())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Reference item types cannot have field property 'IsPartOfKey' set to true.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldPropertyError,FieldErrors.ReferenceItemIsPartOfKeyNotAllowedTrue);
                     }
 
                     if (field.Type.Json != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type Json not support for reference item type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ReferenceListNotSupportJson);
                     }
                     else if (field.Type.Tag != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type Tag not support for reference item type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ReferenceListNotSupportTag);
                     }
                     else if (field.Type.JsonElement != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type JsonElement not support for reference item type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ReferenceItemNotSupportJsonElement);
                     }
                 }
 
@@ -108,7 +108,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.IsPartOfKey())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Relationship Types cannot have field property 'IsPartOfKey' set to true.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError ,FieldErrors.RelationNotAllowedIsPartyOFKeyTrue);
                     }
                 }
 
@@ -116,7 +116,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.IsPartOfKey())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Action Types cannot have field property 'IsPartOfKey' set to true.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ActionNotAllowedIsPartyOFKeyTrue);
                     }
                 }
 
@@ -124,11 +124,11 @@ namespace d360.model.validators
                 {
                     if (actionTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Actions cannot have Path field type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ActionNotSupportPath);
                     }
                     if (relationshipTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Relationships cannot have Path field type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.RelationshipNotSupportPath);
                     }
                     if (assetTypeIdentifierInfoModel != null)
                     {
@@ -138,7 +138,7 @@ namespace d360.model.validators
                         };
                         if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Path field type!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ThisAssetTypeNotSupportPath);
                         }
                     }
                 }
@@ -148,7 +148,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.ComputedRelationshipLookup.IsDisplayable == false)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Relation Lookup.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsDisplayAbleTrueRelationshipLookup, field.FriendlyName));
                     }
                 }
 
@@ -156,7 +156,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.ComputedRelationshipReferenceList.IsDisplayable == false)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Reference Item List from Relationship.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsDisplayAbleTrueReferenceItemListForRelationship, field.FriendlyName));
                     }
                 }
                 #endregion
@@ -166,7 +166,7 @@ namespace d360.model.validators
                 {
                     if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString() || (assetTypeIdentifierInfoModel.Object == SystemObjects.OrganizationType.ToString() && field.Name.ToLower() != "name"))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a key fields defined!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.AssetTypeNotHaveKeyField);
                     }
                 }
 
@@ -179,16 +179,16 @@ namespace d360.model.validators
                         var jsonAttribute = field.Type.JsonElement.JsonAttribute;
                         if (jsonAttribute == null)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Missing Json attribute definition!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.MissingJsonAttribute);
                         }
                         if (!existingFieldTypes.Any(x => x.Name == jsonAttribute.FieldName && x.Type == "JSON"))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"JSON field {jsonAttribute.FieldName} does not exist or is not part of this asset type!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.JsonFiledNotPartAssetType, jsonAttribute.FieldName));
                         }
                         var allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
                         if (!allowedTypes.Contains(jsonAttribute.DataType))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Invalid Json attribute field type. Allowed values are {string.Join(", ", allowedTypes)}!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.InvalidJsonFieldType, string.Join(", ", allowedTypes)));
                         }
 
 
@@ -199,11 +199,11 @@ namespace d360.model.validators
                 {
                     if (actionTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Actions cannot have Score field type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ActionNotAllowedScoreFieldType);
                     }
                     if (relationshipTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Relationships cannot have Score field type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationshipNotAllowedScoreFieldType);
                     }
                     if (assetTypeIdentifierInfoModel != null)
                     {
@@ -214,7 +214,7 @@ namespace d360.model.validators
                         };
                         if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Score field type!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.AssetTypeNotHaveScoreField);
                         }
                     }
                 }
@@ -223,18 +223,18 @@ namespace d360.model.validators
                 {
                     if (actionTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Actions cannot have Tag field type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.ActionNotAllowedTagFieldType);
                     }
                     if (relationshipTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Relationships cannot have Tag field type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.RelationshipsNotAllowedTagFieldType);
                     }
                     if (assetTypeIdentifierInfoModel != null)
                     {
                         var allowedTypes = new List<string>() { SystemObjects.ArtifactType.ToString(), SystemObjects.PolicyType.ToString(), SystemObjects.TaxonomyType.ToString(), SystemObjects.RuleType.ToString(), SystemObjects.TaskType.ToString() };
                         if (!allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Only Artifacts, Policies, Models and Rules are allowed to have Tag field type!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.SpecificHaveTagFieldType);
                         }
                     }
 
@@ -242,7 +242,7 @@ namespace d360.model.validators
                     {
                         if (existingFieldTypes.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Asset type can have only one Tag field type!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.OnlyOneTagFieldAllowed);
                         }
                     }
 
@@ -257,7 +257,7 @@ namespace d360.model.validators
                             var duplicateFieldIntersectTypeUid1 = ExistingIntersectID.Where(f => f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();
                             if (duplicateFieldIntersectTypeUid1.Count > 0)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Duplicate relationship on same asset type", $"The following relationship ID are used more than once: {field.Type.Relationship.IntersectTypeUid}. Relationship must be unique on same assettype");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, $"The following relationship ID are used more than once: {field.Type.Relationship.IntersectTypeUid}. Relationship must be unique on same assettype");
 
                             }
                         }
@@ -265,7 +265,7 @@ namespace d360.model.validators
 
                     if (field.Type.Relationship.IsEditable == false && field.Type.Relationship.Description.Form.Trim().Length > 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Form description must be empty for Relationship field when IsEditable set to false.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field {field.FriendlyName}. Form description must be empty for Relationship field when IsEditable set to false.");
                     }
 
                 }
@@ -274,11 +274,11 @@ namespace d360.model.validators
                 {
                     if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsListable == true)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsListable parameter value must be false for boolean type field defined for action type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field {field.FriendlyName}. IsListable parameter value must be false for boolean type field defined for action type!");
                     }
                     if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsPrimaryFilter == true)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsPrimaryFilter(Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field {field.FriendlyName}. IsPrimaryFilter(Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!");
                     }
                 }
 
@@ -290,7 +290,7 @@ namespace d360.model.validators
                     }
                     catch (Exception)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Validation pattern is not valid Regex expression!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Validation pattern is not valid Regex expression!");
                     }
                 }
 
@@ -298,7 +298,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.Link.IsPartOfKey == true)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Link Types cannot have field property IsPartOfKey on field {field.FriendlyName} set to true.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldPropertyError, $"Link Types cannot have field property IsPartOfKey on field {field.FriendlyName} set to true.");
                     }
                 }
 
@@ -360,7 +360,7 @@ namespace d360.model.validators
                     {
                         if (field.Type.Json.Validation.IsRequired)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"IsRequired property can not be true for JSON field types defined on this asset type!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"IsRequired property can not be true for JSON field types defined on this asset type!");
                         }
                     }
                 }
@@ -369,7 +369,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.Counter.IsEditable == true)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"IsEditable cannot be true for this field type.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"IsEditable cannot be true for this field type.");
                     }
 
                     if (!string.IsNullOrEmpty(field.Type.Counter.CounterPrefix))
@@ -379,24 +379,24 @@ namespace d360.model.validators
 
                         if (value.Length > 10)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Counter Prefix cannot be longer than 10 characters.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Counter Prefix cannot be longer than 10 characters.");
                         }
 
                         var match = Regex.Matches(value, "[a-zA-Z0-9-_]");
                         if (match.Count != value.Length)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.");
                         }
 
                         if (!Regex.IsMatch(value[0].ToString(), "[a-zA-Z]"))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Counter Prefix must start with a character.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Counter Prefix must start with a character.");
                         }
                     }
 
                     if (field.Type.Counter.CounterInitialIndex.HasValue && (field.Type.Counter.CounterInitialIndex.Value <= 0 || field.Type.Counter.CounterInitialIndex.Value > 9999999))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Counter Initial Value must be between 1 and 9999999.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Counter Initial Value must be between 1 and 9999999.");
                     }
 
                     var allowedTypes = new List<string> {
@@ -407,7 +407,7 @@ namespace d360.model.validators
                         };
                     if (assetTypeIdentifierInfoModel == null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Counter field type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"This asset type may not have a Counter field type!");
                     }
                 }
 
@@ -415,7 +415,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.ComputedOwnershipLookup.DisplayInColumn == true && field.Type.ComputedOwnershipLookup.Definition.DisplayAsList != true)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"DisplayInColumn on ComputedOwnershipLookup can be set to True only if DisplayAsList is set to True.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"DisplayInColumn on ComputedOwnershipLookup can be set to True only if DisplayAsList is set to True.");
                     }
                 }
 
@@ -425,42 +425,42 @@ namespace d360.model.validators
 
                     if (field.Type.ComputedOwnershipLookup != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedOwnershipLookup fields are not allowed for current Asset Type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"ComputedOwnershipLookup fields are not allowed for current Asset Type!");
                     }
 
                     if (field.Type.ComputedRelationshipField != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipField fields are not allowed for current Asset Type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"ComputedRelationshipField fields are not allowed for current Asset Type!");
                     }
 
                     if (field.Type.ComputedRelationshipLookup != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipLookup fields are not allowed for current Asset Type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"ComputedRelationshipLookup fields are not allowed for current Asset Type!");
                     }
 
                     if (field.Type.ComputedRelationshipReferenceList != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipReferenceList fields are not allowed for current Asset Type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"ComputedRelationshipReferenceList fields are not allowed for current Asset Type!");
                     }
 
                     if (field.Type.Json != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Json fields are not allowed for current Asset Type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"Json fields are not allowed for current Asset Type!");
                     }
 
                     if (field.Type.JsonElement != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"JsonElement fields are not allowed for current Asset Type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"JsonElement fields are not allowed for current Asset Type!");
                     }
 
                     if (field.Type.Relationship != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Relationship fields are not allowed for current Asset Type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"Relationship fields are not allowed for current Asset Type!");
                     }
 
                     if (field.Type.Score != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Score fields are not allowed for current Asset Type!");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"Score fields are not allowed for current Asset Type!");
                     }
 
                     if (field.Type.Text != null && field.Name == "Name")
@@ -470,31 +470,31 @@ namespace d360.model.validators
                         var ft = field.Type.Text;
                         if (ft.IsDisplayable == false)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsDisplayable", "false"));
                         }
                         if (ft.IsEditable == false)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsEditable", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsEditable", "false"));
                         }
                         if (ft.IsListable == false)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsListable", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsListable", "false"));
                         }
                         if (ft.IsPartOfKey == false)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsPartOfKey", "false"));
                         }
                         if (ft.Validation.IsRequired == false)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsRequired", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsRequired", "false"));
                         }
                         if (ft.IsPrimaryFilter == true)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsPrimaryFilter", "true"));
                         }
                         if (ft.ShowIfEmpty == false)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "ShowIfEmpty", "false"));
                         }
 
                     }
@@ -505,23 +505,23 @@ namespace d360.model.validators
                         var ft = field.Type.Lookup;
                         if (ft.IsDisplayable == false)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsDisplayable", "false"));
                         }
                         if (ft.IsPartOfKey == true)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "true"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsPartOfKey", "true"));
                         }
                         if (ft.IsPrimaryFilter == true)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsPrimaryFilter", "true"));
                         }
                         if (ft.ShowIfEmpty == false)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "ShowIfEmpty", "false"));
                         }
                         if (ft.List.AllowMultipleValues == true)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "AllowMultipleValues", "true"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "AllowMultipleValues", "true"));
                         }
                     }
                     if (field.Type.Decimal != null && field.Name == "StepNo")
@@ -530,13 +530,13 @@ namespace d360.model.validators
                         var message = "Task Types cannot have field property '{0}' on field StepNo set to {1}.";
                         var ft = field.Type.Decimal;
                         if (ft.IsDisplayable == false)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsDisplayable", "false"));
                         if (ft.IsPartOfKey == true)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "true"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsPartOfKey", "true"));
                         if (ft.IsPrimaryFilter == true)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "IsPrimaryFilter", "true"));
                         if (ft.ShowIfEmpty == false)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "false"));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, "ShowIfEmpty", "false"));
 
                     }
 
@@ -545,15 +545,15 @@ namespace d360.model.validators
                         var editableViewModel = GetEditableViewModel(field);
                         if (editableViewModel.IsListable == true)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsListable' set to true!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"Non static fields on Diagram Asset Type cannot have 'IsListable' set to true!");
                         }
                         if (editableViewModel.IsPartOfKey == true)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsPartOfKey' set to true!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"Non static fields on Diagram Asset Type cannot have 'IsPartOfKey' set to true!");
                         }
                         if (editableViewModel.IsPrimaryFilter == true)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsPrimaryFilter' set to true!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, $"Non static fields on Diagram Asset Type cannot have 'IsPrimaryFilter' set to true!");
                         }
 
                     }
@@ -561,16 +561,16 @@ namespace d360.model.validators
             }
             if (fieldsHaveErrors)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Fields contain errors", $"The following fields have more than one type defined: {string.Join(", ", fieldsHaveErrorsList)}.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldsContainErrors, $"The following fields have more than one type defined: {string.Join(", ", fieldsHaveErrorsList)}.");
             }
             if (!actionIsReplaceAndKeySelected)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "No primary key defined", $"You have elected to replace all current fields, yet you have not defined a key. You must define at least one field as a key, or choose Merge as an Action.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoPrimaryKeyDefined, $"You have elected to replace all current fields, yet you have not defined a key. You must define at least one field as a key, or choose Merge as an Action.");
             }
             var duplicateFieldNames = model.Fields.Select(f => f.Name.ToLower()).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
             if (duplicateFieldNames.Count > 0)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Duplicate field names", $"The following field names are used more than once: {string.Join(", ", duplicateFieldNames)}. Field names must be unique.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateFieldNames, $"The following field names are used more than once: {string.Join(", ", duplicateFieldNames)}. Field names must be unique.");
             }
 
 
@@ -580,7 +580,7 @@ namespace d360.model.validators
                 var duplicateFieldIntersectTypeUid = model.Fields.Where(f => f.Type.Relationship != null).Select(f => f.Type.Relationship.IntersectTypeUid).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
                 if (duplicateFieldIntersectTypeUid.Count > 0)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Duplicate relationship on same asset type", $"The following relationship ID are used more than once: {string.Join(", ", duplicateFieldIntersectTypeUid)}. Relationship must be unique on same assettype.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, $"The following relationship ID are used more than once: {string.Join(", ", duplicateFieldIntersectTypeUid)}. Relationship must be unique on same assettype.");
                 }
             }
 
@@ -641,13 +641,13 @@ namespace d360.model.validators
 
             if (anyExistingItems && keyFieldsWillBeDeleted)
             {
-                return (new WorkHttpStatus(HttpStatusCode.BadRequest, "Existing items in system", $"You may not remove key fields as there are existing items in your environment. You may not perform a Delete action until those items are removed, or you alter the key fields defined on this type."), null);
+                return (new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ExistItemInSystem, $"You may not remove key fields as there are existing items in your environment. You may not perform a Delete action until those items are removed, or you alter the key fields defined on this type."), null);
             }
 
             var anyInvalidFields = fieldNamesToDelete.Any(f => !currentFieldTypes.Any(c => c.Name == f));
             if (anyInvalidFields)
             {
-                return (new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid fields", $"You are attempting to remove one or more fields that do not exist on this type."), null);
+                return (new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.InvalidFields, $"You are attempting to remove one or more fields that do not exist on this type."), null);
             }
 
             return (new WorkHttpStatus(HttpStatusCode.OK, "", ""),
@@ -658,12 +658,12 @@ namespace d360.model.validators
         {
             if (model == null)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "No model found", "You did not provide a valid model. Please check your request and try again.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoModelFound, "You did not provide a valid model. Please check your request and try again.");
             }
 
             if (!model.ActionTypeUid.HasValue && !model.AssetTypeUid.HasValue && !model.RelationshipTypeUid.HasValue)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "No Uid found", "You must provide only one of the three Uid properties: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoUidFound, "You must provide only one of the three Uid properties: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.");
             }
 
             if (model.ActionTypeUid.HasValue)
@@ -671,7 +671,7 @@ namespace d360.model.validators
 
                 if (actionTypeIdentifierInfoModel == null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Action Type not found based on Uid provided [{model.ActionTypeUid}].");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound,AssetTypeErrors.TypeNotFound, $"Action Type not found based on Uid provided [{model.ActionTypeUid}].");
                 }
             }
 
@@ -679,13 +679,13 @@ namespace d360.model.validators
             {
                 if (model.ActionTypeUid.HasValue)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.ParameterError, "You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.");
                 }
                 else
                 {
                     if (assetTypeIdentifierInfoModel == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Asset Type not found based on Uid provided [{model.ActionTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, $"Asset Type not found based on Uid provided [{model.ActionTypeUid}].");
                     }
                 }
             }
@@ -694,18 +694,18 @@ namespace d360.model.validators
             {
                 if (model.ActionTypeUid.HasValue)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, "You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.");
                 }
                 else if (model.AssetTypeUid.HasValue)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, "You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.");
                 }
                 else
                 {
 
                     if (relationshipTypeIdentifierInfoModel == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Relationship Type not found based on Uid provided [{model.RelationshipTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, $"Relationship Type not found based on Uid provided [{model.RelationshipTypeUid}].");
                     }
                 }
             }

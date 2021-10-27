@@ -117,37 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddIndexIndividualErrors" xml:space="preserve">
-    <value>Add to index individual errors: </value>
+  <data name="CanNotProvideStateOfNewUser" xml:space="preserve">
+    <value>Cannot provide State for a new user</value>
   </data>
-  <data name="CannotUseSearch" xml:space="preserve">
-    <value>Cannot use a search strategy of none</value>
+  <data name="CurrentPasswordWrong" xml:space="preserve">
+    <value>Your password was not updated, since the provided current password does not match.</value>
   </data>
-  <data name="InvalidMeasureFound" xml:space="preserve">
-    <value>Invalid Measure Found</value>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>Favorites List Cleared.</value>
   </data>
-  <data name="InvalidResponseData" xml:space="preserve">
-    <value>Invalid response no data</value>
+  <data name="FieldTypeKeyNotFound" xml:space="preserve">
+    <value>Field type for key [{0}] not found on this asset</value>
   </data>
-  <data name="NoSearchUrlError" xml:space="preserve">
-    <value>DEV ERROR - NO SEARCH BASE URL SPECIFIED.</value>
+  <data name="FirstNameMissing" xml:space="preserve">
+    <value>Must provide a First Name</value>
   </data>
-  <data name="NotDetermineServerVersion" xml:space="preserve">
-    <value>Could not determine server version</value>
+  <data name="InternalServerErrorMsg" xml:space="preserve">
+    <value>An internal server error occurred</value>
   </data>
-  <data name="ProfileRecordNotExists" xml:space="preserve">
-    <value>Profile record does not exist for provided Uid.</value>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Username is not in a valid email format</value>
   </data>
-  <data name="SignatureTypeInvalid" xml:space="preserve">
-    <value>Signature Type is invalid.</value>
+  <data name="LastNameMissing" xml:space="preserve">
+    <value>Must provide a Last Name</value>
   </data>
-  <data name="SignatureTypeRequired" xml:space="preserve">
-    <value>Signature Type is required.</value>
+  <data name="MissingCurrentPasswordParameter" xml:space="preserve">
+    <value>CurrentPassword parameter value missing.</value>
   </data>
-  <data name="UnknownSearchStrategy" xml:space="preserve">
-    <value>Unknown search strategy: </value>
+  <data name="MissingNewPasswordParameter" xml:space="preserve">
+    <value>NewPassword parameter value missing.</value>
   </data>
-  <data name="UpdateIndexIndividualErrors" xml:space="preserve">
-    <value>Update index individual errors:</value>
+  <data name="NewAndCurrentNotSame" xml:space="preserve">
+    <value>New password may not be the same as current password</value>
+  </data>
+  <data name="PasswordRule" xml:space="preserve">
+    <value>Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number</value>
+  </data>
+  <data name="ProvideUserUid" xml:space="preserve">
+    <value>Must provide Uid for updated user</value>
+  </data>
+  <data name="ResourceUidNotFound" xml:space="preserve">
+    <value>Resource not found for this Uid</value>
+  </data>
+  <data name="ResourceUserNameExists" xml:space="preserve">
+    <value>Resource for this Username already exists</value>
+  </data>
+  <data name="UserDeletedMessage" xml:space="preserve">
+    <value>User(s) successfully deleted</value>
+  </data>
+  <data name="UsernameDuplicate" xml:space="preserve">
+    <value>Username must be unique within the request</value>
+  </data>
+  <data name="UserUidNotFound" xml:space="preserve">
+    <value>User for uid [{0}] not found.</value>
+  </data>
+  <data name="UserUidSystemUser" xml:space="preserve">
+    <value>User for uid [{0}] is a system user and cannot be deleted.</value>
   </data>
 </root>

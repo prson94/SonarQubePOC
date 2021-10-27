@@ -117,37 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddIndexIndividualErrors" xml:space="preserve">
-    <value>Add to index individual errors: </value>
+  <data name="InvalidActionUid" xml:space="preserve">
+    <value>Invalid Action type uid value provided</value>
   </data>
-  <data name="CannotUseSearch" xml:space="preserve">
-    <value>Cannot use a search strategy of none</value>
+  <data name="InvalidLimitProvided" xml:space="preserve">
+    <value>Invalid Limit To Active Workflows value provided</value>
   </data>
-  <data name="InvalidMeasureFound" xml:space="preserve">
-    <value>Invalid Measure Found</value>
-  </data>
-  <data name="InvalidResponseData" xml:space="preserve">
-    <value>Invalid response no data</value>
-  </data>
-  <data name="NoSearchUrlError" xml:space="preserve">
-    <value>DEV ERROR - NO SEARCH BASE URL SPECIFIED.</value>
-  </data>
-  <data name="NotDetermineServerVersion" xml:space="preserve">
-    <value>Could not determine server version</value>
-  </data>
-  <data name="ProfileRecordNotExists" xml:space="preserve">
-    <value>Profile record does not exist for provided Uid.</value>
-  </data>
-  <data name="SignatureTypeInvalid" xml:space="preserve">
-    <value>Signature Type is invalid.</value>
-  </data>
-  <data name="SignatureTypeRequired" xml:space="preserve">
-    <value>Signature Type is required.</value>
-  </data>
-  <data name="UnknownSearchStrategy" xml:space="preserve">
-    <value>Unknown search strategy: </value>
-  </data>
-  <data name="UpdateIndexIndividualErrors" xml:space="preserve">
-    <value>Update index individual errors:</value>
+  <data name="InvalidResourceUid" xml:space="preserve">
+    <value>Invalid resource uid value provided</value>
   </data>
 </root>

@@ -457,6 +457,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid User.
+        /// </summary>
+        public static string InvalidUser {
+            get {
+                return ResourceManager.GetString("InvalidUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter [autoDisplayDescription].
         /// </summary>
         public static string InvalidValueautoDisplayDescription {
@@ -493,6 +502,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [includedashboardflag].
+        /// </summary>
+        public static string InvalidValueincludedashboardflag {
+            get {
+                return ResourceManager.GetString("InvalidValueincludedashboardflag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter [includeLevels].
         /// </summary>
         public static string InvalidValueincludeLevels {
@@ -520,6 +538,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [ReturnCount].
+        /// </summary>
+        public static string InvalidValueReturnCount {
+            get {
+                return ResourceManager.GetString("InvalidValueReturnCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value {0} in _includeFields parameter, field with this name not found..
         /// </summary>
         public static string InvalueValue_includeFields {
@@ -543,15 +570,6 @@ namespace d360.core.resources {
         public static string ItemNotFound {
             get {
                 return ResourceManager.GetString("ItemNotFound", resourceCulture);
-              }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid value for parameter [ReturnCount].
-        /// </summary>
-        public static string InvalidValueReturnCount {
-            get {
-                return ResourceManager.GetString("InvalidValueReturnCount", resourceCulture);
             }
         }
         
@@ -615,6 +633,15 @@ namespace d360.core.resources {
         public static string NameConflicit {
             get {
                 return ResourceManager.GetString("NameConflicit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid character(-s) provided in the asset type name. Please fix content of asset type name field..
+        /// </summary>
+        public static string NameContainInvalidCharacters {
+            get {
+                return ResourceManager.GetString("NameContainInvalidCharacters", resourceCulture);
             }
         }
         
@@ -709,6 +736,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Success.
+        /// </summary>
+        public static string Success {
+            get {
+                return ResourceManager.GetString("Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Wrong Organization.
         /// </summary>
         public static string TitleWrongOrganization {
@@ -736,11 +772,29 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type not found..
+        /// </summary>
+        public static string TypeNotFound {
+            get {
+                return ResourceManager.GetString("TypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not parse value of _includeFields.
         /// </summary>
         public static string UnableParse_IncludeFields {
             get {
                 return ResourceManager.GetString("UnableParse_IncludeFields", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unhandled error occured. Please try your request again..
+        /// </summary>
+        public static string UnhandledError {
+            get {
+                return ResourceManager.GetString("UnhandledError", resourceCulture);
             }
         }
         
