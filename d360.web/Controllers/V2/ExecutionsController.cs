@@ -1109,7 +1109,10 @@ from	[Load] L
 
                     var minutesMessage = (minutes == 0 ? "less than a minute" : minutes + " minute(s)");
 
-                    results[0].ElapsedTime = minutesMessage;
+                    if (results.Count > 0)
+                    {
+                        results[0].ElapsedTime = minutesMessage;
+                    }
                 }
 
                 return await Task.FromResult<IHttpActionResult>(
