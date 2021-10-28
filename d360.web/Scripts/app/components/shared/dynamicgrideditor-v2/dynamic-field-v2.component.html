@@ -24,7 +24,6 @@
                 </div>
             </div>
 
-
             <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
             <p-editor *ngSwitchCase="'Html'"
                       [formControlName]="field.FieldName"
@@ -47,6 +46,8 @@
                     </span>
                 </p-header>
             </p-editor>
+            <ig-switch *ngSwitchCase="'Boolean'" [trueLabel]="'True'" [falseLabel]="'False'" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
+
             <div *ngSwitchCase="'Lookup'">
                 <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
                     <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi">
@@ -249,7 +250,6 @@
                 <ig-color-picker igSize="full" [colors]="defaultColorOptions" [formControlName]="field.FieldName" [invalidOptions]="['Custom']"></ig-color-picker>
             </div>
             <input placeholder="{{getPlaceholder()}}" *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
-            <ig-switch *ngSwitchCase="'Boolean'" [trueLabel]="'True'" [falseLabel]="'False'" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
             <div *ngSwitchCase="'Date'">
                 <ig-date [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
             </div>
