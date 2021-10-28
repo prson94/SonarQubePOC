@@ -205,7 +205,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Score item with Uid {o} does not exist..
+        ///   Looks up a localized string similar to Score item with Uid {0} does not exist..
         /// </summary>
         public static string ScoreNotExists {
             get {
