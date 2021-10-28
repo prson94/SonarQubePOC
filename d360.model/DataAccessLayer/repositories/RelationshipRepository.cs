@@ -116,7 +116,7 @@ namespace d360.model.DataAccessLayer
         {
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
-            bool includeAssetPath = isExport;
+            bool includeAssetPath = false;
             bool orderByAssetPath = false;
             bool listColorsAsJSON = false;
 
@@ -245,7 +245,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_includepath"))
                 {
-                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includepath").Value, out includeAssetPath) && !isExport)
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includepath").Value, out includeAssetPath))
                     {
                         includeAssetPath = false;
                     }
