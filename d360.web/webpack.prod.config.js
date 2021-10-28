@@ -2,7 +2,7 @@
 var webpack = require('webpack');
 var path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-
+const { AngularWebpackPlugin } = require('@ngtools/webpack');
 
 // Webpack Config
 var webpackConfig = {
@@ -21,20 +21,8 @@ var webpackConfig = {
     },
 
     optimization: {
-        noEmitOnErrors: true,
+        emitOnErrors: false,
         runtimeChunk: false,
-        splitChunks: {
-            cacheGroups: {
-                default: false,
-                vendor: {
-                    test: /node_modules/,
-                    chunks: 'initial',
-                    name: 'vendor',
-                    enforce: true,
-                    filename: '[name].bundle.js'
-                },
-            }
-        }
     },
 
     plugins: [
@@ -48,7 +36,10 @@ var webpackConfig = {
         new webpack.DefinePlugin({
             __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
             PRODUCTION: JSON.stringify(true),
-        }),        
+        }),
+        new AngularWebpackPlugin({
+            tsconfig: 'scripts/tsconfig.json',
+        }),
         new CleanWebpackPlugin()
     ],
 
@@ -57,24 +48,14 @@ var webpackConfig = {
             {
                 test: /\.less$/,
                 exclude: /node_modules/,
-                loader: 'raw-loader!less-loader'
+                use: ['raw-loader', 'less-loader']
             },
-            // .ts files for TypeScript
             {
-                test: /\.ts$/,
-                use: [
-                    {
-                        loader: 'ts-loader', options: {
-                            configFile: "scripts/tsconfig.json"
-                        }
-                    },
-                    { loader: 'angular2-template-loader' },
-                    { loader: 'angular2-router-loader' }
-                ],
-                exclude: [/\.(spec|e2e)\.ts$/],
+                test: /\.[jt]sx?$/,
+                use: '@ngtools/webpack'
             },
-            { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
-            { test: /\.html$/, loader: 'raw-loader' }
+            { test: /\.css$/, use: ['to-string-loader', 'css-loader'] },
+            { test: /\.html$/, use: 'raw-loader' }
         ]
     }
 
@@ -100,12 +81,7 @@ var defaultConfig = {
     },
 
     node: {
-        global: true,
-        crypto: 'empty',
-        module: false,
-        Buffer: false,
-        clearImmediate: false,
-        setImmediate: false
+        global: true
     }
 };
 

@@ -3,6 +3,7 @@ var webpack = require('webpack');
 var path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const { AngularWebpackPlugin } = require('@ngtools/webpack');
 
 // Webpack Config
 var webpackConfig = {
@@ -23,19 +24,8 @@ var webpackConfig = {
     },
 
     optimization: {
+        emitOnErrors: true,
         runtimeChunk: false,
-        splitChunks: {
-            cacheGroups: {
-                default: false,               
-                vendor: {
-                    test: /node_modules/,
-                    chunks: 'initial',
-                    name: 'vendor',
-                    enforce: true,
-                    filename: '[name].bundle.js'
-                },
-            }
-        }
     },
 
     plugins: [
@@ -55,6 +45,9 @@ var webpackConfig = {
             moduleFilenameTemplate: '[absolute-resource-path]',
             fallbackModuleFilenameTemplate: '[absolute-resource-path]'
         }),
+        new AngularWebpackPlugin ({
+            tsconfig: 'scripts/tsconfig.json',
+        }),
         // Uncomment the following line to see the webpack bundle sizes for the SPA
         //new BundleAnalyzerPlugin(),
         new CleanWebpackPlugin()
@@ -65,29 +58,14 @@ var webpackConfig = {
             {
                 test: /\.less$/,        
                 exclude: /node_modules/,
-                loader: 'raw-loader!less-loader' 
+                use: ['raw-loader','less-loader'] 
             },
-            // .ts files for TypeScript
             {
-                test: /\.ts$/,
-                use: [
-                    {
-                        loader: 'ts-loader', options: {
-                            configFile: "scripts/tsconfig.json"
-                        }
-                    },
-                    { loader: 'angular2-template-loader' },
-                    { loader: 'angular2-router-loader' }                    
-                ],
-                exclude: [/\.(spec|e2e)\.ts$/],
+                test: /\.[jt]sx?$/,
+                use: '@ngtools/webpack'
             },
-            { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },            
-            { test: /\.html$/, loader: 'raw-loader' },
-            {
-                // Hide import warnings
-                test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
-                parser: { system: true }
-            }
+            { test: /\.css$/, use: ['to-string-loader', 'css-loader'] },            
+            { test: /\.html$/, use: 'raw-loader' },
         ],
     }
 
@@ -112,12 +90,7 @@ var defaultConfig = {
     },
 
     node: {
-        global: true,
-        crypto: 'empty',
-        module: false,
-        Buffer: false,
-        clearImmediate: false,
-        setImmediate: false
+        global: true
     }
 };
 
