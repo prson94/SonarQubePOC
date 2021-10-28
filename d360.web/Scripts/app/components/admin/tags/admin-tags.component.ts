@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Array } from 'core-js';
 import { StringConstants } from '../../../static/string-constants';
-declare var CompanySettings;
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -41,13 +41,19 @@ export class AdminTagsComponent extends AdminBaseComponent {
     @ViewChild('dt', { static: false }) tableEl: any;
     private lastSelectedElement: TagType;
 
-    constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, secondaryNavService: SecondaryNavService,) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+    constructor(
+        private router: Router,
+        private tagsService: TagService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private messagesService: MessagesObservableService,
+        titleService: Title,
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Tags;
         this.setCommonItems();
         this.tabTitle = StringConstants.Section_Tags;
         this.secondaryNavService.setCurrentArea(this.areaName, 'fa-tag', this.tabTitle);
-
     }
 
     ngOnInit() {

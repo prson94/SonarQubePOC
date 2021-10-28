@@ -13,6 +13,7 @@ import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -49,9 +50,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         private assetTypeService: AssetTypeService,
         private assetsService: AssetService,
         titleService: Title,
-        protected messagesService: MessagesObservableService
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
     }
 

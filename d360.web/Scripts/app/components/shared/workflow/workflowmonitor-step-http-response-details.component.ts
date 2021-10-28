@@ -1,4 +1,5 @@
 ﻿import { Component, Input, OnInit } from "@angular/core";
+import { CompanySettingsService } from "../../../services/settings.service";
 import { BaseComponent } from "../../shared/base.component";
 
 @Component({
@@ -47,6 +48,11 @@ export class WorkflowMonitorStepHttpResponseDetailsComponent extends BaseCompone
     @Input() step: any;
 
     outputs: any[] = [];
+
+    constructor(
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 
     ngOnInit() {
         if (this.step != null && this.step.ItemFields != null && this.step.ItemSettings != null) {

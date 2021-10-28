@@ -12,6 +12,7 @@ import { BaseComponent } from '../base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { StringConstants } from '../../../static/string-constants';
 import { AssetTypeService } from '../../../services/asset-type.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'match-detection',
@@ -138,10 +139,11 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         private assetTypeService: AssetTypeService,
         private dataProfileService: DataProfileService,
         private objectDetailService: ObjectDetailService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         private router: Router      
     ) {
-        super();        
+        super(settingsService);        
 
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);

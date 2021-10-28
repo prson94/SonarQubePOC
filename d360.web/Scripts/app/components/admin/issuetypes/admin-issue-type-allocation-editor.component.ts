@@ -7,8 +7,7 @@ import { ResponsibilityTypeService } from "../../../services/responsibility-type
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { SelectItem } from "primeng/api";
 import { AllocationAPIModel, AllocationRequestModel } from "../../../models/workflow.model";
-
-declare var CompanySettings: any;
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: "d3s-admin-issue-type-allocation-editor",
@@ -27,9 +26,14 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
     responsibilityList: SelectItem[] = [];
     selection: AllocationRequestModel = new AllocationRequestModel();
 
-    constructor(private workflowService: WorkflowService, protected messagesService: MessagesObservableService, protected assetTypeService: AssetTypeService,
-        protected responsibilityTypeService: ResponsibilityTypeService, private cdRef: ChangeDetectorRef) {
-        super();
+    constructor(
+        private workflowService: WorkflowService,
+        protected messagesService: MessagesObservableService,
+        protected assetTypeService: AssetTypeService,
+        protected responsibilityTypeService: ResponsibilityTypeService,
+        protected settingsService: CompanySettingsService,
+        private cdRef: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnInit() {

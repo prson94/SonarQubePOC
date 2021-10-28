@@ -7,6 +7,7 @@ import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
 import { EditorField } from '../../../models/editor-field.model';
 import { ResourcesService } from '../../../services/resources.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-site-menu-permissions',
@@ -109,9 +110,10 @@ export class AdminSiteMenuPermissionsComponent extends AdminBaseComponent implem
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
+        protected settingsService: CompanySettingsService,
         private siteMenuService: SiteMenuService
     ) {
-        super(headerBreadcrumbService, titleService);
+        super(headerBreadcrumbService, titleService, settingsService);
     }
 
     ngOnInit() {

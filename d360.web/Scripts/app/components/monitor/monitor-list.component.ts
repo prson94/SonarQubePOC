@@ -3,6 +3,7 @@ import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-monitor-list',
@@ -75,8 +76,11 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     useFilteredObject: boolean = false;
     workflowItems: any[];
 
-    constructor(protected workflowService: WorkflowService, protected router: Router) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        protected workflowService: WorkflowService,
+        protected router: Router) {
+        super(settingsService);
     }
 
     ngOnInit() {

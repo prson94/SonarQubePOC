@@ -9,6 +9,7 @@ import {OrganizationsService} from '../../../services/organizations.service';
 
 import {BaseComponent} from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-contracts',
@@ -151,8 +152,9 @@ export class AdminContractsComponent extends BaseComponent implements OnInit {
 
     constructor(
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesObservableService) {
-        super();
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
         this.theDeleteCallback = this.delete.bind(this);
     }
 

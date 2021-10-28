@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'scoring-index-component',
@@ -39,10 +40,11 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
         private allocationService: AllocationService,
         secondaryNavService: SecondaryNavService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
         private router: Router) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Scoring;
         this.tabTitle = StringConstants.Section_Scoring;
         this.setCommonItems();

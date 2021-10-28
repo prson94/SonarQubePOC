@@ -3,6 +3,7 @@ import { BaseComponent } from "../../../shared/base.component";
 import * as _ from "lodash";
 import { HTTPResponseOutput, NodeModel } from "../../../../models/workflow.model";
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
+import { CompanySettingsService } from "../../../../services/settings.service";
 
 @Component({
     selector: "d3s-workflow-step-http-response",
@@ -47,8 +48,10 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
 
     httpRequests = [];
 
-    constructor(private workflowFieldsService: WorkflowFieldsService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowFieldsService: WorkflowFieldsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -8,6 +8,7 @@ import { Subscription }   from 'rxjs';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
+import { CompanySettingsService } from '../../services/settings.service';
 
 export class AssetGridBaseComponent extends BaseComponent {            
     public area: string = StringConstants.AssetTypeClass_Business;
@@ -16,8 +17,12 @@ export class AssetGridBaseComponent extends BaseComponent {
     //sidebar
     sidebarSubscription: Subscription;
     
-    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, secondaryNavService?: SecondaryNavService, webAnalyticsService?: WebAnalyticsService) {
-        super();
+    constructor(
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
+        secondaryNavService?: SecondaryNavService,
+        webAnalyticsService?: WebAnalyticsService) {
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
         this.breadcrumbsService = headerBreadcrumbService;

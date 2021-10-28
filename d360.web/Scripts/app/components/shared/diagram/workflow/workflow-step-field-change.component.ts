@@ -7,6 +7,7 @@ import { FormMode } from '../../../../models/form.model';
 import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { NodeModel } from '../../../../models/lineage.model';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-step-field-change',
@@ -47,8 +48,11 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     private allowMultiple = false;
 
 
-    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        private workflowFieldsService: WorkflowFieldsService) {
+        super(settingsService);
     }
 
     ngOnChanges() {

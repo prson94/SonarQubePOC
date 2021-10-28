@@ -6,6 +6,7 @@ import { SelectItem } from "primeng/api";
 import { ExportTemplateService } from "../../../services/export-template.service";
 import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: 'd3s-admin-export-template-style-form',
@@ -76,36 +77,36 @@ import { MessagesObservableService } from "../../../services/messages-observable
 
 `
 })
-export class AdminExportTemplateStyleFormComponent extends BaseComponent implements OnInit, OnChanges, FormEvents  {
-
-
+export class AdminExportTemplateStyleFormComponent extends BaseComponent implements OnChanges, FormEvents  {
     @Input() mode: string;
-    @Input()
-    exportViewType: ExportViewType;
+    @Input() exportViewType: ExportViewType;
     @Input() selectedStyle: ExportTemplateStyle;
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
     @Output() onError = new EventEmitter();
     @Output() onCancel = new EventEmitter();
     @Output() onLoadComplete = new EventEmitter();
-
-    @Input()
-    templateId: number;
+    @Input() templateId: number;
 
     private model: ExportTemplateStyle ;
     selections: SelectItem[] = [{ label: "Column", value: "Column" }, { label: "Row", value: "Row" }];
 
-    constructor(private exportTemplateService: ExportTemplateService,
-        protected messagesService: MessagesObservableService, ) {
-        super();
-        //default
-        this.model = { SelectionType: "Row", BgColor: "#FFFFFF", TextColor: "#000000", Column: -1, Row:1, ID: 0, AssetTypeExportTemplateID: 0, IsBold: false };
-    }
-
-
-
-    ngOnInit(): void {
-        
+    constructor(
+        private exportTemplateService: ExportTemplateService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
+        this.model = {
+            SelectionType: "Row",
+            BgColor: "#FFFFFF",
+            TextColor: "#000000",
+            Column: -1,
+            Row: 1,
+            ID: 0,
+            AssetTypeExportTemplateID: 0,
+            IsBold: false
+        };
     }
 
     ngOnChanges(changes: SimpleChanges): void {

@@ -6,6 +6,7 @@ import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
+import { CompanySettingsService } from '../../../services/settings.service';
 import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
@@ -55,13 +56,14 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     private currentButtonIndex: number = -1;
 
-    constructor(private menuService: SiteMenuService,
-        private router: Router,
+    constructor(
         private headerActionsService: HeaderActionsService,
+        protected settingsService: CompanySettingsService,
         private siteMenuService: SiteMenuService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private router: Router
     ) {
-        super();
+        super(settingsService);
     }
 
     @ViewChild('searchinput', { static: false }) searchInput: SearchFieldComponent;

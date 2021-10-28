@@ -1,12 +1,10 @@
 ﻿import {Component, Input, OnChanges, OnInit, SimpleChange} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-
 import {ApiField, ApiVersion} from '../../../models/custom-api.model';
-
 import {CustomAPIService} from '../../../services/custom-api.service';
-
 import {BaseComponent} from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-api-endpoint-version-fields',
@@ -25,10 +23,11 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
     constructor(
         protected customAPIService: CustomAPIService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
         private router: Router,
     ) {
-        super();
+        super(settingsService);
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
@@ -47,7 +46,6 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
         this.customAPIService.getEndpointVersionFields(this.version.ID).subscribe(
             res => {
                 this.fields = res;
-
                 this.isLoading = false;
             }
         );
@@ -60,7 +58,6 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
             res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
-
                 this.showEditor = false;
             }
         );
@@ -70,9 +67,7 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
         this.customAPIService.deleteField(id).subscribe(
             result => {
                 this.showMessageForResult(this.messagesService, result);
-
                 this.showDelete = false;
-
                 this.load();
             }
         );

@@ -24,7 +24,7 @@ import { of } from 'rxjs';
 
 @Component({
     selector: "d3s-user-list",
-    providers: [GridDefinitionService, FieldsObservableService, PermissionsService, ResourcesService, CompanySettingsService],
+    providers: [GridDefinitionService, FieldsObservableService, PermissionsService, ResourcesService],
     templateUrl: "user-list.component.html",
     styleUrls: ["user-list.component.less"],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -82,11 +82,11 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         protected messagesService: MessagesObservableService,
         private permissionsService: PermissionsService,
         private resourcesService: ResourcesService,
-        private companySettingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         private changeDetectorRef: ChangeDetectorRef) {
-        super();
+        super(settingsService);
         this.setObjectInfo('ResourceType', 1);
         this.filterFields$ = this.filterFieldsSubject.asObservable();
     }
@@ -129,7 +129,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
         this.getFieldsDefinition();
 
-        this.companySettingsService.getAuthenticationModel().subscribe(res => {
+        this.settingsService.getAuthenticationModel().subscribe(res => {
             if (res.model == 'forms') {
                 this.allowPasswordReset = true;
             }

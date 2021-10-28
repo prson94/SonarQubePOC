@@ -18,13 +18,13 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ScoreType, ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
 export class BaseComponent {
     public isLoading = false;
     public gridStateStorage: string = 'session';
-    public maxExportRows = CompanySettings.MaxExcelExportRows;
+    public maxExportRows = 0;
 
     readonly resourceTypeUid = '00000001-0000-0000-0000-A00000000011';
     readonly groupTypeUid = '00000001-0000-0000-0000-B00000000012';
@@ -89,8 +89,37 @@ export class BaseComponent {
 
     private getSecondaryNavigationSub: Subscription;
 
+    constructor(
+        protected settingsService: CompanySettingsService
+    ) {
+        this.maxExportRows = this.getNumberSetting(CompanySettingEnum.MaxExcelExportRows);
+    }
+
+    //#region Settings methods
+
+    getBooleanSetting(id: CompanySettingEnum): boolean {
+        return this.settingsService.getSettingById(id).BooleanSetting.Value;
+    }
+    getGuidSetting(id: CompanySettingEnum): string {
+        return this.settingsService.getSettingById(id).GuidSetting.Value;
+    }
+    getNumberSetting(id: CompanySettingEnum): number {
+        let setting = this.settingsService.getSettingById(id);
+        if (setting && setting.NumberSetting) {
+            return setting.NumberSetting.Value;
+        }
+        else {
+            return null;
+        }
+    }
+    getStringSetting(id: CompanySettingEnum): string {
+        return this.settingsService.getSettingById(id).StringSetting.Value;
+    }
+
+    //#endregion
+
     protected setBrowserTitle(tileService: Title, area: string) {
-        tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} : ${area}`);
+        tileService.setTitle(`${this.getStringSetting(CompanySettingEnum.BrowserTitlePrefix)} - ${area}`);
     }
 
     logAction(actionName: string, objectName: string, objectId: number) {
@@ -103,7 +132,7 @@ export class BaseComponent {
         }
     }
 
-    /*permissions functionality */
+    //#region permissions functionality
 
     loadPermissions(
         permissionsService: PermissionsService,
@@ -168,9 +197,7 @@ export class BaseComponent {
         return this.hasPermission(Permission.DeleteRelationships);
     }
 
-    /*end permissions functionality*/
-
-
+    //#endregion permissions functionality
 
     checkSecondaryNavLocalStorage(checkLocal?: boolean) {
         if (this.secondaryNavService) {
@@ -185,6 +212,7 @@ export class BaseComponent {
             });
         }
     }
+
     buildLocalStorage() {
         let currentObject = this.secondaryNavService.getLocalCurrentObject();
         let currentArea = this.secondaryNavService.getLocalCurrentArea();
@@ -258,28 +286,25 @@ export class BaseComponent {
             this.clearSidebar();
             var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
 
-            let showLineage = hasLineage && CompanySettings.ShowLineageSidebar != 'false';
-            let showImpact = hasImpact && CompanySettings.ShowImpactSidebar != 'false';
+            let showLineage = hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
+            let showImpact = hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
 
             if (showLineage || showImpact || hasProcessDiagram) {
-                let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
-                if (!isVisualizationDisabled) {
-                    this.lineageSidebar = new SecondaryNavItem(
-                        'Diagrams',
-                        'lineage',
-                        ['fa-random'],
-                        `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
-                    );
+                this.lineageSidebar = new SecondaryNavItem(
+                    'Diagrams',
+                    'lineage',
+                    ['fa-random'],
+                    `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
+                );
 
-                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
-                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
-                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
+                this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
+                this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
+                this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
 
-                    this.secondaryNavService.showItem(this.lineageSidebar);
-                }
+                this.secondaryNavService.showItem(this.lineageSidebar);
             }
 
-            if ((hasAudit || hasAudit === undefined) && CompanySettings.ShowChangeLogTab != 'false') {
+            if ((hasAudit || hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
                 this.auditSidebar = new SecondaryNavItem(
                     'Change Log',
                     'Change Log',
@@ -288,6 +313,7 @@ export class BaseComponent {
                 );
                 this.secondaryNavService.showItem(this.auditSidebar);
             }
+
             if (hasField) {
                 this.fieldNav = new SecondaryNavItem(
                     'Field Definitions',
@@ -297,7 +323,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.fieldNav);
             }
 
-            if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
+            if (hasOwnership && this.getBooleanSetting(CompanySettingEnum.ShowOwnersSidebar)) {
                 if (this.objectType == 'ReferenceItemType') {
                     this.ownershipSidebar = new SecondaryNavItem(
                         'Responsibilities',
@@ -338,7 +364,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.relationsSidebar);
             }
 
-            if (hasFollowers && CompanySettings.ShowFollowersSidebar != 'false') {
+            if (hasFollowers && this.getBooleanSetting(CompanySettingEnum.ShowFollowersSidebar)) {
                 this.followersSidebar = new SecondaryNavItem(
                     'Followers',
                     'followers',
@@ -368,6 +394,7 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.childSidebar);
             }
+
             if (hasRuleResult) {
                 this.ruleResultSidebar = new SecondaryNavItem(
                     'Rule Results',
@@ -388,7 +415,7 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.scoreSidebar);
 
-                if (CompanySettings.ShowCommentsTab != 'false') {
+                if (this.getBooleanSetting(CompanySettingEnum.ShowCommentsTab)) {
                     this.commentsSidebar = new SecondaryNavItem(
                         'Comments', 'Comments', ['fa-comments'],
                         `/sidebar/comments/${this.uid}`, null, 33
@@ -397,7 +424,7 @@ export class BaseComponent {
                     this.secondaryNavService.showItem(this.commentsSidebar);
                 }
 
-                if (CompanySettings.DisableIssueManagement != 'true') {
+                if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement)) {
                     this.actionsSidebar = new SecondaryNavItem(
                         'Actions', 'Actions', null,
                         `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27

@@ -21,6 +21,7 @@ import { GroupService } from '../../../../services/group.service';
 import * as _ from 'lodash';
 import * as go from 'gojs';
 import { SelectItem } from 'primeng/api';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-step-editor',
@@ -77,8 +78,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     private formRelationshipFields = [];
     private formRelationship;
 
-    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService, private groupService: GroupService) {
-        super();
+    constructor(
+        private groupService: GroupService,
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        private workflowFieldsService: WorkflowFieldsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -12,8 +12,8 @@ import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from "../../../static/string-constants";
 import { ActivatedRoute } from '@angular/router';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'd3s-site-menu',
@@ -57,17 +57,18 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     constructor(
-        private ref: ChangeDetectorRef,
-        private route: ActivatedRoute,
-        private messagesService: MessagesObservableService,
-        private stateService: StateService,
-        private headerActionsService: HeaderActionsService,
         private authenticationService: AuthenticationService,
+        private favoritesService: FavoritesService,
+        private headerActionsService: HeaderActionsService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private siteMenuService: SiteMenuService,
-        private favoritesService: FavoritesService
+        private stateService: StateService,
+        private ref: ChangeDetectorRef,
+        private route: ActivatedRoute
     ) {
-        super();
-    }
+        super(settingsService);
+    }    
 
     ngAfterContentInit(): void {
         this.checkScroller();
@@ -191,7 +192,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     loadFavorites() {
-        if (CompanySettings.ShowFavorites == 'false') {
+        if (this.getBooleanSetting(CompanySettingEnum.ShowFavorites)) {
             return;
         }
 
@@ -235,47 +236,47 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 for (let menu of result.MenuItems) {
                     menu.ShouldDisplay = true;
 
-                    switch (menu.MenuID) {
-                        case '#Business':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/BusinessAsset`;
-                            break;
-                        case '#Technical':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/TechnicalAsset`;
-                            break;
-                        case '#Models':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
-                            break;
-                        case '#Policy':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
-                            break;
-                        case '#Data Quality':
-                            break;
-                        case '#Monitor':
-                            menu.NavigationItems = [];
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
-                            menu.ShouldDisplay = (CompanySettings.DisableIssueManagement != 'true');
-                            break;
-                        case '#Reference':
-                            menu.NavigationItems = [];
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
-                            break;
-                        case '#Community':
-                            menu.NavigationItems = [];
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
-                            break;
-                        case '#Dashboards':
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT;
-                            break;
-                        default:
-                            //is it a custom menu?
-                            if (menu.MenuID.startsWith('~')) {
-                                if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
+                            switch (menu.MenuID) {
+                                case '#Business':
+                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/BusinessAsset`;
+                                    break;
+                                case '#Technical':
+                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/TechnicalAsset`;
+                                    break;
+                                case '#Models':
+                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
+                                    break;
+                                case '#Policy':
+                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
+                                    break;
+                                case '#Data Quality':
+                                    break;
+                                case '#Monitor':
+                                    menu.NavigationItems = [];
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
+                                    menu.ShouldDisplay = (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement));
+                                    break;
+                                case '#Reference':
+                                    menu.NavigationItems = [];
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
+                                    break;
+                                case '#Community':
+                                    menu.NavigationItems = [];
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
+                                    break;
+                                case '#Dashboards':
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT;
+                                    break;
+                                default:
+                                    //is it a custom menu?
+                                    if (menu.MenuID.startsWith('~')) {
+                                        if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
+                                    }
+                                    break;
                             }
-                            break;
-                    }
-                    if (!menu.Icon && !menu.FullURL) {
-                        menu.Icon = 'fa-folder';
-                    }
+                            if (!menu.Icon && !menu.FullURL) {
+                                menu.Icon = 'fa-folder';
+                            }
 
                 }
 
@@ -369,11 +370,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         if ($event) {
             this.menuRefs.forEach((item) => {
                 if ($event.item.title != item.title) {
-                    if (item.menu) {
-                        item.deactivateMenu();
+                    if (item.menu)
+                        item.menu.isActiveItem = false;
+                } else {
+                    if (item.menu && item.menu.NavigationItems && item.menu.NavigationItems.length > 0) {
+                        this.isMenuActive = true;
                     }
-                } else if (item.menu && item.menu.NavigationItems && item.menu.NavigationItems.length > 0) {
-                    this.isMenuActive = true;
                 }
             });
         }
@@ -409,9 +411,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         integrationMenu.Name = "Integration";
         integrationMenu.Items = [];
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, IsHomePage: false, count: null });
-        integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-        if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-
+        integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count: null  });
+        if (this.getBooleanSetting(CompanySettingEnum.ShowCustomAPIAdmin)) {
+            integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        }
         this.adminMenu.NavigationItems.push(integrationMenu);
 
         let securityMenu = new SiteMenuItem();
@@ -420,9 +423,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
-        if (CompanySettings.EnableOrganizations.toLocaleLowerCase() !== 'false')
+        if (this.getBooleanSetting(CompanySettingEnum.EnableOrganizations)) {
             securityMenu.Items.push({ Name: 'Organizations', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-
+        }
         securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 

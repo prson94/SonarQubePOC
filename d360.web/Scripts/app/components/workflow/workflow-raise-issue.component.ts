@@ -20,6 +20,7 @@ import { HeaderActions } from '../../models/header.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { StringConstants } from '../../static/string-constants';
 import { ResourcesService } from '../../services/resources.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 declare var CompanySettings;
 declare var CurrentResourceID;
@@ -92,18 +93,19 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private resourceUid: any;
 
     constructor(
-        private tagService: TagService,
-        private workflowService: WorkflowService,
-        private objectDetailService: ObjectDetailService,
-        private location: Location,
-        protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
         private headerActionsService: HeaderActionsService,
-        webAnalyticsService: WebAnalyticsService,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
         private messagesService: MessagesObservableService,
+        private objectDetailService: ObjectDetailService,
+        protected resourcesService: ResourcesService,
         secondaryNavService: SecondaryNavService,
-        protected resourcesService: ResourcesService) {
-        super();
+        protected settingsService: CompanySettingsService,
+        private tagService: TagService,
+        protected titleService: Title,
+        webAnalyticsService: WebAnalyticsService,
+        private workflowService: WorkflowService,
+        private location: Location) {
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
     }

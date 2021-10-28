@@ -5,6 +5,7 @@ import { SecondaryNavService } from '../../../../services/right-sidebar.service'
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { AssetTypeService } from '../../../../services/asset-type.service';
 import { EditorField } from '../../../../models/editor-field.model';
+import { CompanySettingsService } from '../../../../services/settings.service';
 @Component({
     selector: 'd3s-process-diagram-asset-editor',
     templateUrl: './process-diagram-asset-editor.component.html',
@@ -22,9 +23,10 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         private cdRef: ChangeDetectorRef,
-        private assetTypeService: AssetTypeService
+        private assetTypeService: AssetTypeService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
 

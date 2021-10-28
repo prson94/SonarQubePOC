@@ -75,7 +75,7 @@ namespace d360.core.entities
             get
             {
                 return JsonConvert.DeserializeObject<CompanyOpenIdAuthenticationSettings>(
-                    AuthenticationSettings
+                    AuthenticationSettings ?? "{}"
                     );
             }
         }

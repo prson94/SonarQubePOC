@@ -4,6 +4,7 @@ import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenuItem, NavigationState } from '../../../models/site-menu.model';
 import { StringConstants } from "../../../static/string-constants";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: 'd3s-site-menu-mega-item',    
@@ -38,8 +39,11 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     @Output() activeChange = new EventEmitter();
     numberLoading: boolean;    
 
-    constructor(private router: Router, private menuService: SiteMenuService) {
-        super();
+    constructor(
+        private menuService: SiteMenuService,
+        protected settingsService: CompanySettingsService,
+        private router: Router) {
+        super(settingsService);
     }
 
     getSubIndent() {

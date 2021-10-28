@@ -3,6 +3,7 @@ import { HierarchyTypeLevel } from '../../../models/hierarchy-type-level.model';
 import { LevelsService } from '../../../services/levels.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-level-grid',
@@ -22,8 +23,11 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
     selectedLevel: HierarchyTypeLevel = null;
     theDeleteCallback: Function;
 
-    constructor(private levelsService: LevelsService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private levelsService: LevelsService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
         this.theDeleteCallback = this.deleteLevel.bind(this);
     }
 

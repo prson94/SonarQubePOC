@@ -105,4 +105,4 @@ import { ResourceMultiSelectGridModule } from './resource-multiselect-grid.compo
     ]
 })
 
-export class D3SSharedModule { }
+export class D3SSharedModule {}

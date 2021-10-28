@@ -34,6 +34,7 @@ import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-dynamic-editor-v2',
@@ -122,9 +123,10 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         private uriBasedService: UriBasedService,
         private cascadeService: CascadeService,
         private assetService: AssetService,
-        private dynEditorService: DynEditorService
+        private dynEditorService: DynEditorService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
 
         this.dynEditorService.formUpdate.subscribe(res => {
             if (this.assetUid && this.assetUid == res.assetUid) {

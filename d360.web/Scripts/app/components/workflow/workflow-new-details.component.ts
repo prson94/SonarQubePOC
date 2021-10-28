@@ -15,6 +15,7 @@ import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
 import { map } from 'rxjs/operators';
+import { CompanySettingsService } from '../../services/settings.service';
 
 declare var CurrentResourceID;
 
@@ -46,16 +47,16 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private isAdmin: boolean = false;
     private clearOtherAssignments: boolean = false;
 
-    constructor(private route: ActivatedRoute,
-        private location: Location,
-        private router: Router,
-        protected titleService: Title,
+    constructor(
+        protected authenticationService: AuthenticationService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
+        protected titleService: Title,
         protected workflowService: WorkflowService,
-        protected authenticationService: AuthenticationService
-    )
-    {
-        super();
+        private route: ActivatedRoute,
+        private location: Location,
+        private router: Router) {
+        super(settingsService);
     }
 
     ngOnInit() {

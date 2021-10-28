@@ -4,6 +4,7 @@ import { BaseComponent } from '../base.component';
 import * as Highcharts from 'highcharts';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'data-profile',
@@ -18,9 +19,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     @Output() linkClicked = new EventEmitter();
     
     constructor(
+        private assetService: AssetService,
         private assetTypeService: AssetTypeService,
-        private assetService: AssetService) {
-        super();
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
     }
 
     private sampleCountPercentage: number;

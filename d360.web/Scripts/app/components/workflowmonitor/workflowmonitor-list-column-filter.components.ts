@@ -3,6 +3,7 @@ import { SelectItem } from 'primeng/api';
 import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../../models/grid-definition.model';
 import { FilterField, FilterFieldType, FilterExpression } from '../../models/filter-field.model';
 import { FormHelpers } from '../../static/form-helpers';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflowmonitor-list-column-filter',
@@ -69,7 +70,10 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     availableFilters: FilterField[] = [];
     selectedFilter: any;
 
-    constructor(private ref: ChangeDetectorRef) { }
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private ref: ChangeDetectorRef) {
+    }
 
 
     ngOnInit() {

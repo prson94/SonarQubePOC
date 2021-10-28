@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-browser',
@@ -20,9 +21,10 @@ export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy
         private route: ActivatedRoute,
         private router: Router,
         secondaryNavService: SecondaryNavService,
-        headerbreadcrumbService: HeaderBreadcrumbService
+        headerbreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = headerbreadcrumbService;
 

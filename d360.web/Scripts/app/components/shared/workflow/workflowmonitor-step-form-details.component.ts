@@ -4,6 +4,7 @@ import {  WorkflowStepDetail } from '../../../models/workflow.model';
 import * as _ from 'lodash';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-form-details',
@@ -60,8 +61,11 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     pendingFormList: string = '';
 
 
-    constructor(private ref: ChangeDetectorRef,private router:Router) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private ref: ChangeDetectorRef,
+        private router: Router) {
+        super(settingsService);
     }
 
     ngOnInit() {

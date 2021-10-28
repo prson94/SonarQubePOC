@@ -13,6 +13,7 @@ import { FieldType } from "../../../models/fieldtype-api.model";
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIParameters, LookupValuesAPIModel } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 import { Observable, ReplaySubject } from "rxjs";
 import { map, shareReplay } from "rxjs/operators";
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-audit',
@@ -49,9 +50,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         private auditService: AuditService,
         private changeDetectorRef: ChangeDetectorRef,
         secondaryNavService: SecondaryNavService,
-        breadcrumbService: HeaderBreadcrumbService
+        breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
 

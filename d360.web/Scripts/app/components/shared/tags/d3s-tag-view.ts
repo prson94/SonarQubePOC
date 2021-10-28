@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 import { DatePipe } from '@angular/common';
 
 declare var CurrentResourceID;
@@ -60,15 +61,16 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     deletingTag: boolean;
     tagNameBeingAdded: any;
 
-    constructor(private router: Router,
-        private tagService: TagService,
-        private stateService: StateService,
-        private messagesService: MessagesObservableService,
-        private ref: ChangeDetectorRef,
+    constructor(
         private auth: AuthenticationService,
-        private datePipe: DatePipe
-    ) {
-        super();
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private stateService: StateService,
+        private tagService: TagService,
+        private ref: ChangeDetectorRef,
+        private datePipe: DatePipe,
+        private router: Router) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -8,6 +8,7 @@ import {ObjectDetailService} from '../../../services/object-detail.service';
 import {BaseComponent} from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-ownership',
@@ -34,9 +35,10 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
         private router: Router,
         private objectDetailService: ObjectDetailService,
         secondaryNavService: SecondaryNavService,
-        breadcrumbService: HeaderBreadcrumbService
+        breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

@@ -1,5 +1,6 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from "@angular/core";
 import { MetricAssetVersionConditionItemFieldValueViewModel, MetricAssetVersionConditionViewModel } from "../../../../models/metrics.model";
+import { CompanySettingsService } from "../../../../services/settings.service";
 import { CommonScreenReferencesModel } from "../../../admin/scoring/common-screen-references-model";
 import { BaseComponent } from "../../base.component";
 
@@ -16,6 +17,10 @@ export class MeasureConditionsDetailsComponent extends BaseComponent implements 
     @Input() conditionGroups: MetricAssetVersionConditionViewModel[];
     @Input() matchAll: boolean;
     @Input() screenReferences: CommonScreenReferencesModel;
+
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         this.formatConditions();

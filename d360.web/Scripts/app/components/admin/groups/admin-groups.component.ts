@@ -10,6 +10,7 @@ import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-groups',
@@ -33,9 +34,10 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
         titleService: Title,
-        protected messagesService: MessagesObservableService
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Groups;
         this.adminHeading = StringConstants.SubArea_Security;
         this.setCommonItems();
@@ -54,7 +56,6 @@ export class AdminGroupsComponent extends AdminBaseComponent {
             d => {
                 this.groupItems = d.items;
                 this.selectedRow = this.groupItems[0];
-
                 this.isLoading = false;
             }
         );

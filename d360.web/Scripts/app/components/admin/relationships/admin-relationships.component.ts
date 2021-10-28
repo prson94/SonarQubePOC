@@ -6,6 +6,7 @@ import { RelationshipType } from '../../../models/relationship.model';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-relationships-component',
@@ -22,8 +23,13 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {   
     selected: RelationshipType;
     
-    constructor(secondaryNavService: SecondaryNavService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);        
+    constructor(
+        secondaryNavService: SecondaryNavService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);        
     }
 
     selectedItemChange(event) {

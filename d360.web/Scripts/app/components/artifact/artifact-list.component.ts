@@ -17,6 +17,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 declare var CurrentResourceID;
 
@@ -55,8 +56,9 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
-        secondaryNavService: SecondaryNavService) {
-        super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService) {
+        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
     }
 
     ngOnInit() {

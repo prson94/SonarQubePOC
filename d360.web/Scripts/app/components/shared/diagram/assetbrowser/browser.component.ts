@@ -45,9 +45,10 @@ import { FieldsObservableService } from '../../../../services/fieldsObservable.s
 import { AssetService } from '../../../../services/asset.service';
 import { ResponsibilityService } from '../../../../services/responsibility.service';
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { CompanySettingEnum } from '../../../../models/settings.model';
 
 declare var window: any;
-declare var CompanySettings;
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
@@ -211,13 +212,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         private fieldsService: FieldsObservableService,
         private assetService: AssetService,
         private responsibilityService: ResponsibilityService,
-        private objectStatisticsService: ObjectStatisticsService
+        private objectStatisticsService: ObjectStatisticsService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
 
-        this.maxLinkCountToAvoidNodesTemplate = +CompanySettings["DiagramMaxAvoidNodesLinkCount"];
+        this.maxLinkCountToAvoidNodesTemplate = settingsService.getSettingById(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount).NumberSetting.Value;
     }
 
     public ngOnInit() {

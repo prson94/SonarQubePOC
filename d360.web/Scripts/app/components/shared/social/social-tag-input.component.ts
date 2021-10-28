@@ -5,6 +5,7 @@ import { TagService } from '../../../services/tag.service';
 import { Tag } from '../../../models/tag.model';
 import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-social-tag-input',
@@ -32,8 +33,10 @@ export class SocialTagInputComponent extends BaseComponent  implements OnDestroy
     tag: Tag;
 
     private searchSub: ISubscription;
-    constructor(private tagService: TagService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private tagService: TagService) {
+        super(settingsService);
     }
 
     ngOnDestroy(): void {

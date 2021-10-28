@@ -4,6 +4,7 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 
 @Component({
@@ -12,8 +13,13 @@ import { StringConstants } from '../../../static/string-constants';
 })
 
 export class AdminResourcesComponent extends AdminBaseComponent implements OnInit {
-    constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, secondaryNavService: SecondaryNavService,) {
-        super(headerBreadcrumbService, titleService);
+
+    constructor(
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title,
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Users;
         this.adminHeading = StringConstants.SubArea_Security;
         this.secondaryNavService = secondaryNavService;

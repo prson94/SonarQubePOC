@@ -4,6 +4,7 @@ import { LazyLoadEvent } from "primeng/api";
 import { MetricAssetDefinitionViewModel, MetricRuleResultOperation, ScoreType } from "../../../../models/metrics.model";
 import { DataQualityEvidenceItemModel, DataQualityEvidenceModel, PointBreakdown } from "../../../../models/score.model";
 import { ScoreService } from "../../../../services/score.service";
+import { CompanySettingsService } from "../../../../services/settings.service";
 import { BaseComponent } from "../../base.component";
 
 @Component({
@@ -29,9 +30,10 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     rowsPerPage: number = 25;
 
     constructor(
-        private scoreService: ScoreService
+        private scoreService: ScoreService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
