@@ -96,6 +96,9 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
     private component_uid: string = '';
 
+    linkFieldOptionalPlaceholder: string = 'Optional: you should start the URL with a protocol prefix eg. http:// or https://';
+    linkFieldRequiredPlaceholder: string = 'Value required: you should start the URL with a protocol prefix eg. http:// or https://';
+
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
@@ -237,6 +240,14 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     ngOnInit() {
         if (this.field.FieldType != 'Link') {
             this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
+                this.onFieldChanges(data);
+            });
+        }
+        else {
+            this.fieldChangeSub = this.form.controls[this.field.FieldName + "_Url"].valueChanges.subscribe(data => {
+                this.onFieldChanges(data);
+            });
+            this.fieldChangeSub = this.form.controls[this.field.FieldName + "_Name"].valueChanges.subscribe(data => {
                 this.onFieldChanges(data);
             });
         }
@@ -494,6 +505,18 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
         }
 
+        if (this.field.FieldType === 'Link') {
+            var control = this.form.controls[this.field.FieldName + '_Url'];
+            if (control.value) {
+                var value = control.value as string;
+                if (!value.toLowerCase().startsWith("http://")
+                    && !value.toLowerCase().startsWith("https://")) {
+                    control.setErrors({ invalidUrlStart: true });
+                    return false;
+                }
+            }
+        }
+
         if (this.field.FieldType == "Link") {
             if (this.form.controls[this.field.FieldName + '_Name'] == undefined
                 || this.form.controls[this.field.FieldName + '_Name'].disabled
@@ -503,8 +526,9 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 return true;
             }
 
-            return this.form.controls[this.field.FieldName + '_Url'].valid
+            return this.form.controls[this.field.FieldName + '_Url'].valid;
         }
+
 
         const numInputs = document.querySelectorAll('input[type=number]');
 
@@ -601,10 +625,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             message += "Value cannot be less than 1 or greater than 365. ";
         }
 
-        if (errors["required"]) {
-            message += `${this.currentFieldName} is required. `;
-        }
-
         if (errors["max"]) {
             message += ` Please enter a maximum value of ${errors["max"].max} `;
         }
@@ -623,6 +643,10 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
         if (errors["alreadyExistsProcess"]) {
             message += `Please enter a unique name.`;
+        }
+
+        if (errors["invalidUrlStart"]) {
+            message += `Please start the URL with a protocol prefix eg.http:// or https://`;
         }
 
         return message;
@@ -815,6 +839,14 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     }
 
     isRequired() {
+
+        if (this.field.FieldType === "Link") {
+            var nameControl = this.form.controls[this.field.FieldName + '_Name'];
+            if (nameControl.value) {
+                return true;
+            }
+        }
+
         return this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true;
     }
 

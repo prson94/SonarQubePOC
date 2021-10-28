@@ -64,13 +64,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
         if (this.igformGroup) {
             Object.keys(this.igformGroup.controls).forEach(x => {
                 let control = <FormControl>this.igformGroup.get(x);
-                console.log(x);
                 let elem = this.getFormControlDomElement(x);
                 if (elem && control && control.errors && control.errors["required"] == true) {
                     reqCount++;
-                }
-                else {
-                    console.log(control);
                 }
             });
         }

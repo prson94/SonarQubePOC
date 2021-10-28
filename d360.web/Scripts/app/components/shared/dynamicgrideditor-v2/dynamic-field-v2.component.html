@@ -239,17 +239,17 @@
                 <div class="flex-grid-link">
                     <div class="label">Name</div>
                     <div class="link-input">
-                        <input igInput igSize="full" [formControlName]="field.FieldName + '_Name'" type="text">
+                        <input igInput igSize="full" name="{{field.FieldName + '_Name'}}" [formControlName]="field.FieldName + '_Name'" type="text">
                     </div>
                 </div>
                 <div class="flex-grid-link">
                     <div class="label">URL</div>
                     <div class="link-input">
-                        <input igInput igSize="full" [formControlName]="field.FieldName + '_Url'" type="text">
+                        <input igInput igSize="full" name="{{field.FieldName + '_Url'}}" [formControlName]="field.FieldName + '_Url'" type="text" placeholder="{{(isRequired() ? linkFieldRequiredPlaceholder : linkFieldOptionalPlaceholder)}}" [required]="isRequired()">
                     </div>
                 </div>
             </div>
-            <div class="error-message" *ngIf="!isValid && isDirty">{{errorMessage}}</div>
+            <div class="error-message" *ngIf="!isValid && isDirty && errorMessage">{{errorMessage}}</div>
         </div>
     </div>
 </div>
