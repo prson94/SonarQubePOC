@@ -112,11 +112,11 @@ namespace d360.model.DataAccessLayer
             return allPredicates;
         }
 
-        public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
+        public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false)
         {
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
-            bool includeAssetPath = false;
+            bool includeAssetPath = isExport;
             bool orderByAssetPath = false;
             bool listColorsAsJSON = false;
 
@@ -245,7 +245,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_includepath"))
                 {
-                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includepath").Value, out includeAssetPath))
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includepath").Value, out includeAssetPath) && !isExport)
                     {
                         includeAssetPath = false;
                     }
@@ -427,6 +427,14 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
             }
 
+            if (isExport)
+            {                
+                fieldJoins.Add(" left join AssetDisplayValue ADVS on S.ID = ADVS.AssetID ");
+                fieldJoins.Add(" left join AssetDisplayValue ADVO on O.ID = ADVO.AssetID ");
+                fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ') PS ");
+                fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ");
+            }
+
             string fieldColumnsSql = "";
             if (fieldColumns.Count > 0)
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
@@ -452,11 +460,18 @@ select	@pageSize as 'pageSize',
 				P.Name as 'Predicate.Name',
 				P.Inverse as 'Predicate.Inverse',
 				lower(S.Uid) as 'Subject.Uid',
-				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid',
-                {(includeAssetPath ? "ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'," : "")}
-				lower(O.Uid) as 'Object.Uid',
-				ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
+				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid'
+                {(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}
+                {(isExport ? ",PS.[Path] as 'Subject.AssetTypePath'" : "")}                
+                {(isExport ? ",ADVS.DisplayValue as 'Subject.DisplayName'" : "")}
+				,lower(O.Uid) as 'Object.Uid'
+				,ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
+                {(isExport ? ",ADVO.DisplayValue as 'Object.DisplayName'" : "")}
+                {(isExport ? ",PO.[Path] as 'Object.AssetTypePath'" : "")}
                 {(includeAssetPath ? ",ISNULL(ANDP_Object.DisplayPath,OT2.Name) as 'Object.[Path]'" : "")}
+                
+                
+                
 		{baseTableSql}
         {string.Join("\n", fieldJoins)}
         {whereClause} 
@@ -916,7 +931,7 @@ from	IntersectType I
         }
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            JObject results = await GetRelationships(queryParams);
+            JObject results = await GetRelationships(queryParams, isExport: true);
             var includeTotal = true;
             var includeAssetPath = false;
 
@@ -950,24 +965,28 @@ from	IntersectType I
             var fields = new List<FieldType>();
 
             //add default fields
-            fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = "Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "RelationshipTypeUid", Name = "", FriendlyName = "RelationshipTypeUid" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = "Predicate Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Name", FriendlyName = "Predicate Name" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });
+            fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = "Relationship UID" });
             fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "Uid", FriendlyName = "Subject Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject AssetTypeUid" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "DisplayName", FriendlyName = "Subject Display Name" });            
             if (includeAssetPath)
             {
                 fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "[Path]", FriendlyName = "Subject Asset Path" });
             }
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypePath", FriendlyName = "Subject Asset Type Path" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Name", FriendlyName = "Predicate Name" });
             fields.Add(new FieldType { Type = "string", Object = "Object", Name = "Uid", FriendlyName = "Object Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object AssetTypeUid" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "DisplayName", FriendlyName = "Object Display Name" });
             if (includeAssetPath)
             {
                 fields.Add(new FieldType { Type = "string", Object = "Object", Name = "[Path]", FriendlyName = "Object Asset Path" });
             }
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypePath", FriendlyName = "Object Asset Type Path" });
+            fields.Add(new FieldType { Type = "string", Object = "RelationshipTypeUid", Name = "", FriendlyName = "Relationship Type Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject Asset Type Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object Asset Type Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = "Predicate Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });            
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });                        
 
             #region Populate Excel Document
 
@@ -1018,12 +1037,12 @@ from	IntersectType I
                         if (exists == null)
                         {
                             var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
-                            fields.Insert(2, cusField);
+                            fields.Insert((includeAssetPath ? 11 : 9), cusField);
                         }
                     }
                 }
                 index = 1;
-
+                //overwriting first row each time
                 foreach (var field in fields)
                 {
                     document.SetCellValue(1, index++, (string)field.FriendlyName);
@@ -1053,7 +1072,7 @@ from	IntersectType I
             }
 
             #endregion
-
+            document.AutoFitColumn(1, fields.Count());
             return document;
         }
 
