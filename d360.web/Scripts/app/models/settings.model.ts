@@ -15,6 +15,7 @@ export class CompanySettings {
     DefaultLogoPath: string = "/Content/images/PreciselyLogo@2x.png";
     DefaultRoute: string;
     DefaultSearchTypes: string;
+    DiagramMaxAvoidNodesLinkCount: number;
     DisableCommunityPosting: boolean;
     DisableIssueManagement: boolean;
     EnableOrganizations: boolean;

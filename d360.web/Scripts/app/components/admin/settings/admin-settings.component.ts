@@ -88,6 +88,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
          // Translate to settings object for page editing.
         this.companySettings.AllowedOrigins = this.getStringSetting(CompanySettingEnum.AllowedOrigins);
         this.companySettings.AssetDefinitionColumnWidth = this.getNumberSetting(CompanySettingEnum.AssetDefinitionColumnWidth);
+
         this.companySettings.BrowserTitlePrefix = this.getStringSetting(CompanySettingEnum.BrowserTitlePrefix);
         this.companySettings.CurrentIconPath = this.getStringSetting(CompanySettingEnum.CompanyIcon);
         this.companySettings.CurrentLogoPath = this.getStringSetting(CompanySettingEnum.CompanyLogo);
@@ -97,6 +98,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.searchService.getSearchCategories(true, true).subscribe(cat => {
             this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes, cat);
         });
+        this.companySettings.DiagramMaxAvoidNodesLinkCount = this.getNumberSetting(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount);
         this.companySettings.DisableCommunityPosting = this.getBooleanSetting(CompanySettingEnum.DisableCommunityPosting);
         this.companySettings.DisableIssueManagement = this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement);
         this.companySettings.FramingDomains = this.getStringSetting(CompanySettingEnum.FramingDomains);
