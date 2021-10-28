@@ -180,6 +180,9 @@
   <data name="RelationNotProvided" xml:space="preserve">
     <value>You have not provided any relationships to process in this request.</value>
   </data>
+  <data name="RelationshipSucessfullyRemoved" xml:space="preserve">
+    <value>Relationship successfully removed</value>
+  </data>
   <data name="RelationshipTypeLimit" xml:space="preserve">
     <value>You may only provide a maximum of {0} relationship types in this request.</value>
   </data>

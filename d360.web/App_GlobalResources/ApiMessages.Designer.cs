@@ -106,6 +106,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset cross reference already exists..
+        /// </summary>
+        public static string AssetCorssRefAlreadyExists {
+            get {
+                return ResourceManager.GetString("AssetCorssRefAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset cross reference model does not contain required fields..
+        /// </summary>
+        public static string AssetCrossReferenceNotHaveRequiredField {
+            get {
+                return ResourceManager.GetString("AssetCrossReferenceNotHaveRequiredField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset Not found.
         /// </summary>
         public static string AssetNotfound {
@@ -718,6 +736,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid _includeChildAssets provided.
+        /// </summary>
+        public static string Invalid_includeChildAssetsProvided {
+            get {
+                return ResourceManager.GetString("Invalid_includeChildAssetsProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid _order provided!.
         /// </summary>
         public static string Invalid_Order {
@@ -885,6 +912,24 @@ namespace Resources {
         public static string InvalidIncludeTotal {
             get {
                 return ResourceManager.GetString("InvalidIncludeTotal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid intersect type id.
+        /// </summary>
+        public static string InvalidIntersecttypeid {
+            get {
+                return ResourceManager.GetString("InvalidIntersecttypeid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid model.
+        /// </summary>
+        public static string InvalidModel {
+            get {
+                return ResourceManager.GetString("InvalidModel", resourceCulture);
             }
         }
         
@@ -1123,6 +1168,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Model does not contain required fields.
+        /// </summary>
+        public static string ModelNotContainFields {
+            get {
+                return ResourceManager.GetString("ModelNotContainFields", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name is missing in one or more of the groups in the payload. Name must be provided..
         /// </summary>
         public static string NameMissingInGroupPayload {
@@ -1236,6 +1290,33 @@ namespace Resources {
         public static string RemoveFieldNotAllowed {
             get {
                 return ResourceManager.GetString("RemoveFieldNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request does not contain required parameter dataSource..
+        /// </summary>
+        public static string RequestMissingDatasource {
+            get {
+                return ResourceManager.GetString("RequestMissingDatasource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request does not contain required parameters datasource and type..
+        /// </summary>
+        public static string RequestMissingDatasourceType {
+            get {
+                return ResourceManager.GetString("RequestMissingDatasourceType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request does not contain required parameter type.
+        /// </summary>
+        public static string RequestMissingType {
+            get {
+                return ResourceManager.GetString("RequestMissingType", resourceCulture);
             }
         }
         
@@ -1380,6 +1461,15 @@ namespace Resources {
         public static string SucessfullyUpdated {
             get {
                 return ResourceManager.GetString("SucessfullyUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to target asset type.
+        /// </summary>
+        public static string TargetAssetType {
+            get {
+                return ResourceManager.GetString("TargetAssetType", resourceCulture);
             }
         }
         

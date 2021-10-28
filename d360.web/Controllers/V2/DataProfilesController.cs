@@ -83,7 +83,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -100,7 +100,7 @@ namespace d360.web.Controllers.V2
 
             if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {assetUid} is invalid");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest,string.Format(ApiMessages.InvalidAssetUid,assetUid.ToString()));
             }
 
             if (isValid.Length > 0)
@@ -112,7 +112,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _includeTotal provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidIncludeTotal);
                 }
             }
 
@@ -121,7 +121,7 @@ namespace d360.web.Controllers.V2
 
                 if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_startdate").Value, out DateTime endDate))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _startDate provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidStartDate);
                 }
 
             }
@@ -131,7 +131,7 @@ namespace d360.web.Controllers.V2
 
                 if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_enddate").Value, out DateTime endDate))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _endDate provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidEndDate);
                 }
             }
 
@@ -139,7 +139,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out bool includeTotal))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _includeChildAssets provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.Invalid_includeChildAssetsProvided);
                 }
             }
 

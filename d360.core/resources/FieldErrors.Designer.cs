@@ -106,6 +106,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AllowMultipleValues.
+        /// </summary>
+        public static string AllowMultipleValues {
+            get {
+                return ResourceManager.GetString("AllowMultipleValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset type error.
         /// </summary>
         public static string AssetTypeError {
@@ -160,11 +169,173 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ComputedOwnershipLookup fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string ComputedOwnershipLookupNotSupported {
+            get {
+                return ResourceManager.GetString("ComputedOwnershipLookupNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ComputedRelationshipField fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string ComputedRelationshipFieldNotSupported {
+            get {
+                return ResourceManager.GetString("ComputedRelationshipFieldNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ComputedRelationshipLookup fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string ComputedRelationshipLookupNotSupported {
+            get {
+                return ResourceManager.GetString("ComputedRelationshipLookupNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ComputedRelationshipReferenceList fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string ComputedRelationshipReferenceListNotSupported {
+            get {
+                return ResourceManager.GetString("ComputedRelationshipReferenceListNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to false.
+        /// </summary>
+        public static string Constantfalse {
+            get {
+                return ResourceManager.GetString("Constantfalse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Increment.
+        /// </summary>
+        public static string ConstantIncrement {
+            get {
+                return ResourceManager.GetString("ConstantIncrement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MaximumLength.
+        /// </summary>
+        public static string ConstantMaximumLength {
+            get {
+                return ResourceManager.GetString("ConstantMaximumLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MaximumValue.
+        /// </summary>
+        public static string ConstantMaximumValue {
+            get {
+                return ResourceManager.GetString("ConstantMaximumValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MinimumLength.
+        /// </summary>
+        public static string ConstantMinimumLength {
+            get {
+                return ResourceManager.GetString("ConstantMinimumLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MinimumValue.
+        /// </summary>
+        public static string ConstantMinimumValue {
+            get {
+                return ResourceManager.GetString("ConstantMinimumValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to true.
+        /// </summary>
+        public static string Constanttrue {
+            get {
+                return ResourceManager.GetString("Constanttrue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This asset type may not have a Counter field type!.
+        /// </summary>
+        public static string CounterFieldNotSupportedThisAssetType {
+            get {
+                return ResourceManager.GetString("CounterFieldNotSupportedThisAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Counter Prefix cannot be longer than 10 characters..
+        /// </summary>
+        public static string CounterPrefixMax10Char {
+            get {
+                return ResourceManager.GetString("CounterPrefixMax10Char", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Counter Prefix must be consisted of alphanumericals and/or symbols _ or -..
+        /// </summary>
+        public static string CounterPrefixRule {
+            get {
+                return ResourceManager.GetString("CounterPrefixRule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Counter Prefix must start with a character..
+        /// </summary>
+        public static string CounterPrefixStartWithAlpha {
+            get {
+                return ResourceManager.GetString("CounterPrefixStartWithAlpha", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Counter Initial Value must be between 1 and 9999999..
+        /// </summary>
+        public static string CounterRange {
+            get {
+                return ResourceManager.GetString("CounterRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Default value must be between {1} and {2}.
         /// </summary>
         public static string DefaultValueError {
             get {
                 return ResourceManager.GetString("DefaultValueError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Non static fields on Diagram Asset Type cannot have &apos;{0}&apos; set to {1}!.
+        /// </summary>
+        public static string DiagramATCustomError {
+            get {
+                return ResourceManager.GetString("DiagramATCustomError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DisplayInColumn on ComputedOwnershipLookup can be set to True only if DisplayAsList is set to True..
+        /// </summary>
+        public static string DisplayInColumnMustFlaseOnComputedWonerShipLookup {
+            get {
+                return ResourceManager.GetString("DisplayInColumnMustFlaseOnComputedWonerShipLookup", resourceCulture);
             }
         }
         
@@ -196,11 +367,29 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are attempting to remove one or more fields that do not exist on this type..
+        /// </summary>
+        public static string FailRemoveFieldNotExistsType {
+            get {
+                return ResourceManager.GetString("FailRemoveFieldNotExistsType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field conversion error.
         /// </summary>
         public static string FieldConversionError {
             get {
                 return ResourceManager.GetString("FieldConversionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following field names are used more than once: {0}. Field names must be unique..
+        /// </summary>
+        public static string FieldNameMustUnique {
+            get {
+                return ResourceManager.GetString("FieldNameMustUnique", resourceCulture);
             }
         }
         
@@ -264,6 +453,15 @@ namespace d360.core.resources {
         public static string FieldTypeNotFoundByName {
             get {
                 return ResourceManager.GetString("FieldTypeNotFoundByName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field {0}. Form description must be empty for Relationship field when IsEditable set to false..
+        /// </summary>
+        public static string FormDescriptionMustBeEmptyForRelationship {
+            get {
+                return ResourceManager.GetString("FormDescriptionMustBeEmptyForRelationship", resourceCulture);
             }
         }
         
@@ -349,11 +547,38 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You did not provide a valid model. Please check your request and try again..
+        /// </summary>
+        public static string InvalidModel {
+            get {
+                return ResourceManager.GetString("InvalidModel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid parent Field.
         /// </summary>
         public static string InvalidparentField {
             get {
                 return ResourceManager.GetString("InvalidparentField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You may not remove key fields as there are existing items in your environment. You may not perform a Delete action until those items are removed, or you alter the key fields defined on this type..
+        /// </summary>
+        public static string InvalidRemoveKeyFields {
+            get {
+                return ResourceManager.GetString("InvalidRemoveKeyFields", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IsDisplayable.
+        /// </summary>
+        public static string IsDisplayable {
+            get {
+                return ResourceManager.GetString("IsDisplayable", resourceCulture);
             }
         }
         
@@ -376,11 +601,92 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IsEditable.
+        /// </summary>
+        public static string IsEditable {
+            get {
+                return ResourceManager.GetString("IsEditable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IsEditable cannot be true for this field type..
+        /// </summary>
+        public static string IsEditableCanotTrue {
+            get {
+                return ResourceManager.GetString("IsEditableCanotTrue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IsListable.
+        /// </summary>
+        public static string IsListable {
+            get {
+                return ResourceManager.GetString("IsListable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field {0}. IsListable parameter value must be false for boolean type field defined for action type!.
+        /// </summary>
+        public static string IsListableParameterMustBeFalseForBooleanType {
+            get {
+                return ResourceManager.GetString("IsListableParameterMustBeFalseForBooleanType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IsPartOfKey.
+        /// </summary>
+        public static string IsPartOfKey {
+            get {
+                return ResourceManager.GetString("IsPartOfKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IsPrimaryFilter.
+        /// </summary>
+        public static string IsPrimaryFilter {
+            get {
+                return ResourceManager.GetString("IsPrimaryFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field {0}. IsPrimaryFilter(Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!.
+        /// </summary>
+        public static string IsPrimaryFilterMustBefalseForBooleanType {
+            get {
+                return ResourceManager.GetString("IsPrimaryFilterMustBefalseForBooleanType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IsRequired.
+        /// </summary>
+        public static string IsRequired {
+            get {
+                return ResourceManager.GetString("IsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to JsonElement field types are not enabled in this environment.  In order to use JsonElement field type you must enable system setting 75..
         /// </summary>
         public static string JsonElementFieldTypeNotenabled {
             get {
                 return ResourceManager.GetString("JsonElementFieldTypeNotenabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to JsonElement fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string JsonElementNotSupported {
+            get {
+                return ResourceManager.GetString("JsonElementNotSupported", resourceCulture);
             }
         }
         
@@ -394,11 +700,47 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Json fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string JsonNotSupported {
+            get {
+                return ResourceManager.GetString("JsonNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IsRequired property can not be true for JSON field types defined on this asset type!.
+        /// </summary>
+        public static string JSONTypeNotSupportIsRequiredTrue {
+            get {
+                return ResourceManager.GetString("JSONTypeNotSupportIsRequiredTrue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have elected to replace all current fields, yet you have not defined a key. You must define at least one field as a key, or choose Merge as an Action..
+        /// </summary>
+        public static string KeyFieldNotDefined {
+            get {
+                return ResourceManager.GetString("KeyFieldNotDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} must be less than {1}.
         /// </summary>
         public static string LessThanError {
             get {
                 return ResourceManager.GetString("LessThanError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Link Types cannot have field property IsPartOfKey on field {0} set to true..
+        /// </summary>
+        public static string LinkTypeNotSupportIsPartOfKeyTrue {
+            get {
+                return ResourceManager.GetString("LinkTypeNotSupportIsPartOfKeyTrue", resourceCulture);
             }
         }
         
@@ -583,6 +925,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Validation pattern is not valid Regex expression!.
+        /// </summary>
+        public static string NotValidRegex {
+            get {
+                return ResourceManager.GetString("NotValidRegex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No Uid found.
         /// </summary>
         public static string NoUidFound {
@@ -597,6 +948,15 @@ namespace d360.core.resources {
         public static string NoValidTypeDefined {
             get {
                 return ResourceManager.GetString("NoValidTypeDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following fields have more than one type defined: {0}..
+        /// </summary>
+        public static string OneThanOneTypeDefined {
+            get {
+                return ResourceManager.GetString("OneThanOneTypeDefined", resourceCulture);
             }
         }
         
@@ -633,6 +993,15 @@ namespace d360.core.resources {
         public static string ProvideComputedRealtionshipLookupField {
             get {
                 return ResourceManager.GetString("ProvideComputedRealtionshipLookupField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must provide only one of the three Uid properties: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid..
+        /// </summary>
+        public static string ProvideOneValueActionAssetRelationship {
+            get {
+                return ResourceManager.GetString("ProvideOneValueActionAssetRelationship", resourceCulture);
             }
         }
         
@@ -682,11 +1051,29 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following relationship ID are used more than once: {0}. Relationship must be unique on same assettype.
+        /// </summary>
+        public static string RelationshipIDUsedMoreThanOnce {
+            get {
+                return ResourceManager.GetString("RelationshipIDUsedMoreThanOnce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Relationships cannot have Score field type!.
         /// </summary>
         public static string RelationshipNotAllowedScoreFieldType {
             get {
                 return ResourceManager.GetString("RelationshipNotAllowedScoreFieldType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string RelationshipNotSupported {
+            get {
+                return ResourceManager.GetString("RelationshipNotSupported", resourceCulture);
             }
         }
         
@@ -772,6 +1159,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following relationship ID are used more than once: {0}. Relationship must be unique on same assettype..
+        /// </summary>
+        public static string RelationshipUidMustUniqueWithinAssetType {
+            get {
+                return ResourceManager.GetString("RelationshipUidMustUniqueWithinAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Score fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string ScoreNotSupported {
+            get {
+                return ResourceManager.GetString("ScoreNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Score type {0} cannot be allocated to this asset type for field {1}..
         /// </summary>
         public static string ScoreTypeCannotAllocateAssetType {
@@ -781,11 +1186,47 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ShowIfEmpty.
+        /// </summary>
+        public static string ShowIfEmpty {
+            get {
+                return ResourceManager.GetString("ShowIfEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Only Artifacts, Policies, Models and Rules are allowed to have Tag field type!.
         /// </summary>
         public static string SpecificHaveTagFieldType {
             get {
                 return ResourceManager.GetString("SpecificHaveTagFieldType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field GovernanceRole set to {1}..
+        /// </summary>
+        public static string TaskTypeGovernanceRoleCustomError {
+            get {
+                return ResourceManager.GetString("TaskTypeGovernanceRoleCustomError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field Name set to {1}..
+        /// </summary>
+        public static string TaskTypeNameCustomError {
+            get {
+                return ResourceManager.GetString("TaskTypeNameCustomError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field StepNo set to {1}..
+        /// </summary>
+        public static string TaskTypeStepNoCustomError {
+            get {
+                return ResourceManager.GetString("TaskTypeStepNoCustomError", resourceCulture);
             }
         }
         

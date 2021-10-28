@@ -1642,7 +1642,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             {
                 Company.DeleteRelationship(id);
                 msg.StatusCode = HttpStatusCode.OK;
-                msg.ReasonPhrase = "Relationship successfully removed.";
+                msg.ReasonPhrase = RelationshipsApiMessages.RelationshipSucessfullyRemoved;
             }
             catch (SqlException ex)
             {
@@ -3973,7 +3973,10 @@ where v.id = {0}", id)).FirstOrDefault();
             if (!isAdmin)
             {
                 asset = Company.GetAssetDetail(id);
-                if (asset == null) throw new NotFoundException("Asset Not found");
+                if (asset == null)
+                {
+                    throw new ArgumentNullException(ApiMessages.AssetNotfound);
+                }
             }
 
             return GetPermissionsByObject(asset, isAdmin);
@@ -4024,7 +4027,10 @@ where v.id = {0}", id)).FirstOrDefault();
                 else
                 {
                     asset = Company.Filter<AssetDetail>(i => i.Object == sType && i.ObjectID == id).FirstOrDefault();
-                    if (asset == null) throw new NotFoundException("Asset Not found");
+                    if (asset == null)
+                    {
+                        throw new ArgumentNullException(ApiMessages.AssetNotfound);
+                    }
                     return GetPermissionsByObject(asset, isAdmin);
                 }
             }
@@ -4157,11 +4163,17 @@ where v.id = {0}", id)).FirstOrDefault();
 
             var intersectType = Company.GetById<IntersectType>(intersectTypeID);
 
-            if (intersectType == null) throw new NotFoundException("intersect type id");
+            if (intersectType == null)
+            {
+                throw new ArgumentNullException(ApiMessages.InvalidIntersecttypeid);
+            }
 
             var sTargetType = targetType.ToString();
             var targetAssetType = Company.Filter<AssetType>(i => i.Object == sTargetType && i.ObjectID == targetID).SingleOrDefault();
-            if (targetAssetType == null) throw new NotFoundException("target asset type");
+            if (targetAssetType == null)
+            {
+                throw new ArgumentNullException(ApiMessages.TargetAssetType);
+            }
 
 
             var isTargetObject = intersectType.Object == sTargetType && intersectType.ObjectID == targetID;
@@ -4528,7 +4540,7 @@ SELECT (
             {
                 if (!question.Values.Any(x => x.IsChecked == true))
                 {
-                    throw new Exception("Invalid model");
+                    throw new Exception(ApiMessages.InvalidModel);
                 }
             }
 

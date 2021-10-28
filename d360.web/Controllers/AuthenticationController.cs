@@ -955,7 +955,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            ModelState.AddModelError("UnknownError", UNKNOWN_ERROR_MESSAGE);
+            ModelState.AddModelError(ApiMessages.UnknownError, UNKNOWN_ERROR_MESSAGE);
             return View("Login", model);
         }
 

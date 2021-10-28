@@ -615,4 +615,34 @@
   <data name="LookupFieldTypeInUse" xml:space="preserve">
     <value>There are existing assets in your environment with values on field '{0}'. You may not change 'Type of List' property until those field values are removed.</value>
   </data>
+  <data name="InvalidIntersecttypeid" xml:space="preserve">
+    <value>Invalid intersect type id</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>Invalid model</value>
+  </data>
+  <data name="TargetAssetType" xml:space="preserve">
+    <value>target asset type</value>
+  </data>
+  <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
+    <value>Asset cross reference already exists.</value>
+  </data>
+  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
+    <value>Asset cross reference model does not contain required fields.</value>
+  </data>
+  <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
+    <value>Invalid _includeChildAssets provided</value>
+  </data>
+  <data name="ModelNotContainFields" xml:space="preserve">
+    <value>Model does not contain required fields</value>
+  </data>
+  <data name="RequestMissingDatasource" xml:space="preserve">
+    <value>Request does not contain required parameter dataSource.</value>
+  </data>
+  <data name="RequestMissingDatasourceType" xml:space="preserve">
+    <value>Request does not contain required parameters datasource and type.</value>
+  </data>
+  <data name="RequestMissingType" xml:space="preserve">
+    <value>Request does not contain required parameter type</value>
+  </data>
 </root>

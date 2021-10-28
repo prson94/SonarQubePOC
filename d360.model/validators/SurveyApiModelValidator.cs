@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using d360.core.resources;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -148,19 +149,19 @@ namespace d360.model.validators
                 {
                     case "assettypeuid":
                         if (!Guid.TryParse(param.Value, out Guid _))
-                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for assetTypeUid parameter");
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest,OthersError.InvalidAssetTypeUid);
                         break;
                     case "surveytypeuid":
                         if (!Guid.TryParse(param.Value, out Guid _))
-                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for surveyTypeUid parameter");
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest, OthersError.InvalidSurveyTypeUid);
                         break;
                     case "_pagesize":
                         if (!int.TryParse(param.Value, out int _))
-                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for page size parameter");
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest, OthersError.InvalidPageSize);
                         break;
                     case "_pagenum":
                         if (!int.TryParse(param.Value, out _))
-                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for page num parameter");
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest,OthersError.InvalidPageNum);
                         break;
                     case "_order":
                         switch (param.Value.ToLower())
@@ -172,7 +173,7 @@ namespace d360.model.validators
                             case "numberofresponses":
                                 break;
                             default:
-                                return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for order parameter. Use Name|ValidForDays|CreatedOn|UpdatedOn|NumberOfResponses");
+                                return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest,OthersError.InvalidOrderSurvey);
                         }
                         break;
                 }

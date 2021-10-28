@@ -381,4 +381,7 @@
   <data name="Success" xml:space="preserve">
     <value>Success</value>
   </data>
+  <data name="DuplicateItem" xml:space="preserve">
+    <value>Duplicate items found in request</value>
+  </data>
 </root>

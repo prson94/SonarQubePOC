@@ -132,6 +132,10 @@
   <data name="ActionTypeUidNotFound" xml:space="preserve">
     <value>Action Type not found based on Uid provided [{0}].</value>
   </data>
+  <data name="AllowMultipleValues" xml:space="preserve">
+    <value>AllowMultipleValues</value>
+    <comment>Constant Parameter value</comment>
+  </data>
   <data name="AssetTypeError" xml:space="preserve">
     <value>Asset type error</value>
   </data>
@@ -150,8 +154,69 @@
   <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
     <value>You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.</value>
   </data>
+  <data name="ComputedOwnershipLookupNotSupported" xml:space="preserve">
+    <value>ComputedOwnershipLookup fields are not allowed for current Asset Type!</value>
+  </data>
+  <data name="ComputedRelationshipFieldNotSupported" xml:space="preserve">
+    <value>ComputedRelationshipField fields are not allowed for current Asset Type!</value>
+  </data>
+  <data name="ComputedRelationshipLookupNotSupported" xml:space="preserve">
+    <value>ComputedRelationshipLookup fields are not allowed for current Asset Type!</value>
+  </data>
+  <data name="ComputedRelationshipReferenceListNotSupported" xml:space="preserve">
+    <value>ComputedRelationshipReferenceList fields are not allowed for current Asset Type!</value>
+  </data>
+  <data name="Constantfalse" xml:space="preserve">
+    <value>false</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantIncrement" xml:space="preserve">
+    <value>Increment</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMaximumLength" xml:space="preserve">
+    <value>MaximumLength</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMaximumValue" xml:space="preserve">
+    <value>MaximumValue</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMinimumLength" xml:space="preserve">
+    <value>MinimumLength</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMinimumValue" xml:space="preserve">
+    <value>MinimumValue</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="Constanttrue" xml:space="preserve">
+    <value>true</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="CounterFieldNotSupportedThisAssetType" xml:space="preserve">
+    <value>This asset type may not have a Counter field type!</value>
+  </data>
+  <data name="CounterPrefixMax10Char" xml:space="preserve">
+    <value>Counter Prefix cannot be longer than 10 characters.</value>
+  </data>
+  <data name="CounterPrefixRule" xml:space="preserve">
+    <value>Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.</value>
+  </data>
+  <data name="CounterPrefixStartWithAlpha" xml:space="preserve">
+    <value>Counter Prefix must start with a character.</value>
+  </data>
+  <data name="CounterRange" xml:space="preserve">
+    <value>Counter Initial Value must be between 1 and 9999999.</value>
+  </data>
   <data name="DefaultValueError" xml:space="preserve">
     <value>Default value must be between {1} and {2}</value>
+  </data>
+  <data name="DiagramATCustomError" xml:space="preserve">
+    <value>Non static fields on Diagram Asset Type cannot have '{0}' set to {1}!</value>
+  </data>
+  <data name="DisplayInColumnMustFlaseOnComputedWonerShipLookup" xml:space="preserve">
+    <value>DisplayInColumn on ComputedOwnershipLookup can be set to True only if DisplayAsList is set to True.</value>
   </data>
   <data name="DuplicateFieldNames" xml:space="preserve">
     <value>Duplicate field names</value>
@@ -162,8 +227,14 @@
   <data name="ExistItemInSystem" xml:space="preserve">
     <value>Existing items in system</value>
   </data>
+  <data name="FailRemoveFieldNotExistsType" xml:space="preserve">
+    <value>You are attempting to remove one or more fields that do not exist on this type.</value>
+  </data>
   <data name="FieldConversionError" xml:space="preserve">
     <value>Field conversion error</value>
+  </data>
+  <data name="FieldNameMustUnique" xml:space="preserve">
+    <value>The following field names are used more than once: {0}. Field names must be unique.</value>
   </data>
   <data name="FieldPropertyError" xml:space="preserve">
     <value>Field property error</value>
@@ -185,6 +256,9 @@
   </data>
   <data name="FieldTypeNotFoundByName" xml:space="preserve">
     <value>Field Type not found based on Name provided [{0}].</value>
+  </data>
+  <data name="FormDescriptionMustBeEmptyForRelationship" xml:space="preserve">
+    <value>Field {0}. Form description must be empty for Relationship field when IsEditable set to false.</value>
   </data>
   <data name="FriendNameCannotBe" xml:space="preserve">
     <value>FriendlyName cannot be [{0}].</value>
@@ -213,8 +287,18 @@
   <data name="InvalidLookupDisplayFormat" xml:space="preserve">
     <value>Invalid Lookup display Format</value>
   </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>You did not provide a valid model. Please check your request and try again.</value>
+  </data>
   <data name="InvalidparentField" xml:space="preserve">
     <value>Invalid parent Field</value>
+  </data>
+  <data name="InvalidRemoveKeyFields" xml:space="preserve">
+    <value>You may not remove key fields as there are existing items in your environment. You may not perform a Delete action until those items are removed, or you alter the key fields defined on this type.</value>
+  </data>
+  <data name="IsDisplayable" xml:space="preserve">
+    <value>IsDisplayable</value>
+    <comment>Constant Parameter value</comment>
   </data>
   <data name="IsDisplayAbleTrueReferenceItemListForRelationship" xml:space="preserve">
     <value>Field {0}. IsDisplayable parameter value must be true for type Reference Item List from Relationship.</value>
@@ -222,14 +306,58 @@
   <data name="IsDisplayAbleTrueRelationshipLookup" xml:space="preserve">
     <value>Field {0}. IsDisplayable parameter value must be true for type Relation Lookup.</value>
   </data>
+  <data name="IsEditable" xml:space="preserve">
+    <value>IsEditable</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsEditableCanotTrue" xml:space="preserve">
+    <value>IsEditable cannot be true for this field type.</value>
+  </data>
+  <data name="IsListable" xml:space="preserve">
+    <value>IsListable</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsListableParameterMustBeFalseForBooleanType" xml:space="preserve">
+    <value>Field {0}. IsListable parameter value must be false for boolean type field defined for action type!</value>
+  </data>
+  <data name="IsPartOfKey" xml:space="preserve">
+    <value>IsPartOfKey</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsPrimaryFilter" xml:space="preserve">
+    <value>IsPrimaryFilter</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsPrimaryFilterMustBefalseForBooleanType" xml:space="preserve">
+    <value>Field {0}. IsPrimaryFilter(Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!</value>
+  </data>
+  <data name="IsRequired" xml:space="preserve">
+    <value>IsRequired</value>
+    <comment>Constant Parameter value</comment>
+  </data>
   <data name="JsonElementFieldTypeNotenabled" xml:space="preserve">
     <value>JsonElement field types are not enabled in this environment.  In order to use JsonElement field type you must enable system setting 75.</value>
+  </data>
+  <data name="JsonElementNotSupported" xml:space="preserve">
+    <value>JsonElement fields are not allowed for current Asset Type!</value>
   </data>
   <data name="JsonFiledNotPartAssetType" xml:space="preserve">
     <value>JSON field {0} does not exist or is not part of this asset type!</value>
   </data>
+  <data name="JsonNotSupported" xml:space="preserve">
+    <value>Json fields are not allowed for current Asset Type!</value>
+  </data>
+  <data name="JSONTypeNotSupportIsRequiredTrue" xml:space="preserve">
+    <value>IsRequired property can not be true for JSON field types defined on this asset type!</value>
+  </data>
+  <data name="KeyFieldNotDefined" xml:space="preserve">
+    <value>You have elected to replace all current fields, yet you have not defined a key. You must define at least one field as a key, or choose Merge as an Action.</value>
+  </data>
   <data name="LessThanError" xml:space="preserve">
     <value>{0} must be less than {1}</value>
+  </data>
+  <data name="LinkTypeNotSupportIsPartOfKeyTrue" xml:space="preserve">
+    <value>Link Types cannot have field property IsPartOfKey on field {0} set to true.</value>
   </data>
   <data name="ListAssetTypeNotFound" xml:space="preserve">
     <value>List Asset Type not found</value>
@@ -291,11 +419,17 @@
   <data name="NotUseScoreTypeOnActionAndRelationshipType" xml:space="preserve">
     <value>You may not use a Score type on an action type or relationship type for field {0}.</value>
   </data>
+  <data name="NotValidRegex" xml:space="preserve">
+    <value>Validation pattern is not valid Regex expression!</value>
+  </data>
   <data name="NoUidFound" xml:space="preserve">
     <value>No Uid found</value>
   </data>
   <data name="NoValidTypeDefined" xml:space="preserve">
     <value>No valid type defined</value>
+  </data>
+  <data name="OneThanOneTypeDefined" xml:space="preserve">
+    <value>The following fields have more than one type defined: {0}.</value>
   </data>
   <data name="OnlyOneTagFieldAllowed" xml:space="preserve">
     <value>Asset type can have only one Tag field type!</value>
@@ -308,6 +442,9 @@
   </data>
   <data name="ProvideComputedRealtionshipLookupField" xml:space="preserve">
     <value>You must provide a definition for the computed relationship lookup field {0}.</value>
+  </data>
+  <data name="ProvideOneValueActionAssetRelationship" xml:space="preserve">
+    <value>You must provide only one of the three Uid properties: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.</value>
   </data>
   <data name="ReferenceItemIsPartOfKeyNotAllowedTrue" xml:space="preserve">
     <value>Reference item types cannot have field property 'IsPartOfKey' set to true.</value>
@@ -324,8 +461,14 @@
   <data name="RelationNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
     <value>Relationship Types cannot have field property 'IsPartOfKey' set to true.</value>
   </data>
+  <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
+    <value>The following relationship ID are used more than once: {0}. Relationship must be unique on same assettype</value>
+  </data>
   <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
     <value>Relationships cannot have Score field type!</value>
+  </data>
+  <data name="RelationshipNotSupported" xml:space="preserve">
+    <value>Relationship fields are not allowed for current Asset Type!</value>
   </data>
   <data name="RelationshipNotSupportPath" xml:space="preserve">
     <value>Relationships cannot have Path field type!</value>
@@ -354,11 +497,30 @@
   <data name="RelationShipTypeUidNotRequiredIfAssetTypeUidProvided" xml:space="preserve">
     <value>You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.</value>
   </data>
+  <data name="RelationshipUidMustUniqueWithinAssetType" xml:space="preserve">
+    <value>The following relationship ID are used more than once: {0}. Relationship must be unique on same assettype.</value>
+  </data>
+  <data name="ScoreNotSupported" xml:space="preserve">
+    <value>Score fields are not allowed for current Asset Type!</value>
+  </data>
   <data name="ScoreTypeCannotAllocateAssetType" xml:space="preserve">
     <value>Score type {0} cannot be allocated to this asset type for field {1}.</value>
   </data>
+  <data name="ShowIfEmpty" xml:space="preserve">
+    <value>ShowIfEmpty</value>
+    <comment>Constant Parameter value</comment>
+  </data>
   <data name="SpecificHaveTagFieldType" xml:space="preserve">
     <value>Only Artifacts, Policies, Models and Rules are allowed to have Tag field type!</value>
+  </data>
+  <data name="TaskTypeGovernanceRoleCustomError" xml:space="preserve">
+    <value>Task Types cannot have field property '{0}' on field GovernanceRole set to {1}.</value>
+  </data>
+  <data name="TaskTypeNameCustomError" xml:space="preserve">
+    <value>Task Types cannot have field property '{0}' on field Name set to {1}.</value>
+  </data>
+  <data name="TaskTypeStepNoCustomError" xml:space="preserve">
+    <value>Task Types cannot have field property '{0}' on field StepNo set to {1}.</value>
   </data>
   <data name="ThisAssetTypeNotSupportPath" xml:space="preserve">
     <value>This asset type may not have a Path field type!</value>

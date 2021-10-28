@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
+using d360.core.resources;
 using d360.extensions;
 using Dapper;
 using System;
@@ -274,7 +275,7 @@ namespace d360.model
             {
                 if (status.State == CompanyRebuildJobStatusState.Active && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours) && state == CompanyRebuildJobStatusState.Active)
                 {
-                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, "Job is currently running", $"This job is currently in an Active state and cannot be scheduled again until complete.");
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, OthersError.JobIsRunning, OthersError.JobinActiveState);
                 }
                 else
                 {
@@ -296,7 +297,7 @@ namespace d360.model
             {
                 if (state == CompanyRebuildJobStatusState.Inactive)
                 {
-                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, "Job is not currently running", $"This job is not currently running and cannot be marked as complete.");
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict,OthersError.JobIsNotRunning, OthersError.JobIsNotRunning);
                 }
                 else 
                 {

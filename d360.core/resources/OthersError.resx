@@ -123,11 +123,41 @@
   <data name="CannotUseSearch" xml:space="preserve">
     <value>Cannot use a search strategy of none</value>
   </data>
+  <data name="DuplicateCombination" xml:space="preserve">
+    <value>The request contains duplicate combinations of assetUid, metricAssetUid, and effectiveDate. You must send in unique combinations for those three fields.</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>Invalid value for assetTypeUid parameter</value>
+  </data>
   <data name="InvalidMeasureFound" xml:space="preserve">
     <value>Invalid Measure Found</value>
   </data>
+  <data name="InvalidOrderSurvey" xml:space="preserve">
+    <value>Invalid value for order parameter. Use Name|ValidForDays|CreatedOn|UpdatedOn|NumberOfResponses</value>
+  </data>
+  <data name="InvalidPageNum" xml:space="preserve">
+    <value>Invalid value for page num parameter</value>
+  </data>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Invalid value for page size parameter</value>
+  </data>
   <data name="InvalidResponseData" xml:space="preserve">
     <value>Invalid response no data</value>
+  </data>
+  <data name="InvalidSurveyTypeUid" xml:space="preserve">
+    <value>Invalid value for surveyTypeUid parameter</value>
+  </data>
+  <data name="JobinActiveState" xml:space="preserve">
+    <value>This job is currently in an Active state and cannot be scheduled again until complete.</value>
+  </data>
+  <data name="JobIsNotRunning" xml:space="preserve">
+    <value>This job is not currently running and cannot be marked as complete.</value>
+  </data>
+  <data name="JobIsRunning" xml:space="preserve">
+    <value>Job is currently running</value>
+  </data>
+  <data name="JobNotRunning" xml:space="preserve">
+    <value>Job is not currently running</value>
   </data>
   <data name="NoSearchUrlError" xml:space="preserve">
     <value>DEV ERROR - NO SEARCH BASE URL SPECIFIED.</value>

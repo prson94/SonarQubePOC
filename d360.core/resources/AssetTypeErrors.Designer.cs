@@ -169,6 +169,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate items found in request.
+        /// </summary>
+        public static string DuplicateItem {
+            get {
+                return ResourceManager.GetString("DuplicateItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate Name Found.
         /// </summary>
         public static string DuplicateNameFound {
