@@ -106,15 +106,10 @@
                         <button igButton (click)="isModalVisible = false" class="ig-button-primary" label="Close"></button>
                     </div>
                 </div>
-                <div class="side-panel" *ngIf="!isLoading">
-                    <side-panel (expandedChange)="sidePanelOpen=$event"
-                                (selectedPanelChange)="sidePanelTab=$event"
-                                [selectedItem]="selection"
-                                [panelApplies]="true"
+                <div class="side-panel">
+                    <side-panel [panelApplies]="true"
                                 hasDetail="true"
-                                [storageKey]="sidePanelStorageKey"
-                                [height]="'calc(100vh - 220px)'"
-                                [multipleItemsSelected]="multipleItemsSelected">
+                                [height]="'calc(100vh - 220px)'">
                     </side-panel>
                 </div>
             </div>

@@ -438,7 +438,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     .filter((c) => new Date(c.key) >= lower && new Date(c.key) < upper)
                     .reduce((count, r) => count += r.count, 0);
 
-                let opts = { month: 'short', year: '2-digit' };
+                let opts: Intl.DateTimeFormatOptions = { month: 'short', year: '2-digit' };
                 let dateString = new Intl.DateTimeFormat(navigator.language, opts).format(lower);
 
                 categories.push(dateString);
