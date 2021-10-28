@@ -46,8 +46,18 @@
                     </span>
                 </p-header>
             </p-editor>
-            <ig-switch *ngSwitchCase="'Boolean'" [trueLabel]="'True'" [falseLabel]="'False'" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
+            <ig-switch *ngSwitchCase="'Boolean'"  [attr.name]="field.FieldName" [trueLabel]="'True'" [falseLabel]="'False'" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
+            <ig-number-input *ngSwitchCase="'Number'"  [attr.name]="field.FieldName" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" [required]="isRequired()"></ig-number-input>
+            <ig-number-input *ngSwitchCase="'Decimal'"  [attr.name]="field.FieldName" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" (keyup)="toDecimalPlaces($event,Precision)" [required]="isRequired()"></ig-number-input>
+            <div *ngSwitchCase="'Date'">
+                <ig-date [formControlName]="field.FieldName" [attr.name]="field.FieldName" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
+            </div>
+            <div *ngSwitchCase="'DateTime'">
+                <ig-date [formControlName]="field.FieldName" [attr.name]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
+            </div>
 
+
+         
             <div *ngSwitchCase="'Lookup'">
                 <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
                     <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi">
@@ -243,19 +253,12 @@
                     </ng-template>
                 </p-table>
             </div>
-            <ig-number-input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" [required]="isRequired()"></ig-number-input>
-            <ig-number-input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" (keyup)="toDecimalPlaces($event,Precision)" [required]="isRequired()"></ig-number-input>
             <ig-number-input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" type="number" [step]="0.01" [min]="0.00" [max]="1.00" (keyup)="clamp($event, 0, 1, 3)" [required]="isRequired()"></ig-number-input>
             <div *ngSwitchCase="'Color'">
                 <ig-color-picker igSize="full" [colors]="defaultColorOptions" [formControlName]="field.FieldName" [invalidOptions]="['Custom']"></ig-color-picker>
             </div>
             <input placeholder="{{getPlaceholder()}}" *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
-            <div *ngSwitchCase="'Date'">
-                <ig-date [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
-            </div>
-            <div *ngSwitchCase="'DateTime'">
-                <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
-            </div>
+
             <div class="error-message" *ngIf="!isValid && isDirty && errorMessage">{{errorMessage}}</div>
         </div>
     </div>
