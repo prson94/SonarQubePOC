@@ -1082,7 +1082,7 @@ from	[Load] L
         E.C as Error,
         I.C as Incomplete,
 		T.C as Total,
-        case coalesce(M.Status,LI.[Status]) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
+        case coalesce(M.Success,LI.[Status]) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
         R.FirstName + ' ' + R.LastName as RequestedByName,
         R.uid as RequestedByUid
 from	[Load] L
@@ -1095,8 +1095,8 @@ from	[Load] L
 			cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
 		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy 
-        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI
-        cross apply (select top(1) Success as Status from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)) M "
+        left join (select top(1) Success, ExecutionID from api.ExecutionAsset) M on M.ExecutionID in (L.PostExecutionID, L.PutExecutionID) 
+        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI "
         + countSql + " where L.uid = @loadUid ) X ";
 
             try
