@@ -9,9 +9,30 @@
             <div *ngSwitchCase="'Text'" style="width:100%;">
                 <input igInput igSize="full" [formControlName]="field.FieldName" name="{{field.FieldName}}" (blur)="OnBlurTrim()" type="text" [required]="isRequired()">
             </div>
+            <div *ngSwitchCase="'Link'">
+                <div class="flex-grid-link">
+                    <div class="label">Name</div>
+                    <div class="link-input">
+                        <input igInput igSize="full" name="{{field.FieldName + '_Name'}}" [formControlName]="field.FieldName + '_Name'" type="text">
+                    </div>
+                </div>
+                <div class="flex-grid-link">
+                    <div class="label">URL</div>
+                    <div class="link-input">
+                        <input igInput igSize="full" name="{{field.FieldName + '_Url'}}" [formControlName]="field.FieldName + '_Url'" type="text" placeholder="{{(isRequired() ? linkFieldRequiredPlaceholder : linkFieldOptionalPlaceholder)}}" [required]="isRequired()">
+                    </div>
+                </div>
+            </div>
+
+
             <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
-            <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl #ed>
-                <p-header>
+            <p-editor *ngSwitchCase="'Html'"
+                      [formControlName]="field.FieldName"
+                      [attr.name]="field.FieldName"
+                      [style]="{'height':'150px'}"
+                      placeholder="{{(isRequired() ? 'Value required' : '')}}"
+                      ngDefaultControl #ed>
+                <p-header *ngIf="diagramNodeKey">
                     <span class="ql-formats with-border">
                         <select class="ql-header">
                             <option value="1">Heading</option>
@@ -234,20 +255,6 @@
             </div>
             <div *ngSwitchCase="'DateTime'">
                 <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
-            </div>
-            <div *ngSwitchCase="'Link'">
-                <div class="flex-grid-link">
-                    <div class="label">Name</div>
-                    <div class="link-input">
-                        <input igInput igSize="full" name="{{field.FieldName + '_Name'}}" [formControlName]="field.FieldName + '_Name'" type="text">
-                    </div>
-                </div>
-                <div class="flex-grid-link">
-                    <div class="label">URL</div>
-                    <div class="link-input">
-                        <input igInput igSize="full" name="{{field.FieldName + '_Url'}}" [formControlName]="field.FieldName + '_Url'" type="text" placeholder="{{(isRequired() ? linkFieldRequiredPlaceholder : linkFieldOptionalPlaceholder)}}" [required]="isRequired()">
-                    </div>
-                </div>
             </div>
             <div class="error-message" *ngIf="!isValid && isDirty && errorMessage">{{errorMessage}}</div>
         </div>
