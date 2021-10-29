@@ -166,7 +166,7 @@
     <value>Score item with Uid {0} is not a data quality measure.</value>
   </data>
   <data name="ScoreNotExists" xml:space="preserve">
-    <value>Score item with Uid {o} does not exist.</value>
+    <value>Score item with Uid {0} does not exist.</value>
   </data>
   <data name="ScoreNotExternalCalculation" xml:space="preserve">
     <value>Score definition with {0} is not externally calculated.</value>
