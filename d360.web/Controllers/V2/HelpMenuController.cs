@@ -75,7 +75,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Updates help menu items.
+        /// Updates help menu items. Use the "Adds" to update or add new items and the "Deletes" list of uids to delete any existing items. Visibility must be set to 1, 2 or 3
         /// </summary>
         /// <param name="model">The List of items to be add/updated or deleted. Use the Adds to add new or update existing items and Deletes to remove existing itmes.</param>
         /// <returns></returns>
@@ -84,7 +84,7 @@ namespace d360.web.Controllers.V2
            MapToApiVersion("2.0"),
            Route(""),
            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-           SwaggerResponse(HttpStatusCode.OK, "Help Menu items updated.", typeof(int)),
+           SwaggerResponse(HttpStatusCode.OK, "Help Menu items updated.", typeof(ConfirmResponse)),
            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -93,6 +93,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
+                List<int> visibilties = new List<int> { 1,2,3 };
                 var deleteRecords = model.Deletes;
                 var records = model.Adds;
 
@@ -103,7 +104,7 @@ namespace d360.web.Controllers.V2
                         var helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
                         if (helpItem != null && helpItem.isSystem)
                         {
-                            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorDeletingDefaultHelpItem));
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorDeletingDefaultHelpItem)).ConfigureAwait(false);
                         }
                         if (helpItem != null && !helpItem.isSystem)
                         {
@@ -119,19 +120,23 @@ namespace d360.web.Controllers.V2
 
                         if (item.Name.Trim() == "")
                         {
-                            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidHelpName));
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
                         }
                         if (item.Name.Length > 500)
                         {
-                            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidHelpNameLength));
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
                         }
                         if (item.Url.Trim() == "")
                         {
-                            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidHelpUrl));
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
                         }
                         if (item.Url.Length > 2000)
                         {
-                            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidHelpUrlLength));
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
+                        }
+                        if (!visibilties.Contains(item.visibilty))
+                        {
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
                         }
 
                         if (helpItem == null)
@@ -143,10 +148,10 @@ namespace d360.web.Controllers.V2
                                 Description = item.Description,
                                 Url = item.Url,
                                 uid = uid,
-                                isEditable = item.isEditable,
+                                isEditable = true,
                                 visibilty = item.visibilty,
                                 order = item.order,
-                                isSystem = item.isSystem
+                                isSystem = false
                             });
                         }
                         else
@@ -158,14 +163,13 @@ namespace d360.web.Controllers.V2
                             if (!helpItem.isSystem)
                             {
                                 helpItem.Url = item.Url;
-                                helpItem.isEditable = item.isEditable;
                             }
                         }
                     }
                 }
                 _company.SaveChanges();
-                var response = Request.CreateResponse(HttpStatusCode.OK);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+
+                return successMessageResponse(HttpStatusCode.OK, ApiMessages.HelpMenuUpdated, ApiMessages.HelpMenuSuccess);
             }
             catch (Exception e)
             {
