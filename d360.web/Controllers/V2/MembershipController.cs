@@ -222,7 +222,7 @@ namespace d360.web.Controllers.V2
                     gr.LastLoggedInOn, 
                     case gr.State 
                          when 1 then 'Active'
-                         when 2 then 'InActive'
+                         when 2 then 'Inactive'
                          when 3 then 'Deleted' end as State,
                     gr.CreatedOn");
                 }
@@ -389,7 +389,7 @@ namespace d360.web.Controllers.V2
 
                     simpleFilters.Add(@"(case gr.State 
                      when 1 then 'Active'
-                     when 2 then 'InActive'
+                     when 2 then 'Inactive'
                      when 3 then 'Deleted' end) like @simpleFilter");
                     queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
                 }
@@ -648,7 +648,7 @@ namespace d360.web.Controllers.V2
                                 as [Owner],
                                 case gr.State 
                                     when 1 then 'Active' 
-                                    when 2 then 'InActive'
+                                    when 2 then 'Inactive'
                                     when 3 then 'Deleted' end 
                                 as State ");
             var countBuilder = new StringBuilder();

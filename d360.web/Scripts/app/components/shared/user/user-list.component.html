@@ -62,10 +62,16 @@
                 <tr [pSelectableRow]="item">
 
                     <td *ngFor="let column of columns" [style.width]="setStyleWidth(column.datafield)">
-                        <a *ngIf="column.datafield=='FirstName'"
-                           (click)="openResource(item)">{{item.FirstName}}</a>
-                        <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'" [column]="column"
-                                                 [fields]="fields" [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
+                        <ng-container [ngSwitch]="column.datafield">
+                            <ng-container *ngSwitchCase="'FirstName'">
+                                <a *ngIf="item.State === 'Active'" (click)="openResource(item)">{{item.FirstName}}</a>
+                                <span *ngIf="item.State !== 'Active'">{{item.FirstName}}</span>
+                            </ng-container>
+                            <ng-container *ngSwitchDefault>
+                                <d3s-dynamic-field-value [column]="column"
+                                                        [fields]="fields" [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
+                            </ng-container>
+                        </ng-container>
                     </td>
                     <td *ngIf="hasModifyAssetPermissions()  && IsReadOnly()" style="width: 40px">
                         <div class="RowTools" *ngIf="item.ResourceID > 0">
