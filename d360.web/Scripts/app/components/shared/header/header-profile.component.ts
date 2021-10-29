@@ -1,9 +1,8 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { Subscription } from 'rxjs';
-import { retry } from 'rxjs/operators';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 
@@ -55,11 +54,13 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
             this.isAdminSub.unsubscribe();
         }
     }
-    public resourceUrl() {
-        return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);
-    }
+
     public signOut() {
         window.location.href = '/slo';
+    }
+
+    public viewProfile() {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Resource', this.resourceId));
     }
 
     show(item) {
