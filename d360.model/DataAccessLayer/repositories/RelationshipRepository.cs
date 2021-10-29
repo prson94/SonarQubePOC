@@ -931,7 +931,7 @@ from	IntersectType I
         }
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            JObject results = await GetRelationships(queryParams, isExport: true);
+            JObject results = await GetRelationships(queryParams, isExport: true).ConfigureAwait(false);
             var includeTotal = true;
             var includeAssetPath = false;
 
