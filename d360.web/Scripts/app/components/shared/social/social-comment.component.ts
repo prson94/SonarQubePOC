@@ -3,8 +3,8 @@ import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
 import { CommentApiPostModel, CommentDetail, CommentType, Emoji } from "../../../models/social.model";
 import { Router } from "@angular/router";
-import { CurrentCompanySettings } from "../../../static/company-settings"
-import { ResourcesService } from "../../../services/resources.service";
+import { CompanySettingsService } from "../../../services/settings.service";
+import { CompanySettingEnum } from "../../../models/settings.model";
 
 declare var CurrentResourceID;
 
@@ -32,19 +32,23 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     replyData: CommentApiPostModel;
 
+    isPostingDisabled: boolean = false;
     isDeletable: boolean = false;
     isEditable: boolean = false;
     resourceUid: string = "";
 
-    constructor(private socialService: SocialService, private router: Router) {
-        super();
+    constructor(
+        private socialService: SocialService,
+        protected settingsService: CompanySettingsService,
+        private router: Router) {
+        super(settingsService);
         this.replyData = new CommentApiPostModel();
     }
 
     ngOnInit(): void {
         this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
         this.isEditable = this.comment.CreatedBy == CurrentResourceID;
-
+        this.isPostingDisabled = this.settingsService.getSettingById(CompanySettingEnum.DisableCommunityPosting).BooleanSetting.Value;
         this.calculateVotes();
     }
 
@@ -116,7 +120,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     canReply(): boolean {
-        return !CurrentCompanySettings.disableCommunityPosting;
+        return !this.isPostingDisabled;
     }
 
     private getTagName(tag: any) {

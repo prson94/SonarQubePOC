@@ -15,11 +15,10 @@ import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { AssetTypeService } from '../../../services/asset-type.service';
-declare var CompanySettings;
 
 @Component({
     selector: 'd3s-admin-diagram-asset',
-    providers: [AssetTypeService, AuditService, AssetService, CompanySettingsService],
+    providers: [AssetTypeService, AuditService, AssetService],
     templateUrl: './admin-diagram-asset.component.html'
 })
 
@@ -54,9 +53,9 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         private assetsService: AssetService,
         titleService: Title,
         protected messagesService: MessagesObservableService,
-        private settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
     }
 
@@ -94,22 +93,13 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
                     this.selectedRow = this.artifactTypes[0];
                 } else {
                     this.selectedRow = this.getAssetTypeByUid(uid);
-
                 }
                 this.selectedItemChange();
-                this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).subscribe(res => {
-                    if (res) {
-                        if (res[0]) {
-                            if (res[0].StringSetting && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
-                                this.disableAdd = true;
-                            }
-                            else if (res[0].GuidSetting && res[0].GuidSetting.Value === '00000000-0000-0000-0000-000000000000') {
-                                this.disableAdd = true;
-                            }
-                        }
-                    }
-                    this.isLoading = false;
-                });
+                let setting = this.getGuidSetting(CompanySettingEnum.GovernanceRoleReferenceListUid);
+                if (setting === '00000000-0000-0000-0000-000000000000') {
+                    this.disableAdd = true;
+                }
+                this.isLoading = false;
             });
     }
 
@@ -135,8 +125,9 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     add(uid: string) {
-        if (uid)
+        if (uid) {
             this.selectedRow = this.getAssetTypeByUid(uid);
+        }
         this.loadDataAndExecuteAction(() => {
             if (!uid) {
                 this.editorModel = { data: { ID: 0 } };
@@ -147,7 +138,6 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
             this.isEditing = false;
             this.isAdding = true;
             this.isDeleting = false;
-
         });
     }
 

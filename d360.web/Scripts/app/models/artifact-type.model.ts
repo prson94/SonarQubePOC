@@ -23,7 +23,6 @@ export class ArtifactType {
     AllowHierarchy: boolean;
     AllowRelatedArtifacts: boolean;
     AutoDisplayDescription: boolean;
-    CanOwnFusion: boolean;
     HasDashboards: boolean;
     HasV2Workflows: boolean;
     HasCustomExportTemplates: boolean;

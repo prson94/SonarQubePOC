@@ -17,8 +17,9 @@ import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component
 import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
-declare var CompanySettings;
 declare var CurrentResourceID;
 
 @Component({
@@ -51,9 +52,10 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
-        private dataProfileService: DataProfileService
+        private dataProfileService: DataProfileService,
+        protected settingsService: CompanySettingsService
     ) {
-        super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
+        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
     }
 
     ngOnInit() {
@@ -64,15 +66,12 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
             this.messages = [];
-            this
-                .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
                     this.load(artifactId, this.artifactTypeId);
-                }
-                )
-                ;
+                });
 
-            this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
+            this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
         });
     }
 

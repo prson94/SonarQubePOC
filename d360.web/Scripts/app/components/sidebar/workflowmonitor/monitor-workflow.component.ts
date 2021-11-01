@@ -4,6 +4,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -30,9 +31,10 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
         private route: ActivatedRoute,
         private assetService: AssetService,
         breadcrumbService: HeaderBreadcrumbService,
-        secondaryNavService: SecondaryNavService
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

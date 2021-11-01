@@ -7,6 +7,7 @@ import { Title } from '@angular/platform-browser';
 
 import { WorkflowDiagramModel } from '../../../models/workflow.model';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 
 @Component({
@@ -24,8 +25,12 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     private workflow: WorkflowDiagramModel;
     private cloneWorkflow:boolean=false;
 
-    constructor(secondaryNavService: SecondaryNavService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+    constructor(
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
     }
 
     ngOnInit() {

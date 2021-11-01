@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../../models/grid-definition.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-dynamic-field-value-v2',
@@ -23,8 +24,10 @@ export class DynamicFieldValueComponentV2 extends BaseComponent implements OnIni
     private fieldValue: any;
     private hasColor: boolean;
     private colorText: string;
-    constructor(private router: Router) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private router: Router) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 namespace d360.web
 {
-    public class UserIDCheckMiddleware
+    public class UserIDCheckMiddleware : BaseMiddleware
     {
         public class usercompany
         {
@@ -116,8 +116,7 @@ namespace d360.web
         {
             get
             {
-                var cache = new MemoryCachingProvider();
-                var users = cache.GetItem<ConcurrentBag<usercompany>>("Users");
+                var users = Cache.GetItem<ConcurrentBag<usercompany>>("Users");
                 if (users == null)
                 {
                     users = new ConcurrentBag<usercompany>();
@@ -126,8 +125,7 @@ namespace d360.web
             }
             set
             {
-                var cache = new MemoryCachingProvider();// RedisCachingProvider();
-                cache.SetItem("Users", value, true, 10);
+                Cache.SetItem("Users", value, true, 10);
             }
         }
 
@@ -317,7 +315,7 @@ from	Resource R
         private static readonly bool jwtValidateLifetime = (ConfigurationManager.AppSettings["jwtValidateLifetime"] ?? "").ToUpper() == "TRUE";
 
 
-        private static async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context, Microsoft.ApplicationInsights.TelemetryClient telemetry)
+        private async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context, Microsoft.ApplicationInsights.TelemetryClient telemetry)
         {
             string authority = await getJwtAuthority(context);
 
@@ -366,19 +364,15 @@ from	Resource R
             return user;
         }
 
-        private static async Task<string> getJwtAuthority(IOwinContext context)
+        private async Task<string> getJwtAuthority(IOwinContext context)
         {
             var companyId = context.Get<int>("CompanyID");
             var cnName = "";
             var key = $"JWTAuthority{companyId}";
 
             // try the cache
-            var cache = new MemoryCachingProvider();
-            if (cache != null)
-            {
-                cnName = cache.GetItem<string>(key);
-            }
-
+            cnName = Cache.GetItem<string>(key);
+            
             // not in cache query community
             if (string.IsNullOrEmpty(cnName))
             {
@@ -394,10 +388,7 @@ from	Resource R
                 }
 
                 // Stick in cache
-                if (cache != null)
-                {
-                    cache.SetItem(key, cnName);
-                }
+                Cache.SetItem(key, cnName);
             }
 
             return cnName;

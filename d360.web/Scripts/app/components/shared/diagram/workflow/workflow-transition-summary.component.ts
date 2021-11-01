@@ -5,6 +5,7 @@ import {
     WorkflowActivityType,
     TransitionType,
 } from '../../../../models/workflow.model';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 
 @Component({
@@ -19,7 +20,7 @@ export class WorkflowTransitionSummaryComponent extends BaseComponent {
     WorkflowActivityType = WorkflowActivityType;
     TransitionType = TransitionType;
 
-    constructor() {
-        super();
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 }

@@ -5,6 +5,7 @@ import { SiteNav } from '../../../models/site-menu.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-ip-restriction',
@@ -71,9 +72,10 @@ export class AdminIpRestrictionComponent extends AdminBaseComponent {
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-        super(headerBreadcrumbService, titleService);
+        super(headerBreadcrumbService, titleService, settingsService);
     }
 
     addIpRestriction(): void {

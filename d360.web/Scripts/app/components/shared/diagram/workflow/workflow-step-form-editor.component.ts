@@ -18,6 +18,7 @@ import { WorkflowFieldsService } from "../../../../services/workflow-fields.serv
 import { GroupService } from "../../../../services/group.service";
 import { FormMode, SelectItem } from "../../../../models/form.model";
 import { forkJoin } from "rxjs";
+import { CompanySettingsService } from "../../../../services/settings.service";
 
 @Component({
     selector: "d3s-workflow-step-form-editor",
@@ -104,8 +105,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     constructor(
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
-        private groupService: GroupService) {
-        super();
+        private groupService: GroupService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

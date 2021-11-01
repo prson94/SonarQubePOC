@@ -15,8 +15,9 @@ import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { ResourceApiModel } from '../../models/resource.model';
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
-declare var CompanySettings;
 declare var CurrentResourceID;
 declare var SingleSignOn;
 
@@ -55,7 +56,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private statistics: ObjectStatistics;
     private selectedWorkflow: WorkflowType;
     private pageMode: PageMode = PageMode.Default;
-    private showResourcesLink: boolean = ((CompanySettings.ShowResources) && (CompanySettings.ShowResources.toUpperCase() == 'TRUE'));
+    private showResourcesLink: boolean = false;
     PageMode = PageMode;
     private allowChangePassword = !SingleSignOn;
     itemsOwn: SecondaryNavItem;
@@ -72,14 +73,16 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         private resourcesService: ResourcesService,
         private statisticsService: ObjectStatisticsService,
         private uriBasedService: UriBasedService,
+        protected settingsService: CompanySettingsService,
         private socialService: SocialService,
         secondaryNavService: SecondaryNavService,
         protected messagesService: MessagesObservableService) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
+        this.showResourcesLink = this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
         this.isLoading = true;
 
         this.sub = this.route.params.subscribe(params => {
@@ -101,13 +104,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     }
 
                     this.resourceUid = this.resource.uid;
-
-                    if (this.resource.IsAdministrator || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true')) {
-                        this.showAllUsersAPIKey = true;
-                    }
-                    else {
-                        this.showAllUsersAPIKey = false;
-                    }
+                    let showApi = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
+                    this.showAllUsersAPIKey = (this.resource.IsAdministrator || showApi);
                     
                     if (this.resourceId.toString() === CurrentResourceID.toString()) {
                         this.isMe = true;

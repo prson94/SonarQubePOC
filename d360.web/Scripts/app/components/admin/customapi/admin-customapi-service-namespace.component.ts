@@ -1,16 +1,14 @@
 ﻿import {Component, OnInit, SimpleChange} from '@angular/core';
 import {Title} from '@angular/platform-browser';
 import {ActivatedRoute, Router} from '@angular/router';
-
 import {Breadcrumb} from '../../../models/breadcrumb.model';
 import {ApiNamespace, ApiService} from '../../../models/custom-api.model';
-
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
 import {SecondaryNavService} from '../../../services/right-sidebar.service';
-
 import {AdminBaseComponent} from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-customapi-service-namespace',
@@ -35,9 +33,10 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
         headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = "Custom API";
         this.theDeleteCallback = this.deleteItem.bind(this);
     }

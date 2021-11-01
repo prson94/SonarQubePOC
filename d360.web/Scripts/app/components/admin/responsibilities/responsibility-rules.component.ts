@@ -3,6 +3,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelationRule, ResponsibilityTypeRelationRuleSummary } from '../../../models/responsibility-type.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-responsibility-rules',
@@ -37,8 +38,11 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     private theDeleteCallback: Function;
     private theDeleteDateCallback: Function;
     
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private responsibilityTypeService: ResponsibilityTypeService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
 
         this.theDeleteCallback = this.deleteRule.bind(this);
         this.theDeleteDateCallback = this.deleteDate.bind(this);

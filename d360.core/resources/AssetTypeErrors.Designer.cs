@@ -205,6 +205,33 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} should not be empty..
+        /// </summary>
+        public static string FieldIsEmpty {
+            get {
+                return ResourceManager.GetString("FieldIsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is invalid..
+        /// </summary>
+        public static string FieldIsInvalid {
+            get {
+                return ResourceManager.GetString("FieldIsInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please provide valid value..
+        /// </summary>
+        public static string FieldProvideCorrectValue {
+            get {
+                return ResourceManager.GetString("FieldProvideCorrectValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         public static string Forbidden {
@@ -331,15 +358,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No valid Name provided..
-        /// </summary>
-        public static string InvalidName {
-            get {
-                return ResourceManager.GetString("InvalidName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid order by passed in the request..
         /// </summary>
         public static string InvalidOrderPassed {
@@ -408,6 +426,15 @@ namespace d360.core.resources {
         public static string InvalidPolicyDepth {
             get {
                 return ResourceManager.GetString("InvalidPolicyDepth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid or deleted relationship type encountered on Relationship field with friendly name &quot;{0}&quot;..
+        /// </summary>
+        public static string InvalidRelationshipFieldType {
+            get {
+                return ResourceManager.GetString("InvalidRelationshipFieldType", resourceCulture);
             }
         }
         
@@ -493,6 +520,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [ReturnCount].
+        /// </summary>
+        public static string InvalidValueReturnCount {
+            get {
+                return ResourceManager.GetString("InvalidValueReturnCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value {0} in _includeFields parameter, field with this name not found..
         /// </summary>
         public static string InvalueValue_includeFields {
@@ -516,15 +552,6 @@ namespace d360.core.resources {
         public static string ItemNotFound {
             get {
                 return ResourceManager.GetString("ItemNotFound", resourceCulture);
-              }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid value for parameter [ReturnCount].
-        /// </summary>
-        public static string InvalidValueReturnCount {
-            get {
-                return ResourceManager.GetString("InvalidValueReturnCount", resourceCulture);
             }
         }
         
@@ -588,6 +615,15 @@ namespace d360.core.resources {
         public static string NameConflicit {
             get {
                 return ResourceManager.GetString("NameConflicit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid character(-s) provided in the asset type name. Please fix content of asset type name field..
+        /// </summary>
+        public static string NameContainInvalidCharacters {
+            get {
+                return ResourceManager.GetString("NameContainInvalidCharacters", resourceCulture);
             }
         }
         

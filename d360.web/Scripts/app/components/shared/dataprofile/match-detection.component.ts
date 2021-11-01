@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
 import { Observable, ReplaySubject } from 'rxjs';
@@ -11,6 +11,8 @@ import { AdvancedFilterFieldType, Filters } from '../../assets-grid/advanced-fil
 import { BaseComponent } from '../base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { StringConstants } from '../../../static/string-constants';
+import { AssetTypeService } from '../../../services/asset-type.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'match-detection',
@@ -79,6 +81,14 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     assetDetail = null;
     assetData: any;
+    assetTypePathsforNonTagged: string[];
+    isDrawerLoading = false;
+
+    duplicateStr: string = "duplicate";
+    similarStr: string = "similar";
+
+    @ViewChild('similarCheckBox', { static: false }) similarCheckBox: any;
+    @ViewChild('duplicateCheckBox', { static: false }) duplicateCheckBox: any;
 
     menuItems = [
         {
@@ -122,16 +132,18 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             Category: "",            
             RemovePopulatedOperator: true
         }
-    ]        
+    ]            
 
     constructor(
         private assetService: AssetService,
+        private assetTypeService: AssetTypeService,
         private dataProfileService: DataProfileService,
         private objectDetailService: ObjectDetailService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         private router: Router      
     ) {
-        super();        
+        super(settingsService);        
 
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);
@@ -191,10 +203,10 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }
 
     onMenuSelect(event, item, matchType, isMultiSelect=false) {
-        if (!isMultiSelect && matchType === "duplicate") {
+        if (!isMultiSelect && matchType === this.duplicateStr) {
             this.duplicatesSelection = [];
             this.duplicatesSelection.push(item);
-        } else if (!isMultiSelect && matchType === "similar") {
+        } else if (!isMultiSelect && matchType === this.similarStr) {
             this.similarSelection = [];
             this.similarSelection.push(item);
         }
@@ -212,7 +224,10 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             } else {
                 this.selectedTagItems.push(item);
             }
-            this.tagMatchType = matchType.toLowerCase()==="similar" ? "Similar": "Duplicate";
+            this.tagMatchType = matchType.toLowerCase() === this.similarStr ? "Similar" : "Duplicate";
+            if (this.selectedAssetsWithoutTagField.length > 0) {
+                this.getAssetTypePaths(this.selectedAssetsWithoutTagField.map((t) => t.uid));
+            }
             this.isTagDrawerVisible = true;            
         }
     }
@@ -246,7 +261,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                     this.setSelectedMatch();  
                     this.cdRef.markForCheck();
                 });            
-        } else if (type.toLowerCase() === "similar") {
+        } else if (type.toLowerCase() === this.similarStr) {
             this.similarDataLoading = true;            
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Structure", this.similarCurrentPageNumber, this.similarRowsPerPage, this.similarSimpleFilter, this.similarAdvancedFilter, this.similarSortField, this.similarSortOrder)
                 .subscribe((res) => {
@@ -278,7 +293,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     export(matchType: string) {
         this.isExportInProgress = true;
-        if (matchType === "similar") {
+        if (matchType === this.similarStr) {
             this.dataProfileService.exportMatches(
                 this.assetUid, "Structure", this.similarSimpleFilter, this.similarAdvancedFilter, this.name, this.similarSortField, this.similarSortOrder,
                 () => { this.isExportInProgress = false; }
@@ -291,8 +306,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         }       
     }   
 
-    selectMatch(event: any) {
-        let selectedAssets = event;
+    selectMatch(event: any, matchType: string) {
+        let selectedAssets = event;        
         this.multipleItemsSelected = false;
         if (selectedAssets && selectedAssets.length == 1) {
             //only reload side panel if selection has changed. 
@@ -328,7 +343,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             }
             this.sidePanelLoading = false;
         }
-
+        this.populateHeaderCheckBoxStyle(matchType);
         this.cdRef.markForCheck();
     }
 
@@ -352,12 +367,12 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     private setSelectedMatch() {
         if (this.matchType === "data") {
                 this.duplicatesSelection = this.duplicatesData.slice(0, 1);
-                this.selectMatch(this.duplicatesSelection);
+                this.selectMatch(this.duplicatesSelection, this.duplicateStr);
                 this.similarSelection = [];
         }
-        if (this.matchType === "similar") {
+        if (this.matchType === this.similarStr) {
                 this.similarSelection = this.similarData.slice(0, 1);
-                this.selectMatch(this.similarSelection);
+                this.selectMatch(this.similarSelection, this.similarStr);
                 this.duplicatesSelection = [];
         }        
     }
@@ -392,7 +407,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         }
     }
 
-    itemSelected(item: any, matchType: string, event: MouseEvent) {
+    itemSelected(item: any, matchType: string, event: MouseEvent) {        
         if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
             this.itemMultiSelect(item, matchType);
         } else {
@@ -400,8 +415,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         }
     }
 
-    itemMultiSelect(item: any, matchType: string) {
-        if (matchType === "duplicate") {
+    itemMultiSelect(item: any, matchType: string) {       
+        if (matchType === this.duplicateStr) {
             if (this.duplicatesSelection?.find((x) => x === item)) {
                 this.duplicatesSelection = this.duplicatesSelection.filter((x) => x !== item);
             } else {
@@ -411,9 +426,9 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 this.duplicatesSelection.push(item);
                 this.duplicatesSelection = this.duplicatesSelection.filter((x) => x === x);//required for rows to highlight correctly
             }
-            this.selectMatch(this.duplicatesSelection);
+            this.selectMatch(this.duplicatesSelection, matchType);
             
-        } else if (matchType === "similar") {    
+        } else if (matchType === this.similarStr) {    
             if (this.similarSelection?.find((x) => x === item)) {
                 this.similarSelection = this.similarSelection.filter((x) => x !== item);
             } else {
@@ -423,19 +438,79 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 this.similarSelection.push(item);
                 this.similarSelection = this.similarSelection.filter((x) => x === x);//required for rows to highlight correctly
             }
-            this.selectMatch(this.similarSelection);
+            this.selectMatch(this.similarSelection, matchType);
         }
     }
 
     itemSingleSelect(item: any, matchType: string) {
-        if (matchType === "duplicate") {
+        if (matchType === this.duplicateStr) {
             this.duplicatesSelection = [];
             this.duplicatesSelection.push(item);
-            this.selectMatch(this.duplicatesSelection);
-        } else if (matchType === "similar") {
+            this.selectMatch(this.duplicatesSelection, matchType);
+        } else if (matchType === this.similarStr) {
             this.similarSelection = [];
             this.similarSelection.push(item);
-            this.selectMatch(this.similarSelection);
+            this.selectMatch(this.similarSelection, matchType);
         }
-    }    
+    }   
+
+    private populateHeaderCheckBoxStyle(matchType: string) {
+        if (matchType === this.duplicateStr) {
+            let checkBoxElement = this.duplicateCheckBox.boxViewChild.nativeElement;
+            if (this.duplicatesSelection && this.duplicatesSelection.length > 0 && this.duplicatesSelection.length !== this.duplicatesData.length) {
+                checkBoxElement.classList.add('p-highlight');
+                this.duplicateCheckBox.checked = true;
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi');
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi-minus');                
+            } else if (this.duplicatesSelection && this.duplicatesSelection.length === this.duplicatesData.length) {
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');
+            }
+            else {
+                checkBoxElement.classList.remove('p-highlight');
+                this.duplicateCheckBox.checked = false;
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');                
+            }
+        } else if (matchType === this.similarStr) {
+            let checkBoxElement = this.similarCheckBox.boxViewChild.nativeElement;
+            if (this.similarSelection && this.similarSelection.length > 0 && this.similarSelection.length !== this.similarData.length) {
+                checkBoxElement.classList.add('p-highlight');
+                this.similarCheckBox.checked = true;
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi');
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi-minus');                
+            } else if (this.similarSelection && this.similarSelection.length === this.similarData.length) {
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');
+            }
+            else {
+                this.similarCheckBox.checked = true;
+                checkBoxElement.classList.remove('p-highlight');
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');                
+            }
+        }
+        
+
+    } 
+
+    private getAssetTypePaths(selectedUids: string[]) {
+        let assetTypePaths: string[] = [];
+        let uriParams: any = {};
+        this.isDrawerLoading = true;
+        this.assetTypePathsforNonTagged = [];
+        selectedUids.forEach((uid) => {
+            this.assetService.getAsset(uid)
+                .subscribe((res) => {
+                    uriParams.assetTypeUid = res.AssetTypeUid;
+                    this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+                        let path = result[0].Path.replace(/\//g, '>');
+                        assetTypePaths.push(path);
+                        if (this.assetTypePathsforNonTagged.indexOf(path) < 0) {
+                            this.assetTypePathsforNonTagged.push(path);
+                        }
+
+                        this.isDrawerLoading = !(assetTypePaths.length === selectedUids.length);
+                    });
+                });
+            });
+    }
 }

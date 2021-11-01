@@ -11,6 +11,7 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { AssetTypeClass, AssetCount } from '../../models/asset.model';
 import { AssetService } from '../../services/asset.service';
 import { AssetGridBaseComponent } from './asset-grid-base.component';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-asset-grid-top-level-list',
@@ -34,9 +35,10 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
         private assetService: AssetService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
-        secondaryNavService: SecondaryNavService
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService
     ) {
-        super(headerBreadcrumbService, secondaryNavService);
+        super(headerBreadcrumbService, settingsService, secondaryNavService);
     }
 
     ngOnInit() {

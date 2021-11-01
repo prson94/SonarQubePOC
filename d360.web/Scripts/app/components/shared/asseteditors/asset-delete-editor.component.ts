@@ -2,6 +2,7 @@
 import { BaseComponent } from '../../shared/base.component';
 import { AssetService } from "../../../services/asset.service";
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-asset-delete-editor',
@@ -23,9 +24,10 @@ export class AssetDeleteEditorComponent extends BaseComponent {
     constructor(
         private assetService: AssetService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private changeDetectorRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
 
         this.theDeleteCallback = this.deleteAsset.bind(this);
     }

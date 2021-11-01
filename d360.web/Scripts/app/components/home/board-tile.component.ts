@@ -2,6 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/social.service';
 import { Count } from '../../models/counts.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-board-tile',
@@ -55,8 +56,10 @@ export class BoardTile extends BaseComponent implements OnInit {
 
     @Output() showItemDetail = new EventEmitter();
 
-    constructor(private socialService: SocialService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private socialService: SocialService) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -69,12 +69,13 @@
                                      (onLazyLoad)="lazyLoad($event,'Data')"
                                      [loading]="duplicatesDataLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'"
-                                     (selectionChange)="selectMatch($event)">
+                                     (selectionChange)="selectMatch($event, 'duplicate')">
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th style="width: 30px">
-                                            <p-tableHeaderCheckbox 
-                                                pTooltip="{{(duplicatesSelection && duplicatesSelection.length == dtDupli.rows ? 'Deselect all items' : 'Select all items in the current page')}}"
+                                            <p-tableHeaderCheckbox  
+                                                #duplicateCheckBox
+                                                pTooltip="{{(duplicatesSelection && (duplicatesSelection.length == duplicatesData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
                                                 tooltipPosition="top"
                                                 tooltipStyleClass="ig-tooltip">
                                             </p-tableHeaderCheckbox>                                            
@@ -176,15 +177,15 @@
                                      (onLazyLoad)="lazyLoad($event,'Structure')"
                                      [loading]="similarDataLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'"
-                                     (selectionChange)="selectMatch($event)">
+                                     (selectionChange)="selectMatch($event, 'similar')">
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th style="width: 30px">
-                                            <p-tableHeaderCheckbox pTooltip="{{(similarSelection && similarSelection.length == dtSimi.rows ? 'Deselect all items' : 'Select all items in the current page')}}"
+                                            <p-tableHeaderCheckbox #similarCheckBox
+                                                                   pTooltip="{{(similarSelection && (similarSelection.length == similarData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
                                                                    tooltipPosition="top"
                                                                    tooltipStyleClass="ig-tooltip">
-                                            </p-tableHeaderCheckbox>
-                                            <!--<p-tableHeaderCheckbox></p-tableHeaderCheckbox>-->
+                                            </p-tableHeaderCheckbox>                                            
                                         </th>
                                         <th [pSortableColumn]="'Path'">
                                             Asset Path
@@ -289,32 +290,37 @@
                 Edit Tags
             </ng-container>
             <ng-container content>
-                <div *ngIf="!selectedAssetUids || selectedAssetUids.length === 0">
-                    <span>
-                        None of the selected items has a tag field.<br />
-                        If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field.
-                    </span>
-                </div>
-                <div *ngIf="selectedAssetUids && selectedAssetUids.length > 0">
-                    Showing {{selectedAssetUids.length>1 ? 'common' : ''}} tags for the {{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1 ? (selectedAssetUids.length + selectedAssetsWithoutTagField.length) : ''}} selected item{{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1? 's' : ''}} in <b>{{tagMatchType}} Fields</b>
-                    <div *ngIf="selectedAssetUids.length > 1">
-                        <d3s-tag-view [data]="getCommonTags" [assetUIDList]="selectedAssetUids" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
+                <div *ngIf="isDrawerLoading">
+                    <d3s-loading [isLoading]="isDrawerLoading"></d3s-loading>
+                </div>                
+                <div *ngIf="!isDrawerLoading">
+                    <div *ngIf="!selectedAssetUids || selectedAssetUids.length === 0">
+                        <span>
+                            None of the selected items has a tag field.<br />
+                            If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field.
+                        </span>
                     </div>
-                    <div *ngIf="selectedAssetUids.length == 1">
-                        <d3s-tag-view [data]="selectedAssetsWithTagField[0].tags" [assetUID]="selectedAssetsWithTagField[0].uid" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
-                    </div>
-                    <div class="no-tags-note" *ngIf="selectedAssetsWithoutTagField && selectedAssetsWithoutTagField.length>0">
-                        Please note that {{selectedAssetsWithoutTagField.length}} of the selected items do not have a <b>Tag</b> field. These items will remain unchanged.<br />
-                        If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field to the following <b>Asset Types</b>:
-                        <div *ngIf="selectedAssetsWithoutTagField.length == 1">
-                            {{selectedAssetsWithoutTagField[0].path}}
+                    <div *ngIf="selectedAssetUids && selectedAssetUids.length > 0">
+                        Showing {{selectedAssetUids.length>1 ? 'common' : ''}} tags for the {{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1 ? (selectedAssetUids.length + selectedAssetsWithoutTagField.length) : ''}} selected item{{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1? 's' : ''}} in <b>{{tagMatchType}} Fields</b>
+                        <div *ngIf="selectedAssetUids.length > 1">
+                            <d3s-tag-view [data]="getCommonTags" [assetUIDList]="selectedAssetUids" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
                         </div>
-                        <div *ngIf="selectedAssetsWithoutTagField.length > 1" class="no-tags-asset-list">
-                            <ul>
-                                <li class="no-tags-asset-list-item" *ngFor="let i of selectedAssetsWithoutTagField">
-                                    {{i.path}}
-                                </li>
-                            </ul>
+                        <div *ngIf="selectedAssetUids.length == 1">
+                            <d3s-tag-view [data]="selectedAssetsWithTagField[0].tags" [assetUID]="selectedAssetsWithTagField[0].uid" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
+                        </div>
+                        <div class="no-tags-note" *ngIf="selectedAssetsWithoutTagField && selectedAssetsWithoutTagField.length>0">
+                            Please note that {{selectedAssetsWithoutTagField.length}} of the selected items {{(selectedAssetsWithoutTagField.length === 1? 'does' : 'do')}} not have a <b>Tag</b> field. These items will remain unchanged.<br />
+                            If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field to the following <b>Asset Types</b>:
+                            <div *ngIf="assetTypePathsforNonTagged.length == 1" class="no-tags-single-type">
+                                {{this.assetTypePathsforNonTagged[0]}}
+                            </div>
+                            <div *ngIf="assetTypePathsforNonTagged.length > 1" class="no-tags-asset-list">
+                                <ul>
+                                    <li class="no-tags-asset-list-item" *ngFor="let path of assetTypePathsforNonTagged">
+                                        {{path}}
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>                

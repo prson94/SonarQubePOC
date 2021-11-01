@@ -2,6 +2,7 @@
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-raise-issue-button',
@@ -18,8 +19,10 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 export class RaiseIssueButtonComponent extends BaseComponent {
     
-    constructor(private router: Router) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private router: Router) {
+        super(settingsService);
     }
 
     public raiseIssue() {

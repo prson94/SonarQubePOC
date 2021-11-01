@@ -7,6 +7,7 @@ import { ExportTemplateService } from '../../../services/export-template.service
 import { ExportTemplate } from '../../../models/export-template.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-export-templates-component',
@@ -132,13 +133,14 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     theDeleteCallback: Function;
     
     constructor(
-            secondaryNavService: SecondaryNavService,
-            headerBreadcrumbService: HeaderBreadcrumbService,        
-            titleService: Title,
-            private exportTemplateService: ExportTemplateService,
-            protected messagesService: MessagesObservableService,
+        secondaryNavService: SecondaryNavService,
+        headerBreadcrumbService: HeaderBreadcrumbService,        
+        titleService: Title,
+        private exportTemplateService: ExportTemplateService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
         ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_ExportTemplates;
         this.setCommonItems();
                 
@@ -223,7 +225,6 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     public getSelectedTemplateID(showEditor: boolean = false) {
         this.exportTemplateService.getExportTemplateId(this.selected.Uid).subscribe((item) => { this.selected.ID = item; this.showEditor = showEditor;});
     }
-
 
     clearTemplate() {
         this.isLoading = true;

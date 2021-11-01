@@ -11,6 +11,7 @@ import { LazyLoadEvent } from "primeng/api";
 import { Subscription } from "rxjs";
 import { debounceTime } from "rxjs/operators";
 import { RelationshipTypeUIModel } from "../../../models/relationship.model";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 
 @Component({
@@ -71,14 +72,16 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     @ViewChild("dt", { static: false }) datatable;
 
-    constructor(private router: Router,
-        private gridDefinitionService: GridDefinitionService,
-        protected relationshipsService: RelationshipsService,
-        private messagesService: MessagesObservableService,
+    constructor(
         private assetService: AssetService,
+        private gridDefinitionService: GridDefinitionService,
+        private messagesService: MessagesObservableService,
+        protected relationshipsService: RelationshipsService,
+        protected settingsService: CompanySettingsService,
+        private router: Router,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 

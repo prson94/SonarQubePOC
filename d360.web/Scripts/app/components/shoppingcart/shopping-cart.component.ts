@@ -10,6 +10,7 @@ import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.m
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-shopping-cart',
@@ -32,9 +33,10 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
         private locationService: Location,
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private router: Router)
     {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
     }
 

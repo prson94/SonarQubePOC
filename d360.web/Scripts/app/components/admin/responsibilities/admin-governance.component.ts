@@ -8,6 +8,7 @@ import { AdminBaseComponent } from "../admin-base.component";
 import { Title } from "@angular/platform-browser";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { StringConstants } from "../../../static/string-constants";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: "admin-governance",
@@ -25,8 +26,14 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     theDeleteCallback: Function;
 
-    constructor(secondaryNavService: SecondaryNavService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesObservableService) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+    constructor(
+        secondaryNavService: SecondaryNavService,
+        private responsibilityTypeService: ResponsibilityTypeService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Responsibilities;
         this.adminHeading = StringConstants.SubArea_Security;
         this.tabTitle = "Responsibility Types";

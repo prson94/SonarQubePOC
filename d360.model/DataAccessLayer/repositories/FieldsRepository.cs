@@ -880,7 +880,7 @@ from	IntersectType I
                             new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }
                         ).SingleOrDefault();
 
-                        if (relationInfo == null || i.RelationType == null)
+                        if (relationInfo == null)
                         {
                             hasDefinitionError = true;
                             return;
@@ -2094,9 +2094,28 @@ from	IntersectType I
             var maps = definition.GetFieldMapings();
             List<string> selects = new List<string>();
             List<string> wheres = new List<string>();
+            List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping
+                = new List<Tuple<int, FieldTypeComplexLookupRelationDirection>>();
 
-            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects);
-            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, new List<string>(), isCountQuery: true);
+            foreach (var relFt in definition.Fields.Where(x => x.FieldTypeName.StartsWith("Related Item.")))
+            {
+                bool isSubject = Company.Query<bool>(@"declare @object nvarchar(255)
+                    declare @objectid int
+                    select @object = object, @objectid = objectid from AssetType where uid = @AssetTypeUid
+
+                    select count(1) from intersecttype
+                    where id = @FieldTypeID and Subject = @object and SubjectID = @objectid",
+                    new { relFt.FieldTypeID, relFt.AssetTypeUid })
+                    .FirstOrDefault();
+
+                fieldRelationDirectionMapping.Add(
+                    new Tuple<int, FieldTypeComplexLookupRelationDirection>(
+                        relFt.FieldTypeID,
+                    isSubject ? FieldTypeComplexLookupRelationDirection.Forward : FieldTypeComplexLookupRelationDirection.Back));
+            }
+
+            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects, fieldRelationDirectionMapping);
+            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, new List<string>(), fieldRelationDirectionMapping, isCountQuery: true);
 
             (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 

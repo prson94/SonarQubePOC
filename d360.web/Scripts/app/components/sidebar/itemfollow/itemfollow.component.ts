@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-resource-following',
@@ -28,8 +29,9 @@ export class ItemFollowComponent extends BaseComponent implements OnInit, OnDest
         private route: ActivatedRoute,
         private router: Router,
         secondaryNavService: SecondaryNavService,
-        breadcrumbService: HeaderBreadcrumbService) {
-        super();
+        breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

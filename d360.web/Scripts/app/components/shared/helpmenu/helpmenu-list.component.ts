@@ -5,6 +5,7 @@ import { HelpMenu } from '../../../models/helpmenu.model';
 import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-helpmenu-list',
@@ -60,8 +61,11 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         { title: "Move to Bottom" }
     ];
 
-    constructor(private helpMenuService: HelpMenuService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private helpMenuService: HelpMenuService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -51,7 +51,7 @@ namespace igx.jobs.responsibilityruleprocessor
                 {
                     try
                     {
-                        var company = JobDbContextCreator.CreateWebjobCompanyContext(c.CompanyID, 0, "", true);
+                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, "", true);
 
                         CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 

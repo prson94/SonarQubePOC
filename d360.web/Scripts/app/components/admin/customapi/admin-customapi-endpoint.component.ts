@@ -1,12 +1,10 @@
 ﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-
 import {ApiEndpoint, ApiService} from '../../../models/custom-api.model';
-
 import {CustomAPIService} from '../../../services/custom-api.service';
-
 import {BaseComponent} from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-api-endpoints',
@@ -29,10 +27,11 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
     constructor(
         protected customAPIService: CustomAPIService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
         private router: Router,
     ) {
-        super();
+        super(settingsService);
         this.theDeleteCallback = this.deleteService.bind(this);
     }
 
@@ -46,9 +45,7 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
         this.customAPIService.getEndpoints(this.service.ID).subscribe(
             res => {
                 this.isLoading = false;
-
                 this.endpoints = res;
-
                 this.numberOfEndpoints = this.endpoints.length;
                 this.numberOfEndpointsChange.emit(this.numberOfEndpoints);
             }
@@ -60,7 +57,6 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
             res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
-
                 this.showEditor = false;
             }
         );
@@ -75,7 +71,6 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
             result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.load();
-
                 this.showDelete = false;
             }
         );

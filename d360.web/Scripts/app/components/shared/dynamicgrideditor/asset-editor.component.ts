@@ -29,6 +29,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { Subject } from 'rxjs';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-asset-editor',
@@ -86,12 +87,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         private ref: ChangeDetectorRef,
         private formBuilder: FormBuilder,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private editorDefinitionService: EditorDefinitionService,
         private uriBasedService: UriBasedService,
         private cascadeService: CascadeService,
         private assetService: AssetService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

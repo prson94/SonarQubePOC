@@ -7,6 +7,7 @@ import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
 import { MetricsService } from '../../../services/metrics.service';
 import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-asset-score',
@@ -76,12 +77,14 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     ]
 
-    constructor(protected scoreService: ScoreService,
+    constructor(
         protected assetService: AssetService,
         protected metricService: MetricsService,
+        protected scoreService: ScoreService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
         this.scoreDate = new Date().toDateString();
     }
 

@@ -11,25 +11,10 @@
                type="string"
                [(ngModel)]="field.Value">
         <span *ngSwitchCase="fieldType.Boolean">
-            &nbsp;&nbsp;
-            <label>
-                <input [name]="'input_'+indx"
-                       type="radio"
-                       [value]="true"
-                       required
-                       [(ngModel)]="field.Value"
-                       #f="ngModel">&nbsp;Yes
-            </label>&nbsp;
-            <label>
-                <input [name]="'input_'+indx"
-                       type="radio"
-                       [value]="false"
-                       required
-                       [(ngModel)]="field.Value"
-                       #f="ngModel">&nbsp;No
-            </label>
-            <span *ngIf="f.errors">
-                <span *ngIf="f.errors.required"
+            <p-radioButton igRadioButton [name]="'input_'+indx" [(ngModel)]="field.Value" value="true" label="Yes"></p-radioButton>&nbsp;&nbsp;
+            <p-radioButton igRadioButton [name]="'input_'+indx" [(ngModel)]="field.Value" value="false" label="No"></p-radioButton>
+            <span *ngIf="!fieldValue">
+                <span *ngIf="field.Required"
                       class="error">&nbsp;&nbsp;&nbsp;* This field is required</span>
             </span>
         </span>

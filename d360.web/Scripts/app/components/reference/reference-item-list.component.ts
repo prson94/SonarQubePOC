@@ -5,6 +5,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
 import { GridColumn, GridField } from '../../models/grid-definition.model';
 import { Subscription } from 'rxjs';
 import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-reference-item-list',
@@ -17,9 +18,10 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     constructor(
         private assetService: AssetService,
         private gridDefinitionService: GridDefinitionService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
     }
 
     @Input() assetTypeUid: string;

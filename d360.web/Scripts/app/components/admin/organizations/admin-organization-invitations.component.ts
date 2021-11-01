@@ -9,6 +9,7 @@ import {BaseComponent} from '../../shared/base.component';
 
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-organization-invitations',
@@ -124,9 +125,10 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
     constructor(
         private router: Router,
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.theDeleteCallback = this.delete.bind(this);
     }
 

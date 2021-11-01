@@ -15,6 +15,7 @@ import { StringConstants } from '../../../static/string-constants';
 import { debounceTime } from 'rxjs/operators';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-artifact-item-child-grid',
@@ -60,9 +61,10 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         protected artifactService: ArtifactService,
         protected assetService: AssetService,
         protected objectStatisticsService: ObjectStatisticsService,
+        protected settingsService: CompanySettingsService,
         private ref: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges, OnInit } from "@angular/core";
 import { BaseComponent } from "../../shared/base.component";
 import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
+import { CompanySettingsService } from "../../../services/settings.service";
 
  
 @Component({
@@ -63,15 +64,11 @@ import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
 `,
 
 })
-export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponent implements OnInit, OnChanges {
-
-    
+export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponent {
     @Input() fieldChanges: any;
 
-    ngOnInit(): void {
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     getHtmlFieldValue(item: any) {

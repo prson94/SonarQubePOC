@@ -2,6 +2,7 @@
 import { ResourcesService } from '../../services/resources.service';
 import { CountObject } from '../../models/resource.model';
 import { BaseComponent } from '../shared/base.component';
+import { CompanySettingsService } from '../../services/settings.service';
 
 declare var CurrentResourceID;
 
@@ -44,8 +45,10 @@ export class ResourceFollowingTile extends BaseComponent implements OnChanges {
     isLoading = false;
     isMe = false;
 
-    constructor(private resourcesService: ResourcesService) {
-        super();
+    constructor(
+        private resourcesService: ResourcesService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
     
     ngOnChanges() {

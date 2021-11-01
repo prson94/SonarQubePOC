@@ -2,6 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from './base.component';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-grid-selection-info',
@@ -24,6 +25,10 @@ export class GridSelectionInfoComponent extends BaseComponent {
     @Input() selection: any[] = [];
     @Output() onSelectAllClick = new EventEmitter();
     @Output() onSelectNoneClick = new EventEmitter();
+
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 
     get totalItems(): number {
         return this.model == null ? 0 : this.model.length;

@@ -1,17 +1,15 @@
-import { Injectable, EventEmitter } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { HeaderActions } from '../models/header.model';
 
-declare var CompanySettings;
-
 @Injectable()
 export class HeaderActionsService {
-    showFavorite: boolean = CompanySettings.ShowFavorites != 'false';
+    showFavorite: boolean = false;
     showNotifications: boolean = false;
     showHelp: boolean = true;
     showSearch: boolean = true;
     showRaiseIssue: boolean = true;
-    showFollow: boolean = CompanySettings.ShowImpactSidebar != 'false';
+    showFollow: boolean = false;
     showShoppingCart: boolean = true;
     showHomePage: boolean = true;
     forceTakeActionHidden: boolean = false;
@@ -32,13 +30,13 @@ export class HeaderActionsService {
     private onSiteCountsChangeSource = new Subject();
     public onSiteCountsChange = this.onSiteCountsChangeSource.asObservable();
 
-    public setActionsToDefaultValues() {
-        this.showFavorite = CompanySettings.ShowFavorites != 'false';
+    public setActionsToDefaultValues(showFavorite: boolean, showFollow: boolean) {
+        this.showFavorite = showFavorite;
         this.showNotifications = false;
         this.showHelp = true;
         this.showSearch = true;
         this.showRaiseIssue = true;
-        this.showFollow = CompanySettings.ShowImpactSidebar != 'false';
+        this.showFollow = showFollow;
         this.showShoppingCart = true;
         this.showHomePage = true;
         this.forceTakeActionHidden = false;

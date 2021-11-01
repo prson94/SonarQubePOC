@@ -2,6 +2,7 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'd3s-header',
@@ -14,7 +15,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     </nav>
                 </div>
               `,
-    providers: [CompanySettingsService]
+    providers: []
 })
 
 export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -25,16 +26,15 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
 
     constructor(private router: Router,
         private route: ActivatedRoute,
-        private settings: CompanySettingsService) {
-        super();
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit(): void {
-        this.settings.getSettings()
-            .subscribe(data => {
-                if (data.CurrentCompanyLogoPath != "")
-                    this.imageSource = data.CurrentCompanyLogoPath;
-            });
+        let logoSetting = this.settingsService.getSettingById(CompanySettingEnum.CompanyLogo);
+        if (logoSetting.StringSetting && logoSetting.StringSetting.Value != "") {
+            this.imageSource = logoSetting.StringSetting.Value;
+        }
 
         this.subParams = this.route.queryParams.subscribe((params) => {
             if (params['showbackbutton'] != null) {

@@ -29,6 +29,7 @@ import { TilesModule } from "./tiles/tiles.module";
 import { SiteModalModule } from "./modal/gov-modal.module";
 import { SharedObjectDetailsModule } from "./objectdetails/shared-object-details.module";
 import { SimpleAccordionModule } from "./simple-accordion.part";
+import { CompanySettingsService } from "../../services/settings.service";
 
 
 export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
@@ -118,8 +119,11 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
 
     public onModelTouched: Function = () => { };
 
-    constructor(private resourceService:ResourcesService, private ref: ChangeDetectorRef) {
-        super();
+    constructor(
+        private resourceService: ResourcesService,
+        protected settingsService: CompanySettingsService,
+        private ref: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange} ) {

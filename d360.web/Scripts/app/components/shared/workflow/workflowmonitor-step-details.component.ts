@@ -8,6 +8,7 @@ import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { Observable,of } from 'rxjs';
 import { ResponsibilityType } from '../../../models/responsibility-type.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-details',
@@ -38,8 +39,12 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     private showAllAnyCondition: boolean = false;
     private isSatisfyAll: boolean = true;
 
-    constructor(private workflowService: WorkflowService, private ref: ChangeDetectorRef, private responsibilityService: ResponsibilityTypeService) {
-        super();
+    constructor(
+        private responsibilityService: ResponsibilityTypeService,
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        private ref: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -8,6 +8,7 @@ import {EditorField} from '../../models/editor-field.model';
 import * as _ from 'lodash';
 import { ResourcesService } from '../../services/resources.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-group-members',
@@ -32,8 +33,11 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     public showDelete: boolean = false;
 
 
-    constructor(private groupService: GroupService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private groupService: GroupService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
         this.theDeleteCallback = this.deleteService.bind(this);
     }
 

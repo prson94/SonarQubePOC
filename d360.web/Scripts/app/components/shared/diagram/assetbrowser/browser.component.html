@@ -4,7 +4,6 @@
          class="p-tooltip p-component p-tooltip-top ig-tooltip ig-tooltip-big">
         <div class="p-tooltip-text" [innerHTML]="relationshipBadgeHtml"></div>
     </div>
-
     <div class="asset-browser-body col s12">
         <div style="padding: 0; margin-bottom: 0">
             <div [hidden]="isLoading" [class]="isFullScreen ? 'asset-browser-header expanded' : 'asset-browser-header'">
@@ -67,7 +66,7 @@
                 </div>
             </div>
             <div class="row" *ngIf="isLoading">
-                <div class="col s12" style="position: absolute; z-index: 0;">
+                <div class="col s12" style="position: absolute; z-index: 1000;">
                     <d3s-loading isLoading="true">{{loadingText}}</d3s-loading>
                 </div>
             </div>
@@ -113,6 +112,15 @@
                         <div class="asset-browser-window-container">
                             <div class="asset-browser-window-header" [hidden]="panelModel.InformationVisible">
 
+                                <div class="controls" *ngIf="panelModel.InformationVisible && selectedDiagramAsset?.Url">
+                                    <div class="score-badge-container">
+                                        <div *ngFor="let score of selectedDiagramAsset?.Scores" [class]="'score-badge ' + score.ScoreClass">{{score.Name}} <span class="score-value">{{score.Value | scoreDisplay:1}}</span></div>
+                                    </div>
+                                    <div>
+                                        <button igButton icon="fa-ellipsis-v" (click)="linkMenu.toggle($event)"></button>
+                                        <ig-popup-menu (onSelect)="menu_ClickLinkItem($event)" [items]="linkMenuItems" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                                    </div>
+                                </div>
 
                                 <div class="info">
                                     <div class="asset-name">

@@ -11,6 +11,7 @@ import {SecondaryNavService} from '../../../services/right-sidebar.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-customapi-service-detail',
@@ -35,9 +36,10 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
         headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
     }
 
     ngOnInit(): void {

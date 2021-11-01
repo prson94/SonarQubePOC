@@ -16,6 +16,7 @@ import { BaseComponent } from '../../shared/base.component';
 
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-responsibility-relation-form',
@@ -58,8 +59,12 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
 
     public permissionCategories: string[] = ["R", "A", "E", "D"];
 
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
-        super();
+    constructor(
+        private responsibilityTypeService: ResponsibilityTypeService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private objectDetailService: ObjectDetailService) {
+        super(settingsService);
     }
 
     ngOnInit() {

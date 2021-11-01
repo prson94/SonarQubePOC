@@ -8,6 +8,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'governance-measure-editor',
@@ -98,11 +99,12 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
     constructor(protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
         protected fb: FormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
-        super(fieldsService, metricsService, messagesService, cdRef);
+        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
     }
 
     ngOnChanges(changes: SimpleChanges): void {

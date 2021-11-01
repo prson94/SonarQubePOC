@@ -691,6 +691,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Help Menu items successfully updated..
+        /// </summary>
+        public static string HelpMenuSuccess {
+            get {
+                return ResourceManager.GetString("HelpMenuSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help Menu Updated..
+        /// </summary>
+        public static string HelpMenuUpdated {
+            get {
+                return ResourceManager.GetString("HelpMenuUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item visibility must be set to 1, 2 or 3..
+        /// </summary>
+        public static string HelpMenuVisibilityError {
+            get {
+                return ResourceManager.GetString("HelpMenuVisibilityError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid request, invalid size specified for image. Value must be less then 2048 or greater than 0.
         /// </summary>
         public static string ImageSize2048 {

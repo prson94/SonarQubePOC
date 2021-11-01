@@ -156,13 +156,9 @@ namespace d360.core.entities
         [DataMember]
         public string AssetTypeName { get; set; }
         [DataMember]
-        public string RequestorName { get; set; }
+        public string RequestedByName { get; set; }
         [DataMember]
-        public Guid RequestorUid { get; set; }
-        [DataMember]
-        public int Success { get; set; }
-        [DataMember]
-        public int Error { get; set; }
+        public Guid RequestedByUid { get; set; }
         [DataMember]
         public int Total { get; set; }
         [DataMember]
@@ -395,7 +391,11 @@ namespace d360.core.entities
         [DataMember]
         public int Total { get; set; }
         [DataMember]
-        public int Error { get; set; }     
+        public int Success { get; set; }
+        [DataMember]
+        public int Error { get; set; }
+        [DataMember]
+        public int Incomplete { get; set; }
         [DataMember]
         public string Action { get; set; }
         [DataMember]
@@ -407,9 +407,9 @@ namespace d360.core.entities
         [DataMember]
         public string Status { get; set; }
         [DataMember]
-        public string RequestorName { get; set; }
+        public string RequestedByName { get; set; }
         [DataMember]
-        public Guid RequestorUid { get; set; }
+        public Guid RequestedByUid { get; set; }
     }
 
 }

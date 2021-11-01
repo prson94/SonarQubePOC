@@ -5,6 +5,7 @@ import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../../model
 import { WorkflowHelpers } from '../../../static/workflow-helpers';
 import { Router } from '@angular/router';
 import { StateService } from '../../../services/state.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-grid',
@@ -89,8 +90,13 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
     showAssigneeColumn = false;
     allowSort = false;
 
-    constructor(private ref: ChangeDetectorRef,private router:Router, private stateService:StateService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private stateService: StateService,
+        private ref: ChangeDetectorRef,
+        private router: Router
+        ) {
+        super(settingsService);
     }
 
     ngOnChanges(changes: SimpleChanges) {

@@ -9,6 +9,7 @@ import { catchError } from 'rxjs/operators';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -104,9 +105,10 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     constructor(private surveysService: SurveysService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         titleService: Title,
         secondaryNavService: SecondaryNavService) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Surveys;
         this.setCommonItems();
     }

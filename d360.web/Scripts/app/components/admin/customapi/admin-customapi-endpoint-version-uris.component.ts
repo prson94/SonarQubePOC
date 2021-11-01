@@ -1,12 +1,10 @@
 ﻿import {Component, Input, OnInit, SimpleChange} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-
 import {ApiUri, ApiVersion} from '../../../models/custom-api.model';
-
 import {CustomAPIService} from '../../../services/custom-api.service';
-
 import {BaseComponent} from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-api-endpoint-version-uritypes',
@@ -25,10 +23,11 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
     constructor(
         protected customAPIService: CustomAPIService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
         private router: Router,
     ) {
-        super();
+        super(settingsService);
         this.theDeleteCallback = this.deleteService.bind(this);
     }
 
@@ -47,7 +46,6 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
         this.customAPIService.getEndpointVersionUris(this.version.ID).subscribe(
             res => {
                 this.uris = res;
-
                 this.isLoading = false;
             });
     }
@@ -57,7 +55,6 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
             res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
-
                 this.showEditor = false;
             }
         );
