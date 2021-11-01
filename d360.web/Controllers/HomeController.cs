@@ -22,9 +22,13 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public HomeController(CoreComponentSet set)
+        ICachingProvider Cache;
+
+        public HomeController(CoreComponentSet set, ICachingProvider cache)
             : base(set)
-        { }
+        {
+            Cache = cache;
+        }
 
         #endregion
 

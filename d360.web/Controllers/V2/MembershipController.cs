@@ -41,11 +41,13 @@ namespace d360.web.Controllers.V2
     ]
     public class MembershipController : BaseV2ApiController
     {
+        ICachingProvider Cache;
         readonly IMembershipRepository membershipRepository;
         readonly IAssetRepository assetRepository;
-        public MembershipController(CoreComponentSet set, IMembershipRepository membershipRepository, IAssetRepository assetRepository)
+        public MembershipController(CoreComponentSet set, IMembershipRepository membershipRepository, IAssetRepository assetRepository, ICachingProvider cache)
             : base(set)
         {
+            Cache = cache;
             this.membershipRepository = membershipRepository;
             this.assetRepository = assetRepository;
         }
