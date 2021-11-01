@@ -222,7 +222,6 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var useDistributedCache = GetBoolFlag(FeatureFlags.PERM_IS_DISTRIBUTED_CACHE);
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 string isValid = isPageSizeAndNumValid(queryParams);
