@@ -86,7 +86,7 @@ namespace d360.web
 
             #endregion
 
-            app.Use<CompanyIDCheckMiddleware>();
+            app.Use<CompanyIDCheckMiddleware>(); // This must be first, as it checks for active environments and clients.
             app.Use<UserIDCheckMiddleware>();
             app.Use<IpRestrictionMiddleware>();
             app.Use<ContractValidationMiddleware>();
