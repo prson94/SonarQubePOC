@@ -38,7 +38,11 @@ namespace d360.web
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
                     cnn.Open();
-                    dict = (await cnn.QueryAsync<cd>("select CompanyID, DomainSettingID, UrlPrefix from CompanyDomainSetting")).ToList();                                        
+                    dict = (await cnn.QueryAsync<cd>(@"
+select	S.CompanyID, S.DomainSettingID, S.UrlPrefix 
+from	CompanyDomainSetting S 
+		inner join Company E on E.ID = S.CompanyID and E.Status = 'Active'
+		inner join Client C on C.ID = E.ClientID and C.State = 1")).ToList();                                        
                 }
                 Cache.SetItem(key, dict, true, 5);
             }
