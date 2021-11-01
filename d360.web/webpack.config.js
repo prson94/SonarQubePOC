@@ -10,7 +10,6 @@ var webpackConfig = {
     mode: 'development',
     entry: {
         'polyfills': './scripts/polyfills.ts',
-        'vendor': './scripts/vendor.ts',
         'main': './scripts/main.ts',
     },
     performance: {
@@ -26,6 +25,18 @@ var webpackConfig = {
     optimization: {
         emitOnErrors: true,
         runtimeChunk: false,
+        splitChunks: {
+            cacheGroups: {
+                default: false,
+                defaultVendors: {
+                    test: /node_modules/,
+                    chunks: 'initial',
+                    name: 'vendor',
+                    enforce: true,
+                    filename: '[name].bundle.js'
+                },
+            }
+        }
     },
 
     plugins: [

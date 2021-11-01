@@ -9,7 +9,6 @@ var webpackConfig = {
     mode: 'production',
     entry: {
         'polyfills': './scripts/polyfills.ts',
-        'vendor': './scripts/vendor.ts',
         'main': './scripts/main.ts',
     },
 
@@ -17,12 +16,24 @@ var webpackConfig = {
         path: __dirname + '/scripts/dist/',
         publicPath: './scripts/dist/',
         filename: '[name].bundle.js',
-        chunkFilename: '[id].[hash].chunk.js'
+        chunkFilename: '[id].[fullhash].chunk.js'
     },
 
     optimization: {
         emitOnErrors: false,
         runtimeChunk: false,
+        splitChunks: {
+            cacheGroups: {
+                default: false,
+                defaultVendors: {
+                    test: /node_modules/,
+                    chunks: 'initial',
+                    name: 'vendor',
+                    enforce: true,
+                    filename: '[name].bundle.js'
+                },
+            }
+        }
     },
 
     plugins: [
