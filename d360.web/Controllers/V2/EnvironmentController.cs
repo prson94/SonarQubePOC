@@ -181,11 +181,6 @@ namespace d360.web.Controllers.V2
         ]
         public HttpResponseMessage Settings()
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-            }
-
             var queryParams = Request.GetQueryNameValuePairs();
             var _settingId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_settingid").Value;
             int? settingId = null;
