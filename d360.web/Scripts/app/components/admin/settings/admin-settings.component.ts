@@ -67,7 +67,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private companySettingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private featureFlagService: FeatureFlagsService,
         private searchService: SearchService,
         secondaryNavService: SecondaryNavService,

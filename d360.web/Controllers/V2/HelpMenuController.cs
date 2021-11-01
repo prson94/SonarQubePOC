@@ -99,14 +99,14 @@ namespace d360.web.Controllers.V2
                 {
                     foreach (var item in deleteRecords)
                     {
-                        var helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
+                        var helpItem = Company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
                         if (helpItem != null && helpItem.isSystem)
                         {
                             return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorDeletingDefaultHelpItem)).ConfigureAwait(false);
                         }
                         if (helpItem != null && !helpItem.isSystem)
                         {
-                            _company.HelpResources.Remove(helpItem);
+                            Company.HelpResources.Remove(helpItem);
                         }
                     }
                 }
@@ -114,7 +114,7 @@ namespace d360.web.Controllers.V2
                 {
                     foreach (var item in records)
                     {
-                        HelpResource helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
+                        HelpResource helpItem = Company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
 
                         if (item.Name.Trim() == "")
                         {
@@ -140,7 +140,7 @@ namespace d360.web.Controllers.V2
                         if (helpItem == null)
                         {
                             var uid = Guid.NewGuid();
-                            _company.HelpResources.Add(new HelpResource
+                            Company.HelpResources.Add(new HelpResource
                             {
                                 Name = item.Name,
                                 Description = item.Description,
@@ -165,7 +165,7 @@ namespace d360.web.Controllers.V2
                         }
                     }
                 }
-                _company.SaveChanges();
+                Company.SaveChanges();
 
                 return successMessageResponse(HttpStatusCode.OK, ApiMessages.HelpMenuUpdated, ApiMessages.HelpMenuSuccess);
             }
