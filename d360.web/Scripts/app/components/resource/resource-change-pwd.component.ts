@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-resource-change-pwd',
@@ -20,11 +21,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 })
 
 export class ResourceChangePwdComponent extends BaseComponent implements OnInit {
+
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
         private titleService: Title,
         private router: Router) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

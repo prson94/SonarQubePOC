@@ -259,7 +259,7 @@ namespace d360.web.Controllers
             var o = assetType.Object;
             return this.DynamicEditorEditFields(o, assetUid);
 
-            throw new Exception("Invalid or non implemented editor type");
+            throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
         }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
@@ -294,7 +294,7 @@ namespace d360.web.Controllers
                     }
                     return DynamicEditorEditFields(o, objectId);
             }
-            throw new Exception("Invalid or non implemented editor type");
+            throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
         }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
@@ -377,7 +377,7 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionUri_EditFields(oid);
                     break;
                 default:
-                    throw new Exception("Invalid or non implemented editor type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
             }
 
 
@@ -406,7 +406,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Issue Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.IssueTypeNotFound);
                     }
                 }
                 else if (objectType == SystemObjects.IssueTypeRelation.ToString())
@@ -418,7 +418,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Issue Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.IssueTypeNotFound);
                     }
                 }
                 else if (objectType == SystemObjects.IntersectType.ToString())
@@ -439,7 +439,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("Not valid Intersect Type Uid or Target Type Uid");
+                        throw new ArgumentException(FormControllerApiMessage.InvalidIntersectTypeAndTargetUID);
                     }
 
                 }
@@ -452,11 +452,11 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Asset Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.AssetTypeNotFound);
                     }
                 }
             }
-            throw new ArgumentException("Invalid Guid");
+            throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, ""));
 
         }
 
@@ -545,7 +545,7 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
                     break;
                 default:
-                    throw new Exception("Invalid or non implemented editor type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
 
             }
             res.MaxJsonLength = int.MaxValue;
@@ -596,7 +596,7 @@ namespace d360.web.Controllers
                 case "URI":
                     return EditServiceEndpointVersionUri(form);
                 default:
-                    throw new Exception("Invalid / unsupported edit type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditType);
             }
         }
 
@@ -645,7 +645,7 @@ namespace d360.web.Controllers
                 case "VERSION":
                     return DeleteCustomAPIVersion(form);
                 default:
-                    throw new Exception("Invalid / unsupported delete type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidDeleteType);
             }
         }
 
@@ -695,7 +695,7 @@ namespace d360.web.Controllers
                 case "URI":
                     return AddServiceEndpointVersionUri(form);
                 default:
-                    throw new Exception("Invalid / unsupported create type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidCreateType);
             }
         }
 
@@ -716,349 +716,6 @@ namespace d360.web.Controllers
                 Data = list,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
-        }
-
-        [Route("CompanySettings")]
-        public JsonNetResult CompanySettings()
-        {
-            var settings = SettingsRepository.GetSettings();
-            var model = new CompanySettingsEditorModel
-            {
-                DisableCommunityPosting = settings.GetValue<bool>(Setting.DisableCommunityPosting),
-                DisableIssueManagement = settings.GetValue<bool>(Setting.DisableIssueManagement),
-                EnableOrganizations = settings.GetValue<bool>(Setting.EnableOrganizations),
-                EnableShoppingCart = settings.GetValue<bool>(Setting.EnableShoppingCart),
-                DefaultRoute = settings.GetValue(Setting.DefaultRoute),
-                EnableSagacity = settings.GetValue<bool>(Setting.EnableSagacity),
-                EnableSearchExactMatch = settings.GetValue<bool>(Setting.SearchExactMatch),
-                HideData3SixtyUsers = settings.GetValue<bool>(Setting.HideData3SixtyUsers),
-                ShowAllUsersAPIKey = settings.GetValue<bool>(Setting.ShowAllUsersAPIKey),
-                WorkflowCatchAllGroup = settings.GetValue<int>(Setting.WorkflowCatchAllGroup),
-                WorkflowDigestEmailDays = settings.GetValue<int>(Setting.WorkflowDigestEmailDays),
-                MaxDropdownItems = settings.GetValue<int>(Setting.MaxDropdownItems),
-                WriteActionDescription = settings.GetValue<bool>(Setting.WriteActionDescription),
-                MaxExcelExportRows = settings.GetValue<int>(Setting.MaxExcelExportRows),
-                CurrentCompanyIconPath = settings.GetValue(Setting.CompanyIcon),
-                CurrentCompanyLogoPath = settings.GetValue(Setting.CompanyLogo),
-                DefaultSearchTypes = settings.GetValue(Setting.DefaultSearchTypes),
-                HeaderBackgroundColor = settings.GetValue(Setting.HeaderBackgroundColor),
-                ShowHomeAssignmentTile = settings.GetValue<bool>(Setting.ShowHomeAssignmentTile),
-                ShowHomeBoardTile = settings.GetValue<bool>(Setting.ShowHomeBoardTile),
-                ShowHomeActivityTile = settings.GetValue<bool>(Setting.ShowHomeActivityTile),
-                ShowHomePageTitle = settings.GetValue<bool>(Setting.ShowHomePageTitle),
-                HomePageTitleSize = settings.GetValue(Setting.HomePageTitleSize),
-                HomePageTitleColor = settings.GetValue(Setting.HomePageTitleColor),
-                HomePageBackgroundImage = settings.GetValue(Setting.HomePageBackgroundImage),
-                BrowserTitlePrefix = settings.GetValue(Setting.BrowserTitlePrefix),
-                AllowedOrigins = settings.GetValue(Setting.AllowedOrigins),
-                FramingDomains = settings.GetValue(Setting.FramingDomains),
-                AssetDefinitionColumnWidth = settings.GetValue<int>(Setting.AssetDefinitionColumnWidth),
-                HideHeaderBarControls = settings.GetValue<bool>(Setting.HideHeaderBarControls)
-            };
-            var ipRaw = settings.GetValue(Setting.IpRestriction);
-            if (!string.IsNullOrEmpty(ipRaw))
-            {
-                var ipXml = XElement.Parse(ipRaw);
-                var ips = ipXml.Elements("ip").Select(i => new CompanySettingsIpRestrictionEditorModel { Name = i.Element("name").Value, Start = i.Element("start").Value, End = i.Element("end").Value });
-                model.IpRestrictions.AddRange(ips);
-            }
-
-            IQueryable<SiteNav> siteNavs = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder);
-            model.SiteNav = siteNavs.ToList();
-
-            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [HttpPut, ValidateInput(false), Route("UpdateCompanySettings")]
-        public async Task<JsonResult> UpdateCompanySettings(CompanySettingsEditorModel formModel)
-        {
-            try
-            {
-                if (formModel == null) throw new NoFormDataException("company settings");
-
-                // Permissions validation.
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var settings = SettingsRepository.GetSettings();
-                SettingInfo currentSettingInfo = null;
-                Setting currentSetting;
-
-                Action<Setting, SettingInfo, bool> settingAction = (s, i, delete) =>
-                {
-                    if (delete)
-                    {
-                        SettingsRepository.DeleteSetting(s);
-                        settings.Remove(i);
-                    }
-                    else
-                    {
-                        SettingsRepository.UpsertSetting(s, i.Value);
-                    }
-                };
-
-                Action<Setting, string> settingActionValue = (s, newValue) =>
-                {
-                    currentSettingInfo = settings.Single(o => o.ID == s);
-                    currentSettingInfo.Value = newValue;
-                    settingAction(s, currentSettingInfo, !currentSettingInfo.IsOverridden);
-                };
-
-
-                #region Icon
-
-                currentSetting = Setting.CompanyIcon;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (formModel.SetIconToDefault)
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(formModel.CompanyIcon))
-                    {
-                        var iconMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyIcon);
-
-                        var iconMime = iconMatch.Groups["mime"].Value;
-                        var iconData = iconMatch.Groups["data"].Value;
-                        var iconExtension = MimeTypeExtensionsMap.GetExtension(iconMime);
-                        var iconByteArray = Convert.FromBase64String(iconData);
-                        using (var iconStream = new MemoryStream(iconByteArray))
-                        {
-                            var iconFileName = string.Format("{0}{1}", Company.CurrentCompanyID, iconExtension);
-                            await Storage.CreateFile(constants.COMPANY_ICON_FOLDER, iconFileName, iconStream);
-                            settingActionValue(currentSetting, $"{constants.COMPANY_ICON_URL}{iconFileName}");
-                        }
-                    }
-                }
-
-                #endregion
-
-                #region Logo
-
-                currentSetting = Setting.CompanyLogo;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (formModel.SetLogoToDefault)
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(formModel.CompanyLogo))
-                    {
-                        var logoMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyLogo);
-
-                        var logoMime = logoMatch.Groups["mime"].Value;
-                        var logoData = logoMatch.Groups["data"].Value;
-                        var logoExtension = MimeTypeExtensionsMap.GetExtension(logoMime);
-                        var logoByteArray = Convert.FromBase64String(logoData);
-                        using (var logoStream = new MemoryStream(logoByteArray))
-                        {
-                            var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_LOGO_FOLDER, $"{Company.CurrentCompanyID}.");
-                            filesToDelete.ForEach(f =>
-                            {
-                                Storage.DeleteFile(constants.COMPANY_LOGO_FOLDER, f).Wait();
-                            });
-
-                            var logoFileName = string.Format("{0}{1}", Company.CurrentCompanyID, logoExtension);
-                            await Storage.CreateFile(constants.COMPANY_LOGO_FOLDER, logoFileName, logoStream);
-                            settingActionValue(currentSetting, $"{constants.COMPANY_LOGO_URL}{logoFileName}");
-                        }
-                    }
-                }
-
-                #endregion
-
-                // Social
-                settingActionValue(Setting.DisableCommunityPosting, formModel.DisableCommunityPosting.ToString().ToLower());
-
-                #region Global Fields
-
-                settingActionValue(Setting.DisableIssueManagement, formModel.DisableIssueManagement.ToString().ToLower());
-                settingActionValue(Setting.DefaultRoute, (formModel.DefaultRoute ?? "").Trim());
-                settingActionValue(Setting.SearchExactMatch, formModel.EnableSearchExactMatch.ToString().ToLower());
-                settingActionValue(Setting.HideData3SixtyUsers, formModel.HideData3SixtyUsers.ToString().ToLower());
-                settingActionValue(Setting.ShowAllUsersAPIKey, formModel.ShowAllUsersAPIKey.ToString().ToLower());
-                settingActionValue(Setting.WorkflowCatchAllGroup, formModel.WorkflowCatchAllGroup.ToString());
-                settingActionValue(Setting.WorkflowDigestEmailDays, formModel.WorkflowDigestEmailDays.ToString());
-                settingActionValue(Setting.MaxDropdownItems, Math.Abs(formModel.MaxDropdownItems).ToString());
-                settingActionValue(Setting.WriteActionDescription, formModel.WriteActionDescription.ToString().ToLower());
-                settingActionValue(Setting.MaxExcelExportRows, Math.Abs(formModel.MaxExcelExportRows).ToString());
-
-                if (formModel.AssetDefinitionColumnWidth < 100)
-                {
-                    formModel.AssetDefinitionColumnWidth = 100;
-                }
-                if (formModel.AssetDefinitionColumnWidth > 1000)
-                {
-                    formModel.AssetDefinitionColumnWidth = 1000;
-                }
-
-                settingActionValue(Setting.AssetDefinitionColumnWidth, Math.Abs(formModel.AssetDefinitionColumnWidth).ToString());
-
-                #endregion
-
-                #region IP
-
-                currentSetting = Setting.IpRestriction;
-
-                var ipValidationCheckPassed = true;
-                if (formModel.IpRestrictions != null)
-                {
-                    var xml = new XElement("ips");
-                    foreach (var ip in formModel.IpRestrictions)
-                    {
-                        if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
-                        {
-                            ipValidationCheckPassed = false;
-                            break;
-                        }
-                        else
-                        {
-                            xml.Add(new XElement("ip",
-                                new XElement("name", ip.Name),
-                                new XElement("start", ip.Start),
-                                new XElement("end", ip.End)
-                            ));
-                        }
-                    }
-                    if (ipValidationCheckPassed)
-                    {
-                        settingActionValue(currentSetting, xml.ToString());
-                    }
-                    else
-                    {
-                        throw new MissingPropertiesException("IP Restrictions");
-                    }
-                }
-                else
-                {
-                    SettingsRepository.DeleteSetting(currentSetting);
-                }
-
-                #endregion
-
-                // Search
-                settingActionValue(Setting.DefaultSearchTypes, (formModel.DefaultSearchTypes ?? "").ToString());
-
-                // Header
-                settingActionValue(Setting.HeaderBackgroundColor, formModel.HeaderBackgroundColor);
-                settingActionValue(Setting.HideHeaderBarControls, formModel.HideHeaderBarControls.ToString().ToLower());
-
-                #region Home Page Customization
-
-                settingActionValue(Setting.ShowHomeAssignmentTile, formModel.ShowHomeAssignmentTile.ToString().ToLower());
-                settingActionValue(Setting.ShowHomeBoardTile, formModel.ShowHomeBoardTile.ToString().ToLower());
-                settingActionValue(Setting.ShowHomeActivityTile, formModel.ShowHomeActivityTile.ToString().ToLower());
-                settingActionValue(Setting.ShowHomePageTitle, formModel.ShowHomePageTitle.ToString().ToLower());
-                settingActionValue(Setting.BrowserTitlePrefix, formModel.BrowserTitlePrefix);
-
-                //prevent the user from entering special characters
-                var alphaNumericChars = "abcdefghijklmnopqrstuvwxyz0123456789";
-                var sizeAllowedChars = alphaNumericChars + ".";
-                var colorAllowedChars = alphaNumericChars + "#";
-
-                var safeSize = System.Text.RegularExpressions.Regex.Replace(formModel.HomePageTitleSize?.Trim() ?? "", $"[^{sizeAllowedChars}]", string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                var safeColor = System.Text.RegularExpressions.Regex.Replace(formModel.HomePageTitleColor?.Trim() ?? "", $"[^{colorAllowedChars}]", string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-                settingActionValue(Setting.HomePageTitleSize, safeSize);
-                settingActionValue(Setting.HomePageTitleColor, safeColor);
-
-                #region Home Page Background Image
-
-                currentSetting = Setting.HomePageBackgroundImage;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (formModel.ClearHomePageBackgroundImage)
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(formModel.HomePageBackgroundImage))
-                    {
-                        var imageMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.HomePageBackgroundImage);
-
-                        var imageMime = imageMatch.Groups["mime"].Value;
-                        var imageData = imageMatch.Groups["data"].Value;
-                        var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
-                        if (imageExtension == null)
-                        {
-                            return jsonException(string.Format("Invalid file type: {0} cannot be uploaded.", imageMime), HttpStatusCode.BadRequest);
-                        }
-                        var imageByteArray = Convert.FromBase64String(imageData);
-                        var imageGuid = Guid.NewGuid();
-
-                        using (var imageStream = new MemoryStream(imageByteArray))
-                        {
-                            var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_RESOURCES_FOLDER, $"{Company.CurrentCompanyID}.home.");
-                            filesToDelete.ForEach(f =>
-                            {
-                                Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, f).Wait();
-                            });
-
-                            var imageFileName = string.Format("{0}.home.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-                            await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
-
-                            settingActionValue(currentSetting, $"{constants.COMPANY_RESOURCES_URL}{imageFileName}");
-                        }
-                    }
-                }
-
-                #endregion
-
-                #endregion
-
-                #region Security
-
-                currentSetting = Setting.AllowedOrigins;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (string.IsNullOrWhiteSpace(formModel.AllowedOrigins))
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    var origins = formModel.AllowedOrigins
-                        .Split(',')
-                        .Select(o => o.Trim())
-                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
-                        .ToList();
-
-                    currentSettingInfo.Value = string.Join(",", origins);
-                    settingAction(currentSetting, currentSettingInfo, false);
-                }
-
-                currentSetting = Setting.FramingDomains;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (string.IsNullOrWhiteSpace(formModel.FramingDomains))
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    var domains = formModel.FramingDomains
-                        .Split(',')
-                        .Select(o => o.Trim())
-                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
-                        .ToList();
-
-                    currentSettingInfo.Value = string.Join(",", domains);
-                    settingAction(currentSetting, currentSettingInfo, false);
-                }
-
-                #endregion
-
-                return jsonSuccess("Settings successfully updated.", "0", "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.GetFullExceptionData(), HttpStatusCode.InternalServerError);
-            }
         }
 
         [HttpGet, Route("GetSiteNavFolderItems"), NonNullableParameters]
@@ -1400,7 +1057,7 @@ order by Sort, title";
                             UpdatedBy = Company.CurrentResourceID,
                             AssetTypeUid = assetTypeUid,
                             IntersectTypeUid = intersectTypeUid
-                        };
+                    };
 
                         xls = new SLDocument(stream);
 
@@ -2238,7 +1895,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var shortcut = Company.GetById<Shortcut>(id);
                 if (shortcut == null)
                 {
-                    throw new Exception($"Shortcut Id ${id} not found");
+                    throw new ArgumentNullException($"Shortcut Id ${id} not found");
                 }
 
                 direction = moveUp ? "up" : "down";
@@ -2253,7 +1910,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 }
 
                 if (adjacentShortcut == null)
-                    throw new Exception($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
+                    throw new ArgumentNullException($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
 
 
                 int newOrder = adjacentShortcut.DisplayOrder;

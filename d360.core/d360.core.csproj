@@ -15,7 +15,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.ComponentModel" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
   </ItemGroup>
 
@@ -24,6 +24,11 @@
       <DependentUpon>AssetTypeErrors.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\CommentErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CommentErrors.resx</DependentUpon>
     </Compile>
     <Compile Update="resources\CommonErrors.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -34,6 +39,11 @@
       <DependentUpon>CommonNames.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\CompanyContextErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyContextErrors.resx</DependentUpon>
     </Compile>
     <Compile Update="resources\DataQualityErrors.Designer.cs">
       <DependentUpon>DataQualityErrors.resx</DependentUpon>
@@ -60,6 +70,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Notifications.resx</DependentUpon>
     </Compile>
+    <Compile Update="resources\OthersError.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OthersError.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\Permissions.Designer.cs">
       <DependentUpon>Permissions.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -80,12 +95,21 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="resources\ExcelExports.Designer.cs">
+      <DependentUpon>ExcelExports.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="resources\AssetTypeErrors.resx">
       <LastGenOutput>AssetTypeErrors.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\CommentErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>CommentErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\CommonErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -94,6 +118,10 @@
     <EmbeddedResource Update="resources\CommonNames.resx">
       <LastGenOutput>CommonNames.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\CompanyContextErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>CompanyContextErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\DataQualityErrors.resx">
       <LastGenOutput>DataQualityErrors.Designer.cs</LastGenOutput>
@@ -118,6 +146,10 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Notifications.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Update="resources\OthersError.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>OthersError.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="resources\Permissions.resx">
       <LastGenOutput>Permissions.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -129,6 +161,10 @@
     <EmbeddedResource Update="resources\Types.resx">
       <SubType>Designer</SubType>
       <LastGenOutput>Types.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\ExcelExports.resx">
+      <LastGenOutput>ExcelExports.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Values.resx">

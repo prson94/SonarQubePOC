@@ -321,11 +321,11 @@
     <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encodings.Web.5.0.0\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Json.5.0.0\lib\net461\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.4.7.2\lib\net461\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -392,6 +392,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\AssetsApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssetsApiMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\CommentsAPIMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -417,6 +422,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>FieldInfo.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\FormControllerApiMessage.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FormControllerApiMessage.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\FormInfo.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -427,10 +437,40 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MetricsApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\RelationshipsApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RelationshipsApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\ResponsibilityApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ResponsibilityApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\ScoreApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScoreApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\SurverysApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SurverysApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\TagsApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TagsApiMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\Validation.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Validation.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\WorkflowApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>WorkflowApiMessages.resx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BaseMiddleware.cs" />
     <Compile Include="App_Start\ContentSecurityPolicyMiddleware.cs" />
@@ -800,15 +840,17 @@
     <Content Include="Content\styles\Tooltip.min.css">
       <DependentUpon>Tooltip.css</DependentUpon>
     </Content>
-    <Content Include="App_GlobalResources\ApiMessages.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\ApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ApiMessages.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </Content>
-    <Content Include="App_GlobalResources\ActionApiMessages.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\ActionApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ActionApiMessages.designer.cs</LastGenOutput>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <Content Include="App_GlobalResources\DataProfileAPIMessages.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>DataProfileAPIMessages.Designer.cs</LastGenOutput>
@@ -821,10 +863,51 @@
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>ConnectorLabelAPIMessage.Designer.cs</LastGenOutput>
     </Content>
-    <Content Include="App_GlobalResources\MetricsApiMessages.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\AssetsApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>AssetsApiMessages.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\FormControllerApiMessage.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FormControllerApiMessage.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\MetricsApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>MetricsApiMessages.Designer.cs</LastGenOutput>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>RelationshipsApiMessages.designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\WorkflowApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>WorkflowApiMessages.designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\TagsApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TagsApiMessages.designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\ResponsibilityApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ResponsibilityApiMessages.designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\ScoreApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScoreApiMessages.designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SurverysApiMessages.designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <EmbeddedResource Include="Content\Swagger\index.html" />
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -990,11 +1073,9 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\viewchange.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\search.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\alertpanel.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\ownerpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.html" />
@@ -1080,7 +1161,9 @@
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
+    <Content Include="Scripts\app\components\workflow\workflow-bulk-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
+    <Content Include="Scripts\app\components\workflow\workflow-form-fields.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
@@ -1181,8 +1264,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-object-detail.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.ts" />
@@ -1217,6 +1298,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\sidepanel\side-panel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\sidepanel\side-panel.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.module.ts" />
@@ -1456,12 +1538,14 @@
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.less" />
     <Content Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.less" />
     <Content Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.less" />
+    <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-form-fields.component.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\models\helpmenu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
@@ -1523,6 +1607,10 @@
     <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj">
       <Project>{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}</Project>
       <Name>d360.utils.company</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.utils.excel\d360.utils.excel.csproj">
+      <Project>{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}</Project>
+      <Name>d360.utils.excel</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -1587,7 +1675,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\viewchange.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\alertpanel.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\ownerpanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.ts" />
@@ -1829,7 +1916,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\overlay-window.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\shared-object-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\shared-relationship.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tiles.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\relationships\relationships.component.ts" />
@@ -2095,7 +2181,6 @@
     <TypeScriptCompile Include="Scripts\app\services\workflowmonitor.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\advanced-filter-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\environment-settings.ts" />
-    <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\form-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-constants.ts" />

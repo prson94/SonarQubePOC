@@ -15,6 +15,7 @@ import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     template: ''
@@ -236,9 +237,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         protected fieldsService: FieldsObservableService,
         protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         protected cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
     }
 
     loadConditions() {

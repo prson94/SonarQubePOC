@@ -567,7 +567,61 @@
   <data name="FilterExpressionParseError" xml:space="preserve">
     <value>Filter expression parse error</value>
   </data>
+  <data name="Invalid_PageNum" xml:space="preserve">
+    <value>Invalid _pageNum parameter passed in the request</value>
+  </data>
+  <data name="Invalid_PageSize" xml:space="preserve">
+    <value>Invalid _pageSize parameter passed in the request</value>
+  </data>
+  <data name="_PageSizeLimit" xml:space="preserve">
+    <value>Invalid _pageSize parameter passed in the request value is greater than the maximum supported value of 100,000.</value>
+  </data>
+  <data name="_PageSizePassedZeroLess" xml:space="preserve">
+    <value>Invalid _pageSize parameter passed in the request value is less than or equal to zero.</value>
+  </data>
+  <data name="EndpointMethod" xml:space="preserve">
+    <value>Endpoint Method</value>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>Invalid</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} is not valid uid!</value>
+  </data>
+  <data name="UidConstant" xml:space="preserve">
+    <value>Uid</value>
+  </data>
+  <data name="InvalidOrderRequese" xml:space="preserve">
+    <value>Invalid order passed in the request</value>
+  </data>
+  <data name="InvalidType" xml:space="preserve">
+    <value>Invalid Type</value>
+  </data>
+  <data name="FailedAuthentication" xml:space="preserve">
+    <value>Failed to authenticate. Oidc State not found in .</value>
+  </data>
+  <data name="FailedAuthenticationNonces" xml:space="preserve">
+    <value>Failed to authenticate. Nonces do not match.</value>
+  </data>
+  <data name="InvalidSortField" xml:space="preserve">
+    <value>Invalid sort field specified</value>
+  </data>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>Invalid sort order specified</value>
+  </data>
+  <data name="MissingConfigInfo" xml:space="preserve">
+    <value>Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority.</value>
+  </data>
   <data name="LookupFieldTypeInUse" xml:space="preserve">
     <value>There are existing assets in your environment with values on field '{0}'. You may not change 'Type of List' property until those field values are removed.</value>
+  </data>
+  <data name="HelpMenuSuccess" xml:space="preserve">
+    <value>Help Menu items successfully updated.</value>
+  </data>
+  <data name="HelpMenuUpdated" xml:space="preserve">
+    <value>Help Menu Updated.</value>
+  </data>
+  <data name="HelpMenuVisibilityError" xml:space="preserve">
+    <value>Item visibility must be set to 1, 2 or 3.</value>
   </data>
 </root>

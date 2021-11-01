@@ -23,6 +23,7 @@ using d360.core;
 using System.Text;
 using d360.core.entities.Metric;
 using Microsoft.Extensions.Hosting;
+using d360.extensions.mail;
 
 namespace igx.jobs.bulkloadprocessor
 {
@@ -50,8 +51,8 @@ namespace igx.jobs.bulkloadprocessor
             try
             {
                 #region Create EF connection
-                var _c = CoreFunction.GetCompaniesByCurrentSlot()
-                    .FirstOrDefault(x=> x.CompanyID == loadInfo.CompanyID);
+
+                var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x=> x.CompanyID == loadInfo.CompanyID);
 
                 var sec = new UriSecurityContextProvider()
                 {
@@ -61,11 +62,12 @@ namespace igx.jobs.bulkloadprocessor
                     IsAdministrator = true
                 };
                 var cache = new DummyCachingProvider();
+                var mail = new DummyMailProvider();
                 var queue = new AzureQueueSource();
                 var storage = new AzureStorageProvider();
                 var community = new CommunityContext(cache, queue, sec);
-                
-                var company = new CompanyContext(community, cache, queue, sec, storage, true);
+
+                var company = new CompanyContext(community, cache, queue, mail, sec, storage, true);
                 var assetRepository = new AssetRepository(company, queue, storage, community);
                 var relationshipRepository = new RelationshipRepository(community, company, queue, storage);
 

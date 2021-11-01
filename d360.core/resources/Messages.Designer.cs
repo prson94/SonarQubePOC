@@ -277,6 +277,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Item Not Found.
+        /// </summary>
+        public static string ItemNotFound {
+            get {
+                return ResourceManager.GetString("ItemNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This model type is assigned as a subject area to one or more artifacts and may not be removed..
         /// </summary>
         public static string TaxonomyType_Assigned {

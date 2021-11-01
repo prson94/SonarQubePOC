@@ -1,6 +1,6 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { CompanySettings, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState } from '../../../models/settings.model';
+import { CompanySettings, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState, CompanySettingEnum, SettingsPutModel } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SearchService } from '../../../services/search.service';
@@ -17,7 +17,7 @@ import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflag
 
 @Component({
     selector: 'admin-settings',
-    providers: [CompanySettingsService, SiteMenuService],
+    providers: [SiteMenuService],
     templateUrl: './admin-settings.component.html',
     styles: [`
         .remove {
@@ -73,10 +73,10 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         secondaryNavService: SecondaryNavService,
         private helpMenuService: HelpMenuService,
         titleService: Title,
-        private messagesService: MessagesObservableService,
+        private messagesService: MessagesObservableService
     ) {
 
-        super(headerBreadcrumbService, titleService, secondaryNavService);        
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);        
         this.areaName = StringConstants.Section_Settings;
         this.setCommonItems();
 
@@ -92,41 +92,69 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
     load(): void {
         this.isLoading = true;
-        this.companySettingsService.getSettings()
-            .subscribe(data => {
-                this.companyLogo = new CompanyImage();
-                this.companyIcon = new CompanyImage();
-                this.homePageImage = new CompanyImage();
-                delete data['EnableShoppingCart'];
 
-                this.companySettings = data;
+        this.companyLogo = new CompanyImage();
+        this.companyIcon = new CompanyImage();
+        this.homePageImage = new CompanyImage();
 
-                this.searchService.getSearchCategories(true, true).subscribe(cat => {
-                    this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes, cat);
+         // Translate to settings object for page editing.
+        this.companySettings.AllowedOrigins = this.getStringSetting(CompanySettingEnum.AllowedOrigins);
+        this.companySettings.AssetDefinitionColumnWidth = this.getNumberSetting(CompanySettingEnum.AssetDefinitionColumnWidth);
+
+        this.companySettings.BrowserTitlePrefix = this.getStringSetting(CompanySettingEnum.BrowserTitlePrefix);
+        this.companySettings.CurrentIconPath = this.getStringSetting(CompanySettingEnum.CompanyIcon);
+        this.companySettings.CurrentLogoPath = this.getStringSetting(CompanySettingEnum.CompanyLogo);
+        this.companySettings.DefaultRoute = this.getStringSetting(CompanySettingEnum.DefaultRoute);
+
+        this.companySettings.DefaultSearchTypes = this.getStringSetting(CompanySettingEnum.DefaultSearchTypes);
+        this.searchService.getSearchCategories(true, true).subscribe(cat => {
+            this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes, cat);
+        });
+        this.companySettings.DiagramMaxAvoidNodesLinkCount = this.getNumberSetting(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount);
+        this.companySettings.DisableCommunityPosting = this.getBooleanSetting(CompanySettingEnum.DisableCommunityPosting);
+        this.companySettings.DisableIssueManagement = this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement);
+        this.companySettings.FramingDomains = this.getStringSetting(CompanySettingEnum.FramingDomains);
+        this.companySettings.EnableOrganizations = this.getBooleanSetting(CompanySettingEnum.EnableOrganizations);
+        this.companySettings.EnableSearchExactMatch = this.getBooleanSetting(CompanySettingEnum.SearchExactMatch);
+        this.companySettings.HideData3SixtyUsers = this.getBooleanSetting(CompanySettingEnum.HideData3SixtyUsers);
+        this.companySettings.HideHeaderBarControls = this.getBooleanSetting(CompanySettingEnum.HideHeaderBarControls);
+        this.companySettings.HomePageBackgroundImage = this.getStringSetting(CompanySettingEnum.HomePageBackgroundImage);
+        this.companySettings.HomePageTitleColor = this.getStringSetting(CompanySettingEnum.HomePageTitleColor);
+        this.companySettings.HomePageTitleSize = this.getStringSetting(CompanySettingEnum.HomePageTitleSize);
+        this.companySettings.IpRestrictions = this.settingsService.getSettingById(CompanySettingEnum.IpRestriction).IpAddressSetting.Value ?? [];
+
+        this.companySettings.MaxDropdownItems = this.getNumberSetting(CompanySettingEnum.MaxDropdownItems);
+        this.companySettings.MaxExcelExportRows = this.getNumberSetting(CompanySettingEnum.MaxExcelExportRows);
+        this.companySettings.ShowAllUsersAPIKey = this.getBooleanSetting(CompanySettingEnum.ShowAllUsersAPIKey);
+        this.companySettings.ShowHomeActivityTile = this.getBooleanSetting(CompanySettingEnum.ShowHomeActivityTile);
+        this.companySettings.ShowHomeAssignmentTile = this.getBooleanSetting(CompanySettingEnum.ShowHomeAssignmentTile);
+        this.companySettings.ShowHomeBoardTile = this.getBooleanSetting(CompanySettingEnum.ShowHomeBoardTile);
+        this.companySettings.ShowHomePageTitle = this.getBooleanSetting(CompanySettingEnum.ShowHomePageTitle);
+        this.companySettings.SiteNav.forEach(s => {
+            s.IsCustom = (s.Name.indexOf('#') != 0)
+        });
+        this.companySettings.WorkflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
+        this.companySettings.WorkflowDigestEmailDays = this.getNumberSetting(CompanySettingEnum.WorkflowDigestEmailDays);
+        this.companySettings.WriteActionDescription = this.getBooleanSetting(CompanySettingEnum.WriteActionDescription);
+
+        this.settingsService.getGroups()
+            .subscribe(x => {
+                this.groups = x.map(x => {
+                    return { label: x.label, value: +x.value }
                 });
-                
-                this.companySettings.SiteNav.forEach(s => {
-                    s.IsCustom = (s.Name.indexOf('#') != 0)
-                });
-                this.companySettingsService.getGroups()
-                    .subscribe(x => {
-                        this.groups = x.map(x => {
-                            return { label: x.label, value: +x.value }
-                        });
-                        this.groups.unshift({ label: '[Administrators]', value: 0 });
-                        this.isLoading = false;
-                    });
-                this.secondaryNavService.clearButtons();
-                this.SaveButton = new DynamicButton("Save Changes");
-                this.secondaryNavService.showButton(this.SaveButton);
-                this.SaveButton.dynamicCallback = () => {
-                    this.SaveButton.disabled = true;
-                    this.SaveButton.isLoading = true;
-                    this.save();
-                };
-            })
+                this.groups.unshift({ label: '[Administrators]', value: 0 });
+                this.isLoading = false;
+            });
+        this.secondaryNavService.clearButtons();
+        this.SaveButton = new DynamicButton("Save Changes");
+        this.secondaryNavService.showButton(this.SaveButton);
+        this.SaveButton.dynamicCallback = () => {
+            this.SaveButton.disabled = true;
+            this.SaveButton.isLoading = true;
+            this.save();
+        };
 
-        this.companySettingsService.getRebuildRequestStatuses()
+        this.settingsService.getRebuildRequestStatuses()
             .subscribe(data => {
                 this.rebuildStatuses = data;
             });
@@ -146,16 +174,204 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.helpMenuService.updateHelpMenuItems(this.items, this.deletedRecords).subscribe((r) => {
         });
 
-        this.companySettingsService.putSettings(this.companySettings)
-            .subscribe(data => {                
-                this.isLoading = false;
-                let type = data.type;
-                if (type && type === "error") {
-                    this.messagesService.showError("Problem Saving settings", data.message);
-                } else {
-                    window.location.reload();
-                }
+        //#region Translate to settings array for v2 API.
+
+        let settings: SettingsPutModel[] = [];
+
+        settings.push({
+            SettingID: CompanySettingEnum.AllowedOrigins,
+            StringSetting: { Value: this.companySettings.AllowedOrigins },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.AssetDefinitionColumnWidth,
+            NumberSetting: { Value: this.companySettings.AssetDefinitionColumnWidth },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, StringSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.BrowserTitlePrefix,
+            StringSetting: { Value: this.companySettings.BrowserTitlePrefix  },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        if (this.companyIcon.dataUrl && !this.companySettings.SetIconToDefault) {
+            settings.push({
+                SettingID: CompanySettingEnum.CompanyIcon,
+                StringSetting: { Value: this.companyIcon.dataUrl },
+                BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
             });
+        }
+        else if (this.companySettings.SetIconToDefault) {
+            settings.push({
+                SettingID: CompanySettingEnum.CompanyIcon,
+                StringSetting: { Value: null },
+                BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+            });
+        }
+        if (this.companyLogo.dataUrl && !this.companySettings.SetLogoToDefault) {
+            settings.push({
+                SettingID: CompanySettingEnum.CompanyLogo,
+                StringSetting: { Value: this.companyLogo.dataUrl },
+                BooleanSetting: null,
+                GuidSetting: null,
+                IpAddressSetting: null,
+                NumberSetting: null
+            });
+        }
+        else if (this.companySettings.SetLogoToDefault) {
+            settings.push({
+                SettingID: CompanySettingEnum.CompanyLogo,
+                StringSetting: { Value: null },
+                BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+            });
+        }
+        settings.push({
+            SettingID: CompanySettingEnum.DefaultRoute,
+            StringSetting: { Value: this.companySettings.DefaultRoute },
+            BooleanSetting: null,
+            GuidSetting: null,
+            IpAddressSetting: null,
+            NumberSetting: null
+        });
+        let defaultSearchTypes = SettingsHelper.searchTypeListToString(this.searchTypes);
+        settings.push({
+            SettingID: CompanySettingEnum.DefaultSearchTypes,
+            StringSetting: { Value: defaultSearchTypes },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.DisableCommunityPosting,
+            BooleanSetting: { Value: this.companySettings.DisableCommunityPosting },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.DisableIssueManagement,
+            BooleanSetting: { Value: this.companySettings.DisableIssueManagement },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.EnableOrganizations,
+            BooleanSetting: { Value: this.companySettings.EnableOrganizations },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.SearchExactMatch,
+            BooleanSetting: { Value: this.companySettings.EnableSearchExactMatch },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.FramingDomains,
+            StringSetting: { Value: this.companySettings.FramingDomains },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.HideData3SixtyUsers,
+            BooleanSetting: { Value: this.companySettings.HideData3SixtyUsers },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.HideHeaderBarControls,
+            BooleanSetting: { Value: this.companySettings.HideHeaderBarControls },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        if (this.homePageImage.dataUrl && !this.companySettings.ClearHomePageBackgroundImage) {
+            settings.push({
+                SettingID: CompanySettingEnum.HomePageBackgroundImage,
+                StringSetting: { Value: this.homePageImage.dataUrl },
+                BooleanSetting: null,
+                GuidSetting: null,
+                IpAddressSetting: null,
+                NumberSetting: null
+            });
+        }
+        else if (this.companySettings.ClearHomePageBackgroundImage) {
+            settings.push({
+                SettingID: CompanySettingEnum.HomePageBackgroundImage,
+                StringSetting: { Value: null },
+                BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+            });
+        }
+        settings.push({
+            SettingID: CompanySettingEnum.HomePageTitleColor,
+            StringSetting: { Value: this.companySettings.HomePageTitleColor },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.HomePageTitleSize,
+            StringSetting: { Value: this.companySettings.HomePageTitleSize },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.IpRestriction,
+            IpAddressSetting: { Value: this.companySettings.IpRestrictions },
+            BooleanSetting: null, GuidSetting: null, NumberSetting: null, StringSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.MaxDropdownItems,
+            NumberSetting: { Value: this.companySettings.MaxDropdownItems },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, StringSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.MaxExcelExportRows,
+            NumberSetting: { Value: this.companySettings.MaxExcelExportRows },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, StringSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.ShowAllUsersAPIKey,
+            BooleanSetting: { Value: this.companySettings.ShowAllUsersAPIKey },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.ShowHomeActivityTile,
+            BooleanSetting: { Value: this.companySettings.ShowHomeActivityTile },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.ShowHomeAssignmentTile,
+            BooleanSetting: { Value: this.companySettings.ShowHomeAssignmentTile },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.ShowHomeBoardTile,
+            BooleanSetting: { Value: this.companySettings.ShowHomeBoardTile },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.ShowHomePageTitle,
+            BooleanSetting: { Value: this.companySettings.ShowHomePageTitle },
+            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.WriteActionDescription,
+            BooleanSetting: { Value: this.companySettings.WriteActionDescription },
+            GuidSetting: null, IpAddressSetting: null, NumberSetting: null, StringSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.WorkflowCatchAllGroup,
+            NumberSetting: { Value: this.companySettings.WorkflowCatchAllGroup },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, StringSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.WorkflowDigestEmailDays,
+            NumberSetting: { Value: this.companySettings.WorkflowDigestEmailDays },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, StringSetting: null
+        });
+
+        //#endregion
+
+        this.settingsService.putSettings(settings)
+            .subscribe(
+                (data) => {
+                    this.isLoading = false;
+                    this.SaveButton.disabled = false;
+                    this.SaveButton.isLoading = false;
+                    if (data && data.type === "error") {
+                        this.messagesService.showError(data.title, data.message);
+                    }
+                    else {
+                        window.location.reload();
+                    }
+                }
+            );
     }
 
     validateRoute() {
@@ -172,7 +388,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
     rebuild(model: CompanyRebuildJobStatusApiModel) {
         model.state = CompanyRebuildJobStatusState.Active;
-        this.companySettingsService.postRebuildRequest(model.jobToken)
+        this.settingsService.postRebuildRequest(model.jobToken)
             .subscribe(data => {
                 if (data.type && data.type === "error") {
                     this.messagesService.showError("Problem with Rebuild", data.message);

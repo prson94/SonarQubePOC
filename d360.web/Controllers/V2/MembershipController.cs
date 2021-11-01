@@ -34,6 +34,7 @@ using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
 using d360.core.enums;
 using Resources;
+using d360.extensions;
 
 namespace d360.web.Controllers.V2
 {
@@ -212,7 +213,7 @@ namespace d360.web.Controllers.V2
                     gr.LastLoggedInOn, 
                     case gr.State 
                          when 1 then 'Active'
-                         when 2 then 'InActive'
+                         when 2 then 'Inactive'
                          when 3 then 'Deleted' end as State,
                     gr.CreatedOn");
                 }
@@ -379,7 +380,7 @@ namespace d360.web.Controllers.V2
 
                     simpleFilters.Add(@"(case gr.State 
                      when 1 then 'Active'
-                     when 2 then 'InActive'
+                     when 2 then 'Inactive'
                      when 3 then 'Deleted' end) like @simpleFilter");
                     queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
                 }
@@ -638,7 +639,7 @@ namespace d360.web.Controllers.V2
                                 as [Owner],
                                 case gr.State 
                                     when 1 then 'Active' 
-                                    when 2 then 'InActive'
+                                    when 2 then 'Inactive'
                                     when 3 then 'Deleted' end 
                                 as State ");
             var countBuilder = new StringBuilder();
@@ -1990,8 +1991,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                     select @apiKey as apiKey, @apisecret as apiSecret", new { Company.CurrentResourceID }).FirstOrDefault();
 
-                var cache = new MemoryCachingProvider();
-                var users = cache.GetItem<ConcurrentBag<usercompany>>("Users");
+                var users = Cache.GetItem<ConcurrentBag<usercompany>>("Users");
 
                 if (users != null)
                 {

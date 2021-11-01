@@ -5,12 +5,60 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.utility.GetIntersectTypesByType-v5">
+  <changeSet author="MDonato" id="Function.utility.GetIntersectTypesByType-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [utility].[GetIntersectTypesByType]  
+(
+	@assetTypeUid uniqueidentifier
+)
+RETURNS TABLE   
+AS  
+RETURN   
+(
+	select	top 100
+			'I' as type,
+			*  
+	from	(
+			select	Uid,  
+					cast(Uid as varchar(36)) + '|' + cast(ObjectUid as varchar(36)) + '|2' as value,  
+					coalesce(
+						UPPER(LEFT(PredicateName, 1)) + LOWER(SUBSTRING(PredicateName, 2, LEN(PredicateNAME))),   
+						'relates to'  
+					) + ' ' + ObjectAssetTypePath + ' (->)' as title  
+			from	IntersectTypeDetail
+			where	SubjectUid = @assetTypeUid and PredicateType not in (15,16,17)
+			
+			union  
+   
+			select	Uid,
+					cast(Uid as varchar(36)) + '|' + cast(SubjectUid as varchar(36)) + '|1' as value,  
+					coalesce(
+						UPPER(LEFT(PredicateInverse, 1)) + LOWER(SUBSTRING(PredicateInverse, 2, LEN(PredicateInverse))), 
+						'is related to'
+					) + ' ' + SubjectAssetTypePath + ' (<-)' as title  
+			from	IntersectTypeDetail  
+			where	ObjectUid = @assetTypeUid and PredicateType not in (15,16,17)
+
+			union
+
+			select	Uid,  
+					cast(Uid as varchar(36)) + '|' + cast(ObjectUid as varchar(36)) + '|3' as value,  
+					coalesce(
+						UPPER(LEFT(PredicateName, 1)) + LOWER(SUBSTRING(PredicateName, 2, LEN(PredicateNAME))) + ' or ' + UPPER(LEFT(PredicateInverse, 1)) + LOWER(SUBSTRING(PredicateInverse, 2, LEN(PredicateInverse))),   
+						'relates to or is related to'  
+					) + ' ' + ObjectAssetTypePath + ' (<->)' as title  
+			from	IntersectTypeDetail
+			where	SubjectUid = @assetTypeUid and SubjectUid = ObjectUid and PredicateType in (6,7,9,14)
+   ) O order by title 
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter function [utility].[GetIntersectTypesByType]  
 (
 	@assetTypeUid uniqueidentifier
@@ -53,43 +101,6 @@ RETURN
 					) + ' ' + ObjectName + ' (<->)' as title  
 			from	IntersectTypeDetail
 			where	SubjectUid = @assetTypeUid and SubjectUid = ObjectUid and PredicateType in (6,7,9,14)
-   ) O order by title 
-)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-create or alter function [utility].[GetIntersectTypesByType]  
-(
-	@assetTypeUid uniqueidentifier
-)
-RETURNS TABLE   
-AS  
-RETURN   
-(  
-	select	top 100
-			'I' as type,
-			*  
-	from	(
-			select	Uid,  
-					cast(Uid as varchar(36)) + '|' + cast(ObjectUid as varchar(36)) + '|2' as value,  
-					coalesce(
-						UPPER(LEFT(PredicateName, 1)) + LOWER(SUBSTRING(PredicateName, 2, LEN(PredicateNAME))),   
-						'relates to'  
-					) + ' ' + ObjectName + ' (->)' as title  
-			from	IntersectTypeDetail
-			where	SubjectUid = @assetTypeUid and PredicateType not in (15,16,17)
-			
-			union  
-   
-			select	Uid,
-					cast(Uid as varchar(36)) + '|' + cast(SubjectUid as varchar(36)) + '|1' as value,  
-					coalesce(
-						UPPER(LEFT(PredicateInverse, 1)) + LOWER(SUBSTRING(PredicateInverse, 2, LEN(PredicateInverse))), 
-						'related to'
-					) + ' ' + SubjectName + ' (<-)' as title  
-			from	IntersectTypeDetail  
-			where	ObjectUid = @assetTypeUid and PredicateType not in (15,16,17)
    ) O order by title 
 )
 		]]>

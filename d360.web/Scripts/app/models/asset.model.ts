@@ -78,7 +78,6 @@ export class AssetType {
     ParentUid: string;
     Notes: string;
     UseAsTransformation: boolean;
-    CanOwnFusion: boolean;
     IconStyle: IconStyle = new IconStyle();
     Hierarchy: Hierarchy = new Hierarchy();
     FusionID: number;
@@ -110,7 +109,6 @@ export class AssetTypeApiModel {
     ParentUid: string;
     Notes: string;
     UseAsTransformation: boolean;
-    CanOwnFusion: boolean;
     Hierarchical: boolean;
     HierarchyMaximumDepth: number;
     FlowObjectType: FlowObjectType;

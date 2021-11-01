@@ -6,6 +6,7 @@ import { MessagesObservableService } from "../../../services/messages-observable
 import { SocialService } from "../../../services/social.service";
 import { BaseComponent } from "../base.component";
 import * as _ from "lodash";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: "d3s-comment-form",
@@ -23,10 +24,12 @@ export class CommentFormComponent extends BaseComponent {
 
     originalComment: CommentDetail;
 
-    constructor(private authenticationService: AuthenticationService,
-        private socialService: SocialService,
-        protected messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private authenticationService: AuthenticationService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private socialService: SocialService) {
+        super(settingsService);
         this.comment = new CommentDetail();
         this.comment.Tags = [];
     }

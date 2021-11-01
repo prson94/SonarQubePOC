@@ -7,6 +7,7 @@ import {GroupService} from '../../services/group.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
 import {GroupEditorModel} from '../../models/group.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import { CompanySettingsService } from '../../services/settings.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -42,11 +43,14 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
     private groupId: number;
     private groupUid: string;
 
-    constructor(private route: ActivatedRoute,
-                private router: Router,
-                private groupService: GroupService,
-                protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
-        super();
+    constructor(
+        private groupService: GroupService,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
+        protected titleService: Title,
+        private route: ActivatedRoute,
+        private router: Router) {
+        super(settingsService);
     }
 
     ngOnInit() {

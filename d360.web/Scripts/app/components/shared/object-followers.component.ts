@@ -1,5 +1,6 @@
 ﻿
 import {Component, Input, Output, EventEmitter} from '@angular/core';
+import { CompanySettingsService } from '../../services/settings.service';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
@@ -18,8 +19,8 @@ export class ObjectFollowersComponent extends BaseComponent {
     @Input() showDetails: boolean = false;
     @Output() showDetailsChange = new EventEmitter();
 
-    constructor() {
-        super();
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     toggleDetails() {

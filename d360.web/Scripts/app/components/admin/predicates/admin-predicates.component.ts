@@ -7,6 +7,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-predicates-component',
@@ -99,13 +100,15 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     selected: Predicate = null;
     theDeleteCallback: Function;
 
-    constructor(private predicatesService: PredicatesService,
+    constructor(
+        private predicatesService: PredicatesService,
         private messagesService: MessagesObservableService,
-        secondaryNavService: SecondaryNavService,        
+        protected settingsService: CompanySettingsService,
+        secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.theDeleteCallback = this.deletePredicate.bind(this);        
         this.areaName = StringConstants.Section_Predicates;
         this.setCommonItems();        

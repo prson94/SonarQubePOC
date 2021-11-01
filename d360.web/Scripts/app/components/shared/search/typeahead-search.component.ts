@@ -6,8 +6,6 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SearchSession } from '../../search/search-session';
 import { SubscriptionLike as ISubscription, Subject } from 'rxjs';
 
-declare var CompanySettings;
-
 @Component({
     selector: 'd3s-header-typeahead-search',
     templateUrl: 'typeahead-search.component.html',
@@ -39,10 +37,11 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     constructor(
         private router: Router,
+        private settingsService: CompanySettingsService,
         private typeaheadSearchService: TypeaheadSearchService,
         private ref: ChangeDetectorRef
     ) {
-        this.defaultSearchOptions = CompanySettings.DefaultSearchTypes ? CompanySettings.DefaultSearchTypes.split(',') : [];
+        this.defaultSearchOptions = (settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).ScalarValue ?? "").split(',');
         this.endSearchAllOption = new SearchResult();
         this.endSearchAllOption.Type = this.endSearchAllTypeToken;
     }
@@ -171,6 +170,8 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { DialogModule } from 'primeng/dialog';
 import { SharedModule } from 'primeng/api';
 import { AssetPathWidgetModule } from '../../search/asset-path-widget/asset-path-widget.module';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 
 

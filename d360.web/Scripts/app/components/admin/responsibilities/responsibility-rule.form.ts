@@ -15,6 +15,7 @@ import { ObjectDetailService } from "../../../services/object-detail.service";
 import { BaseComponent } from "../../shared/base.component";
 import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 
 @Component({
@@ -84,8 +85,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     errorMessage: string = "";
 
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
-        super();
+    constructor(
+        private responsibilityTypeService: ResponsibilityTypeService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private objectDetailService: ObjectDetailService
+    ) {
+        super(settingsService);
     }
 
     ngOnInit() {

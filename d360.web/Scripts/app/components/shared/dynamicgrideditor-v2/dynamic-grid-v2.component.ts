@@ -4,6 +4,7 @@ import { GridDefinitionService } from '../../../services/grid-definition.service
 import { UriBasedService } from '../../../services/uri-based.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
@@ -141,8 +142,13 @@ export class DynamicGridComponentV2 extends BaseComponent implements OnChanges {
         return this.columns.map(c => c.datafield);
     }
 
-    constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private gridDefinitionService: GridDefinitionService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private uriBasedService: UriBasedService
+        ) {
+        super(settingsService);
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 

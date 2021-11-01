@@ -89,7 +89,6 @@ namespace igx.UpdateDatabases
                 #region
 
                 var document = new SLDocument();
-                document.DeleteWorksheet(SLDocument.DefaultFirstSheetName);
 
                 var rowNumbers = new Dictionary<string, int>();
                 int ix = 1;
@@ -99,6 +98,8 @@ namespace igx.UpdateDatabases
                     document.AddWorksheet($"Query {ix}");
                     ix++;
                 }
+
+                document.DeleteWorksheet(SLDocument.DefaultFirstSheetName);
 
                 #endregion
 

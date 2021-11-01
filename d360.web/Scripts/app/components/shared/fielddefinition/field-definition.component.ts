@@ -5,6 +5,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FieldTypeAPIModel, FieldTypeAPIModelField, FieldDisplayModel, FieldType } from '../../../models/fieldtype-api.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 
 @Component({
@@ -53,8 +54,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     private theDeleteCallback: Function;
     public hasKeyFields: boolean = false;
 
-    constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private fieldsService: FieldsObservableService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
         this.theDeleteCallback = this.deleteFieldType.bind(this);
     }
 

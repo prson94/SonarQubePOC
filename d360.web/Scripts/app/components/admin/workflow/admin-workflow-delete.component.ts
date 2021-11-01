@@ -3,6 +3,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
 
 import * as _ from 'lodash';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-workflow-delete',
@@ -30,8 +31,10 @@ export class AdminWorkflowDeleteComponent extends BaseComponent implements OnIni
     @Output() onComplete = new EventEmitter();
 
 
-    constructor(private workflowService: WorkflowService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService) {
+        super(settingsService);
     }
 
     ngOnInit() {

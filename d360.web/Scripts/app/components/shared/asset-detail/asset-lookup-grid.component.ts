@@ -9,6 +9,7 @@ import { Subscription } from "rxjs";
 import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { AssetTypeClass, State } from "../../../models/asset.model";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 declare var CurrentResourceID;
 
@@ -55,9 +56,10 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     constructor(private router: Router,
         private assetService: AssetService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
 
     }
 

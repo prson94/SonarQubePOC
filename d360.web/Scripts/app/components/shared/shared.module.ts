@@ -38,9 +38,9 @@ import { ObjectFollowersComponent } from './object-followers.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { UserListComponent } from './user/user-list.component';
-import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.component';
 import { SiteModalModule } from './modal/gov-modal.module';
 import { AssetDetailModule } from './asset-detail/asset-detail.module';
+import { ResourceMultiSelectGridModule } from './resource-multiselect-grid.component';
 
 @NgModule({
     declarations: [                           
@@ -50,8 +50,7 @@ import { AssetDetailModule } from './asset-detail/asset-detail.module';
         ObjectFollowersComponent,                          
         ResourceResponsibilityComponent,        
         ResourceResponsibilityGridComponent,      
-        UserListComponent,
-        ResourceMultiSelectGridComponent
+        UserListComponent
     ],
     exports: [                                                                                                                                        
         GroupMembersComponent,                             
@@ -60,8 +59,7 @@ import { AssetDetailModule } from './asset-detail/asset-detail.module';
         ObjectFollowersComponent,                                 
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,               
-        UserListComponent,    
-        ResourceMultiSelectGridComponent
+        UserListComponent
         ]
     , imports: [
         CommonModule,
@@ -97,6 +95,7 @@ import { AssetDetailModule } from './asset-detail/asset-detail.module';
         AssetDetailModule,
         AdvancedFiltersModule,
         SearchFieldModule,
+        ResourceMultiSelectGridModule,
     ],
     providers: [
         {
@@ -106,4 +105,4 @@ import { AssetDetailModule } from './asset-detail/asset-detail.module';
     ]
 })
 
-export class D3SSharedModule { }
+export class D3SSharedModule {}

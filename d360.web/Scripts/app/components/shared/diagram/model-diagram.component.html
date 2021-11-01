@@ -1,54 +1,51 @@
 <div class="row">
-    <div class="col s12">
-        <div class="tile tile-detail">
-            <header>
-                <span>Hierarchy</span>
-                <span *ngIf="isLoading"
-                      id="LoadingProgress"
-                      style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
-                <d3s-tile-actions (menuClick)="menuAction($event)"
-                                  [menuItems]="menuItems"
-                                  hasMenu="true"></d3s-tile-actions>
-            </header>
-            <div style="position:relative;left: 100%; display: inline; width: 1px; top: 5px">
-                <d3s-overlay-window [(visible)]="isWindowVisible"
-                                    [headerText]="(selectedNode != null) ? headerText : ''"
-                                    maxHeight="400"
-                                    padding="15"
-                                    width="500">
-                    <div *ngIf="selectedNode == null">Nothing selected</div>
-                    <ul *ngIf="selectedNode != null" class="tab-menu">
-                        <li (click)="selectTab('info')"
-                            *ngIf="selectedNode != null"
-                            [class.selected]="tab == 'info'"
-                            class="tab-item"><i class="fa fa-info-circle fa-2x"></i></li>
-                        <li (click)="selectTab('user')"
-                            *ngIf="selectedNode != null"
-                            [class.selected]="tab == 'user'"
-                            class="tab-item"><i class="fa fa-user fa-2x"></i></li>
-                        <li (click)="selectTab('relations')"
-                            *ngIf="selectedNode != null"
-                            [class.selected]="tab == 'relations'"
-                            class="tab-item"><i class="fa fa-retweet fa-2x"></i></li>
-                    </ul>
-                    <div [ngSwitch]="tab">
-                        <div *ngSwitchCase="'info'">
-                            <d3s-lineage-object-detail *ngIf="selectedNode != null"
-                                                       [objectId]="(selectedNode.key == 0) ? id : selectedNode.key"
-                                                       [objectType]="(selectedNode.key == 0) ? 'TaxonomyType' : 'Taxonomy'"></d3s-lineage-object-detail>
-                        </div>                        
-                        <div *ngSwitchCase="'relations'">
-                            <d3s-lineage-relations *ngIf="selectedNode != null" [objectId]="selectedNode.key"
-                                                   objectType="Taxonomy"></d3s-lineage-relations>
+    <div>
+        <div class="col s12" style="display:flex;">
+            <div class="tile tile-detail main-panel no-padding">
+                <div class="diagram-top-header">
+                    <div class="flex-row">
+                        <div class="title">
+                            Hierarchy
+                            <span *ngIf="isLoading"
+                                  id="LoadingProgress"
+                                  style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
+                        </div>
+                        <div class="flex-grow"></div>
+                        <div class="button-wrapper">
+                            <button igButton icon="fa-refresh" (click)="populateDiagram()" tooltip="Refresh"></button>
                         </div>
                     </div>
-                </d3s-overlay-window>
-            </div>
+                </div>
 
-            <div #diagram
-                 class="diagram"
-                 id="HierarchyDiagram"
-                 style="overflow: hidden;"></div>
+                <div #diagram
+                     class="diagram"
+                     id="HierarchyDiagram"
+                     style="overflow: hidden;"></div>
+            </div>
+            <div class="tile tile-detail side-panel">
+                <side-panel (expandedChange)="sidePanelOpen=$event"
+                            hasDetail="true"
+                            [storageKey]="sidePanelStorageKey"
+                            [showEmptyOverlay]="!selectedNode?.uid">
+                    <ng-container *ngIf="sidePanelOpen">
+                        <ng-container *ngIf="selectedNode?.uid">
+                            <ig-asset-detail [objectUID]="selectedNode?.uid"
+                                             [objectType]="selectedNode?.object"
+                                             [useAccordion]="true"
+                                             [shouldBePadded]="false"
+                                             [showHeaderLine]="false"
+                                             [showHeader]="true"
+                                             [spacerHeight]="'16px'"
+                                             [paddingLeft]="'11px'"
+                                             [tooltipAlign]="'left'"
+                                             [isSidePanel]="true"
+                                             [hasAddRelationshipsPermissions]="false"
+                                             [hasModifyRelationshipsPermissions]="false"
+                                             [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                        </ng-container>
+                    </ng-container>
+                </side-panel>
+            </div>
         </div>
     </div>
-</div>
+</div> 

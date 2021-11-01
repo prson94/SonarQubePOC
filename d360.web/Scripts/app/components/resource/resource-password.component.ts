@@ -5,6 +5,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { UriBasedService } from '../../services/uri-based.service';
 import { ResourceApiModel } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-resource-password',
@@ -74,8 +75,9 @@ export class ResourcePasswordComponent extends BaseComponent{
         private uriBasedService: UriBasedService,
         private resourcesService: ResourcesService,
         private route: ActivatedRoute,
-        protected messagesService: MessagesObservableService) {
-        super();
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     save() {

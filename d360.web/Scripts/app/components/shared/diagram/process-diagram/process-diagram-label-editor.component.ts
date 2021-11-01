@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.
 
 import { ConnectorLabelService } from '../../../../services/connectorLabel.service';
 import { Subscription } from 'rxjs';
+import { CompanySettingsService } from '../../../../services/settings.service';
 @Component({
     selector: 'd3s-process-diagram-label-editor',
     templateUrl: './process-diagram-label-editor.component.html',
@@ -23,9 +24,10 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         private cdRef: ChangeDetectorRef,
-        private connectorLabelService: ConnectorLabelService
+        private connectorLabelService: ConnectorLabelService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
 

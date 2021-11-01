@@ -3,13 +3,13 @@ import { ObjectDetailService } from '../../services/object-detail.service';
 import { BaseComponent } from '../shared/base.component';
 import { NymType } from '../../models/object-detail.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
     selector: 'd3s-admin-nym-allocations',
     providers: [ObjectDetailService],
-    encapsulation: ViewEncapsulation.None,
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
@@ -39,11 +39,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
                         (click)="save()"></button>
             </div>
         </div>
-    `,
-    styles: [`
-        .nym-row:hover { background-color:white !important; }
-        .nym-row .p-checkbox { pointer-events: all !important; }
-    `]
+    `
 })
 
 export class AdminNymAllocationsComponent extends BaseComponent implements OnChanges {
@@ -52,8 +48,11 @@ export class AdminNymAllocationsComponent extends BaseComponent implements OnCha
 
     private nyms: NymType[] = [];
 
-    constructor(private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
-        super();
+    constructor(
+        private messagesService: MessagesObservableService,
+        private objectDetailService: ObjectDetailService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

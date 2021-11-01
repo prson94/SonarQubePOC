@@ -43,6 +43,7 @@ import {
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
+import { CompanySettingsService } from '../../../../services/settings.service';
  
 declare var window: any;
 
@@ -125,8 +126,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
         private uriBasedService: UriBasedService,
-        private objectDetailService: ObjectDetailService) {
-        super();
+        private objectDetailService: ObjectDetailService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     //#region angular

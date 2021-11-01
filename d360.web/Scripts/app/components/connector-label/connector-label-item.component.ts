@@ -12,6 +12,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetAction, EditFormData } from '../../models/secondaryNav.model';
 import { Location } from '@angular/common';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-connector-label-item',
@@ -49,11 +50,12 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
         private connectorLabelService: ConnectorLabelService,
         protected titleService: Title,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         private router: Router,
         private loc: Location,
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.theDeleteCallback = this.deleteLabel.bind(this);
     }

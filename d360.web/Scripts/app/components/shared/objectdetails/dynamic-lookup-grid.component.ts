@@ -6,6 +6,7 @@ import { BaseComponent } from "../base.component";
 import { DetailField } from "../../../models/object-detail.model";
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: "d3s-dynamic-lookup-grid",
@@ -34,11 +35,13 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
         return this.visibleColumns.map(c => c.datafield);
     }
 
-    constructor(private router: Router,
+    constructor(
         private assetService: AssetService,
-        private cdRef: ChangeDetectorRef
+        protected settingsService: CompanySettingsService,
+        private cdRef: ChangeDetectorRef,
+        private router: Router
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnDestroy() {

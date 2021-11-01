@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SynonymPermission } from '../../../models/artifacts.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 
 @Component({
@@ -49,12 +50,14 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected selectedSynonym: SynonymItem;    
     protected customSynonymName: string = '';
     protected isLoadingItems = false;
-    
-    constructor(private messagesService: MessagesObservableService,
+
+    constructor(
+        private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
         private relationshipsService: RelationshipsService,
+        protected settingsService: CompanySettingsService,
         private router: Router) {
-        super();
+        super(settingsService);
 
         this.theDeleteCallback = this.deleteSynonym.bind(this);
     }

@@ -134,6 +134,7 @@ namespace d360.web.Models
 
         public int AssetDefinitionColumnWidth { get; set; }
 
+        public int DiagramMaxAvoidNodesLinkCount { get; set; }
     }
 
     public class DataQualityResult
@@ -771,20 +772,22 @@ namespace d360.web.Models
 
     public class HelpMenuItem
     {
-        public int ID { get; set; }
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
-        public bool isEditable { get; set; }
         public int visibilty { get; set; }
         public int order { get; set; }
-        public Guid Uid { get; set; }
+        public Guid uid { get; set; }
     }
 
+    public class DeleteMenuItem
+    {
+        public Guid uid { get; set; }
+    }
 
     public class HelpMenuModel
     {
-        public List<HelpResource> Adds { get; set; }
-        public List<HelpResource> Deletes { get; set; }
+        public List<HelpMenuItem> Adds { get; set; }
+        public List<DeleteMenuItem> Deletes { get; set; }
     }
 }

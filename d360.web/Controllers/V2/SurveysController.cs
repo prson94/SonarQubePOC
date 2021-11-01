@@ -14,6 +14,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using d360.core.entities.SurveyModels;
 using d360.model.validators;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -64,7 +65,7 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
 
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden,  ApiMessages.AccessDenied));
 
             try
             {
@@ -73,7 +74,7 @@ namespace d360.web.Controllers.V2
                 var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
                 if (survey == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey Type with Uid {surveyTypeUid} not found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, surveyTypeUid))).ConfigureAwait(false);
                 }
                 var queryParams = Request.GetQueryNameValuePairs();
 
@@ -81,7 +82,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
@@ -91,7 +92,7 @@ namespace d360.web.Controllers.V2
                     var asset = AssetRepository.GetAssetByUID(uid);
                     if (asset == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {uid} not found.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString()))).ConfigureAwait(false);
                     }
                 }
 
@@ -101,7 +102,7 @@ namespace d360.web.Controllers.V2
                     var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
                     if (!DateTime.TryParse(paramDate, out date))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid date value for AsOfDate parameter!")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidValueAsOfDate)).ConfigureAwait(false);
                     }
                 }
 
@@ -122,7 +123,7 @@ namespace d360.web.Controllers.V2
                 {
                     errorMessage = errorMessage.Replace("Guid", "Uid");
                     errorCode = HttpStatusCode.BadRequest;
-                    errorTitle = "Invalid request";
+                    errorTitle = ApiMessages.InvalidRequest;
                 }
 
                 SendException(ex, new Dictionary<string, string>() {
@@ -168,7 +169,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 var status = validator.ValidateGetSurveyTypesRequest(queryParams);
@@ -185,7 +186,7 @@ namespace d360.web.Controllers.V2
                     var assetType = AssetRepository.GetAssetTypeByUID(uid);
                     if (assetType == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {uid} not found.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, uid.ToString()))).ConfigureAwait(false);
                     }
                 }
 
@@ -196,7 +197,7 @@ namespace d360.web.Controllers.V2
                     var surveyType = SurveyRepository.GetSurveyTypeByUid(uid);
                     if (surveyType == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey type with Uid {uid} not found.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, uid.ToString()))).ConfigureAwait(false);
                     }
                 }
 
@@ -219,7 +220,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
 
         }
@@ -250,7 +251,7 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
 
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
 
             try
             {
@@ -259,7 +260,7 @@ namespace d360.web.Controllers.V2
                 var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
                 if (survey == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey Type with Uid {surveyTypeUid} not found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, surveyTypeUid))).ConfigureAwait(false);
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -268,7 +269,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
@@ -278,11 +279,11 @@ namespace d360.web.Controllers.V2
                     var asset = AssetRepository.GetAssetByUID(uid);
                     if (asset == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {uid} not found."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString()))).ConfigureAwait(false);
                     }
                     if(asset.AssetType.Object != survey.Object || asset.AssetType.ObjectID != survey.ObjectID)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type does not match with any survey.")).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, SurverysApiMessages.AssetTypeNotSurvey)).ConfigureAwait(false);
                     }
                 }
 
@@ -292,7 +293,7 @@ namespace d360.web.Controllers.V2
                     var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
                     if (!DateTime.TryParse(paramDate, out date))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid date value for AsOfDate parameter!"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidValueAsOfDate)).ConfigureAwait(false);
                     }
                 }
 
@@ -306,12 +307,12 @@ namespace d360.web.Controllers.V2
             {
                 HttpStatusCode errorCode = HttpStatusCode.InternalServerError;
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                string errorTitle = "Unknown error";
+                string errorTitle = ApiMessages.UnknownError;
                 if (ex is FormatException)
                 {
                     errorMessage = errorMessage.Replace("Guid", "Uid");
                     errorCode = HttpStatusCode.BadRequest;
-                    errorTitle = "Invalid request";
+                    errorTitle = ApiMessages.InvalidRequest;
                 }
 
 
@@ -358,7 +359,7 @@ namespace d360.web.Controllers.V2
 
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
             }
 
             try
@@ -367,36 +368,36 @@ namespace d360.web.Controllers.V2
 
                 if (!this.validator.IsRequiredGuidExistForDeleteSurveyResult(queryParams))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Either SurveyTypeUid or ResourceUid or AssetUid should populate")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, SurverysApiMessages.SurveyResourceAssetUidPopulated)).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidSurveyType(queryParams))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Type with Uid {GetUidFromQueryParams(queryParams,"SurveyTypeUid")} not found")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, GetUidFromQueryParams(queryParams, "SurveyTypeUid")))).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidAsset(queryParams))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset with Uid {GetUidFromQueryParams(queryParams, "AssetUid")} not found")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, GetUidFromQueryParams(queryParams, "AssetUid")))).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidResource(queryParams))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"User with Uid {GetUidFromQueryParams(queryParams, "ResourceUid")} not found")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.UserUidNotFound, GetUidFromQueryParams(queryParams, "ResourceUid")))).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidDate(queryParams, "StartDateRange"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid StartDateRange")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, SurverysApiMessages.NotvalidStartDateRange)).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidDate(queryParams, "EndDateRange"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid EndDateRange")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, SurverysApiMessages.NotavalidEndDateRange)).ConfigureAwait(false);
                 }
 
                 int count = this.SurveyRepository.DeleteSurveyResults(queryParams);
-                var result = new SurveyAPIDeleteResultsResponseModel() { Message = $@"{count} results removed.", Success=true };
+                var result = new SurveyAPIDeleteResultsResponseModel { Message = string.Format(SurverysApiMessages.ResultRemoved, count.ToString()), Success=true };
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
 
             }
@@ -409,7 +410,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
 
         }
@@ -435,14 +436,14 @@ namespace d360.web.Controllers.V2
 
             if (!Guid.TryParse(assetUid, out Guid parsedAssetUid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Invalid asset uid provided")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
             }
 
             var asset = AssetRepository.GetAssetByUID(parsedAssetUid);
 
             if (asset == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Invalid asset uid provided"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
             }
 
             try
@@ -458,7 +459,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -489,19 +490,19 @@ namespace d360.web.Controllers.V2
 
             if (model == null || model.Questions == null || model.Questions.Count == 0)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Request body is not formatted correctly")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
             }
 
             if (!Guid.TryParse(surveyTypeUid, out Guid uid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid format for surveyTypeUid")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidFormatSurveyTypeUid)).ConfigureAwait(false);
             }
 
             var surveyType = SurveyRepository.GetSurveyTypeByUid(uid);
 
             if (surveyType == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey type for uid {uid} not found")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, uid.ToString()))).ConfigureAwait(false);
             }
 
 
@@ -510,7 +511,7 @@ namespace d360.web.Controllers.V2
                 var questionType = SurveyRepository.GetSurveyQuestionTypeByUid(question.SurveyQuestionUid);
                 if (questionType == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Question Type for uid {question.SurveyQuestionUid} not found")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyQuestionTypeUidNotFound, question.SurveyQuestionUid.ToString()))).ConfigureAwait(false);
                 }
 
                 var responses = await SurveyRepository.GetSurveyQuestionResponses(questionType.Uid);
@@ -518,7 +519,7 @@ namespace d360.web.Controllers.V2
 
                 if (invalidResponses.Any())
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Bad Request", $"Survey Question Type for uid {question.SurveyQuestionUid} contains invalid responses: [{string.Join(", ", invalidResponses)}]")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.BadRequest, string.Format(SurverysApiMessages.SurveyQuestionTypeUidInvalid, question.SurveyQuestionUid.ToString(), string.Join(", ", invalidResponses)))).ConfigureAwait(false);
                 }
             }
 
@@ -526,12 +527,12 @@ namespace d360.web.Controllers.V2
 
             if (asset == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset for uid {model.AssetUid} not found")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, model.AssetUid.ToString()))).ConfigureAwait(false);
             }
 
             if (surveyType.Object != asset.AssetType.Object || surveyType.ObjectID != asset.AssetType.ObjectID)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Bad Request", $"Survey not valid for this asset type")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.BadRequest, SurverysApiMessages.SurveyInvalidForAssetType)).ConfigureAwait(false);
             }
 
             try
@@ -548,7 +549,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
 
             }
         }

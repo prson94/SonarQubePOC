@@ -38,6 +38,9 @@ namespace igx.jobs.responsibilityruleprocessor
         {
             try
             {
+                // increase the default dapper timeout from 30 to 90 seconds
+                Dapper.SqlMapper.Settings.CommandTimeout = 90;
+
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
@@ -48,7 +51,7 @@ namespace igx.jobs.responsibilityruleprocessor
                 {
                     try
                     {
-                        var company = JobDbContextCreator.CreateWebjobCompanyContext(c.CompanyID, 0, "", true);
+                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, "", true);
 
                         CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 
@@ -89,7 +92,6 @@ namespace igx.jobs.responsibilityruleprocessor
                 CoreFunction.AITrackException(functionName, ex);
                 log.WriteLine($"General Exception: {ex.GetFullExceptionData()}");
             }
-
             CoreFunction.AIFlush();
         }
     }

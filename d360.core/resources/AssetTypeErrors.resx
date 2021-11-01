@@ -147,9 +147,6 @@
   <data name="InvalidPolicyDepth" xml:space="preserve">
     <value>Invalid maximum depth. Policy level specified must be a value between 1 and 10.</value>
   </data>
-  <data name="InvalidName" xml:space="preserve">
-    <value>No valid Name provided.</value>
-  </data>
   <data name="InvalidParentForClass" xml:space="preserve">
     <value>Not valid ParentUid for the Class.</value>
   </data>
@@ -219,7 +216,154 @@
   <data name="CanEditParentRestriction" xml:space="preserve">
     <value>Can Edit Parent can be set only on children asset types.</value>
   </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>Invalid order direction passed in the request.</value>
+  </data>
+  <data name="InvalidOrderPassed" xml:space="preserve">
+    <value>Invalid order by passed in the request.</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>{0} could not be found.</value>
+  </data>
+  <data name="PredicateHttpErrorTitle" xml:space="preserve">
+    <value>Predicate</value>
+  </data>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>Invalid assetType specified</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>Invalid asset Uid in parameters!</value>
+  </data>
+  <data name="InvalidMaximumDepthTitle" xml:space="preserve">
+    <value>Invalid Maximum Depth</value>
+  </data>
+  <data name="InvalidOwnerUid" xml:space="preserve">
+    <value>Invalid Owner Uid in parameters!</value>
+  </data>
+  <data name="InvalidValueautoDisplayDescription" xml:space="preserve">
+    <value>Invalid value for parameter [autoDisplayDescription]</value>
+  </data>
+  <data name="InvalidValueAutoDisplayParent" xml:space="preserve">
+    <value>Invalid value for parameter [autoDisplayParent]</value>
+  </data>
+  <data name="InvalidValueForuseastransformation" xml:space="preserve">
+    <value>Invalid value for parameter [useastransformation]</value>
+  </data>
+  <data name="InvalidValueHierachical" xml:space="preserve">
+    <value>Invalid value for parameter [hierarchical]</value>
+  </data>
+  <data name="InvalidValueincludeLevels" xml:space="preserve">
+    <value>Invalid value for parameter [includeLevels]</value>
+  </data>
+  <data name="InvalidValueObj" xml:space="preserve">
+    <value>Invalid value for parameter [obj]</value>
+  </data>
+  <data name="InvalidValueObjID" xml:space="preserve">
+    <value>Invalid value for parameter [objID]</value>
+  </data>
+  <data name="InvalueValue_includeFields" xml:space="preserve">
+    <value>Invalid value {0} in _includeFields parameter, field with this name not found.</value>
+  </data>
+  <data name="UnableParse_IncludeFields" xml:space="preserve">
+    <value>Could not parse value of _includeFields</value>
+  </data>
+  <data name="UseAsAdminUseWithAssetUid" xml:space="preserve">
+    <value>UseAsAdmin parameter can be used only with _assetUid specified!</value>
+  </data>
+  <data name="WrongNameHttpErrorTitle" xml:space="preserve">
+    <value>Wrong Name</value>
+  </data>
+  <data name="DuplicateFound" xml:space="preserve">
+    <value>Duplicate Found</value>
+  </data>
+  <data name="DuplicateNameFound" xml:space="preserve">
+    <value>Duplicate Name Found</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>Execution unique identifier not found.</value>
+  </data>
+  <data name="InvalidClass" xml:space="preserve">
+    <value>Invalid {0} provided.</value>
+  </data>
+  <data name="InvalidOrganization" xml:space="preserve">
+    <value>Invalid Organization provided.</value>
+  </data>
+  <data name="InvalidParentSelected" xml:space="preserve">
+    <value>Invalid Parent Selected</value>
+  </data>
+  <data name="ItemConflicit" xml:space="preserve">
+    <value>{0} could not be added or updated because an existing item already found.</value>
+  </data>
+  <data name="MaxNumberAllowedAssetType" xml:space="preserve">
+    <value>Maximum number of asset types for this method is 1.</value>
+  </data>
+  <data name="NameConflicit" xml:space="preserve">
+    <value>{0} could not be added or updated because an item with the same name already exists.</value>
+  </data>
+  <data name="ParentChildRelationExists" xml:space="preserve">
+    <value>There are existing parent/child relationships for assets of this type. You may not alter the parent type until these relationships are removed.</value>
+  </data>
+  <data name="TitleWrongOrganization" xml:space="preserve">
+    <value>Wrong Organization</value>
+  </data>
+  <data name="WrongClass" xml:space="preserve">
+    <value>Wrong {0}</value>
+  </data>
+  <data name="_parentuidNotValidAsset" xml:space="preserve">
+    <value>_parentUid with value {0} does not correspond to a valid asset!</value>
+  </data>
+  <data name="_parentUidNotValidUid" xml:space="preserve">
+    <value>_parentUid parameter must be a valid Guid, be set to null, or not be present!</value>
+  </data>
+  <data name="BadRequest" xml:space="preserve">
+    <value>Bad Request</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>Forbidden</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Internal Server Error</value>
+  </data>
+  <data name="InvalidFieldEntry" xml:space="preserve">
+    <value>Invalid Field Entry</value>
+  </data>
+  <data name="InvalidFieldMessage" xml:space="preserve">
+    <value>{0} could not be updated because it is {1}.</value>
+  </data>
+  <data name="MissingPropertyMessage" xml:space="preserve">
+    <value>{0} is missing required properties for the request to proceed.</value>
+  </data>
+  <data name="MissingPropertyTitle" xml:space="preserve">
+    <value>Item Missing Properties</value>
+  </data>
+  <data name="NoFormDataMessage" xml:space="preserve">
+    <value>No form data present to created {0}.</value>
+  </data>
+  <data name="NoFormDataTitle" xml:space="preserve">
+    <value>No Form Data</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Not Found</value>
+  </data>
+  <data name="ScoreAlreadyProcessed" xml:space="preserve">
+    <value>Scores Message Already Being Processed</value>
+  </data>
   <data name="InvalidValueReturnCount" xml:space="preserve">
     <value>Invalid value for parameter [ReturnCount]</value>
+  </data>
+  <data name="FieldIsEmpty" xml:space="preserve">
+    <value>{0} should not be empty.</value>
+  </data>
+  <data name="FieldIsInvalid" xml:space="preserve">
+    <value>{0} is invalid.</value>
+  </data>
+  <data name="FieldProvideCorrectValue" xml:space="preserve">
+    <value>Please provide valid value.</value>
+  </data>
+  <data name="NameContainInvalidCharacters" xml:space="preserve">
+    <value>Invalid character(-s) provided in the asset type name. Please fix content of asset type name field.</value>
+  </data>
+  <data name="InvalidRelationshipFieldType" xml:space="preserve">
+    <value>Invalid or deleted relationship type encountered on Relationship field with friendly name "{0}".</value>
   </data>
 </root>

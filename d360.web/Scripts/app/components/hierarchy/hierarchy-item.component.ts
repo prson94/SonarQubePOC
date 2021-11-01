@@ -14,8 +14,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TreeNode } from 'primeng/api';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
     selector: 'd3s-hierarchy-item',
@@ -54,9 +54,10 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
+        protected settingsService: CompanySettingsService,
         webAnalyticsService: WebAnalyticsService
         ) {
-        super();
+        super(settingsService);
 
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
@@ -109,7 +110,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             }
         });
 
-        this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
+        this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
     }
 
     ngOnDestroy() {

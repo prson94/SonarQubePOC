@@ -66,6 +66,7 @@
                         <td>
                             <div class="RowTools">
                                 <a (click)="selectedItem=item;delete();"
+                                   *ngIf="synonymPermission.deleteSynonym"
                                    style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </td>

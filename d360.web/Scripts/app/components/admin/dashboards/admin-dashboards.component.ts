@@ -9,7 +9,7 @@ import { Title } from '@angular/platform-browser';
 import { StateService } from '../../../services/state.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
-
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-dashboards-component',
@@ -120,8 +120,15 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     powerBiUser: string;
     powerBiPassword: string;
 
-    constructor(private stateService: StateService, secondaryNavService: SecondaryNavService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);        
+    constructor(
+        private stateService: StateService,
+        secondaryNavService: SecondaryNavService,
+        protected reportsService: ReportsService,
+        protected messagesService: MessagesObservableService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
+        titleService: Title) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);        
         this.areaName = StringConstants.Section_Dashboards;
         this.theDeleteCallback = this.deleteReport.bind(this);
     }

@@ -11,6 +11,7 @@ import { AssetService } from '../../services/asset.service';
 import { AssetEditorModel } from '../../models/asset.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SynonymPermission } from '../../models/artifacts.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-object-definition-tile',
@@ -41,8 +42,9 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         private headerActionsService: HeaderActionsService,
         private assetService: AssetService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

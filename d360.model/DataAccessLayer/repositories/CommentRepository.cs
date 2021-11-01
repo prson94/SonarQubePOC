@@ -83,7 +83,7 @@ namespace d360.model.DataAccessLayer
                 var parentComment = CompanyContext.Filter<Comment>(o => o.Uid == comment.ParentUid.Value, o => o.Asset).SingleOrDefault();
                 if (parentComment == null)
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Parent comment not found");
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.ParentCommentNotFound);
                 }
                 else
                 {
@@ -98,7 +98,7 @@ namespace d360.model.DataAccessLayer
 
             if (comment.AssetUid == Guid.Empty)
             {
-                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You must provide a valid Uid for the AssetUid property.");
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, CommentErrors.InvalidAssetUid);
             }
 
             if (!assetId.HasValue)
@@ -106,20 +106,21 @@ namespace d360.model.DataAccessLayer
                 commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid, a => a.AssetType).FirstOrDefault();
                 if (commentAsset == null)
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
                 }
                 if (!commentAsset.AssetType.Class.AsInfoModel().AllowCommentsOnAsset)
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Comments may not be created on asset with provided Uid.");
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.RestrictedAssetUid);
                 }
                 assetId = commentAsset.ID;
             }
+
 
             if (commentAsset != null)
             {
                 if (!CompanyContext.HasAssetPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
+                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, AssetTypeErrors.Forbidden, CommentErrors.CommentAddPermission);
                 }
             }
 
@@ -159,7 +160,7 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "", "Comment was not successfully created.");
+                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, AssetTypeErrors.InternalServerError, CommentErrors.UnableCreateComment);
             }
         }
 
@@ -206,7 +207,7 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                throw new NotFoundException("comment");
+                throw new NotFoundException(CommentErrors.comment);
             }
         }
 
@@ -221,7 +222,7 @@ namespace d360.model.DataAccessLayer
 
             if (dbComment.CreatedBy != CompanyContext.CurrentResourceID && !CompanyContext.CurrentResourceIsAdmin)
             {
-                throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment or administrator and may not update it.", "You are not the creator of this comment or administrator and may not update it.");
+                throw new GenericException(System.Net.HttpStatusCode.Forbidden, CommentErrors.CommentUpdatePermissionAdmin, CommentErrors.CommentUpdatePermissionAdmin);
             }
 
             bool commentUpdated = false;
@@ -244,7 +245,7 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "Comment was not successfully removed.");
+                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, CommentErrors.CommentNotRemoved);
             }
         }
 
@@ -266,7 +267,7 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                throw new NotFoundException("comment");
+                throw new NotFoundException(CommentErrors.comment);
             }
         }
 
@@ -278,12 +279,12 @@ namespace d360.model.DataAccessLayer
 
             if (dbComment == null)
             {
-                throw new NotFoundException("comment");
+                throw new NotFoundException(CommentErrors.comment);
             }
 
             if (dbComment.CreatedBy != CompanyContext.CurrentResourceID)
             {
-                throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment and may not update it.", "You are not the creator of this comment and may not update it.");
+                throw new GenericException(System.Net.HttpStatusCode.Forbidden, CommentErrors.CommentUpdatePermission, CommentErrors.CommentUpdatePermission);
             }
 
 
@@ -321,7 +322,7 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "", "Comment was not successfully updated.");
+                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, AssetTypeErrors.InternalServerError, CommentErrors.CommentNotUpdated);
             }
         }
 
@@ -524,14 +525,14 @@ order by u.CommentTypeName";
                 var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
                 if (asset == null || !CompanyContext.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
                 }
                 var assetType = CompanyContext.Filter<AssetType>(o => o.ID == asset.AssetTypeID).FirstOrDefault();
 
                 if (!CompanyContext.CurrentResourceIsAdmin
                     && !CompanyContext.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type.");
+                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, AssetTypeErrors.InvalidRequestHttpErrorTitle, CommentErrors.RestrictReadAssettype);
                 }
 
                 dbArgs.Add("@assetId", asset.ID);
@@ -542,13 +543,13 @@ order by u.CommentTypeName";
                 var assetType = CompanyContext.Filter<AssetType>(o => o.uid == assetTypeUid).FirstOrDefault();
                 if (assetType == null)
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset Type with provided Uid does not exist.");
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
                 }
 
                 if (!CompanyContext.CurrentResourceIsAdmin
                     && !CompanyContext.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type.");
+                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, AssetTypeErrors.InvalidRequestHttpErrorTitle, CommentErrors.RestrictReadAssettype);
                 }
 
                 dbArgs.Add("@assetTypeId", assetType.ID);
@@ -576,7 +577,7 @@ order by u.CommentTypeName";
                 var follower = CompanyContext.Filter<GlobalReportingResource>(o => o.Uid == followerUid).FirstOrDefault();
                 if (follower == null)
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "User with provided Uid does not exist.");
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.UserUidNotFound);
                 }
                 else
                 {
@@ -712,7 +713,7 @@ ORDER BY	C.ParentID, C.CreatedOn DESC";
             }
             else
             {
-                throw new NotFoundException("comment");
+                throw new NotFoundException(CommentErrors.comment);
             }
         }
 
@@ -734,7 +735,7 @@ order by V.Emoji";
             }
             else
             {
-                throw new NotFoundException("comment");
+                throw new NotFoundException(CommentErrors.comment);
             }
         }
 
@@ -776,16 +777,16 @@ order by V.Emoji";
         {
             if (comment == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "No content provided to create a comment with.");
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, CommentErrors.NoContentProvided);
             }
             if (string.IsNullOrEmpty(comment.Body))
             {
-                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You must provide a value for the Body property.");
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, CommentErrors.BodyNotEmpty);
             }
 
             if (comment.Tags != null && comment.Tags.Count > 50)
             {
-                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You may not provide more than 50 tags on this comment.");
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, CommentErrors.CommentTagMaxLimit);
             }
         }
 

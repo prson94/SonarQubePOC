@@ -9,14 +9,11 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-declare var CompanySettings: any;
-
 @Injectable({
     providedIn: 'root'
 })
 export class LoadService extends BaseObservableService {
 
-    lineageVersion: number = 1;
     aOptions: any[] = [];
 
     constructor(
@@ -55,9 +52,6 @@ export class LoadService extends BaseObservableService {
             {label: 'Unrelation', value: 'U'},
             {label: 'Users/Groups', value: 'M'}
         ];
-        if (CompanySettings != null && CompanySettings.LineageVersion != null) {
-            this.lineageVersion = CompanySettings.LineageVersion;
-        }
         return this.aOptions;
     }
 

@@ -13,8 +13,31 @@
                 <div #el class="tag-item-wrapper">
                     {{tag.Value}}
                 </div>
-                <div *ngIf="isEditable" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
-                    <i style="padding-left:10px" class="fa fa-times-circle"></i>
+                <div>
+                    <div *ngIf="isEditable && !deletingTag" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
+                        <span>
+                            <i style="padding-left:10px" class="fa fa-times-circle"></i>
+                        </span>                        
+                    </div>
+                    <div *ngIf="deletingTag" class="link-button">
+                        <span [pTooltip]="'Removing Tag'" style="padding-left:10px;padding-right:7px;">
+                            <i class="pi pi-spin pi-spinner"></i>
+                        </span>
+                    </div>
+                </div>                
+            </a>
+        </span>
+        <span *ngIf="savingTag">
+            <a pTooltip="Saving Tag"
+               [escape]="false"
+               tooltipPosition="top"
+               tooltipStyleClass="ig-tooltip"
+               class="link-button tagging">
+                <div #el class="tag-item-wrapper savingTag">
+                    {{tagNameBeingAdded}}
+                </div>
+                <div class="link-button" style="padding-left:10px;padding-right:7px;">
+                    <i class="pi pi-spin pi-spinner"></i>
                 </div>
             </a>
         </span>
@@ -26,7 +49,7 @@
                             value="inputValue"
                             inputStyleClass="inputBox"
                             [style]="{'margin-bottom':'12px'}"
-                            placeholder="Click to add..."
+                            placeholder="{{placeHolder}}"
                             [suggestions]="searchResults"
                             (onKeyUp)="checkKey($event,inputValue)"
                             (onSelect)="saveTag($event)"

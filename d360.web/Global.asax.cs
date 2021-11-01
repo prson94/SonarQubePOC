@@ -17,6 +17,7 @@ using System.Linq;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Utilities;
+using d360.extensions.caching;
 
 namespace d360.web
 {
@@ -26,12 +27,22 @@ namespace d360.web
         {
             var builder = new ContainerBuilder();
 
-
             #region Extension DI
 
             #region Config Setting Reader            
             builder.RegisterType<d360.extensions.search.ElasticSearchSource>().As<ISearchSource>().InstancePerRequest();
-            builder.RegisterType<d360.web.caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
+            builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>().InstancePerRequest().OnActivating(i => {
+                i.Instance.ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY);
+                i.Instance.SubAccount = Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT);
+            });
+            if (Config.GetValue<bool>("RedisEnabled"))
+            {
+                builder.RegisterType<RedisCachingProvider>().As<ICachingProvider>().InstancePerRequest();
+            }
+            else
+            {
+                builder.RegisterType<caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
+            }
             builder.RegisterType<d360.extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
             builder.RegisterType<d360.extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
             #endregion
