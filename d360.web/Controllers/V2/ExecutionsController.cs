@@ -710,7 +710,7 @@ from	[Load] L
 
             var load = Company.Filter<Load>(i => i.uid == uid).FirstOrDefault();
 
-            if(load == null)
+            if (load == null)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
             }
@@ -745,7 +745,7 @@ from	[Load] L
             }
             if (queryParams.Any(x => x.Key == "_direction"))
             {
-                var allowedDirections = new [] { "asc", "desc" };
+                var allowedDirections = new[] { "asc", "desc" };
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                 if (!allowedDirections.Contains(order.Trim().ToLower()))
                 {
@@ -784,7 +784,7 @@ from	[Load] L
                     whereSql = " where (RowIndex like @filterValue or [Status] like @filterValue or StatusMessage like @filterValue";
                     if (columns.Count > 0)
                     {
-                        for(int x = 1; x <= columns.Count; x++)
+                        for (int x = 1; x <= columns.Count; x++)
                         {
                             columnSql += " or Column" + x + " like @filterValue ";
                         }
@@ -794,7 +794,7 @@ from	[Load] L
                     {
                         whereSql += whereSql + ")";
                     }
-                } 
+                }
             }
             #endregion
 
@@ -846,7 +846,7 @@ from	[Load] L
 
                         countSql += $" from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
                         countSql += $"union all\n";
-                        countSql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R ";
+                        countSql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R " + whereSql;
 
                         break;
                     case "R":
@@ -872,7 +872,7 @@ from	[Load] L
                         countSql += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
 
                         sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
-                        countSql += $" {sqlTables} where I.LoadID = @id) X";
+                        countSql += $" {sqlTables} where I.LoadID = @id) X " + whereSql;
 
                         break;
                     case "U":
@@ -895,13 +895,13 @@ from	[Load] L
                         countSql += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
 
                         sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
-                        countSql = $" {sqlTables} where I.LoadID = @id) X ";
+                        countSql += $" {sqlTables} where I.LoadID = @id) X " + whereSql;
                         break;
                 }
 
 
                 var results = Company.Query<dynamic>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue });
-                var total = Company.Query<int>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID}).FirstOrDefault();
+                var total = Company.Query<int>(countSql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue }).FirstOrDefault();
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
@@ -926,12 +926,13 @@ from	[Load] L
                     sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
                 });
                 sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage as StatusMessage";
+                countSql += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage as StatusMessage";
 
                 sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
-                var count = countSql + " " + sqlTables + " where I.LoadID = @id) X ";
+                var count = countSql + " " + sqlTables + " where I.LoadID = @id) X " + whereSql;
 
                 var results = Company.Query<dynamic>(sql, new { id = load.ID, filterValue });
-                var total = Company.Query<int>(count, new { id = load.ID}).FirstOrDefault();
+                var total = Company.Query<int>(count, new { id = load.ID, filterValue }).FirstOrDefault();
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
