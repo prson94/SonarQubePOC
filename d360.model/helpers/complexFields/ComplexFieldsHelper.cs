@@ -87,6 +87,13 @@ namespace d360.model.helpers
                 }
                 else if (f.FieldTypeID != 0)
                 {
+
+                    //skip field if field type got deleted
+                    if (ft == null)
+                    {
+                        continue;
+                    }
+
                     string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
 
@@ -222,6 +229,12 @@ namespace d360.model.helpers
                 {
                     var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
                     var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
+
+                    if (ft == null)
+                    {
+                        continue;
+                    }
+
                     var gColumn = new GridColumn { text = ft.FriendlyName, columnWidth = colWidth };
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
                     gField.name = gColumn.datafield = fieldAlias;
