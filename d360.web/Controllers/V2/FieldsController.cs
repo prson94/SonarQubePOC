@@ -2067,7 +2067,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
             ]
-        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null)
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, bool isForAssetForm = false)
         {
             var prefix = "Fields.GetFilterVales => ";
             try
@@ -2126,7 +2126,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 }
 
                 var query = $@"
-                    select text from FieldLookupValue where @fieldTypeId = FieldTypeID
+                    select {(isForAssetForm ? "text, value" : "text")} from FieldLookupValue where @fieldTypeId = FieldTypeID
                     {whereQuery}
                     order by text asc
 					{pagingQuery};
@@ -2136,13 +2136,27 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                 var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter });
 
-                var data = new
+                if (!isForAssetForm)
                 {
-                    items = results.Read<string>().ToList(),
-                    count = results.Read<int>().FirstOrDefault()
-                };
+                    var data = new
+                    {
+                        items = results.Read<string>().ToList(),
+                        count = results.Read<int>().FirstOrDefault()
+                    };
 
-                return Request.CreateResponse(HttpStatusCode.OK, data);
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+                else
+                {
+                    var data = new
+                    {
+                        items = results.Read<dynamic>().ToList(),
+                        count = results.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+
 
             }
             catch (Exception ex)

@@ -48,6 +48,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Input() editorChange: Observable<any>;
     @Input() disallowedNames: string[] = [];
     @Input() assetUid: string;
+    @Input() assetTypeUid: string;
     @Input() diagramNodeKey: string;
 
     @Input() useNewUI: boolean = false;
@@ -95,6 +96,8 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     defaultColorOptions: SelectItem[] = [];
 
     private component_uid: string = '';
+
+    isLookupValuesLoading: boolean = false;
 
     linkFieldOptionalPlaceholder: string = 'Optional: you should start the URL with a protocol prefix eg. http:// or https://';
     linkFieldRequiredPlaceholder: string = 'Value required: you should start the URL with a protocol prefix eg. http:// or https://';
@@ -866,5 +869,61 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
         }
         return strfiltePH;
+    }
+
+
+    lookupSelectedValue: any[] = [];
+    lookupValues: any[] = [];
+    lookupOptions: SelectItem[] = []
+    loadListLazy(params) {
+        params["isForAssetForm"] = true;
+        this.isLookupValuesLoading = true;
+        this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, params).subscribe((res) => {
+            if (!this.lookupValues || this.lookupValues.length === 0) {
+                this.lookupValues = Array.from({ length: res.count });
+            }
+
+            let loadedData = [];
+
+            res.items.forEach((str) => {
+                loadedData.push({ label: str.text, value: str.value });
+            });
+
+            Array.prototype.splice.apply(this.lookupValues, [...[params.skip, params.take], ...loadedData]);
+
+            this.lookupValues = [...this.lookupValues];
+            if (this.lookupValues.length > res.count) {
+                this.lookupValues = this.lookupValues.slice(0, res.count);
+            }
+
+            this.isLookupValuesLoading = false;
+
+            this.ref.detectChanges();
+        });
+        //    this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
+    }
+
+    onItemSelected(event) {
+    }
+
+    //table extensions
+    selectSingleItem(event: MouseEvent, item: SelectItem) {
+        if (this.field?.MultiSelect) {
+            let valueRef = this.lookupSelectedValue as SelectItem[];
+            let elIdx = valueRef.findIndex((x) => x.value === item.value);
+
+            if (elIdx > -1) {
+                valueRef.splice(elIdx, 1);
+            }
+            else {
+                valueRef.push(item);
+            }
+            //update reference
+            this.lookupSelectedValue = [...valueRef];
+        } else {
+            this.lookupSelectedValue = [item];
+            this.lookupOptions = [item];
+            this.form.controls[this.field.FieldName].setValue(this.lookupSelectedValue[0].value);
+        }
     }
 }

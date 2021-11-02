@@ -545,14 +545,6 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                         this.form.value[p] = arr.map(x => x.title).join('|');
                     }
                 }
-                else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
-                    if (this.form.value[p] != null) {
-                        this.form.value[p] = this.form.value[p].Value;
-                    }
-                    if (!this.form.value[p] && field.Value && !field.MultiSelect) {
-                        this.form.value[p] = field.Value;
-                    }
-                }
             }
         }
 

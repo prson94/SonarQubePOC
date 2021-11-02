@@ -16,7 +16,7 @@ export interface LookupValuesAPIParameters {
 
 export class LookupValuesAPIModel {
     count: number;
-    items: string[];
+    items: any[];
 }
 
 export class AdvancedFilterFieldType extends FieldTypeAPIModelField {
