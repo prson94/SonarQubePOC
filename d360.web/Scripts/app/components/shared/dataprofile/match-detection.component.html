@@ -36,8 +36,8 @@
                                 <div *ngIf="duplicatesSelection && duplicatesSelection.length > 1">
                                     <div style="background: #f1f1f3;display: inline-flex; margin-left: 8px; height: 32px; align-items: center;">
                                         <span style="padding-left: 16px;padding-right: 8px;">{{duplicatesSelection.length}} items selected</span>
-                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu4.toggle($event)" [darkMode]="true"></button>
                                         <ig-popup-menu (onSelect)="onMenuSelect($event, duplicatesSelection, 'duplicate', true)" #menu4 [tabIndex]="1" [items]="multiselectMenuItems"></ig-popup-menu>
+                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu4.toggle($event)" [darkMode]="true"></button>
                                     </div>
                                 </div>                                
                                 <div class="grid-action-buttons">
@@ -145,8 +145,8 @@
                                 <div *ngIf="similarSelection && similarSelection.length>1" >                                          
                                     <div style="background: #f1f1f3;display: inline-flex; margin-left: 8px; height: 32px; align-items: center;">
                                         <span style="padding-left: 16px;padding-right: 8px;">{{similarSelection.length}} items selected</span>
-                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu3.toggle($event)" [darkMode]="true"></button>
                                         <ig-popup-menu (onSelect)="onMenuSelect($event, similarSelection, 'similar', true)" #menu3 [tabIndex]="1" [items]="multiselectMenuItems"></ig-popup-menu>
+                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu3.toggle($event)" [darkMode]="true"></button>
                                     </div>
                                 </div>
                                 <div class="grid-action-buttons">
