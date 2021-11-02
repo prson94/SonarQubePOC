@@ -2879,7 +2879,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
                 string[] validOrderByFields = { "executionid", "resourceuid", "resource", "total",
                                                 "processed", "error", "errormessage", "processingstartedon",
-                                                "startedon", "completedon", "method", "route", "fields" };
+                                                "startedon", "completedon", "method", "route", "fields", "applicationid" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                     return new APIExecutionAPIModelResult
                     {
@@ -2923,6 +2923,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                               ,[Method]
                               ,[Route]
                               ,[Fields]
+                              ,[ApplicationId]
                           FROM [api].[Execution] Ex
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID  
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID] 
@@ -2936,8 +2937,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID 
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID]
                         ";
-            var executions = await CompanyContext.QueryAsync<dynamic>(sql, ApiTimeout);
-            var count = await CompanyContext.QueryAsync<int>(countSQL, ApiTimeout);
+            var executions = await CompanyContext.QueryAsync<dynamic>(sql, null, ApiTimeout);
+            var count = await CompanyContext.QueryAsync<int>(countSQL, null, ApiTimeout);
 
             var items = executions.Select(x =>
             {
@@ -2956,7 +2957,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     ResourceUid = x.ResourceUid,
                     Route = x.Route,
                     StartedOn = x.StartedOn,
-                    Total = x.Total
+                    Total = x.Total,
+                    ApplicationId = x.ApplicationId
                 };
             });
             var resultsModel = new APIExecutionAPIModelResult

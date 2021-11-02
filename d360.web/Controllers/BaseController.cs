@@ -402,7 +402,7 @@ namespace d360.web.Controllers
             return sql;
         }
 
-        protected internal ApiExecution getApiExecution(int total = 0, object fields = null, int error = 0, int processed = 0)
+        protected internal ApiExecution getApiExecution(int total = 0, object fields = null, int error = 0, int processed = 0, string applicationId = null)
         {
 
             var execution = new ApiExecution
@@ -415,7 +415,8 @@ namespace d360.web.Controllers
                 Total = total,
                 Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
                 Error = error,
-                Processed = processed
+                Processed = processed,
+                ApplicationId = applicationId
             };
 
             return execution;
