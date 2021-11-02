@@ -62,10 +62,11 @@
                     </div>
                     <ng-template #singleSelect>
                         <p-dropdown igDropdown
+                                    styleClass="dropdown-lazy-load"
                                     igSize="full"
                                     [inputId]="field.FieldName + '_input_' + component_uid"
                                     [formControlName]="field.FieldName"
-                                    [options]="lookupOptions"
+                                    [options]="field.Items | selectItemTextToLabel"
                                     (onSelect)="onSelect($event)"
                                     [required]="field.Required"
                                     (click)="op.toggle($event)">

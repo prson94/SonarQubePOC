@@ -874,7 +874,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
     lookupSelectedValue: any[] = [];
     lookupValues: any[] = [];
-    lookupOptions: SelectItem[] = []
     loadListLazy(params) {
         params["isForAssetForm"] = true;
         this.isLookupValuesLoading = true;
@@ -922,7 +921,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             this.lookupSelectedValue = [...valueRef];
         } else {
             this.lookupSelectedValue = [item];
-            this.lookupOptions = [item];
+            this.field.Items = [item];
             this.form.controls[this.field.FieldName].setValue(this.lookupSelectedValue[0].value);
         }
     }
