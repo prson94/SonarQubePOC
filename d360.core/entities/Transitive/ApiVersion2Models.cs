@@ -384,7 +384,7 @@ namespace d360.core.entities
         public string Owner { get; set; }
     }
 
-    public class RelationshipUidResult
+    public class RelationshipUidResult: PagedApiBaseRequestModel
     {
         [DataMember]
         public IEnumerable<RelationshipUidResultItem> Results { get; set; }
