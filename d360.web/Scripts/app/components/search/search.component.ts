@@ -108,7 +108,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.secondaryNavService.showHeader(false);
         this.searchStateService.advancedFilters = [];
 
-        this.searchTypes = this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).ScalarValue.split(',');
+        this.searchTypes = this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).StringSetting.Value.split(',');
 
         this.sub = this.route.queryParams.subscribe((params) => {
             this.searchText = params['query'] ? params['query'] : '';
