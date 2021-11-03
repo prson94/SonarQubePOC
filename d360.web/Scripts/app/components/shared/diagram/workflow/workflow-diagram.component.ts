@@ -613,27 +613,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             return;
 
         let obj = this.model.Event.Object;
-
-        if (obj == 'Fusion') {
-            this.uriBasedService.getItems(`api/fusion/0/configurations/${this.model.Event.ObjectID}`)
-                .subscribe(r => {
-                    if (r != null)
-                        this.objectTypeName = 'Fusion :: ' + r['Name'];
-                    else
-                        this.objectTypeName = '';
-                })
-        } else {
-            this.objectDetailService.getObject(this.model.Event.ObjectID, obj)
-                .subscribe(
-                r => {
-                    if (r != null) {
-                        this.objectTypeName = r.TypeName + ' :: ' + r.Name;
-                    } else {
-                        this.objectTypeName = '';
-                    }
+        this.objectDetailService.getObject(this.model.Event.ObjectID, obj)
+            .subscribe(
+            r => {
+                if (r != null) {
+                    this.objectTypeName = r.TypeName + ' :: ' + r.Name;
+                } else {
+                    this.objectTypeName = '';
                 }
-            );
-        }
+            }
+        );
     }
 
     private getAvailableFormInputs(link: LinkModel): string[] {

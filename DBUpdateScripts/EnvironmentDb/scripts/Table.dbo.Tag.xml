@@ -58,7 +58,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Tag-Tag_AfterUpdate-v1">
+  <changeSet author="Core" id="Table.dbo.Tag-Tag_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -77,9 +77,7 @@ BEGIN
 				A.ObjectID,
 				A.ID
 		FROM inserted I INNER JOIN [dbo].[AssetTag] T ON I.ID = T.TagID
-		INNER JOIN [dbo].[Asset] A
-		ON T.AssetID = A.ID
-		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+		INNER JOIN [dbo].[Asset] A ON T.AssetID = A.ID;
 END
 		]]>
     </sql>

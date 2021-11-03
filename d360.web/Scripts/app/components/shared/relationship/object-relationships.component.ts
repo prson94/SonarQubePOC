@@ -281,9 +281,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             case "Policy":
                 cs += "fa-university";
                 break;
-            case "FusionAttribute":
-                cs += "fa-database";
-                break;
             case "Resource":
                 cs += "fa-user";
                 break;
@@ -318,9 +315,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                     break;
                 case "Policy":
                     tooltip = "Policy";
-                    break;
-                case "FusionAttribute":
-                    tooltip = "Fusion Attribute";
                     break;
                 case "Resource":
                     tooltip = "Resource";

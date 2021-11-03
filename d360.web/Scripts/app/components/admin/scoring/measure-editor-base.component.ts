@@ -14,8 +14,8 @@ import { Observable } from 'rxjs';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
-import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AppSettingsEnum } from '../../../models/settings.model';
 
 @Component({
     template: ''
@@ -30,8 +30,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
-    public conditionGroupLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
-    public conditionAndWeightLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
+    public conditionGroupLink: string = "";
+    public conditionAndWeightLink: string = "";
+
     //#region Tooltip data
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
@@ -47,14 +48,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         + 'similar nature(E.g.responsibility assignments, required field checks).'
         + 'Grouping measures do not have asset conditions, as they are not applied directly to the assets.';
 
-
-    conditionWeightTootlip: string = "<div>You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.</div>"
-        + "<div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
-
-    assetConditionsAndWeightingTooltip: string = "<div>Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, "
-        + "either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.</div>"
-        + "<div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionAndWeightLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
-
+    assetConditionsAndWeightingTooltip: string = "";
+    conditionWeightTootlip: string = "";
 
     //#endregion
 
@@ -86,7 +81,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         { "title": "Delete" }
     ];
 
-
     private upMenuItems: any[] = [
         { title: "Move to Top" },
         { title: "Move Up" }
@@ -96,6 +90,28 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         { title: "Move Down" },
         { title: "Move to Bottom" }
     ];
+
+    @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
+
+    constructor(
+        protected fieldsService: FieldsObservableService,
+        protected metricsService: MetricsService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        protected cdRef: ChangeDetectorRef
+    ) {
+        super(settingsService);
+        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        this.conditionGroupLink = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
+        this.conditionAndWeightLink = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
+
+        this.conditionWeightTootlip = "<div>You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.</div>"
+            + "<div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
+
+        this.assetConditionsAndWeightingTooltip = "<div>Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, "
+            + "either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.</div>"
+            + "<div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionAndWeightLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
+    }
 
     menuOptions(includeUp: boolean, includeDown: boolean): any[] {
 
@@ -190,6 +206,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             return 0;
         }
     }
+
     getMaxDisplayOrderForGroups(): number {
         if (this.conditionGroups.length > 0) {
             return (this.conditionGroups.map(x => x.DisplayOrder).sort((a, b) => b - a)[0] + 1);
@@ -215,9 +232,11 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             x.DisplayOrder = pos;
         });
     }
+
     sortByDisplayOrder() {
         return this.conditionGroups.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
     }
+
     addConditionGroupFormControls(index: number) {
         const prefix = `cg_${index}_`;
         this.metricForm.addControl(prefix + 'matchType', new FormControl());
@@ -228,19 +247,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         const prefix = `cg_${index}_`;
         this.metricForm.removeControl(prefix + 'matchType');
         this.metricForm.removeControl(prefix + 'weight');
-    }
-
-
-    @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
-
-    constructor(
-        protected fieldsService: FieldsObservableService,
-        protected metricsService: MetricsService,
-        protected messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService,
-        protected cdRef: ChangeDetectorRef
-    ) {
-        super(settingsService);
     }
 
     loadConditions() {
@@ -610,7 +616,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             return changeFound;
         }
     }
-
 
     haveRuleConditionsChanged(updated: FieldCondition[], original: FieldCondition[]) {
         if (updated && !original) {

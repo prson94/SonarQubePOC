@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GenerateObjectUrl-v1">
+  <changeSet author="Pappas" id="Function.dbo.GenerateObjectUrl-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -33,13 +33,8 @@ BEGIN
 			SET @Url = CASE @Type
 				WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
 				WHEN 'ArtifactType' THEN 'artifact/' + CAST(@TypeID as varchar)
-				WHEN 'Domain' THEN 'domain/' +  + CAST(@TypeID as varchar) + '/' +  + CAST(@ObjectID as varchar)
-				WHEN 'DomainType' THEN 'domain/' + CAST(@TypeID as varchar)
 				WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(@TypeID as varchar)
 				WHEN 'ReferenceItemType' THEN 'reference/' + CAST(@TypeID as varchar)
-				WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)		
-				WHEN 'Fusion' THEN 'fusion/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
-				WHEN 'FusionType' THEN 'fusion/' + CAST(@TypeID as varchar)
 				WHEN 'Group' THEN 'groups/' + CAST(@ObjectID as varchar)	
 				WHEN 'Lookup' THEN 'admin/lookups/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
 				WHEN 'LookupType' THEN 'admin/lookups/' + CAST(@TypeID as varchar)

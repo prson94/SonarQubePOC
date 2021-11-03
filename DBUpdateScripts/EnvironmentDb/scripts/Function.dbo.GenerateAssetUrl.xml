@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Function.dbo.GenerateAssetUrl-v3">
+  <changeSet author="Pappas" id="Function.dbo.GenerateAssetUrl-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -38,8 +38,6 @@ BEGIN
 	SET @Url = CASE @Type
 		WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
 		WHEN 'ReferenceItem' THEN 'reference;referenceListId=' + lower(cast(@typeUid as nvarchar(36)))
-		WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)		
-		WHEN 'Fusion' THEN 'fusion/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
 		WHEN 'Group' THEN 'group/' + CAST(@ObjectID as varchar)	
 		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar)	
 		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)

@@ -163,12 +163,6 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
             case "TechnicalAsset":
                 name = "Technical Asset";
                 break;
-            case "FusionAttribute":
-                name = "Fusion Attribute";
-                break;
-            case "FusionQuery":
-                name = "Fusion Query";
-                break;
             case "DiagramAsset":
                 name = "Diagram Asset";
                 break;

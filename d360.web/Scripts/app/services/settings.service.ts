@@ -1,5 +1,5 @@
 ﻿import { Injectable } from "@angular/core";
-import { CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanySettingEnum, SettingsPutModel, SettingsGetModel } from "../models/settings.model";
+import { CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanySettingEnum, SettingsPutModel, SettingsGetModel, AppSettingModel, AppSettingsEnum } from "../models/settings.model";
 import { AuthenticationProperties } from "../models/authentication-properties.model";
 import { SelectItem } from "primeng/api";
 import { JsonResult } from "../models/jsonresult.model";
@@ -14,10 +14,21 @@ import { OperatorModel } from "../models/operator.model";
     providedIn: 'root'
 })
 export class CompanySettingsService extends BaseObservableService {
+    appSettings: AppSettingModel[] = null;
     settings: SettingsGetModel[] = null;
     settingToUpdate: SettingsPutModel[] = [];
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
+
+    loadApplicationSettings() {
+        //HelpBaseUri
+        return new Promise((resolve, reject) => {
+            this.http.get('/api/v2/environment/appsettings').subscribe((r) => {
+                this.appSettings = <AppSettingModel[]>r;
+                resolve(true);
+            });
+        });
+    }
 
     loadSettings() {
         return new Promise((resolve, reject) => {
@@ -49,7 +60,6 @@ export class CompanySettingsService extends BaseObservableService {
     getSettings(): Observable<SettingsGetModel[]> {
         return of(this.settings);
     }
-
 
     getAuthenticationModel(): Observable<AuthenticationProperties> {
         return this.http.get('api/authenticationModel')
@@ -83,6 +93,10 @@ export class CompanySettingsService extends BaseObservableService {
                 map(res => res as JsonResult),
                 catchError(err => this.handleError(err))
             );
+    }
+
+    getAppSetting(setting: string): any {
+        return this.appSettings.find(a => a.Name === setting).Value;
     }
 
     getSettingById(setting: CompanySettingEnum): SettingsGetModel {

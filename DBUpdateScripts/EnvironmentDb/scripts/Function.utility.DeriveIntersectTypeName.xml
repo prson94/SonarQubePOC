@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Function.utility.DeriveIntersectTypeName-v2">
-  <comment>GOV-11726</comment>
+  <changeSet author="Pappas" id="Function.utility.DeriveIntersectTypeName-v3">
+  <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,8 +24,8 @@ BEGIN
 	SET @result =	(
 					SELECT	COALESCE(SATT.Name,'') + ' [' + coalesce(P.Name,'/') + '] ' + COALESCE(OATT.Name, '')
 					FROM	[IntersectType] I
-							left join AssetType SATT on I.Subject = SATT.[Object] and SATT.ObjectID = I.SubjectID and I.Subject != 'FusionAttributeType'
-							left join AssetType OATT on I.Object = OATT.[Object] and OATT.ObjectID = I.ObjectID and I.Object != 'FusionAttributeType'
+							left join AssetType SATT on I.Subject = SATT.[Object] and SATT.ObjectID = I.SubjectID
+							left join AssetType OATT on I.Object = OATT.[Object] and OATT.ObjectID = I.ObjectID
 							left join [Predicate] P on P.ID = I.PredicateID
 					WHERE	I.ID = @id					
 					)

@@ -209,7 +209,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         let i = this.ftItemToSelectItem(r.IntersectTypes);
 
                         l.DataTypes = this.ftItemToSelectItem(r.DataTypes);
-                        l.FusionAttributeTypes = this.ftItemToSelectItem(r.FusionAttributeTypes);
                         l.IntersectTypes = [];
 
                         i.forEach((j) => {
@@ -249,15 +248,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 map(response => <FieldTypeEditorModel>response),
                 catchError(err => this.handleError(err))
             );
-    }
-
-    getFusionReferenceTypes(): SelectItem[] {
-        return [
-            { label: 'Self Reference', value: '1' },
-            { label: 'Parent Reference', value: '2' },
-            { label: 'Child Reference', value: '3' },
-            { label: 'Relationship Reference', value: '4' },
-        ];
     }
 
     getReferenceTypes(): SelectItem[] {

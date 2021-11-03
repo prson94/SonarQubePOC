@@ -840,12 +840,6 @@ export class BaseComponent {
             return;
         }
 
-        //For legacy fusion use local storage way of restoring secondary navigation and breadcrumbs
-        if (data.ObjectType == 'FusionAttribute' || data.ObjectType == 'Fusion') {
-            this.checkSecondaryNavLocalStorage();
-            return;
-        }
-
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe((r) => {
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;

@@ -69,9 +69,6 @@ export class IconService extends BaseObservableService   {
         switch (c) {
             case AssetTypeClass.BusinessAsset:
                 return 'book';
-            case AssetTypeClass.Fusion:
-            case AssetTypeClass.FusionAttribute:
-            case AssetTypeClass.FusionQuery:
             case AssetTypeClass.TechnicalAsset:
                 return 'database';
             case AssetTypeClass.Model:
