@@ -2927,40 +2927,46 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID 
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID]
                         ";
-            var executions = await CompanyContext.QueryAsync<dynamic>(sql, null, ApiTimeout);
-            var count = await CompanyContext.QueryAsync<int>(countSQL, null, ApiTimeout);
 
-            var items = executions.Select(x =>
+            var multiSQL = $"{sql}; {countSQL}";
+            using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, null, ApiTimeout))
             {
-                var f = string.IsNullOrEmpty(x.Fields) ? "{}" : x.Fields;
-                return new APIExecutionAPIModel
+                var executions = multi.Read<dynamic>().ToList();
+                var count = multi.Read<int>().First();
+
+                var items = executions.Select(x =>
                 {
-                    CompletedOn = x.CompletedOn,
-                    Error = x.Error,
-                    ErrorMessage = x.ErrorMessage,
-                    ExecutionID = x.ExecutionID,
-                    Fields = JsonConvert.DeserializeObject<dynamic>(f),
-                    Method = x.Method,
-                    Processed = x.Processed,
-                    ProcessingStartedOn = x.ProcessingStartedOn,
-                    Resource = x.Resource,
-                    ResourceUid = x.ResourceUid,
-                    Route = x.Route,
-                    StartedOn = x.StartedOn,
-                    Total = x.Total,
-                    ApplicationId = x.ApplicationId
-                };
-            });
-            var resultsModel = new APIExecutionAPIModelResult
-            {
-                items = items,
-                total = count.FirstOrDefault(),
-                pageNum = pageNum,
-                pageSize = pageSize,
-                StatusCode = HttpStatusCode.OK
-            };
+                    var f = string.IsNullOrEmpty(x.Fields) ? "{}" : x.Fields;
+                    return new APIExecutionAPIModel
+                    {
+                        CompletedOn = x.CompletedOn,
+                        Error = x.Error,
+                        ErrorMessage = x.ErrorMessage,
+                        ExecutionID = x.ExecutionID,
+                        Fields = JsonConvert.DeserializeObject<dynamic>(f),
+                        Method = x.Method,
+                        Processed = x.Processed,
+                        ProcessingStartedOn = x.ProcessingStartedOn,
+                        Resource = x.Resource,
+                        ResourceUid = x.ResourceUid,
+                        Route = x.Route,
+                        StartedOn = x.StartedOn,
+                        Total = x.Total,
+                        ApplicationId = x.ApplicationId
+                    };
+                });
 
-            return resultsModel;
+                var resultsModel = new APIExecutionAPIModelResult
+                {
+                    items = items,
+                    total = count,
+                    pageNum = pageNum,
+                    pageSize = pageSize,
+                    StatusCode = HttpStatusCode.OK
+                };
+
+                return resultsModel;
+            }
         }
 
         public async Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string component, string status)
