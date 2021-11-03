@@ -874,6 +874,11 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -961,6 +966,11 @@ namespace d360.web.Controllers.V2
             var prefix = "Assets.PutAssetsAsync => ";
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -1031,6 +1041,11 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -1788,10 +1803,14 @@ namespace d360.web.Controllers.V2
             string applicationId = null)
         {
             var prefix = "Assets.PostBulkAssetsAsync => ";
-            var errorMessage = "";
 
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -1820,7 +1839,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { ApiMessages.EndpointMethod, prefix },
                     { AssetsApiMessages.AssetTypeUid, assetTypeUid.ToString() },
@@ -1865,10 +1884,13 @@ namespace d360.web.Controllers.V2
             string applicationId = null)
         {
             var prefix = "Assets.PutBulkAssetsAsync => ";
-            var errorMessage = "";
-
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -1899,7 +1921,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { ApiMessages.EndpointMethod, prefix },
                     { AssetsApiMessages.AssetTypeUid, assetTypeUid.ToString() },
@@ -1945,10 +1967,12 @@ namespace d360.web.Controllers.V2
             string applicationId = null)
         {
             var prefix = "Assets.DeleteBulkAssetsAsync => ";
-            var errorMessage = "";
-
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
 
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
@@ -1982,7 +2006,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { ApiMessages.EndpointMethod, prefix },
                     { AssetsApiMessages.AssetTypeUid, assetTypeUid.ToString() },

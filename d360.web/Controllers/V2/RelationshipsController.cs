@@ -1103,10 +1103,14 @@ namespace d360.web.Controllers.V2
             string applicationId = null)
         {
             var prefix = "Relationships.PostRelationshipsAsync => ";
-            var errorMessage = "";
 
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
                 if (intersectType == null)
@@ -1170,7 +1174,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
@@ -1201,10 +1205,13 @@ namespace d360.web.Controllers.V2
             string applicationId = null)
         {
             var prefix = "Relationships.PostBulkRelationshipsAsync => ";
-            var errorMessage = "";
-
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
                 if (intersectType == null)
@@ -1245,7 +1252,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
@@ -1356,10 +1363,14 @@ namespace d360.web.Controllers.V2
             string applicationId = null)
         {
             var prefix = "Relationships.DeleteBulkRelationshipsAsync => ";
-            var errorMessage = "";
 
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
                 if (intersectType == null)
@@ -1400,7 +1411,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
@@ -1436,6 +1447,11 @@ namespace d360.web.Controllers.V2
             bool triggerWorkflow = false,
             string applicationId = null)
         {
+            if (applicationId != null && applicationId.Length > 200)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+            }
+
             IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
             if (intersectType == null)
