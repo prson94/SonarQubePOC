@@ -88,6 +88,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to add.
+        /// </summary>
+        public static string add {
+            get {
+                return ResourceManager.GetString("add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are already watching {0}.
         /// </summary>
         public static string AlreadyWatch {
@@ -187,6 +196,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Company Inactive.
+        /// </summary>
+        public static string CompanyInactive {
+            get {
+                return ResourceManager.GetString("CompanyInactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Component cannot exceed 250 characters..
         /// </summary>
         public static string ComponentMaxSize250 {
@@ -201,6 +219,15 @@ namespace Resources {
         public static string ComponentNotValid {
             get {
                 return ResourceManager.GetString("ComponentNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to confirm.
+        /// </summary>
+        public static string confirm {
+            get {
+                return ResourceManager.GetString("confirm", resourceCulture);
             }
         }
         
@@ -354,6 +381,15 @@ namespace Resources {
         public static string EndpointRecalculatingMeasureScoreItemsHeading {
             get {
                 return ResourceManager.GetString("EndpointRecalculatingMeasureScoreItemsHeading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
             }
         }
         
@@ -574,6 +610,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Favorites of type Page cannot have an empty route..
+        /// </summary>
+        public static string FavoritesEmptyRoute {
+            get {
+                return ResourceManager.GetString("FavoritesEmptyRoute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field moved successfully..
         /// </summary>
         public static string FieldMovedSuccessfully {
@@ -736,6 +781,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid _direction provided.
+        /// </summary>
+        public static string Invalid_Direction {
+            get {
+                return ResourceManager.GetString("Invalid_Direction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid _includeChildAssets provided.
         /// </summary>
         public static string Invalid_includeChildAssetsProvided {
@@ -822,6 +876,15 @@ namespace Resources {
         public static string InvalidEndDate {
             get {
                 return ResourceManager.GetString("InvalidEndDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Enumeration Value in JSON.
+        /// </summary>
+        public static string InvalidEnumValueInJson {
+            get {
+                return ResourceManager.GetString("InvalidEnumValueInJson", resourceCulture);
             }
         }
         
@@ -921,6 +984,15 @@ namespace Resources {
         public static string InvalidIntersecttypeid {
             get {
                 return ResourceManager.GetString("InvalidIntersecttypeid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid JSON Message.
+        /// </summary>
+        public static string InvalidJson {
+            get {
+                return ResourceManager.GetString("InvalidJson", resourceCulture);
             }
         }
         
@@ -1186,6 +1258,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Name is required..
+        /// </summary>
+        public static string NameRequired {
+            get {
+                return ResourceManager.GetString("NameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No Groups provided in request.
         /// </summary>
         public static string NoGroupRequest {
@@ -1258,6 +1339,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ownership type.
+        /// </summary>
+        public static string OwnershipType {
+            get {
+                return ResourceManager.GetString("OwnershipType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to pageNum.
         /// </summary>
         public static string PageNumString {
@@ -1276,11 +1366,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Predicate.
+        /// </summary>
+        public static string Predicate {
+            get {
+                return ResourceManager.GetString("Predicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot delete Primary Owner of group..
         /// </summary>
         public static string PrimayOwnerOfGroupNotDelete {
             get {
                 return ResourceManager.GetString("PrimayOwnerOfGroupNotDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rebuild request received and accepted..
+        /// </summary>
+        public static string RebuildRequest {
+            get {
+                return ResourceManager.GetString("RebuildRequest", resourceCulture);
             }
         }
         
@@ -1456,6 +1564,42 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} successfully created..
+        /// </summary>
+        public static string SucessfullyCreated {
+            get {
+                return ResourceManager.GetString("SucessfullyCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} successfully deleted..
+        /// </summary>
+        public static string SucessfullyDeleted {
+            get {
+                return ResourceManager.GetString("SucessfullyDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} successfully edited..
+        /// </summary>
+        public static string SucessfullyEdited {
+            get {
+                return ResourceManager.GetString("SucessfullyEdited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} successfully removed..
+        /// </summary>
+        public static string SucessfullyRemoved {
+            get {
+                return ResourceManager.GetString("SucessfullyRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} successfully updated..
         /// </summary>
         public static string SucessfullyUpdated {
@@ -1569,6 +1713,15 @@ namespace Resources {
         public static string UidConstant {
             get {
                 return ResourceManager.GetString("UidConstant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uid Invalid for {0}.
+        /// </summary>
+        public static string UidInvalid {
+            get {
+                return ResourceManager.GetString("UidInvalid", resourceCulture);
             }
         }
         

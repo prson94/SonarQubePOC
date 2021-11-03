@@ -118,7 +118,7 @@ namespace d360.web.Controllers.V2
             {
                 HttpStatusCode errorCode = HttpStatusCode.InternalServerError;
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                string errorTitle = "Unknown error";
+                string errorTitle = ApiMessages.UnknownError;
 
                 if (ex is FormatException)
                 {

@@ -139,12 +139,30 @@
     <value>Asset UID</value>
     <comment>Used for data profile match export</comment>
   </data>
+  <data name="AssetUidProfileSetDateRecordNotfound" xml:space="preserve">
+    <value>Record does not exist for AssetUid {0} and ProfileSetDate {1}</value>
+  </data>
   <data name="AssetUrlColumn" xml:space="preserve">
     <value>Url</value>
     <comment>Used for data profile match export</comment>
   </data>
+  <data name="DataProfileDeleteMaxLimit" xml:space="preserve">
+    <value>You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint.</value>
+  </data>
+  <data name="DataProfileRecordsLimit" xml:space="preserve">
+    <value>You may only provide a maximum of {0} Data Profile records in this request. Please call the BATCH API to submit more than {1} items.</value>
+  </data>
   <data name="Duplicate" xml:space="preserve">
     <value>Duplicate</value>
+  </data>
+  <data name="DuplicateRecordBatchProfile" xml:space="preserve">
+    <value>Duplicate Records: {0}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch.</value>
+  </data>
+  <data name="ElementBottomKNotEmpty" xml:space="preserve">
+    <value>Elements in bottomK cannot be Empty strings</value>
+  </data>
+  <data name="ElementTopKNotEmpty" xml:space="preserve">
+    <value>Elements in topK cannot be Empty string</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
     <value>Invalid value for parameter '_order'. Allowed values are 'path' and 'tags'.</value>
@@ -198,6 +216,12 @@
   </data>
   <data name="OrderInvalid" xml:space="preserve">
     <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
+  </data>
+  <data name="ProfileRecordAlreadyExists" xml:space="preserve">
+    <value>Record already exists for AssetUid {0} and ProfileSetDate {1}</value>
+  </data>
+  <data name="ProfilingNotSupportAssetClass" xml:space="preserve">
+    <value>The asset class {0} does not support data profiling. Profiling data can only be associated with Business or Technical Asset types.</value>
   </data>
   <data name="RequiredSimilarType" xml:space="preserve">
     <value>similarType is a required field.</value>

@@ -34,6 +34,7 @@ using System.Web.Mvc;
 using System.Web.Security;
 using System.Xml;
 using Resources;
+
 namespace d360.web.Controllers
 {
     [RoutePrefix(""), ValidateContracts(Ignore = true)]
@@ -93,7 +94,7 @@ namespace d360.web.Controllers
                         }
                         else
                         {
-                            throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where an IDP-supplied CER file was stored");
+                            throw new ApplicationException(OthersMessages.FailedToVerifySignature);
                         }
                     }
                     else
@@ -104,7 +105,7 @@ namespace d360.web.Controllers
                         }
                         else
                         {
-                            throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where no IDP-supplied CER file was stored");
+                            throw new ApplicationException(OthersMessages.FailedToVerifySignatureNoIDP);
                         }
                     }
                 }
@@ -656,7 +657,7 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    throw new ArgumentException("No assertions in response");
+                    throw new ArgumentException(OthersMessages.NoAssertionsInResponse);
                 }
 
                 var attributes = samlAssertion.GetAttributeStatements()[0].Attributes;
@@ -950,7 +951,7 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("Unauthorized", "The user name or password provided is incorrect.");
+                    ModelState.AddModelError(OthersMessages.Unauthorized, OthersMessages.IncorrectPassword);
                     return View("Login", model);
                 }
             }
@@ -1042,7 +1043,7 @@ namespace d360.web.Controllers
 
             if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
             {
-                ModelState.AddModelError("Invalid", "No terms of use agreement found.");
+                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoTermOfAgreementFound);
                 success = false;
             }
 
@@ -1067,7 +1068,7 @@ namespace d360.web.Controllers
 
             if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
             {
-                ModelState.AddModelError("Invalid", "No terms of use agreement found.");
+                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoTermOfAgreementFound);
                 success = false;
             }
 
@@ -1186,7 +1187,7 @@ namespace d360.web.Controllers
 
                             if (string.IsNullOrEmpty(emailDomain))
                             {
-                                ModelState.AddModelError("Invalid", "No email domain could be resolved.");
+                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoEmailDomainResolved);
                                 return View(model);
                             }
 
@@ -1289,14 +1290,14 @@ namespace d360.web.Controllers
                                         await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                         model.Step = RegisterStep.Email;
-                                        model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                        model.Message = OthersMessages.OwnershipConfirmationMail;
                                     }
 
                                     return View(model);
                                 }
                                 else
                                 {
-                                    ModelState.AddModelError("Unauthorized", "Your organisation is not yet registered with the Market Business Glossary or your details are invalid. Please contact <a href='mailto:datasupport@londonmarketgroup.co.uk'>datasupport@londonmarketgroup.co.uk</a> for assistance.");
+                                    ModelState.AddModelError( OthersMessages.Unauthorized, OthersMessages.OrganisationNotYetRegistered);
                                     return View(model);
                                 }
 
@@ -1304,7 +1305,7 @@ namespace d360.web.Controllers
                         }
                         catch (Exception)
                         {
-                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
                             return View(model);
                         }
 
@@ -1313,7 +1314,7 @@ namespace d360.web.Controllers
 
                         if (!model.RegistrationID.HasValue)
                         {
-                            ModelState.AddModelError("Invalid", "No registration found.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                             return View(model);
                         }
 
@@ -1363,7 +1364,7 @@ namespace d360.web.Controllers
 
                                 if (resource == null)
                                 {
-                                    ModelState.AddModelError("Invalid", "Resource not available for this user.");
+                                    ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResourceNotThisUser);
                                     return View(model);
                                 }
 
@@ -1389,7 +1390,7 @@ namespace d360.web.Controllers
 
                                     if (orgResource == null)
                                     {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                        ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResourceNotSetOrgResource);
                                         return View(model);
                                     }
 
@@ -1437,7 +1438,7 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
                         }
@@ -1450,19 +1451,19 @@ namespace d360.web.Controllers
 
                             if (!model.RegistrationID.HasValue)
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
 
                             if (!model.Password.Equals(model.ConfirmPassword))
                             {
-                                ModelState.AddModelError("Invalid", "Passwords do not match.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.PasswordNotMatch);
                                 return View(model);
                             }
 
                             if (!Regex.Match(model.Password, Resources.Validation.Password_Regex).Success)
                             {
-                                ModelState.AddModelError("Invalid", $"Your password does not meet the following complexity requirements: {Resources.Validation.Password_Requirements}.");
+                                ModelState.AddModelError(ApiMessages.Invalid,string.Format(OthersMessages.NotMeetPasswordRule,Resources.Validation.Password_Requirements));
                                 return View(model);
                             }
 
@@ -1525,13 +1526,13 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
-                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
                             return View(model);
                         }
 
@@ -1543,7 +1544,7 @@ namespace d360.web.Controllers
 
                             if (!model.RegistrationID.HasValue)
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
 
@@ -1591,7 +1592,7 @@ namespace d360.web.Controllers
 
                                 if (resource == null)
                                 {
-                                    ModelState.AddModelError("Invalid", "Resource not available for this user.");
+                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotThisUser );
                                     return View(model);
                                 }
 
@@ -1617,7 +1618,7 @@ namespace d360.web.Controllers
 
                                     if (orgResource == null)
                                     {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                        ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotSetOrgResource);
                                         return View(model);
                                     }
 
@@ -1665,13 +1666,13 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
-                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
                             return View(model);
                         }
                     case RegisterStep.TermsOfUse:
@@ -1682,7 +1683,7 @@ namespace d360.web.Controllers
 
                             if (!model.RegistrationID.HasValue)
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
 
@@ -1695,21 +1696,21 @@ namespace d360.web.Controllers
 
                                 if (!model.Accept ?? false)
                                 {
-                                    ModelState.AddModelError("Invalid", "You must accept the terms of use.");
+                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.MustAcceptTermsOfUse);
                                     return View(model);
                                 }
 
                                 var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
                                 if (resource == null)
                                 {
-                                    ModelState.AddModelError("Invalid", "No resource account could be located for you.");
+                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoResourceAccount);
                                     return View(model);
                                 }
                                 else
                                 {
                                     if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
                                     {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet allocated to this company.");
+                                        ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResoourceAccountNotAllocatedToCompany);
                                         return View(model);
                                     }
                                 }
@@ -1737,7 +1738,7 @@ namespace d360.web.Controllers
 
                                     if (orgResource == null)
                                     {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                        ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotSetOrgResource);
                                         return View(model);
                                     }
 
@@ -1780,13 +1781,13 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
-                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
                             return View(model);
                         }
 
@@ -1799,7 +1800,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            ModelState.AddModelError("UnknownError", UNKNOWN_ERROR_MESSAGE);
+            ModelState.AddModelError(ApiMessages.UnknownError, UNKNOWN_ERROR_MESSAGE);
             return View(model);
         }
 

@@ -61,11 +61,515 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred - there are more than 1 open carts for this user.
+        /// </summary>
+        public static string AnErrorOccurMorethan1OpenCart {
+            get {
+                return ResourceManager.GetString("AnErrorOccurMorethan1OpenCart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api endpoint uri successfully removed..
+        /// </summary>
+        public static string ApiEndPointUriRemoved {
+            get {
+                return ResourceManager.GetString("ApiEndPointUriRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api endpoint version successfully removed..
+        /// </summary>
+        public static string ApiEndPointVersionRemoved {
+            get {
+                return ResourceManager.GetString("ApiEndPointVersionRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api field.
+        /// </summary>
+        public static string ApiField {
+            get {
+                return ResourceManager.GetString("ApiField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api field successfully removed..
+        /// </summary>
+        public static string ApiFieldRemoved {
+            get {
+                return ResourceManager.GetString("ApiFieldRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Api Field successfully updated..
+        /// </summary>
+        public static string ApiFieldUpdated {
+            get {
+                return ResourceManager.GetString("ApiFieldUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to API Namespace Name is null.
+        /// </summary>
+        public static string APINamespaceNameNull {
+            get {
+                return ResourceManager.GetString("APINamespaceNameNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to API Namespace is null.
+        /// </summary>
+        public static string APINamespaceNull {
+            get {
+                return ResourceManager.GetString("APINamespaceNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api service.
+        /// </summary>
+        public static string ApiService {
+            get {
+                return ResourceManager.GetString("ApiService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api service endpoint.
+        /// </summary>
+        public static string ApiServiceEndpoint {
+            get {
+                return ResourceManager.GetString("ApiServiceEndpoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to API Service Endpoint Name is null.
+        /// </summary>
+        public static string APIServiceEndpointNameNull {
+            get {
+                return ResourceManager.GetString("APIServiceEndpointNameNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to API Service Endpoint Prefix is null.
+        /// </summary>
+        public static string APIServiceEndpointPrefixNull {
+            get {
+                return ResourceManager.GetString("APIServiceEndpointPrefixNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to API Service Endpoint Version Prefix is null.
+        /// </summary>
+        public static string APIServiceEndpointVersionPrefixNull {
+            get {
+                return ResourceManager.GetString("APIServiceEndpointVersionPrefixNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to API Service Name is null.
+        /// </summary>
+        public static string APIServiceNameNull {
+            get {
+                return ResourceManager.GetString("APIServiceNameNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to API Service Prefix is null.
+        /// </summary>
+        public static string APIServicePrefixNull {
+            get {
+                return ResourceManager.GetString("APIServicePrefixNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api service successfully removed..
+        /// </summary>
+        public static string ApiServiceRemoved {
+            get {
+                return ResourceManager.GetString("ApiServiceRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to API Service Endpoint Version URI format is null.
+        /// </summary>
+        public static string ApiServiceUriFormatIsNull {
+            get {
+                return ResourceManager.GetString("ApiServiceUriFormatIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api service version.
+        /// </summary>
+        public static string apiserviceversion {
+            get {
+                return ResourceManager.GetString("apiserviceversion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api service version entity.
+        /// </summary>
+        public static string ApiServiceVersionEntity {
+            get {
+                return ResourceManager.GetString("ApiServiceVersionEntity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api service version uri.
+        /// </summary>
+        public static string ApiServiceVersionUri {
+            get {
+                return ResourceManager.GetString("ApiServiceVersionUri", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to asset type.
+        /// </summary>
+        public static string AssetType {
+            get {
+                return ResourceManager.GetString("AssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No Asset Type found for given Guid.
         /// </summary>
         public static string AssetTypeNotFound {
             get {
                 return ResourceManager.GetString("AssetTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to authentication failed.
+        /// </summary>
+        public static string AuthenticationFailed {
+            get {
+                return ResourceManager.GetString("AuthenticationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to bottom..
+        /// </summary>
+        public static string bottomConstant {
+            get {
+                return ResourceManager.GetString("bottomConstant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to company settings.
+        /// </summary>
+        public static string CompanySettings {
+            get {
+                return ResourceManager.GetString("CompanySettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to contract.
+        /// </summary>
+        public static string Contract {
+            get {
+                return ResourceManager.GetString("Contract", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find existing permission.
+        /// </summary>
+        public static string CoultNotFindPermission {
+            get {
+                return ResourceManager.GetString("CoultNotFindPermission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to custom synonym.
+        /// </summary>
+        public static string CustomSynonym {
+            get {
+                return ResourceManager.GetString("CustomSynonym", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom Synonym not found.
+        /// </summary>
+        public static string CustomSynonymNotFound {
+            get {
+                return ResourceManager.GetString("CustomSynonymNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dashboard.
+        /// </summary>
+        public static string Dashboard {
+            get {
+                return ResourceManager.GetString("Dashboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This domain is already part of this organization.
+        /// </summary>
+        public static string DomainPartOfOrganization {
+            get {
+                return ResourceManager.GetString("DomainPartOfOrganization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This email has already been invited to this organization.
+        /// </summary>
+        public static string EmailAlreadyInviteThisOrganization {
+            get {
+                return ResourceManager.GetString("EmailAlreadyInviteThisOrganization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The email you entered is not valid.
+        /// </summary>
+        public static string emailNotValid {
+            get {
+                return ResourceManager.GetString("emailNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to endpoint.
+        /// </summary>
+        public static string endpoint {
+            get {
+                return ResourceManager.GetString("endpoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to end point successfully removed..
+        /// </summary>
+        public static string EndPointRemoved {
+            get {
+                return ResourceManager.GetString("EndPointRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error Occurred!.
+        /// </summary>
+        public static string ErrorOccurred {
+            get {
+                return ResourceManager.GetString("ErrorOccurred", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to generate embed token..
+        /// </summary>
+        public static string FailedGenerateToken {
+            get {
+                return ResourceManager.GetString("FailedGenerateToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!.
+        /// </summary>
+        public static string FailedToLoadPowerBI {
+            get {
+                return ResourceManager.GetString("FailedToLoadPowerBI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Favorite moved successfully..
+        /// </summary>
+        public static string FavoriteMoved {
+            get {
+                return ResourceManager.GetString("FavoriteMoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to field.
+        /// </summary>
+        public static string field {
+            get {
+                return ResourceManager.GetString("field", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field successfully created..
+        /// </summary>
+        public static string FieldCreated {
+            get {
+                return ResourceManager.GetString("FieldCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File is required.
+        /// </summary>
+        public static string FileRequired {
+            get {
+                return ResourceManager.GetString("FileRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File uploaded and queued for processing..
+        /// </summary>
+        public static string FileUploadedAndQueueProcessing {
+            get {
+                return ResourceManager.GetString("FileUploadedAndQueueProcessing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder added successfully.
+        /// </summary>
+        public static string FolderAdded {
+            get {
+                return ResourceManager.GetString("FolderAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This folder is already sorted to the bottom..
+        /// </summary>
+        public static string FolderAlreadySortedToBottom {
+            get {
+                return ResourceManager.GetString("FolderAlreadySortedToBottom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This folder is already sorted to the top.
+        /// </summary>
+        public static string FolderAlreadySortedToTop {
+            get {
+                return ResourceManager.GetString("FolderAlreadySortedToTop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder id ${id} not found.
+        /// </summary>
+        public static string FolderIdNotFound {
+            get {
+                return ResourceManager.GetString("FolderIdNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder item added successfully..
+        /// </summary>
+        public static string FolderItemAdded {
+            get {
+                return ResourceManager.GetString("FolderItemAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder Item Id ${id} not found.
+        /// </summary>
+        public static string FolderItemNotFound {
+            get {
+                return ResourceManager.GetString("FolderItemNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder item removed successfully..
+        /// </summary>
+        public static string FolderItemRemoved {
+            get {
+                return ResourceManager.GetString("FolderItemRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder {0} moved successfully..
+        /// </summary>
+        public static string FolderMoved {
+            get {
+                return ResourceManager.GetString("FolderMoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder {0} moved down successfully..
+        /// </summary>
+        public static string FolderMovedDown {
+            get {
+                return ResourceManager.GetString("FolderMovedDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder {0} moved up successfully..
+        /// </summary>
+        public static string FolderMovedUp {
+            get {
+                return ResourceManager.GetString("FolderMovedUp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder name cannot be empty..
+        /// </summary>
+        public static string FolderNameNotEmpty {
+            get {
+                return ResourceManager.GetString("FolderNameNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder removed successfully..
+        /// </summary>
+        public static string FolderRemoved {
+            get {
+                return ResourceManager.GetString("FolderRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder updated successfully..
+        /// </summary>
+        public static string FolderUpdated {
+            get {
+                return ResourceManager.GetString("FolderUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grammar allocation successfully modified..
+        /// </summary>
+        public static string GrammarAllocationModified {
+            get {
+                return ResourceManager.GetString("GrammarAllocationModified", resourceCulture);
             }
         }
         
@@ -106,6 +610,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid file type: {0} cannot be uploaded..
+        /// </summary>
+        public static string InvalidFileType {
+            get {
+                return ResourceManager.GetString("InvalidFileType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid folder..
+        /// </summary>
+        public static string InvalidFolder {
+            get {
+                return ResourceManager.GetString("InvalidFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not valid Intersect Type Uid or Target Type Uid.
         /// </summary>
         public static string InvalidIntersectTypeAndTargetUID {
@@ -115,11 +637,884 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid object passed.
+        /// </summary>
+        public static string invalidObjectPassed {
+            get {
+                return ResourceManager.GetString("invalidObjectPassed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid relationship cardinality for multiple items..
+        /// </summary>
+        public static string InvalidrelationshipCardinality {
+            get {
+                return ResourceManager.GetString("InvalidrelationshipCardinality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid relationship type or source item..
+        /// </summary>
+        public static string InvalidRelationshipType {
+            get {
+                return ResourceManager.GetString("InvalidRelationshipType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IP Restrictions.
+        /// </summary>
+        public static string IPRestriction {
+            get {
+                return ResourceManager.GetString("IPRestriction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to issue type.
+        /// </summary>
+        public static string IssueType {
+            get {
+                return ResourceManager.GetString("IssueType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No Issue Type found for given Guid.
         /// </summary>
         public static string IssueTypeNotFound {
             get {
                 return ResourceManager.GetString("IssueTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item.
+        /// </summary>
+        public static string Item {
+            get {
+                return ResourceManager.GetString("Item", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The item has been added to your cart.
+        /// </summary>
+        public static string ItemAddedCart {
+            get {
+                return ResourceManager.GetString("ItemAddedCart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item is already in your cart.
+        /// </summary>
+        public static string ItemAlreadyInCart {
+            get {
+                return ResourceManager.GetString("ItemAlreadyInCart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The item cannot be related to itself..
+        /// </summary>
+        public static string ItemCannotRelateItself {
+            get {
+                return ResourceManager.GetString("ItemCannotRelateItself", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item successfully created and processed..
+        /// </summary>
+        public static string ItemCreatedProcessed {
+            get {
+                return ResourceManager.GetString("ItemCreatedProcessed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item date.
+        /// </summary>
+        public static string ItemDate {
+            get {
+                return ResourceManager.GetString("ItemDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item successfully removed..
+        /// </summary>
+        public static string ItemRemoved {
+            get {
+                return ResourceManager.GetString("ItemRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item successfully updated and processed..
+        /// </summary>
+        public static string ItemUpdatedProcessed {
+            get {
+                return ResourceManager.GetString("ItemUpdatedProcessed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LoadAction.
+        /// </summary>
+        public static string LoadAction {
+            get {
+                return ResourceManager.GetString("LoadAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The model passed to the method was invalid.
+        /// </summary>
+        public static string ModelPassedToMethodInvalid {
+            get {
+                return ResourceManager.GetString("ModelPassedToMethodInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Namespace successfully created..
+        /// </summary>
+        public static string NamespaceCreated {
+            get {
+                return ResourceManager.GetString("NamespaceCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to api namespace successfully removed..
+        /// </summary>
+        public static string NamespaceRemoved {
+            get {
+                return ResourceManager.GetString("NamespaceRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Namespace successfully updated..
+        /// </summary>
+        public static string NamespaceUpdated {
+            get {
+                return ResourceManager.GetString("NamespaceUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No asset type found for the ID {0}.
+        /// </summary>
+        public static string NoAssetTypeFound {
+            get {
+                return ResourceManager.GetString("NoAssetTypeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No asset type ID provided (id parameter)..
+        /// </summary>
+        public static string NoAssetTypeIDProvided {
+            get {
+                return ResourceManager.GetString("NoAssetTypeIDProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to no favorite above.
+        /// </summary>
+        public static string NoFavoriteAbove {
+            get {
+                return ResourceManager.GetString("NoFavoriteAbove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to no favorite below.
+        /// </summary>
+        public static string NoFavoriteBelow {
+            get {
+                return ResourceManager.GetString("NoFavoriteBelow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to no favorite with supplied route.
+        /// </summary>
+        public static string NoFavoriteRoute {
+            get {
+                return ResourceManager.GetString("NoFavoriteRoute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot find the specified service endpoint version entity to edit.
+        /// </summary>
+        public static string NoFoundSericeEndpointVersionEntityToEdit {
+            get {
+                return ResourceManager.GetString("NoFoundSericeEndpointVersionEntityToEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot find the specified service endpoint version to edit.
+        /// </summary>
+        public static string NoFoundSericeEndpointVersionToEdit {
+            get {
+                return ResourceManager.GetString("NoFoundSericeEndpointVersionToEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to do this.
+        /// </summary>
+        public static string NoPermissionToDoThis {
+            get {
+                return ResourceManager.GetString("NoPermissionToDoThis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to add items to this cart.
+        /// </summary>
+        public static string NoPremissionAddItemInCart {
+            get {
+                return ResourceManager.GetString("NoPremissionAddItemInCart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to clear this cart..
+        /// </summary>
+        public static string NoPremissionClearCart {
+            get {
+                return ResourceManager.GetString("NoPremissionClearCart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to edit shortcuts..
+        /// </summary>
+        public static string NoPremissionEditShortCuts {
+            get {
+                return ResourceManager.GetString("NoPremissionEditShortCuts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to remove this item.
+        /// </summary>
+        public static string NoPremissionRemoveItem {
+            get {
+                return ResourceManager.GetString("NoPremissionRemoveItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to request this shopping cart..
+        /// </summary>
+        public static string NoPremissionRequestCart {
+            get {
+                return ResourceManager.GetString("NoPremissionRequestCart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No selected items.
+        /// </summary>
+        public static string NoSelectedItems {
+            get {
+                return ResourceManager.GetString("NoSelectedItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No such report.
+        /// </summary>
+        public static string NoSuchReport {
+            get {
+                return ResourceManager.GetString("NoSuchReport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are not allowed to update this relationship type as there are existing field types that depend on it..
+        /// </summary>
+        public static string NotAllowedUpdateRelationship {
+            get {
+                return ResourceManager.GetString("NotAllowedUpdateRelationship", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not delete Organization Type.
+        /// </summary>
+        public static string NotDeleteOrganizationType {
+            get {
+                return ResourceManager.GetString("NotDeleteOrganizationType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot find the specified service to edit.
+        /// </summary>
+        public static string NotFoundServiceEdit {
+            get {
+                return ResourceManager.GetString("NotFoundServiceEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find the shopping cart specified..
+        /// </summary>
+        public static string NotFoundShoppingCart {
+            get {
+                return ResourceManager.GetString("NotFoundShoppingCart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Organization.
+        /// </summary>
+        public static string Organization {
+            get {
+                return ResourceManager.GetString("Organization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Organization domain.
+        /// </summary>
+        public static string OrganizationDomain {
+            get {
+                return ResourceManager.GetString("OrganizationDomain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Organization invitation.
+        /// </summary>
+        public static string OrganizationInvitation {
+            get {
+                return ResourceManager.GetString("OrganizationInvitation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to organizationType.
+        /// </summary>
+        public static string organizationType {
+            get {
+                return ResourceManager.GetString("organizationType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please specify a valid username and password..
+        /// </summary>
+        public static string PleaseSpecifyUserNamePassword {
+            get {
+                return ResourceManager.GetString("PleaseSpecifyUserNamePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to policy type.
+        /// </summary>
+        public static string PolicyType {
+            get {
+                return ResourceManager.GetString("PolicyType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to policy type level.
+        /// </summary>
+        public static string PolicyTypeLevel {
+            get {
+                return ResourceManager.GetString("PolicyTypeLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power BI Credentials.
+        /// </summary>
+        public static string PowerBICredentials {
+            get {
+                return ResourceManager.GetString("PowerBICredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerBI has not been setup on this Govern environment.  You are possibly seeing reports because the environment was copied from another region.  Please re-upload your PowerBI files to resolve this issue..
+        /// </summary>
+        public static string PowerBINotSetupOnGovernEnvironment {
+            get {
+                return ResourceManager.GetString("PowerBINotSetupOnGovernEnvironment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Question.
+        /// </summary>
+        public static string Question {
+            get {
+                return ResourceManager.GetString("Question", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship.
+        /// </summary>
+        public static string Relationship {
+            get {
+                return ResourceManager.GetString("Relationship", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship not found..
+        /// </summary>
+        public static string RelationshipNotFound {
+            get {
+                return ResourceManager.GetString("RelationshipNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship type.
+        /// </summary>
+        public static string RelationshipType {
+            get {
+                return ResourceManager.GetString("RelationshipType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Report.
+        /// </summary>
+        public static string Report {
+            get {
+                return ResourceManager.GetString("Report", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your request has been submitted.
+        /// </summary>
+        public static string RequestSubmitted {
+            get {
+                return ResourceManager.GetString("RequestSubmitted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users password has been successfully updated!.
+        /// </summary>
+        public static string ResetPassword {
+            get {
+                return ResourceManager.GetString("ResetPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to resource.
+        /// </summary>
+        public static string Resource {
+            get {
+                return ResourceManager.GetString("Resource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to response type.
+        /// </summary>
+        public static string ResponseType {
+            get {
+                return ResourceManager.GetString("ResponseType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to responsibility.
+        /// </summary>
+        public static string Responsibility {
+            get {
+                return ResourceManager.GetString("Responsibility", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name provided must be less then 250 characters in length..
+        /// </summary>
+        public static string ResponsibilityNameMax250 {
+            get {
+                return ResourceManager.GetString("ResponsibilityNameMax250", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ResponsibilityType.
+        /// </summary>
+        public static string ResponsibilityType {
+            get {
+                return ResourceManager.GetString("ResponsibilityType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to responsibility type rule.
+        /// </summary>
+        public static string ResponsibilityTypeRule {
+            get {
+                return ResourceManager.GetString("ResponsibilityTypeRule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select a predicate for this relationship..
+        /// </summary>
+        public static string SelectPredicate {
+            get {
+                return ResourceManager.GetString("SelectPredicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to service.
+        /// </summary>
+        public static string serviceConstant {
+            get {
+                return ResourceManager.GetString("serviceConstant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service successfully created..
+        /// </summary>
+        public static string ServiceCreated {
+            get {
+                return ResourceManager.GetString("ServiceCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service endpoint successfully created..
+        /// </summary>
+        public static string ServiceEndpointCreated {
+            get {
+                return ResourceManager.GetString("ServiceEndpointCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings successfully updated..
+        /// </summary>
+        public static string SettingSucessfullyUpdated {
+            get {
+                return ResourceManager.GetString("SettingSucessfullyUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shopping cart cleared successfully.
+        /// </summary>
+        public static string ShoppingCartCleared {
+            get {
+                return ResourceManager.GetString("ShoppingCartCleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shopping cart item could not be found.
+        /// </summary>
+        public static string ShoppingCartNotFound {
+            get {
+                return ResourceManager.GetString("ShoppingCartNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shopping cart item removed successfully.
+        /// </summary>
+        public static string ShoppingCartRemoved {
+            get {
+                return ResourceManager.GetString("ShoppingCartRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shortcut added successfully.
+        /// </summary>
+        public static string ShortcutAdded {
+            get {
+                return ResourceManager.GetString("ShortcutAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shortcut is already sorted to the {0}.
+        /// </summary>
+        public static string ShortcutAlreadySorted {
+            get {
+                return ResourceManager.GetString("ShortcutAlreadySorted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shortcut deleted successfully..
+        /// </summary>
+        public static string ShortcutDeleted {
+            get {
+                return ResourceManager.GetString("ShortcutDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shortcut Id {0} not found.
+        /// </summary>
+        public static string ShortcutIDNotFound {
+            get {
+                return ResourceManager.GetString("ShortcutIDNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This shortcut is missing an icon.
+        /// </summary>
+        public static string ShortcutMissingAnIcon {
+            get {
+                return ResourceManager.GetString("ShortcutMissingAnIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shortcut modified successfully.
+        /// </summary>
+        public static string ShortcutModified {
+            get {
+                return ResourceManager.GetString("ShortcutModified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shortcut {0} moved {1} successfully..
+        /// </summary>
+        public static string ShortcutMoved {
+            get {
+                return ResourceManager.GetString("ShortcutMoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The shortcut with id {0} could not be found..
+        /// </summary>
+        public static string ShortCutNotFound {
+            get {
+                return ResourceManager.GetString("ShortCutNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This shortcut requires a name.
+        /// </summary>
+        public static string ShortCutRequireName {
+            get {
+                return ResourceManager.GetString("ShortCutRequireName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The site nav specified was not found.
+        /// </summary>
+        public static string SiteNavNotFound {
+            get {
+                return ResourceManager.GetString("SiteNavNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The specified cart could not be found.
+        /// </summary>
+        public static string SpecificCartNotFound {
+            get {
+                return ResourceManager.GetString("SpecificCartNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Survey question.
+        /// </summary>
+        public static string SurveyQuestion {
+            get {
+                return ResourceManager.GetString("SurveyQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to survey type.
+        /// </summary>
+        public static string SurveyType {
+            get {
+                return ResourceManager.GetString("SurveyType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to synonym.
+        /// </summary>
+        public static string Synonym {
+            get {
+                return ResourceManager.GetString("Synonym", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Synonym {0} successfully created..
+        /// </summary>
+        public static string SynonymCreated {
+            get {
+                return ResourceManager.GetString("SynonymCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Synonym successfully removed.
+        /// </summary>
+        public static string SynRemoved {
+            get {
+                return ResourceManager.GetString("SynRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to taxonomy type.
+        /// </summary>
+        public static string TaxonomyType {
+            get {
+                return ResourceManager.GetString("TaxonomyType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to taxonomy type level.
+        /// </summary>
+        public static string TaxonomyTypeLevel {
+            get {
+                return ResourceManager.GetString("TaxonomyTypeLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to top..
+        /// </summary>
+        public static string TopConstant {
+            get {
+                return ResourceManager.GetString("TopConstant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type.
+        /// </summary>
+        public static string TypeConstant {
+            get {
+                return ResourceManager.GetString("TypeConstant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS..
+        /// </summary>
+        public static string UnableToFindPowerBISettings {
+            get {
+                return ResourceManager.GetString("UnableToFindPowerBISettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported hierarchy asset type specified to Hierarchy_AddFields.  Supported types are taxonomytype and policytype..
+        /// </summary>
+        public static string UnsupportedHierarchyAssetTypeAddField {
+            get {
+                return ResourceManager.GetString("UnsupportedHierarchyAssetTypeAddField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported hierarchy type specified to Hierarchy_EditFields.  Supported types are taxonomy and policy..
+        /// </summary>
+        public static string UnsupportedHierarchyTypeEditField {
+            get {
+                return ResourceManager.GetString("UnsupportedHierarchyTypeEditField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to uri.
+        /// </summary>
+        public static string uriConstant {
+            get {
+                return ResourceManager.GetString("uriConstant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uri successfully created..
+        /// </summary>
+        public static string UriCreated {
+            get {
+                return ResourceManager.GetString("UriCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A user with this email address is already registered to this organization.
+        /// </summary>
+        public static string UserAlreadyRegisteredThisOrganization {
+            get {
+                return ResourceManager.GetString("UserAlreadyRegisteredThisOrganization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to user does not have admin privileges..
+        /// </summary>
+        public static string UserDoesnotAdmin {
+            get {
+                return ResourceManager.GetString("UserDoesnotAdmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to version.
+        /// </summary>
+        public static string version {
+            get {
+                return ResourceManager.GetString("version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version successfully created..
+        /// </summary>
+        public static string VersionCreated {
+            get {
+                return ResourceManager.GetString("VersionCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version successfully updated..
+        /// </summary>
+        public static string VersionUpdated {
+            get {
+                return ResourceManager.GetString("VersionUpdated", resourceCulture);
             }
         }
     }

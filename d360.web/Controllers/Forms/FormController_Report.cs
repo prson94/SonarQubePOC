@@ -53,8 +53,9 @@ namespace d360.web.Controllers
                             var importResult = await uploadPowerBIReport(file, name);
 
                             if (importResult.ImportState == "Failed")
-                                throw new Exception("FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!");
-
+                            {
+                                throw new Exception(FormControllerApiMessage.FailedToLoadPowerBI);
+                            }
                             datasetID = importResult.Datasets.FirstOrDefault().Id;
                             powerBIID = importResult.Reports.FirstOrDefault().Id.ToString();
                             filename = file.FileName;
@@ -62,7 +63,7 @@ namespace d360.web.Controllers
                     }
                     else if (reportType == "powerbi" && fileCount == 0)
                     {
-                        throw new ConflictException("Error", "File is required");
+                        throw new ConflictException(ApiMessages.Error,FormControllerApiMessage.FileRequired);
                     }
 
                     var model = new Report
@@ -110,11 +111,11 @@ namespace d360.web.Controllers
 
                     Company.Add(model);
 
-                    return jsonSuccess("Dashboard successfully created", model.ID.ToString(), "add", HttpStatusCode.Created);
+                    return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.Dashboard), model.ID.ToString(), "add", HttpStatusCode.Created);
                 }
                 else
                 {
-                    throw new MissingPropertiesException("Report");
+                    throw new MissingPropertiesException(FormControllerApiMessage.Report);
                 }
             }
             catch (BaseException ex)
@@ -154,7 +155,10 @@ namespace d360.web.Controllers
                     var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
 
                     if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-                        throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
+                    {
+                        throw new Exception(FormControllerApiMessage.UnableToFindPowerBISettings);
+                    }
+
                     try
                     {
                         await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, model.PowerBIDatasetID);
@@ -164,7 +168,7 @@ namespace d360.web.Controllers
 
                 Company.Delete(model);
 
-                return jsonSuccess("Dashboard successfully deleted", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyDeleted, FormControllerApiMessage.Dashboard), id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -192,25 +196,28 @@ namespace d360.web.Controllers
                 var pwd = parseTextField(form, "Password");
 
                 if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pwd))
-                    throw new Exception("Please specify a valid username and password.");
-
+                {
+                    throw new Exception(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
+                }
                 var companySettings = SettingsRepository.GetSettings();
                 var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
                 var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
 
                 if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-                    throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
-
+                {
+                    throw new Exception(FormControllerApiMessage.UnableToFindPowerBISettings);
+                }
                 // if the workspace id is null create a new one and update the companysettings
                 groupId = await checkPowerBIValidWorkspace(groupId, clientId);
 
                 if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-                    throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
-
+                {
+                    throw new Exception(FormControllerApiMessage.UnableToFindPowerBISettings);
+                }
                 //save password in this workspace for all ds's
                 await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, user, pwd);
 
-                return jsonSuccess("Power BI Credentials successfully updated", "", "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.PowerBICredentials), "", "add", HttpStatusCode.Created);
 
             }
             catch (BaseException ex)
@@ -257,7 +264,9 @@ namespace d360.web.Controllers
                         var importResult = await uploadPowerBIReport(file, name, model.PowerBIDatasetID);
 
                         if (importResult.ImportState == "Failed")
-                            throw new Exception("FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!");
+                        {
+                            throw new Exception(FormControllerApiMessage.FailedToLoadPowerBI);
+                        }
 
                         datasetID = importResult.Datasets.FirstOrDefault().Id;
 
@@ -271,7 +280,7 @@ namespace d360.web.Controllers
                 }
                 else if (reportType == "powerbi" && string.IsNullOrEmpty(model.FileName))
                 {
-                    throw new ConflictException("Error", "File is required");
+                    throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
                 }
 
                 var visibleTo = form["VisibleTo"];
@@ -343,11 +352,11 @@ namespace d360.web.Controllers
 
                     Company.Update<Report>(model);
 
-                    return jsonSuccess("Dashboard successfully edited", id.ToString(), "edit", HttpStatusCode.OK);
+                    return jsonSuccess(string.Format(ApiMessages.SucessfullyEdited,FormControllerApiMessage.Dashboard), id.ToString(), "edit", HttpStatusCode.OK);
                 }
                 else
                 {
-                    throw new MissingPropertiesException("Report");
+                    throw new MissingPropertiesException(FormControllerApiMessage.Report);
                 }
             }
             catch (BaseException ex)
@@ -383,8 +392,9 @@ namespace d360.web.Controllers
             var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
 
             if (string.IsNullOrEmpty(clientId))
-                throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
-
+            {
+                throw new Exception(FormControllerApiMessage.UnableToFindPowerBISettings);
+            }
             // if the workspace id is null create a new one and update the companysettings
             groupId = await checkPowerBIValidWorkspace(groupId, clientId);
 

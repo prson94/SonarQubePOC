@@ -645,4 +645,55 @@
   <data name="RequestMissingType" xml:space="preserve">
     <value>Request does not contain required parameter type</value>
   </data>
+  <data name="add" xml:space="preserve">
+    <value>add</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>confirm</value>
+  </data>
+  <data name="RebuildRequest" xml:space="preserve">
+    <value>Rebuild request received and accepted.</value>
+  </data>
+  <data name="CompanyInactive" xml:space="preserve">
+    <value>Company Inactive</value>
+  </data>
+  <data name="InvalidEnumValueInJson" xml:space="preserve">
+    <value>Invalid Enumeration Value in JSON</value>
+  </data>
+  <data name="InvalidJson" xml:space="preserve">
+    <value>Invalid JSON Message</value>
+  </data>
+  <data name="FavoritesEmptyRoute" xml:space="preserve">
+    <value>Favorites of type Page cannot have an empty route.</value>
+  </data>
+  <data name="Invalid_Direction" xml:space="preserve">
+    <value>Invalid _direction provided</value>
+  </data>
+  <data name="NameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="UidInvalid" xml:space="preserve">
+    <value>Uid Invalid for {0}</value>
+  </data>
+  <data name="SucessfullyCreated" xml:space="preserve">
+    <value>{0} successfully created.</value>
+  </data>
+  <data name="SucessfullyRemoved" xml:space="preserve">
+    <value>{0} successfully removed.</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="OwnershipType" xml:space="preserve">
+    <value>ownership type</value>
+  </data>
+  <data name="Predicate" xml:space="preserve">
+    <value>Predicate</value>
+  </data>
+  <data name="SucessfullyDeleted" xml:space="preserve">
+    <value>{0} successfully deleted.</value>
+  </data>
+  <data name="SucessfullyEdited" xml:space="preserve">
+    <value>{0} successfully edited.</value>
+  </data>
 </root>

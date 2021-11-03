@@ -83,7 +83,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<ResponsibilityTypeRelationOverrideItem>(id);
                 if (model == null)
                 {
-                    throw new NotFoundException("responsibility");
+                    throw new NotFoundException(FormControllerApiMessage.Responsibility);
                 }
 
                 if (!Company.HasAssetPermission(model.AssetID, Permission.DeleteResponsibilities))
@@ -92,7 +92,7 @@ namespace d360.web.Controllers
                 }
 
                 Company.Delete(model);
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, new { AssetID = model.AssetID });
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved,FormControllerApiMessage.Item), id.ToString(), "delete", HttpStatusCode.OK, new { AssetID = model.AssetID });
             }
             catch (BaseException ex)
             {
@@ -326,11 +326,13 @@ namespace d360.web.Controllers
                 }
 
                 var existing = Company.GetById<ResponsibilityType>(model.ID, i => i.ResponsibilityTypeRelations);
-                if (existing == null) throw new NotFoundException("ownership type");
-
+                if (existing == null)
+                {
+                    throw new NotFoundException(ApiMessages.OwnershipType);
+                }
                 if (model.Name.Trim().Length > 250)
                 {
-                    return jsonException($"Name provided must be less then 250 characters in length.", HttpStatusCode.BadRequest);
+                    return jsonException(FormControllerApiMessage.ResponsibilityNameMax250, HttpStatusCode.BadRequest);
                 }
 
                 existing.Name = model.Name;
@@ -373,7 +375,7 @@ namespace d360.web.Controllers
 
                 Company.Update(existing);
 
-                return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.Item), model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -402,13 +404,13 @@ namespace d360.web.Controllers
 
                 if (model.Name.Trim().Length > 250)
                 {
-                    return jsonException($"Name provided must be less then 250 characters in length.", HttpStatusCode.BadRequest);
+                    return jsonException(FormControllerApiMessage.ResponsibilityNameMax250, HttpStatusCode.BadRequest);
                 }
 
                 model.UID = Guid.NewGuid();
                 Company.Add(model);
 
-                return jsonSuccess("Item successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.Item), model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -747,12 +749,12 @@ order by	case
                 var model = Company.GetById<ResponsibilityTypeRelationRule>(id);
                 if (model == null)
                 {
-                    throw new NotFoundException("responsibility type rule");
+                    throw new NotFoundException(FormControllerApiMessage.ResponsibilityTypeRule);
                 }
 
                 model.LastRunOn = null;
                 Company.Update(model);
-                return jsonSuccess("Item date successfully removed.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved,FormControllerApiMessage.ItemDate), id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -801,7 +803,7 @@ order by	case
                 var existing = Company.GetById<ResponsibilityTypeRelationRule>(model.ID);
                 if (existing == null)
                 {
-                    throw new NotFoundException("ownership type");
+                    throw new NotFoundException(ApiMessages.OwnershipType);
                 }
 
                 existing.Name = model.Name;
@@ -818,24 +820,24 @@ order by	case
                 existing.SetRawFromDefinition();
                 if (existing.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
                 {
-                    throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
+                    throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_Filter_Value_Required);
                 }
 
 
                 if (model.StructuredDefinition?.When?.Where(x => x.Value == null).Count() > 0)
                 {
-                    throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Value_Required);
+                    throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Value_Required);
                 }
 
                 if (!model.ApplyToType)
                 {
                     if (model.StructuredDefinition?.When == null)
                     {
-                        throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Required_Based_ApplyToType_Value);
+                        throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Required_Based_ApplyToType_Value);
                     }
                     else if (model.StructuredDefinition?.When?.Count == 0)
                     {
-                        throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Value_Required);
+                        throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Value_Required);
                     }
                 }
 
@@ -848,7 +850,7 @@ order by	case
                         // if a field check type AND its a field type not on this asset type dont allow it
                         if (action.CheckType == "F"  && !allowedFieldTypeIds.Contains(action.FieldTypeID))
                         {
-                            throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_InvalidFieldType);
+                            throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_InvalidFieldType);
                         }
                     }
                 }
@@ -868,7 +870,7 @@ order by	case
                 }
 
 
-                return jsonSuccess("Item successfully updated and processed.", model.ID.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.ItemUpdatedProcessed, model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -894,23 +896,23 @@ order by	case
                 model.SetRawFromDefinition();
                 if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
                 {
-                    throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
+                    throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_Filter_Value_Required);
                 }
 
                 if (model.StructuredDefinition?.When?.Where(x => x.Value == null).Count() > 0)
                 {
-                    throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Value_Required);
+                    throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Value_Required);
                 }
 
                 if (!model.ApplyToType)
                 {
                     if (model.StructuredDefinition?.When == null)
                     {
-                        throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Required_Based_ApplyToType_Value);
+                        throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Required_Based_ApplyToType_Value);
                     }
                     else if (model.StructuredDefinition?.When?.Count == 0)
                     {
-                        throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_When_Filter_Value_Required);
+                        throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Value_Required);
                     }
                 }
 
@@ -920,7 +922,7 @@ order by	case
                 // Process this rule.
                 await Company.ProcessResponsibilityRelationRules(model.ID);
 
-                return jsonSuccess("Item successfully created and processed.", model.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(FormControllerApiMessage.ItemCreatedProcessed, model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {

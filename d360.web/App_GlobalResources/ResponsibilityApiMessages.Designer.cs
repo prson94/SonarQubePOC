@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allocation not found..
+        /// </summary>
+        public static string AllocationNotFound {
+            get {
+                return ResourceManager.GetString("AllocationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to In order to use the _assigneeuid filter the _assetTypeUid or _assetUid filter must also be specified..
         /// </summary>
         public static string assigneeUidFilterValidation {
@@ -111,6 +120,24 @@ namespace Resources {
         public static string DuplicateResponsibilityRule {
             get {
                 return ResourceManager.GetString("DuplicateResponsibilityRule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid AssetTypeClass. [{0}] is not valid..
+        /// </summary>
+        public static string InvalidAssetTypeClass {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Permission provided. [{0}].
+        /// </summary>
+        public static string InvalidPermissionProvided {
+            get {
+                return ResourceManager.GetString("InvalidPermissionProvided", resourceCulture);
             }
         }
         

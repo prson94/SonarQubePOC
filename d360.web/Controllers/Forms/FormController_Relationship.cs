@@ -104,7 +104,7 @@ namespace d360.web.Controllers
 
             if (obj == null || relationshipType == null)
             {
-                return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
             }
 
             Cardinality targetCardinality;
@@ -157,8 +157,10 @@ namespace d360.web.Controllers
         public JsonResult Relationship_EditFields(int id)
         {
             var relationship = Company.GetById<Intersect>(id, i => i.IntersectType);
-            if (relationship == null) return jsonException("Relationship not found.", HttpStatusCode.NotFound);
-
+            if (relationship == null)
+            {
+                return jsonException(FormControllerApiMessage.RelationshipNotFound, HttpStatusCode.NotFound);
+            }
             if (!Company.HasAssetPermission(relationship.Subject, relationship.SubjectID, Permission.EditRelationships) &&
                 !Company.HasAssetPermission(relationship.Object, relationship.ObjectID, Permission.EditRelationships))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -179,8 +181,10 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("relationship");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.Relationship);
+                }
                 var source = parseTextField(form, "Source");
                 var sourceID = parseIntField(form, "SourceID");
                 int typeID = parseIntField(form, "IntersectTypeID");
@@ -190,8 +194,10 @@ namespace d360.web.Controllers
                 if (!Company.HasAssetPermission(source, sourceID, Permission.AddRelationships))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (relationshipType == null) throw new NotFoundException("relationship");
-
+                if (relationshipType == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Relationship);
+                }
                 var predicateTypeInfo = relationshipType.Predicate.Type.AsInfoModel();
 
                 if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
@@ -211,13 +217,16 @@ namespace d360.web.Controllers
 
                 var rawItems = parseTextField(form, "Items");
                 if (string.IsNullOrEmpty(rawItems))
-                    return jsonException("No selected items", HttpStatusCode.BadRequest);
+                {
+                    return jsonException(FormControllerApiMessage.NoSelectedItems, HttpStatusCode.BadRequest);
+                }
 
                 var items = rawItems.Split(',').ToList();
 
                 if ((targetCardinality == Cardinality.One && items.Count > 1))
-                    return jsonException("Invalid relationship cardinality for multiple items.", HttpStatusCode.BadRequest);
-
+                { 
+                return jsonException(FormControllerApiMessage.InvalidrelationshipCardinality, HttpStatusCode.BadRequest);
+                }
                 List<Asset> assetToAddIntersect = new List<Asset>();
 
                 items.ForEach(item =>
@@ -229,7 +238,7 @@ namespace d360.web.Controllers
 
                 if (assetToAddIntersect.Any(x => x.Object == source && x.ObjectID == sourceID))
                 {
-                    return jsonException("The item cannot be related to itself.", HttpStatusCode.BadRequest);
+                    return jsonException(FormControllerApiMessage.ItemCannotRelateItself, HttpStatusCode.BadRequest);
                 }
 
                 foreach (var asset in assetToAddIntersect)
@@ -248,7 +257,7 @@ namespace d360.web.Controllers
                 }
                 var name = Company.GetIntersectTypeName(relationshipType);
 
-                return jsonSuccess(name + " successfully created.", "0", "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, name), "0", "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
             }
             catch (BaseException ex)
             {
@@ -266,13 +275,17 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("relationship");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.Relationship);
+                }
                 int id = parseIntField(form, "ID");
                 var intersect = Company.GetById<Intersect>(id);
 
-                if (intersect == null) throw new NotFoundException("relationship");
-
+                if (intersect == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Relationship);
+                }
                 var intersectType = Company.GetById<IntersectType>(intersect.IntersectTypeID, p => p.Predicate);
                 var predicateTypeInfo = intersectType.Predicate.Type.AsInfoModel();
 
@@ -287,7 +300,7 @@ namespace d360.web.Controllers
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
-                return jsonSuccess("Relationship successfully updated.", intersect.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.Relationship), intersect.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
             }
             catch (BaseException ex)
             {
@@ -321,11 +334,11 @@ namespace d360.web.Controllers
             var obj = Company.GetObjectDetail(type.ToString(), objectId);
             objectTypeID = obj.TypeID;
             parentType = obj.Type;
-            
+
 
             if (objectTypeID <= 0 || string.IsNullOrEmpty(parentType) || relationshipType == null)
             {
-                return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
             }
 
             if (type == SystemObjects.ReferenceItemType)
@@ -376,7 +389,10 @@ namespace d360.web.Controllers
             }
 
             var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
-            if (targetAssetType == null) throw new NotFoundException("target asset type");
+            if (targetAssetType == null)
+            { 
+                throw new NotFoundException(ApiMessages.TargetAssetType);
+            }
 
             #endregion
 
@@ -643,8 +659,10 @@ order by r.Name";
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                if (form == null) throw new NoFormDataException("relationship type");
-
+                if (form == null)
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.RelationshipType);
+                }
                 var subject = form["Subject"];
                 var subjectInfo = subject.Split('|');
                 var @object = form["Object"];
@@ -653,7 +671,7 @@ order by r.Name";
 
                 if (string.IsNullOrEmpty(predicate))
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
+                    throw new GenericException(HttpStatusCode.Conflict, ApiMessages.Predicate,FormControllerApiMessage.SelectPredicate);
                 }
 
                 var model = new IntersectType
@@ -673,7 +691,7 @@ order by r.Name";
 
                 Company.CreateRollupPathChangedExecution(id);
 
-                return jsonSuccess("Relationship type successfully created.", id.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.RelationshipType), id.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -694,8 +712,10 @@ order by r.Name";
                 var intersectTypes = new List<string> { DataType.Relationship.ToString(), DataType.RefListRelationship.ToString(), DataType.FieldFromRelationship.ToString() };
                 var id = parseIntField(form, "ID");
                 var uid = Guid.Parse(parseTextField(form, "IntersectTypeUid"));
-                if (!form.HasKeys()) throw new NoFormDataException("relationship type");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.RelationshipType);
+                }
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
@@ -719,8 +739,10 @@ order by r.Name";
                 }
 
                 var model = Company.GetById<IntersectType>(id);
-                if (model == null) throw new NotFoundException("relationship type");
-
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.RelationshipType);
+                }
                 var impactedMeasureVersions = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Relation, id);
 
                 Company.Delete(SystemObjects.IntersectType, id);
@@ -731,7 +753,7 @@ order by r.Name";
                 }
 
                 Company.CreateRollupPathChangedExecution(id);
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved,FormControllerApiMessage.Item), id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -749,8 +771,10 @@ order by r.Name";
         {
             try
             {
-                if (form == null) throw new NoFormDataException("relationship type");
-
+                if (form == null)
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.RelationshipType);
+                }
                 var id = int.Parse(form["ID"]);
 
                 // Permissions validation.
@@ -758,8 +782,10 @@ order by r.Name";
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var model = Company.GetById<IntersectType>(id);
-                if (model == null) throw new NotFoundException("relationship type");
-
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.RelationshipType);
+                }
 
                 var subject = form["Subject"];
                 var subjectInfo = subject.Split('|');
@@ -771,7 +797,7 @@ order by r.Name";
 
                 if (string.IsNullOrEmpty(predicate))
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
+                    throw new GenericException(HttpStatusCode.Conflict,ApiMessages.Predicate,FormControllerApiMessage.SelectPredicate);
                 }
 
                 var newSubjectCardinality = parseEnumField<Cardinality>(form, "SubjectCardinality");
@@ -799,7 +825,7 @@ order by r.Name";
                 }
                 if (isCardinalityException)
                 {
-                    return jsonException("You are not allowed to update this relationship type as there are existing field types that depend on it.", HttpStatusCode.Conflict);
+                    return jsonException( FormControllerApiMessage.NotAllowedUpdateRelationship, HttpStatusCode.Conflict);
                 }
 
                 #endregion
@@ -815,7 +841,7 @@ order by r.Name";
                 Company.UpsertIntersectType(model);
                 Company.CreateRollupPathChangedExecution(id);
 
-                return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.RelationshipType), model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

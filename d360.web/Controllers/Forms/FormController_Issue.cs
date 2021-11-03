@@ -88,8 +88,10 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var type = Company.GetById<IssueType>(issueTypeId);
 
-            if (type == null) throw new NotFoundException("issue type");
-
+            if (type == null)
+            {
+                throw new NotFoundException(FormControllerApiMessage.IssueType);
+            }
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2, false);

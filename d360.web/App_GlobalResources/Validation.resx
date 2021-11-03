@@ -144,4 +144,10 @@
   <data name="MaxLevelForMeasure" xml:space="preserve">
     <value>Maximum number of levels for measures is {0}.</value>
   </data>
+  <data name="InvalidPageNum" xml:space="preserve">
+    <value>Invalid pageNum value provided.</value>
+  </data>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Invalid pageSize value provided.</value>
+  </data>
 </root>

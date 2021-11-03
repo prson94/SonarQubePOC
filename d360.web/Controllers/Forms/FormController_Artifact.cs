@@ -222,14 +222,14 @@ namespace d360.web.Controllers
                 {
                     if (!id.HasValue)
                     {
-                        return jsonNetException($"No asset type ID provided (id parameter).", HttpStatusCode.BadRequest);
+                        return jsonNetException(FormControllerApiMessage.NoAssetTypeIDProvided, HttpStatusCode.BadRequest);
                     }
 
                     var assetType = Company.GetById<AssetType>(id.Value);
 
                     if (assetType == null)
                     {
-                        return jsonNetException($"No asset type found for the ID {id.Value}", HttpStatusCode.NotFound);
+                        return jsonNetException(string.Format (FormControllerApiMessage.NoAssetTypeFound,id.Value.ToString()), HttpStatusCode.NotFound);
                     }
 
                     var style = assetType.AssetTypeStyle;

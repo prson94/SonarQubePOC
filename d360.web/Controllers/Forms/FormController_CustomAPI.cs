@@ -45,7 +45,7 @@ namespace d360.web.Controllers
 
             if (a == null)
             {
-                return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NotFoundServiceEdit, HttpStatusCode.NotFound);
             }
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -70,7 +70,7 @@ namespace d360.web.Controllers
 
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("service");
+                    throw new NoFormDataException(FormControllerApiMessage.serviceConstant);
                 }
 
                 var name = parseTextField(form, "Name");
@@ -78,12 +78,12 @@ namespace d360.web.Controllers
 
                 if (string.IsNullOrEmpty(name))
                 {
-                    return jsonException("API Service Name is null", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.APIServiceNameNull, HttpStatusCode.NotFound);
                 }
 
                 if (string.IsNullOrEmpty(prefix))
                 {
-                    return jsonException("API Service Prefix is null", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.APIServicePrefixNull, HttpStatusCode.NotFound);
                 }
 
                 var service = new ApiService
@@ -96,7 +96,7 @@ namespace d360.web.Controllers
 
                 Company.Add(service);
 
-                return jsonSuccess("Service successfully created.", service.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(FormControllerApiMessage.ServiceCreated, service.ID.ToString(),"add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -116,13 +116,21 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
-                if (!form.HasKeys()) throw new NoFormDataException("service");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.serviceConstant);
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiService>(id);
-                if (model == null) throw new NotFoundException("api service");
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.ApiService);
+                }
 
                 model.Name = parseTextField(form, "Name");
                 model.UriPrefix = parseTextField(form, "URIPrefix");
@@ -131,7 +139,7 @@ namespace d360.web.Controllers
 
                 Company.Update(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, model.Name), id.ToString(),"edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -171,7 +179,7 @@ namespace d360.web.Controllers
 
             if (a == null)
             {
-                return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NotFoundServiceEdit, HttpStatusCode.NotFound);
             }
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -186,7 +194,10 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("service");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.serviceConstant);
+                }
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -197,12 +208,12 @@ namespace d360.web.Controllers
 
                 if (string.IsNullOrEmpty(name))
                 {
-                    return jsonException("API Namespace Name is null", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.APINamespaceNameNull, HttpStatusCode.NotFound);
                 }
 
                 if (string.IsNullOrEmpty(ns))
                 {
-                    return jsonException("API Namespace is null", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.APINamespaceNull, HttpStatusCode.NotFound);
                 }
 
                 var apiNamespace = new ApiNamespace
@@ -215,7 +226,7 @@ namespace d360.web.Controllers
                 Company.Add(apiNamespace);
 
 
-                return jsonSuccess("Namespace successfully created.", apiNamespace.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(FormControllerApiMessage.NamespaceCreated, apiNamespace.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -235,7 +246,7 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("service");
+                    throw new NoFormDataException(FormControllerApiMessage.serviceConstant);
                 }
 
                 if (!Company.CurrentResourceIsAdmin)
@@ -247,7 +258,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<ApiNamespace>(id);
                 if (model == null)
                 {
-                    throw new NotFoundException("api service");
+                    throw new NotFoundException(FormControllerApiMessage.ApiService);
                 }
 
                 model.Node = parseTextField(form, "Name");
@@ -255,7 +266,7 @@ namespace d360.web.Controllers
 
                 Company.Update(model);
 
-                return jsonSuccess("Namespace successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.NamespaceUpdated, id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -279,7 +290,7 @@ namespace d360.web.Controllers
 
                 Company.Delete<ApiNamespace>(o => o.ID == id);
 
-                return jsonSuccess("api namespace successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.NamespaceRemoved, id.ToString(),"delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -321,7 +332,7 @@ namespace d360.web.Controllers
 
             if (a == null)
             {
-                return jsonException("Cannot find the specified service endpoint to edit", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NotFoundServiceEdit, HttpStatusCode.NotFound);
             }
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -341,7 +352,7 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("endpoint");
+                    throw new NoFormDataException(FormControllerApiMessage.endpoint);
                 }
 
                 if (!Company.CurrentResourceIsAdmin)
@@ -355,10 +366,10 @@ namespace d360.web.Controllers
                 var itemNode = parseTextField(form, "ItemNode");
 
                 if (string.IsNullOrEmpty(name))
-                    return jsonException("API Service Endpoint Name is null", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.APIServiceEndpointNameNull, HttpStatusCode.NotFound);
 
                 if (string.IsNullOrEmpty(prefix))
-                    return jsonException("API Service Endpoint Prefix is null", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.APIServiceEndpointPrefixNull, HttpStatusCode.NotFound);
 
                 var endpoint = new ApiEndpoint
                 {
@@ -371,7 +382,7 @@ namespace d360.web.Controllers
 
                 Company.Add(endpoint);
 
-                return jsonSuccess("Service endpoint successfully created.", endpoint.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(FormControllerApiMessage.ServiceEndpointCreated, endpoint.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -395,14 +406,14 @@ namespace d360.web.Controllers
 
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("endpoint");
+                    throw new NoFormDataException(FormControllerApiMessage.endpoint);
                 }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEndpoint>(id);
                 if (model == null)
                 {
-                    throw new NotFoundException("api service endpoint");
+                    throw new NotFoundException(FormControllerApiMessage.ApiServiceEndpoint);
                 }
 
                 model.Name = parseTextField(form, "Name");
@@ -412,7 +423,7 @@ namespace d360.web.Controllers
 
                 Company.Update(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,model.Name), id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -473,13 +484,13 @@ namespace d360.web.Controllers
 
             if (a == null)
             {
-                return jsonException("Cannot find the specified service endpoint version to edit", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NoFoundSericeEndpointVersionToEdit, HttpStatusCode.NotFound);
             }
 
             var ent = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == a.ID);
             if (ent == null)
             {
-                return jsonException("Cannot find the specified service endpoint version entity to edit", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NoFoundSericeEndpointVersionEntityToEdit, HttpStatusCode.NotFound);
             }
 
 
@@ -516,7 +527,10 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("endpoint");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.endpoint);
+                }
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -529,7 +543,9 @@ namespace d360.web.Controllers
 
 
                 if (string.IsNullOrEmpty(prefix))
-                    return jsonException("API Service Endpoint Version Prefix is null", HttpStatusCode.NotFound);
+                {
+                    return jsonException(FormControllerApiMessage.APIServiceEndpointVersionPrefixNull, HttpStatusCode.NotFound);
+                }
 
                 var version = new ApiEndpointVersion
                 {
@@ -550,7 +566,7 @@ namespace d360.web.Controllers
                 Company.Add<ApiEntity>(entity);
 
 
-                return jsonSuccess("Version successfully created.", version.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(FormControllerApiMessage.VersionCreated, version.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -573,14 +589,14 @@ namespace d360.web.Controllers
 
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("version");
+                    throw new NoFormDataException(FormControllerApiMessage.version);
                 }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEndpointVersion>(id);
                 if (model == null)
                 {
-                    throw new NotFoundException("api service version");
+                    throw new NotFoundException(FormControllerApiMessage.apiserviceversion);
                 }
 
                 model.UriPrefix = parseTextField(form, "URIPrefix");
@@ -594,14 +610,14 @@ namespace d360.web.Controllers
                 var entity = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == model.ID);
                 if (entity == null)
                 {
-                    throw new NotFoundException("api service version entity");
+                    throw new NotFoundException(FormControllerApiMessage.ApiServiceVersionEntity);
                 }
 
                 entity.AssetTypeID = assetTypeID;
 
                 Company.Update(entity);
 
-                return jsonSuccess("Version successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.VersionUpdated, id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -685,7 +701,7 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("uri");
+                    throw new NoFormDataException(FormControllerApiMessage.uriConstant);
                 }
 
                 if (!Company.CurrentResourceIsAdmin)
@@ -697,7 +713,7 @@ namespace d360.web.Controllers
 
                 if (string.IsNullOrEmpty(format))
                 {
-                    return jsonException("API Service Endpoint Version URI format is null", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.ApiServiceUriFormatIsNull, HttpStatusCode.NotFound);
                 }
 
                 var uri = new ApiEntityUri
@@ -709,7 +725,7 @@ namespace d360.web.Controllers
 
                 Company.Add(uri);
 
-                return jsonSuccess("Uri successfully created.", uri.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess( FormControllerApiMessage.UriCreated, uri.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -735,14 +751,14 @@ namespace d360.web.Controllers
 
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("version");
+                    throw new NoFormDataException(FormControllerApiMessage.version);
                 }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEntityUri>(id);
                 if (model == null)
                 {
-                    throw new NotFoundException("api service version uri");
+                    throw new NotFoundException(FormControllerApiMessage.ApiServiceVersionUri);
                 }
 
                 model.Format = parseTextField(form, "Format");
@@ -750,7 +766,7 @@ namespace d360.web.Controllers
 
                 Company.Update(model);
 
-                return jsonSuccess("Version successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.VersionUpdated, id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -851,7 +867,7 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("uri");
+                    throw new NoFormDataException(FormControllerApiMessage.uriConstant);
                 }
 
                 if (!Company.CurrentResourceIsAdmin)
@@ -889,7 +905,7 @@ namespace d360.web.Controllers
 
                 Company.Add(field);
 
-                return jsonSuccess("Field successfully created.", field.EntityID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess( FormControllerApiMessage.FieldCreated, field.EntityID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -915,7 +931,7 @@ namespace d360.web.Controllers
 
                 Company.Delete(o);
 
-                return jsonSuccess("end ponint successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.EndPointRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -941,7 +957,7 @@ namespace d360.web.Controllers
 
                 Company.Delete(o);
 
-                return jsonSuccess("api service successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.ApiServiceRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -967,7 +983,7 @@ namespace d360.web.Controllers
 
                 Company.Delete(o);
 
-                return jsonSuccess("api endpoint version successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.ApiEndPointVersionRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -993,7 +1009,7 @@ namespace d360.web.Controllers
 
                 Company.Delete(o);
 
-                return jsonSuccess("api endpoint uri successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.ApiEndPointUriRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -1013,7 +1029,7 @@ namespace d360.web.Controllers
                 var o = Company.GetById<ApiEntityFieldType>(id);
                 if (o == null)
                 {
-                    throw new NotFoundException("api field");
+                    throw new NotFoundException(FormControllerApiMessage.ApiField);
                 }
 
                 if (!Company.CurrentResourceIsAdmin)
@@ -1028,7 +1044,7 @@ namespace d360.web.Controllers
 
                 Company.Delete(o);
 
-                return jsonSuccess("api field successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.ApiFieldRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -1050,14 +1066,14 @@ namespace d360.web.Controllers
 
                 if (!form.HasKeys())
                 {
-                    throw new NoFormDataException("field");
+                    throw new NoFormDataException(FormControllerApiMessage.field);
                 }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEntityFieldType>(id);
                 if (model == null)
                 {
-                    throw new NotFoundException("api field");
+                    throw new NotFoundException(FormControllerApiMessage.ApiField);
                 }
 
                 model.FieldTypeID = parseIntField(form, "FieldTypeID");
@@ -1088,7 +1104,7 @@ namespace d360.web.Controllers
 
                 Company.Update(model);
 
-                return jsonSuccess("Api Field successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess (FormControllerApiMessage.ApiFieldUpdated, id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

@@ -16,6 +16,7 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System.Configuration;
 using d360.core.entities.Views;
 using d360.model.DataAccessLayer;
+using Resources;
 
 namespace d360.web.Controllers
 {
@@ -46,7 +47,7 @@ namespace d360.web.Controllers
 
             if (string.IsNullOrEmpty(groupId))
             {
-                throw new Exception("PowerBI has not been setup on this Govern environment.  You are possibly seeing reports because the environment was copied from another region.  Please re-upload your PowerBI files to resolve this issue.");
+                throw new Exception(FormControllerApiMessage.PowerBINotSetupOnGovernEnvironment);
             }
 
             // Create a user password cradentials.
@@ -58,7 +59,7 @@ namespace d360.web.Controllers
 
             if (authenticationResult == null)
             {
-                throw new Exception("authentication failed");
+                throw new Exception(FormControllerApiMessage.AuthenticationFailed);
             }
 
             var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
@@ -70,7 +71,7 @@ namespace d360.web.Controllers
 
                 if (report == null)
                 {
-                    throw new Exception("No such report");
+                    throw new Exception(FormControllerApiMessage.NoSuchReport);
                 }
 
                 Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest(accessLevel: "view");
@@ -79,7 +80,7 @@ namespace d360.web.Controllers
 
                 if (tokenResponse == null)
                 {
-                    throw new Exception("Failed to generate embed token.");
+                    throw new Exception(FormControllerApiMessage.FailedGenerateToken);
                 }
 
                 var viewModel = new PowerBIReportViewModel

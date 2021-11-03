@@ -17,6 +17,7 @@ using d360.core.entities.Process;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using d360.core.enums;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -109,13 +110,13 @@ namespace d360.web.Controllers.V2
         {
             if (assetUid == null)
             {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
             }
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
             if (asset == null)
             {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest,OthersMessages.AssetuidDoesnotExists));
             }
 
             IEnumerable<dynamic> nodes = await ProcessRepository.GetAvailableDiagramNodesForAsset(assetUid);
@@ -143,13 +144,13 @@ namespace d360.web.Controllers.V2
         {
             if (assetUid == null)
             {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
             }
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
             if (asset == null)
             {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
             }
 
             ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
@@ -200,12 +201,12 @@ namespace d360.web.Controllers.V2
                 bool isModelEmpty = model.linkDataArray == null && model.linkFromPortIdProperty == null && model.linkToPortIdProperty == null && model.nodeDataArray == null;
                 if (!sourceAssetUid.HasValue && isModelEmpty)
                 {
-                    throw new Exception("Model cannot be empty.");
+                    throw new Exception(OthersMessages.ModelNotEmpty);
                 }
 
                 if (sourceAssetUid.HasValue && !isModelEmpty)
                 {
-                    throw new Exception("When using copy/replace option with sourceAssetUid model must be empty.");
+                    throw new Exception(OthersMessages.SourceAssetUidModelNotEmpty);
                 }
 
                 targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
@@ -216,16 +217,16 @@ namespace d360.web.Controllers.V2
                     sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
                     if (sourceAsset == null)
                     {
-                        throw new Exception("sourceAssetUid is invalid or asset does not exist.");
+                        throw new Exception(OthersMessages.SourceUidNotExists);
                     }
 
                     if (sourceAsset.ID == targetAsset.ID)
                     {
-                        throw new Exception("Source and target asset cannot be same.");
+                        throw new Exception(OthersMessages.SourceTargetNotSame);
                     }
                     if (sourceAsset.AssetTypeID != targetAsset.AssetTypeID)
                     {
-                        throw new Exception("Source and target asset types must be same.");
+                        throw new Exception(OthersMessages.SourceTargetTypeMustSame);
                     }
 
                     model = ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
@@ -293,7 +294,7 @@ namespace d360.web.Controllers.V2
                 {
                     var err = new List<ValidationError>
                     {
-                        new ValidationError { Error = "You are not authorized to edit this process diagram" }
+                        new ValidationError { Error = OthersMessages.NotAuthorizedToEditDiagram }
                     };
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
                     {
@@ -307,7 +308,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (item.from == Guid.Empty || item.to == Guid.Empty)
                     {
-                        throw new Exception("Link without from and to node detected.");
+                        throw new Exception(OthersMessages.LinkWithoutFromToDetected);
                     }
                 }
 
@@ -329,8 +330,8 @@ namespace d360.web.Controllers.V2
                                 new ValidationError(){
                                 AssetTypeUid = Guid.Empty,
                                 AssetUid = Guid.Empty,
-                                ErrorType = "Custom",
-                                Error = "All nodes within diagram must be linked."
+                                ErrorType = OthersMessages.CustomConstant,
+                                Error = OthersMessages.AllNodeMustLink
                                 }
                             }
                         })));
@@ -495,11 +496,11 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetProcessDiagramExport(Guid assetUid)
         {
             if (assetUid == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
             if (asset == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
             string result = await Request.Content.ReadAsStringAsync();
 
             result = result.Replace("data:image/png;base64,", "");
@@ -534,11 +535,11 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetProcessDiagramBadges(Guid assetUid)
         {
             if (assetUid == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
             if (asset == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
 
             IEnumerable<dynamic> response = ProcessRepository.GetDiagramAssetBadges(assetUid);
 
@@ -561,11 +562,11 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetProcessDiagramUrl(Guid assetUid)
         {
             if (assetUid == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
             if (asset == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest,OthersMessages.AssetuidDoesnotExists));
 
             Guid baseAssetUid = Company.Query<Guid>(@"select top 1 diagramassetuid from processexpandeddata where fromuid = @assetUid or touid = @assetUid", new { assetUid }).FirstOrDefault();
             string url = $"sidebar/visualization/browser/{baseAssetUid.ToString()}/Process/{assetUid}";

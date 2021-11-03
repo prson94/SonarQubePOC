@@ -80,13 +80,17 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("organization");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.Organization);
+                }
                 int typeID = parseIntField(form, "OrganizationTypeID");
                 var type = Company.GetById<OrganizationType>(typeID);
 
-                if (type == null) throw new NotFoundException("organization type");
-
+                if (type == null)
+                {
+                    throw new NotFoundException(FormInfo.OrganizationType);
+                }
                 var a = new Organization
                 {
                     Name = parseTextField(form, "Name"),
@@ -99,7 +103,9 @@ namespace d360.web.Controllers
 
 
                 if (!regex.IsMatch(a.AdministratorEmail))
-                    return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
+                {
+                    return jsonException(FormControllerApiMessage.emailNotValid, HttpStatusCode.Forbidden);
+                }
 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.OrganizationType, typeID).ToList();
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Organization, a.ID, fieldTypes, form, Server);
@@ -111,7 +117,7 @@ namespace d360.web.Controllers
                     action = "add"
                 };
 
-                return jsonSuccess("Organization successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, FormControllerApiMessage.Organization), a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -134,8 +140,10 @@ namespace d360.web.Controllers
 
                 var id = parseIntField(form, "ID");
                 var existing = Company.GetById<Organization>(id);
-                if (existing == null) throw new NotFoundException("organization");
-
+                if (existing == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Organization);
+                }
                 existing.Name = parseTextField(form, "Name");
                 existing.AdministratorEmail = parseTextField(form, "AdministratorEmail");
 
@@ -144,7 +152,9 @@ namespace d360.web.Controllers
 
 
                 if (!regex.IsMatch(existing.AdministratorEmail))
-                    return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
+                {
+                    return jsonException(FormControllerApiMessage.emailNotValid, HttpStatusCode.Forbidden);
+                }
 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.OrganizationType, existing.OrganizationTypeID).ToList();
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Organization, existing.ID, fieldTypes, form, Server, false);
@@ -156,7 +166,7 @@ namespace d360.web.Controllers
                     action = "edit"
                 };
 
-                return jsonSuccess("Organization successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.Organization), id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -178,8 +188,10 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var model = Company.GetById<Organization>(id);
-                if (model == null) throw new NotFoundException("organization");
-
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Organization);
+                }
                 //get child records
                 var domains = Company.Filter<OrganizationDomain>(i => i.OrganizationID == model.ID);
                 var invitations = Company.Filter<OrganizationInvitation>(i => i.OrganizationID == model.ID);
@@ -202,7 +214,7 @@ namespace d360.web.Controllers
                     action = "delete"
                 };
 
-                return jsonSuccess("Organization successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.Organization), id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -302,12 +314,16 @@ namespace d360.web.Controllers
                 int id = model.ID;
 
                 if (id < 1)
-                    throw new NotFoundException("contract");
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Contract);
+                }
 
                 var contract = Company.GetById<Contract>(id);
 
                 if (contract == null)
-                    throw new NotFoundException("contract");
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Contract);
+                }
 
 
                 contract.Title = model.Title;
@@ -334,7 +350,7 @@ namespace d360.web.Controllers
                     action = "edit"
                 };
 
-                return jsonSuccess($"{model.ContractType.GetDisplayName()} contract successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,$"{model.ContractType.GetDisplayName()} {FormControllerApiMessage.Contract}"), id.ToString(), "edit", HttpStatusCode.OK, custom);
 
             }
             catch (BaseException ex)
@@ -386,8 +402,7 @@ namespace d360.web.Controllers
                     action = "add"
                 };
 
-                return jsonSuccess($"{contract.ContractType.GetDisplayName()} contract successfully created.", contract.ID.ToString(), "add", HttpStatusCode.Created, custom);
-
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, $"{contract.ContractType.GetDisplayName()} {FormControllerApiMessage.Contract}"), contract.ID.ToString(), "add", HttpStatusCode.Created, custom);
 
             }
             catch (BaseException ex)
@@ -411,8 +426,10 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var o = Company.GetById<Contract>(id);
-                if (o == null) throw new NotFoundException("contract");
-
+                if (o == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Contract);
+                }
                 o.State = State.Deleted;
                 Company.SaveOrUpdate(o);
 
@@ -422,7 +439,7 @@ namespace d360.web.Controllers
                     action = "delete"
                 };
 
-                return jsonSuccess($"{o.ContractType.GetDisplayName()} contract successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, $"{o.ContractType.GetDisplayName()} {FormControllerApiMessage.Contract}"), id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -490,7 +507,7 @@ namespace d360.web.Controllers
                 };
 
                 if (Company.Any<OrganizationDomain>(i => i.OrganizationID == o.OrganizationID && i.Domain == o.Domain))
-                    return jsonException("This domain is already part of this organization", HttpStatusCode.Forbidden);
+                    return jsonException(FormControllerApiMessage.DomainPartOfOrganization, HttpStatusCode.Forbidden);
 
                 Company.Add(o);
 
@@ -499,7 +516,7 @@ namespace d360.web.Controllers
                     action = "add"
                 };
 
-                return jsonSuccess("Organization domain successfully created.", o.ID.ToString(), "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.OrganizationDomain), o.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -522,13 +539,16 @@ namespace d360.web.Controllers
 
                 var id = parseIntField(form, "ID");
                 var existing = Company.GetById<OrganizationDomain>(id);
-                if (existing == null) throw new NotFoundException("organization domain");
-
+                if (existing == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.OrganizationDomain);
+                }
                 existing.Domain = parseTextField(form, "Domain");
 
                 if (Company.Any<OrganizationDomain>(i => i.OrganizationID == existing.OrganizationID && i.Domain == existing.Domain && i.ID != existing.ID))
-                    return jsonException("This domain is already part of this organization", HttpStatusCode.Forbidden);
-
+                {
+                    return jsonException(FormControllerApiMessage.DomainPartOfOrganization, HttpStatusCode.Forbidden);
+                }
                 Company.Update(existing);
 
                 dynamic custom = new
@@ -536,7 +556,7 @@ namespace d360.web.Controllers
                     action = "edit"
                 };
 
-                return jsonSuccess("Organization domain successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.OrganizationDomain),id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -558,8 +578,10 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var model = Company.GetById<OrganizationDomain>(id);
-                if (model == null) throw new NotFoundException("organization domain");
-
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.OrganizationDomain);
+                }
                 Company.Delete(model);
 
                 dynamic custom = new
@@ -567,7 +589,7 @@ namespace d360.web.Controllers
                     action = "delete"
                 };
 
-                return jsonSuccess("Organization domain successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.OrganizationDomain), id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -638,16 +660,22 @@ namespace d360.web.Controllers
                 var regex = new System.Text.RegularExpressions.Regex(emailRegex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
                 if (!regex.IsMatch(a.Email))
-                    return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
+                {
+                    return jsonException(FormControllerApiMessage.emailNotValid, HttpStatusCode.Forbidden);
+                }
 
                 if (Company.Any<OrganizationInvitation>(i => i.OrganizationID == a.OrganizationID && i.Email == a.Email))
+                {
                     return jsonException("This email has already been invited to this organization", HttpStatusCode.Forbidden);
+                }
 
                 var userIsAlreadyRegistered = Company.Query<dynamic>(@"select 1 from organizationresource g
                     inner join reporting.Global_Resource r on r.ResourceID = g.ResourceID
                     where r.Email = @Email and g.OrganizationID = @OrganizationID", new { a.Email, a.OrganizationID }).Count() > 0;
                 if (userIsAlreadyRegistered)
-                    return jsonException("A user with this email address is already registered to this organization", HttpStatusCode.Forbidden);
+                {
+                    return jsonException(FormControllerApiMessage.UserAlreadyRegisteredThisOrganization, HttpStatusCode.Forbidden);
+                }
 
                 Company.Add(a);
 
@@ -656,7 +684,7 @@ namespace d360.web.Controllers
                     action = "add"
                 };
 
-                return jsonSuccess("Organization invitation successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.OrganizationInvitation), a.ID.ToString(), "add", HttpStatusCode.Created, custom);
             }
             catch (BaseException ex)
             {
@@ -679,8 +707,10 @@ namespace d360.web.Controllers
 
                 var id = parseIntField(form, "ID");
                 var existing = Company.GetById<OrganizationInvitation>(id);
-                if (existing == null) throw new NotFoundException("organization invitation");
-
+                if (existing == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.OrganizationInvitation);
+                }
                 existing.Email = parseTextField(form, "Email");
 
                 var emailRegex = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
@@ -688,17 +718,20 @@ namespace d360.web.Controllers
 
 
                 if (!regex.IsMatch(existing.Email))
-                    return jsonException("The email you entered is not valid", HttpStatusCode.Forbidden);
-
+                { 
+                return jsonException(FormControllerApiMessage.emailNotValid, HttpStatusCode.Forbidden);
+                }
                 if (Company.Any<OrganizationInvitation>(i => i.OrganizationID == existing.OrganizationID && i.Email == existing.Email && i.ID != existing.ID))
-                    return jsonException("This email has already been invited to this organization", HttpStatusCode.Forbidden);
-
+                {
+                    return jsonException(FormControllerApiMessage.EmailAlreadyInviteThisOrganization, HttpStatusCode.Forbidden);
+                }
                 var userIsAlreadyRegistered = Company.Query<dynamic>(@"select 1 from organizationresource g
                     inner join reporting.Global_Resource r on r.ResourceID = g.ResourceID
                     where r.Email = @Email and g.OrganizationID = @OrganizationID", new { existing.Email, existing.OrganizationID }).Any();
                 if (userIsAlreadyRegistered)
-                    return jsonException("A user with this email address is already registered to this organization", HttpStatusCode.Forbidden);
-
+                {
+                    return jsonException(FormControllerApiMessage.UserAlreadyRegisteredThisOrganization, HttpStatusCode.Forbidden);
+                }
 
                 Company.Update(existing);
 
@@ -707,7 +740,7 @@ namespace d360.web.Controllers
                     action = "edit"
                 };
 
-                return jsonSuccess("Organization invitation successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.OrganizationInvitation), id.ToString(), "edit", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -729,8 +762,10 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var model = Company.GetById<OrganizationInvitation>(id);
-                if (model == null) throw new NotFoundException("organization invitation");
-
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.OrganizationInvitation);
+                }
                 Company.Delete(model);
 
                 dynamic custom = new
@@ -738,7 +773,7 @@ namespace d360.web.Controllers
                     action = "delete"
                 };
 
-                return jsonSuccess("Organization invitation successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.OrganizationInvitation), id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
@@ -764,8 +799,10 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 AssetType assetType = Company.AssetTypes.Where(a => a.Object == "OrganizationType" && a.ObjectID == id).FirstOrDefault();
-                if (assetType == null) throw new NotFoundException("organizationType");
-
+                if (assetType == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.organizationType);
+                }
                 var execution = new ApiExecution
                 {
                     ExecutionID = Guid.NewGuid(),
@@ -800,7 +837,9 @@ namespace d360.web.Controllers
                 Company.SaveChanges();
 
                 if (execution.Error > 0)
-                    throw new Exception("Could not delete Organization Type");
+                {
+                    throw new Exception(FormControllerApiMessage.NotDeleteOrganizationType);
+                }
 
                 dynamic custom = new
                 {
@@ -808,7 +847,7 @@ namespace d360.web.Controllers
                     action = "delete"
                 };
 
-                return jsonSuccess("Organization successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.Organization), id.ToString(), "delete", HttpStatusCode.OK, custom);
             }
             catch (BaseException ex)
             {
