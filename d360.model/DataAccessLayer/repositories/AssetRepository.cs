@@ -2849,11 +2849,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
         public async Task<APIExecutionAPIModelResult> GetExecutionItems(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            int pageNum = 1;
-            int pageSize = 200;
             string orderDirection = "asc";
-            string orderBySql = "";
-            string offsetSql = "";
             if (queryParams.Any(x => x.Key == "_direction"))
             {
                 var allowedDirections = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "asc", "desc" };
@@ -2869,6 +2865,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 orderDirection = order;
             }
 
+            string orderBySql = "";
             if (!queryParams.Any(p => p.Key == "_order"))
             {
                 orderBySql = $" order by [CompletedOn] {orderDirection} ";
@@ -2890,23 +2887,17 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 orderBySql = $" order by [{orderByCol}] {orderDirection} ";
             }
 
+            int pageNum = 1;
             if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
-                    if (pageNum < 1) pageNum = 1;
+                {
+                }
 
+            int pageSize = 200;
             if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
-                    if (pageSize < 1) pageSize = 1;
-
-            if (pageSize > 0 || pageNum > 0)
-            {
-                if (pageSize < 1) pageSize = 1;
-                if (pageNum < 1) pageNum = 1;
-                if (pageSize > 25000) pageSize = 25000;
-                if (pageNum > 10000) pageNum = 10000;
-                offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
-            }
-
+                {
+                }
 
             var sql = $@"
                         SELECT Ex.[ExecutionID]
@@ -2927,7 +2918,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID  
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID] 
                           {orderBySql}
-                          {offsetSql}
+                          offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only
                         ";
 
             var countSQL = $@"
