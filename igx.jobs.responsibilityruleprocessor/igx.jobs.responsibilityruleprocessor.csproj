@@ -76,6 +76,10 @@
       <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
       <Name>d360.core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
+      <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
+      <Name>d360.extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\d360.model\d360.model.csproj">
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>
