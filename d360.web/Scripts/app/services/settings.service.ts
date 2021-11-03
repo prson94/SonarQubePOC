@@ -96,7 +96,7 @@ export class CompanySettingsService extends BaseObservableService {
     }
 
     getAppSetting(setting: string): any {
-        return this.appSettings.find(a => a.Name === setting).Value;
+        return this.appSettings.find((a) => a.Name === setting).Value;
     }
 
     getSettingById(setting: CompanySettingEnum): SettingsGetModel {

@@ -42,7 +42,7 @@ export function localeIdFactory() {
 }
 
 export function settingsInitializer(provider: CompanySettingsService) {
-    return () => provider.loadSettings().then(r => { provider.loadApplicationSettings(); });
+    return () => provider.loadSettings().then((r) => { provider.loadApplicationSettings(); });
 }
 
 export function localeInitializer(localeId: string) {                  
