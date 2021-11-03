@@ -1155,6 +1155,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <Content Include="Scripts\environments\workaround.js" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.ts" />
