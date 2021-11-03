@@ -1988,7 +1988,10 @@ from	IntersectType I
 					                inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
 		                end
 
-                   select * from fieldtype where assettypeid = @referenceid
+                   select * from fieldtype
+                        where assettypeid = @referenceid and IsListable = 1
+				        order by ColumnOrder asc, FriendlyName asc;
+
                         ", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
                 return fields;
