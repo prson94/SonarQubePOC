@@ -2287,7 +2287,7 @@ from	IntersectType I
             List<string> joins = new List<string>();
             List<string> wheres = new List<string>();
 
-            int assetTypeId = await GetAssetTypeIdForRefListField(dbArgs);
+            int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs);
 
             wheres.Add("A.AssetTypeID = @assetTypeId");
             wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");
@@ -2506,9 +2506,9 @@ from	IntersectType I
             return (Columns, Fields, Values, count);
         }
 
-        private async Task<int> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
+        private async Task<int?> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
         {
-            return (await Company.QueryAsync<int>($@"declare @isSubject bit,
+            return (await Company.QueryAsync<int?>($@"declare @isSubject bit,
 				                        @referenceItemTypeID int
 		                        select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
 		                        from	IntersectType I 
