@@ -2856,9 +2856,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             string offsetSql = "";
             if (queryParams.Any(x => x.Key == "_direction"))
             {
-                string[] allowedDirections = new string[] { "asc", "desc" };
-                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
-                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                var allowedDirections = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim();
+                if (!allowedDirections.Contains(order))
                 {
                     return new APIExecutionAPIModelResult
                     {
@@ -2866,7 +2866,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         StatusCode = HttpStatusCode.BadRequest
                     };
                 }
-                orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+                orderDirection = order;
             }
 
             if (!queryParams.Any(p => p.Key == "_order"))
@@ -2877,16 +2877,17 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
 
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                string[] validOrderByFields = { "executionid", "resourceuid", "resource", "total",
-                                                "processed", "error", "errormessage", "processingstartedon",
-                                                "startedon", "completedon", "method", "route", "fields", "applicationid" };
-                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                var validOrderByFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { 
+                    "executionid", "resourceuid", "resource", "total",
+                    "processed", "error", "errormessage", "processingstartedon",
+                    "startedon", "completedon", "method", "route", "fields", "applicationid" };
+                if (!validOrderByFields.Contains(orderByCol))
                     return new APIExecutionAPIModelResult
                     {
                         Message = AssetTypeErrors.InvalidOrderPassed,
                         StatusCode = HttpStatusCode.BadRequest
                     };
-                orderBySql = $" order by {orderByCol} {orderDirection} ";
+                orderBySql = $" order by [{orderByCol}] {orderDirection} ";
             }
 
             if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
@@ -2903,8 +2904,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 if (pageNum < 1) pageNum = 1;
                 if (pageSize > 25000) pageSize = 25000;
                 if (pageNum > 10000) pageNum = 10000;
-
-
                 offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
             }
 
