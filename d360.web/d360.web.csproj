@@ -218,6 +218,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
+    <Reference Include="SmartFormat, Version=2.7.0.0, Culture=neutral, PublicKeyToken=568866805651201f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SmartFormat.NET.2.7.0\lib\net461\SmartFormat.dll</HintPath>
+    </Reference>
     <Reference Include="SpreadsheetLight, Version=3.4.11.0, Culture=neutral, PublicKeyToken=32fbb46dc1730c57, processorArchitecture=MSIL">
       <HintPath>..\packages\SpreadsheetLight.3.4.11\lib\net40\SpreadsheetLight.dll</HintPath>
     </Reference>
