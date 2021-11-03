@@ -17,16 +17,20 @@ function goc16239fix() {
     ];
 
     files.forEach(function (editorfile) {
-        fs.exists(editorfile, function (exists) {
+        fs.exists(`${editorfile}`, function (exists) {
             if (exists) {
-                fs.readFile(editorfile, 'utf-8', function (err, data) {
-                    if (err) throw err;
+                fs.readFile(`${editorfile}`, 'utf-8', function (err, data) {
+                    if (err) {
+                        throw err;
+                    }
                     var pattern = /\/\*\#__PURE__\*\/_interopNamespace\(Quill\)/gim;
                     if (data.match(pattern)) {
                         var newValue = data.replace(pattern, 'Quill');
 
-                        fs.writeFile(editorfile, newValue, 'utf-8', function (err) {
-                            if (err) throw err;
+                        fs.writeFile(`${editorfile}`, newValue, 'utf-8', function (err) {
+                            if (err) {
+                                throw err;
+                            }
                         });
                     }
                 });
