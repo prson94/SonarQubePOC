@@ -706,7 +706,7 @@ namespace d360.web.Controllers
                                         fld.DelayedLoadType = "Predicate";
                                     }
                                 }
-                                else if (loadLookupValues)
+                                else
                                 {
                                     if (!f.IsRequired && !f.AllowMultipleValues)
                                     {
@@ -752,7 +752,31 @@ namespace d360.web.Controllers
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
-                                    if (f.AllowMultipleValues)
+                                    if (!loadLookupValues && f != null && !string.IsNullOrEmpty(f.DefaultValue))
+                                    {
+                                        List<int> lookupValues = f.DefaultValue.Split(',').Select(x => int.Parse(x)).ToList();
+
+                                        if (lookupValues.Count > 0)
+                                        {
+                                            fld.Items.AddRange(Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupValues, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
+                                                    .OrderBy(o => o.Text)
+                                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                                    .ToList());
+
+                                            foreach (var item in fld.Items)
+                                            {
+                                                if (lookupValues.Contains(int.Parse(item.Value)))
+                                                {
+                                                    item.Selected = true;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            fld.Items = new List<SelectListItem>();
+                                        }
+                                    }
+                                    else if (f.AllowMultipleValues)
                                     {
                                         var items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
                                             .OrderBy(o => o.Text)
@@ -1173,7 +1197,7 @@ namespace d360.web.Controllers
                             fld.Required = (ft.MinimumLength > 0 || ft.Length > 0 || ft.IsRequired);
                         }
                         else
-                            if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
+                    if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
                         {
                             fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
                         }

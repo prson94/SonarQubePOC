@@ -61,6 +61,8 @@
                                        selectedItemsLabel="{0} items selected"></p-multiSelect>
                     </div>
                     <ng-template #singleSelect>
+                        value: {{this.form.controls[this.field.FieldName].value}}
+                        items: {{field.Items | json}}
                         <p-dropdown #dropdown
                                     igDropdown
                                     styleClass="dropdown-lazy-load"
