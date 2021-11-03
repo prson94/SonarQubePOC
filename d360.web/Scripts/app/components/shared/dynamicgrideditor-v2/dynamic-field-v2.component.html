@@ -61,17 +61,29 @@
                                        selectedItemsLabel="{0} items selected"></p-multiSelect>
                     </div>
                     <ng-template #singleSelect>
-                        <p-dropdown igDropdown
+                        value : {{this.form.controls[this.field.FieldName].value}}
+                        items : {{field.Items | json}}
+                        <p-dropdown #dropdown
+                                    igDropdown
                                     styleClass="dropdown-lazy-load"
                                     igSize="full"
                                     [inputId]="field.FieldName + '_input_' + component_uid"
                                     [formControlName]="field.FieldName"
-                                    [options]="field.Items | selectItemTextToLabel"
+                                    [options]="field.Items"
                                     (onSelect)="onSelect($event)"
                                     [required]="field.Required"
-                                    (click)="op.toggle($event)">
+                                    (click)="overlayPanel.toggle($event)">
+                            <ng-template let-item pTemplate="selectedItem">
+                                <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
+                                    <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
+                                    <span class="ig-colorfield-item-label">{{item.label}}</span>
+                                </div>
+
+                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
+
+                            </ng-template>
                         </p-dropdown>
-                        <p-overlayPanel #op [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
+                        <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
                             <ng-template pTemplate>
                                 <p-table #dataTable
                                          tableStyleClass="ig-filter-table"
@@ -81,9 +93,9 @@
                                          [globalFilterFields]="['label']"
                                          dataKey="value"
                                          [scrollable]="true"
-                                         scrollHeight="320px"
-                                         [virtualRowHeight]="32"
-                                         [rows]="20"
+                                         scrollHeight="340px"
+                                         [virtualRowHeight]="34"
+                                         [rows]="10"
                                          [virtualScroll]="true"
                                          [lazy]="true"
                                          (onLazyLoad)="loadListLazy($event)"
@@ -105,7 +117,12 @@
                                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                             </td>
                                             <td (click)="selectSingleItem($event,item);">
-                                                <span class="item-value" [innerHTML]="item.label"></span>
+                                                <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
+                                                    <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
+                                                    <span class="ig-colorfield-item-label">{{item.label}}</span>
+                                                </div>
+
+                                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
                                             </td>
                                         </tr>
                                     </ng-template>

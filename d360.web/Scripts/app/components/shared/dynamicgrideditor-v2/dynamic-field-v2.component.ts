@@ -30,6 +30,8 @@ import { SelectItem } from 'primeng/api/selectitem';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { Dropdown } from 'primeng/dropdown';
+import { OverlayPanel } from 'primeng/overlaypanel';
 
 @Component({
     selector: 'd3s-dynamic-field-v2',
@@ -102,6 +104,10 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
     linkFieldOptionalPlaceholder: string = 'Optional: you should start the URL with a protocol prefix eg. http:// or https://';
     linkFieldRequiredPlaceholder: string = 'Value required: you should start the URL with a protocol prefix eg. http:// or https://';
+
+    @ViewChild('dropdown', { static: false }) dropdown: Dropdown;
+    @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
+
 
     constructor(
         private cascadeService: CascadeService,
@@ -443,6 +449,14 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                     el.value = this.typeAheadValue.Text;
             }
         }
+
+        if (this.dropdown && this.overlayPanel) {
+            var width = this.dropdown.el.nativeElement.offsetWidth;
+            if (this.overlayPanel.overlayVisible && this.overlayPanel.container) {
+                this.overlayPanel.container.style.width = width + "px";
+            }
+        }
+
     }
 
     ngOnDestroy() {
@@ -876,7 +890,13 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
     lookupSelectedValue: any[] = [];
     lookupValues: any[] = [];
+
+    lastParams: any;
     loadListLazy(params) {
+        if (this.lastParams === params) {
+            return;
+        }
+
         params["isForAssetForm"] = true;
         this.isLookupValuesLoading = true;
         this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, params).subscribe((res) => {
@@ -887,18 +907,18 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             let loadedData = [];
 
             res.items.forEach((str) => {
-                loadedData.push({ label: str.text, value: str.value });
+                loadedData.push({ label: str.text, value: str.value, color: str.color });
             });
 
             Array.prototype.splice.apply(this.lookupValues, [...[params.skip, params.take], ...loadedData]);
 
             this.lookupValues = [...this.lookupValues];
+
             if (this.lookupValues.length > res.count) {
                 this.lookupValues = this.lookupValues.slice(0, res.count);
             }
-
             this.isLookupValuesLoading = false;
-
+            this.lastParams = params;
             this.ref.detectChanges();
         });
         //    this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
@@ -925,6 +945,31 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             this.lookupSelectedValue = [item];
             this.field.Items = [item];
             this.form.controls[this.field.FieldName].setValue(this.lookupSelectedValue[0].value);
+            this.overlayPanel.hide();
         }
+    }
+
+    hexToRgb(hex: string): string {
+        if (!hex) {
+            return "";
+        }
+
+        if (!hex.startsWith("#")) {
+            return hex;
+        }
+        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+        var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        var data = result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+
+        return data ? `rgb(${data.r},${data.g},${data.b})` : '';
     }
 }

@@ -163,12 +163,11 @@
         </p-table>
     </div>
 </div>
-<d3s-modal [title]="modalTitle" 
-           additionalClasses="modal-dyn-editor large-dialog asset-editor" 
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor" 
            (onClose)="showEditor=false" 
            [showTitle]="false"
            [isVisible]="showEditor">
-    <d3s-dynamic-editor-v2 
+    <d3s-dynamic-editor-v2 *ngIf="showEditor"
                         [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
                         [objectType]="gridObject.Object"
                         [title]="selected ? 'Edit Asset' : 'Create New Asset'"

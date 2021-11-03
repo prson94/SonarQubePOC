@@ -88,8 +88,8 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     @Input() disallowedNames: string[] = [];
     private savingInProgress: boolean = false;
     private consolidateToTag: any;
-    private isInError: boolean = false;
-    private isInErrorMessage: string = "";
+    isInError: boolean = false;
+    isInErrorMessage: string = "";
 
     @Input() diagramNodeKey: string = "";
 

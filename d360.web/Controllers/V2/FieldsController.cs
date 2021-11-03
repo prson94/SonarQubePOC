@@ -2124,9 +2124,39 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 {
                     fieldTypeId = fieldType.ID;
                 }
+                bool hasColor = false;
 
+                var colorjoin = $@"
+                                        outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
+                                                    from Asset A 
+                                                    outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
+													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
+                                        )colorJSON 
+                                        ";
+
+                string selectStatement = "v.text";
+
+                if (isForAssetForm)
+                {
+                    hasColor = Company.Connection.Query<int>(@"select count(1) from fieldtype ft
+                    inner join assettype at on at.Object = ft.LookupObjectType + 'Type' and at.ObjectID = ft.LookupObjectID
+                    inner join asset a on a.AssetTypeID = at.ID
+                    where ft.id = @fieldTypeId and a.color is not null", new { fieldTypeId }).FirstOrDefault() > 0;
+                    if (hasColor)
+                    {
+                        selectStatement = "JSON_VALUE(colorJson.FV,'$.name') AS text,JSON_VALUE(colorJson.FV,'$.color') AS color, v.value";
+                    }
+                    else
+                    {
+                        selectStatement = "v.text, v.value";
+                        colorjoin = "";
+                    }
+                }
                 var query = $@"
-                    select {(isForAssetForm ? "text, value" : "text")} from FieldLookupValue where @fieldTypeId = FieldTypeID
+                    select {selectStatement} 
+                    from FieldLookupValue V
+                    {colorjoin}
+                    where @fieldTypeId = v.FieldTypeID
                     {whereQuery}
                     order by text asc
 					{pagingQuery};

@@ -137,7 +137,7 @@ namespace d360.web.Controllers
             return Request.CreateResponse<GenericHttpError>(status, new GenericHttpError { Code = status, Message = message }, asJson ? "application/json" : "application/xml");
         }
 
-        public class StatusCodeErrorMessage 
+        public class StatusCodeErrorMessage
         {
             public HttpStatusCode Status { get; set; }
             public string ErrorMessage { get; set; }
@@ -169,7 +169,7 @@ namespace d360.web.Controllers
                 return errorMessageResponse((ex as GenericException).StatusCode, errorHeading, (ex as GenericException).StatusDescription);
             }
             else
-            { 
+            {
                 if (ex.Message.ToLower().Contains("invalid filter expression"))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, $"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}");
@@ -541,11 +541,11 @@ namespace d360.web.Controllers
             {
                 if (string.IsNullOrEmpty(validationMessage))
                 {
-                    if(fieldType == "Number")
+                    if (fieldType == "Number")
                     {
                         validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a whole number");
                     }
-                    if(fieldType == "Decimal")
+                    if (fieldType == "Decimal")
                     {
                         validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a decimal number");
                     }
@@ -612,7 +612,7 @@ namespace d360.web.Controllers
             return SettingsRepository.GetSettingValue<bool>(Setting.ShowAllUsersAPIKey);
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true, bool loadLookupValues = true)
         {
             var row = startRow;
             const string defaultCategoryName = "General";
@@ -706,7 +706,7 @@ namespace d360.web.Controllers
                                         fld.DelayedLoadType = "Predicate";
                                     }
                                 }
-                                else
+                                else if (loadLookupValues)
                                 {
                                     if (!f.IsRequired && !f.AllowMultipleValues)
                                     {
@@ -862,7 +862,7 @@ namespace d360.web.Controllers
             return list;
         }
 
-        internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true)
+        internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true, bool loadOnlySelectedLookupValue = false)
         {
             var row = startRow;
             const string defaultCategoryName = "General";
@@ -1002,11 +1002,22 @@ namespace d360.web.Controllers
                                         )colorJSON 
                                         ";
 
+                                    string loadOnlySelectedLookupValueSQL = "";
+                                    List<int> lookupValues = new List<int>();
+                                    if (loadOnlySelectedLookupValue)
+                                    {
+                                        if (!string.IsNullOrEmpty(f.Value))
+                                        {
+                                            lookupValues = f.Value.Split(',').Select(x => int.Parse(x)).ToList();
+                                            loadOnlySelectedLookupValueSQL = " and V.Value in @lookupValues";
+                                        }
+                                    }
+
                                     var itemSql = $@"select {columns} 
                                         from FieldLookupValue V
                                         {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
                                         {(fld.UseColorControl ? colorjoin : "")}
-                                        where V.FieldTypeID = @fieldTypeId
+                                        where V.FieldTypeID = @fieldTypeId {loadOnlySelectedLookupValueSQL}
                                         ";
 
                                     var countSql = $@"select count(*)
@@ -1016,9 +1027,11 @@ namespace d360.web.Controllers
                                         where V.FieldTypeID = @fieldTypeId
                                         ";
 
+
+
                                     if (ft.AllowMultipleValues)
                                     {
-                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID })
+                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
                                             .OrderBy(o => o.Text)
                                             .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                             .ToList();
@@ -1202,7 +1215,7 @@ namespace d360.web.Controllers
         {
             Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
         }
-        
+
         internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, DynamicParameters dbArgs, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null, string idColumn = "A.ID")
         {
             var columnBuilder = new StringBuilder();
