@@ -968,7 +968,7 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-                                    if (!ft.IsRequired && !ft.AllowMultipleValues)
+                                    if (!ft.IsRequired && !ft.AllowMultipleValues && !loadOnlySelectedLookupValue)
                                     {
                                         fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
                                     }
@@ -1006,7 +1006,7 @@ namespace d360.web.Controllers
                                     List<int> lookupValues = new List<int>();
                                     if (loadOnlySelectedLookupValue)
                                     {
-                                        if (!string.IsNullOrEmpty(f.Value))
+                                        if (!string.IsNullOrEmpty(f?.Value))
                                         {
                                             lookupValues = f.Value.Split(',').Select(x => int.Parse(x)).ToList();
                                             loadOnlySelectedLookupValueSQL = " and V.Value in @lookupValues";
@@ -1028,8 +1028,29 @@ namespace d360.web.Controllers
                                         ";
 
 
+                                    if (loadOnlySelectedLookupValue)
+                                    {
+                                        string selectedValue = null;
+                                        if (f != null && !string.IsNullOrWhiteSpace(f.Value))
+                                            selectedValue = f.Value;
+                                        else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+                                            selectedValue = ft.DefaultValue;
 
-                                    if (ft.AllowMultipleValues)
+                                        if (lookupValues.Count > 0)
+                                        {
+                                            items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
+                                                    .OrderBy(o => o.Text)
+                                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                                    .ToList();
+
+                                            items.ForEach(x => x.Selected = true);
+                                        }
+                                        else
+                                        {
+                                            items = new List<SelectListItem>();
+                                        }
+                                    }
+                                    else if (ft.AllowMultipleValues)
                                     {
                                         items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
                                             .OrderBy(o => o.Text)
@@ -1092,6 +1113,8 @@ namespace d360.web.Controllers
                                         }
 
                                     }
+
+
 
                                     if (items != null) // missing null check causes exception if items is null GOV-6041
                                     {
