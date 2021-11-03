@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.Models;
 using Dapper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,13 +9,16 @@ namespace d360.model.helpers
 {
     public static class ComplexFieldsHelper
     {
-        public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, bool isCountQuery = false)
+
+        public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping, bool isCountQuery = false)
         {
+            Guid resourceTypeUid = Guid.Parse("00000001-0000-0000-0000-a00000000011");
+
             List<string> joins = new List<string>();
             int idx = 1;
             foreach (var rel in definition.Relations)
             {
-                selects.Add($"dbo.GenerateAssetUrl(H{idx}.ID) as [H{idx}_Url]");
+                selects.Add($"concat('asset/', H{idx}.Uid) as [H{idx}_Url]");
                 selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
 
                 if (definition.Relations.IndexOf(rel) == 0)
@@ -43,6 +47,11 @@ namespace d360.model.helpers
                         joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
                     }
                 }
+                bool isResource = definition.Fields.Where(x => (x.RelationIndex + 1) == idx && x.AssetTypeUid == resourceTypeUid).Any();
+                if (isResource)
+                {
+                    joins.Add($"INNER JOIN reporting.global_resource U{idx} ON u{idx}.uid = h{idx}.uid");
+                }
 
                 idx++;
             }
@@ -60,12 +69,31 @@ namespace d360.model.helpers
                     selects.Add($"H{index}_A{f.FieldTypeID}_DV.DisplayValue AS [H{index}_{f.FieldTypeID}_DisplayValue]");
                     selects.Add($"H{index}_R{f.FieldTypeID}.IntersectTypeUid AS [H{index}_{f.FieldTypeID}_IntersectTypeUid]");
 
-                    joins.Add($@"LEFT JOIN graph.AssetEdge H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.$to_id = H{index}.$node_id AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}
-                                         LEFT JOIN graph.AssetNode H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.$node_id = H{index}_R{f.FieldTypeID}.$from_id
-                                         LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
+                    var direction = fieldRelationDirectionMapping.FirstOrDefault(x => x.Item1 == f.FieldTypeID)?.Item2;
+
+                    if (direction == null || direction == FieldTypeComplexLookupRelationDirection.Back)
+                    {
+                        joins.Add($@"LEFT JOIN graph.AssetEdge H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.$to_id = H{index}.$node_id AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}
+                                 LEFT JOIN graph.AssetNode H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.$node_id = H{index}_R{f.FieldTypeID}.$from_id
+                                 LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
+                    }
+                    else
+                    {
+                        joins.Add($@"LEFT JOIN graph.AssetEdge H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.$from_id = H{index}.$node_id AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}
+                                 LEFT JOIN graph.AssetNode H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.$node_id = H{index}_R{f.FieldTypeID}.$to_id
+                                 LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
+                    }
+
                 }
                 else if (f.FieldTypeID != 0)
                 {
+
+                    //skip field if field type got deleted
+                    if (ft == null)
+                    {
+                        continue;
+                    }
+
                     string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
 
@@ -89,7 +117,7 @@ namespace d360.model.helpers
                         case "counter":
                             string cnt_prefix = "cntprefix_" + ft.ID;
                             dbArgs.Add(cnt_prefix, ft.CounterPrefix);
-                            selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
+                            selects.Add($"(@{cnt_prefix} + try_cast(F{ft.ID}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
                             break;
                         case "jsonelement":
                             selects.Add($"JSON_VALUE(F_{ft.ID}.FormattedValue,'$.'+FT_JSON_{ft.ID}.Name) as [{fieldAlias}]");
@@ -112,7 +140,7 @@ namespace d360.model.helpers
                               (SELECT top 1 [Value] AS FormattedValue
                                FROM dbo.FieldCounterValue
                                WHERE AssetId = H{f.RelationIndex + 1}.ID
-                                 AND FieldTypeId = {ft.ID}){fieldSelector}");
+                                 AND FieldTypeId = {ft.ID})F{ft.ID}");
                     }
                     else if (ft.Type == "Score")
                     {
@@ -145,6 +173,13 @@ namespace d360.model.helpers
                         selects.Add($"H{f.RelationIndex + 1}_CODE.Code as [H{f.RelationIndex + 1}_Code]");
                         joins.Add($"left join asset H{f.RelationIndex + 1}_CODE on H{f.RelationIndex + 1}_CODE.uid = H{f.RelationIndex + 1}.Uid");
                     }
+
+                    bool isResource = f.AssetTypeUid == resourceTypeUid;
+                    if (isResource)
+                    {
+                        selects.Add($"u{f.RelationIndex + 1}.{f.FieldTypeName} AS [H{f.RelationIndex + 1}_{f.FieldTypeName}]");
+                    }
+
                 }
 
 
@@ -194,6 +229,12 @@ namespace d360.model.helpers
                 {
                     var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
                     var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
+
+                    if (ft == null)
+                    {
+                        continue;
+                    }
+
                     var gColumn = new GridColumn { text = ft.FriendlyName, columnWidth = colWidth };
                     string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
                     gField.name = gColumn.datafield = fieldAlias;
@@ -296,6 +337,35 @@ namespace d360.model.helpers
                     var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text" };
                     Columns.Add(gColumn);
                     Fields.Add(gField);
+                }
+
+                Guid resourceTypeUid = Guid.Parse("00000001-0000-0000-0000-a00000000011");
+                bool isResource = f.AssetTypeUid == resourceTypeUid;
+                if (isResource)
+                {
+                    var gColumn = new GridColumn
+                    {
+                        text = fieldName,
+                        datafield = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
+                        columnWidth = colWidth,
+                        columntype = "textbox",
+                        apiName = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
+                        uidfield = $"H{(f.RelationIndex + 1)}_Uid",
+                        urlfield = $"H{(f.RelationIndex + 1)}_Url"
+                    };
+                    var gField = new GridField
+                    {
+                        name = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
+                        type = "text",
+                        apiName = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
+                        defaultFilter = f.Filter,
+                        sortOrder = f.SortOrder
+                    };
+                    Columns.Add(gColumn);
+                    Fields.Add(gField);
+
+                    Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Uid", type = "text" });
+                    Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Url", type = "text" });
                 }
             }
 

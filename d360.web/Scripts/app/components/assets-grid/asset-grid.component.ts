@@ -38,6 +38,7 @@ import { V2ApiFilters } from "../../models/asset-search.model";
 import { SortOrder } from "../../models/enums.model";
 import { AssetGridObject } from "./asset-grid.model";
 import { Filters } from "./advanced-filtering/advanced-filtering.models";
+import { CompanySettingsService } from "../../services/settings.service";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -128,13 +129,14 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private headerActionsService: HeaderActionsService,
         public stateService: StateService,
         private permissionsService: PermissionsService,
+        protected settingsService: CompanySettingsService,
         private router: Router,
         private gridDefinitionService: GridDefinitionService,
         private changeDetectorRef: ChangeDetectorRef,
         private assetService: AssetService,
         private route: ActivatedRoute
     ) {
-        super();
+        super(settingsService);
 
         var me = this;
         this.route.queryParams.subscribe((params) => {

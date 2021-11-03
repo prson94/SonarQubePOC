@@ -4,6 +4,7 @@ import { CompanySettings, CompanyImage } from '../../../models/settings.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-image-upload',
@@ -32,20 +33,20 @@ import { MessagesObservableService } from '../../../services/messages-observable
         </div>
         <div class="row">
             <div class="col s6">
-                <div *ngIf="companySettings.CurrentCompanyLogoPath">
+                <div *ngIf="companySettings.CurrentLogoPath">
                     Current Logo: <br />
-                    <img [src]="companySettings.CurrentCompanyLogoPath" class="company-logo-canvas" />
+                    <img [src]="companySettings.CurrentLogoPath" class="company-logo-canvas" />
                 </div>
                 &nbsp;
             </div>
             <div class="col s6">
-                <div *ngIf="companySettings.CurrentCompanyIconPath">
+                <div *ngIf="companySettings.CurrentIconPath">
                     Current Icon: <br />
-                    <img [src]="companySettings.CurrentCompanyIconPath" />
+                    <img [src]="companySettings.CurrentIconPath" />
                 </div>
             </div>
         </div>
-        <div class="row" *ngIf="companySettings.CurrentCompanyLogoPath || companySettings.CurrentCompanyIconPath">
+        <div class="row" *ngIf="companySettings.CurrentLogoPath !== companySettings.DefaultLogoPath || companySettings.CurrentIconPath !== companySettings.DefaultIconPath">
             <div class="col s6">
                 <p-checkbox igCheckbox
                             [(ngModel)]="companySettings.SetLogoToDefault"
@@ -104,9 +105,10 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-        super(headerBreadcrumbService, titleService);
+        super(headerBreadcrumbService, titleService, settingsService);
     }
 
 

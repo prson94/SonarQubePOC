@@ -2,10 +2,8 @@
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { FlowObjectType, AssetTypeClass, AssetTypeEditorModel } from '../../../models/asset.model';
-import { ApiResult } from '../../../models/apiresult.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-
-declare var CompanySettings: any;
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-asset-type-editor',
@@ -41,23 +39,20 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     showNotesField: boolean = false;
     showParentPredicates: boolean = true;
 
-    private lineageVersion: number = 1;
-
     private flowObjectDDL: any[] = [];
 
-    constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private assetTypeService: AssetTypeService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
         this.flowObjectDDL.push({ value: FlowObjectType.Event, label: 'Event' });
         this.flowObjectDDL.push({ value: FlowObjectType.Activity, label: 'Activity' });
         this.flowObjectDDL.push({ value: FlowObjectType.Gateway, label: 'Gateway' });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-
-        if (CompanySettings != null && CompanySettings.LineageVersion != null) {
-            this.lineageVersion = CompanySettings.LineageVersion;
-        }
-
         let triggerLoad = false;
         for (let p in changes) {
             if (p == 'id' || p == 'parentID' || p == 'topTypeID') {

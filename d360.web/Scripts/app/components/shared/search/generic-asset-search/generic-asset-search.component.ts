@@ -5,8 +5,6 @@ import { PredicateType, Predicate } from '../../../../models/predicate.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { ToolTipService } from '../../../../services/tooltip.service';
 
-declare var CompanySettings;
-
 @Component({
     selector: 'd3s-asset-search',
     templateUrl: 'generic-asset-search.component.html',

@@ -38,7 +38,7 @@ namespace d360.model
     {
         internal IQueueSource QueueSource;
         internal IStorageProvider Storage;
-
+        internal IMailProvider Mail;
         readonly CommunityContext Community;
 
         bool IsEventingEnabled;
@@ -53,13 +53,20 @@ namespace d360.model
 
         #region Ctors
 
-        public CompanyContext(ICommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, IStorageProvider storage, bool skipCacheCheck = false)
+        public CompanyContext(
+            ICommunityContext community, 
+            ICachingProvider caching, 
+            IQueueSource queueSource, IMailProvider mail, 
+            ISecurityContextProvider context, 
+            IStorageProvider storage, 
+            bool skipCacheCheck = false)
             : base(community.GetCompanyConnectionString(skipCacheCheck))
         {
             Database.SetInitializer<CompanyContext>(null); //dont create any tables if they dont exist.
 
             Community = (CommunityContext)community;
             Caching = caching;
+            Mail = mail;
             QueueSource = queueSource;
             Storage = storage;
 
@@ -455,7 +462,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             if (intersectType == null)
             {
                 var error = new Dictionary<string, object>();
-                error.Add("RelationshipError", "Invalid or deleted relationship type encountered on Relationship field " + ft.FriendlyName + ".");
+                error.Add("RelationshipError", ft.FriendlyName);
                 return error;
             }
 

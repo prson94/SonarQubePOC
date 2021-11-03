@@ -1,5 +1,6 @@
 ﻿import { BaseComponent } from '../base.component';
 import * as go from 'gojs';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 export class DiagramBaseComponent extends BaseComponent {
 
@@ -7,8 +8,8 @@ export class DiagramBaseComponent extends BaseComponent {
     protected palette: go.Palette;
     protected g = go.GraphObject.make;
 
-    constructor() {
-        super();
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
         (go as any).licenseKey = this.getLicenseKey();
     }
 

@@ -15,6 +15,7 @@ import { TagType, TagDetail, TagItem } from '../../models/tag.model';
 import { Location } from '@angular/common';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 
 @Component({
@@ -50,10 +51,11 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         private authService: AuthenticationService,
         private ref: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
 
     }

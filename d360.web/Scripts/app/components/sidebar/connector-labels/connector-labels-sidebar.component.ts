@@ -8,6 +8,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-connector-labels',
     templateUrl: './connector-labels-sidebar.component.html',
@@ -52,9 +53,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         private messagesService: MessagesObservableService,
         titleService: Title,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = "Diagram Assets";
         this.setCommonItems();
         this.tabTitle = 'Diagram Assets';

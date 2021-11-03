@@ -34,6 +34,8 @@ using System.Web.Mvc;
 using System.Web.Security;
 using System.Xml;
 using Resources;
+using d360.extensions;
+
 namespace d360.web.Controllers
 {
     [RoutePrefix(""), ValidateContracts(Ignore = true)]
@@ -46,9 +48,10 @@ namespace d360.web.Controllers
 
         TelemetryClient Telemetry;
 
-        public AuthenticationController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+        public AuthenticationController(ICommunityContext community, ICompanyContext company, IMailProvider mail, ISettingsRepository settingsRepository)
             : base(community, company, settingsRepository)
         {
+            Mail = mail;
             Telemetry = new TelemetryClient();
             Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
             Telemetry.Context.GlobalProperties["CompanyID"] = company.CurrentCompanyID.ToString();
@@ -951,12 +954,12 @@ namespace d360.web.Controllers
                 else
                 {
                     ModelState.AddModelError("Unauthorized", "The user name or password provided is incorrect.");
-                    return View(model);
+                    return View("Login", model);
                 }
             }
 
             ModelState.AddModelError("UnknownError", UNKNOWN_ERROR_MESSAGE);
-            return View(model);
+            return View("Login", model);
         }
 
         [AllowAnonymous, Route("slo-callback")]
@@ -1218,7 +1221,7 @@ namespace d360.web.Controllers
                                 {
 
                                     var content = $@"Please complete registration to {orgs.First().Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                    await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                    await Mail.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                     model.Step = RegisterStep.Email;
                                     model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -1251,7 +1254,7 @@ namespace d360.web.Controllers
                                 {
 
                                     var content = $@"Please complete registration to {org.Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                    await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                    await Mail.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                     model.Step = RegisterStep.Email;
                                     model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -1286,7 +1289,7 @@ namespace d360.web.Controllers
                                     else
                                     {
                                         var content = $@"Please complete registration to {invite.OrganizationName} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                        await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                        await Mail.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                         model.Step = RegisterStep.Email;
                                         model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -1872,7 +1875,7 @@ namespace d360.web.Controllers
                 templateValues["request_url"] = strUrl;
 
                 //email user 
-                extensions.mail.SimpleMessage.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
+                Mail.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
             }
             //redirect to login page
             FormsAuthentication.RedirectToLoginPage();

@@ -20,8 +20,8 @@ import * as _ from 'lodash';
 import { State } from '../../../models/asset.model';
 import { Observable, of, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'd3s-admin-workflow-editor',
@@ -71,17 +71,18 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     ];
 
     constructor(
-        private workflowService: WorkflowService,
-        private workflowFieldsService: WorkflowFieldsService,
         private responsibilityService: ResponsibilityTypeService,
-        private messageService: MessagesObservableService) {
-        super();
+        private messageService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private workflowFieldsService: WorkflowFieldsService,
+        private workflowService: WorkflowService
+    ) {
+        super(settingsService);
     }
 
     ngOnInit() {
-        if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true') {
-            this.hideShoppingCart = false;
-        }
+        this.hideShoppingCart = !this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
+
         this.defaultWorkflowObject.label = "";
         this.defaultWorkflowObject.value = "";
 

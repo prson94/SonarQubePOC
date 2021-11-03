@@ -6,6 +6,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AllocationService } from '../../../services/allocations.service';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import * as _ from 'lodash';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'allocation-editor',
@@ -41,8 +42,13 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
     rangeValues: number[] = [];
     @ViewChild('slider', { static: true }) slider: ElementRef;
 
-    constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService, private elementRef: ElementRef, private cdRef: ChangeDetectorRef) {
-        super();
+    constructor(
+        private allocationService: AllocationService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private elementRef: ElementRef,
+        private cdRef: ChangeDetectorRef) {
+        super(settingsService);
         this.selection = new ScoreTypeAllocation();
         this.selection.isExternallyCalculated = false;
         this.selection.lowerThreshold = 50;

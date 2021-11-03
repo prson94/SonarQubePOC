@@ -4,6 +4,7 @@ import {BaseComponent} from '../../shared/base.component';
 import {ObjectDetailService} from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -41,9 +42,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         private router: Router,
-        breadcrumbService: HeaderBreadcrumbService
+        breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

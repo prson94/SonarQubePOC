@@ -4,6 +4,7 @@ import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-hero-search-input',
@@ -17,8 +18,12 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 
     searchObjectTypes: SelectItem[] = [];
 
-    constructor(protected authenticationService: AuthenticationService, protected searchService: SearchService) {
-        super();
+    constructor(
+        protected authenticationService: AuthenticationService,
+        protected searchService: SearchService,
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -4,7 +4,6 @@ import { MetricFieldTypeViewModel, MetricAssetDefinitionViewModel, MetricRuleRes
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
-import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldType, FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
@@ -12,11 +11,12 @@ import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'dataquality-measure-editor',
     templateUrl: './measure-editor-dataquality.component.html',
-    providers: [MetricsService, CompanySettingsService, FieldsObservableService],
+    providers: [MetricsService, FieldsObservableService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
     .row-label{
@@ -80,13 +80,15 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.loadFieldData();
     }, 200);
 
-    constructor(protected metricsService: MetricsService,
+    constructor(
+        protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
         protected fb: FormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
-        super(fieldsService, metricsService, messagesService, cdRef);
+        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
     }
 
     ngOnChanges(changes: SimpleChanges): void {

@@ -8,6 +8,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
 import * as go from 'gojs';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-condition-editor',
@@ -49,8 +50,11 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         { value: 'false', label: 'False' }
     ];
 
-    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        private workflowFieldsService: WorkflowFieldsService) {
+        super(settingsService);
         this.allowedOperators = this.workflowFieldsService.getConditionOperators();
         this.operators = this.allowedOperators;
     }

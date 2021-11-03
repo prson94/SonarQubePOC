@@ -1,4 +1,5 @@
 ﻿import { Component, Input } from "@angular/core";
+import { CompanySettingsService } from "../../../services/settings.service";
 import { BaseComponent } from "../../shared/base.component";
 
 @Component({
@@ -56,4 +57,8 @@ import { BaseComponent } from "../../shared/base.component";
 })
 export class WorkflowMonitorStepHttpDetailsComponent extends BaseComponent {
     @Input() step: any;
+    constructor(
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 }

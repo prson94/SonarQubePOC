@@ -1065,7 +1065,7 @@ from	IntersectType I
 				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid }, ApiTimeout);
         }
 
-        public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal, string owner)
+        public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, int pageSize, int pageNum, bool includeTotal, string owner)
         {
             int? total = null;
             string whereFilter = string.IsNullOrEmpty(owner) ? " " : " and i.owner = @owner";
@@ -1142,7 +1142,7 @@ from	IntersectType I
 
             var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize, owner }, ApiTimeout);
 
-            return new RelationshipUidResult { Total = total, Results = results };
+            return new RelationshipUidResult { Total = total, pageSize = pageSize, pageNum = pageNum, Results = results };
         }
     }
 }

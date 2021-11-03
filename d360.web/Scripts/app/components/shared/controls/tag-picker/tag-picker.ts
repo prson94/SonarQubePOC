@@ -9,6 +9,7 @@ import { MessagesObservableService } from '../../../../services/messages-observa
 import { TagType, TagPermissionItem } from '../../../../models/tag.model';
 import { BaseComponent } from '../../base.component';
 import { SelectItem } from 'primeng/api';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 
 export const SWITCH_VALUE_ACCESSOR: any = {
@@ -68,9 +69,10 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     constructor(protected changeDetectorRef: ChangeDetectorRef,
         private tagService: TagService,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
     @ViewChild("tagPicker", { static: false }) _el: ElementRef;
 

@@ -28,5 +28,5 @@ if (!Element.prototype.matches) {
 // import 'core-js/es6/promise';
 
 import 'core-js/es7/reflect';
-import 'zone.js/dist/zone';
+import 'zone.js';
 import 'zone.js/dist/long-stack-trace-zone';

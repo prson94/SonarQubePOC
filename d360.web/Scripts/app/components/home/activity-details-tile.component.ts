@@ -6,6 +6,7 @@ import { ArtifactService } from '../../services/artifacts.service';
 import { Count} from '../../models/counts.model';
 import { AssetDetail } from '../../models/asset.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-activity-details-tile',
@@ -24,9 +25,10 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
 
     constructor(
         private router: Router,
-        private artifactService: ArtifactService
+        private artifactService: ArtifactService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

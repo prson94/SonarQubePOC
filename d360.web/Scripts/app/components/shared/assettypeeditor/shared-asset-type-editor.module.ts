@@ -22,6 +22,8 @@ import { AssetTypeEditorUseAsTransformationComponent } from './asset-type-editor
 import { IconPickerModule } from '../controls/icon-picker/icon-picker.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DirectivesModule } from '../directives/directives.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -36,6 +38,7 @@ import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
         SimpleAccordionModule,        
         IconPickerModule,
         InfoTooltipModule,
+        DirectivesModule,
         //prime        
         ButtonModule,
         ColorPickerModule,
@@ -44,6 +47,7 @@ import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
         EditorModule,
         InputTextModule,
         SharedModule,
+        CheckboxModule
     ],
     declarations: [
         AssetTypeEditorComponent,

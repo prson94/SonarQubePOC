@@ -3,11 +3,10 @@ import { SelectItem } from 'primeng/api';
 import { ReportsService} from '../../../services/reports.service';
 import { Report } from '../../../models/report.model';
 import { DropdownOption } from '../../../models/dropdown.model';
-
 import * as _ from 'lodash';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'd3s-admin-dashboards-editor',
@@ -91,13 +90,17 @@ export class AdminDashboardsEditor {
 
     constructor(
         private reportsService: ReportsService,
-        private responsibilityTypeService: ResponsibilityTypeService
+        private responsibilityTypeService: ResponsibilityTypeService,
+        protected settingsService: CompanySettingsService
     ) {
         this.reportTypes.push({ value:"powerbi", title:"PowerBI" });
     }
 
     ngOnInit() {
-        if (CompanySettings.EnableSagacity == "true" || CompanySettings.EnableSagacity == "True") this.reportTypes.push({ value: "sagacity", title: "Data360 DQ+" });
+        let enableDqPlus = this.settingsService.getSettingById(CompanySettingEnum.EnableSagacity).BooleanSetting.Value;
+        if (enableDqPlus) {
+            this.reportTypes.push({ value: "sagacity", title: "Data360 DQ+" });
+        }
         if (this.report != undefined) {
             this.editedReport = _.cloneDeep(this.report);
             this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();

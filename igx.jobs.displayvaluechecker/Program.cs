@@ -61,21 +61,7 @@ namespace igx.jobs.displayvaluechecker
 
                 foreach(var c in companies)
                 {
-                    #region Create EF connection
-
-                    var sec = new UriSecurityContextProvider()
-                    {
-                        CompanyID = c.CompanyID,
-                        ResourceID = 0,
-                        CompanyPrefix = c.UrlPrefix,
-                        IsAdministrator = true
-                    };
-                    var cache = new DummyCachingProvider();
-                    var queue = new AzureQueueSource();
-                    var community = new CommunityContext(cache, queue, sec);
-
-                    #endregion
-
+                    var community = JobDbContextCreator.CreateCommunityContext(c.CompanyID, 0, c.UrlPrefix, true);
                     var rs = await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                     {

@@ -7,6 +7,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import * as Highcharts from 'highcharts';
+import { CompanySettingsService } from '../../services/settings.service';
 
 
 @Component({
@@ -53,9 +54,10 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     constructor(protected responsibilityTypeService: ResponsibilityTypeService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        secondaryNavService: SecondaryNavService
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
     }
 

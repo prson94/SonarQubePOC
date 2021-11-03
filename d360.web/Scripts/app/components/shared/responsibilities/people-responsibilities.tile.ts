@@ -33,6 +33,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
 import { ResponsibilityItemFormModule } from './responsibility-item.form';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
@@ -58,8 +59,14 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     private isDeleting = false;
     private isAdding = false;
 
-    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService, protected messagesService: MessagesObservableService, private router: Router, private ref: ChangeDetectorRef) {
-        super();
+    constructor(
+        private responsibilityService: ResponsibilityService,
+        private permissionsService: PermissionsService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private router: Router,
+        private ref: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -489,7 +489,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, RequestorName. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, RequestedByName. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
         ]
 
@@ -504,6 +504,8 @@ namespace d360.web.Controllers.V2
             string offsetSql = "";
             string whereSql = " ";
             string filterValue = "";
+            string countSql = "select count(1) from";
+            string defaultSelect = "select	* from";
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -557,7 +559,7 @@ namespace d360.web.Controllers.V2
 
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
                 string[] validOrderByFields = { "datestarted", "datecompleted", "action", "assettypename",
-                                                "requestorname" };
+                                                "requestedbyname" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
@@ -570,7 +572,7 @@ namespace d360.web.Controllers.V2
                 if (filterValue != "")
                 {
                     filterValue = '%' + filterValue + '%';
-                    whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestorName] like @filterValue
+                    whereSql = @"where (X.[Action] like @filterValue or X.DateCompleted like @filterValue or X.[RequestedByName] like @filterValue
                         or X.AssetTypeName like @filterValue or X.ErrorMessage like @filterValue or X.ErrorMessage like @filterValue
                         or x.Success like @filterValue or X.Error like @filterValue or X.Total like @filterValue) ";
                 }
@@ -580,7 +582,7 @@ namespace d360.web.Controllers.V2
 
 
             offsetSql = $" offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only ";
-            string LoadDetailBaseSql = @"select	* from(select	
+            string LoadDetailBaseSql = @"(select	
             case L.[Action]
 			when 'M' then 'Users/Groups'
             when 'P' then 'Promotion'
@@ -612,8 +614,8 @@ namespace d360.web.Controllers.V2
         S.C as Success,
         E.C as Error,
 		T.C as Total,
-        R.FirstName + ' ' + R.LastName as RequestorName,
-        R.uid as RequestorUid,
+        R.FirstName + ' ' + R.LastName as RequestedByName,
+        R.uid as RequestedByUid,
         L.uid as LoadUid
 from	[Load] L
         left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
@@ -629,15 +631,18 @@ from	[Load] L
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T ) X " + whereSql + orderBySql + offsetSql;
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T ) X ";
 
             try
             {
-                var results = Company.Query<LoadDetailV2>(LoadDetailBaseSql, new { filterValue });
+                var sql = defaultSelect + LoadDetailBaseSql + whereSql + orderBySql + offsetSql;
+                var totalSql = countSql + LoadDetailBaseSql;
+                var total = Company.Query<int>(totalSql).FirstOrDefault();
+                var results = Company.Query<LoadDetailV2>(sql, new { filterValue });
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
-                model.total = results.Count();
+                model.total = total;
 
                 return await Task.FromResult<IHttpActionResult>(
                             ResponseMessage(
@@ -689,6 +694,7 @@ from	[Load] L
             string whereSql = "";
             string filterValue = "";
             List<string> v2ApiActions = new List<string> { "P", "R", "U" };
+            string countSql = "select	count(1) ";
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -703,6 +709,11 @@ from	[Load] L
             }
 
             var load = Company.Filter<Load>(i => i.uid == uid).FirstOrDefault();
+
+            if (load == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+            }
             var useExecutionTable = false;
 
             if (v2ApiActions.Contains(load.Action) && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
@@ -734,7 +745,7 @@ from	[Load] L
             }
             if (queryParams.Any(x => x.Key == "_direction"))
             {
-                var allowedDirections = new [] { "asc", "desc" };
+                var allowedDirections = new[] { "asc", "desc" };
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                 if (!allowedDirections.Contains(order.Trim().ToLower()))
                 {
@@ -773,7 +784,7 @@ from	[Load] L
                     whereSql = " where (RowIndex like @filterValue or [Status] like @filterValue or StatusMessage like @filterValue";
                     if (columns.Count > 0)
                     {
-                        for(int x = 1; x <= columns.Count; x++)
+                        for (int x = 1; x <= columns.Count; x++)
                         {
                             columnSql += " or Column" + x + " like @filterValue ";
                         }
@@ -783,7 +794,7 @@ from	[Load] L
                     {
                         whereSql += whereSql + ")";
                     }
-                } 
+                }
             }
             #endregion
 
@@ -833,9 +844,14 @@ from	[Load] L
                         sql += $"union all\n";
                         sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R " + whereSql + orderBySql + offsetSql;
 
+                        countSql += $" from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
+                        countSql += $"union all\n";
+                        countSql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R " + whereSql;
+
                         break;
                     case "R":
                         sqlColumns = $"select	* from(select I.RowIndex as RowIndex\n";
+                        countSql += $" from(select I.RowIndex as RowIndex\n";
                         sqlTables = @"from LoadItem I
                                       left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
                                       left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid and ER.ExecutionID = @postExecutionID
@@ -844,6 +860,7 @@ from	[Load] L
                         {
                             var i = c.ColumnIndex;
                             sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
+                            countSql += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
                             sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
                             sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
 
@@ -851,10 +868,15 @@ from	[Load] L
                         sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
                         sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
 
+                        countSql += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
+                        countSql += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
+
                         sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
+                        countSql += $" {sqlTables} where I.LoadID = @id) X " + whereSql;
 
                         break;
                     case "U":
+                        countSql += " from(select I.RowIndex as RowIndex\n";
                         sqlColumns = $"select	* from(select I.RowIndex as RowIndex\n";
                         sqlTables = @"from LoadItem I
                                         left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
@@ -862,22 +884,28 @@ from	[Load] L
                         {
                             var i = c.ColumnIndex;
                             sqlColumns += $",C{i}.[Value] as Column{i}\n";
+                            countSql += $",C{i}.[Value] as Column{i}\n";
                             sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
 
                         });
                         sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
                         sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
 
+                        countSql += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        countSql += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
+
                         sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
+                        countSql += $" {sqlTables} where I.LoadID = @id) X " + whereSql;
                         break;
                 }
 
 
                 var results = Company.Query<dynamic>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue });
+                var total = Company.Query<int>(countSql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue }).FirstOrDefault();
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
-                model.total = results.Count();
+                model.total = total;
                 return await Task.FromResult<IHttpActionResult>(
                         ResponseMessage(
                             Request.CreateResponse(
@@ -888,22 +916,27 @@ from	[Load] L
             }
             else
             {
+                countSql += "from(select I.RowIndex as RowIndex";
                 sqlColumns = "select	* from(select I.RowIndex as RowIndex";
                 sqlTables = "from LoadItem I";
                 columns.ForEach(c =>
                 {
+                    countSql += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
                     sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
                     sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
                 });
                 sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage as StatusMessage";
+                countSql += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage as StatusMessage";
 
                 sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
+                var count = countSql + " " + sqlTables + " where I.LoadID = @id) X " + whereSql;
 
                 var results = Company.Query<dynamic>(sql, new { id = load.ID, filterValue });
+                var total = Company.Query<int>(count, new { id = load.ID, filterValue }).FirstOrDefault();
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 model.items = results;
-                model.total = results.Count();
+                model.total = total;
                 return await Task.FromResult<IHttpActionResult>(
                         ResponseMessage(
                             Request.CreateResponse(
@@ -932,9 +965,104 @@ from	[Load] L
 
         public async Task<IHttpActionResult> GetLoads(Guid loadUid)
         {
+            List<string> v2ApiActions = new List<string> { "P", "R", "U" };
+            string countSql = "";
+
             if (!Company.CurrentResourceIsAdmin)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            var load = Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
+            var useExecutionTable = false;
+
+            if (v2ApiActions.Contains(load.Action) && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
+            {
+                useExecutionTable = true;
+            }
+
+            if (useExecutionTable)
+            {
+                switch (load.Action)
+                {
+                    case "P":
+                        countSql = @"
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 0
+				                    union all
+				                    select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success is null
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    union all
+				                    select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    ) R
+			                    ) T";
+                        break;
+                    case "R":
+                        countSql = @"		
+                            cross apply (
+				                    select count(*) as C from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select Error as I from api.Execution where ExecutionID = L.PostExecutionID
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                select case when CompletedOn is null then (Total - Processed) else 0 end as C from api.Execution where ExecutionID = L.PostExecutionID
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select Total as I from api.Execution where ExecutionID = L.PostExecutionID
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+				                    ) R
+			                    ) T";
+                        break;
+                    case "U":
+                        countSql = @"
+                            cross apply (
+				                    select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 0
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success is null
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+				                    ) R
+			                    ) T";
+                        break;
+                }
+            }
+            else
+            {
+                countSql = @"
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
             }
 
             string LoadDetailBaseSql = @"select	* from(select	
@@ -951,11 +1079,13 @@ from	[Load] L
 		end as [Action],
         coalesce(C_D.[Name], 'Default') as AssetTypeName,
         C_D.[uid] as AssetTypeUid,
+        S.C as Success,
         E.C as Error,
+        I.C as Incomplete,
 		T.C as Total,
-        case LI.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
-        R.FirstName + ' ' + R.LastName as RequestorName,
-        R.uid as RequestorUid
+        case coalesce(M.Success,LI.[Status]) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
+        R.FirstName + ' ' + R.LastName as RequestedByName,
+        R.uid as RequestedByUid
 from	[Load] L
         left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
         left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
@@ -966,16 +1096,12 @@ from	[Load] L
 			cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
 		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy 
-        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI 
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T where L.uid = @loadUid ) X";
+        left join (select top(1) Success, ExecutionID from api.ExecutionAsset) M on M.ExecutionID in (L.PostExecutionID, L.PutExecutionID) 
+        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI "
+        + countSql + " where L.uid = @loadUid ) X ";
 
             try
             {
-                var load =  Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
-
                 var results = Company.Query<SingleLoadDetail>(LoadDetailBaseSql, new { loadUid }).ToList();
 
                 if (load != null && load.DateCompleted.HasValue && load.DateStarted.HasValue)
@@ -984,7 +1110,10 @@ from	[Load] L
 
                     var minutesMessage = (minutes == 0 ? "less than a minute" : minutes + " minute(s)");
 
-                    results[0].ElapsedTime = minutesMessage;
+                    if (results.Count > 0)
+                    {
+                        results[0].ElapsedTime = minutesMessage;
+                    }
                 }
 
                 return await Task.FromResult<IHttpActionResult>(

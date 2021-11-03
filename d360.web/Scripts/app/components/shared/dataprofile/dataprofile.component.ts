@@ -4,6 +4,7 @@ import { BaseComponent } from '../base.component';
 import * as Highcharts from 'highcharts';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'data-profile',
@@ -18,9 +19,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     @Output() linkClicked = new EventEmitter();
     
     constructor(
+        private assetService: AssetService,
         private assetTypeService: AssetTypeService,
-        private assetService: AssetService) {
-        super();
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
     }
 
     private sampleCountPercentage: number;
@@ -435,7 +438,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     .filter((c) => new Date(c.key) >= lower && new Date(c.key) < upper)
                     .reduce((count, r) => count += r.count, 0);
 
-                let opts = { month: 'short', year: '2-digit' };
+                let opts: Intl.DateTimeFormatOptions = { month: 'short', year: '2-digit' };
                 let dateString = new Intl.DateTimeFormat(navigator.language, opts).format(lower);
 
                 categories.push(dateString);

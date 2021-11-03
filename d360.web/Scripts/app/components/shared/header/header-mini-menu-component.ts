@@ -6,12 +6,13 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { FavoriteApiModel } from '../../../models/favorite.model';
 import * as _ from 'lodash'; 
+import { CompanySettingEnum } from '../../../models/settings.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 declare var CurrentResourceID;
 declare var SingleSignOn;
 declare var ResourceName;
 declare var ResourceEmail;
-declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-mini-menu',
@@ -72,11 +73,13 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     Uid: any;
 
     constructor(
+        private favoritesService: FavoritesService,
         public headerActionsService: HeaderActionsService,
         private secondaryNavService: SecondaryNavService,
-        private favoritesService: FavoritesService,
+        protected settingsService: CompanySettingsService,
         private router: Router,
-        private ref: ChangeDetectorRef,) { }
+        private ref: ChangeDetectorRef) {
+    }
 
     ngOnInit() {
         this.routerSub = this.router.events.subscribe(e => {
@@ -97,8 +100,11 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
                 //dont show raise issue button on raise issue screen or any admin screens or user profile           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
-                this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && !isResourceUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);
-
+                this.hasRaiseIssueButton = 
+                        !e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue')
+                        && !this.isAdminUrl
+                        && !isResourceUrl
+                        && !this.settingsService.getSettingById(CompanySettingEnum.DisableIssueManagement).BooleanSetting.Value;
 
                 this.calculateControlWidth();
             }
@@ -133,9 +139,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
             );
         });
 
-        if (CompanySettings != null && CompanySettings.EnableShoppingCart.toString() === 'true') {
-            this.showShoppingCart = true;
-        }
+        this.showShoppingCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
 
         this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe(x => {
             this.headerActionsService.showFollow = x.showFollow;

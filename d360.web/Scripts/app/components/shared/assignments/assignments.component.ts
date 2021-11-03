@@ -4,6 +4,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { Count } from '../../../models/counts.model';
 import { WorkflowType } from '../../../models/workflow.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-assignments',
@@ -68,8 +69,11 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
     private resource: any = null;
 
 
-    constructor(private workflowService: WorkflowService, private resourcesService: ResourcesService) {
-        super();
+    constructor(
+        private resourcesService: ResourcesService,
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService) {
+        super(settingsService);
     }
 
     ngOnInit() {

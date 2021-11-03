@@ -37,8 +37,14 @@ namespace d360.core.validators
             if (!SupportedClasses.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.UnsupportedAssetClass);
 
-            if (string.IsNullOrWhiteSpace(model.Name) || model.Name.Trim('\0') == string.Empty)
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidName} {AssetTypeErrors.CheckRequest}");
+            if (string.IsNullOrWhiteSpace(model.Name))
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsEmpty} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));
+            
+            var invalidChars = new[] { '\0' };
+            if (model.Name.Any(invalidChars.Contains))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsInvalid} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));   
+            }
 
             if ((isInsert && (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty)) || (!isInsert && model.DisplayFormat != null && model.DisplayFormat.Trim() == string.Empty))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidDisplayFormat} {AssetTypeErrors.CheckRequest}");

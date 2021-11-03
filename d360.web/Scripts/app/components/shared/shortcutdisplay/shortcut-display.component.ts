@@ -4,6 +4,7 @@ import { BaseComponent } from '../base.component';
 import { Shortcut, LinkTarget } from '../../../models/shortcuts.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
 import { Observable } from 'rxjs';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-shortcut-display',
@@ -31,8 +32,11 @@ import { Observable } from 'rxjs';
 export class ShortcutDisplayComponent extends BaseComponent implements OnInit {
     public shortcuts: Observable<Shortcut[]>;
 
-    constructor(private shortcutService: ShortcutService, private router: Router) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private shortcutService: ShortcutService,
+        private router: Router) {
+        super(settingsService);
     }
 
     ngOnInit() {

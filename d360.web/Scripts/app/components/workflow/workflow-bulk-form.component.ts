@@ -8,6 +8,7 @@ import { WorkflowFormFieldsComponent } from "./workflow-form-fields.component";
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-bulk-form',
@@ -43,15 +44,16 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
     private isUserAllowedToComplete: boolean = true;
     private isSubmitting = false;
 
-    @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent
+    @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
-    constructor(private route: ActivatedRoute,
-            protected headerBreadcrumbService: HeaderBreadcrumbService,
-            protected workflowService: WorkflowService,
-            protected messagesService: MessagesObservableService
-        )
-    {
-        super();
+    constructor(
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        protected workflowService: WorkflowService,
+        private route: ActivatedRoute
+    ) {
+        super(settingsService);
     }
 
     ngOnInit() {

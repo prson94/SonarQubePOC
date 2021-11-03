@@ -2,6 +2,7 @@
 import { BaseComponent } from "../base.component";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { RelationshipsService } from "../../../services/relationships.service";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: 'd3s-asset-type-editor-use-as-transformation',
@@ -33,8 +34,11 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
     initialValue: boolean;
     isRelationsExist : boolean =false
 
-    constructor(private messagesService: MessagesObservableService, private relationshipsService: RelationshipsService) {
-        super();
+    constructor(
+        private messagesService: MessagesObservableService,
+        private relationshipsService: RelationshipsService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     } 
 
     ngOnInit() {

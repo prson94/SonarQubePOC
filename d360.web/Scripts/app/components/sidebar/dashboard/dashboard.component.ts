@@ -7,6 +7,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-dashboard',
@@ -31,9 +32,10 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         private headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
         private router: Router,
-        breadcrumbService: HeaderBreadcrumbService
+        breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

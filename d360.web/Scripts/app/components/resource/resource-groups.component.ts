@@ -6,6 +6,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Resource } from '../../models/resource.model';
 import { Observable } from 'rxjs';
 import { AssetService } from '../../services/asset.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-resource-groups',
@@ -60,8 +61,12 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
     private user: Observable<Resource>;
     private id: number;
 
-    constructor(private router: Router, private resourcesService: ResourcesService, private assetService: AssetService) {
-        super();        
+    constructor(
+        private assetService: AssetService,
+        private resourcesService: ResourcesService,
+        protected settingsService: CompanySettingsService,
+        private router: Router) {
+        super(settingsService);        
     }
 
     ngOnInit() {

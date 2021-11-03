@@ -1,6 +1,7 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AssetService } from '../../services/asset.service';
+import { CompanySettingsService } from '../../services/settings.service';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
@@ -14,9 +15,10 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
 
     constructor(
         private assetService: AssetService,
+        protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
         private router: Router) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

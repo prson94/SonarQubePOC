@@ -26,6 +26,7 @@ import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
 import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -95,9 +96,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         private fieldsService: FieldsObservableService,
         private assetService: AssetService,
         private ref: ChangeDetectorRef,
+        protected settingsService: CompanySettingsService,
         private tagService: TagService
     ) {
-        super();
+        super(settingsService);
         this.component_uid = Math.random().toString(36).substring(2);
     }
 

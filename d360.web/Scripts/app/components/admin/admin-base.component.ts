@@ -7,6 +7,7 @@ import { Title } from '@angular/platform-browser';
 import { ViewChildren, Component } from '@angular/core';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { StringConstants } from '../../static/string-constants';
+import { CompanySettingsService } from '../../services/settings.service';
 
 
 @Component({
@@ -23,8 +24,13 @@ export class AdminBaseComponent extends BaseComponent {
     private isDefaultTreeValuesSet: boolean = false;
 
 
-    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected titleService: Title, secondaryNavService?: SecondaryNavService) {
-        super();
+    constructor(
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected titleService: Title,
+        protected settingsService: CompanySettingsService,
+        secondaryNavService?: SecondaryNavService
+    ) {
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = headerBreadcrumbService;
     }

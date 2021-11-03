@@ -10,6 +10,7 @@ import * as _ from 'lodash';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'measure-list',
@@ -102,8 +103,12 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         }
     ];
 
-    constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private metricsService: MetricsService,
+        private allocationService: AllocationService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     delayedReload = _.debounce(() => {

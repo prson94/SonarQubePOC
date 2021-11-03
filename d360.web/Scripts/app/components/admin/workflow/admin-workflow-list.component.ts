@@ -5,6 +5,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
 import { map} from 'rxjs/operators';
 import { State } from '../../../models/asset.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 
 
@@ -94,10 +95,11 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     }
 
     constructor(
+        protected settingsService: CompanySettingsService,
         private workflowService: WorkflowService,
         protected router: Router
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -6,6 +6,7 @@ import { ObjectStatisticChildItem } from '../../../models/object-statistics.mode
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-children',
@@ -53,9 +54,10 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
         private route: ActivatedRoute,
         private router: Router,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         breadcrumbService: HeaderBreadcrumbService   
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }
