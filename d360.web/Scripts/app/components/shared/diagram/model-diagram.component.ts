@@ -87,7 +87,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.populateDiagram();
     }
 
-    private populateDiagram() {
+    public populateDiagram() {
         this.isLoading = true;
         this.modelsService.getCatalogDiagram(this.id).subscribe(
             data => {

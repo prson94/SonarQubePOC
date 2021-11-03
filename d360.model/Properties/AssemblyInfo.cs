@@ -7,5 +7,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany(constants.COMPANY)]
 [assembly: AssemblyProduct(constants.TITLE_PREFIX + " Data Layer")]
 [assembly: AssemblyTitle(constants.TITLE_PREFIX + " Data Layer")]
-[assembly: AssemblyCopyright(constants.COPYRIGHT)]
-[assembly: AssemblyVersion(constants.PRODUCT_VERSION)]
+[assembly: AssemblyCopyright(versioning.COPYRIGHT)]
+[assembly: AssemblyVersion(versioning.PRODUCT_VERSION)]

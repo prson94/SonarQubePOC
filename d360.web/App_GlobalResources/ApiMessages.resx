@@ -615,6 +615,15 @@
   <data name="LookupFieldTypeInUse" xml:space="preserve">
     <value>There are existing assets in your environment with values on field '{0}'. You may not change 'Type of List' property until those field values are removed.</value>
   </data>
+  <data name="HelpMenuSuccess" xml:space="preserve">
+    <value>Help Menu items successfully updated.</value>
+  </data>
+  <data name="HelpMenuUpdated" xml:space="preserve">
+    <value>Help Menu Updated.</value>
+  </data>
+  <data name="HelpMenuVisibilityError" xml:space="preserve">
+    <value>Item visibility must be set to 1, 2 or 3.</value>
+  </data>
   <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
     <value>ApplicationId length cannot exceed 200 characters</value>
   </data>

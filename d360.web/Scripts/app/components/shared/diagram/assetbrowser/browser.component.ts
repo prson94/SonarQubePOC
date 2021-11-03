@@ -1482,6 +1482,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             this.loadingText = "";
                             this.isLoading = false;
                             this.loadOwnerCounts();
+
+                            this.cdRef.markForCheck();
+
+                            obs.next(true);
+                            obs.complete();
                         }, 10);
                     }
                 }
@@ -1491,9 +1496,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.isLoading = false;
                 }
                 this.cdRef.markForCheck();
-
-                obs.next(true);
-                obs.complete();
             };
 
             if (isLineage) {
