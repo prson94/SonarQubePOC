@@ -10,7 +10,7 @@
  * Also remove the postinstall entry from package.json when removing this file.
  * */
 
-function goc16239fix() {
+function gov16239fix() {
     var files = [
         '.\\node_modules\\primeng\\bundles\\primeng-editor.umd.js',
         '.\\node_modules\\primeng\\__ivy_ngcc__\\bundles\\primeng-editor.umd.js'
@@ -41,4 +41,4 @@ function goc16239fix() {
     });
 }
 
-goc16239fix();
+gov16239fix();
