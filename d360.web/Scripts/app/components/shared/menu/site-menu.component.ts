@@ -126,17 +126,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
     }
 
-    clearSearches($event) {
-
-        this.menuRefs.forEach((item) => {
-            if ($event.item.title != item.title) {
-                if (item.menu)
-                    item.menu.isActiveItem = false;
-                item.clearInput();
-            }
-        });
-    }
-
     doScroll() {
         if (this.menu && this.isScrollerVisable) {
             let elem = this.menu.nativeElement;
@@ -373,7 +362,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     if (item.menu)
                         item.menu.isActiveItem = false;
                 } else {
-                    if (item.menu && item.menu.NavigationItems && item.menu.NavigationItems.length > 0) {
+                    if (item.menu && item.menu.NavigationItems && item.menu.NavigationItems.length > 0) { 
+                        item.menu.isActiveItem = true;
                         this.isMenuActive = true;
                     }
                 }

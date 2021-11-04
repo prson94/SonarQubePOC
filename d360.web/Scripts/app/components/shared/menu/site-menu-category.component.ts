@@ -1,13 +1,10 @@
-﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild, HostListener, OnChanges, SimpleChanges } from '@angular/core';
-import { Router } from '@angular/router';
+﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, HostListener, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { SiteMenuService } from '../../../services/site-menu.service';
-import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model';
-import { HeaderActionsService } from '../../../services/header-actions.service';
+import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
 import * as _ from 'lodash';
-import { SearchFieldComponent } from '../controls/search-field/search-field.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -15,8 +12,7 @@ import { ChangeDetectorRef } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SiteMenuCategoryComponent extends BaseComponent implements AfterViewInit, OnChanges {
-
+export class SiteMenuCategoryComponent extends BaseComponent implements OnChanges {
     @Input() url: string;
     @Input() title: string;
     @Input() rootIconName: string;
@@ -28,7 +24,6 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     @Input() isActive: boolean = false;
 
     @Output() clearClick = new EventEmitter();
-    @Output() clearSearchesEvent = new EventEmitter();
     @Output() activeItemChanged = new EventEmitter();
 
     @HostListener('document:click', ['$event'])
@@ -49,144 +44,38 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         this.cdRef.detectChanges();
     }
 
-    public showing: boolean = false;
-    private viewReady: boolean;
-    private maxMenuHeight: number;
-    public searchText: string = "";
-
-    private currentButtonIndex: number = -1;
-
     constructor(
-        private headerActionsService: HeaderActionsService,
         protected settingsService: CompanySettingsService,
-        private siteMenuService: SiteMenuService,
         private cdRef: ChangeDetectorRef,
-        private router: Router
-    ) {
+        private router: Router) {
         super(settingsService);
     }
 
-    @ViewChild('searchinput', { static: false }) searchInput: SearchFieldComponent;
-
-    toggleEmptyVisibility() {
-        var newValue = (!this.hideEmptyItems).toString();
-        localStorage.setItem(this.storageKey, newValue);
-    }
-
-    hideEmptySubItems(items: SiteMenuItem[]) {
-
-        items.forEach((x) => {
-            if (x.Items) {
-                x.Items = x.Items.filter((y) => y.count > 0);
-                this.hideEmptySubItems(x.Items);
-            }
-        });
-    }
-
-    _visibleMenuItems: SiteMenuItem[] = [];
-    get visibleMenuItems(): SiteMenuItem[] {
-        if (this.hideEmptyItems) {
-            var menu = _.cloneDeep(this.menu.NavigationItems);
-            var items = menu.filter((x) => x.count > 0);
-            this.hideEmptySubItems(items);
-            if (this.getTreeCount(this._visibleMenuItems) !== this.getTreeCount(items)) {
-                this._visibleMenuItems = items;
-            }
-        }
-        else {
-            this._visibleMenuItems = this.menu.NavigationItems;
-        }
-
-        return this._visibleMenuItems;
-    }
-
-    getTreeCount(items: SiteMenuItem[]) {
-        var cnt = items.length;
-        items.forEach((node) => {
-            if (node.Items) {
-                cnt += this.getTreeCount(node.Items);
-            }
-        });
-        return cnt;
-    }
-
-    get showVisiblityToggle(): boolean {
-        return this.menu.ShowVisibilityToggle;
-    }
-
-    get hideEmptyItems(): boolean {
-        return localStorage.getItem(this.storageKey) === "true";
-    }
-
-    get storageKey(): string {
-        return "hide-empty-items-" + this.menu.MenuID;
-    }
-
-    getMaxHeight() {
-        return (window.innerHeight - 80) + 'px';
-    }
-
-    checkKey(event, elem) {
-        if (event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 38) {
-
-            let allAItems = elem.getElementsByTagName("a");
-            if (!allAItems.length)
-                return;
-
-            if (event.keyCode == 13)
-                allAItems[this.currentButtonIndex].click();
-            if (event.keyCode == 40) {
-                this.currentButtonIndex++;
-            } else if (event.keyCode == 38) {
-                this.currentButtonIndex--;
-            }
-
-            if (allAItems.length - 1 < this.currentButtonIndex || this.currentButtonIndex < 0)
-                this.currentButtonIndex = 0;
-
-            this.ResetColor(allAItems);
-            let arr = allAItems[this.currentButtonIndex].className.split(" ");
-            if (arr.indexOf("highlight") == -1) {
-                allAItems[this.currentButtonIndex].className += " highlight";
-            }
-
-        }
-    }
+    @ViewChild('item', { static: false }) item: ElementRef;
+    
     navigateToUrl(url) {        
         if (url) {
             this.router.navigateByUrl(url);
         }
     }
-    ResetColor(allAItems) {
-        if (allAItems.length) {
-            Array.prototype.forEach.call(allAItems, function (item) {
-                item.className = item.className.replace(/\b highlight\b/g, "");
-            });
-        }
-    }
+    
     show(item) {
-        this.activeItemChanged.emit({ item: this });
-        if (this.menu && this.menu.isActiveItem) {            
-            return;
-        }
-        this.positionMenu(null, item);
+        this.activeItemChanged.emit({ item: this });        
+        this.positionMenu(null);
     }
 
-    private positionMenu(event: any, item: any) {
+    private positionMenu(event: any) {
         if (event != null && (event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 38)) {
             return;
         }
         if (this.menu && this.menu.NavigationItems) {
-            let submenu = item.children[0].nextElementSibling;
+            let submenu = this.item.nativeElement.children[0].nextElementSibling;
             if (submenu) {
-                var dims = item.getBoundingClientRect();
+                var dims = this.item.nativeElement.getBoundingClientRect();
                 this.menu.isActiveItem = true;                
                 submenu.style.zIndex = ++SiteNav.zindex;
                 submenu.style.top = dims.top + 'px';
-                submenu.style.left = item.offsetWidth + 'px';
-                window.setTimeout(() => {
-                    this.searchInput.focus();
-                }, 350);
+                submenu.style.left = this.item.nativeElement.offsetWidth + 'px';
 
                 window.setTimeout(() => {
                     this.repositionMenuToFit(submenu);
@@ -195,53 +84,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
 
-    loadCounts(menu: any) {
-        if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
-            this.siteMenuService.getCounts().subscribe((res) => {
-                menu.NavigationItems.forEach((item) => this.getAllCounts(item, res));
-            });
-        }
-    }
-
-    getAllCounts(items, arr: any[]) {
-        if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') !== -1) {
-            //get count for item
-            var id = _.findIndex(arr, function (o) {
-                let currentURL = items.Url.toLowerCase();
-                currentURL = items.Url.replace('model', 'taxonomy');
-                return o.Name == items.Name
-                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
-                    && _.includes(currentURL, o.ObjectID);
-            });
-            if (id !== -1) {
-                items.count = arr[id].count;
-            } else {
-                items.count = 0;
-            }
-        }
-
-        //check if sub items exist
-        if (_.isArray(items.Items)) {
-            //recursively check sub items
-            items.Items.forEach((item) => this.getAllCounts(item, arr));
-        }
-    }
-
-    ngAfterViewInit(): void {
-
-        this.viewReady = true;
-
-        if (this.searchInput) {
-            this.searchInput.focus();
-        }
-
-    }
-
-    private menuhasItems(menu) {
-        return menu && menu.NavigationItems && menu.NavigationItems.length > 0;
-    }
-
-    private stopNavigation(event) {
+    stopNavigation(event) {
         event.stopPropagation();
     }
 
@@ -268,21 +111,4 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             }
         }
     }
-
-    hide(item) {
-        if (this.menu && this.searchText == "") {
-            this.ResetColor(item.getElementsByTagName("a"));
-            this.currentButtonIndex = -1;
-            this.menu.isActiveItem = false;
-        }
-    }
-
-    clearSearches(event, item) {
-        this.clearSearchesEvent.emit({ event: event, item: item });
-    }
-    clearInput() {
-        this.searchText = "";
-    }
-
-
 }

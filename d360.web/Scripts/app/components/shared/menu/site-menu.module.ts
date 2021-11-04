@@ -14,6 +14,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
+import { SiteMenuCategoryPanelComponent } from './site-menu-category-panel.component';
+import { LinksKeyboardNavigationComponent } from './links-keyboard-navigation.component';
 
 @NgModule({
     imports: [
@@ -32,6 +34,8 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         SiteMenuComponent,
         SiteMenuMegaItemComponent,
         SiteMenuCategoryComponent,
+        SiteMenuCategoryPanelComponent,
+        LinksKeyboardNavigationComponent
     ],
     exports: [
         SiteMenuComponent,        
