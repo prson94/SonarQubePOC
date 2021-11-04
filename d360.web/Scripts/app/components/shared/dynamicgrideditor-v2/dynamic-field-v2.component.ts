@@ -908,18 +908,16 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     lookupValues: any[] = [];
 
     lastParams: any;
-    loadListLazy(params) {
-        if (this.lastParams === params) {
-            return;
+    loadListLazy($params) {
+        var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };;
+        loadParams["isForAssetForm"] = true;
+
+        if ($params.globalFilter) {
+            loadParams["filter"] = $params.globalFilter;
         }
 
-        if (params.globalFilter) {
-            params["filter"] = params.globalFilter;
-        }
-
-        params["isForAssetForm"] = true;
         this.isLookupValuesLoading = true;
-        this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, params).subscribe((res) => {
+        this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
             if (!this.lookupValues || this.lookupValues.length === 0) {
                 this.lookupValues = Array.from({ length: res.count });
             }
@@ -930,7 +928,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 loadedData.push({ label: str.text, value: str.value, color: str.color });
             });
 
-            Array.prototype.splice.apply(this.lookupValues, [...[params.skip, params.take], ...loadedData]);
+            Array.prototype.splice.apply(this.lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
 
             this.lookupValues = [...this.lookupValues];
 
@@ -938,7 +936,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 this.lookupValues = this.lookupValues.slice(0, res.count);
             }
             this.isLookupValuesLoading = false;
-            this.lastParams = params;
+            this.lastParams = loadParams;
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
             this.ref.detectChanges();
         });

@@ -2090,24 +2090,18 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     return Request.CreateResponse(HttpStatusCode.OK, new { items = classInfos.Select(x => x.Name).ToList() });
                 }
 
+                int fieldTypeId = -1;
+
+                var assetTypeId = Company.AssetTypes
+                    .FirstOrDefault(x => x.uid == assetTypeUid).ID;
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
+
                 string pagingQuery = "";
                 string whereQuery = "";
                 if (skip != null && take != null)
                 {
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
                 }
-
-                if (!string.IsNullOrEmpty(filter))
-                {
-                    filter = "%" + filter + "%";
-                    whereQuery += " and text like @filter ";
-                }
-
-                int fieldTypeId = -1;
-
-                var assetTypeId = Company.AssetTypes
-                    .FirstOrDefault(x => x.uid == assetTypeUid).ID;
-                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
 
                 //case when fieldname coming from complex relation grid with coded names from procedure
                 if (fieldType == null && fieldName.Contains("_"))
@@ -2124,6 +2118,62 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 {
                     fieldTypeId = fieldType.ID;
                 }
+
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    filter = "%" + filter + "%";
+                    if (fieldType.Type == "Relationship")
+                    {
+                        whereQuery += " and node.displaypath like @filter ";
+                    }
+                    else
+                    {
+                        whereQuery += " and text like @filter ";
+                    }
+                }
+
+                if (fieldType.Type == "Relationship")
+                {
+                    var sql = $@"
+                                declare @target nvarchar(255) 
+                                declare @targetid int
+
+                                select  
+                                @targetid = 
+                                case when ft.object = it.subject and ft.objectid = it.subjectid then it.ObjectID
+                                else it.SubjectID
+                                end, 
+                                @target = case when ft.object = it.subject and ft.objectid = it.subjectid then it.Object
+                                else it.Subject
+                                end
+                                 from fieldtype ft
+                                inner join [IntersectType] IT on IT.ID = ft.LookupObjectID
+                                where ft.id = @fieldtypeid
+
+                                declare @assetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
+
+                                select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @assetTypeId {whereQuery}
+                                order by node.displaypath
+                                {pagingQuery};
+
+                                select count(*) from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @assetTypeId {whereQuery};";
+
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { fieldTypeId, skip, take, filter });
+
+                    var data = new
+                    {
+                        items = resultsAssets.Read<DDLSelectItem>().ToList(),
+                        count = resultsAssets.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+
+
                 bool hasColor = false;
 
                 var colorjoin = $@"

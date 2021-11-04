@@ -27,8 +27,8 @@
                 </p-header>
             </p-editor>
             <div *ngSwitchCase="'Lookup'">
-                <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi multi-select-lazy-load">
-                    <div class="overlay-trigger" (click)="overlayPanel.toggle($event)">
+                <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
+                    <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="overlayPanel.toggle($event)">
                         <p-multiSelect #dropdown
                                        [maxSelectedLabels]="5"
                                        igSize="full"
@@ -42,6 +42,29 @@
                                        display="chip">
                         </p-multiSelect>
                     </div>
+
+                    <p-dropdown *ngIf="!field?.MultiSelect"
+                                #dropdown
+                                igDropdown
+                                styleClass="dropdown-lazy-load"
+                                igSize="full"
+                                [inputId]="field.FieldName + '_input_' + component_uid"
+                                [formControlName]="field.FieldName"
+                                [options]="field.Items"
+                                (onSelect)="onSelect($event)"
+                                [required]="field.Required"
+                                (click)="overlayPanel.toggle($event)">
+                        <ng-template let-item pTemplate="selectedItem">
+                            <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
+                                <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
+                                <span class="ig-colorfield-item-label">{{item.label}}</span>
+                            </div>
+
+                            <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
+
+                        </ng-template>
+                    </p-dropdown>
+
                     <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
                         <ng-template pTemplate>
                             <p-table #dataTable
@@ -52,8 +75,8 @@
                                      [globalFilterFields]="['label']"
                                      dataKey="value"
                                      [scrollable]="true"
-                                     scrollHeight="340px"
-                                     [virtualRowHeight]="'32px'"
+                                     [scrollHeight]="selectionScrollHeight"
+                                     [virtualRowHeight]="32"
                                      [rows]="20"
                                      [virtualScroll]="true"
                                      [lazy]="true"
@@ -86,8 +109,26 @@
                         </ng-template>
                     </p-overlayPanel>
                 </div>
-                <ng-template #singleSelect>
-                    <p-dropdown #dropdown
+            </div>
+            <div *ngSwitchCase="'Relationship'">
+                <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
+                    <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="overlayPanel.toggle($event)">
+                        <p-multiSelect #dropdown
+                                       [maxSelectedLabels]="5"
+                                       igSize="full"
+                                       [inputId]="field.FieldName + '_input_' + component_uid"
+                                       [formControlName]="field.FieldName"
+                                       [options]="field.Items"
+                                       (onChange)="onChangeMultiselect($event)"
+                                       [required]="field.Required"
+                                       [readonly]="true"
+                                       [placeholder]="'Value Required'"
+                                       display="chip">
+                        </p-multiSelect>
+                    </div>
+
+                    <p-dropdown *ngIf="!field?.MultiSelect"
+                                #dropdown
                                 igDropdown
                                 styleClass="dropdown-lazy-load"
                                 igSize="full"
@@ -107,6 +148,7 @@
 
                         </ng-template>
                     </p-dropdown>
+
                     <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
                         <ng-template pTemplate>
                             <p-table #dataTable
@@ -118,6 +160,7 @@
                                      dataKey="value"
                                      [scrollable]="true"
                                      [scrollHeight]="selectionScrollHeight"
+                                     [virtualRowHeight]="32"
                                      [rows]="20"
                                      [virtualScroll]="true"
                                      [lazy]="true"
@@ -149,35 +192,7 @@
                             </p-table>
                         </ng-template>
                     </p-overlayPanel>
-                </ng-template>
-
-            </div>
-            <div *ngSwitchCase="'Relationship'">
-                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                <p-table #dt [value]="field.Items" [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'" [selection]="relationItems" (selectionChange)="selectRelationItems($event)"
-                         [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
-                         [lazy]="true" (onLazyLoad)="lazyLoad($event)" [totalRecords]="field?.RecordCount" [formControlName]="field.FieldName" ngDefaultControl>
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th style="width: 30px">
-                                <p-tableHeaderCheckbox *ngIf="field?.MultiSelect"></p-tableHeaderCheckbox>
-                            </th>
-                            <th>Name</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-item>
-                        <tr [pSelectableRow]="item">
-                            <td>
-                                <p-tableRadioButton *ngIf="!field?.MultiSelect" [value]="item"></p-tableRadioButton>
-                                <p-tableCheckbox *ngIf="field?.MultiSelect" [value]="item"></p-tableCheckbox>
-                            </td>
-                            <td>{{item.Text}}</td>
-                        </tr>
-                    </ng-template>
-                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                    </ng-template>
-                </p-table>
+                </div>
             </div>
             <ig-number-input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" [required]="isRequired()"></ig-number-input>
             <ig-number-input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" (keyup)="toDecimalPlaces($event,Precision)" [required]="isRequired()"></ig-number-input>
