@@ -27,137 +27,130 @@
                 </p-header>
             </p-editor>
             <div *ngSwitchCase="'Lookup'">
-                <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
-                    <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi multi-select-lazy-load">
-                        <div class="overlay-trigger" (click)="overlayPanel.toggle($event)">
-                            <p-multiSelect #dropdown
-                                           [maxSelectedLabels]="5"
-                                           igSize="full"
-                                           [inputId]="field.FieldName + '_input_' + component_uid"
-                                           [formControlName]="field.FieldName"
-                                           [options]="field.Items"
-                                           (onChange)="onChangeMultiselect($event)"
-                                           [required]="field.Required"
-                                           [readonly]="true"
-                                           display="chip">
-                            </p-multiSelect>
-                        </div>
-                        <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
-                            <ng-template pTemplate>
-                                <p-table #dataTable
-                                         tableStyleClass="ig-filter-table"
-                                         [metaKeySelection]="true"
-                                         [value]="lookupValues"
-                                         [(selection)]="lookupSelectedValue"
-                                         [globalFilterFields]="['label']"
-                                         dataKey="value"
-                                         [scrollable]="true"
-                                         scrollHeight="340px"
-                                         [virtualRowHeight]="34"
-                                         [rows]="10"
-                                         [virtualScroll]="true"
-                                         [lazy]="true"
-                                         (onLazyLoad)="loadListLazy($event)"
-                                         [loading]="isLookupValuesLoading"
-                                         [loadingIcon]="'fa fa-spinner fa-spin'">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th class="first-col" *ngIf="field?.MultiSelect">
-                                                <p-tableHeaderCheckbox *ngIf="hasSelectAllCheckbox"></p-tableHeaderCheckbox>
-                                            </th>
-                                            <th>
-                                                <!--<input type="text" class="filter-item-table-filter" [(ngModel)]="filterTableValue" (ngModelChange)="filterTable($event)" placeholder="Search list" />-->
-                                            </th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-item>
-                                        <tr [pSelectableRow]="item">
-                                            <td class="first-col" *ngIf="field?.MultiSelect">
-                                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                            </td>
-                                            <td (click)="selectSingleItem($event,item);">
-                                                <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
-                                                    <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
-                                                    <span class="ig-colorfield-item-label">{{item.label}}</span>
-                                                </div>
-
-                                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
-                                            </td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
-                            </ng-template>
-                        </p-overlayPanel>
+                <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi multi-select-lazy-load">
+                    <div class="overlay-trigger" (click)="overlayPanel.toggle($event)">
+                        <p-multiSelect #dropdown
+                                       [maxSelectedLabels]="5"
+                                       igSize="full"
+                                       [inputId]="field.FieldName + '_input_' + component_uid"
+                                       [formControlName]="field.FieldName"
+                                       [options]="field.Items"
+                                       (onChange)="onChangeMultiselect($event)"
+                                       [required]="field.Required"
+                                       [readonly]="true"
+                                       [placeholder]="'Value Required'"
+                                       display="chip">
+                        </p-multiSelect>
                     </div>
-                    <ng-template #singleSelect>
-                        <p-dropdown #dropdown
-                                    igDropdown
-                                    styleClass="dropdown-lazy-load"
-                                    igSize="full"
-                                    [inputId]="field.FieldName + '_input_' + component_uid"
-                                    [formControlName]="field.FieldName"
-                                    [options]="field.Items"
-                                    (onSelect)="onSelect($event)"
-                                    [required]="field.Required"
-                                    (click)="overlayPanel.toggle($event)">
-                            <ng-template let-item pTemplate="selectedItem">
-                                <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
-                                    <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
-                                    <span class="ig-colorfield-item-label">{{item.label}}</span>
-                                </div>
+                    <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
+                        <ng-template pTemplate>
+                            <p-table #dataTable
+                                     tableStyleClass="ig-filter-table"
+                                     [metaKeySelection]="true"
+                                     [value]="lookupValues"
+                                     [(selection)]="lookupSelectedValue"
+                                     [globalFilterFields]="['label']"
+                                     dataKey="value"
+                                     [scrollable]="true"
+                                     scrollHeight="340px"
+                                     [virtualRowHeight]="'32px'"
+                                     [rows]="20"
+                                     [virtualScroll]="true"
+                                     [lazy]="true"
+                                     (onLazyLoad)="loadListLazy($event)"
+                                     [loading]="isLookupValuesLoading"
+                                     [loadingIcon]="'fa fa-spinner fa-spin'">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th colspan="2">
+                                            <ig-search-field mode="Keypress" [debounce]="200" (onSearch)="dataTable.filterGlobal($event, 'contains');"></ig-search-field>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td class="first-col" *ngIf="field?.MultiSelect">
+                                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                        </td>
+                                        <td (click)="selectSingleItem($event,item);">
+                                            <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
+                                                <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
+                                                <span class="ig-colorfield-item-label">{{item.label}}</span>
+                                            </div>
 
-                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
+                                            <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </ng-template>
+                    </p-overlayPanel>
+                </div>
+                <ng-template #singleSelect>
+                    <p-dropdown #dropdown
+                                igDropdown
+                                styleClass="dropdown-lazy-load"
+                                igSize="full"
+                                [inputId]="field.FieldName + '_input_' + component_uid"
+                                [formControlName]="field.FieldName"
+                                [options]="field.Items"
+                                (onSelect)="onSelect($event)"
+                                [required]="field.Required"
+                                (click)="overlayPanel.toggle($event)">
+                        <ng-template let-item pTemplate="selectedItem">
+                            <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
+                                <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
+                                <span class="ig-colorfield-item-label">{{item.label}}</span>
+                            </div>
 
-                            </ng-template>
-                        </p-dropdown>
-                        <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
-                            <ng-template pTemplate>
-                                <p-table #dataTable
-                                         tableStyleClass="ig-filter-table"
-                                         [metaKeySelection]="true"
-                                         [value]="lookupValues"
-                                         [(selection)]="lookupSelectedValue"
-                                         [globalFilterFields]="['label']"
-                                         dataKey="value"
-                                         [scrollable]="true"
-                                         scrollHeight="340px"
-                                         [virtualRowHeight]="34"
-                                         [rows]="10"
-                                         [virtualScroll]="true"
-                                         [lazy]="true"
-                                         (onLazyLoad)="loadListLazy($event)"
-                                         [loading]="isLookupValuesLoading"
-                                         [loadingIcon]="'fa fa-spinner fa-spin'">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th class="first-col" *ngIf="field?.MultiSelect">
-                                                <p-tableHeaderCheckbox *ngIf="hasSelectAllCheckbox"></p-tableHeaderCheckbox>
-                                            </th>
-                                            <th>
-                                                <!--<input type="text" class="filter-item-table-filter" [(ngModel)]="filterTableValue" (ngModelChange)="filterTable($event)" placeholder="Search list" />-->
-                                            </th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-item>
-                                        <tr [pSelectableRow]="item">
-                                            <td class="first-col" *ngIf="field?.MultiSelect">
-                                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                            </td>
-                                            <td (click)="selectSingleItem($event,item);">
-                                                <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
-                                                    <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
-                                                    <span class="ig-colorfield-item-label">{{item.label}}</span>
-                                                </div>
+                            <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
 
-                                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
-                                            </td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
-                            </ng-template>
-                        </p-overlayPanel>
-                    </ng-template>
-                </ng-container>
+                        </ng-template>
+                    </p-dropdown>
+                    <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
+                        <ng-template pTemplate>
+                            <p-table #dataTable
+                                     tableStyleClass="ig-filter-table"
+                                     [metaKeySelection]="true"
+                                     [value]="lookupValues"
+                                     [(selection)]="lookupSelectedValue"
+                                     [globalFilterFields]="['label']"
+                                     dataKey="value"
+                                     [scrollable]="true"
+                                     [scrollHeight]="selectionScrollHeight"
+                                     [rows]="20"
+                                     [virtualScroll]="true"
+                                     [lazy]="true"
+                                     (onLazyLoad)="loadListLazy($event)"
+                                     [loading]="isLookupValuesLoading"
+                                     [loadingIcon]="'fa fa-spinner fa-spin'">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th colspan="2">
+                                            <ig-search-field mode="Keypress" [debounce]="200" (onSearch)="dataTable.filterGlobal($event, 'contains');"></ig-search-field>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td class="first-col" *ngIf="field?.MultiSelect">
+                                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                        </td>
+                                        <td (click)="selectSingleItem($event,item);">
+                                            <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
+                                                <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
+                                                <span class="ig-colorfield-item-label">{{item.label}}</span>
+                                            </div>
+
+                                            <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </ng-template>
+                    </p-overlayPanel>
+                </ng-template>
+
             </div>
             <div *ngSwitchCase="'Relationship'">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">

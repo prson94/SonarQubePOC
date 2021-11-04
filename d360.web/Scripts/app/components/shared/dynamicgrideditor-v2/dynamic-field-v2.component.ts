@@ -11,7 +11,8 @@ import {
     Output,
     ViewChild,
 
-    HostListener
+    HostListener,
+    ElementRef
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
@@ -32,6 +33,7 @@ import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Dropdown } from 'primeng/dropdown';
 import { OverlayPanel } from 'primeng/overlaypanel';
+import { Table } from 'primeng/table';
 
 @Component({
     selector: 'd3s-dynamic-field-v2',
@@ -53,6 +55,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Input() assetUid: string;
     @Input() assetTypeUid: string;
     @Input() diagramNodeKey: string;
+    selectionScrollHeight: string = "34px";
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -107,6 +110,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
     @ViewChild('dropdown', { static: false }) dropdown: Dropdown;
     @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
+    @ViewChild("dataTable", { static: false }) dataTable: Table;
 
 
     constructor(
@@ -116,7 +120,8 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         private ref: ChangeDetectorRef,
         private tagService: TagService,
         public dynEditorService: DynEditorService,
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+        private elRef: ElementRef
     ) {
         super(settingsService);
         this.component_uid = Math.random().toString(36).substring(2);
@@ -132,6 +137,9 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 }
             }
         });
+        setInterval(() => {
+            this.setSelectionVirtualScrollHeight();
+        }, 25);
     }
 
     searchTags(q: any) {
@@ -411,8 +419,10 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 this.field.Items.filter(x => x.Selected == true).forEach((item) => {
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
+                this.selectSingleItem(null, { value: null });
             }
             this.form.controls[this.field.FieldName].setValue(this.field.Value);
+
             window.setTimeout(() => {
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
                 this.ref.markForCheck();
@@ -903,6 +913,10 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             return;
         }
 
+        if (params.globalFilter) {
+            params["filter"] = params.globalFilter;
+        }
+
         params["isForAssetForm"] = true;
         this.isLookupValuesLoading = true;
         this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, params).subscribe((res) => {
@@ -925,6 +939,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
             this.isLookupValuesLoading = false;
             this.lastParams = params;
+            this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
             this.ref.detectChanges();
         });
         //    this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
@@ -942,7 +957,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             if (elIdx > -1) {
                 valueRef.splice(elIdx, 1);
             }
-            else {
+            else if (item.value !== null) {
                 valueRef.push(item);
             }
             //update reference
@@ -994,6 +1009,62 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
         })
         this.lookupSelectedValue = newValues;
-        console.log(this.lookupSelectedValue);
+    }
+
+    setSelectionVirtualScrollHeight() {
+        try {
+            let count: number = 0;
+            let res = [];
+
+            if (!this.dataTable || !this.dataTable.value) {
+                return;
+            }
+
+            var filter = this.dataTable?.filters?.global ? (this.dataTable?.filters?.global["value"] as string) : "";
+            if (!filter || !this.dataTable.filteredValue) {
+                res = new Array(this.dataTable.value.length);
+            }
+            else {
+                res = new Array(this.dataTable.filteredValue.length);
+            }
+            if (res.length) {
+                count = res.length;
+            }
+
+            let calculatedHeight: number = 0;
+            let maxHeight: number = 320;
+            let minHeight: number = 50;
+            let margins: number = 180;
+            let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
+
+            if (count < 10) {
+                calculatedHeight = count * 32;
+                if (calculatedHeight < 32) {
+                    calculatedHeight = 32;
+                }
+
+            }
+            else {
+                calculatedHeight = maxHeight;
+            }
+
+            var diff = window.innerHeight - calculatedHeight - margins - bottomPos;
+            if (diff < 0) {
+                calculatedHeight += diff;
+            }
+
+            if (calculatedHeight > maxHeight) {
+                calculatedHeight = maxHeight;
+            }
+            if (calculatedHeight < minHeight) {
+                calculatedHeight = minHeight;
+            }
+            this.selectionScrollHeight = calculatedHeight + "px";
+        }
+        catch (ex) {
+            console.warn(ex);
+            this.selectionScrollHeight = "320px";
+        }
+        this.ref.markForCheck();
     }
 }

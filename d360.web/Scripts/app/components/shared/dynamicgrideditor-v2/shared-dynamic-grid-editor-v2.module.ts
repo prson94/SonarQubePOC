@@ -40,6 +40,7 @@ import { SwitchModule } from '../controls/switch/switch';
 import { IgDateModule } from '../controls/date/date';
 import { IgNumberFieldModule } from '../controls/number-picker/number-input.component';
 import { PropertyGroupModule } from '../controls/property-group/property-group.component';
+import { SearchFieldModule } from '../controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -63,6 +64,7 @@ import { PropertyGroupModule } from '../controls/property-group/property-group.c
         IgNumberFieldModule,
         PropertyGroupModule,
         MultiSelectModule,
+        SearchFieldModule,
         //prime        
         CalendarModule,
         DropdownModule,
