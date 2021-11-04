@@ -17,9 +17,10 @@ function goc16239fix() {
     ];
 
     files.forEach(function (editorfile) {
-        fs.exists(`${editorfile}`, function (exists) {
+        /* eslint-disable security/detect-non-literal-fs-filename -- Safe as no value holds user input */
+        fs.exists(editorfile, function (exists) {
             if (exists) {
-                fs.readFile(`${editorfile}`, 'utf-8', function (err, data) {
+                fs.readFile(editorfile, 'utf-8', function (err, data) {
                     if (err) {
                         throw err;
                     }
@@ -27,7 +28,7 @@ function goc16239fix() {
                     if (data.match(pattern)) {
                         var newValue = data.replace(pattern, 'Quill');
 
-                        fs.writeFile(`${editorfile}`, newValue, 'utf-8', function (err) {
+                        fs.writeFile(editorfile, newValue, 'utf-8', function (err) {
                             if (err) {
                                 throw err;
                             }
@@ -36,6 +37,7 @@ function goc16239fix() {
                 });
             }
         });
+        /* eslint-enable */
     });
 }
 
