@@ -706,7 +706,7 @@ namespace d360.web.Controllers
                                         fld.DelayedLoadType = "Predicate";
                                     }
                                 }
-                                else
+                                else if(loadLookupValues || !string.IsNullOrEmpty(f?.DefaultValue))
                                 {
                                     if (!f.IsRequired && !f.AllowMultipleValues)
                                     {
@@ -758,18 +758,14 @@ namespace d360.web.Controllers
 
                                         if (lookupValues.Count > 0)
                                         {
-                                            fld.Items.AddRange(Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupValues, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
+                                            itemSql += " and V.Value in @lookupValues";
+
+                                            fld.Items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupValues, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
                                                     .OrderBy(o => o.Text)
                                                     .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                                    .ToList());
+                                                    .ToList();
 
-                                            foreach (var item in fld.Items)
-                                            {
-                                                if (lookupValues.Contains(int.Parse(item.Value)))
-                                                {
-                                                    item.Selected = true;
-                                                }
-                                            }
+                                            fld.Items.ForEach(x => x.Selected = true);
                                         }
                                         else
                                         {
@@ -997,7 +993,7 @@ namespace d360.web.Controllers
                                         fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
                                     }
 
-                                    if (ft.AllowAllValue)
+                                    if ((ft.AllowAllValue && !loadOnlySelectedLookupValue) || (loadOnlySelectedLookupValue && f?.Value == "0"))
                                     {
                                         fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
                                     }

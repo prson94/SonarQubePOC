@@ -2135,6 +2135,17 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                                         ";
 
                 string selectStatement = "v.text";
+                string resourceJoin = "";
+
+                if (fieldType.LookupObjectType == "Resource")
+                {
+                    bool hideData3SixtyUsers = HideData3SixtyUsers();
+                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
+                    resourceJoin = $@"
+                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+                                        ";
+                }
+
 
                 if (isForAssetForm)
                 {
@@ -2152,19 +2163,25 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         colorjoin = "";
                     }
                 }
+
+
+
                 var query = $@"
                     select {selectStatement} 
                     from FieldLookupValue V
+                    {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
                     {colorjoin}
                     where @fieldTypeId = v.FieldTypeID
                     {whereQuery}
                     order by text asc
 					{pagingQuery};
 
-                    select count(1) from FieldLookupValue where @fieldTypeId = FieldTypeID {whereQuery};
+                    select count(1) from FieldLookupValue V
+                        {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
+                        where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
 
-                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter });
+                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel });
 
                 if (!isForAssetForm)
                 {
@@ -2178,10 +2195,23 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 }
                 else
                 {
+                    var items = new List<DDLSelectItem>();
+                    if (fieldType.AllowAllValue)
+                    {
+                        items.Add(new DDLSelectItem { text = fieldType.AllowAllLabel, value = "0" });
+                    }
+
+                    items.AddRange(results.Read<DDLSelectItem>().ToList());
+                    var count = results.Read<int>().FirstOrDefault();
+                    if (items.Any(x => x.value == "0"))
+                    {
+                        count++;
+                    }
+
                     var data = new
                     {
-                        items = results.Read<dynamic>().ToList(),
-                        count = results.Read<int>().FirstOrDefault()
+                        items = items,
+                        count = count
                     };
 
                     return Request.CreateResponse(HttpStatusCode.OK, data);
@@ -2198,6 +2228,13 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
+        }
+
+        public class DDLSelectItem
+        {
+            public string text { get; set; }
+            public string value { get; set; }
+            public string color { get; set; }
         }
 
         /// <summary>
