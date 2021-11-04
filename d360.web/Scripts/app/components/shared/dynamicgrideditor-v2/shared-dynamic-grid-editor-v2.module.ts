@@ -62,6 +62,7 @@ import { PropertyGroupModule } from '../controls/property-group/property-group.c
         IgDateModule,
         IgNumberFieldModule,
         PropertyGroupModule,
+        MultiSelectModule,
         //prime        
         CalendarModule,
         DropdownModule,

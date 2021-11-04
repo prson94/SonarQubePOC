@@ -72,6 +72,48 @@
   .action-buttons {
     padding: 24px 0px 0px 0px;
   }
+
+  .multi-select-lazy-load {
+    width: 100%;
+
+    .overlay-trigger {
+      width: 100%;
+    }
+
+    .p-multiselect-chip {
+      height: unset;
+    }
+
+    .p-multiselect-label {
+      max-width: unset;
+      position: relative;
+      padding: 2px;
+      height: unset !important;
+      line-height: 24px;
+      padding-bottom: 0;
+
+      .p-multiselect-token {
+        display: block;
+        background: @ig-grey-t5;
+        color: @ig-black;
+        border-radius: 4px;
+        margin: 0 2px 2px 0;
+        padding: 0 4px;
+        float: left;
+        height: 24px;
+
+        .p-multiselect-token-label {
+          position: relative;
+          top: -3px;
+        }
+
+        .p-multiselect-token-icon {
+          font-size: 16px;
+          padding: 4px;
+        }
+      }
+    }
+  }
 }
 
 

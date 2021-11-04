@@ -28,37 +28,66 @@
             </p-editor>
             <div *ngSwitchCase="'Lookup'">
                 <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
-                    <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi">
-                        <p-multiSelect *ngIf="field.UseColorControl"
-                                       [formControlName]="field.FieldName"
-                                       [options]="field.Items"
-                                       [appendTo]="'body'"
-                                       ngDefaultControl
-                                       [placeholder]="multiselectLabel()">
-                            <ng-template let-items pTemplate="selectedItems">
-                                <div class="d3s-color-multiSelect" *ngIf="items && items.length < 2">
-                                    <div *ngFor="let item of items" class="ig-colorfield-item-selected">
-                                        <span class="ig-colorfield-swatch" [style.background-color]="getColorByID(item)"></span>
-                                        <span class="ig-colorfield-item-label">{{getLabelByID(item)}}</span>
-                                    </div>
-                                </div>
-                                <span *ngIf="items && items.length > 1">{{items.length}} items selected</span>
+                    <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi multi-select-lazy-load">
+                        <div class="overlay-trigger" (click)="overlayPanel.toggle($event)">
+                            <p-multiSelect #dropdown
+                                           [maxSelectedLabels]="5"
+                                           igSize="full"
+                                           [inputId]="field.FieldName + '_input_' + component_uid"
+                                           [formControlName]="field.FieldName"
+                                           [options]="field.Items"
+                                           (onChange)="onChangeMultiselect($event)"
+                                           [required]="field.Required"
+                                           [readonly]="true"
+                                           display="chip">
+                            </p-multiSelect>
+                        </div>
+                        <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
+                            <ng-template pTemplate>
+                                <p-table #dataTable
+                                         tableStyleClass="ig-filter-table"
+                                         [metaKeySelection]="true"
+                                         [value]="lookupValues"
+                                         [(selection)]="lookupSelectedValue"
+                                         [globalFilterFields]="['label']"
+                                         dataKey="value"
+                                         [scrollable]="true"
+                                         scrollHeight="340px"
+                                         [virtualRowHeight]="34"
+                                         [rows]="10"
+                                         [virtualScroll]="true"
+                                         [lazy]="true"
+                                         (onLazyLoad)="loadListLazy($event)"
+                                         [loading]="isLookupValuesLoading"
+                                         [loadingIcon]="'fa fa-spinner fa-spin'">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th class="first-col" *ngIf="field?.MultiSelect">
+                                                <p-tableHeaderCheckbox *ngIf="hasSelectAllCheckbox"></p-tableHeaderCheckbox>
+                                            </th>
+                                            <th>
+                                                <!--<input type="text" class="filter-item-table-filter" [(ngModel)]="filterTableValue" (ngModelChange)="filterTable($event)" placeholder="Search list" />-->
+                                            </th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr [pSelectableRow]="item">
+                                            <td class="first-col" *ngIf="field?.MultiSelect">
+                                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                            </td>
+                                            <td (click)="selectSingleItem($event,item);">
+                                                <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
+                                                    <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
+                                                    <span class="ig-colorfield-item-label">{{item.label}}</span>
+                                                </div>
+
+                                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
                             </ng-template>
-                            <ng-template let-color pTemplate="item">
-                                <div class="ig-colorfield-item">
-                                    <span class="ig-colorfield-swatch" [style.background-color]="color.title"></span>
-                                    <span class="ig-colorfield-item-label">{{color.label}}</span>
-                                </div>
-                            </ng-template>
-                        </p-multiSelect>
-                        <p-multiSelect *ngIf="!field.UseColorControl"
-                                       [formControlName]="field.FieldName"
-                                       [options]="field.Items | dropdownItemToSelectItemPipe"
-                                       [style]="{width:'100%'}"
-                                       [appendTo]="'body'"
-                                       ngDefaultControl
-                                       [placeholder]="multiselectLabel()"
-                                       selectedItemsLabel="{0} items selected"></p-multiSelect>
+                        </p-overlayPanel>
                     </div>
                     <ng-template #singleSelect>
                         <p-dropdown #dropdown
@@ -129,61 +158,6 @@
                         </p-overlayPanel>
                     </ng-template>
                 </ng-container>
-                <ng-template #delayedLoadType>
-                    <div *ngIf="filterException" class="fa-stack" style="width:2em;font-size:smaller;float:right;" title="{{filterException}}">
-                        <i class="fa fa-filter fa-stack-2x"></i>
-                        <i class="fa fa-times fa-stack-1x" style="padding-left:0.5em;padding-top:0.5em;color:red;"></i>
-                    </div>
-                    <div [style.margin-right]="(filterException == '') ? 'auto' : '2.5em'">
-                        <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect"
-                                       [formControlName]="field.FieldName"
-                                       [options]="field.Items | selectItemTextToLabel"
-                                       [style]="{width: '100%'}"
-                                       ngDefaultControl [placeholder]="multiselectLabel()"
-                                       selectedItemsLabel="{0} items selected">
-                            <ng-template let-item pTemplate="item">
-                                <div class="selectlistinfoitem-wrapper-multiselect">
-                                    <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
-                                </div>
-                            </ng-template>
-                        </p-multiSelect>
-                        <ng-template #singleSelect>
-                            <ng-container *ngIf="!field.UseTypeahead">
-                                <p-dropdown [formControlName]="field.FieldName"
-                                            [style]="{'height':'auto',width: '100%'}"
-                                            [options]="field.Items | selectItemTextToLabel"
-                                            [placeholder]="multiselectLabel()">
-                                    <ng-template let-item pTemplate="item">
-                                        <div class="selectlistinfoitem-wrapper">
-                                            <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
-                                        </div>
-                                    </ng-template>
-                                </p-dropdown>
-                            </ng-container>
-                            <ng-container *ngIf="field.UseTypeahead">
-                                <p-autoComplete [placeholder]="'Start typing to select an item'"
-                                                [delay]="350"
-                                                [field]="'Text'"
-                                                [style]="{'width':'100%'}"
-                                                [inputStyle]="{'width':'100%' }"
-                                                [inputId]="field.FieldName + '_input_' + component_uid"
-                                                [formControlName]="field.FieldName"
-                                                (onSelect)="onSelect($event)"
-                                                [suggestions]="field.Items"
-                                                (completeMethod)="search($event)"
-                                                [forceSelection]="field.Required"
-                                                (onClear)="clearTypeahead($event)"
-                                                [dropdown]="false">
-                                    <ng-template let-item pTemplate="item">
-                                        <div class="selectlistinfoitem-wrapper">
-                                            <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
-                                        </div>
-                                    </ng-template>
-                                </p-autoComplete>
-                            </ng-container>
-                        </ng-template>
-                    </div>
-                </ng-template>
             </div>
             <div *ngSwitchCase="'Relationship'">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">

@@ -404,7 +404,13 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
             if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
-                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value)
+                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
+            }
+            if (this.field?.MultiSelect && this.field.Value) {
+                this.lookupSelectedValue = [];
+                this.field.Items.filter(x => x.Selected == true).forEach((item) => {
+                    this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
+                });
             }
             this.form.controls[this.field.FieldName].setValue(this.field.Value);
             window.setTimeout(() => {
@@ -941,6 +947,12 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
             //update reference
             this.lookupSelectedValue = [...valueRef];
+            this.field.Items = [...valueRef];
+
+            var value = this.lookupSelectedValue.map((s) => s.value);
+
+            this.form.controls[this.field.FieldName].setValue(value);
+
         } else {
             this.lookupSelectedValue = [item];
             this.field.Items = [item];
@@ -971,5 +983,17 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         } : null;
 
         return data ? `rgb(${data.r},${data.g},${data.b})` : '';
+    }
+
+    onChangeMultiselect($event) {
+        var values = this.form.controls[this.field.FieldName].value as any[];
+        var newValues = [];
+        this.lookupSelectedValue.forEach((item) => {
+            if (values.indexOf(item.value) != -1) {
+                newValues.push(item);
+            }
+        })
+        this.lookupSelectedValue = newValues;
+        console.log(this.lookupSelectedValue);
     }
 }
