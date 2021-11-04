@@ -474,7 +474,7 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Gets bulk load info.
+        /// Retrieves bulk load info.
         /// </summary>
         /// <returns></returns>
         [
@@ -659,7 +659,7 @@ from	[Load] L
         }
 
         /// <summary>
-        /// Gets bulk load items details.
+        /// Retrieves bulk load items details for a given load unique identifier.
         /// </summary>
         /// /// <param name="uid">The unique identifier of the load which details are returned for.</param>
         /// <returns></returns>
@@ -948,7 +948,7 @@ from	[Load] L
         }
 
         /// <summary>
-        /// Gets bulk load info.
+        /// Retrieves bulk load info for a given load unique identifier.
         /// </summary>
         /// <param name="loadUid">The unique identifier of the load which details are returned for.</param>
         /// <returns></returns>
