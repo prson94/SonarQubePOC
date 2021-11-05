@@ -2096,11 +2096,53 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     .FirstOrDefault(x => x.uid == assetTypeUid).ID;
                 var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
 
+
                 string pagingQuery = "";
                 string whereQuery = "";
                 if (skip != null && take != null)
                 {
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
+                }
+
+
+
+                //list items for parent field
+                if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
+                {
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        filter = "%" + filter + "%";
+                        whereQuery += " and node.displaypath like @filter ";
+                    }
+                    var sql = $@"declare @target nvarchar(255) 
+                                declare @targetid int
+                                
+                                select @target = ito.Subject, @targetid = ito.SubjectId from AssetType at
+                                left join [IntersectType] ito on ito.Object = at.Object and ito.ObjectId = at.objectid
+                                left join [Predicate] po on ito.PredicateID = po.ID and po.Type in (3,4)
+                                where at.id = @assettypeid
+                                
+                                declare @parentAssetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
+                                
+                                select cast(a.uid as nvarchar(36)) as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @parentAssetTypeId {whereQuery}
+                                order by node.displaypath 
+                                {pagingQuery};
+
+                                select count(*) from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @parentAssetTypeId {whereQuery};";
+
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { assetTypeId, skip, take, filter });
+
+                    var data = new
+                    {
+                        items = resultsAssets.Read<DDLSelectItem>().ToList(),
+                        count = resultsAssets.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
                 }
 
                 //case when fieldname coming from complex relation grid with coded names from procedure
