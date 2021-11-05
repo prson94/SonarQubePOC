@@ -163,20 +163,21 @@
         </p-table>
     </div>
 </div>
-<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor" 
-           (onClose)="showEditor=false" 
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
            [showTitle]="false"
            [isVisible]="showEditor">
     <d3s-dynamic-editor-v2 *ngIf="showEditor"
-                        [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
-                        [objectType]="gridObject.Object"
-                        [title]="selected ? 'Edit Asset' : 'Create New Asset'"
-                        [selection]="selected"
-                        [rowID]="rowID"
-                        [objectTypeUid]="gridObject?.AssetTypeUID"
-                        (saveClick)="saveItem($event)"
-                        [isV2API]="true"
-                        (closeClick)="closeEditor()"></d3s-dynamic-editor-v2>
+                           [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
+                           [objectType]="gridObject.Object"
+                           [title]="selected ? 'Edit Asset' : 'Create New Asset'"
+                           [selection]="selected"
+                           [rowID]="rowID"
+                           [objectTypeUid]="gridObject?.AssetTypeUID"
+                           [assetTypePath]="gridObject?.AssetTypePath"
+                           (saveClick)="saveItem($event)"
+                           [isV2API]="true"
+                           (closeClick)="closeEditor()"></d3s-dynamic-editor-v2>
 
 </d3s-modal>
 

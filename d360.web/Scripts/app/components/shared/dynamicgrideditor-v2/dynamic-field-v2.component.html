@@ -111,8 +111,6 @@
                 </div>
             </div>
             <div *ngSwitchCase="'Relationship'">
-                {{field.Items | json}}
-                value: {{this.form.controls[this.field.FieldName].value | json}}
                 <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
                     <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="overlayPanel.toggle($event)">
                         <p-multiSelect #dropdown

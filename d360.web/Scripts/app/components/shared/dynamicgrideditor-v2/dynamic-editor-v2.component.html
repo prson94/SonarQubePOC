@@ -1,7 +1,7 @@
 ﻿<div class="add-asset-form">
     <div class="form-header" *ngIf="hasHeader">
         {{title}}
-        <div class="sub-header">Business Terms</div>
+        <div class="sub-header">{{assetTypePath}}</div>
     </div>
 
     <d3s-loading [isLoading]="isLoading"></d3s-loading>

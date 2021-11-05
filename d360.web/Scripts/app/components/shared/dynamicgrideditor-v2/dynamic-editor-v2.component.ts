@@ -75,6 +75,8 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     @Input() useModelBinding: boolean = false;
     @Input() dataModel: any = null;
 
+    @Input() assetTypePath: string = '[AssetTypePath]';
+
     @Output() modelChanged = new EventEmitter();
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();

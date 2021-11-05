@@ -1142,6 +1142,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 model.Add("AssetTypeUID", assetType.uid);
                 model.Add("AssetTypeID", assetType.ID);
 
+                var assetTypePath = Company.Query<string>(@"select p.path from assettype at cross apply dbo.GetAssetTypeTextPathById(at.id, ' > ') p where at.id = @atid", new { atid = assetType.ID }).FirstOrDefault();
+                model.Add("AssetTypePath", assetTypePath);
             }
             catch (Exception ex)
             {
