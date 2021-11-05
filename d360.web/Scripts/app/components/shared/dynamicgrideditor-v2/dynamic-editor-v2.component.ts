@@ -88,7 +88,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     @Input() useNonLegacyData: boolean = false;
 
     @Input() disallowedNames: string[] = [];
-    private savingInProgress: boolean = false;
+    savingInProgress: boolean = false;
     private consolidateToTag: any;
     isInError: boolean = false;
     isInErrorMessage: string = "";
@@ -588,12 +588,12 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         }
 
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
-            this.isLoading = true;
+            this.savingInProgress = true;
 
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)
                 .subscribe(result => {
                     this.showMessageForResult(this.messagesService, result);
-                    this.isLoading = false;
+                    this.savingInProgress = false;
                     this.saveClick.emit({ item: result, action: action, values: values });
                 });
         } else {
@@ -611,7 +611,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     }
 
     postToApiV2(event) {
-        this.isLoading = true;
+        this.savingInProgress = true;
         let values: any = {};
         let asset: AssetEditorModel = new AssetEditorModel();
         asset.Fields = {};
@@ -659,7 +659,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                 }
                 else {
                     this.showMessageForApiResult(this.messagesService, res);
-                    this.isLoading = false;
+                    this.savingInProgress = false;
                     this.saveClick.emit(event);
                 }
 

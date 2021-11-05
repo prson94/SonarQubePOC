@@ -1,4 +1,4 @@
-﻿<div class="add-asset-form">
+﻿<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
     <div class="form-header" *ngIf="hasHeader">
         {{title}}
         <div class="sub-header">{{assetTypePath}}</div>
@@ -49,7 +49,7 @@
                 <button igButton type="button" label="Cancel" tooltip="Cancel" (click)="closeClick.emit();"></button>
 
                 <div class="flex-grow"></div>
-                <button type="submit" class="ig-button-primary" igButton [disabled]="!form.valid" label="Create" tooltip="Create"></button>
+                <button type="submit" class="ig-button-primary" igButton [disabled]="!form.valid" label="Create" tooltip="Create" [loading]="savingInProgress"></button>
             </div>
         </form>
     </div>
