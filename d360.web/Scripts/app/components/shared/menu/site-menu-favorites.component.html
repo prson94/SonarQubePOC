@@ -1,3 +1,8 @@
+<ng-template #customPanelContent>
+    <d3s-site-menu-manage-favorites-panel>
+    </d3s-site-menu-manage-favorites-panel>
+</ng-template>
+    
 <d3s-site-menu-category 
     *ngIf="menu"
     [expanded]="expanded"
@@ -6,5 +11,16 @@
     [menu]="menu"
     [isActive]="menu.isActiveItem"
     rootIconName="fa-star"
-    (activeItemChanged)="handleActiveItem($event);">
+    (activeItemChanged)="handleActiveItem($event);"
+    [customPanelContent]="manageFavorites ? customPanelContent : null">
+    <ng-container additionalButtons>
+        <button
+            igButton
+            (click)="toggleManageFavorites()"
+            icon="fa-edit"
+            pTooltip="Manage favorites2"
+            tooltipPosition="top"
+            tooltipStyleClass="ig-tooltip">
+        </button>
+    </ng-container>
 </d3s-site-menu-category>

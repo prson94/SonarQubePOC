@@ -11,6 +11,7 @@
                     tooltipPosition="top"
                     tooltipStyleClass="ig-tooltip">
             </button>
+            <ng-content select="[additionalButtons]"></ng-content>
         </div>
         <div class="row megamenu-items" [ngStyle]="{'max-height': getMaxHeight()}">
             <div class="col s12 megamenu-items-container" *ngFor="let item of visibleMenuItems | simpleSearch: searchText">

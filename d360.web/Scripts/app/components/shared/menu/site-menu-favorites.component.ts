@@ -21,6 +21,7 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
     
     public menu: SiteMenu;
     private subFavorites: any;
+    public manageFavoritesMode = false;
 
     constructor(
         private favoritesService: FavoritesService,
@@ -76,6 +77,11 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
                 this.ref.markForCheck();
             }
         );
+    }
+
+    toggleManageFavorites() {
+        this.manageFavoritesMode = !this.manageFavoritesMode;
+        this.ref.markForCheck();
     }
 
     protected clearFavorites() {

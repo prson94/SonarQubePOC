@@ -1,4 +1,4 @@
-﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, HostListener, ElementRef } from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, HostListener, ElementRef, ContentChildren, QueryList, TemplateRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
 import * as _ from 'lodash';
@@ -15,15 +15,15 @@ export class SiteMenuCategoryComponent extends BaseComponent {
     @Input() url: string;
     @Input() title: string;
     @Input() rootIconName: string;
-    @Input() public menu: SiteMenu;
-    @Input() showClearButton: boolean = false;
+    @Input() menu: SiteMenu;
     @Input() expanded: boolean;
     @Input() imageUrl: string;
     @Input() countData: any[];
     @Input() isActive: boolean = false;
+    @Input() customPanelContent: TemplateRef<any>;
 
     @Output() clearClick = new EventEmitter();
-    @Output() activeItemChanged = new EventEmitter();
+    @Output() activeItemChanged = new EventEmitter();;
 
     @HostListener('document:click', ['$event'])
     documentClick(event: MouseEvent) {

@@ -17,6 +17,7 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
 import { SiteMenuCategoryPanelComponent } from './site-menu-category-panel.component';
 import { LinksKeyboardNavigationComponent } from './links-keyboard-navigation.component';
 import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
+import { SiteMenuManageFavoritesPanelComponent } from './site-menu-manage-favorites-panel.component';
 
 @NgModule({
     imports: [
@@ -37,6 +38,7 @@ import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
         SiteMenuCategoryComponent,
         SiteMenuCategoryPanelComponent,
         SiteMenuFavoritesComponent,
+        SiteMenuManageFavoritesPanelComponent,
         LinksKeyboardNavigationComponent
     ],
     exports: [
