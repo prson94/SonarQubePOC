@@ -69,16 +69,9 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
     private cascadeSub: any;
-    private relationSource$ = new Subject<any>();
-    private relationSub: any;
-    private relationItems = [];
     private excludedRelationitems = {};
     private relationItemsLoading = false;
 
-    private typeAheadSource$ = new Subject<any>();
-    private typeAheadSub: any;
-    private typeAheadValue: EditorDropDownItem = null;
-    private loadTypeAheadValue: boolean = false;
     private Increment: number = 1;
     private Min: number;
     private Max: number;
@@ -317,41 +310,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 }
             });
 
-        this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
-            .subscribe(res => {
-                this.relationItemsLoading = false;
-                this.field.Items = res.results["items"];
-                this.selectRelationItems(this.relationItems);
-
-                //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
-                let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
-                if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0) {
-                    if (hasCardinalityOne) {
-                        var selectedCount = this.relationItems ? this.relationItems.length : 0;
-                        this.field.RecordCount = selectedCount + res.results["count"];
-                    }
-                    else {
-                        this.field.RecordCount = res.results["count"];
-                    }
-                }
-                this.ref.markForCheck();
-            });
-
-        this.typeAheadSub = (this.field.DelayedLoadType == 'Predicate') ?
-            this.fieldsService.getTypeaheadFilteredByPredicateItems(this.typeAheadSource$, this.selectedObject, this.selectedObjectID)
-                .subscribe(res => {
-                    this.field.Items = <any[]>res;
-                    this.ref.markForCheck();
-                })
-            : this.fieldsService.getTypeaheadItems(this.typeAheadSource$, this.field.UseColorControl)
-                .subscribe(res => {
-                    if (this.field.UseColorControl)
-                        this.field.Items = this.getColorItemsAsEditorItem(res);
-                    else
-                        this.field.Items = <EditorDropDownItem[]>res;
-                    this.ref.markForCheck();
-                });
-
         if (this.field.DelayedLoadType == 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
                 res => {
@@ -400,17 +358,31 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             this.colorValue = this.field.Value;
         }
 
-        if (this.field.FieldType == 'Relationship') {
-            this.selectRelationItems(this.field.Value);
-        }
-
         if ((this.field.FieldType == 'Date' || this.field.FieldType == 'DateTime') && isNaN(Date.parse(this.field.Value))) {
             this.field.Value = null;
             this.form.controls[this.field.FieldName].setValue(this.field.Value);
         }
 
+        if (this.field.FieldType === 'Relationship' && this.field.Value) {
+            this.field.Items = this.field.Value;
+            var value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
+            this.form.controls[this.field.FieldName].setValue(value);
 
-        if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
+            if (this.field?.MultiSelect && this.field.Value) {
+                this.lookupSelectedValue = [];
+
+                this.field.Items.forEach((item) => {
+                    item['label'] = item['Text'];
+                    item['value'] = item['Value'];
+                    this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
+
+                });
+                this.selectSingleItem(null, { value: null });
+
+            }
+        }
+
+        if (this.field.FieldType === 'Lookup') {
             if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
                 this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
             }
@@ -428,19 +400,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 this.ref.markForCheck();
             }, 250);
         }
-
-        if (this.field.FieldType == 'Lookup' && this.field.UseTypeahead) {
-            if (this.field.Items != null && this.field.Items.length > 0) {
-                let sel: EditorDropDownItem = this.field.Items.find(i => i.Selected == true);
-
-                this.loadTypeAheadValue = true;
-                this.typeAheadValue = sel;
-                this.onSelect(sel);
-            }
-        }
-        if (this.field.UseColorControl) {
-            this.field.Items = this.getColorItemsAsSelectItem(this.field.Items);
-        }
     }
 
     ngOnChanges() {
@@ -456,16 +415,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             this.quill = this.ed.quill;
         }
 
-        //set input text on typeahead to current value if applicable, avoids using ngModel binding
-        if (this.loadTypeAheadValue) {
-            this.loadTypeAheadValue = false;
-            if (this.field.UseTypeahead) {
-                let el: any = document.getElementById(this.field.FieldName + '_input_' + this.component_uid);
-                if (el != null && this.typeAheadValue != null)
-                    el.value = this.typeAheadValue.Text;
-            }
-        }
-
         if (this.dropdown && this.overlayPanel) {
             var width = this.dropdown.el.nativeElement.offsetWidth;
             if (this.overlayPanel.overlayVisible && this.overlayPanel.container) {
@@ -479,9 +428,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         if (this.cascadeSub) {
             this.cascadeSub.unsubscribe();
         }
-        if (this.relationSub) {
-            this.relationSub.unsubscribe();
-        }
         if (this.fieldChangeSub != null) {
             this.fieldChangeSub.unsubscribe();
         }
@@ -492,14 +438,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     onFieldChanges(data: any) {
         this.isDirty = true;
         if (this.field.FieldType == 'Lookup') {
-            if (this.field.UseTypeahead) {
-                if (this.typeAheadValue != null)
-                    this.field.Value = this.typeAheadValue.Value;
-                else
-                    this.field.Value = null;
-            } else {
-                this.field.Value = data;
-            }
+            this.field.Value = data;
             this.listItemChange.emit({ field: this.field, value: data });
         }
         else if (this.field.FieldType == 'Relationship') {
@@ -754,48 +693,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             object = this.selectedObject;
             objectId = this.selectedObjectID;
         }
-
-        this.relationSource$.next({
-            fieldTypeID: this.field.FieldTypeID,
-            object: object,
-            objectID: objectId,
-            event: e
-        });
-    }
-
-    selectRelationItems(e: any) {
-        if (e === '[]') {
-            this.relationItems = [];
-        } else {
-            this.relationItems = e;
-        }
-
-        if (this.relationItems != null) {
-            if (!Array.isArray(this.relationItems)) {
-                this.relationItems = [this.relationItems];
-            }
-
-            for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
-                let x = this.field.Items.findIndex(f => f.Value == this.relationItems[i].Value);
-
-                if (x > -1) {
-                    this.relationItems[i] = this.field.Items[x];
-                }
-            }
-
-            this.relationItems = this.relationItems.slice();
-            this.field.Value = this.relationItems.map(i => i.Value).join(',');
-        } else {
-            this.field.Value = null;
-        }
-
-        this.relationItemChange.emit({ field: this.field, value: null });
-        this.form.controls[this.field.FieldName].setValue(this.field.Value);
-        this.ref.markForCheck();
-    }
-
-    private search(e: any) {
-        this.typeAheadSource$.next({ fieldTypeID: this.field.FieldTypeID, value: this.field.Value, event: e });
     }
 
     private onSelect(e: EditorDropDownItem) {
@@ -812,12 +709,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     private onColorSelect(item) {
         this.form.controls[this.field.FieldName].setValue(item);
         this.field.Value = item;
-    }
-
-    private clearTypeahead(e: any) {
-        this.typeAheadValue = null;
-        this.field.Value = null;
-        this.ref.markForCheck();
     }
 
     private onEditorChange(event: any) {
