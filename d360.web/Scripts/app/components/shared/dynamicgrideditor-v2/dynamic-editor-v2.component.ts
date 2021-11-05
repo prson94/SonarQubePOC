@@ -14,7 +14,9 @@ import {
     ViewChild,
     ElementRef,
 
-    ViewEncapsulation
+    ViewEncapsulation,
+    ViewChildren,
+    QueryList
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
@@ -34,6 +36,7 @@ import { Subject } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { DynamicFieldComponentV2 } from './dynamic-field-v2.component';
 
 @Component({
     selector: 'd3s-dynamic-editor-v2',
@@ -109,6 +112,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     back: EditorField;
     selectedTagID: number;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
+    @ViewChildren(DynamicFieldComponentV2) dyFieldRef: QueryList<DynamicFieldComponentV2>;
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -549,6 +553,15 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                         this.form.value[p] = arr.map(x => x.title).join('|');
                     }
                 }
+                else if (field != null && (field.FieldType === 'Number' || field.FieldType === 'Decimal')) {
+                    if (this.form.value[p]) {
+                        this.form.value[p] = +this.form.value[p];
+                    }
+                    else {
+                        this.form.value[p] = null;
+                    }
+                }
+
             }
         }
 
@@ -660,7 +673,11 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                 else {
                     this.showMessageForApiResult(this.messagesService, res);
                     this.savingInProgress = false;
-                    this.saveClick.emit(event);
+                    this.ref.markForCheck();
+
+                    if (res && res.Message && res.Message.indexOf('Key values match another') !== -1) {
+                        this.dyFieldRef.forEach((fld) => fld.setKeyFieldsErrorMessage(false));
+                    }
                 }
 
             });

@@ -67,6 +67,8 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Output() relationItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
+    keyFieldError: string = "";
+
     private fieldTooltip: string;
     private cascadeSub: any;
     private excludedRelationitems = {};
@@ -135,92 +137,14 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         }, 25);
     }
 
-    searchTags(q: any) {
-        this.autoCompleteSelected.emit(null);
-        this.tagService.searchTags(q.query, this.objectID)
-            .subscribe(response => {
-                this.suggestionResultsArray = response;
-                this.suggestionResults = [];
-                this.suggestionResultsArray.forEach(x => this.suggestionResults.push(x.name));
-
-                this.suggestionResultsArray.forEach(s => {
-                    if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
-                        this.autoCompleteSelected.emit(s);
-                    }
-                });
-
-                this.ref.markForCheck();
-            });
-    }
-
-    checkAssetExistance() {
-        this.doesAssetExists = false;
-
-        this.tagService.searchTags(this.field.Value, this.objectID, true)
-            .subscribe(response => {
-
-                response.forEach(s => {
-                    if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
-                        this.doesAssetExists = true;
-                    }
-                });
-
-                this.ref.markForCheck();
-            });
-    }
-
-    getColorItemsAsSelectItem(items: any[]): SelectItem[] {
-        if (items.length > 0) {
-            return items.filter(x => x.Text != "Choose...").map((x) => {
-                try {
-
-                    let colorobj = JSON.parse(x.Text);
-                    if (colorobj)
-                        return { label: colorobj.name, value: x.Value, title: colorobj.color };
-                } catch (ex) {
-                    return { label: x.Text, value: x.Value, title: 'transparent' };
-                }
-            });
+    public setKeyFieldsErrorMessage(isSingle: boolean) {
+        if (isSingle) {
+            this.keyFieldError = "Please enter a unique value";
         }
-    }
-
-    getColorItemsAsEditorItem(items: any[]): EditorDropDownItem[] {
-        if (items.length > 0) {
-            let its = items.filter(x => x.Text != "Choose...").map((x) => {
-                try {
-                    let colorobj = JSON.parse(x.Text);
-                    if (colorobj)
-                        return { Text: colorobj.name, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: colorobj.color };
-                } catch (ex) {
-                    return { Text: x.Text, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: 'transparent' };
-                }
-            });
-            return its;
+        else {
+            this.keyFieldError = "Please enter a unique combination of key field values";
         }
-    }
-
-    getLabelByID(id) {
-        if (id && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter(x => x.value == id);
-            if (filterItems.length > 0) {
-                return filterItems[0].label;
-            }
-        }
-        return "";
-    }
-
-    getColorByID(id) {
-        if (id && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter(x => x.value == id);
-            if (filterItems.length > 0) {
-                return filterItems[0].title;
-            }
-        }
-        return "";
-    }
-    selectTag(event) {
-        var obj = this.suggestionResultsArray.filter(x => x.name == event)[0];
-        this.autoCompleteSelected.emit(obj);
+        this.ref.markForCheck();
     }
 
     setEditorContent(e: any) {
@@ -449,10 +373,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             this.field.Value = data;
         } else {
             this.field.Value = data;
-        }
-
-        if (this.object == 'Tag' && !this.objectID) {
-            this.checkAssetExistance();
         }
     }
 

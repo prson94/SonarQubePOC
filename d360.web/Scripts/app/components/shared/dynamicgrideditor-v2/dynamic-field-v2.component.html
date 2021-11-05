@@ -228,6 +228,7 @@
                 </div>
             </div>
             <div class="error-message" *ngIf="!isValid && isDirty && errorMessage">{{errorMessage}}</div>
+            <div class="error-message" *ngIf="keyFieldError">{{keyFieldError}}</div>
         </div>
     </div>
 </div>
