@@ -138,13 +138,15 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     }
 
     public setKeyFieldsErrorMessage(isSingle: boolean) {
-        if (isSingle) {
-            this.keyFieldError = "Please enter a unique value";
+        if (this.field.IsPartOfKey) {
+            if (isSingle) {
+                this.keyFieldError = "Please enter a unique value";
+            }
+            else {
+                this.keyFieldError = "Please enter a unique combination of key field values";
+            }
+            this.ref.markForCheck();
         }
-        else {
-            this.keyFieldError = "Please enter a unique combination of key field values";
-        }
-        this.ref.markForCheck();
     }
 
     setEditorContent(e: any) {
@@ -374,6 +376,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         } else {
             this.field.Value = data;
         }
+        this.keyFieldError = "";
     }
 
     get isValid() {

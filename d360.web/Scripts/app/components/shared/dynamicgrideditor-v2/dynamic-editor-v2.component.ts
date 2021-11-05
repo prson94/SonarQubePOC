@@ -676,7 +676,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                     this.ref.markForCheck();
 
                     if (res && res.Message && res.Message.indexOf('Key values match another') !== -1) {
-                        this.dyFieldRef.forEach((fld) => fld.setKeyFieldsErrorMessage(false));
+                        this.dyFieldRef.forEach((fld) => fld.setKeyFieldsErrorMessage(this.fields.filter(x => x.IsPartOfKey).length < 2));
                     }
                 }
 
