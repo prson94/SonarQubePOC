@@ -40,6 +40,7 @@ export class EditorField {
     ItemSize: number;
     UseNativeLookupControl: boolean;
     UseColorControl: boolean;
+    IsPartOfKey: boolean;
 
     IsAssetLazyLoad: boolean;
     AssetUid: string;

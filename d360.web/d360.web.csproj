@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>4.2</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.3</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -602,6 +602,7 @@
     <Content Include="Content\images\About-P.png" />
     <Content Include="Content\images\aboutLogo.png" />
     <Content Include="Content\images\diagram-show-overview.svg" />
+    <Content Include="Content\images\field-key.svg" />
     <Content Include="Content\images\govern-small-white.svg" />
     <Content Include="Content\images\govern-small.svg" />
     <Content Include="Content\images\govern.svg" />
