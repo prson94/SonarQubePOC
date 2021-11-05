@@ -1,9 +1,8 @@
-﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, HostListener, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, HostListener, ElementRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
@@ -12,11 +11,11 @@ import { Router } from '@angular/router';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SiteMenuCategoryComponent extends BaseComponent implements OnChanges {
+export class SiteMenuCategoryComponent extends BaseComponent {
     @Input() url: string;
     @Input() title: string;
     @Input() rootIconName: string;
-    @Input() menu: SiteMenu;
+    @Input() public menu: SiteMenu;
     @Input() showClearButton: boolean = false;
     @Input() expanded: boolean;
     @Input() imageUrl: string;
@@ -28,25 +27,13 @@ export class SiteMenuCategoryComponent extends BaseComponent implements OnChange
 
     @HostListener('document:click', ['$event'])
     documentClick(event: MouseEvent) {
-        if (this.menu) {
-            this.menu.isActiveItem = false;
-        }        
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (!this.isActive && this.menu) {
-            this.menu.isActiveItem = false;
-        }
-    }
-
-    public deactivateMenu() {
-        this.menu.isActiveItem = false;
-        this.cdRef.detectChanges();
+        if (this.menu && this.menu.isActiveItem) {
+            this.activeItemChanged.emit(undefined);
+        }    
     }
 
     constructor(
         protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef,
         private router: Router) {
         super(settingsService);
     }

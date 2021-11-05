@@ -1,0 +1,10 @@
+<d3s-site-menu-category 
+    *ngIf="menu"
+    [expanded]="expanded"
+    [title]="title"
+    (clearClick)="clearFavorites()"
+    [menu]="menu"
+    [isActive]="menu.isActiveItem"
+    rootIconName="fa-star"
+    (activeItemChanged)="handleActiveItem($event);">
+</d3s-site-menu-category>

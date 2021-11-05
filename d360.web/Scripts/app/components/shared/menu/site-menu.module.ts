@@ -16,6 +16,7 @@ import { DirectivesModule } from '../../../directives/directives.module';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
 import { SiteMenuCategoryPanelComponent } from './site-menu-category-panel.component';
 import { LinksKeyboardNavigationComponent } from './links-keyboard-navigation.component';
+import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
 
 @NgModule({
     imports: [
@@ -35,6 +36,7 @@ import { LinksKeyboardNavigationComponent } from './links-keyboard-navigation.co
         SiteMenuMegaItemComponent,
         SiteMenuCategoryComponent,
         SiteMenuCategoryPanelComponent,
+        SiteMenuFavoritesComponent,
         LinksKeyboardNavigationComponent
     ],
     exports: [
