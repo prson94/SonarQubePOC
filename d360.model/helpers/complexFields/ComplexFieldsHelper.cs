@@ -376,7 +376,7 @@ namespace d360.model.helpers
         {
             List<GridColumn> Columns = new List<GridColumn>();
             List<GridField> Fields = new List<GridField>();
-            foreach (var ft in fields.OrderBy(x => x.SortOrder))
+            foreach (var ft in fields)
             {
                 var gColumn = new GridColumn { text = ft.FriendlyName, datafield = ft.Name };
                 var gField = new GridField { type = "text", name = ft.Name, apiName = ft.Name };

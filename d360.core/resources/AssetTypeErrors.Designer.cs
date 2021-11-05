@@ -430,7 +430,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid or deleted relationship type encountered on Relationship field with friendly name &quot;{0}&quot;..
+        ///   Looks up a localized string similar to Invalid or deleted relationship type encountered on Relationship field with friendly name &quot;{FriendlyName}&quot;..
         /// </summary>
         public static string InvalidRelationshipFieldType {
             get {
