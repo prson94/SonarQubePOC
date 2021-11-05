@@ -301,7 +301,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<any> {
-        var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid;
+        var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid + '&_includepath=true';
 
         if (params) {
             url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
