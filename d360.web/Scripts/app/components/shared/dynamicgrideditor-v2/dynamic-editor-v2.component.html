@@ -46,9 +46,11 @@
             </div>
 
             <div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
-                <button igButton type="button" label="Cancel" tooltip="Cancel" (click)="closeClick.emit();"></button>
+                <button igButton type="button" [disabled]="savingInProgress" label="Cancel" tooltip="Cancel" (click)="closeClick.emit();"></button>
 
                 <div class="flex-grow"></div>
+                <button type="button" igButton [disabled]="!form.valid || savingInProgress" label="Create and Add Another" tooltip="Create and Add Another" [loading]="savingInProgress" (click)="onSubmit(true)"></button>
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <button type="submit" class="ig-button-primary" igButton [disabled]="!form.valid || savingInProgress" label="Create" tooltip="Create" [loading]="savingInProgress"></button>
             </div>
         </form>

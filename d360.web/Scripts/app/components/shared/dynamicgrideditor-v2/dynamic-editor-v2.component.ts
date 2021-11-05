@@ -92,7 +92,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
 
     @Input() disallowedNames: string[] = [];
     savingInProgress: boolean = false;
-    private consolidateToTag: any;
+
     isInError: boolean = false;
     isInErrorMessage: string = "";
 
@@ -160,22 +160,9 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         if (changes['isModalVisible']) {
             if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
                 this.savingInProgress = false;
-                this.consolidateToTag = null;
                 this.load();
             }
         }
-    }
-    autoCompleteSelected(event) {
-        if (this.objectType == 'Tag' && !this.adding) {
-            this.consolidateToTag = event;
-        } else if (this.objectType == 'Tag' && this.adding) {
-            if (event) {
-                this.consolidateToTag = null;
-                this.selectedTagID = event.ID;
-            }
-
-        }
-
     }
 
     focusToFirst() {
@@ -519,7 +506,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
 
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
-    onSubmit() {
+    onSubmit(addAnother: boolean = false) {
         this.savingInProgress = true;
         let action = (this.selection == null ? "new" : "edit");
         let values: any = {};
@@ -600,27 +587,9 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
             return;
         }
 
-        if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
-            this.savingInProgress = true;
 
-            this.uriBasedService.saveItem(this.createUri, this.editUri, values)
-                .subscribe(result => {
-                    this.showMessageForResult(this.messagesService, result);
-                    this.savingInProgress = false;
-                    this.saveClick.emit({ item: result, action: action, values: values });
-                });
-        } else {
-            if (this.consolidateToTag) {
-                this.saveClick.emit({ item: values, action: action, additionalOption: this.consolidateToTag });
+        this.postToApiV2({ item: values, action: action, addAnother: addAnother });
 
-            }
-            else if (this.isV2API) {
-                this.postToApiV2({ item: values, action: action });
-            }
-            else {
-                this.saveClick.emit({ item: values, action: action });
-            }
-        }
     }
 
     postToApiV2(event) {

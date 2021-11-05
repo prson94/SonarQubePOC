@@ -381,7 +381,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return params;
     }
 
-    getData() {
+    getData(autoSelect: boolean = true) {
         this.isLoading = true;
         this.isLoadingChange.emit(true);
         if (this.assetSearchSub) {
@@ -393,7 +393,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             .subscribe(res => {
                 this.items = res.items;
 
-                let selectedItemStillExists = false;
+                let selectedItemStillExists = !autoSelect;
                 let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 
                 this.items.forEach((i) => {
@@ -556,11 +556,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     saveItem($event) {
         this.isEditing = false;
         if ($event.item.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
-        this.getData();
-        this.isLoading = false;
-        this.isLoadingChange.emit(false);
-        this.showEditor = false;
-        this.showEditorChange.emit(false);
+
+        if ($event && $event.addAnother) {
+            this.add();
+        }
+        else {
+            var newUrl = '/asset/' + $event.assetUid;
+            this.router.navigateByUrl(newUrl);
+        }
+
         this.changeDetectorRef.markForCheck();
     }
 
