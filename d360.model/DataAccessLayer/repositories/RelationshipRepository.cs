@@ -18,6 +18,8 @@ using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
+using d360.utils.excel;
+using d360.core.resources;
 
 namespace d360.model.DataAccessLayer
 {
@@ -958,16 +960,17 @@ from	IntersectType I
 
             var apiInfo = results.Children().ToList();
 
-            var document = new SLDocument();
-            const string relationshipSheetName = "Relationships";
-            const string apiSheetName = "Api Info";
-
+            var excelDocument = new ExcelDocument(string.Format(ExcelExports.FollowedResources_DocumentName, DateTime.Now));
+                   
             var fields = new List<FieldType>();
+
+            var headerRow = new ExcelRow();
+            var itemsSheet = new ExcelSheet(ExcelExports.Relationships_SheetName);
 
             //add default fields
             fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = "Relationship UID" });
             fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "Uid", FriendlyName = "Subject Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "DisplayName", FriendlyName = "Subject Display Name" });            
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "DisplayName", FriendlyName = "Subject Display Name" });
             if (includeAssetPath)
             {
                 fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "[Path]", FriendlyName = "Subject Asset Path" });
@@ -985,95 +988,86 @@ from	IntersectType I
             fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject Asset Type Uid" });
             fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object Asset Type Uid" });
             fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = "Predicate Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });            
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });                        
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });
 
-            #region Populate Excel Document
+            #region Populate Excel Document            
 
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, relationshipSheetName);
+            #region API Info Sheet
+            var apiInfoSheet = new ExcelSheet(ExcelExports.Common_ApiInfoSheetName);
 
-            document.AddWorksheet(apiSheetName);
-            document.SelectWorksheet(apiSheetName);
+            var pageSizeRow = new ExcelRow { ExcelExports.Common_PageSize, results.GetValue("pageSize").ToString() };
+            var pageNumRow = new ExcelRow { ExcelExports.Common_PageNum, results.GetValue("pageNum").ToString() };
+            apiInfoSheet.ValueRows.Add(pageSizeRow);
+            apiInfoSheet.ValueRows.Add(pageSizeRow);
 
-            document.SetCellValue(1, 1, "pageSize");
-            document.SetCellValue(1, 2, results.GetValue("pageSize").ToString());
-            document.SetCellValue(2, 1, "pageNum");
-            document.SetCellValue(2, 2, results.GetValue("pageNum").ToString());
             if (includeTotal)
             {
-                document.SetCellValue(3, 1, "total");
-                document.SetCellValue(3, 2, results.GetValue("total").ToString());
+                var totalRow = new ExcelRow { ExcelExports.Common_Total, results.GetValue("total").ToString() };
+                apiInfoSheet.ValueRows.Add(totalRow);
             }
-
-            document.SelectWorksheet(relationshipSheetName);
+            #endregion    
 
             var items = results.GetValue("items");
             var rowData = new List<JToken>();
 
             if (items != null)
             {
+                #region Populate Items Sheet
                 rowData = items.ToList();
-            }
-            else
-            {
-                return document;
-            }
 
-            int rowNumber = 1;
-            int index = 1;
-            foreach (var row in rowData)
-            {
-                var relationshipTypeUid = row["RelationshipTypeUid"];
-                var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString());
-
-                if (customColumns.Count() > 0)
+                List<ExcelRow> rows = new List<ExcelRow>();
+                foreach (var row in rowData)
                 {
-                    index = fields.Count() + 1;
-                    foreach (var cus in customColumns)
+                    var relationshipTypeUid = row["RelationshipTypeUid"];
+                    var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString());
+
+                    if (customColumns.Count() > 0)
                     {
-                        var name = cus.Name;
-                        var friendlyName = cus.FriendlyName;
-                        var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
-                        if (exists == null)
+                        foreach (var cus in customColumns)
                         {
-                            var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
-                            fields.Insert((includeAssetPath ? 11 : 9), cusField);
+                            var name = cus.Name;
+                            var friendlyName = cus.FriendlyName;
+                            var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
+                            if (exists == null)
+                            {
+                                var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
+                                fields.Insert((includeAssetPath ? 11 : 9), cusField);
+                            }
                         }
                     }
-                }
-                index = 1;
-                //overwriting first row each time
-                foreach (var field in fields)
-                {
-                    document.SetCellValue(1, index++, (string)field.FriendlyName);
-                }
 
-                index = 1;
-                rowNumber++;
-                foreach (var field in fields)
-                {
-                    var token = row[field.Object];
-                    if (field.Name == "")
+                    ExcelRow excelRow = new ExcelRow();
+                    foreach (var field in fields)
                     {
-                        token = row[field.Object];
+                        var token = row[field.Object];
+                        if (field.Name == "")
+                        {
+                            token = row[field.Object];
+                        }
+                        else
+                        {
+                            token = row[field.Object][field.Name];
+                        }
+                        string value = "";
+                        if (token != null)
+                        {
+                            value = token.Value<string>();
+                        }
+                        excelRow.Add(value);
                     }
-                    else
-                    {
-                        token = row[field.Object][field.Name];
-                    }
-                    string value = "";
-                    if (token != null)
-                    {
-                        value = token.Value<string>();
-                    }
-                    document.SetCellValue(rowNumber, index, value);
-                    index++;
+                    rows.Add(excelRow);
                 }
+                itemsSheet.ValueRows.AddRange(rows);
+                #endregion
             }
 
             #endregion
-            document.AutoFitColumn(1, fields.Count());
-            return document;
+            fields.ForEach((field) => headerRow.Add(field.FriendlyName));
+            itemsSheet.HeaderRows.Add(headerRow);
+            excelDocument.Add(itemsSheet);
+            excelDocument.Add(apiInfoSheet);
+            return excelDocument.ToSLDocument();
         }
 
         public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid)

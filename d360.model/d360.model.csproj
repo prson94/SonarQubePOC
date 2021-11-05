@@ -173,6 +173,10 @@
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.utils.excel\d360.utils.excel.csproj">
+      <Project>{82faa62e-0a4f-4d1a-ba72-6689705a59a0}</Project>
+      <Name>d360.utils.excel</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
