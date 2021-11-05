@@ -602,6 +602,7 @@
     <Content Include="Content\images\About-P.png" />
     <Content Include="Content\images\aboutLogo.png" />
     <Content Include="Content\images\diagram-show-overview.svg" />
+    <Content Include="Content\images\field-key.svg" />
     <Content Include="Content\images\govern-small-white.svg" />
     <Content Include="Content\images\govern-small.svg" />
     <Content Include="Content\images\govern.svg" />

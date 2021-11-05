@@ -105,7 +105,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -124,7 +125,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
@@ -193,7 +195,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -232,7 +235,8 @@ from	metrics.Score S
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -298,7 +302,8 @@ from	metrics.Score S
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = jsonElementDataType,
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -363,7 +368,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = "Html",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -383,7 +389,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -1294,8 +1301,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         FieldName = ft.Name,
                         ShowIfEmpty = true,
                         DataType = "tag",
-                        Values = GetTagsValues(type, id)
-
+                        Values = GetTagsValues(type, id),
+                        IsPartOfKey = ft.IsPartOfKey
                     }
                 },
                 Category = ft.Category
@@ -1345,7 +1352,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                                         LookupFieldTypeID = ft.ID,
                                         LookupType = (int)((DataType)Enum.Parse(typeof(DataType), ft.Type)),
                                         ShowIfEmpty = ft.ShowIfEmpty,
-                                        DataType = ft.Type
+                                        DataType = ft.Type,
+                                        IsPartOfKey = ft.IsPartOfKey
                                     }
                                 },
                         Category = ft.Category
@@ -1362,7 +1370,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         FieldName = ft.Name,
                         Values = null,
                         DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                        ShowIfEmpty = ft.ShowIfEmpty
+                        ShowIfEmpty = ft.ShowIfEmpty,
+                        IsPartOfKey = ft.IsPartOfKey
                     };
 
                     list.Add(new DetailReadOnlyRowModel
@@ -1510,7 +1519,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 FieldName = ft.Name,
                 Values = values,
                 ShowIfEmpty = ft.ShowIfEmpty,
-                DataType = ft.Type
+                DataType = ft.Type,
+                IsPartOfKey = ft.IsPartOfKey
             };
 
             list.Add(new DetailReadOnlyRowModel
