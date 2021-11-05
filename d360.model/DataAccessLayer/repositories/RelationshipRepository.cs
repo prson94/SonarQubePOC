@@ -999,7 +999,7 @@ from	IntersectType I
             var pageSizeRow = new ExcelRow { ExcelExports.Common_PageSize, results.GetValue("pageSize").ToString() };
             var pageNumRow = new ExcelRow { ExcelExports.Common_PageNum, results.GetValue("pageNum").ToString() };
             apiInfoSheet.ValueRows.Add(pageSizeRow);
-            apiInfoSheet.ValueRows.Add(pageSizeRow);
+            apiInfoSheet.ValueRows.Add(pageNumRow);
 
             if (includeTotal)
             {
@@ -1067,7 +1067,10 @@ from	IntersectType I
             itemsSheet.HeaderRows.Add(headerRow);
             excelDocument.Add(itemsSheet);
             excelDocument.Add(apiInfoSheet);
-            return excelDocument.ToSLDocument();
+
+            SLDocument document = excelDocument.ToSLDocument();
+            document.SelectWorksheet(ExcelExports.Relationships_SheetName);
+            return document;
         }
 
         public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid)
