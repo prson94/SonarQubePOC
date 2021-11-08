@@ -167,7 +167,7 @@
            (onClose)="showEditor=false"
            [showTitle]="false"
            [isVisible]="showEditor">
-    <d3s-dynamic-editor-v2 #dynamicEditor
+    <asset-editor #dynamicEditor
                            *ngIf="showEditor"
                            [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
                            [objectType]="gridObject.Object"
@@ -179,7 +179,7 @@
                            (saveClick)="saveItem($event)"
                            [showAsModal]="true"
                            [isV2API]="true"
-                           (closeClick)="closeEditor()"></d3s-dynamic-editor-v2>
+                           (closeClick)="closeEditor()"></asset-editor>
 
 </d3s-modal>
 

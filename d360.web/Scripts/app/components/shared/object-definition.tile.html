@@ -31,7 +31,7 @@
                (onClose)="closeEditor()"
                [showTitle]="false"
                [isVisible]="modalEditorVisible">
-        <d3s-dynamic-editor-v2 #dynamicEditor
+        <asset-editor #dynamicEditor
                                *ngIf="formMode == FormMode.Editing"
                                [objectID]="objectID"
                                [parentID]="object?.ParentID"
@@ -44,6 +44,6 @@
                                [title]="'Edit Asset'"
                                [rowID]="rowID"
                                [assetTypePath]="gridObject?.AssetTypePath"
-                               [showAsModal]="true"></d3s-dynamic-editor-v2>
+                               [showAsModal]="true"></asset-editor>
     </d3s-modal>
 </ng-container>

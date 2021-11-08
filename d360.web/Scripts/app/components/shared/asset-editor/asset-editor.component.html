@@ -1,0 +1,60 @@
+﻿<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
+    <div class="form-header" *ngIf="hasHeader">
+        {{title}}
+        <div class="sub-header">{{assetTypePath}}</div>
+    </div>
+
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div class="row" *ngIf="isInError">
+        <div class="err-message">{{isInErrorMessage}}</div>
+    </div>
+    <div class="row"
+         *ngIf="!isLoading">
+        <div class="form-instructions" *ngIf="hasDirections">
+            {{directions}}
+        </div>
+        <form (ngSubmit)="onSubmit()"
+              [formGroup]="form">
+            <div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
+                <ng-template ngFor
+                             let-category
+                             [ngForOf]="categories">
+                    <ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true">
+                        <div inputs>
+                            <div class="row"
+                                 *ngFor="let row of category.rows">
+                                <div *ngFor="let field of row.Fields"
+                                     [class]="'field-col col ' + row.getColClass()"
+                                     style="padding-bottom:10px;">
+                                    <asset-editor-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
+                                                          [form]="form"
+                                                          (listItemChange)="listSelectionChanged($event)"
+                                                          [editorChange]="editorChange"
+                                                          [object]="objectType"
+                                                          [objectID]="objectID"
+                                                          [selectedObject]="selectedObject"
+                                                          [disallowedNames]="disallowedNames"
+                                                          [assetUid]="assetUid"
+                                                          [assetTypeUid]="objectTypeUid"
+                                                          [diagramNodeKey]="diagramNodeKey"
+                                                          [selectedObjectID]="selectedObjectID"></asset-editor-field>
+                                </div>
+                            </div>
+                        </div>
+                    </ig-property-group>
+                </ng-template>
+            </div>
+
+            <div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
+                <button igButton type="button" [disabled]="savingInProgress" label="Cancel" tooltip="Cancel" (click)="closeClick.emit();"></button>
+
+                <div class="flex-grow"></div>
+                <button *ngIf="!selection" type="button" igButton [disabled]="!form.valid || savingInProgress" label="Create and Add Another" tooltip="Create and Add Another" [loading]="savingInProgress && savingInProgressWithAddNew" (click)="onSubmit(true)"></button>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <button type="submit" class="ig-button-primary" igButton [disabled]="!form.valid || savingInProgress" label="{{selection ? 'Save Changes' : 'Create'}}" tooltip="{{selection ? 'Save Changes' : 'Create'}}" [loading]="savingInProgress && !savingInProgressWithAddNew"></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+

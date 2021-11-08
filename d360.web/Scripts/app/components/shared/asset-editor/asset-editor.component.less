@@ -1,0 +1,163 @@
+@import '../../../../../Content/styles/_Variables.less';
+
+.add-asset-form {
+  padding: 24px;
+
+  .form-header {
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 16px;
+
+    .sub-header {
+      color: @igx-gray-color;
+      font-size: 12px;
+      font-weight: normal;
+    }
+  }
+
+  .form-wrapper {
+    overflow: auto;
+    padding-right: 24px;
+
+    .dropdown-selected-value {
+      margin-top: -7px;
+    }
+
+    .col {
+      padding: 0px;
+    }
+
+    .FieldName {
+      color: @ig-black;
+    }
+
+    .field-wrapper-type-Link {
+      .flex-grid-link {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 8px 0 0 0;
+
+        .link-input {
+          flex-grow: 1;
+        }
+
+        .label {
+          line-height: 32px;
+          padding-right: 16px;
+          width: 58px;
+        }
+      }
+
+      .error-message {
+        margin-left: 58px;
+      }
+    }
+
+    .field-wrapper-type-Html.required-field.empty-field {
+      .p-editor-content {
+        height: 150px;
+        background: @ig-lightblue-t4;
+        font-family: 'Precisely';
+      }
+    }
+  }
+
+  .action-buttons {
+    padding: 24px 0px 0px 0px;
+  }
+
+  .multi-select-lazy-load {
+    width: 100%;
+
+    .overlay-trigger {
+      width: 100%;
+    }
+
+    .p-multiselect-chip {
+      height: unset;
+    }
+
+    .p-multiselect-label {
+      max-width: unset;
+      position: relative;
+      padding: 2px;
+      height: unset !important;
+      line-height: 24px;
+      padding-bottom: 0;
+
+      .p-multiselect-token {
+        display: block;
+        background: @ig-grey-t5;
+        color: @ig-black;
+        border-radius: 4px;
+        margin: 0 2px 2px 0;
+        padding: 0 4px;
+        float: left;
+        height: 24px;
+
+        .p-multiselect-token-label {
+          position: relative;
+          top: -3px;
+        }
+
+        .p-multiselect-token-icon {
+          font-size: 16px;
+          padding: 4px;
+        }
+      }
+    }
+  }
+
+
+  &.saving-in-progress {
+    .input-wrapper {
+      pointer-events: none;
+      opacity: 0.33;
+    }
+  }
+}
+
+
+.p-overlaypanel.dropdown-overlay {
+  margin-top: 0;
+  position: absolute;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.3);
+  border-radius: 4px;
+  min-width: 500px;
+
+  .item-value {
+    padding: 0 8px;
+  }
+
+  tbody.p-datatable-tbody > tr {
+    border-bottom: none;
+  }
+
+  ig-search-field {
+    width: 100%;
+
+    .ig-search-field {
+      padding: 4px;
+
+      input {
+        font-weight: normal;
+      }
+    }
+
+    .ig-search-field-button {
+      top: 8px;
+      line-height: 24px;
+    }
+  }
+
+  .p-datatable-thead {
+    border: none;
+  }
+}
+
+
+.dropdown-lazy-load {
+  .ig-dropdown-overlay {
+    display: none;
+  }
+}
