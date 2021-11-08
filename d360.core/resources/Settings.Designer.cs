@@ -475,24 +475,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This setting indicates whether the Govern UI should display Fusion options..
-        /// </summary>
-        internal static string FusionEnabled_Desc {
-            get {
-                return ResourceManager.GetString("FusionEnabled_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable Fusion.
-        /// </summary>
-        internal static string FusionEnabled_Name {
-            get {
-                return ResourceManager.GetString("FusionEnabled_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The Uid of the reference list that contains the Governance Roles that the Diagram Designer depends on..
         /// </summary>
         internal static string GovernanceRoleReferenceListUid_Desc {

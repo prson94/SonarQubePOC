@@ -215,20 +215,11 @@ namespace d360.model
                     {
                         Set<Field>().Attach(item);
                         Entry(item).State = (string.IsNullOrEmpty(item.Value)) ? EntityState.Deleted : EntityState.Modified;
-                        if (item.ObjectType == "FusionAttribute")
-                        {
-                            item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
-                        }
-
                     }
                     else //ADD
                     {
                         if (!string.IsNullOrEmpty(item.Value))
                         {
-                            if (item.ObjectType == "FusionAttribute")
-                            {
-                                item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
-                            }
                             Set<Field>().Add(item);
                         }
                     }

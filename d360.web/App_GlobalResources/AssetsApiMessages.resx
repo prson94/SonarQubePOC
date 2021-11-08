@@ -177,9 +177,6 @@
   <data name="FilterResrictPredicateUid" xml:space="preserve">
     <value>Filtering using _relationFilter cannot be used with _predicateUid parameter</value>
   </data>
-  <data name="fusionSetBusinessClassOnly" xml:space="preserve">
-    <value>Can Own Fusion can be set only asset types that are of class Business</value>
-  </data>
   <data name="GovernRoleReferListNotExists" xml:space="preserve">
     <value>Governance Role Reference List with UID '{0}' does not exist</value>
   </data>
@@ -188,9 +185,6 @@
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
     <value>Invalid Asset type class '{0}'</value>
-  </data>
-  <data name="InvalidClassFusionTypeUid" xml:space="preserve">
-    <value>Invalid class type for Fusion type UID.</value>
   </data>
   <data name="InvalidExportTemplateCurrent" xml:space="preserve">
     <value>Invalid Export Template for current Asset Type.</value>

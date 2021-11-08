@@ -10,6 +10,13 @@ using System.Web;
 
 namespace d360.web.Models
 {
+    public class ApplicationSetting
+    {
+        public string Name { get; set; }
+
+        public dynamic Value { get; set; }
+    }
+
     public class ApiExecutionRecievedResponse
     {
         public Guid ExecutionID { get; set; }

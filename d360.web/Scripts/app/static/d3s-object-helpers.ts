@@ -4,8 +4,6 @@
     // Given an d3s object name get its friendly name to display to users
     static getObjectTypeFriendlyName(objectType: string) : string {
         switch (objectType.toUpperCase()) {
-            case "FUSIONATTRIBUTES":
-                return "Fusion";
             case "ARTIFACT":
                 return "Artifact";
             case "TAXONOMY":

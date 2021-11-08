@@ -60,7 +60,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Gets a list of score definitions set up in Administration / Scoring.
         /// </summary>
-        /// <param name="Class">Allows for filtering the allocations by asset type class. The Fusion, FusionAttribute, Organization, User, Group, FusionQuery, Reference, Diagram, Generic and ReferenceItemType class types are not applicable for scoring.</param>
+        /// <param name="Class">Allows for filtering the allocations by asset type class. The Organization, User, Group, Reference, Diagram, Generic and ReferenceItemType class types are not applicable for scoring.</param>
         /// <returns>The allocation.</returns>
         [
             HttpGet,

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Function.dbo.GetRelationshipDisplayValue-v2">
+  <changeSet author="Pappas" id="Function.dbo.GetRelationshipDisplayValue-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,21 +20,13 @@ RETURNS TABLE
 AS
 RETURN 
 (
-select
-		DisplayValue
-	from
-		dbo.Asset A
-		cross apply [dbo].[GetAssetDisplayValueById](A.ID) DV		
-	where 
-		@o = 'FusionAttribute' and A.[Object] = @o and A.ObjectID = @oid
-	union
 	select
 		DV.DisplayValue
 	from
 		dbo.Asset A
 		inner join dbo.AssetDisplayValue DV on DV.AssetID = A.ID		
 	where 
-		@o not in('Taxonomy','FusionAttribute') and A.[Object] = @o and A.ObjectID = @oid
+		@o not in('Policy', 'Taxonomy') and A.[Object] = @o and A.ObjectID = @oid
 	union
 	select 
 		AT.Name as DisplayValue
@@ -47,7 +39,7 @@ select
 		dbo.Asset A
 		cross apply [dbo].GetAssetTextPathById(A.ID,'/')
 	where 
-		@o = 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid		
+		@o in('Policy', 'Taxonomy') and A.[Object] = @o and A.ObjectID = @oid		
 )
 		]]>
     </sql>

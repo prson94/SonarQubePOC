@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Sequences-v1">
+  <changeSet author="Core" id="Sequences-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -22,16 +22,11 @@ BEGIN
 	CREATE SEQUENCE [dbo].[AssetType_ObjectID_Seq]  AS [bigint] START WITH 100000000 INCREMENT BY 1 MINVALUE 0 MAXVALUE 9223372036854775807 CACHE 
 END
 
-if not exists (select * from [INFORMATION_SCHEMA].[SEQUENCES] where SEQUENCE_NAME = 'FusionAttribute_Seq')
-BEGIN
-	CREATE SEQUENCE [dbo].[FusionAttribute_Seq]  AS [int] START WITH 1 INCREMENT BY 1 MINVALUE 0 MAXVALUE 2147483647 CACHE 
-END
+drop sequence if exists [dbo].[FusionAttribute_Seq]
+GO
 
-if not exists (select * from [INFORMATION_SCHEMA].[SEQUENCES] where SEQUENCE_SCHEMA = 'integration' AND SEQUENCE_NAME = 'Execution_Seq')
-BEGIN
-	CREATE SEQUENCE [integration].[Execution_Seq] AS [bigint] START WITH 50000 INCREMENT BY 1 MINVALUE 1 MAXVALUE 99999999999999999 CACHE 
-END
-
+drop sequence if exists [dbo].[Execution_Seq]
+GO
 		]]>
     </sql>
 	<rollback>

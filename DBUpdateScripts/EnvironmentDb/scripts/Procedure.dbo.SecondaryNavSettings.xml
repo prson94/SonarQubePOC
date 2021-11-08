@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.SecondaryNavSettings-v6">
+  <changeSet author="Pappas" id="Procedure.dbo.SecondaryNavSettings-v7">
     <comment>GOV-14655</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER   procedure [dbo].[SecondaryNavSettings]
+create or alter procedure [dbo].[SecondaryNavSettings]
 	@uid uniqueidentifier,
 	@assetTypeUid uniqueidentifier,
 	@resourceId int,
@@ -56,9 +56,6 @@ begin
 		CASE
 			WHEN Class = 1 THEN 'Business Assets'
 			WHEN Class = 2 THEN 'Models'
-			WHEN Class = 3 THEN 'Fusions'
-			WHEN Class = 4 THEN 'Fusion Attributes'
-			WHEN Class = 5 THEN 'Attribute Groups'
 			WHEN Class = 6 THEN 'Policies'
 			WHEN Class = 7 THEN 'Rules'
 			WHEN Class = 8 THEN 'Technical Assets'
@@ -66,16 +63,12 @@ begin
 			WHEN Class = 10 THEN 'Organizations'
 			WHEN Class = 11 THEN 'Users'
 			WHEN Class = 12 THEN 'Groups'
-			WHEN Class = 13 THEN 'Fusion Queries'
 			WHEN Class = 14 THEN 'Reference Lists'
 			ELSE ''
 		END as Name , 
 		CASE
 			WHEN Class = 1 THEN 'Business Asset'
 			WHEN Class = 2 THEN 'Model'
-			WHEN Class = 3 THEN 'Fusion'
-			WHEN Class = 4 THEN 'Fusion Attribute'
-			WHEN Class = 5 THEN 'Attribute Group'
 			WHEN Class = 6 THEN 'Policy'
 			WHEN Class = 7 THEN 'Rule'
 			WHEN Class = 8 THEN 'Technical Asset'
@@ -83,7 +76,6 @@ begin
 			WHEN Class = 10 THEN 'Organization'
 			WHEN Class = 11 THEN 'User'
 			WHEN Class = 12 THEN 'Group'
-			WHEN Class = 13 THEN 'Fusion Query'
 			WHEN Class = 14 THEN 'Reference List'
 			ELSE ''
 		END + ' Types' as MainTitle ,

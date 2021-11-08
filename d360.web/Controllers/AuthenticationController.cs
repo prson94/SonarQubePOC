@@ -587,6 +587,14 @@ namespace d360.web.Controllers
                     Community.SetOpenIdRequest(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state });
 
                     var ru = new RequestUrl($"{authenticationSettings.baseUri}/authorize");
+                    var extras = new Parameters();
+                    if (authenticationSettings.extraParameters.Properties().Count() > 0)
+                    {
+                        foreach (var p in authenticationSettings.extraParameters.Properties())
+                        {
+                            extras.Add(p.Name, p.Value.ToString());
+                        }
+                    }
                     var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId, 
                         responseType: "code", 
@@ -595,7 +603,8 @@ namespace d360.web.Controllers
                         state, 
                         nonce, 
                         responseMode: "form_post",
-                        extra: authenticationSettings.GetStructuredExtraParameters());
+                        extra: extras
+                        );
                     return new RedirectResult(url);
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
@@ -988,9 +997,17 @@ namespace d360.web.Controllers
                     {
                         var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/slo-callback";
                         var ru = new RequestUrl($"{authenticationSettings.baseUri}/logout");
+                        var extras = new Parameters();
+                        if (authenticationSettings.extraParameters.Properties().Count() > 0)
+                        {
+                            foreach (var p in authenticationSettings.extraParameters.Properties())
+                            {
+                                extras.Add(p.Name, p.Value<string>(p.Name));
+                            }
+                        }
                         var url = ru.CreateEndSessionUrl(idToken, 
                             callbackUri,
-                            extra: authenticationSettings.GetStructuredExtraParameters());
+                            extra: extras);
 
                         return Redirect(url);
                     }

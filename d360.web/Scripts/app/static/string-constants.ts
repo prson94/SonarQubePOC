@@ -10,8 +10,6 @@ export class StringConstants {
     static ObjectTaxonomy = "Taxonomy";
     static ObjectRule = "Rule";
     static ObjectPolicy = "Policy";
-    static ObjectFusion = "Fusion";
-    static ObjectFusionAttribute = "FusionAttribute";
     static ObjectResource = "Resource";
     static ObjectTaxonomyType = "TaxonomyType";
     static ObjectPolicyType = "PolicyType";

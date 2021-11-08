@@ -144,10 +144,6 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
 
     getResponsibilityTypesByObject(type: string, id: number): Observable<any> {
         let uri = `api/ownership/${type}/${id}/responsibilitytypes`;
-        if (type.toLowerCase() == 'fusion') {
-            uri = `api/ownership/fusion/${id}/fusionresponsibilitytypes`
-        }
-
         return this.http.get(uri)
             .pipe(
                 map((response) => <any>response),

@@ -33,7 +33,6 @@ namespace igx.UnitTests.SearchTests
         }
 
         [Theory]
-        [InlineData("Fusion", false)]
         [InlineData("Invalid", false)]
         public void SearchIndexerIsNotIndexable(string classOrObjectName, bool expected)
         {
@@ -82,9 +81,9 @@ namespace igx.UnitTests.SearchTests
         [InlineData("Taxonomy", "Model")]
         [InlineData("Resource", "User")]
         [InlineData("ReferenceItemType", "Reference")]
-        public void SearchIndexerGetCategoryFromObject(string objectName, string expectred)
+        public void SearchIndexerGetCategoryFromObject(string objectName, string expected)
         {
-            Assert.Equal(expectred, SearchIndexer.GetCategoryFromObject(objectName));
+            Assert.Equal(expected, SearchIndexer.GetCategoryFromObject(objectName));
         }
 
     }

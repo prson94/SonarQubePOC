@@ -97,24 +97,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Should changes generate an event notification?.
-        /// </summary>
-        public static string AllowEventNotification_Description {
-            get {
-                return ResourceManager.GetString("AllowEventNotification_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow Event Notification.
-        /// </summary>
-        public static string AllowEventNotification_Name {
-            get {
-                return ResourceManager.GetString("AllowEventNotification_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Allow users to group similar relationships together to form a grouping..
         /// </summary>
         public static string AllowGrouping_Description {
@@ -219,24 +201,6 @@ namespace d360.core.resources {
         public static string AllowRelatedArtifacts_Name {
             get {
                 return ResourceManager.GetString("AllowRelatedArtifacts_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow sources to be defined for this relationship..
-        /// </summary>
-        public static string AllowSourcing_Description {
-            get {
-                return ResourceManager.GetString("AllowSourcing_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow Sourcing on Relationship?.
-        /// </summary>
-        public static string AllowSourcing_Name {
-            get {
-                return ResourceManager.GetString("AllowSourcing_Name", resourceCulture);
             }
         }
         
@@ -349,231 +313,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Items of this type can own fusion configurations, which applies during auto-promotion..
-        /// </summary>
-        public static string CanOwnFusion_Description {
-            get {
-                return ResourceManager.GetString("CanOwnFusion_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Can Own Fusion?.
-        /// </summary>
-        public static string CanOwnFusion_Name {
-            get {
-                return ResourceManager.GetString("CanOwnFusion_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The certification process ends on this date..
-        /// </summary>
-        public static string CertificationEndDate_Description {
-            get {
-                return ResourceManager.GetString("CertificationEndDate_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Certification Ends On.
-        /// </summary>
-        public static string CertificationEndDate_Name {
-            get {
-                return ResourceManager.GetString("CertificationEndDate_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The certification process started on this date..
-        /// </summary>
-        public static string CertificationStartDate_Description {
-            get {
-                return ResourceManager.GetString("CertificationStartDate_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Certification Started On.
-        /// </summary>
-        public static string CertificationStartDate_Name {
-            get {
-                return ResourceManager.GetString("CertificationStartDate_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The property of the target item to check..
-        /// </summary>
-        public static string Check_PropertyName_Description {
-            get {
-                return ResourceManager.GetString("Check_PropertyName_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Property to Check.
-        /// </summary>
-        public static string Check_PropertyName_Name {
-            get {
-                return ResourceManager.GetString("Check_PropertyName_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value of the target item&apos;s property..
-        /// </summary>
-        public static string Check_PropertyValue_Description {
-            get {
-                return ResourceManager.GetString("Check_PropertyValue_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Property Value to Validate.
-        /// </summary>
-        public static string Check_PropertyValue_Name {
-            get {
-                return ResourceManager.GetString("Check_PropertyValue_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The SQL query to perform for this check.  The SQL query must return a boolean (bit) true or false.  Only SELECT statements are allowed..
-        /// </summary>
-        public static string Check_SQL_Description {
-            get {
-                return ResourceManager.GetString("Check_SQL_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SQL Query.
-        /// </summary>
-        public static string Check_SQL_Name {
-            get {
-                return ResourceManager.GetString("Check_SQL_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value to check for..
-        /// </summary>
-        public static string Check_Value_Description {
-            get {
-                return ResourceManager.GetString("Check_Value_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Value to Check.
-        /// </summary>
-        public static string Check_Value_Name {
-            get {
-                return ResourceManager.GetString("Check_Value_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The end value of the value range to check..
-        /// </summary>
-        public static string Check_ValueEnd_Description {
-            get {
-                return ResourceManager.GetString("Check_ValueEnd_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to End Value to Check.
-        /// </summary>
-        public static string Check_ValueEnd_Name {
-            get {
-                return ResourceManager.GetString("Check_ValueEnd_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The start value of the value range to check..
-        /// </summary>
-        public static string Check_ValueStart_Description {
-            get {
-                return ResourceManager.GetString("Check_ValueStart_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Start Value to Check.
-        /// </summary>
-        public static string Check_ValueStart_Name {
-            get {
-                return ResourceManager.GetString("Check_ValueStart_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The type of check this analytic should perform for the target object..
-        /// </summary>
-        public static string CheckType_Description {
-            get {
-                return ResourceManager.GetString("CheckType_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Check Type.
-        /// </summary>
-        public static string CheckType_Name {
-            get {
-                return ResourceManager.GetString("CheckType_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Object Property Name.
-        /// </summary>
-        public static string CheckType_PropertyName_Name {
-            get {
-                return ResourceManager.GetString("CheckType_PropertyName_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SQL Query.
-        /// </summary>
-        public static string CheckType_SQL_Name {
-            get {
-                return ResourceManager.GetString("CheckType_SQL_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Object Property Value.
-        /// </summary>
-        public static string CheckType_Value_Name {
-            get {
-                return ResourceManager.GetString("CheckType_Value_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Object Property Range End.
-        /// </summary>
-        public static string CheckType_ValueEnd_Name {
-            get {
-                return ResourceManager.GetString("CheckType_ValueEnd_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Object Property Range Start.
-        /// </summary>
-        public static string CheckType_ValueStart_Name {
-            get {
-                return ResourceManager.GetString("CheckType_ValueStart_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The high-level classification of the model you are adding/editing.  You may configure these classes under Model Administration..
         /// </summary>
         public static string Class_Description {
@@ -606,24 +345,6 @@ namespace d360.core.resources {
         public static string Code_Name {
             get {
                 return ResourceManager.GetString("Code_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The SQL SELECT statement to pull contents from.  You may only query objects within the reporting schema..
-        /// </summary>
-        public static string CommandText_Description {
-            get {
-                return ResourceManager.GetString("CommandText_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Command Text.
-        /// </summary>
-        public static string CommandText_Name {
-            get {
-                return ResourceManager.GetString("CommandText_Name", resourceCulture);
             }
         }
         
@@ -1303,60 +1024,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name of the Fusion assembly, including dll extension. Not required if this is a manual Fusion process..
-        /// </summary>
-        public static string FusionAssembly_Description {
-            get {
-                return ResourceManager.GetString("FusionAssembly_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fusion Assembly Name.
-        /// </summary>
-        public static string FusionAssembly_Name {
-            get {
-                return ResourceManager.GetString("FusionAssembly_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fusion Fact.
-        /// </summary>
-        public static string FusionFact_Description {
-            get {
-                return ResourceManager.GetString("FusionFact_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fusion Fact.
-        /// </summary>
-        public static string FusionFact_Name {
-            get {
-                return ResourceManager.GetString("FusionFact_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fusion Type.
-        /// </summary>
-        public static string FusionType_Description {
-            get {
-                return ResourceManager.GetString("FusionType_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fusion Type.
-        /// </summary>
-        public static string FusionType_Name {
-            get {
-                return ResourceManager.GetString("FusionType_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The group assigned to this item..
         /// </summary>
         public static string Group_Description {
@@ -1510,69 +1177,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Impact for this item..
-        /// </summary>
-        public static string Impact_Description {
-            get {
-                return ResourceManager.GetString("Impact_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Impact is a required field..
-        /// </summary>
-        public static string Impact_ErrorRequired {
-            get {
-                return ResourceManager.GetString("Impact_ErrorRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Impact.
-        /// </summary>
-        public static string Impact_Name {
-            get {
-                return ResourceManager.GetString("Impact_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The amount of time between agent executions for a given fusion configuration..
-        /// </summary>
-        public static string Interval_Description {
-            get {
-                return ResourceManager.GetString("Interval_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Interval.
-        /// </summary>
-        public static string Interval_Name {
-            get {
-                return ResourceManager.GetString("Interval_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This interval type is the time between agent executions for a given configuration..
-        /// </summary>
-        public static string IntervalType_Description {
-            get {
-                return ResourceManager.GetString("IntervalType_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Interval Type.
-        /// </summary>
-        public static string IntervalType_Name {
-            get {
-                return ResourceManager.GetString("IntervalType_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Is this item globally available?.
         /// </summary>
         public static string IsGlobal_Description {
@@ -1627,24 +1231,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Is this fusion type automatically synchronized or must a user manually create and synchronize the fusion items?.
-        /// </summary>
-        public static string IsManual_Description {
-            get {
-                return ResourceManager.GetString("IsManual_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Manual Process?.
-        /// </summary>
-        public static string IsManual_Name {
-            get {
-                return ResourceManager.GetString("IsManual_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Is a user required to choose or provide a value for this field?.
         /// </summary>
         public static string IsRequired_Description {
@@ -1677,24 +1263,6 @@ namespace d360.core.resources {
         public static string IsSystemLookup_Name {
             get {
                 return ResourceManager.GetString("IsSystemLookup_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Is this a technical relationship, storing technical metadata and pointing to something not specifically business-related?.
-        /// </summary>
-        public static string IsTechnical_Description {
-            get {
-                return ResourceManager.GetString("IsTechnical_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Technical Relationship?.
-        /// </summary>
-        public static string IsTechnical_Name {
-            get {
-                return ResourceManager.GetString("IsTechnical_Name", resourceCulture);
             }
         }
         
@@ -1807,87 +1375,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The license key for this item..
-        /// </summary>
-        public static string LicenseKey_Description {
-            get {
-                return ResourceManager.GetString("LicenseKey_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to License Key is a required field..
-        /// </summary>
-        public static string LicenseKey_ErrorRequired {
-            get {
-                return ResourceManager.GetString("LicenseKey_ErrorRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to License Key.
-        /// </summary>
-        public static string LicenseKey_Name {
-            get {
-                return ResourceManager.GetString("LicenseKey_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Item is locked via Fusion Promotion..
-        /// </summary>
-        public static string Locked_Description {
-            get {
-                return ResourceManager.GetString("Locked_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Locked?.
-        /// </summary>
-        public static string Locked_Name {
-            get {
-                return ResourceManager.GetString("Locked_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Objects that are promoted within this configuration are locked and cannot be edited..
-        /// </summary>
-        public static string LockPromotedItems_Description {
-            get {
-                return ResourceManager.GetString("LockPromotedItems_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Lock Promoted Objects?.
-        /// </summary>
-        public static string LockPromotedItems_Name {
-            get {
-                return ResourceManager.GetString("LockPromotedItems_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The # logs for this item..
-        /// </summary>
-        public static string LogCount_Description {
-            get {
-                return ResourceManager.GetString("LogCount_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to # Exceptions.
-        /// </summary>
-        public static string LogCount_Name {
-            get {
-                return ResourceManager.GetString("LogCount_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The format used for displaying this field.  This format is used when resolving the underlying lookup value to display..
         /// </summary>
         public static string LookupDisplayFormat_Description {
@@ -1938,24 +1425,6 @@ namespace d360.core.resources {
         public static string LookupObjectType_Name {
             get {
                 return ResourceManager.GetString("LookupObjectType_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The domain list that acts as the master list for this group that all other list synchronize with..
-        /// </summary>
-        public static string MasterList_Description {
-            get {
-                return ResourceManager.GetString("MasterList_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Master List.
-        /// </summary>
-        public static string MasterList_Name {
-            get {
-                return ResourceManager.GetString("MasterList_Name", resourceCulture);
             }
         }
         

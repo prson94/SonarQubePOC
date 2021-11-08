@@ -40,7 +40,7 @@ namespace d360.core.enums
         Rule = 7,
         [
             Name("Technical Asset"),
-            Description("Technical asset that replaces fusion attribute types."),
+            Description("Technical asset that represent items like database columns, schemas, XML attributes, etc."),
             IsAllowedAutoDisplayParent(true),
             AllowCommentsOnAsset
         ]
@@ -65,12 +65,6 @@ namespace d360.core.enums
             Description("Group asset.")
         ]
         Group = 12,
-        [
-            Name("Fusion Query-Obsolete"),
-            Obsolete("Fusion Queries no longer supported", false),
-            Description("Obsolete - do not use.")
-        ]
-        FusionQuery = 13,
         [
             Name("Reference List"),
             Description("Reference Item List.")
