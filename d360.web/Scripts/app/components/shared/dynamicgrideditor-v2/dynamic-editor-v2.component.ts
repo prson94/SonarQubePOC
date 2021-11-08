@@ -39,6 +39,7 @@ import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { DynamicFieldComponentV2 } from './dynamic-field-v2.component';
 import { AfterViewChecked } from '@angular/core';
+import { PropertyGroupComponent } from '../controls/property-group/property-group.component';
 
 @Component({
     selector: 'd3s-dynamic-editor-v2',
@@ -115,6 +116,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
     @ViewChildren(DynamicFieldComponentV2) dyFieldRef: QueryList<DynamicFieldComponentV2>;
+    @ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -335,6 +337,11 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         this.ref.markForCheck();
         setTimeout(() => {
             this.focusToFirst();
+            if (this.propertyGroups) {
+                this.propertyGroups.forEach((pg) => pg.refreshBadgeCounts());
+                this.propertyGroups.first.showHeaderLine = false;
+            }
+            this.ref.markForCheck();
         }, 200);
     }
 
