@@ -47,7 +47,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     gridLoading: boolean = true;
     definitionLoaded: boolean = false;
     dataProfile: any;
-    
+
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -65,7 +65,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
 
-            
+
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
@@ -181,7 +181,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         });
                     }
                     this.sidePanelLoading = false;
-                }); 
+                });
         }
     }
 

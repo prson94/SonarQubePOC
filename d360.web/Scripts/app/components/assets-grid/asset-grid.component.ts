@@ -696,4 +696,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     public onSimpleSearch($event) {
         this.getData();
     }
+
+    public triggerEdit() {
+        this.onEdit(this.selected);
+    }
 }
