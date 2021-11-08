@@ -18,6 +18,8 @@ import { SiteMenuCategoryPanelComponent } from './site-menu-category-panel.compo
 import { LinksKeyboardNavigationComponent } from './links-keyboard-navigation.component';
 import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
 import { SiteMenuManageFavoritesPanelComponent } from './site-menu-manage-favorites-panel.component';
+import { CheckboxModule } from 'primeng/checkbox';
+import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 
 @NgModule({
     imports: [
@@ -30,7 +32,9 @@ import { SiteMenuManageFavoritesPanelComponent } from './site-menu-manage-favori
         //prime
         TooltipModule,
         DirectivesModule,
-        SearchFieldModule
+        SearchFieldModule,
+        CheckboxModule,
+        IgCheckboxModule
     ],
     declarations: [
         SiteMenuComponent,

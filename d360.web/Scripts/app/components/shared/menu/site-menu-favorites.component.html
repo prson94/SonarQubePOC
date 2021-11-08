@@ -1,26 +1,26 @@
 <ng-template #customPanelContent>
-    <d3s-site-menu-manage-favorites-panel>
-    </d3s-site-menu-manage-favorites-panel>
+	<d3s-site-menu-manage-favorites-panel></d3s-site-menu-manage-favorites-panel>
 </ng-template>
-    
+
+<!-- TODO: check if we need to show Favorites when they are empty -->
+<!-- TODO: check why favorites menu is hidden when we click inside -->
 <d3s-site-menu-category 
-    *ngIf="menu"
-    [expanded]="expanded"
-    [title]="title"
-    (clearClick)="clearFavorites()"
-    [menu]="menu"
-    [isActive]="menu.isActiveItem"
-    rootIconName="fa-star"
-    (activeItemChanged)="handleActiveItem($event);"
-    [customPanelContent]="manageFavorites ? customPanelContent : null">
-    <ng-container additionalButtons>
-        <button
-            igButton
-            (click)="toggleManageFavorites()"
-            icon="fa-edit"
-            pTooltip="Manage favorites2"
-            tooltipPosition="top"
-            tooltipStyleClass="ig-tooltip">
-        </button>
-    </ng-container>
+	*ngIf="menu"
+	[expanded]="expanded"
+	[title]="title"
+	[menu]="menu"
+	[isActive]="menu.isActiveItem"
+	[customPanelContent]="(state$|async)?.isManageFavoritesModeEnabled ? customPanelContent : null"
+	(clearClick)="clearFavorites()"
+	(activeItemChanged)="handleActiveItem($event);"
+	rootIconName="fa-star">
+	<ng-container additionalButtons>
+		<button (click)="store.toggleManageFavoritesAction()"
+			igButton
+			icon="fa-edit"
+			pTooltip="Manage favorites"
+			tooltipPosition="top"
+			tooltipStyleClass="ig-tooltip">
+		</button>
+	</ng-container>
 </d3s-site-menu-category>

@@ -1,0 +1,14 @@
+.manageFavoritesHeader {
+    display: flex;
+    flex-direction: row;
+}
+
+.manageFavoritesHeaderText {
+    color: black;
+    align-self: center;
+    margin-left: 10px;
+}
+
+.removeButton {
+    margin-left: auto;
+}
