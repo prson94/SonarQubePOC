@@ -39,7 +39,7 @@ import { SortOrder } from "../../models/enums.model";
 import { AssetGridObject } from "./asset-grid.model";
 import { Filters } from "./advanced-filtering/advanced-filtering.models";
 import { CompanySettingsService } from "../../services/settings.service";
-import { DynamicEditorComponentV2 } from "../shared/dynamicgrideditor-v2/dynamic-editor-v2.component";
+import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -62,7 +62,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
     @ViewChild('dt', { static: false }) dt: Table;
-    @ViewChild('dynamicEditor', { static: false }) dynamicEditor: DynamicEditorComponentV2;
+    @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
