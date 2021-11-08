@@ -11,8 +11,7 @@ import {
     Output,
     ViewChild,
 
-    HostListener,
-    ElementRef
+    HostListener
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
@@ -31,9 +30,6 @@ import { SelectItem } from 'primeng/api/selectitem';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { Dropdown } from 'primeng/dropdown';
-import { OverlayPanel } from 'primeng/overlaypanel';
-import { Table } from 'primeng/table';
 
 @Component({
     selector: 'd3s-dynamic-field-v2',
@@ -53,9 +49,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Input() editorChange: Observable<any>;
     @Input() disallowedNames: string[] = [];
     @Input() assetUid: string;
-    @Input() assetTypeUid: string;
     @Input() diagramNodeKey: string;
-    selectionScrollHeight: string = "34px";
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -67,13 +61,18 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Output() relationItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
-    keyFieldError: string = "";
-
     private fieldTooltip: string;
     private cascadeSub: any;
+    private relationSource$ = new Subject<any>();
+    private relationSub: any;
+    private relationItems = [];
     private excludedRelationitems = {};
     private relationItemsLoading = false;
 
+    private typeAheadSource$ = new Subject<any>();
+    private typeAheadSub: any;
+    private typeAheadValue: EditorDropDownItem = null;
+    private loadTypeAheadValue: boolean = false;
     private Increment: number = 1;
     private Min: number;
     private Max: number;
@@ -98,16 +97,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
     private component_uid: string = '';
 
-    isLookupValuesLoading: boolean = false;
-
-    linkFieldOptionalPlaceholder: string = 'Optional: you should start the URL with a protocol prefix eg. http:// or https://';
-    linkFieldRequiredPlaceholder: string = 'Value required: you should start the URL with a protocol prefix eg. http:// or https://';
-
-    @ViewChild('dropdown', { static: false }) dropdown: Dropdown;
-    @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
-    @ViewChild("dataTable", { static: false }) dataTable: Table;
-
-
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
@@ -115,8 +104,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         private ref: ChangeDetectorRef,
         private tagService: TagService,
         public dynEditorService: DynEditorService,
-        protected settingsService: CompanySettingsService,
-        private elRef: ElementRef
+        protected settingsService: CompanySettingsService
     ) {
         super(settingsService);
         this.component_uid = Math.random().toString(36).substring(2);
@@ -132,21 +120,94 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 }
             }
         });
-        setInterval(() => {
-            this.setSelectionVirtualScrollHeight();
-        }, 25);
     }
 
-    public setKeyFieldsErrorMessage(isSingle: boolean) {
-        if (this.field.IsPartOfKey) {
-            if (isSingle) {
-                this.keyFieldError = "Please enter a unique value";
-            }
-            else {
-                this.keyFieldError = "Please enter a unique combination of key field values";
-            }
-            this.ref.markForCheck();
+    searchTags(q: any) {
+        this.autoCompleteSelected.emit(null);
+        this.tagService.searchTags(q.query, this.objectID)
+            .subscribe(response => {
+                this.suggestionResultsArray = response;
+                this.suggestionResults = [];
+                this.suggestionResultsArray.forEach(x => this.suggestionResults.push(x.name));
+
+                this.suggestionResultsArray.forEach(s => {
+                    if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
+                        this.autoCompleteSelected.emit(s);
+                    }
+                });
+
+                this.ref.markForCheck();
+            });
+    }
+
+    checkAssetExistance() {
+        this.doesAssetExists = false;
+
+        this.tagService.searchTags(this.field.Value, this.objectID, true)
+            .subscribe(response => {
+
+                response.forEach(s => {
+                    if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
+                        this.doesAssetExists = true;
+                    }
+                });
+
+                this.ref.markForCheck();
+            });
+    }
+
+    getColorItemsAsSelectItem(items: any[]): SelectItem[] {
+        if (items.length > 0) {
+            return items.filter(x => x.Text != "Choose...").map((x) => {
+                try {
+
+                    let colorobj = JSON.parse(x.Text);
+                    if (colorobj)
+                        return { label: colorobj.name, value: x.Value, title: colorobj.color };
+                } catch (ex) {
+                    return { label: x.Text, value: x.Value, title: 'transparent' };
+                }
+            });
         }
+    }
+
+    getColorItemsAsEditorItem(items: any[]): EditorDropDownItem[] {
+        if (items.length > 0) {
+            let its = items.filter(x => x.Text != "Choose...").map((x) => {
+                try {
+                    let colorobj = JSON.parse(x.Text);
+                    if (colorobj)
+                        return { Text: colorobj.name, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: colorobj.color };
+                } catch (ex) {
+                    return { Text: x.Text, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: 'transparent' };
+                }
+            });
+            return its;
+        }
+    }
+
+    getLabelByID(id) {
+        if (id && this.field.Items.length > 0) {
+            let filterItems = this.field.Items.filter(x => x.value == id);
+            if (filterItems.length > 0) {
+                return filterItems[0].label;
+            }
+        }
+        return "";
+    }
+
+    getColorByID(id) {
+        if (id && this.field.Items.length > 0) {
+            let filterItems = this.field.Items.filter(x => x.value == id);
+            if (filterItems.length > 0) {
+                return filterItems[0].title;
+            }
+        }
+        return "";
+    }
+    selectTag(event) {
+        var obj = this.suggestionResultsArray.filter(x => x.name == event)[0];
+        this.autoCompleteSelected.emit(obj);
     }
 
     setEditorContent(e: any) {
@@ -178,14 +239,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     ngOnInit() {
         if (this.field.FieldType != 'Link') {
             this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
-                this.onFieldChanges(data);
-            });
-        }
-        else {
-            this.fieldChangeSub = this.form.controls[this.field.FieldName + "_Url"].valueChanges.subscribe(data => {
-                this.onFieldChanges(data);
-            });
-            this.fieldChangeSub = this.form.controls[this.field.FieldName + "_Name"].valueChanges.subscribe(data => {
                 this.onFieldChanges(data);
             });
         }
@@ -236,6 +289,41 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 }
             });
 
+        this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
+            .subscribe(res => {
+                this.relationItemsLoading = false;
+                this.field.Items = res.results["items"];
+                this.selectRelationItems(this.relationItems);
+
+                //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
+                let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
+                if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0) {
+                    if (hasCardinalityOne) {
+                        var selectedCount = this.relationItems ? this.relationItems.length : 0;
+                        this.field.RecordCount = selectedCount + res.results["count"];
+                    }
+                    else {
+                        this.field.RecordCount = res.results["count"];
+                    }
+                }
+                this.ref.markForCheck();
+            });
+
+        this.typeAheadSub = (this.field.DelayedLoadType == 'Predicate') ?
+            this.fieldsService.getTypeaheadFilteredByPredicateItems(this.typeAheadSource$, this.selectedObject, this.selectedObjectID)
+                .subscribe(res => {
+                    this.field.Items = <any[]>res;
+                    this.ref.markForCheck();
+                })
+            : this.fieldsService.getTypeaheadItems(this.typeAheadSource$, this.field.UseColorControl)
+                .subscribe(res => {
+                    if (this.field.UseColorControl)
+                        this.field.Items = this.getColorItemsAsEditorItem(res);
+                    else
+                        this.field.Items = <EditorDropDownItem[]>res;
+                    this.ref.markForCheck();
+                });
+
         if (this.field.DelayedLoadType == 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
                 res => {
@@ -284,57 +372,40 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             this.colorValue = this.field.Value;
         }
 
+        if (this.field.FieldType == 'Relationship') {
+            this.selectRelationItems(this.field.Value);
+        }
+
         if ((this.field.FieldType == 'Date' || this.field.FieldType == 'DateTime') && isNaN(Date.parse(this.field.Value))) {
             this.field.Value = null;
             this.form.controls[this.field.FieldName].setValue(this.field.Value);
         }
 
-        if (this.field.FieldType === 'Relationship' && this.field.Value) {
-            this.field.Items = this.field.Value;
-            var value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
-            this.form.controls[this.field.FieldName].setValue(value);
 
-            if (this.field?.MultiSelect && this.field.Value) {
-                this.lookupSelectedValue = [];
-
-                this.field.Items.forEach((item) => {
-                    item['label'] = item['Text'];
-                    item['value'] = item['Value'];
-                    this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
-
-                });
-                this.selectSingleItem(null, { value: null });
-
-            }
-        }
-
-        if (this.field.FieldType === 'Lookup') {
-            this.field.Items.forEach((item) => {
-                if (this.isJson(item.Text)) {
-                    var obj = JSON.parse(item.Text);
-                    item.Text = obj.name;
-                    item.color = obj.color;
-                    item.label = obj.name;
-                }
-            });
-
+        if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
             if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
-                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
-            }
-            if (this.field?.MultiSelect && this.field.Value) {
-                this.lookupSelectedValue = [];
-                this.field.Items.filter(x => x.Selected == true).forEach((item) => {
-                    this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
-                });
-                this.selectSingleItem(null, { value: null });
+                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value)
             }
             this.form.controls[this.field.FieldName].setValue(this.field.Value);
-
             window.setTimeout(() => {
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
                 this.ref.markForCheck();
             }, 250);
         }
+
+        if (this.field.FieldType == 'Lookup' && this.field.UseTypeahead) {
+            if (this.field.Items != null && this.field.Items.length > 0) {
+                let sel: EditorDropDownItem = this.field.Items.find(i => i.Selected == true);
+
+                this.loadTypeAheadValue = true;
+                this.typeAheadValue = sel;
+                this.onSelect(sel);
+            }
+        }
+        if (this.field.UseColorControl) {
+            this.field.Items = this.getColorItemsAsSelectItem(this.field.Items);
+        }
+        this.isDirty = true;
     }
 
     ngOnChanges() {
@@ -350,18 +421,23 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             this.quill = this.ed.quill;
         }
 
-        if (this.dropdown && this.overlayPanel) {
-            var width = this.dropdown.el.nativeElement.offsetWidth;
-            if (this.overlayPanel.overlayVisible && this.overlayPanel.container) {
-                this.overlayPanel.container.style.width = width + "px";
+        //set input text on typeahead to current value if applicable, avoids using ngModel binding
+        if (this.loadTypeAheadValue) {
+            this.loadTypeAheadValue = false;
+            if (this.field.UseTypeahead) {
+                let el: any = document.getElementById(this.field.FieldName + '_input_' + this.component_uid);
+                if (el != null && this.typeAheadValue != null)
+                    el.value = this.typeAheadValue.Text;
             }
         }
-
     }
 
     ngOnDestroy() {
         if (this.cascadeSub) {
             this.cascadeSub.unsubscribe();
+        }
+        if (this.relationSub) {
+            this.relationSub.unsubscribe();
         }
         if (this.fieldChangeSub != null) {
             this.fieldChangeSub.unsubscribe();
@@ -373,7 +449,14 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     onFieldChanges(data: any) {
         this.isDirty = true;
         if (this.field.FieldType == 'Lookup') {
-            this.field.Value = data;
+            if (this.field.UseTypeahead) {
+                if (this.typeAheadValue != null)
+                    this.field.Value = this.typeAheadValue.Value;
+                else
+                    this.field.Value = null;
+            } else {
+                this.field.Value = data;
+            }
             this.listItemChange.emit({ field: this.field, value: data });
         }
         else if (this.field.FieldType == 'Relationship') {
@@ -385,7 +468,10 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         } else {
             this.field.Value = data;
         }
-        this.keyFieldError = "";
+
+        if (this.object == 'Tag' && !this.objectID) {
+            this.checkAssetExistance();
+        }
     }
 
     get isValid() {
@@ -411,18 +497,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
         }
 
-        if (this.field.FieldType === 'Link') {
-            var control = this.form.controls[this.field.FieldName + '_Url'];
-            if (control.value) {
-                var value = control.value as string;
-                if (!value.toLowerCase().startsWith("http://")
-                    && !value.toLowerCase().startsWith("https://")) {
-                    control.setErrors({ invalidUrlStart: true });
-                    return false;
-                }
-            }
-        }
-
         if (this.field.FieldType == "Link") {
             if (this.form.controls[this.field.FieldName + '_Name'] == undefined
                 || this.form.controls[this.field.FieldName + '_Name'].disabled
@@ -432,9 +506,8 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 return true;
             }
 
-            return this.form.controls[this.field.FieldName + '_Url'].valid;
+            return this.form.controls[this.field.FieldName + '_Url'].valid
         }
-
 
         const numInputs = document.querySelectorAll('input[type=number]');
 
@@ -531,6 +604,10 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             message += "Value cannot be less than 1 or greater than 365. ";
         }
 
+        if (errors["required"]) {
+            message += `${this.currentFieldName} is required. `;
+        }
+
         if (errors["max"]) {
             message += ` Please enter a maximum value of ${errors["max"].max} `;
         }
@@ -549,10 +626,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
         if (errors["alreadyExistsProcess"]) {
             message += `Please enter a unique name.`;
-        }
-
-        if (errors["invalidUrlStart"]) {
-            message += `Please start the URL with a protocol prefix eg.http:// or https://`;
         }
 
         return message;
@@ -625,6 +698,48 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             object = this.selectedObject;
             objectId = this.selectedObjectID;
         }
+
+        this.relationSource$.next({
+            fieldTypeID: this.field.FieldTypeID,
+            object: object,
+            objectID: objectId,
+            event: e
+        });
+    }
+
+    selectRelationItems(e: any) {
+        if (e === '[]') {
+            this.relationItems = [];
+        } else {
+            this.relationItems = e;
+        }
+
+        if (this.relationItems != null) {
+            if (!Array.isArray(this.relationItems)) {
+                this.relationItems = [this.relationItems];
+            }
+
+            for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
+                let x = this.field.Items.findIndex(f => f.Value == this.relationItems[i].Value);
+
+                if (x > -1) {
+                    this.relationItems[i] = this.field.Items[x];
+                }
+            }
+
+            this.relationItems = this.relationItems.slice();
+            this.field.Value = this.relationItems.map(i => i.Value).join(',');
+        } else {
+            this.field.Value = null;
+        }
+
+        this.relationItemChange.emit({ field: this.field, value: null });
+        this.form.controls[this.field.FieldName].setValue(this.field.Value);
+        this.ref.markForCheck();
+    }
+
+    private search(e: any) {
+        this.typeAheadSource$.next({ fieldTypeID: this.field.FieldTypeID, value: this.field.Value, event: e });
     }
 
     private onSelect(e: EditorDropDownItem) {
@@ -641,6 +756,12 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     private onColorSelect(item) {
         this.form.controls[this.field.FieldName].setValue(item);
         this.field.Value = item;
+    }
+
+    private clearTypeahead(e: any) {
+        this.typeAheadValue = null;
+        this.field.Value = null;
+        this.ref.markForCheck();
     }
 
     private onEditorChange(event: any) {
@@ -697,14 +818,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     }
 
     isRequired() {
-
-        if (this.field.FieldType === "Link") {
-            var nameControl = this.form.controls[this.field.FieldName + '_Name'];
-            if (nameControl.value) {
-                return true;
-            }
-        }
-
         return this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true;
     }
 
@@ -724,184 +837,5 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
         }
         return strfiltePH;
-    }
-
-
-    lookupSelectedValue: any[] = [];
-    lookupValues: any[] = [];
-
-    lastParams: any;
-    loadListLazy($params) {
-        var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };;
-        loadParams["isForAssetForm"] = true;
-
-        if ($params.globalFilter) {
-            loadParams["filter"] = $params.globalFilter;
-        }
-
-        this.isLookupValuesLoading = true;
-        this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
-            if (!this.lookupValues || this.lookupValues.length === 0) {
-                this.lookupValues = Array.from({ length: res.count });
-            }
-
-            let loadedData = [];
-
-            res.items.forEach((str) => {
-                loadedData.push({ label: str.text, value: str.value, color: str.color });
-            });
-
-            Array.prototype.splice.apply(this.lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
-
-            this.lookupValues = [...this.lookupValues];
-
-            if (this.lookupValues.length > res.count) {
-                this.lookupValues = this.lookupValues.slice(0, res.count);
-            }
-            this.isLookupValuesLoading = false;
-            this.lastParams = loadParams;
-            this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
-            this.ref.detectChanges();
-        });
-        //    this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
-    }
-
-    onItemSelected(event) {
-    }
-
-    //table extensions
-    selectSingleItem(event: MouseEvent, item: SelectItem) {
-        if (this.field?.MultiSelect) {
-            let valueRef = this.lookupSelectedValue as SelectItem[];
-            let elIdx = valueRef.findIndex((x) => x.value === item.value);
-
-            if (elIdx > -1) {
-                valueRef.splice(elIdx, 1);
-            }
-            else if (item.value !== null) {
-                valueRef.push(item);
-            }
-            //update reference
-            this.lookupSelectedValue = [...valueRef];
-            this.field.Items = [...valueRef];
-
-            var value = this.lookupSelectedValue.map((s) => s.value);
-
-            this.form.controls[this.field.FieldName].setValue(value);
-
-        } else {
-            this.lookupSelectedValue = [item];
-            this.field.Items = [item];
-            this.form.controls[this.field.FieldName].setValue(this.lookupSelectedValue[0].value);
-            this.overlayPanel.hide();
-        }
-    }
-
-    hexToRgb(hex: string): string {
-        if (!hex) {
-            return "";
-        }
-
-        if (!hex.startsWith("#")) {
-            return hex;
-        }
-        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-        var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-        hex = hex.replace(shorthandRegex, function (m, r, g, b) {
-            return r + r + g + g + b + b;
-        });
-
-        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        var data = result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-
-        return data ? `rgb(${data.r},${data.g},${data.b})` : '';
-    }
-
-    onChangeMultiselect($event) {
-        var values = this.form.controls[this.field.FieldName].value as any[];
-        var newValues = [];
-        this.lookupSelectedValue.forEach((item) => {
-            if (values.indexOf(item.value) != -1) {
-                newValues.push(item);
-            }
-        })
-        this.lookupSelectedValue = newValues;
-    }
-
-    setSelectionVirtualScrollHeight() {
-        try {
-            let count: number = 0;
-            let res = [];
-
-            if (!this.dataTable || !this.dataTable.value) {
-                return;
-            }
-
-            var filter = this.dataTable?.filters?.global ? (this.dataTable?.filters?.global["value"] as string) : "";
-            if (!filter || !this.dataTable.filteredValue) {
-                res = new Array(this.dataTable.value.length);
-            }
-            else {
-                res = new Array(this.dataTable.filteredValue.length);
-            }
-            if (res.length) {
-                count = res.length;
-            }
-
-            let calculatedHeight: number = 0;
-            let maxHeight: number = 320;
-            let minHeight: number = 50;
-            let margins: number = 180;
-            let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
-
-            if (count < 10) {
-                calculatedHeight = count * 32;
-                if (calculatedHeight < 32) {
-                    calculatedHeight = 32;
-                }
-
-            }
-            else {
-                calculatedHeight = maxHeight;
-            }
-
-            var diff = window.innerHeight - calculatedHeight - margins - bottomPos;
-            if (diff < 0) {
-                calculatedHeight += diff;
-            }
-
-            if (calculatedHeight > maxHeight) {
-                calculatedHeight = maxHeight;
-            }
-            if (calculatedHeight < minHeight) {
-                calculatedHeight = minHeight;
-            }
-            this.selectionScrollHeight = calculatedHeight + "px";
-        }
-        catch (ex) {
-            console.warn(ex);
-            this.selectionScrollHeight = "320px";
-        }
-        this.ref.markForCheck();
-    }
-
-    getFieldTypeForSwitch(type: string) {
-        if (type === 'Relationship' || type === 'Lookup') {
-            return 'LazyLookup';
-        }
-        return type;
-    }
-
-    isJson(str) {
-        try {
-            JSON.parse(str);
-        } catch (e) {
-            return false;
-        }
-        return true;
     }
 }

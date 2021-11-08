@@ -14,10 +14,7 @@ import {
     ViewChild,
     ElementRef,
 
-    ViewEncapsulation,
-    ViewChildren,
-    QueryList,
-    HostListener
+    ViewEncapsulation
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
@@ -33,13 +30,11 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
+import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { DynamicFieldComponentV2 } from './dynamic-field-v2.component';
-import { AfterViewChecked } from '@angular/core';
-import { PropertyGroupComponent } from '../controls/property-group/property-group.component';
 
 @Component({
     selector: 'd3s-dynamic-editor-v2',
@@ -47,10 +42,16 @@ import { PropertyGroupComponent } from '../controls/property-group/property-grou
     providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['dynamic-editor-v2.component.less']
+    styles: [
+        `
+            .p-multiselect-panel,.p-dropdown-panel {
+                z-index: 10000 !important;
+            }
+        `
+    ],
 })
 
-export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges, OnInit, AfterViewChecked {
+export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges, OnInit {
     @Input() selection: any;
     @Input() rowID: string = 'ID';
     @Input() title: string;
@@ -81,21 +82,21 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     @Input() useModelBinding: boolean = false;
     @Input() dataModel: any = null;
 
-    @Input() assetTypePath: string = '[AssetTypePath]';
-
     @Output() modelChanged = new EventEmitter();
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
 
     //Modal
     @Input() showAsModal: boolean = false;
+    @Input() modalTitle: string = '';
+    @Input() isModalVisible: boolean = false;
+    @Input() useNonLegacyData: boolean = false;
 
     @Input() disallowedNames: string[] = [];
-    savingInProgress: boolean = false;
-    savingInProgressWithAddNew: boolean = false;
-
-    isInError: boolean = false;
-    isInErrorMessage: string = "";
+    private savingInProgress: boolean = false;
+    private consolidateToTag: any;
+    private isInError: boolean = false;
+    private isInErrorMessage: string = "";
 
     @Input() diagramNodeKey: string = "";
 
@@ -112,11 +113,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     fore: EditorField;
     back: EditorField;
     selectedTagID: number;
-
-    modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
-    @ViewChildren(DynamicFieldComponentV2) dyFieldRef: QueryList<DynamicFieldComponentV2>;
-    @ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -138,21 +135,6 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                 }
             }
         });
-    }
-
-    @HostListener('window:resize', ['$event'])
-    onResize(event) {
-        this.setFormHeight();
-    }
-
-    ngAfterViewChecked() {
-        this.setFormHeight();
-    }
-
-    private setFormHeight() {
-        if (this.showAsModal) {
-            this.modalFormMaxHeight = window.innerHeight - 242;
-        }
     }
 
     ngOnInit() {
@@ -179,9 +161,22 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         if (changes['isModalVisible']) {
             if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
                 this.savingInProgress = false;
+                this.consolidateToTag = null;
                 this.load();
             }
         }
+    }
+    autoCompleteSelected(event) {
+        if (this.objectType == 'Tag' && !this.adding) {
+            this.consolidateToTag = event;
+        } else if (this.objectType == 'Tag' && this.adding) {
+            if (event) {
+                this.consolidateToTag = null;
+                this.selectedTagID = event.ID;
+            }
+
+        }
+
     }
 
     focusToFirst() {
@@ -190,7 +185,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         }
     }
 
-    public load() {
+    private load() {
         this.isInErrorMessage = '';
         this.isInError = false;
         if (this.selection != undefined) {
@@ -212,18 +207,21 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
             if (this.selection.uid)
                 id = this.selection.uid;
 
-            if (this.selection.UID) {
-                id = this.selection.UID;
-            }
-
             //For ones recieved from GET V2 Asset API
             if (this.isV2API && this.selection.AssetUid) {
                 id = this.selection.AssetUid;
             }
         }
+
         this.isLoading = true;
         if (this.useTypeUidForDefinition) {
             this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType)
+                .subscribe(result => {
+                    this.handleEditor(result);
+                });
+        }
+        else if (this.useNonLegacyData) {
+            this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, this.assetUid)
                 .subscribe(result => {
                     this.handleEditor(result);
                 });
@@ -340,11 +338,6 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         this.ref.markForCheck();
         setTimeout(() => {
             this.focusToFirst();
-            if (this.propertyGroups && this.propertyGroups.length > 0) {
-                this.propertyGroups.forEach((pg) => pg.refreshBadgeCounts());
-                this.propertyGroups.first.showHeaderLine = false;
-            }
-            this.ref.markForCheck();
         }, 200);
     }
 
@@ -527,13 +520,8 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
 
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
-    onSubmit(addAnother: boolean = false) {
+    onSubmit() {
         this.savingInProgress = true;
-
-        if (addAnother) {
-            this.savingInProgressWithAddNew = true;
-        }
-
         let action = (this.selection == null ? "new" : "edit");
         let values: any = {};
 
@@ -566,15 +554,14 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                         this.form.value[p] = arr.map(x => x.title).join('|');
                     }
                 }
-                else if (field != null && (field.FieldType === 'Number' || field.FieldType === 'Decimal')) {
-                    if (this.form.value[p]) {
-                        this.form.value[p] = +this.form.value[p];
+                else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
+                    if (this.form.value[p] != null) {
+                        this.form.value[p] = this.form.value[p].Value;
                     }
-                    else {
-                        this.form.value[p] = null;
+                    if (!this.form.value[p] && field.Value && !field.MultiSelect) {
+                        this.form.value[p] = field.Value;
                     }
                 }
-
             }
         }
 
@@ -613,13 +600,31 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
             return;
         }
 
+        if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
+            this.isLoading = true;
 
-        this.postToApiV2({ item: values, action: action, addAnother: addAnother });
+            this.uriBasedService.saveItem(this.createUri, this.editUri, values)
+                .subscribe(result => {
+                    this.showMessageForResult(this.messagesService, result);
+                    this.isLoading = false;
+                    this.saveClick.emit({ item: result, action: action, values: values });
+                });
+        } else {
+            if (this.consolidateToTag) {
+                this.saveClick.emit({ item: values, action: action, additionalOption: this.consolidateToTag });
 
+            }
+            else if (this.isV2API) {
+                this.postToApiV2({ item: values, action: action });
+            }
+            else {
+                this.saveClick.emit({ item: values, action: action });
+            }
+        }
     }
 
     postToApiV2(event) {
-        this.savingInProgress = true;
+        this.isLoading = true;
         let values: any = {};
         let asset: AssetEditorModel = new AssetEditorModel();
         asset.Fields = {};
@@ -663,20 +668,12 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                         event.assetUid = res.uid;
                         event.assetTypeUid = this.objectTypeUid;
                     }
-                    this.savingInProgress = false;
-                    this.savingInProgressWithAddNew = false;
                     this.saveClick.emit(event);
                 }
                 else {
                     this.showMessageForApiResult(this.messagesService, res);
-                    this.savingInProgress = false;
-                    this.savingInProgressWithAddNew = false;
-
-                    this.ref.markForCheck();
-
-                    if (res && res.Message && res.Message.indexOf('Key values match another') !== -1) {
-                        this.dyFieldRef.forEach((fld) => fld.setKeyFieldsErrorMessage(this.fields.filter(x => x.IsPartOfKey).length < 2));
-                    }
+                    this.isLoading = false;
+                    this.saveClick.emit(event);
                 }
 
             });

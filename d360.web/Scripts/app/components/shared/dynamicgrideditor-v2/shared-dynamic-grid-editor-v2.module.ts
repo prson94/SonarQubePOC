@@ -1,5 +1,5 @@
-﻿import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+﻿import { NgModule }       from '@angular/core';
+import { CommonModule }       from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
@@ -21,12 +21,13 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedAssetEditorsModule } from '../asseteditors/shared-asset-editor.module';
-import { TilesModule } from '../tiles/tiles.module';
+import { TilesModule  } from '../tiles/tiles.module';
 import { SimilarItemsModule } from '../similar-items.component';
 
 import { DynamicEditorComponentV2 } from './dynamic-editor-v2.component';
 import { DynamicFieldComponentV2 } from './dynamic-field-v2.component';
 import { DynamicFieldValueComponentV2 } from './dynamic-field-value-v2.component';
+import { DynamicGridComponentV2 } from './dynamic-grid-v2.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
@@ -38,8 +39,6 @@ import { TagPickerModule } from '../controls/tag-picker/tag-picker';
 import { SwitchModule } from '../controls/switch/switch';
 import { IgDateModule } from '../controls/date/date';
 import { IgNumberFieldModule } from '../controls/number-picker/number-input.component';
-import { PropertyGroupModule } from '../controls/property-group/property-group.component';
-import { SearchFieldModule } from '../controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -48,6 +47,7 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
+
         //d3s
         CoreModule,
         SharedDeleteFormModule,
@@ -61,9 +61,6 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         IgColorPickerModule,
         IgDateModule,
         IgNumberFieldModule,
-        PropertyGroupModule,
-        MultiSelectModule,
-        SearchFieldModule,
         //prime        
         CalendarModule,
         DropdownModule,
@@ -85,18 +82,19 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
     declarations: [
         DynamicEditorComponentV2,
         DynamicFieldComponentV2,
-        DynamicFieldValueComponentV2
+        DynamicFieldValueComponentV2,
+        DynamicGridComponentV2
     ],
     exports: [
         DynamicEditorComponentV2,
-        DynamicFieldValueComponentV2
+        DynamicFieldValueComponentV2,
+        DynamicGridComponentV2,
     ],
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true
-        },
+            multi: true },
     ]
 })
 export class SharedDynamicGridEditorModuleV2 { }
