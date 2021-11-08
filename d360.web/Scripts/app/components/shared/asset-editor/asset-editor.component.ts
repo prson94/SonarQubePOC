@@ -272,9 +272,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.fields = result;
 
             this.fields.forEach(f => {
-
                 if (f.Category == null) {
                     currentCategory = "";
+                    if (f.FieldName === 'ParentUid') {
+                        currentCategory = "General";
+                    }
                 }
                 else {
                     currentCategory = f.Category;
