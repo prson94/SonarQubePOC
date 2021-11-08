@@ -167,7 +167,8 @@
            (onClose)="showEditor=false"
            [showTitle]="false"
            [isVisible]="showEditor">
-    <d3s-dynamic-editor-v2 *ngIf="showEditor"
+    <d3s-dynamic-editor-v2 #dynamicEditor
+                           *ngIf="showEditor"
                            [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
                            [objectType]="gridObject.Object"
                            [title]="selected ? 'Edit Asset' : 'Create New Asset'"

@@ -19,7 +19,7 @@
                 <ng-template ngFor
                              let-category
                              [ngForOf]="categories">
-                    <ig-property-group [igformGroup]="form" [title]="category.name">
+                    <ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true">
                         <div inputs>
                             <div class="row"
                                  *ngFor="let row of category.rows">
@@ -49,9 +49,9 @@
                 <button igButton type="button" [disabled]="savingInProgress" label="Cancel" tooltip="Cancel" (click)="closeClick.emit();"></button>
 
                 <div class="flex-grow"></div>
-                <button type="button" igButton [disabled]="!form.valid || savingInProgress" label="Create and Add Another" tooltip="Create and Add Another" [loading]="savingInProgress" (click)="onSubmit(true)"></button>
+                <button type="button" igButton [disabled]="!form.valid || savingInProgress" label="Create and Add Another" tooltip="Create and Add Another" [loading]="savingInProgress && savingInProgressWithAddNew" (click)="onSubmit(true)"></button>
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <button type="submit" class="ig-button-primary" igButton [disabled]="!form.valid || savingInProgress" label="Create" tooltip="Create" [loading]="savingInProgress"></button>
+                <button type="submit" class="ig-button-primary" igButton [disabled]="!form.valid || savingInProgress" label="Create" tooltip="Create" [loading]="savingInProgress && !savingInProgressWithAddNew"></button>
             </div>
         </form>
     </div>

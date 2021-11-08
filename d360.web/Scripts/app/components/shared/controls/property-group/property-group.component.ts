@@ -18,6 +18,8 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
     @Input() showHeaderLine: boolean = true;
+    @Input() hideIfNoTitle: boolean = false;
+
     @Output() isValid = new EventEmitter();
     invalidCount: number = 0;
     requiredCount: number = 0;

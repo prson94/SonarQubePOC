@@ -92,6 +92,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
 
     @Input() disallowedNames: string[] = [];
     savingInProgress: boolean = false;
+    savingInProgressWithAddNew: boolean = false;
 
     isInError: boolean = false;
     isInErrorMessage: string = "";
@@ -171,7 +172,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         }
     }
 
-    private load() {
+    public load() {
         this.isInErrorMessage = '';
         this.isInError = false;
         if (this.selection != undefined) {
@@ -508,6 +509,11 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
 
     onSubmit(addAnother: boolean = false) {
         this.savingInProgress = true;
+
+        if (addAnother) {
+            this.savingInProgressWithAddNew = true;
+        }
+
         let action = (this.selection == null ? "new" : "edit");
         let values: any = {};
 
@@ -637,11 +643,15 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                         event.assetUid = res.uid;
                         event.assetTypeUid = this.objectTypeUid;
                     }
+                    this.savingInProgress = false;
+                    this.savingInProgressWithAddNew = false;
                     this.saveClick.emit(event);
                 }
                 else {
                     this.showMessageForApiResult(this.messagesService, res);
                     this.savingInProgress = false;
+                    this.savingInProgressWithAddNew = false;
+
                     this.ref.markForCheck();
 
                     if (res && res.Message && res.Message.indexOf('Key values match another') !== -1) {
