@@ -1,7 +1,7 @@
 ﻿<div class="field-wrapper {{(!isValid ? 'invalid' : '')}} {{(isRequired() ? 'required-field' : '')}} {{(!field.Value || field.Value.length == 0) ? 'empty-field' : '' }}">
     <div [formGroup]="form">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
-        <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'">
+        <div [ngSwitch]="getFieldTypeForSwitch(field.FieldType)" class="col s12" *ngIf="field.FieldType!='Hidden'">
             <div class="FieldName">
                 <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
                 <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
@@ -58,7 +58,7 @@
                     <ig-date [formControlName]="field.FieldName" [attr.name]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
                 </div>
 
-                <div *ngSwitchCase="'Lookup'">
+                <div *ngSwitchCase="'LazyLookup'">
                     <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
                         <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="overlayPanel.toggle($event)">
                             <p-multiSelect #dropdown
@@ -66,6 +66,7 @@
                                            igSize="full"
                                            [inputId]="field.FieldName + '_input_' + component_uid"
                                            [formControlName]="field.FieldName"
+                                           [attr.name]="field.FieldName"
                                            [options]="field.Items"
                                            (onChange)="onChangeMultiselect($event)"
                                            [required]="field.Required"
@@ -82,90 +83,7 @@
                                     igSize="full"
                                     [inputId]="field.FieldName + '_input_' + component_uid"
                                     [formControlName]="field.FieldName"
-                                    [options]="field.Items"
-                                    (onSelect)="onSelect($event)"
-                                    [required]="field.Required"
-                                    (click)="overlayPanel.toggle($event)">
-                            <ng-template let-item pTemplate="selectedItem">
-                                <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
-                                    <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
-                                    <span class="ig-colorfield-item-label">{{item.label}}</span>
-                                </div>
-
-                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
-
-                            </ng-template>
-                        </p-dropdown>
-
-                        <p-overlayPanel #overlayPanel [styleClass]="'dropdown-overlay'" [dismissable]="true" [baseZIndex]="20000" [appendTo]="'body'">
-                            <ng-template pTemplate>
-                                <p-table #dataTable
-                                         tableStyleClass="ig-filter-table"
-                                         [metaKeySelection]="true"
-                                         [value]="lookupValues"
-                                         [(selection)]="lookupSelectedValue"
-                                         [globalFilterFields]="['label']"
-                                         dataKey="value"
-                                         [scrollable]="true"
-                                         [scrollHeight]="selectionScrollHeight"
-                                         [virtualRowHeight]="32"
-                                         [rows]="20"
-                                         [virtualScroll]="true"
-                                         [lazy]="true"
-                                         (onLazyLoad)="loadListLazy($event)"
-                                         [loading]="isLookupValuesLoading"
-                                         [loadingIcon]="'fa fa-spinner fa-spin'">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th colspan="2">
-                                                <ig-search-field mode="Keypress" [debounce]="200" (onSearch)="dataTable.filterGlobal($event, 'contains');"></ig-search-field>
-                                            </th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-item>
-                                        <tr [pSelectableRow]="item">
-                                            <td class="first-col" *ngIf="field?.MultiSelect">
-                                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                            </td>
-                                            <td (click)="selectSingleItem($event,item);">
-                                                <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
-                                                    <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
-                                                    <span class="ig-colorfield-item-label">{{item.label}}</span>
-                                                </div>
-
-                                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
-                                            </td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
-                            </ng-template>
-                        </p-overlayPanel>
-                    </div>
-                </div>
-                <div *ngSwitchCase="'Relationship'">
-                    <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
-                        <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="overlayPanel.toggle($event)">
-                            <p-multiSelect #dropdown
-                                           [maxSelectedLabels]="5"
-                                           igSize="full"
-                                           [inputId]="field.FieldName + '_input_' + component_uid"
-                                           [formControlName]="field.FieldName"
-                                           [options]="field.Items"
-                                           (onChange)="onChangeMultiselect($event)"
-                                           [required]="field.Required"
-                                           [readonly]="true"
-                                           [placeholder]="'Value Required'"
-                                           display="chip">
-                            </p-multiSelect>
-                        </div>
-
-                        <p-dropdown *ngIf="!field?.MultiSelect"
-                                    #dropdown
-                                    igDropdown
-                                    styleClass="dropdown-lazy-load"
-                                    igSize="full"
-                                    [inputId]="field.FieldName + '_input_' + component_uid"
-                                    [formControlName]="field.FieldName"
+                                    [attr.name]="field.FieldName"
                                     [options]="field.Items"
                                     (onSelect)="onSelect($event)"
                                     [required]="field.Required"

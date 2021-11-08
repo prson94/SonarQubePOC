@@ -309,6 +309,15 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         }
 
         if (this.field.FieldType === 'Lookup') {
+            this.field.Items.forEach((item) => {
+                if (this.isJson(item.Text)) {
+                    var obj = JSON.parse(item.Text);
+                    item.Text = obj.name;
+                    item.color = obj.color;
+                    item.label = obj.name;
+                }
+            });
+
             if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
                 this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
             }
@@ -878,5 +887,21 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             this.selectionScrollHeight = "320px";
         }
         this.ref.markForCheck();
+    }
+
+    getFieldTypeForSwitch(type: string) {
+        if (type === 'Relationship' || type === 'Lookup') {
+            return 'LazyLookup';
+        }
+        return type;
+    }
+
+    isJson(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
 }
