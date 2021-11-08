@@ -15,7 +15,7 @@
         </div>
         <form (ngSubmit)="onSubmit()"
               [formGroup]="form">
-            <div class="form-wrapper">
+            <div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
                 <ng-template ngFor
                              let-category
                              [ngForOf]="categories">

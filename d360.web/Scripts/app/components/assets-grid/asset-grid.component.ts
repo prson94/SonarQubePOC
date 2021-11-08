@@ -524,7 +524,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.showEditor = true;
         this.showEditorChange.emit(true);
         this.selectedChange.emit(null);
-        this.dynamicEditor.load();
+
+        //reload dynamic editor if it already exists to trigger change detection
+        if (this.dynamicEditor) {
+            this.dynamicEditor.load();
+        }
     }
 
     export(listableOnly) {

@@ -16,7 +16,8 @@ import {
 
     ViewEncapsulation,
     ViewChildren,
-    QueryList
+    QueryList,
+    HostListener
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
@@ -37,6 +38,7 @@ import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { DynamicFieldComponentV2 } from './dynamic-field-v2.component';
+import { AfterViewChecked } from '@angular/core';
 
 @Component({
     selector: 'd3s-dynamic-editor-v2',
@@ -47,7 +49,7 @@ import { DynamicFieldComponentV2 } from './dynamic-field-v2.component';
     styleUrls: ['dynamic-editor-v2.component.less']
 })
 
-export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges, OnInit {
+export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges, OnInit, AfterViewChecked {
     @Input() selection: any;
     @Input() rowID: string = 'ID';
     @Input() title: string;
@@ -86,9 +88,6 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
 
     //Modal
     @Input() showAsModal: boolean = false;
-    @Input() modalTitle: string = '';
-    @Input() isModalVisible: boolean = false;
-    @Input() useNonLegacyData: boolean = false;
 
     @Input() disallowedNames: string[] = [];
     savingInProgress: boolean = false;
@@ -112,6 +111,8 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     fore: EditorField;
     back: EditorField;
     selectedTagID: number;
+
+    modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
     @ViewChildren(DynamicFieldComponentV2) dyFieldRef: QueryList<DynamicFieldComponentV2>;
 
@@ -135,6 +136,21 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                 }
             }
         });
+    }
+
+    @HostListener('window:resize', ['$event'])
+    onResize(event) {
+        this.setFormHeight();
+    }
+
+    ngAfterViewChecked() {
+        this.setFormHeight();
+    }
+
+    private setFormHeight() {
+        if (this.showAsModal) {
+            this.modalFormMaxHeight = window.innerHeight - 242;
+        }
     }
 
     ngOnInit() {
@@ -203,12 +219,6 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         this.isLoading = true;
         if (this.useTypeUidForDefinition) {
             this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType)
-                .subscribe(result => {
-                    this.handleEditor(result);
-                });
-        }
-        else if (this.useNonLegacyData) {
-            this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, this.assetUid)
                 .subscribe(result => {
                     this.handleEditor(result);
                 });
