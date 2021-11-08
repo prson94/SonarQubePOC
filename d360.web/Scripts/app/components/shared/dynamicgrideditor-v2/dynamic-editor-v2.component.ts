@@ -212,12 +212,15 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
             if (this.selection.uid)
                 id = this.selection.uid;
 
+            if (this.selection.UID) {
+                id = this.selection.UID;
+            }
+
             //For ones recieved from GET V2 Asset API
             if (this.isV2API && this.selection.AssetUid) {
                 id = this.selection.AssetUid;
             }
         }
-
         this.isLoading = true;
         if (this.useTypeUidForDefinition) {
             this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType)
@@ -337,7 +340,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         this.ref.markForCheck();
         setTimeout(() => {
             this.focusToFirst();
-            if (this.propertyGroups) {
+            if (this.propertyGroups && this.propertyGroups.length > 0) {
                 this.propertyGroups.forEach((pg) => pg.refreshBadgeCounts());
                 this.propertyGroups.first.showHeaderLine = false;
             }
