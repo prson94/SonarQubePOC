@@ -16,7 +16,8 @@
     "webpackGlobal": "webpack --watch --progress",
     "webpackLocal": "node_modules\\.bin\\webpack --watch --progress",
     "webpackLocalDevelopmentMode": "node_modules\\.bin\\webpack --watch --progress --debug --devtool cheap-module-eval-source-map --config webpack.aot.config.js",
-    "webpackLocalProductionMode": "node_modules\\.bin\\webpack --config webpack.prod.config.js"
+    "webpackLocalProductionMode": "node_modules\\.bin\\webpack --config webpack.prod.config.js",
+    "postinstall": "node .\\Scripts\\environments\\workaround.js"
   },
   "license": "ISC",
   "dependencies": {
@@ -70,5 +71,9 @@
     "webpack-cli": "4.9.1",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "4.2.2"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not ie 11"
+  ]
 }

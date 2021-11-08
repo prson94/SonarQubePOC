@@ -18,6 +18,9 @@ using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
+using d360.utils.excel;
+using d360.core.resources;
+using SmartFormat;
 
 namespace d360.model.DataAccessLayer
 {
@@ -112,7 +115,7 @@ namespace d360.model.DataAccessLayer
             return allPredicates;
         }
 
-        public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
+        public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false)
         {
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
@@ -427,6 +430,14 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
             }
 
+            if (isExport)
+            {                
+                fieldJoins.Add(" left join AssetDisplayValue ADVS on S.ID = ADVS.AssetID ");
+                fieldJoins.Add(" left join AssetDisplayValue ADVO on O.ID = ADVO.AssetID ");
+                fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ') PS ");
+                fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ");
+            }
+
             string fieldColumnsSql = "";
             if (fieldColumns.Count > 0)
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
@@ -452,11 +463,18 @@ select	@pageSize as 'pageSize',
 				P.Name as 'Predicate.Name',
 				P.Inverse as 'Predicate.Inverse',
 				lower(S.Uid) as 'Subject.Uid',
-				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid',
-                {(includeAssetPath ? "ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'," : "")}
-				lower(O.Uid) as 'Object.Uid',
-				ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
+				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid'
+                {(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}
+                {(isExport ? ",PS.[Path] as 'Subject.AssetTypePath'" : "")}                
+                {(isExport ? ",ADVS.DisplayValue as 'Subject.DisplayName'" : "")}
+				,lower(O.Uid) as 'Object.Uid'
+				,ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
+                {(isExport ? ",ADVO.DisplayValue as 'Object.DisplayName'" : "")}
+                {(isExport ? ",PO.[Path] as 'Object.AssetTypePath'" : "")}
                 {(includeAssetPath ? ",ISNULL(ANDP_Object.DisplayPath,OT2.Name) as 'Object.[Path]'" : "")}
+                
+                
+                
 		{baseTableSql}
         {string.Join("\n", fieldJoins)}
         {whereClause} 
@@ -916,7 +934,8 @@ from	IntersectType I
         }
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            JObject results = await GetRelationships(queryParams);
+            var apiTimeout = ApiTimeout;
+            JObject results = await GetRelationships(queryParams, isExport: true).ConfigureAwait(false);
             var includeTotal = true;
             var includeAssetPath = false;
 
@@ -943,126 +962,125 @@ from	IntersectType I
 
             var apiInfo = results.Children().ToList();
 
-            var document = new SLDocument();
-            const string relationshipSheetName = "Relationships";
-            const string apiSheetName = "Api Info";
-
+            var excelDocument = new ExcelDocument(Smart.Format(ExcelExports.Relationships_DocumentName, DateTime.Now));
+                   
             var fields = new List<FieldType>();
 
+            var headerRow = new ExcelRow();
+            var itemsSheet = new ExcelSheet(ExcelExports.Relationships_SheetName);
+
             //add default fields
-            fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = "Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "RelationshipTypeUid", Name = "", FriendlyName = "RelationshipTypeUid" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = "Predicate Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Name", FriendlyName = "Predicate Name" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });
+            fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = "Relationship UID" });
             fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "Uid", FriendlyName = "Subject Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject AssetTypeUid" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "DisplayName", FriendlyName = "Subject Display Name" });
             if (includeAssetPath)
             {
                 fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "[Path]", FriendlyName = "Subject Asset Path" });
             }
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypePath", FriendlyName = "Subject Asset Type Path" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Name", FriendlyName = "Predicate Name" });
             fields.Add(new FieldType { Type = "string", Object = "Object", Name = "Uid", FriendlyName = "Object Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object AssetTypeUid" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "DisplayName", FriendlyName = "Object Display Name" });
             if (includeAssetPath)
             {
                 fields.Add(new FieldType { Type = "string", Object = "Object", Name = "[Path]", FriendlyName = "Object Asset Path" });
             }
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypePath", FriendlyName = "Object Asset Type Path" });
+            fields.Add(new FieldType { Type = "string", Object = "RelationshipTypeUid", Name = "", FriendlyName = "Relationship Type Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject Asset Type Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object Asset Type Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = "Predicate Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });
 
-            #region Populate Excel Document
+            #region Populate Excel Document            
 
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, relationshipSheetName);
+            #region API Info Sheet
+            var apiInfoSheet = new ExcelSheet(ExcelExports.Common_ApiInfoSheetName);
 
-            document.AddWorksheet(apiSheetName);
-            document.SelectWorksheet(apiSheetName);
+            var pageSizeRow = new ExcelRow { ExcelExports.Common_PageSize, results.GetValue("pageSize").ToString() };
+            var pageNumRow = new ExcelRow { ExcelExports.Common_PageNum, results.GetValue("pageNum").ToString() };
+            apiInfoSheet.ValueRows.Add(pageSizeRow);
+            apiInfoSheet.ValueRows.Add(pageNumRow);
 
-            document.SetCellValue(1, 1, "pageSize");
-            document.SetCellValue(1, 2, results.GetValue("pageSize").ToString());
-            document.SetCellValue(2, 1, "pageNum");
-            document.SetCellValue(2, 2, results.GetValue("pageNum").ToString());
             if (includeTotal)
             {
-                document.SetCellValue(3, 1, "total");
-                document.SetCellValue(3, 2, results.GetValue("total").ToString());
+                var totalRow = new ExcelRow { ExcelExports.Common_Total, results.GetValue("total").ToString() };
+                apiInfoSheet.ValueRows.Add(totalRow);
             }
-
-            document.SelectWorksheet(relationshipSheetName);
+            #endregion    
 
             var items = results.GetValue("items");
             var rowData = new List<JToken>();
 
             if (items != null)
             {
+                #region Populate Items Sheet
                 rowData = items.ToList();
-            }
-            else
-            {
-                return document;
-            }
 
-            int rowNumber = 1;
-            int index = 1;
-            foreach (var row in rowData)
-            {
-                var relationshipTypeUid = row["RelationshipTypeUid"];
-                var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString());
-
-                if (customColumns.Count() > 0)
+                List<ExcelRow> rows = new List<ExcelRow>();
+                foreach (var row in rowData)
                 {
-                    index = fields.Count() + 1;
-                    foreach (var cus in customColumns)
+                    var relationshipTypeUid = row["RelationshipTypeUid"];
+                    var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString(), apiTimeout);
+
+                    if (customColumns.Count() > 0)
                     {
-                        var name = cus.Name;
-                        var friendlyName = cus.FriendlyName;
-                        var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
-                        if (exists == null)
+                        foreach (var cus in customColumns)
                         {
-                            var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
-                            fields.Insert(2, cusField);
+                            var name = cus.Name;
+                            var friendlyName = cus.FriendlyName;
+                            var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
+                            if (exists == null)
+                            {
+                                var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
+                                fields.Insert((includeAssetPath ? 11 : 9), cusField);
+                            }
                         }
                     }
-                }
-                index = 1;
 
-                foreach (var field in fields)
-                {
-                    document.SetCellValue(1, index++, (string)field.FriendlyName);
+                    ExcelRow excelRow = new ExcelRow();
+                    foreach (var field in fields)
+                    {
+                        var token = row[field.Object];
+                        if (field.Name == "")
+                        {
+                            token = row[field.Object];
+                        }
+                        else
+                        {
+                            token = row[field.Object][field.Name];
+                        }
+                        string value = "";
+                        if (token != null)
+                        {
+                            value = token.Value<string>();
+                        }
+                        excelRow.Add(value);
+                    }
+                    rows.Add(excelRow);
                 }
-
-                index = 1;
-                rowNumber++;
-                foreach (var field in fields)
-                {
-                    var token = row[field.Object];
-                    if (field.Name == "")
-                    {
-                        token = row[field.Object];
-                    }
-                    else
-                    {
-                        token = row[field.Object][field.Name];
-                    }
-                    string value = "";
-                    if (token != null)
-                    {
-                        value = token.Value<string>();
-                    }
-                    document.SetCellValue(rowNumber, index, value);
-                    index++;
-                }
+                itemsSheet.ValueRows.AddRange(rows);
+                #endregion
             }
 
             #endregion
+            fields.ForEach((field) => headerRow.Add(field.FriendlyName));
+            itemsSheet.HeaderRows.Add(headerRow);
+            excelDocument.Add(itemsSheet);
+            excelDocument.Add(apiInfoSheet);
 
+            SLDocument document = excelDocument.ToSLDocument();
+            document.SelectWorksheet(ExcelExports.Relationships_SheetName);
             return document;
         }
 
-        public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid)
+        public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid, int apiTimeout)
         {
             return companyContext.Query<dynamic>(
                 @"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName from fieldtype f  
 				inner join IntersectType i on i.uid = @uid
-				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid }, ApiTimeout);
+				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid }, apiTimeout);
         }
 
         public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, int pageSize, int pageNum, bool includeTotal, string owner)

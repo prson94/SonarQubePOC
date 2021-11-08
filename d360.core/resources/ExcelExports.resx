@@ -117,11 +117,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Common_ApiInfoSheetName" xml:space="preserve">
+    <value>Api Info</value>
+  </data>
   <data name="Common_ExcelDateFormat" xml:space="preserve">
     <value>mm/dd/yyyy</value>
   </data>
   <data name="Common_ItemsSheetName" xml:space="preserve">
     <value>Items</value>
+  </data>
+  <data name="Common_PageNum" xml:space="preserve">
+    <value>pageNum</value>
+  </data>
+  <data name="Common_PageSize" xml:space="preserve">
+    <value>pageSize</value>
+  </data>
+  <data name="Common_Total" xml:space="preserve">
+    <value>total</value>
   </data>
   <data name="FollowedResources_AssetID" xml:space="preserve">
     <value>Asset ID</value>
@@ -152,6 +164,12 @@
   </data>
   <data name="OwnedResources_ViaType" xml:space="preserve">
     <value>Via Type</value>
+  </data>
+  <data name="Relationships_DocumentName" xml:space="preserve">
+    <value>relationship type items {Now:d}</value>
+  </data>
+  <data name="Relationships_SheetName" xml:space="preserve">
+    <value>Relationships</value>
   </data>
   <data name="WorkflowMonitor_Asset" xml:space="preserve">
     <value>Asset</value>

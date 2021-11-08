@@ -2854,6 +2854,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             string orderDirection = "asc";
             string orderBySql = "";
             string offsetSql = "";
+            string filterSql = "";
             if (queryParams.Any(x => x.Key == "_direction"))
             {
                 string[] allowedDirections = new string[] { "asc", "desc" };
@@ -2908,6 +2909,25 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
             }
 
+            if (queryParams.Any(p => p.Key == "_status"))
+            {
+                if(Enum.TryParse(queryParams.FirstOrDefault(p => p.Key == "_status").Value, out ExecutionInternalStatus status))
+                {
+                    switch(status)
+                    {
+                        case ExecutionInternalStatus.Pending:
+                            filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NULL";
+                            break;
+                        case ExecutionInternalStatus.Running:
+                            filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NOT NULL";
+                            break;
+                        case ExecutionInternalStatus.Completed:
+                            filterSql = "WHERE Ex.CompletedOn IS NOT NULL";
+                            break;
+
+                    }
+                }
+            }
 
             var sql = $@"
                         SELECT Ex.[ExecutionID]
@@ -2926,6 +2946,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           FROM [api].[Execution] Ex
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID  
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID] 
+                          {filterSql}
                           {orderBySql}
                           {offsetSql}
                         ";
@@ -2935,6 +2956,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           FROM [api].[Execution] Ex
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID 
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID]
+                          {filterSql}
                         ";
             var executions = await CompanyContext.QueryAsync<dynamic>(sql, ApiTimeout);
             var count = await CompanyContext.QueryAsync<int>(countSQL, ApiTimeout);
