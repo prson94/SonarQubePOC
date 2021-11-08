@@ -20,6 +20,7 @@ using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
 using d360.utils.excel;
 using d360.core.resources;
+using SmartFormat;
 
 namespace d360.model.DataAccessLayer
 {
@@ -933,6 +934,7 @@ from	IntersectType I
         }
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
+            var apiTimeout = ApiTimeout;
             JObject results = await GetRelationships(queryParams, isExport: true).ConfigureAwait(false);
             var includeTotal = true;
             var includeAssetPath = false;
@@ -960,7 +962,7 @@ from	IntersectType I
 
             var apiInfo = results.Children().ToList();
 
-            var excelDocument = new ExcelDocument(string.Format(ExcelExports.FollowedResources_DocumentName, DateTime.Now));
+            var excelDocument = new ExcelDocument(Smart.Format(ExcelExports.Relationships_DocumentName, DateTime.Now));
                    
             var fields = new List<FieldType>();
 
@@ -1020,7 +1022,7 @@ from	IntersectType I
                 foreach (var row in rowData)
                 {
                     var relationshipTypeUid = row["RelationshipTypeUid"];
-                    var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString());
+                    var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString(), apiTimeout);
 
                     if (customColumns.Count() > 0)
                     {
@@ -1073,12 +1075,12 @@ from	IntersectType I
             return document;
         }
 
-        public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid)
+        public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid, int apiTimeout)
         {
             return companyContext.Query<dynamic>(
                 @"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName from fieldtype f  
 				inner join IntersectType i on i.uid = @uid
-				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid }, ApiTimeout);
+				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid }, apiTimeout);
         }
 
         public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, int pageSize, int pageNum, bool includeTotal, string owner)

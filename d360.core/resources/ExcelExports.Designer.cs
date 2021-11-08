@@ -205,6 +205,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to relationship type items {Now:d}.
+        /// </summary>
+        public static string Relationships_DocumentName {
+            get {
+                return ResourceManager.GetString("Relationships_DocumentName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Relationships.
         /// </summary>
         public static string Relationships_SheetName {

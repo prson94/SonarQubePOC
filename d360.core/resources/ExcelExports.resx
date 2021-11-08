@@ -165,6 +165,9 @@
   <data name="OwnedResources_ViaType" xml:space="preserve">
     <value>Via Type</value>
   </data>
+  <data name="Relationships_DocumentName" xml:space="preserve">
+    <value>relationship type items {Now:d}</value>
+  </data>
   <data name="Relationships_SheetName" xml:space="preserve">
     <value>Relationships</value>
   </data>
