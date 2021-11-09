@@ -11,10 +11,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
     providers: [WorkflowService, ResourcesService],
     template: `
                 <div class="tile tile-detail">
-                   <header *ngIf="resourceId >= 0">{{resource?.FirstName}}'s Assignments
-                    <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
-                   </header>
-                   <header *ngIf="resourceId == null || resourceId < 0">Your Assignments
+                   <header>Assignments
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
