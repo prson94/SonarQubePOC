@@ -557,12 +557,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     saveItem($event) {
         this.isEditing = false;
+        console.log($event);
         if ($event.item.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
         if ($event && $event.addAnother) {
             this.add();
             this.getData(false);
         }
-        else if ($event && $event.action == 'action') {
+        else if ($event && $event.action === 'new') {
             var newUrl = '/asset/' + $event.assetUid;
             this.router.navigateByUrl(newUrl);
         }

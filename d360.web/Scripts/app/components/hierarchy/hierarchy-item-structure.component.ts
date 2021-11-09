@@ -438,7 +438,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.showAdd(this.selectedLevel, this.selectedParentId);
             this.loadNodes(false);
         }
-        else if ($event && $event.action == 'action') {
+        else if ($event && $event.action === 'new') {
             var newUrl = '/asset/' + $event.assetUid;
             this.router.navigateByUrl(newUrl);
         }
