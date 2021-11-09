@@ -90,8 +90,8 @@
     <Reference Include="HtmlSanitizer, Version=5.0.0.0, Culture=neutral, PublicKeyToken=61c49a1a9e79cc28, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlSanitizer.5.0.404\lib\net46\HtmlSanitizer.dll</HintPath>
     </Reference>
-    <Reference Include="IdentityModel, Version=4.1.0.0, Culture=neutral, PublicKeyToken=e7877f4675df049f, processorArchitecture=MSIL">
-      <HintPath>..\packages\IdentityModel.4.1.0\lib\net472\IdentityModel.dll</HintPath>
+    <Reference Include="IdentityModel, Version=5.2.0.0, Culture=neutral, PublicKeyToken=e7877f4675df049f, processorArchitecture=MSIL">
+      <HintPath>..\packages\IdentityModel.5.2.0\lib\net472\IdentityModel.dll</HintPath>
     </Reference>
     <Reference Include="IdentityModel.OidcClient, Version=3.0.0.0, Culture=neutral, PublicKeyToken=5580d04c1b6c37c1, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.OidcClient.3.1.2\lib\net472\IdentityModel.OidcClient.dll</HintPath>
@@ -314,8 +314,8 @@
     <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Json.4.7.2\lib\net461\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=5.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.5.0.2\lib\net461\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -2175,7 +2175,6 @@
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflowmonitor.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\advanced-filter-helpers.ts" />
-    <TypeScriptCompile Include="Scripts\app\static\environment-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\form-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-constants.ts" />

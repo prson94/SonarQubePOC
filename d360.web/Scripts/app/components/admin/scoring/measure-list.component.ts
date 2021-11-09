@@ -8,9 +8,9 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AllocationService } from '../../../services/allocations.service';
 import * as _ from 'lodash';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
-import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AppSettingsEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'measure-list',
@@ -45,7 +45,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     @Input() showDisabled: boolean = false;
 
-    helpUri = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
+    helpUri: string = "";
 
     private metrics: MetricAssetViewModel[] = [];
     private metricTree: TreeNode[] = [];
@@ -109,6 +109,9 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService) {
         super(settingsService);
+
+        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
     }
 
     delayedReload = _.debounce(() => {
@@ -117,7 +120,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }, 200);
 
     ngOnInit() {
-        this.delayedReload();        
+        this.delayedReload();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

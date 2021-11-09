@@ -88,8 +88,6 @@ namespace igx.UnitTests.ValidatorTests
             List<string> allTypes = new List<string>() {
                 "ArtifactType",
                 "AttributeType",
-                "FusionAttributeType",
-                "FusionType",
                 "GroupType",
                 "OrganizationType",
                 "PolicyType",

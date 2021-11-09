@@ -107,5 +107,6 @@
   <include file="scripts/GOV-15436.xml"/>  <!-- Rename tables dbo.Setting and dbo.CompanySetting-->
   <include file="scripts/GOV-15830.xml"/>  <!-- Removing dbo.DatabaseServer FusionQueue column-->
   <include file="scripts/GOV-15442.xml"/>  <!-- Drop tables dbo.GenericCommand_backup-->
+  <include file="scripts/GOV-16089.xml"/>  <!-- Add column region in tables dbo.DatabaseServer-->
+  <include file="scripts/GOV-15437.xml"/>  <!-- Drop renamed tables dbo.Setting and dbo.CompanySetting-->
 </databaseChangeLog>
-

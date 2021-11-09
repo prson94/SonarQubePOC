@@ -457,6 +457,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for status. Valid values are Pending, Running and Completed..
+        /// </summary>
+        public static string ExecutionStatusInvalid {
+            get {
+                return ResourceManager.GetString("ExecutionStatusInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Execution with UID {0} has been already canceled..
         /// </summary>
         public static string ExecutionUIDCancelled {

@@ -47,8 +47,6 @@ export class AssetTypeEditorModel {
 export enum AssetTypeClass {
     BusinessAsset = 1,
     Model = 2,
-    Fusion = 3,
-    FusionAttribute = 4,
     Policy = 6,
     Rule = 7,
     TechnicalAsset = 8,
@@ -56,7 +54,6 @@ export enum AssetTypeClass {
     Organization = 10,
     User = 11,
     Group = 12,
-    FusionQuery = 13,
     ReferenceItemType = 14,
     DiagramAsset = 15,
 }
@@ -80,7 +77,6 @@ export class AssetType {
     UseAsTransformation: boolean;
     IconStyle: IconStyle = new IconStyle();
     Hierarchy: Hierarchy = new Hierarchy();
-    FusionID: number;
     AutoDisplayParent: boolean;
     CanEditParent: boolean;
 }

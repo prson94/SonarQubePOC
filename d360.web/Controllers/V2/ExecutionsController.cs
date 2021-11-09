@@ -59,11 +59,10 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CompletedOn.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-
+            SwaggerParameter("_status", "Filter by execution status. Allowed values are Pending, Running, Completed", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetExecutions()
         {
-
             var queryParams = Request.GetQueryNameValuePairs();
 
             string isValid = isPageSizeAndNumValid(queryParams);
@@ -71,6 +70,15 @@ namespace d360.web.Controllers.V2
             if (!string.IsNullOrEmpty(isValid))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+            }
+
+            if (queryParams.Any(x => x.Key == "_status"))
+            {
+                string status = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_status").Value;
+                if (!Enum.IsDefined(typeof(ExecutionInternalStatus), status))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ExecutionStatusInvalid)).ConfigureAwait(false);
+                }
             }
 
             var executions = await AssetRepository.GetExecutionItems(queryParams);

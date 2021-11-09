@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetComplexLookupByAsset-v59">
-  <comment>GOV-15460-TDuric,GOV-15361</comment>
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v60">
+		<comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -237,26 +237,7 @@ set nocount on;
 						DataField as Alias
 			from		@fields F
 			where		FieldTypeID = 0 
-						and Object <> 'FusionAttributeType'
-						and FieldTypeName = '_assetPath'
-			order by	F.RowNumber;
-
-		insert into @selects
-			select		'F' + F.RRN + '.TextPath', --Must stay as this field as it is a hard-coded value on the FusionAttribute table
-						F.DataField as Alias
-			from		@fields F
-			where		F.Object = 'FusionAttributeType' 
-						and F.FieldTypeID = 0 
-						and F.FieldTypeName = '_assetPath'
-			order by	F.RowNumber;
-
-		insert into @selects
-			select		'F' + F.RRN + '.' + FieldTypeName,
-						DataField as Alias
-			from		@fields F
-			where		Object = 'FusionAttributeType' 
-						and FieldTypeID = 0 
-						and FieldTypeName = 'Name'
+							and FieldTypeName = '_assetPath'
 			order by	F.RowNumber;
 
 		insert into @selects
@@ -307,11 +288,6 @@ set nocount on;
 					end + ' = ''' + replace(F.[Filter], '''', '''''') + '''' 
 			from	@fields F
 			where	F.[Filter] is not null and F.[Filter] <> '';
-
-		insert into @wheres
-			select	'F' + F.RRN + '.Name = ''' + replace(F.[Filter], '''', '''''') + ''''
-			from	@fields F
-			where	Object = 'FusionAttributeType' and FieldTypeID = 0 and FieldTypeName = 'Name' and F.[Filter] is not null and F.[Filter] <> '';
 
 		insert into @wheres
 			select	'U' + F.RRN + '.' + F.FieldTypeName + ' = ''' + replace(F.[Filter], '''', '''''') + ''''
@@ -439,7 +415,6 @@ set nocount on;
 			begin
 			set @tableStatement = @tableStatement + ' ' + @joinPrefix + ' join graph.AssetNodeDisplayPath H'+@rn+'P on H'+@rn+'P.ID = H'+@rn+'.ID' +
 								  case @obj
-									when 'FusionAttributeType' then @joinPrefix + ' join Asset FA'+@rn+' on FA'+@rn+'.ID = H'+@rn+'.ID inner join FusionAttribute F'+@rn+' on FA'+@rn+'.Object = ''FusionAttribute'' and F'+@rn+'.ID = FA'+@rn+'.ObjectID and F'+@rn+'.Deleted = 0'
 									when 'ResourceType' then @joinPrefix + ' join reporting.Global_Resource U'+@rn+' on U'+@rn+'.uid = H'+@rn+'.Uid'
 									else ''
 								  end

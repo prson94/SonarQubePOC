@@ -181,7 +181,6 @@ export class Lookups {
     DataTypes: SelectItem[];
     Patterns: SelectItem[];
     IntersectTypes: LookupItem[];
-    FusionAttributeTypes: SelectItem[];
     Lookups: SelectItem[];
     Field_JsonFields: SelectItem[];
     Field_JsonDataTypes: SelectItem[];

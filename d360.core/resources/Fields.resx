@@ -129,12 +129,6 @@
   <data name="Active_Name" xml:space="preserve">
     <value>Is active?</value>
   </data>
-  <data name="AllowEventNotification_Description" xml:space="preserve">
-    <value>Should changes generate an event notification?</value>
-  </data>
-  <data name="AllowEventNotification_Name" xml:space="preserve">
-    <value>Allow Event Notification</value>
-  </data>
   <data name="AllowMultipleEntries_Description" xml:space="preserve">
     <value>May this attribute be assigned to the underlying item multiple times?</value>
   </data>
@@ -194,48 +188,6 @@
   </data>
   <data name="SourcingApplies_Name" xml:space="preserve">
     <value>Sourcing Applies?</value>
-  </data>
-  <data name="CheckType_Description" xml:space="preserve">
-    <value>The type of check this analytic should perform for the target object.</value>
-  </data>
-  <data name="CheckType_Name" xml:space="preserve">
-    <value>Check Type</value>
-  </data>
-  <data name="Check_PropertyName_Description" xml:space="preserve">
-    <value>The property of the target item to check.</value>
-  </data>
-  <data name="Check_PropertyName_Name" xml:space="preserve">
-    <value>Property to Check</value>
-  </data>
-  <data name="Check_PropertyValue_Description" xml:space="preserve">
-    <value>The value of the target item's property.</value>
-  </data>
-  <data name="Check_PropertyValue_Name" xml:space="preserve">
-    <value>Property Value to Validate</value>
-  </data>
-  <data name="Check_SQL_Description" xml:space="preserve">
-    <value>The SQL query to perform for this check.  The SQL query must return a boolean (bit) true or false.  Only SELECT statements are allowed.</value>
-  </data>
-  <data name="Check_SQL_Name" xml:space="preserve">
-    <value>SQL Query</value>
-  </data>
-  <data name="Check_ValueEnd_Description" xml:space="preserve">
-    <value>The end value of the value range to check.</value>
-  </data>
-  <data name="Check_ValueEnd_Name" xml:space="preserve">
-    <value>End Value to Check</value>
-  </data>
-  <data name="Check_ValueStart_Description" xml:space="preserve">
-    <value>The start value of the value range to check.</value>
-  </data>
-  <data name="Check_ValueStart_Name" xml:space="preserve">
-    <value>Start Value to Check</value>
-  </data>
-  <data name="Check_Value_Description" xml:space="preserve">
-    <value>The value to check for.</value>
-  </data>
-  <data name="Check_Value_Name" xml:space="preserve">
-    <value>Value to Check</value>
   </data>
   <data name="Code_Description" xml:space="preserve">
     <value>The code for this item.</value>
@@ -414,24 +366,6 @@
   <data name="FriendlyName_Name" xml:space="preserve">
     <value>Friendly Name</value>
   </data>
-  <data name="FusionAssembly_Description" xml:space="preserve">
-    <value>The name of the Fusion assembly, including dll extension. Not required if this is a manual Fusion process.</value>
-  </data>
-  <data name="FusionAssembly_Name" xml:space="preserve">
-    <value>Fusion Assembly Name</value>
-  </data>
-  <data name="FusionFact_Description" xml:space="preserve">
-    <value>Fusion Fact</value>
-  </data>
-  <data name="FusionFact_Name" xml:space="preserve">
-    <value>Fusion Fact</value>
-  </data>
-  <data name="FusionType_Description" xml:space="preserve">
-    <value>Fusion Type</value>
-  </data>
-  <data name="FusionType_Name" xml:space="preserve">
-    <value>Fusion Type</value>
-  </data>
   <data name="GroupAllowed_Description" xml:space="preserve">
     <value>Is group assignment allowed?</value>
   </data>
@@ -452,15 +386,7 @@
   </data>
   <data name="ID_Name" xml:space="preserve">
     <value>ID</value>
-  </data>
-  <data name="Impact_Description" xml:space="preserve">
-    <value>The Impact for this item.</value>
-  </data>
-  <data name="Impact_ErrorRequired" xml:space="preserve">
-    <value>Impact is a required field.</value>
-  </data>
-  <data name="Impact_Name" xml:space="preserve">
-    <value>Impact</value>
+    <comment>u</comment>
   </data>
   <data name="IsGlobal_Description" xml:space="preserve">
     <value>Is this item globally available?</value>
@@ -474,12 +400,6 @@
   <data name="IsHierarchical_Name" xml:space="preserve">
     <value>Is Hierarchical?</value>
   </data>
-  <data name="IsManual_Description" xml:space="preserve">
-    <value>Is this fusion type automatically synchronized or must a user manually create and synchronize the fusion items?</value>
-  </data>
-  <data name="IsManual_Name" xml:space="preserve">
-    <value>Manual Process?</value>
-  </data>
   <data name="IsRequired_Description" xml:space="preserve">
     <value>Is a user required to choose or provide a value for this field?</value>
   </data>
@@ -491,12 +411,6 @@
   </data>
   <data name="IsSystemLookup_Name" xml:space="preserve">
     <value>Is System Lookup?</value>
-  </data>
-  <data name="IsTechnical_Description" xml:space="preserve">
-    <value>Is this a technical relationship, storing technical metadata and pointing to something not specifically business-related?</value>
-  </data>
-  <data name="IsTechnical_Name" xml:space="preserve">
-    <value>Technical Relationship?</value>
   </data>
   <data name="ItemCount_Description" xml:space="preserve">
     <value>The # items for this lookup.</value>
@@ -522,21 +436,6 @@
   <data name="Length_Name" xml:space="preserve">
     <value>Length</value>
   </data>
-  <data name="LicenseKey_Description" xml:space="preserve">
-    <value>The license key for this item.</value>
-  </data>
-  <data name="LicenseKey_ErrorRequired" xml:space="preserve">
-    <value>License Key is a required field.</value>
-  </data>
-  <data name="LicenseKey_Name" xml:space="preserve">
-    <value>License Key</value>
-  </data>
-  <data name="LogCount_Description" xml:space="preserve">
-    <value>The # logs for this item.</value>
-  </data>
-  <data name="LogCount_Name" xml:space="preserve">
-    <value># Exceptions</value>
-  </data>
   <data name="LookupDisplayFormat_Description" xml:space="preserve">
     <value>The format used for displaying this field.  This format is used when resolving the underlying lookup value to display.</value>
   </data>
@@ -554,12 +453,6 @@
   </data>
   <data name="LookupObjectType_Name" xml:space="preserve">
     <value>Lookup Object Type</value>
-  </data>
-  <data name="MasterList_Description" xml:space="preserve">
-    <value>The domain list that acts as the master list for this group that all other list synchronize with.</value>
-  </data>
-  <data name="MasterList_Name" xml:space="preserve">
-    <value>Master List</value>
   </data>
   <data name="MaximumLength_Description" xml:space="preserve">
     <value>The maximum allowed length for this field's value.</value>
@@ -629,12 +522,6 @@
   </data>
   <data name="Parent_Name" xml:space="preserve">
     <value>Owner/Parent</value>
-  </data>
-  <data name="CanOwnFusion_Description" xml:space="preserve">
-    <value>Items of this type can own fusion configurations, which applies during auto-promotion.</value>
-  </data>
-  <data name="CanOwnFusion_Name" xml:space="preserve">
-    <value>Can Own Fusion?</value>
   </data>
   <data name="PartOfScore_Description" xml:space="preserve">
     <value>Should this check be part of the overall scoring of the target object?  If not part of the scoring, this statistic will display on the top bar of the object detail page.</value>
@@ -825,18 +712,6 @@
   <data name="MaximumDepth_Name" xml:space="preserve">
     <value>Maximum Depth</value>
   </data>
-  <data name="LockPromotedItems_Description" xml:space="preserve">
-    <value>Objects that are promoted within this configuration are locked and cannot be edited.</value>
-  </data>
-  <data name="LockPromotedItems_Name" xml:space="preserve">
-    <value>Lock Promoted Objects?</value>
-  </data>
-  <data name="Locked_Description" xml:space="preserve">
-    <value>Item is locked via Fusion Promotion.</value>
-  </data>
-  <data name="Locked_Name" xml:space="preserve">
-    <value>Locked?</value>
-  </data>
   <data name="ResponsibilityTypeGroup_Description" xml:space="preserve">
     <value>The group associated with this responsibility type.</value>
   </data>
@@ -848,33 +723,6 @@
   </data>
   <data name="Score_Name" xml:space="preserve">
     <value>Score</value>
-  </data>
-  <data name="CheckType_PropertyName_Name" xml:space="preserve">
-    <value>Object Property Name</value>
-  </data>
-  <data name="CheckType_SQL_Name" xml:space="preserve">
-    <value>SQL Query</value>
-  </data>
-  <data name="CheckType_ValueEnd_Name" xml:space="preserve">
-    <value>Object Property Range End</value>
-  </data>
-  <data name="CheckType_ValueStart_Name" xml:space="preserve">
-    <value>Object Property Range Start</value>
-  </data>
-  <data name="CheckType_Value_Name" xml:space="preserve">
-    <value>Object Property Value</value>
-  </data>
-  <data name="IntervalType_Description" xml:space="preserve">
-    <value>This interval type is the time between agent executions for a given configuration.</value>
-  </data>
-  <data name="IntervalType_Name" xml:space="preserve">
-    <value>Interval Type</value>
-  </data>
-  <data name="Interval_Description" xml:space="preserve">
-    <value>The amount of time between agent executions for a given fusion configuration.</value>
-  </data>
-  <data name="Interval_Name" xml:space="preserve">
-    <value>Interval</value>
   </data>
   <data name="GroupPrimaryOwner_Description" xml:space="preserve">
     <value>The primary owner of the group.  This person is responsible for the day to day management of the group, including assigning any tasks to members.</value>
@@ -893,12 +741,6 @@
   </data>
   <data name="AllowRelatedArtifacts_Name" xml:space="preserve">
     <value>Allow Related Artifacts?</value>
-  </data>
-  <data name="CommandText_Description" xml:space="preserve">
-    <value>The SQL SELECT statement to pull contents from.  You may only query objects within the reporting schema.</value>
-  </data>
-  <data name="CommandText_Name" xml:space="preserve">
-    <value>Command Text</value>
   </data>
   <data name="ContentAreaNumber_Description" xml:space="preserve">
     <value>Location within the rpeort's layout that this tile will appear in.</value>
@@ -920,18 +762,6 @@
   </data>
   <data name="DateLastCertified_Name" xml:space="preserve">
     <value>Date Last Certified</value>
-  </data>
-  <data name="CertificationEndDate_Description" xml:space="preserve">
-    <value>The certification process ends on this date.</value>
-  </data>
-  <data name="CertificationEndDate_Name" xml:space="preserve">
-    <value>Certification Ends On</value>
-  </data>
-  <data name="CertificationStartDate_Description" xml:space="preserve">
-    <value>The certification process started on this date.</value>
-  </data>
-  <data name="CertificationStartDate_Name" xml:space="preserve">
-    <value>Certification Started On</value>
   </data>
   <data name="DaysGivenToCompleteCertification_Description" xml:space="preserve">
     <value>Indicates the number of days an owner has to complete a certification of a given item.</value>
@@ -959,12 +789,6 @@
   </data>
   <data name="AllowGrouping_Name" xml:space="preserve">
     <value>Allow Grouping of Relationships?</value>
-  </data>
-  <data name="AllowSourcing_Description" xml:space="preserve">
-    <value>Allow sources to be defined for this relationship.</value>
-  </data>
-  <data name="AllowSourcing_Name" xml:space="preserve">
-    <value>Allow Sourcing on Relationship?</value>
   </data>
   <data name="GroupComment_Description" xml:space="preserve">
     <value>A comment on or description of the role this item has within the relationship group.</value>

@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
-using static d360.model.CommunityContext;
 
 namespace d360.web.Controllers.V2
 {
@@ -168,6 +167,34 @@ namespace d360.web.Controllers.V2
             catch { }
 
             return Request.CreateResponse(HttpStatusCode.OK, ApiMessages.StyleUpdated);
+        }
+
+
+        /// <summary>
+        /// Retrieves a list of epplication settings.
+        /// </summary>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("appsettings"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetAppSettings()
+        {
+            try
+            {
+                var settings = new List<ApplicationSetting>();
+
+                settings.Add(new ApplicationSetting { Name = "HelpBaseUri", Value = Config.GetValue<string>("HelpBaseUri") });
+                settings.Add(new ApplicationSetting { Name = "AppInsightsInstrumentationKey", Value = Config.GetValue<string>("AppInsightsInstrumentationKey") });
+
+                return Request.CreateResponse(HttpStatusCode.OK, settings);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
         }
 
 

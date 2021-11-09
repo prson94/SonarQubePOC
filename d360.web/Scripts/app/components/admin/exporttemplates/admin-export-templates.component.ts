@@ -223,7 +223,9 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     }
 
     public getSelectedTemplateID(showEditor: boolean = false) {
-        this.exportTemplateService.getExportTemplateId(this.selected.Uid).subscribe((item) => { this.selected.ID = item; this.showEditor = showEditor;});
+        if (this.selected) {
+            this.exportTemplateService.getExportTemplateId(this.selected.Uid).subscribe((item) => { this.selected.ID = item; this.showEditor = showEditor; });
+        }
     }
 
     clearTemplate() {

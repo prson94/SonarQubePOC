@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.bulkload.GetLoadColumns-v11">
-    <comment>GOV-10243</comment>
+  <changeSet author="Pappas" id="Procedure.bulkload.GetLoadColumns-v12">
+    <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -223,7 +223,7 @@ begin
 		where	ID = @id
 		
 
-		if @objectType = 'FusionAttributeType' or @objectType = 'IntersectType'
+		if @objectType = 'IntersectType'
 		begin
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName, 1, 1, 0, 0, 1)
 		end		
@@ -236,7 +236,7 @@ begin
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)				
 		end
 
-		if @subjectType = 'FusionAttributeType' or @subjectType = 'IntersectType'
+		if @subjectType = 'IntersectType'
 		begin
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName, 1, 1, 0, 0, 1)
 		end

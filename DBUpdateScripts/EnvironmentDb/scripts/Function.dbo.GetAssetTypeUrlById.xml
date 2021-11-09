@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetAssetTypeUrlById-v1">
+  <changeSet author="Pappas" id="Function.dbo.GetAssetTypeUrlById-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -23,7 +23,6 @@ RETURN
 		WHEN 'ArtifactType' THEN 'artifact/' + CAST(T.ObjectID as varchar)
 		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(T.ObjectID as varchar)
 		WHEN 'ReferenceItemType' THEN 'reference/' + CAST(T.ObjectID as varchar)
-		WHEN 'FusionType' THEN 'fusion/' + CAST(T.ObjectID as varchar)
 		WHEN 'PolicyType' THEN 'policy/' + CAST(T.ObjectID as varchar) + '/structure'		
 		WHEN 'ResourceType' THEN 'resource/list/' + CAST(T.ObjectID as varchar)
 		WHEN 'RuleType' THEN 'quality/rule/' + CAST(T.ObjectID as varchar)	

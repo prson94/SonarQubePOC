@@ -279,12 +279,6 @@ namespace d360.core.validators
 
             string[] validFields = { "name", "sourceid", "textpath", "code" };
 
-            if (assetType.Object == "FusionAttributeType")
-            {
-                var valid = validFields.Contains(fieldName.Trim().ToLower());
-                if (valid) return true;
-            }
-
             var doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower());
             List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
 

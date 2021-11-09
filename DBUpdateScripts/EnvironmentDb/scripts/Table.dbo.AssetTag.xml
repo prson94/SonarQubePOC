@@ -55,7 +55,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterDelete-v1">
+  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterDelete-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -72,9 +72,7 @@ AS
 				A.Object, 
 				A.ObjectID,
 				A.ID
-		FROM deleted D INNER JOIN [dbo].[Asset] A
-		ON D.AssetID = A.ID
-		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+		FROM deleted D INNER JOIN [dbo].[Asset] A ON D.AssetID = A.ID;
 		]]>
     </sql>
 	<rollback>
@@ -84,7 +82,7 @@ AS
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterUpsert-v1">
+  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterUpsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -101,9 +99,7 @@ AS
 				A.Object, 
 				A.ObjectID,
 				A.ID
-		FROM inserted  I INNER JOIN [dbo].[Asset] A
-		ON I.AssetID = A.ID
-		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+		FROM inserted  I INNER JOIN [dbo].[Asset] A ON I.AssetID = A.ID;
 		]]>
     </sql>
 	<rollback>

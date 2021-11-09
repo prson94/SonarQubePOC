@@ -205,11 +205,164 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Relationships {0}.
+        /// </summary>
+        public static string Relationships_DocumentName {
+            get {
+                return ResourceManager.GetString("Relationships_DocumentName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Object Asset Path.
+        /// </summary>
+        public static string Relationships_Object_Asset_Path {
+            get {
+                return ResourceManager.GetString("Relationships_Object_Asset_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Object Asset Type Path.
+        /// </summary>
+        public static string Relationships_Object_Asset_Type_Path {
+            get {
+                return ResourceManager.GetString("Relationships_Object_Asset_Type_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Object Asset Type UID.
+        /// </summary>
+        public static string Relationships_Object_Asset_Type_UID {
+            get {
+                return ResourceManager.GetString("Relationships_Object_Asset_Type_UID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Object Display Name.
+        /// </summary>
+        public static string Relationships_Object_Display_Name {
+            get {
+                return ResourceManager.GetString("Relationships_Object_Display_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Object UID.
+        /// </summary>
+        public static string Relationships_Object_UID {
+            get {
+                return ResourceManager.GetString("Relationships_Object_UID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Predicate Inverse.
+        /// </summary>
+        public static string Relationships_Predicate_Inverse {
+            get {
+                return ResourceManager.GetString("Relationships_Predicate_Inverse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Predicate Name.
+        /// </summary>
+        public static string Relationships_Predicate_Name {
+            get {
+                return ResourceManager.GetString("Relationships_Predicate_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Predicate Type.
+        /// </summary>
+        public static string Relationships_Predicate_Type {
+            get {
+                return ResourceManager.GetString("Relationships_Predicate_Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Predicate UID.
+        /// </summary>
+        public static string Relationships_Predicate_UID {
+            get {
+                return ResourceManager.GetString("Relationships_Predicate_UID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship Type UID.
+        /// </summary>
+        public static string Relationships_Relationship_Type_UID {
+            get {
+                return ResourceManager.GetString("Relationships_Relationship_Type_UID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship UID.
+        /// </summary>
+        public static string Relationships_Relationship_UID {
+            get {
+                return ResourceManager.GetString("Relationships_Relationship_UID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Relationships.
         /// </summary>
         public static string Relationships_SheetName {
             get {
                 return ResourceManager.GetString("Relationships_SheetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject Asset Path.
+        /// </summary>
+        public static string Relationships_Subject_Asset_Path {
+            get {
+                return ResourceManager.GetString("Relationships_Subject_Asset_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject Asset Type Path.
+        /// </summary>
+        public static string Relationships_Subject_Asset_Type_Path {
+            get {
+                return ResourceManager.GetString("Relationships_Subject_Asset_Type_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject Asset Type UID.
+        /// </summary>
+        public static string Relationships_Subject_Asset_Type_UID {
+            get {
+                return ResourceManager.GetString("Relationships_Subject_Asset_Type_UID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject Display Name.
+        /// </summary>
+        public static string Relationships_Subject_Display_Name {
+            get {
+                return ResourceManager.GetString("Relationships_Subject_Display_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject UID.
+        /// </summary>
+        public static string Relationships_Subject_UID {
+            get {
+                return ResourceManager.GetString("Relationships_Subject_UID", resourceCulture);
             }
         }
         

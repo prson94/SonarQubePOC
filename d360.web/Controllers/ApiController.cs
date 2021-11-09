@@ -1133,7 +1133,6 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 model.Add("Name", assetType.Name);
                 model.Add("Description", assetType.Description);
                 model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
-                model.Add("CanOwnFusion", false);
                 model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
                 model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
                 model.Add("Class", assetType.Class);
@@ -2261,10 +2260,6 @@ from    (
 
             Dapper.DynamicParameters dbParams = new DynamicParameters();
 
-            List<string> objectsToExclude = new List<string> { "FusionAttribute" };
-
-            if (!string.IsNullOrEmpty(excludeObjects)) objectsToExclude.AddRange(excludeObjects.Split(','));
-
             var sql = @"select 
 										c.[Object], 
 										c.ObjectID, 
@@ -2281,12 +2276,11 @@ from    (
 										inner join  AssetDisplayValue as AD   on
 										AD.AssetID = C.ID
 										cross apply [dbo].getAssetUrlById(c.ID) cU                              
-										where c.[Object] not in @exclude and (AD.DisplayValue like @beginsWith or (len(@val) > 2 and AD.DisplayValue like @contains))";
+										where (AD.DisplayValue like @beginsWith or (len(@val) > 2 and AD.DisplayValue like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
             dbParams.Add("val", $"{phrase}%");
             dbParams.Add("contains", $"%{phrase}%");
-            dbParams.Add("exclude", objectsToExclude);
 
             var tags = Company.Query<TagSuggestionModel>(sql, dbParams);
 

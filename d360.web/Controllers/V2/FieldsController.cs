@@ -558,7 +558,6 @@ namespace d360.web.Controllers.V2
                 var lists = await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList");
                 var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var attributes = lists.Where(i => i.type == "A").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
-                var fusionAttributeTypes = lists.Where(i => i.type == "F").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var lookups = lists.Where(i => i.type == "L").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var filteredLookups = lists.Where(i => i.type == "FL").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
 
@@ -744,7 +743,6 @@ namespace d360.web.Controllers.V2
                     FilteredLookups = filteredLookups,
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
                     IntersectTypes = intersectTypes,
-                    FusionAttributeTypes = fusionAttributeTypes,
                     Lookups = lookups,
                     ComplexLookupRelations = complexLookupRelations.Select(x => new { ID = (int)x.ID, x.Name, x.DisplayName })
                 });
@@ -808,7 +806,6 @@ namespace d360.web.Controllers.V2
                 }
 
                 List<dynamic> filteredLookupItems = null;
-                List<dynamic> fusionItems = null;
                 List<dynamic> relationItems = null;
                 dynamic ownershipLookupSettings = null;
                 dynamic JsonElementSettings = null;
@@ -896,7 +893,6 @@ namespace d360.web.Controllers.V2
                 {
                     FieldType = ft,
                     FilteredLookupItems = filteredLookupItems,
-                    FusionItems = fusionItems,
                     JsonElementSettings,
                     OwnershipLookupSettings = ownershipLookupSettings,
                     RefListFromRelSettings = refListFromRelSettings,
