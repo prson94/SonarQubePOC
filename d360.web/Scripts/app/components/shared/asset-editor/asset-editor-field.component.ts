@@ -96,7 +96,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     private useColorMultiSelect: boolean = false;
     defaultColorOptions: SelectItem[] = [];
 
-    private component_uid: string = '';
+    componentUid: string = '';
 
     isLookupValuesLoading: boolean = false;
 
@@ -120,14 +120,14 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         private elRef: ElementRef
     ) {
         super(settingsService);
-        this.component_uid = Math.random().toString(36).substring(2);
-        this.dynEditorService.formUpdate.subscribe(res => {
+        this.componentUid = Math.random().toString(36).substring(2);
+        this.dynEditorService.formUpdate.subscribe((res) => {
             if (res) {
                 var assetUid = this.assetUid;
                 if (!assetUid)
                     assetUid = this.diagramNodeKey;
-                if (assetUid && assetUid == res.assetUid) {
-                    if (this.field.FieldName == res.fieldName) {
+                if (assetUid && assetUid === res.assetUid) {
+                    if (this.field.FieldName === res.fieldName) {
                         this.form.controls[res.fieldName].patchValue(res.fieldValue);
                     }
                 }
@@ -163,7 +163,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             let contents = quill.getContents();
 
             if (contents != null && contents.ops != null) {
-                let content = contents.ops.find(i => i.insert != null && i.insert != '\n');
+                let content = contents.ops.find((i) => i.insert !== null && i.insert !== '\n');
 
                 if (content != null) {
                     this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
@@ -177,41 +177,41 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     ngOnInit() {
-        if (this.field.FieldType != 'Link') {
-            this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
+        if (this.field.FieldType !== 'Link') {
+            this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe((data) => {
                 this.onFieldChanges(data);
             });
         }
         else {
-            this.fieldChangeSub = this.form.controls[this.field.FieldName + "_Url"].valueChanges.subscribe(data => {
+            this.fieldChangeSub = this.form.controls[this.field.FieldName + "_Url"].valueChanges.subscribe((data) => {
                 this.onFieldChanges(data);
             });
-            this.fieldChangeSub = this.form.controls[this.field.FieldName + "_Name"].valueChanges.subscribe(data => {
+            this.fieldChangeSub = this.form.controls[this.field.FieldName + "_Name"].valueChanges.subscribe((data) => {
                 this.onFieldChanges(data);
             });
         }
 
         if (this.editorChange != null) {
-            this.editorChangeSub = this.editorChange.subscribe(e => this.onEditorChange(e));
+            this.editorChangeSub = this.editorChange.subscribe((e) => this.onEditorChange(e));
         }
 
         this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
-            casc => {
-                if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
+            (casc) => {
+                if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId === this.field.FieldTypeID) {
                     if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
                         //load the values for the list that is a child                    
                         this.field.Items = [];
 
                         return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).subscribe(
-                            res => {
+                            (res) => {
                                 this.field.Items = res;
 
-                                if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
+                                if (((this.field.Items == null || this.field.Items.length === 0) && this.field.Value !== null) || this.hasCascadeLoaded) {
                                     this.field.Value = null;
                                 }
 
-                                if (this.field.DelayedLoadType == 'FieldFilter') {
-                                    if (this.field.Items == null || this.field.Items.length == 0) {
+                                if (this.field.DelayedLoadType === 'FieldFilter') {
+                                    if (this.field.Items === null || this.field.Items.length === 0) {
                                         this.form.controls[this.field.FieldName].disable();
                                     } else if (!this.field.ReadOnly) {
                                         this.form.controls[this.field.FieldName].enable();
@@ -222,7 +222,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
                                 this.ref.markForCheck();
                             }
-                        )
+                        );
                     } else {
                         this.field.Value = null;
                         this.field.Items = [];
@@ -237,7 +237,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 }
             });
 
-        if (this.field.DelayedLoadType == 'Predicate') {
+        if (this.field.DelayedLoadType === 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
                 res => {
                     this.field.Items = res.items;
@@ -278,8 +278,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
 
 
-        if (this.field.FieldType == 'Color') {
-            this.assetService.getAllColors().subscribe(x => {
+        if (this.field.FieldType === 'Color') {
+            this.assetService.getAllColors().subscribe((x) => {
                 this.defaultColorOptions = x;
             });
             this.colorValue = this.field.Value;
@@ -292,7 +292,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (this.field.FieldType === 'Relationship' && this.field.Value) {
             this.field.Items = this.field.Value;
-            var value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
+            var value = this.field.Items.filter((x) => x.Selected === true).map(x => x.Value);
             this.form.controls[this.field.FieldName].setValue(value);
 
             if (this.field?.MultiSelect && this.field.Value) {
@@ -319,12 +319,12 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 }
             });
 
-            if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
-                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
+            if (this.field.Value === null && this.field.Items.some((x) => x.Selected == true)) {
+                this.field.Value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
             }
             if (this.field?.MultiSelect && this.field.Value) {
                 this.lookupSelectedValue = [];
-                this.field.Items.filter(x => x.Selected == true).forEach((item) => {
+                this.field.Items.filter((x) => x.Selected === true).forEach((item) => {
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
                 this.selectSingleItem(null, { value: null });
@@ -373,14 +373,14 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     onFieldChanges(data: any) {
         this.isDirty = true;
-        if (this.field.FieldType == 'Lookup') {
+        if (this.field.FieldType === 'Lookup') {
             this.field.Value = data;
             this.listItemChange.emit({ field: this.field, value: data });
         }
-        else if (this.field.FieldType == 'Relationship') {
+        else if (this.field.FieldType === 'Relationship') {
             this.listItemChange.emit({ field: this.field, value: data });
 
-        } else if (this.field.FieldType == 'Html') {
+        } else if (this.field.FieldType === 'Html') {
             this.setEditorContent(data);
             this.field.Value = data;
         } else {
@@ -396,16 +396,16 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             return false;
         }
 
-        if (this.object == 'Tag' && this.field.Value) {
+        if (this.object === 'Tag' && this.field.Value) {
             if (this.field.Value.includes('|')) {
                 this.form.controls[this.field.FieldName].setErrors({ hasPipe: true });
                 return false;
             }
         }
 
-        if (this.selectedObject == 'TaskType' && this.field.Name == 'Name' && this.field.Value) {
+        if (this.selectedObject === 'TaskType' && this.field.Name === 'Name' && this.field.Value) {
 
-            if (this.disallowedNames.filter(x => x.toLowerCase().trim() == this.field.Value.toString().toLowerCase().trim()).length > 1) {
+            if (this.disallowedNames.filter((x) => x.toLowerCase().trim() === this.field.Value.toString().toLowerCase().trim()).length > 1) {
                 this.form.controls[this.field.FieldName].setErrors({ alreadyExistsProcess: true });
                 return false;
             }
@@ -424,10 +424,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         }
 
-        if (this.field.FieldType == "Link") {
-            if (this.form.controls[this.field.FieldName + '_Name'] == undefined
+        if (this.field.FieldType === "Link") {
+            if (this.form.controls[this.field.FieldName + '_Name'] === undefined
                 || this.form.controls[this.field.FieldName + '_Name'].disabled
-                || this.form.controls[this.field.FieldName + '_Url'] == undefined
+                || this.form.controls[this.field.FieldName + '_Url'] === undefined
                 || this.form.controls[this.field.FieldName + '_Url'].disabled
             ) {
                 return true;

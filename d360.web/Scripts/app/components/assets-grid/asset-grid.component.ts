@@ -453,7 +453,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 if (this.initialTotalRecords == null) {
                     this.initialTotalRecords = res.total;
                 }
-                if (this.items && this.items.length > 0 && autoSelect) this.selected = this.items[0];
+                if (this.items && this.items.length > 0 && autoSelect) {
+                    this.selected = this.items[0];
+                }
                 this.isLoading = false;
                 this.isLoadingChange.emit(false);
                 this.changeDetectorRef.markForCheck();

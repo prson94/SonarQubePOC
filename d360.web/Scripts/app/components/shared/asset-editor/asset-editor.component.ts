@@ -130,8 +130,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     ) {
         super(settingsService);
 
-        this.dynEditorService.formUpdate.subscribe(res => {
-            if (this.assetUid && this.assetUid == res.assetUid) {
+        this.dynEditorService.formUpdate.subscribe((res) => {
+            if (this.assetUid && this.assetUid === res.assetUid) {
                 if (this.dataModel) {
                     this.dataModel[res.fieldName] = res.fieldValue;
                 }
@@ -169,22 +169,22 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['objectID']) {
-            if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
+            if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue !== changes['objectID'].currentValue)) { // object has changed            
                 this.load();
             }
         }
         if (changes['objectTypeUid']) {
-            if (!changes['objectTypeUid'].isFirstChange() && (changes['objectTypeUid'].previousValue != changes['objectTypeUid'].currentValue)) { // object has changed            
+            if (!changes['objectTypeUid'].isFirstChange() && (changes['objectTypeUid'].previousValue !== changes['objectTypeUid'].currentValue)) { // object has changed            
                 this.load();
             }
         }
         if (changes['assetUid']) {
-            if (!changes['assetUid'].isFirstChange() && (changes['assetUid'].previousValue != changes['assetUid'].currentValue)) { // object has changed            
+            if (!changes['assetUid'].isFirstChange() && (changes['assetUid'].previousValue !== changes['assetUid'].currentValue)) { // object has changed            
                 this.load();
             }
         }
         if (changes['isModalVisible']) {
-            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
+            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue !== changes['isModalVisible'].currentValue)) { // visibility has changed            
                 this.savingInProgress = false;
                 this.load();
             }
@@ -200,7 +200,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     public load() {
         this.isInErrorMessage = '';
         this.isInError = false;
-        if (this.selection != undefined) {
+        if (typeof this.selection === "undefined") {
             this.editedItem = _.cloneDeep(this.selection);
         } else {
             this.editedItem = {};
@@ -212,11 +212,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
         if (this.selection) {
-            if (this.objectType == 'IntersectType' || this.objectType == 'Predicate')
+            if (this.objectType === 'IntersectType' || this.objectType === 'Predicate') {
                 id = this.selection.Uid;
+            }
 
-            if (this.selection.uid)
+            if (this.selection.uid) {
                 id = this.selection.uid;
+            }
 
             if (this.selection.UID) {
                 id = this.selection.UID;
@@ -250,7 +252,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 this.createParams,
                 this.editParams,
                 this.action
-            ).subscribe(result => {
+            ).subscribe((result) => {
                 this.handleEditor(result);
             });
         }
@@ -258,16 +260,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     }
 
     handleEditor(result: EditorField[]) {
-
         if (this.dataModel) {
-            result.forEach(res => {
-                if (res.Name == 'Name') {
+            result.forEach((res) => {
+                if (res.Name === 'Name') {
                     res.Value = this.dataModel['Name'];
                 }
             });
         }
-
-        if ((result as any).type && (result as any).type == "error") {
+        if ((result as any).type && (result as any).type === "error") {
             this.isInErrorMessage = (result as any).message;
             this.isInError = true;
             this.isLoading = false;
@@ -280,10 +280,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.isLoading = false;
             this.categories = [];
 
-            result = _.orderBy(result, [field => field.Row ? field.Row : 0], ['asc']);
+            result = _.orderBy(result, [(field) => field.Row ? field.Row : 0], ['asc']);
             this.fields = result;
 
-            this.fields.forEach(f => {
+            this.fields.forEach((f) => {
                 if (f.Category == null) {
                     currentCategory = "";
                     if (f.FieldName === 'ParentUid') {
@@ -295,11 +295,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
 
 
-                if (this.categories.findIndex(dc => dc.name == currentCategory) == -1) {
+                if (this.categories.findIndex((dc) => dc.name === currentCategory) === -1) {
                     let category = new EditorCategory();
                     category.name = currentCategory;
                     category.rows = [];
-                    if (currentCategory == "") {
+                    if (currentCategory === "") {
                         this.categories.unshift(category);
                     }
                     else {
@@ -309,19 +309,19 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
 
 
-                if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
+                if (f.FieldType && f.FieldType.toUpperCase() === 'BOOLEAN') {
                     if (f.Value) {
                         /* checkbox doesnt work binding to a string */
-                        f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false);
+                        f.Value = (f.Value.toUpperCase() === "TRUE" ? true : false);
                     }
                     else {
                         f.Value = undefined;
                     }
                 }
 
-                let curCategory = this.categories.find(dc => dc.name == currentCategory);
+                let curCategory = this.categories.find(dc => dc.name === currentCategory);
 
-                let r = curCategory.rows.find(r => r.Row == (f.Row || 0));
+                let r = curCategory.rows.find((r) => r.Row === (f.Row || 0));
                 if (r) {
                     r.Fields.push(f);
                 } else {
@@ -334,18 +334,18 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             });
 
 
-            this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
-            this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
+            this.fore = this.fields.find((f) => f.FieldType === 'Color' && f.FieldName === 'IconForeColor');
+            this.back = this.fields.find((f) => f.FieldType === 'Color' && f.FieldName === 'IconBackColor');
 
-            if (this.fore != null && this.back != null) {
+            if (this.fore !== null && this.back !== null) {
                 this.hasIconFields = true;
             }
 
             this.form = this.toFormGroup(this.fields);
             if (this.useModelBinding) {
-                this.form.valueChanges.subscribe(x => {
+                this.form.valueChanges.subscribe((x) => {
                     this.onSubmit();
-                })
+                });
 
                 setTimeout(() => this.onSubmit(), 20);
             }
@@ -365,9 +365,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     toFormGroup(editorField: EditorField[]) {
         let group: any = {};
 
-        editorField.forEach(field => {
+        editorField.forEach((field) => {
             //if its a link we need to add two fields a link and name            
-            if (field.FieldType == "Link") {
+            if (field.FieldType === "Link") {
                 let parts = (field.Value ? field.Value.split("|") : []);
                 let url = "";
                 let name = "";
@@ -383,11 +383,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
-            } else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
+            } else if (field.FieldType === "DateTime" || field.FieldType === "Date") {
                 if (field.Value != null) {
                     let date = new Date(field.Value);
 
-                    if (field.FieldType == "DateTime") {
+                    if (field.FieldType === "DateTime") {
                         date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
                     }
 
@@ -398,11 +398,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     value: (field.Value),
                     disabled: field.ReadOnly
                 }, this.getFieldValidators(field));
-            } else if (field.FieldType == 'Tag') {
+            } else if (field.FieldType === 'Tag') {
                 if (field.Value) {
                     var arr = (field.Value as string).split('|');
                     var arrValue: SelectItem[] = [];
-                    arr.forEach(tag => {
+                    arr.forEach((tag) => {
                         arrValue.push({ title: tag, value: '' });
                     })
                     field.Value = arrValue;
@@ -414,12 +414,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }, this.getFieldValidators(field));
             }
             else {
-                if (field.FieldType == "Relationship" && this.selection) {
+                if (field.FieldType === "Relationship" && this.selection) {
                     if (field.Value != null) {
                         field.Value = JSON.parse(field.Value);
                     }
                 }
-                else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
+                else if (field.FieldType === "Lookup" && !field.Value && this.selection) {
                     let selected = field.Items.filter(x => x.Selected);
                     field.Value = [];
 

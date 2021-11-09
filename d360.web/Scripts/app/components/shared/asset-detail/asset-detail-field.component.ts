@@ -148,7 +148,7 @@ export class AssetDetailFieldComponent {
                     this.field.Value = res[0].DisplayPath;
                 }
                 this.isPathRefreshing = false;
-            })
+            });
     }
 }
 
