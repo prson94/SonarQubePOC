@@ -228,7 +228,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                         this.field.Items = [];
                         this.form.controls[this.field.FieldName].setValue(null);
 
-                        if (this.field.DelayedLoadType == 'FieldFilter') {
+                        if (this.field.DelayedLoadType === 'FieldFilter') {
                             this.form.controls[this.field.FieldName].disable();
                         }
 
@@ -285,7 +285,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.colorValue = this.field.Value;
         }
 
-        if ((this.field.FieldType == 'Date' || this.field.FieldType == 'DateTime') && isNaN(Date.parse(this.field.Value))) {
+        if ((this.field.FieldType === 'Date' || this.field.FieldType === 'DateTime') && isNaN(Date.parse(this.field.Value))) {
             this.field.Value = null;
             this.form.controls[this.field.FieldName].setValue(this.field.Value);
         }
@@ -442,16 +442,16 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         for (let i = 0; i < numInputs.length; i++) {
             let elem = numInputs[i] as HTMLInputElement;
 
-            if (elem.validity.badInput && elem.validationMessage == "Please enter a number.") {
-                if (this.field.FieldType == 'Number' && this.field.FieldName == elem.name) {
+            if (elem.validity.badInput && elem.validationMessage === "Please enter a number.") {
+                if (this.field.FieldType === 'Number' && this.field.FieldName === elem.name) {
                     this.form.controls[this.field.FieldName].setErrors({ integer: true });
                 }
-                if (this.field.FieldType == 'Decimal' && this.field.FieldName == elem.name) {
+                if (this.field.FieldType === 'Decimal' && this.field.FieldName === elem.name) {
                     this.form.controls[this.field.FieldName].setErrors({ number: true });
                 }
             }
 
-            if (this.field.FieldType == 'Number') {
+            if (this.field.FieldType === 'Number') {
                 if (elem.value.split('.').length > 1
                     || elem.value.split('+').length > 1
                     || (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1)
@@ -462,18 +462,19 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                         this.form.controls[this.field.FieldName].setErrors({ integer: true });
                     }
                 }
-                else if (elem.name == "ValidForDays") {
-                    if (+elem.value < 1 || +elem.value > 365)
+                else if (elem.name === "ValidForDays") {
+                    if (+elem.value < 1 || +elem.value > 365) {
                         this.form.controls[this.field.FieldName].setErrors({ validDay: true });
+                    }
                 }
-            } else if (this.field.FieldType == 'Decimal') {
+            } else if (this.field.FieldType === 'Decimal') {
                 if (elem.value.split('.').length > 2
                     || elem.value.split('+').length > 1
                     || (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1)
                     || elem.value.split('e').length > 1
                     || elem.value.split('E').length > 1
                 ) {
-                    if (this.field.FieldName == elem.name) {
+                    if (this.field.FieldName === elem.name) {
                         this.form.controls[this.field.FieldName].setErrors({ number: true });
                     }
                 }
@@ -500,7 +501,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         let message = "";
         let errors = this.form.controls[field].errors;
 
-        if (this.form.controls[field] == undefined) {
+        if (typeof this.form.controls[field] === "undefined") {
             return '';
         }
 
@@ -577,7 +578,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         let val = +e.target.value;
         let newVal = +val.toFixed(precision);
 
-        if (e == null || e.target == null || precision == null) {
+        if (e === null || e.target === null || precision === null) {
             return;
         }
 
@@ -585,7 +586,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             return;
         }
 
-        if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
+        if (newVal !== null && (newVal !== 0 || newVal !== +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
             this.field.Value = newVal;
         }
@@ -595,19 +596,20 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         let val = e.target.value;
         let newVal = FormHelpers.clamp(val, min, max, precision);
 
-        if (e == null || e.target == null || min == null || max == null) {
+        if (e === null || e.target === null || min === null || max === null) {
             return;
         }
 
-        if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
+        if (newVal !== null && (newVal !== 0 || newVal !== +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
             this.field.Value = newVal;
         }
     }
 
     multiselectLabel(): string {
-        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items == null || this.field.Items.length == 0))
+        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items === null || this.field.Items.length === 0)) {
             return `Select a ${this.field.ParentFieldTypeName}`;
+        }
         return "Choose";
     }
 
@@ -629,7 +631,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     private onSelect(e: EditorDropDownItem) {
-        if (e != null) {
+        if (e !== null) {
             this.field.Value = e.Value;
         } else {
             this.field.Value = null;
@@ -645,46 +647,49 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     private onEditorChange(event: any) {
-        if (event == null || event.field == null)
+        if (event === null || event.field === null)
             return;
 
         let field = event.field;
 
 
-        if (this.field.FieldType == 'Relationship') {
+        if (this.field.FieldType === 'Relationship') {
             this.filterSemanticRelationItems(field);
         }
     }
 
     private filterSemanticRelationItems(field: any) {
 
-        if (field.FieldName == this.field.FieldName)
+        if (field.FieldName === this.field.FieldName)
             return;
 
-        if (this.field.FieldType == 'Relationship' && this.field.IsSemantic === true) {
-            if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
-                if (field.Items == null)
+        if (this.field.FieldType === 'Relationship' && this.field.IsSemantic === true) {
+            if (field.FieldType === 'Relationship' && field.IsSemantic === true) {
+                if (field.Items === null) {
                     return;
+                }
 
                 let selectedItems = field.Value.split(',');
 
-                field.Items.forEach(i => {
-                    let selected = selectedItems.findIndex(s => s == i.Value) > -1;
+                field.Items.forEach((i) => {
+                    let selected = selectedItems.findIndex((s) => s === i.Value) > -1;
                     if (selected) {
-                        let ix = this.field.Items.findIndex(r => r.Value == i.Value);
+                        let ix = this.field.Items.findIndex((r) => r.Value === i.Value);
 
                         if (ix > -1) {
                             let item = this.field.Items.slice()[ix];
                             this.field.Items.splice(ix, 1);
-                            if (this.excludedRelationitems[field.FieldName] == null)
+                            if (this.excludedRelationitems[field.FieldName] === null) {
                                 this.excludedRelationitems[field.FieldName] = [];
+                            }
                             this.excludedRelationitems[field.FieldName].push(item);
                         }
 
                     } else {
-                        if (this.excludedRelationitems[field.FieldName] == null)
+                        if (this.excludedRelationitems[field.FieldName] === null) {
                             return;
-                        let ix = this.excludedRelationitems[field.FieldName].findIndex(r => r.Value == i.Value);
+                        }
+                        let ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value === i.Value);
                         if (ix > -1) {
                             let item = this.excludedRelationitems[field.FieldName].slice()[ix];
                             this.excludedRelationitems[field.FieldName].splice(ix, 1)
@@ -706,20 +711,23 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         }
 
-        return this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true;
+        return this.field.Validations && this.field.Validations.some(x => x.rule === 'required') == true;
     }
 
     getPlaceholder() {
-        if (this.isRequired())
+        if (this.isRequired()) {
             return 'Value required';
-        else return 'Optional';
+        }
+        else {
+            return 'Optional';
+        }
     }
 
     getfilterplaceholder() {
         var strfiltePH = 'Search colors';
         if (this.field) {
-            if (this.field.Name != null) {
-                if (this.selectedObject == 'TaskType' && this.field.FieldName == 'GovernanceRole') {
+            if (this.field.Name !== null) {
+                if (this.selectedObject === 'TaskType' && this.field.FieldName === 'GovernanceRole') {
                     strfiltePH = 'Search roles';
                 }
             }
@@ -771,7 +779,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
             this.ref.detectChanges();
         });
-        //    this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
     }
 
     onItemSelected(event) {

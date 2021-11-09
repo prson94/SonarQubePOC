@@ -707,7 +707,7 @@ namespace d360.web.Controllers
                                         fld.DelayedLoadType = "Predicate";
                                     }
                                 }
-                                else if(loadLookupValues || !string.IsNullOrEmpty(f?.DefaultValue))
+                                else if (loadLookupValues || !string.IsNullOrEmpty(f?.DefaultValue))
                                 {
                                     if (!f.IsRequired && !f.AllowMultipleValues)
                                     {
@@ -1052,12 +1052,6 @@ namespace d360.web.Controllers
 
                                     if (loadOnlySelectedLookupValue)
                                     {
-                                        string selectedValue = null;
-                                        if (f != null && !string.IsNullOrWhiteSpace(f.Value))
-                                            selectedValue = f.Value;
-                                        else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
-                                            selectedValue = ft.DefaultValue;
-
                                         if (lookupValues.Count > 0)
                                         {
                                             items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })

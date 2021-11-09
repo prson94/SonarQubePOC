@@ -430,13 +430,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     if (field.Value.length == 0) {
                         field.Value = null;
                     }
-                } else if (field.FieldType == "Lookup" && field.Value) {
+                } else if (field.FieldType === "Lookup" && field.Value) {
                     if (field.Value != null && field.MultiSelect && typeof field.Value === "string") {
                         field.Value = field.Value.split(',');
                     }
                 }
                 var setDisabled = field.ReadOnly;
-                if (field.FieldType == "Lookup" && !field.Value && field.DelayedLoadType == 'FieldFilter') {
+                if (field.FieldType === "Lookup" && !field.Value && field.DelayedLoadType === 'FieldFilter') {
                     setDisabled = true;
                 }
 
@@ -463,9 +463,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     if (vals.length == 2) {
                         maxLen = +vals[1];
 
-                        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                        if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                             validators.push(Validators.max(maxLen));
-                        } else {
+                        }
+                        else {
                             validators.push(Validators.maxLength(maxLen));
                         }
 
@@ -474,7 +475,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                             minLen = +minParts[1];
 
                             if (minLen > 1) {
-                                if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                                if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                                     validators.push(Validators.min(minLen));
                                 } else {
                                     // only min length > 1
@@ -488,7 +489,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 } else if (validation.rule && validation.rule.startsWith('minLength=')) {
                     minLen = +validation.rule.split('=').pop();
 
-                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                    if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                         validators.push(Validators.min(minLen));
                     } else {
                         validators.push(Validators.minLength(minLen));
@@ -496,7 +497,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 } else if (validation.rule && validation.rule.startsWith('maxLength=')) {
                     maxLen = +validation.rule.split('=').pop();
 
-                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                    if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                         validators.push(Validators.max(maxLen));
                     } else {
                         validators.push(Validators.maxLength(maxLen));
@@ -513,25 +514,25 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             validators.push(Validators.required);
         }
 
-        if (field.FieldType == 'Number') {
+        if (field.FieldType === 'Number') {
             validators.push(FormHelpers.integerValidator);
 
-            if (validators.indexOf(Validators.min) == -1) {
+            if (validators.indexOf(Validators.min) === -1) {
                 validators.push(Validators.min(minLen));
             }
 
-            if (validators.indexOf(Validators.max) == -1) {
+            if (validators.indexOf(Validators.max) === -1) {
                 validators.push(Validators.max(maxLen));
             }
         }
-        if (field.FieldType == 'Decimal') {
+        if (field.FieldType === 'Decimal') {
             validators.push(FormHelpers.numberValidator);
 
-            if (validators.indexOf(Validators.min) == -1) {
+            if (validators.indexOf(Validators.min) === -1) {
                 validators.push(Validators.min(minLen));
             }
 
-            if (validators.indexOf(Validators.max) == -1) {
+            if (validators.indexOf(Validators.max) === -1) {
                 validators.push(Validators.max(maxLen));
             }
         }
@@ -548,24 +549,24 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.savingInProgressWithAddNew = true;
         }
 
-        let action = (this.selection == null ? "new" : "edit");
+        let action = (this.selection === null ? "new" : "edit");
         let values: any = {};
 
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
-                let field = this.fields.find(f => f.FieldName == p);
+                let field = this.fields.find((f) => f.FieldName == p);
 
                 if (this.form.value[p] instanceof Date) {
-                    if (field != null && field.FieldType == 'Date' && this.isV2API) {
+                    if (field != null && field.FieldType === 'Date' && this.isV2API) {
                         let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
-                        if (simpleDate.indexOf('NaN') != -1) {
+                        if (simpleDate.indexOf('NaN') !== -1) {
                             simpleDate = '';
                         }
                         this.form.value[p] = simpleDate;
                     }
-                    else if (field != null && field.FieldType == 'DateTime' && this.isV2API) {
-                        if (this.form.value[p] != 'Invalid Date')
+                    else if (field !== null && field.FieldType === 'DateTime' && this.isV2API) {
+                        if (this.form.value[p] !== 'Invalid Date')
                             this.form.value[p] = new Date(this.form.value[p]).toISOString();
                         else
                             this.form.value[p] = '';
@@ -574,10 +575,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
                     }
                 }
-                else if (field != null && field.FieldType == 'Tag') {
+                else if (field !== null && field.FieldType === 'Tag') {
                     var arr = this.form.value[p] as SelectItem[];
                     if (arr) {
-                        this.form.value[p] = arr.map(x => x.title).join('|');
+                        this.form.value[p] = arr.map((x) => x.title).join('|');
                     }
                 }
                 else if (field != null && (field.FieldType === 'Number' || field.FieldType === 'Decimal')) {
@@ -607,7 +608,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API || this.useV2ApiLink) {
-            let links = this.fields.filter(x => x.FieldType == 'Link');
+            let links = this.fields.filter((x) => x.FieldType === 'Link');
             //need to get the link and url for each            
             for (let link of links) {
                 let url = values[link.FieldName + '_Url'];
@@ -615,7 +616,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 let name = values[link.FieldName + '_Name'];
                 delete values[link.FieldName + '_Name'];
                 //No name and url, use empty string rather than '|'
-                values[link.FieldName] = (name == '' && url == '') ? `` : `${name}|${url}`;
+                values[link.FieldName] = (name === '' && url === '') ? `` : `${name}|${url}`;
             }
 
         }
@@ -651,14 +652,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         //convert artifact to an asset
         for (var p in values) {
-            if (p.toUpperCase() == "PARENTUID") {
-                if (values[p] != "00000000-0000-0000-0000-000000000000")
+            if (p.toUpperCase() === "PARENTUID") {
+                if (values[p] !== "00000000-0000-0000-0000-000000000000")
                     asset.ParentUid = values[p];
             }
-            else if (p.toUpperCase() == "UID") {
+            else if (p.toUpperCase() === "UID") {
                 asset.Uid = values[p];
             }
-            else if (p.toUpperCase() == "ASSETTYPEUID") {
+            else if (p.toUpperCase() === "ASSETTYPEUID") {
                 //ignore
             }
             else {
@@ -667,7 +668,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         }
 
         this.assetService.saveAsset(this.objectTypeUid, asset)
-            .subscribe(res => {
+            .subscribe((res) => {
                 event.Success = res.Success;
 
                 if (res.Success) {
@@ -707,23 +708,23 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         var field = event.field;
         var value = event.value;
 
-        if (field == null || this.fields == null || this.fields.length <= 0) {
+        if (field === null || this.fields === null || this.fields.length <= 0) {
             return;
         }
 
-        if (this.objectType == "ExportTemplate" && field.Name == "Asset Type") {
-            var item = field.Items.filter(x => {
+        if (this.objectType === "ExportTemplate" && field.Name === "Asset Type") {
+            var item = field.Items.filter((x) => {
                 return x.Value == field.Value
             })[0];
             if (item && item.Text.startsWith("Rule")) {
-                this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "no-display";
+                this.fields.find(x => x.FieldName === "IncludeParent").FieldType = "no-display";
                 this.ref.detectChanges();
             } else {
-                this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "Boolean";
+                this.fields.find(x => x.FieldName === "IncludeParent").FieldType = "Boolean";
                 this.ref.detectChanges();
             }
         }
-        if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
+        if (field.FieldType === 'Relationship' && field.IsSemantic === true) {
             this.editorChange.next(event);
         }
 
@@ -732,7 +733,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         }
 
         this.fields.forEach(editorField => {
-            if (editorField.ParentFieldTypeID == field.FieldTypeID) {
+            if (editorField.ParentFieldTypeID === field.FieldTypeID) {
                 this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);
             }
         });

@@ -2298,8 +2298,8 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                     var data = new
                     {
-                        items = items,
-                        count = count
+                        items,
+                        count
                     };
 
                     return Request.CreateResponse(HttpStatusCode.OK, data);
