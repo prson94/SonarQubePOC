@@ -12,14 +12,18 @@ export class SiteMenuManageFavoritesPanelComponent {
     constructor(public store: FavoritesManagementService) {
     }
 
+    isLoading$ = this.store.state$.pipe(
+        map(state => state.loadingCounter > 0)
+    );
+
     favorites$ = this.store.state$.pipe(
         map(state => state.homepageAndFavorites?.Favorites ?? [])
     );
 
     allFavoritesRemovalStatus$ = this.store.state$.pipe(
         map(state => {
-            const allFavoriteUids = state.homepageAndFavorites.Favorites.map(f => f.Uid);
-            const removalStatus = allFavoriteUids.map(uid => state.removeFavoritesByUid.get(uid) ?? false);
+            const allFavoriteIds = state.homepageAndFavorites.Favorites.map(f => f.Id);
+            const removalStatus = allFavoriteIds.map(id => state.removeFavoritesByIds.get(id) ?? false);
             const removeEverything = _.every(removalStatus, x => x === true);
             if (removeEverything) {
                 return true;
@@ -38,9 +42,9 @@ export class SiteMenuManageFavoritesPanelComponent {
         map(removalStatus => removalStatus != false)
     );
 
-    getFavoriteRemovalStatus(favoriteUid: string){
+    getFavoriteRemovalStatus(favoriteId: number){
         return this.store.state$.pipe(
-            map(state => state.removeFavoritesByUid.get(favoriteUid) ?? false)
+            map(state => state.removeFavoritesByIds.get(favoriteId) ?? false)
         );
     }
 

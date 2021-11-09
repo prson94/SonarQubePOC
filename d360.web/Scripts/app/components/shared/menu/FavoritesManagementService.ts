@@ -23,6 +23,10 @@ abstract class BaseStore<TState> extends BaseComponent {
         return this.mutableState$.asObservable();
     }
 
+    protected get currentState() {
+        return this.mutableState$.value;
+    }
+
     protected init(state: TState) {
         this.mutableState$.next(state);
     }
@@ -53,22 +57,34 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
         this.init(initialState);
     }
 
+    public increaseLoadingCounterAction() {
+        this.mutate(state => {
+            state.loadingCounter = state.loadingCounter + 1;
+        });
+    }
+
+    public decreaseLoadingCounterAction() {
+        this.mutate(state => {
+            state.loadingCounter = state.loadingCounter - 1;
+        });
+    }
+
     public toggleManageFavoritesAction() {
         this.mutate(state => {
             state.isManageFavoritesModeEnabled = !state.isManageFavoritesModeEnabled;
         });
     }
 
-    public setFavoriteRemovalAction(payload: { favoriteUid: string, remove: boolean }) {
+    public setFavoriteRemovalAction(payload: { favoriteId: number, remove: boolean }) {
         this.mutate(state => {
-            state.removeFavoritesByUid.set(payload.favoriteUid, payload.remove);
+            state.removeFavoritesByIds.set(payload.favoriteId, payload.remove);
         });
     }
 
     public setAllFavoritesRemovalAction(payload: { remove: boolean }) {
         this.mutate(state => {
             for (const favorite of state.homepageAndFavorites.Favorites) {
-                state.removeFavoritesByUid.set(favorite.Uid, payload.remove);
+                state.removeFavoritesByIds.set(favorite.Id, payload.remove);
             }
         });
     }
@@ -76,16 +92,27 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
     public setFavoritesAction(payload: { homefav: HomepageAndFavoritesModel }) {
         this.mutate(state => {
             state.homepageAndFavorites = payload.homefav;
-            state.removeFavoritesByUid = new Map();
+            state.removeFavoritesByIds = new Map();
         })
     }
 
     public removeFavoritesSaga() {
-        // TODO: this should remove only specified favorites;
-        this.favoritesService.deleteCurrentUsersFavoritesV2().subscribe(
+        const favoriteIds = Array
+            .from(this.currentState.removeFavoritesByIds.entries())
+            .filter(([id, remove]) => remove === true)
+            .map(([id]) => id);
+
+        this.increaseLoadingCounterAction();
+        this.favoritesService.deleteCurrentUsersFavoritesV2(favoriteIds).subscribe(
             result => {
                 this.showMessageForResult(this.messagesService, result);
-                this.headerActionsService.emitFavoritesChange()
+                this.headerActionsService.emitFavoritesChange();
+                this.toggleManageFavoritesAction();
+                this.decreaseLoadingCounterAction();
+                // TODO: close menu if there are no items left
+            },
+            error => {
+                this.decreaseLoadingCounterAction();
             }
         );
     }
@@ -95,8 +122,15 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
             return;
         }
 
+        this.increaseLoadingCounterAction();
         this.favoritesService.getHomePageAndFavorites().subscribe(
-            homefav => this.setFavoritesAction({ homefav })
+            homefav => {
+                this.setFavoritesAction({ homefav });
+                this.decreaseLoadingCounterAction();
+            },
+            error => {
+                this.decreaseLoadingCounterAction();
+            }
         );
     }
 }
@@ -104,11 +138,14 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
 interface FavoritesManagementState {
     isManageFavoritesModeEnabled: boolean;
     homepageAndFavorites: HomepageAndFavoritesModel | null;
-    removeFavoritesByUid: Map<string, boolean>;
+    // TODO: consider using Set
+    removeFavoritesByIds: Map<number, boolean>;
+    loadingCounter: number;
 }
 
 const initialState: FavoritesManagementState = {
     isManageFavoritesModeEnabled: false,
     homepageAndFavorites: null,
-    removeFavoritesByUid: new Map()
+    removeFavoritesByIds: new Map(),
+    loadingCounter: 0
 }

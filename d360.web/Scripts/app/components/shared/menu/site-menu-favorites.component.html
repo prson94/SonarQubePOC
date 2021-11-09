@@ -1,9 +1,7 @@
-<ng-template #customPanelContent>
-	<d3s-site-menu-manage-favorites-panel></d3s-site-menu-manage-favorites-panel>
-</ng-template>
 
-<!-- TODO: check if we need to show Favorites when they are empty -->
 <!-- TODO: check why favorites menu is hidden when we click inside -->
+<!-- TODO: explanation tooltip when there are no favorites -->
+<!-- TODO: should reset manage mode when empty -->
 <d3s-site-menu-category 
 	*ngIf="menu"
 	[expanded]="expanded"
@@ -14,6 +12,10 @@
 	(clearClick)="clearFavorites()"
 	(activeItemChanged)="handleActiveItem($event);"
 	rootIconName="fa-star">
+	<ng-template #customPanelContent>
+		<d3s-site-menu-manage-favorites-panel></d3s-site-menu-manage-favorites-panel>
+	</ng-template>
+	
 	<ng-container additionalButtons>
 		<button (click)="store.toggleManageFavoritesAction()"
 			igButton

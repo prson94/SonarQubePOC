@@ -1228,12 +1228,13 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             dbArgs.Add("resourceId", resourceID);
 
-            string sql = $@"select q.[Name], q.[Route], q.[Type], q.[Uid] from (
+            string sql = $@"select q.[Id], q.[Name], q.[Route], q.[Type], q.[Uid] from (
 select	coalesce(AName.DisplayValue, TA.[Name]) as [Name],
 		lower(f.[Type] +'/' + convert(nvarchar(50),f.[Uid])) as [Route],
 		f.[Type],
 		f.SortOrder,
-        f.[Uid]
+        f.[Uid],
+        f.[ID] as Id
 from	Favorite f
 		left join Asset a on a.[Object] = f.[Object] and a.[ObjectID] = f.[ObjectID]
 		left join AssetType ta on ta.[Object] = f.[Object] and ta.[ObjectID] = f.[ObjectID]
@@ -1244,7 +1245,8 @@ select		coalesce(f.Name, f.Route) as Name,
 			f.Route as [Route],
 			f.[Type],
 			f.SortOrder,
-            f.[Uid]
+            f.[Uid],
+            f.[ID] as Id
 from		Favorite f	
 where		f.ObjectID is null 
 			and f.ResourceID = @resourceId
@@ -1571,12 +1573,16 @@ order by	q.SortOrder";
             }
         }
 
-        public WorkHttpStatus DeleteFavorites(int resourceID)
+        // TODO: get rid of WorkHttpStatus
+        public WorkHttpStatus DeleteFavorites(int resourceID, List<int> favoriteIds)
         {
             try
             {
-                CompanyContext.Delete<Favorite>(i => i.ResourceID == resourceID && !i.IsHomePage);
-                return new WorkHttpStatus(HttpStatusCode.OK, "Success", "Favorites List Cleared.");
+                // TODO: make async??
+                // TODO: ensure that delete deletes everything
+                CompanyContext.Delete<Favorite>(i => i.ResourceID == resourceID && !i.IsHomePage && favoriteIds.Contains(i.ID));
+                // TODO: resources
+                return new WorkHttpStatus(HttpStatusCode.OK, "Success", "Successfully deleted specified favorites");
             }
             catch
             {

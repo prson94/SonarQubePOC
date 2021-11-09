@@ -1167,29 +1167,30 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
         /// <summary>
-        /// Clears the list of favorite items for the current user
+        /// Given list of routes, deletes the favorite for the current user
         /// </summary>
         /// <returns></returns>
         [
-        HttpDelete,
-        Route("users/me/favorites"),
-        SwaggerResponse(HttpStatusCode.OK, ""),
-        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            HttpPost,
+            Route("users/me/favorites/bulkDelete"),
+            SwaggerResponse(HttpStatusCode.OK, ""),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> ClearFavorites()
+        public async Task<IHttpActionResult> DeleteFavorites(List<int> favoriteIds)
         {
-            var prefix = "Membership.ClearFavorites => ";
+            // TODO: autogenerate prefix via CallerMemberName attribute
+            var prefix = $"Membership.ClearFavorites => ";
 
             try
             {
-                var result = membershipRepository.DeleteFavorites(_company.CurrentResourceID);
+                var result = membershipRepository.DeleteFavorites(_company.CurrentResourceID, favoriteIds);
 
                 if (result.StatusCode != HttpStatusCode.OK)
                 {
-                    return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message)).ConfigureAwait(false);
+                    return errorMessageResponse(result.StatusCode, result.Error, result.Message);
                 }
 
-                return await Task.FromResult(successMessageResponse(result.StatusCode,ApiMessages.Success, result.Message)).ConfigureAwait(false);
+                return successMessageResponse(result.StatusCode, ApiMessages.Success, result.Message);
             }
             catch (Exception ex)
             {
@@ -1198,7 +1199,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage);
             }
         }
 

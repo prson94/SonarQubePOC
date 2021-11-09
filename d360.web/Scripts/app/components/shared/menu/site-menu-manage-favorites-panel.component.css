@@ -12,3 +12,7 @@
 .removeButton {
     margin-left: auto;
 }
+
+d3s-loading {
+    color: black;
+}
