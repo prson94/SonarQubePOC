@@ -123,7 +123,7 @@ export class RelationshipsService extends BaseObservableService {
         );
     }
     exportRelationshipTypeItems(relType: RelationshipType) {
-        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship type items'));
+        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Relationships'));
     }
 
     exportRelationshipTypes() {
