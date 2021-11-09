@@ -91,6 +91,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     assetsWithAlerts: string[] = [];
     selectedAssetsWithAlerts: string[] = [];
     totalAlertCount = 0;
+    showEditor: boolean = false;
 
     diagramTypeSpecifiedInPath = DiagramType.Lineage;
     isDiagramTypeSpecifiedInPath = false;
@@ -4081,5 +4082,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 return `The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
             }
         }
+    }
+
+    onEditClick($event) {
+        this.selectedDiagramAsset.AssetTypeUid = $event.assetTypeUid;
+        this.showEditor = true;
     }
 }

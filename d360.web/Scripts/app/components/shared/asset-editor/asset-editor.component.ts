@@ -211,7 +211,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
-
+        debugger;
         if (this.selection) {
             if (this.objectType == 'IntersectType' || this.objectType == 'Predicate')
                 id = this.selection.Uid;
@@ -221,6 +221,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
             if (this.selection.UID) {
                 id = this.selection.UID;
+            }
+            if (this.selection.Uid) {
+                id = this.selection.Uid;
             }
 
             //For ones recieved from GET V2 Asset API

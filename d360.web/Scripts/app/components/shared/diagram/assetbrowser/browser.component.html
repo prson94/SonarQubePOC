@@ -177,8 +177,28 @@
                                                                      [showHeader]="true"
                                                                      [hasAddRelationshipsPermissions]="false"
                                                                      [hasModifyRelationshipsPermissions]="false"
-                                                                     [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                                                     [hasDeleteRelationshipsPermissions]="false"
+                                                                     (onEditClick)="onEditClick($event)"></ig-asset-detail>
                                                 </div>
+
+                                                <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+                                                           (onClose)="showEditor=false"
+                                                           [showTitle]="false"
+                                                           [isVisible]="showEditor">
+                                                    <asset-editor #dynamicEditor
+                                                                  *ngIf="showEditor"
+                                                                  [objectID]="selectedDiagramAsset.Uid"
+                                                                  [objectType]="selectedDiagramAsset.Object"
+                                                                  [title]="'Edit Asset'"
+                                                                  [selection]="selectedDiagramAsset"
+                                                                  [objectTypeUid]="selectedDiagramAsset.AssetTypeUid"
+                                                                  [assetTypePath]="selectedDiagramAsset.TypeName"
+                                                                  (saveClick)="showEditor=false;"
+                                                                  [showAsModal]="true"
+                                                                  [isV2API]="true"
+                                                                  (closeClick)="showEditor = false;"></asset-editor>
+
+                                                </d3s-modal>
                                             </ng-container>
                                             <ng-container *ngIf="panel_InformationHasReadAccess == false">
                                                 <div #infoDetailPanel class="empty-overlay">
