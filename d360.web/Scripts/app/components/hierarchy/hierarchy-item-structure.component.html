@@ -1,11 +1,11 @@
 ﻿<div class="row hierarchy-grid">
     <div class="col s12" style="display:flex">
         <div class="tile tile-detail main-panel">
-            <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
+            <div *ngIf="!showDelete && assetType && assetType.Description && assetType.Description.length >0"
                  [innerHtml]="assetType.Description"
                  class="item-description"></div>
 
-            <div class="grid-actions-header" *ngIf="!showDelete && !showEditor">
+            <div class="grid-actions-header" *ngIf="!showDelete">
                 <div class="simple-search">
                     <ig-search-field mode="Keypress"
                                      [debounce]="600"
@@ -23,6 +23,7 @@
                             tooltipStyleClass="ig-tooltip"
                             class="ig-button-primary"
                             icon="fa-plus"
+                            [disabled]="isLoading"
                             (click)="showAdd(0)">
                     </button>
 
@@ -39,7 +40,7 @@
                 </div>
             </div>
 
-            <div class="tree-wrapper" *ngIf="!showDelete && !showEditor">
+            <div class="tree-wrapper" *ngIf="!showDelete">
                 <p-treeTable #treeTable
                              [pageLinks]="3"
                              [paginator]="true"
@@ -130,7 +131,7 @@
                               [selection]="selected?.data"
                               [objectTypeUid]="assetTypeUid"
                               [parentID]="selectedParentId"
-                              [assetTypePath]="selected?.data?.Path"
+                              [assetTypePath]="selected ? selected?.data?.Path : assetType?.Path"
                               (saveClick)="save($event)"
                               [showAsModal]="true"
                               [isV2API]="true"
@@ -138,7 +139,7 @@
 
             </d3s-modal>
         </div>
-        <div class="tile tile-detail side-panel" *ngIf="!isLoading && (!showEditor || (showEditor && selected != null))">
+        <div class="tile tile-detail side-panel">
             <side-panel [(expanded)]="sidePanelOpen"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [selectedItem]="selected?.data"
@@ -166,7 +167,8 @@
                                          [isSidePanel]="true"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
-                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                         [hasDeleteRelationshipsPermissions]="false"
+                                         (onEditClick)="showEditor=true"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
             </side-panel>

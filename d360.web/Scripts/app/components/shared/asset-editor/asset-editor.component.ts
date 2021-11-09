@@ -150,7 +150,15 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     private setFormHeight() {
         if (this.showAsModal) {
-            this.modalFormMaxHeight = window.innerHeight - 242;
+            var groupsHeight = 0;
+            var maxHeight = window.innerHeight - 242;
+            if (this.propertyGroups) {
+                this.propertyGroups.forEach((pg) => {
+                    groupsHeight += pg.inputContainer.nativeElement.offsetHeight;
+                });
+            }
+
+            this.modalFormMaxHeight = groupsHeight > maxHeight ? maxHeight : groupsHeight + 34;
         }
     }
 

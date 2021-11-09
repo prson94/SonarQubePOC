@@ -23,6 +23,7 @@ import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.mo
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 declare var CurrentResourceID;
 
@@ -92,12 +93,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     areAllExpanded: boolean = false;
     loadNodesSub: Subscription;
 
-    private sidePanelOpen: boolean = false;
-    private sidePanelLoading: boolean = false;
-    private sidePanelTab: string;
-    private sidePanelStorageKey: string;
+    sidePanelOpen: boolean = false;
+    sidePanelLoading: boolean = false;
+    sidePanelTab: string;
+    sidePanelStorageKey: string;
 
-    private hasProfiling: boolean = false;
+    hasProfiling: boolean = false;
     dataProfile: any;
 
     readonly menuKey: string = '~menu';
@@ -119,7 +120,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         protected settingsService: CompanySettingsService,
         webAnalyticsService: WebAnalyticsService,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         super(settingsService);
 
@@ -429,14 +431,27 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         }
     }
 
-    private save(event) {
-        this.showEditor = false;
-        this.selected = null;
-        this.selectedLevel = null;
-        this.selectedParentId = null;
-        this.loadNodes();
-        this.headerActionsService.emitFavoritesChange();
-        this.isLoading = false;
+    private save($event) {
+        if ($event && $event.addAnother) {
+            this.showAdd(this.selectedLevel, this.selectedParentId);
+        }
+        else if ($event && $event.action == 'action') {
+            var newUrl = '/asset/' + $event.assetUid;
+            this.router.navigateByUrl(newUrl);
+        }
+        else {
+
+
+            this.showEditor = false;
+            this.selected = null;
+            this.selectedLevel = null;
+            this.selectedParentId = null;
+            this.loadNodes();
+            this.headerActionsService.emitFavoritesChange();
+            this.isLoading = false;
+        }
+        this.changeDetectorRef.markForCheck();
+
     }
 
     private closeEditor() {

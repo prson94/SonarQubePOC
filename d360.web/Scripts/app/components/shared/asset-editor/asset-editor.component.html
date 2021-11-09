@@ -27,17 +27,17 @@
                                      [class]="'field-col col ' + row.getColClass()"
                                      style="padding-bottom:10px;">
                                     <asset-editor-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
-                                                          [form]="form"
-                                                          (listItemChange)="listSelectionChanged($event)"
-                                                          [editorChange]="editorChange"
-                                                          [object]="objectType"
-                                                          [objectID]="objectID"
-                                                          [selectedObject]="selectedObject"
-                                                          [disallowedNames]="disallowedNames"
-                                                          [assetUid]="assetUid"
-                                                          [assetTypeUid]="objectTypeUid"
-                                                          [diagramNodeKey]="diagramNodeKey"
-                                                          [selectedObjectID]="selectedObjectID"></asset-editor-field>
+                                                        [form]="form"
+                                                        (listItemChange)="listSelectionChanged($event)"
+                                                        [editorChange]="editorChange"
+                                                        [object]="objectType"
+                                                        [objectID]="objectID"
+                                                        [selectedObject]="selectedObject"
+                                                        [disallowedNames]="disallowedNames"
+                                                        [assetUid]="assetUid"
+                                                        [assetTypeUid]="objectTypeUid"
+                                                        [diagramNodeKey]="diagramNodeKey"
+                                                        [selectedObjectID]="selectedObjectID"></asset-editor-field>
                                 </div>
                             </div>
                         </div>
