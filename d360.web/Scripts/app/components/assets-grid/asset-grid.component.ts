@@ -394,8 +394,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             .pipe(debounceTime(200))
             .subscribe(res => {
                 this.items = res.items;
-
-                let selectedItemStillExists = !autoSelect;
                 let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 
                 this.items.forEach((i) => {
@@ -419,16 +417,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                         });
                     }
 
-                    if (this.selected != null && !selectedItemStillExists) {
+                    if (this.selected != null && autoSelect) {
                         if (i.AssetId === this.selected.AssetId) {
                             this.selectRow(i);
-                            selectedItemStillExists = true;
                         }
                     }
 
                 });
 
-                if (!selectedItemStillExists) {
+                if (autoSelect) {
                     if (this.items && this.items.length > 0) {
                         this.selectRow(this.items[0]);
                     } else {
@@ -456,7 +453,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 if (this.initialTotalRecords == null) {
                     this.initialTotalRecords = res.total;
                 }
-                if (this.items && this.items.length > 0) this.selected = this.items[0];
+                if (this.items && this.items.length > 0 && autoSelect) this.selected = this.items[0];
                 this.isLoading = false;
                 this.isLoadingChange.emit(false);
                 this.changeDetectorRef.markForCheck();
@@ -522,7 +519,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     add() {
         this.selected = null;
         this.showEditor = true;
-        this.showEditorChange.emit(true);
         this.selectedChange.emit(null);
 
         //reload dynamic editor if it already exists to trigger change detection
@@ -564,6 +560,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if ($event.item.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
         if ($event && $event.addAnother) {
             this.add();
+            this.getData(false);
         }
         else if ($event && $event.action == 'action') {
             var newUrl = '/asset/' + $event.assetUid;
