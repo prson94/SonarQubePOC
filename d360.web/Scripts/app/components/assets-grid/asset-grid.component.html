@@ -168,18 +168,18 @@
            [showTitle]="false"
            [isVisible]="showEditor">
     <asset-editor #dynamicEditor
-                           *ngIf="showEditor"
-                           [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
-                           [objectType]="gridObject.Object"
-                           [title]="selected ? 'Edit Asset' : 'Create New Asset'"
-                           [selection]="selected"
-                           [rowID]="rowID"
-                           [objectTypeUid]="gridObject?.AssetTypeUID"
-                           [assetTypePath]="gridObject?.AssetTypePath"
-                           (saveClick)="saveItem($event)"
-                           [showAsModal]="true"
-                           [isV2API]="true"
-                           (closeClick)="closeEditor()"></asset-editor>
+                  *ngIf="showEditor"
+                  [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
+                  [objectType]="gridObject.Object"
+                  [title]="selected ? 'Edit Asset' : 'Create New Asset'"
+                  [selection]="selected"
+                  [rowID]="rowID"
+                  [objectTypeUid]="gridObject?.AssetTypeUID"
+                  [assetTypePath]="gridObject?.AssetTypePath"
+                  (saveClick)="saveItem($event)"
+                  [showAsModal]="true"
+                  [isV2API]="true"
+                  (closeClick)="closeEditor()"></asset-editor>
 
 </d3s-modal>
 

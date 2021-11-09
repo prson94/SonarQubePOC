@@ -118,14 +118,25 @@
                                      (onDeleted)="onDeleted();">
             </d3s-asset-delete-editor>
 
-            <d3s-asset-editor *ngIf="showEditor"
-                              [assetUid]="selected?.data?.AssetUid"
-                              [assetTypeUid]="assetTypeUid"
-                              [parentAssetUid]="selectedParentId"
-                              [title]="selected?.data?.Path ? selected?.data?.Path : assetTypeTitle"
+            <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+                       (onClose)="showEditor=false"
+                       [showTitle]="false"
+                       [isVisible]="showEditor">
+                <asset-editor #dynamicEditor
+                              *ngIf="showEditor"
+                              [objectID]="selected ? selected?.ObjectID : objectTypeId"
+                              [objectType]="object"
+                              [title]="selected ? 'Edit Asset' : 'Create New Asset'"
                               [selection]="selected?.data"
-                              (saveClick)="save()"
-                              (closeClick)="closeEditor();"></d3s-asset-editor>
+                              [objectTypeUid]="assetTypeUid"
+                              [parentID]="selectedParentId"
+                              [assetTypePath]="selected?.data?.Path"
+                              (saveClick)="save($event)"
+                              [showAsModal]="true"
+                              [isV2API]="true"
+                              (closeClick)="closeEditor()"></asset-editor>
+
+            </d3s-modal>
         </div>
         <div class="tile tile-detail side-panel" *ngIf="!isLoading && (!showEditor || (showEditor && selected != null))">
             <side-panel [(expanded)]="sidePanelOpen"

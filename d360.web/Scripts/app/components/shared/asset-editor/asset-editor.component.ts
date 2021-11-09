@@ -75,7 +75,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() isV2API: boolean = false;
     @Input() useV2ApiLink: boolean = false;
 
-    @Input() useTypeUidForDefinition: boolean = false;
     @Input() showActions: boolean = true;
 
     @Input() useModelBinding: boolean = false;
@@ -222,13 +221,15 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             }
         }
         this.isLoading = true;
-        if (this.useTypeUidForDefinition) {
-            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType)
-                .subscribe(result => {
+        if (this.parentID && this.parentID.toString().length === 36) {
+            this.editorDefinitionService.getAssetEditorDefinition(this.objectTypeUid, this.assetUid, this.parentID.toString())
+                .subscribe((result) => {
+                    this.isLoading = false;
                     this.handleEditor(result);
                 });
         }
         else {
+
             this.editorDefinitionService.getEditorDefinition(
                 id,
                 this.objectID,
@@ -243,6 +244,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 this.handleEditor(result);
             });
         }
+
     }
 
     handleEditor(result: EditorField[]) {
