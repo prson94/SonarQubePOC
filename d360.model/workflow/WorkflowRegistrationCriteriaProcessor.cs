@@ -113,7 +113,7 @@ namespace d360.model.workflow
             // With this, we avoid triggering workflow again on plain save where field meets condition but is not changed
             if (changedFields != null && item.FieldTypeId > 0)
             {
-                var field = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
+                var field = fields.FirstOrDefault(x => x.FieldTypeID == item.FieldTypeId);
                 var value = field?.Value ?? null;
                 var formattedVal = field?.FormattedValue ?? null;
 

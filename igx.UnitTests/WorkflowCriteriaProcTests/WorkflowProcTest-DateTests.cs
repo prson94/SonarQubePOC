@@ -2,6 +2,7 @@
 using d360.model.workflow;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -41,7 +42,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(4).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(4).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -55,7 +56,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -69,7 +70,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(4).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(4).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -83,7 +84,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(7).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(7).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -97,7 +98,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(3).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(3).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -111,7 +112,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(3).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(3).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -125,7 +126,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(8).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(8).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -140,7 +141,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -155,7 +156,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -170,7 +171,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -185,7 +186,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { 3 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
-            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString(CultureInfo.InvariantCulture);
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
