@@ -3,7 +3,11 @@
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <div [ngSwitch]="getFieldTypeForSwitch(field.FieldType)" class="col s12" *ngIf="field.FieldType!='Hidden'">
             <div class="FieldName">
-                <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
+                <span *ngIf="fieldTooltip"
+                      pTooltip="{{fieldTooltip}}" 
+                      tooltipPosition="top" 
+                      tooltipStyleClass="ig-tooltip"
+                      >{{currentFieldName}}</span>
                 <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
             </div>
             <div class="input-wrapper">
