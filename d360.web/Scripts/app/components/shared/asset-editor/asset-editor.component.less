@@ -77,6 +77,18 @@
       height: unset;
     }
 
+    .p-dropdown-trigger,
+    .p-multiselect-trigger {
+      margin-top: 2px;
+      margin-right: 2px;
+    }
+
+    .ng-invalid {
+      .value-required {
+        background: @ig-lightblue-t4;
+      }
+    }
+
     .p-multiselect-label {
       max-width: unset;
       position: relative;
@@ -84,6 +96,10 @@
       height: unset !important;
       line-height: 24px;
       padding-bottom: 0;
+
+      &.p-placeholder {
+        padding-left: 8px;
+      }
 
       .p-multiselect-token {
         display: block;
@@ -152,6 +168,10 @@
 
   .p-datatable-thead {
     border: none;
+  }
+
+  .p-datatable-scrollable-header-box {
+    padding-right: 0 !important;
   }
 }
 

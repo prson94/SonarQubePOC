@@ -346,10 +346,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.focusToFirst();
             if (this.propertyGroups && this.propertyGroups.length > 0) {
                 this.propertyGroups.forEach((pg) => pg.refreshBadgeCounts());
-                this.propertyGroups.first.showHeaderLine = false;
+                this.propertyGroups.filter((pg) => pg.title.length > 0)[0].showHeaderLine = false;
             }
             this.ref.markForCheck();
-        }, 200);
+        }, 20);
     }
 
     toFormGroup(editorField: EditorField[]) {

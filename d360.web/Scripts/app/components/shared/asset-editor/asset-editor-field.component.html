@@ -64,6 +64,7 @@
                             <p-multiSelect #dropdown
                                            [maxSelectedLabels]="5"
                                            igSize="full"
+                                           styleClass="{{field.Required ? 'value-required' : ''}}"
                                            [inputId]="field.FieldName + '_input_' + component_uid"
                                            [formControlName]="field.FieldName"
                                            [attr.name]="field.FieldName"
@@ -71,7 +72,7 @@
                                            (onChange)="onChangeMultiselect($event)"
                                            [required]="field.Required"
                                            [readonly]="true"
-                                           [placeholder]="'Value Required'"
+                                           placeholder="{{field.Required ? 'Value Required' : 'Optional'}}"
                                            display="chip">
                             </p-multiSelect>
                         </div>

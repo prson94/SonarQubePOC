@@ -113,7 +113,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         private fieldsService: FieldsObservableService,
         private assetService: AssetService,
         private ref: ChangeDetectorRef,
-        private tagService: TagService,
         public dynEditorService: DynEditorService,
         protected settingsService: CompanySettingsService,
         private elRef: ElementRef
