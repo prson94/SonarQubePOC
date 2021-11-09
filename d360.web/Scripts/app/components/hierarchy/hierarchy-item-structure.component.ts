@@ -460,6 +460,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.selected = null;
         this.selectedLevel = null;
         this.selectedParentId = null;
+
     }
 
     private exportExcel(level: number) {

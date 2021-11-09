@@ -143,5 +143,6 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         this.onEditComplete.emit(this.object);
         this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);
+        this.modalEditorVisible = false;
     }
 }

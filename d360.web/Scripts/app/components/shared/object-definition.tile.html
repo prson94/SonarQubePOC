@@ -32,18 +32,18 @@
                [showTitle]="false"
                [isVisible]="modalEditorVisible">
         <asset-editor #dynamicEditor
-                               *ngIf="formMode == FormMode.Editing"
-                               [objectID]="objectID"
-                               [parentID]="object?.ParentID"
-                               [objectType]="objectType"
-                               [objectTypeUid]="object?.AssetTypeUid"
-                               [selection]="object"
-                               [isV2API]="true"
-                               (saveClick)="saveV2($event)"
-                               (closeClick)="closeEditor()"
-                               [title]="'Edit Asset'"
-                               [rowID]="rowID"
-                               [assetTypePath]="gridObject?.AssetTypePath"
-                               [showAsModal]="true"></asset-editor>
+                      *ngIf="formMode == FormMode.Editing"
+                      [objectID]="objectID"
+                      [parentID]="object?.ParentID"
+                      [objectType]="objectType"
+                      [objectTypeUid]="object?.AssetTypeUid"
+                      [selection]="object"
+                      [isV2API]="true"
+                      (saveClick)="saveV2($event)"
+                      (closeClick)="closeEditor()"
+                      [title]="'Edit Asset'"
+                      [rowID]="rowID"
+                      [assetTypePath]="gridObject?.AssetTypePath"
+                      [showAsModal]="true"></asset-editor>
     </d3s-modal>
 </ng-container>

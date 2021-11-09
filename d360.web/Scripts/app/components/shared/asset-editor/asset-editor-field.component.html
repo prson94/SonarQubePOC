@@ -4,10 +4,9 @@
         <div [ngSwitch]="getFieldTypeForSwitch(field.FieldType)" class="col s12" *ngIf="field.FieldType!='Hidden'">
             <div class="FieldName">
                 <span *ngIf="fieldTooltip"
-                      pTooltip="{{fieldTooltip}}" 
-                      tooltipPosition="top" 
-                      tooltipStyleClass="ig-tooltip"
-                      >{{currentFieldName}}</span>
+                      pTooltip="{{fieldTooltip}}"
+                      tooltipPosition="top"
+                      tooltipStyleClass="ig-tooltip">{{currentFieldName}}</span>
                 <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
             </div>
             <div class="input-wrapper">
@@ -80,7 +79,6 @@
                                            display="chip">
                             </p-multiSelect>
                         </div>
-
                         <p-dropdown *ngIf="!field?.MultiSelect"
                                     #dropdown
                                     igDropdown
@@ -123,7 +121,7 @@
                                          [loading]="isLookupValuesLoading"
                                          [loadingIcon]="'fa fa-spinner fa-spin'">
                                     <ng-template pTemplate="header">
-                                        <tr>
+                                        <tr *ngIf="showLookupSearchField">
                                             <th colspan="2">
                                                 <ig-search-field mode="Keypress" [debounce]="200" (onSearch)="dataTable.filterGlobal($event, 'contains');"></ig-search-field>
                                             </th>

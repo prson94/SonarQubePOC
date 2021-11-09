@@ -103,6 +103,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     linkFieldOptionalPlaceholder: string = 'Optional: you should start the URL with a protocol prefix eg. http:// or https://';
     linkFieldRequiredPlaceholder: string = 'Value required: you should start the URL with a protocol prefix eg. http:// or https://';
 
+    showLookupSearchField: boolean = false;
+
     @ViewChild('dropdown', { static: false }) dropdown: Dropdown;
     @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -742,6 +744,13 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
             if (!this.lookupValues || this.lookupValues.length === 0) {
                 this.lookupValues = Array.from({ length: res.count });
+            }
+
+            if (this.lookupValues.length > 10) {
+                this.showLookupSearchField = true;
+            }
+            else {
+                this.showLookupSearchField = false;
             }
 
             let loadedData = [];

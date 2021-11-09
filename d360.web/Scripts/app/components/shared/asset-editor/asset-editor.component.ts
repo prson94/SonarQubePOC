@@ -151,7 +151,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     private setFormHeight() {
         if (this.showAsModal) {
             var groupsHeight = 0;
-            var maxHeight = window.innerHeight - 242;
+            var maxHeight = window.innerHeight - 260;
             if (this.propertyGroups) {
                 this.propertyGroups.forEach((pg) => {
                     groupsHeight += pg.inputContainer.nativeElement.offsetHeight;
@@ -211,7 +211,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
-        debugger;
         if (this.selection) {
             if (this.objectType == 'IntersectType' || this.objectType == 'Predicate')
                 id = this.selection.Uid;
