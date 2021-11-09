@@ -205,7 +205,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationships {Now:d}.
+        ///   Looks up a localized string similar to Relationships {0}.
         /// </summary>
         public static string Relationships_DocumentName {
             get {

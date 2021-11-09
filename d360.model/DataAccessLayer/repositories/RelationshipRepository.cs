@@ -20,7 +20,6 @@ using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
 using d360.utils.excel;
 using d360.core.resources;
-using SmartFormat;
 
 namespace d360.model.DataAccessLayer
 {
@@ -962,7 +961,7 @@ from	IntersectType I
 
             var apiInfo = results.Children().ToList();
 
-            var excelDocument = new ExcelDocument(Smart.Format(ExcelExports.Relationships_DocumentName, DateTime.Now));
+            var excelDocument = new ExcelDocument(string.Format(ExcelExports.Relationships_DocumentName, DateTime.Now));
                    
             var fields = new List<FieldType>();
 

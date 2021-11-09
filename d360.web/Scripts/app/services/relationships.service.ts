@@ -123,7 +123,7 @@ export class RelationshipsService extends BaseObservableService {
         );
     }
     exportRelationshipTypeItems(relType: RelationshipType) {
-        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Relationships'));
+        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship type items'));
     }
 
     exportRelationshipTypes() {
@@ -325,7 +325,7 @@ export class RelationshipsService extends BaseObservableService {
         }
         else {
             this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-                .subscribe((data) => this.downloadFile(data, 'relationship type items'));
+                .subscribe((data) => this.downloadFile(data, 'Relationships'));
         }
     }
 

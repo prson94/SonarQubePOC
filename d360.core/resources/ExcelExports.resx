@@ -166,7 +166,7 @@
     <value>Via Type</value>
   </data>
   <data name="Relationships_DocumentName" xml:space="preserve">
-    <value>Relationships {Now:d}</value>
+    <value>Relationships {0}</value>
   </data>
   <data name="Relationships_Object_Asset_Path" xml:space="preserve">
     <value>Object Asset Path</value>
