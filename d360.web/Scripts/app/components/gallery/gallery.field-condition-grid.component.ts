@@ -23,7 +23,7 @@ import { FormGroup, FormBuilder } from '@angular/forms';
         `
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService, CompanySettingsService]
+    providers: [FieldsObservableService]
 })
 
 export class GalleryFieldConditionGridComponent implements OnInit {
@@ -40,7 +40,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     eventValue: any;    
     constructor(
         private fieldsService: FieldsObservableService,
-        private settingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private fb: FormBuilder,
         private ref: ChangeDetectorRef
     ) {

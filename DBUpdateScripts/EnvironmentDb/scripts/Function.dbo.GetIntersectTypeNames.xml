@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Function.dbo.GetIntersectTypeNames-v2">
-  <comment>GOV-11726</comment>
+  <changeSet author="Pappas" id="Function.dbo.GetIntersectTypeNames-v3">
+  <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -21,16 +21,16 @@ AS
 RETURN 
 (
 	SELECT	COALESCE(SI.Name, SRef.Name, SATT.Name, '') + ' [' + coalesce(P.Name,'/') + '] ' + COALESCE(ORef.Name, OATT.Name, '') as Name
-					FROM	[IntersectType] I
-							left join AssetType SATT on SATT.[Object] = I.Subject and SATT.[ObjectID] = I.SubjectID and SATT.[Object] != 'FusionAttributeType'
-							left join AssetType OATT on OATT.[Object] = I.[Object] and OATT.[ObjectID] = I.ObjectID and OATT.[Object] != 'FusionAttributeType'
-							left join (
+	FROM		[IntersectType] I
+					left join AssetType SATT on SATT.[Object] = I.Subject and SATT.[ObjectID] = I.SubjectID
+					left join AssetType OATT on OATT.[Object] = I.[Object] and OATT.[ObjectID] = I.ObjectID
+					left join (
 								SELECT	I_sub.ID, COALESCE( SATT_sub.Name, '') + 
 										' [' + coalesce(P_sub.Name,'/') + '] ' + 
 										COALESCE( OATT_sub.Name, '') as Name
 								FROM	[IntersectType] I_sub
-										left join AssetType SATT_sub on SATT_sub.[Object] = I_sub.Subject and SATT_sub.[ObjectID] = I_sub.SubjectID and SATT_sub.[Object] != 'FusionAttributeType'
-										left join AssetType OATT_sub on OATT_sub.[Object] = I_sub.[Object] and OATT_sub.[ObjectID] = I_sub.ObjectID and OATT_sub.[Object] != 'FusionAttributeType'
+										left join AssetType SATT_sub on SATT_sub.[Object] = I_sub.Subject and SATT_sub.[ObjectID] = I_sub.SubjectID
+										left join AssetType OATT_sub on OATT_sub.[Object] = I_sub.[Object] and OATT_sub.[ObjectID] = I_sub.ObjectID
 										left join [Predicate] P_sub on P_sub.ID = I_sub.PredicateID
 								
 							   ) SI on (I.Subject = 'IntersectType' and SI.ID = I.SubjectID)
@@ -41,10 +41,9 @@ RETURN
 
 							 left join (
 								select 0 as ID, 'Reference Item Type' as Name								
-							 ) ORef on I.Object = 'ReferenceItemType' and I.ObjectID = 0
-							 
-							left join [Predicate] P on P.ID = I.PredicateID
-					WHERE	I.ID = @id				
+					) ORef on I.Object = 'ReferenceItemType' and I.ObjectID = 0
+					left join [Predicate] P on P.ID = I.PredicateID
+	WHERE		I.ID = @id				
 )
 		]]>
     </sql>

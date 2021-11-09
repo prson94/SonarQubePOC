@@ -511,6 +511,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for status. Valid values are Pending, Running and Completed..
+        /// </summary>
+        public static string ExecutionStatusInvalid {
+            get {
+                return ResourceManager.GetString("ExecutionStatusInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Execution with UID {0} has been already canceled..
         /// </summary>
         public static string ExecutionUIDCancelled {
@@ -750,6 +759,33 @@ namespace Resources {
         public static string GroupUidNotExists {
             get {
                 return ResourceManager.GetString("GroupUidNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help Menu items successfully updated..
+        /// </summary>
+        public static string HelpMenuSuccess {
+            get {
+                return ResourceManager.GetString("HelpMenuSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help Menu Updated..
+        /// </summary>
+        public static string HelpMenuUpdated {
+            get {
+                return ResourceManager.GetString("HelpMenuUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item visibility must be set to 1, 2 or 3..
+        /// </summary>
+        public static string HelpMenuVisibilityError {
+            get {
+                return ResourceManager.GetString("HelpMenuVisibilityError", resourceCulture);
             }
         }
         

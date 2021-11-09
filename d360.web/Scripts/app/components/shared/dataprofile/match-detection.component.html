@@ -36,8 +36,8 @@
                                 <div *ngIf="duplicatesSelection && duplicatesSelection.length > 1">
                                     <div style="background: #f1f1f3;display: inline-flex; margin-left: 8px; height: 32px; align-items: center;">
                                         <span style="padding-left: 16px;padding-right: 8px;">{{duplicatesSelection.length}} items selected</span>
-                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu4.toggle($event)" [darkMode]="true"></button>
                                         <ig-popup-menu (onSelect)="onMenuSelect($event, duplicatesSelection, 'duplicate', true)" #menu4 [tabIndex]="1" [items]="multiselectMenuItems"></ig-popup-menu>
+                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu4.toggle($event)" [darkMode]="true"></button>
                                     </div>
                                 </div>                                
                                 <div class="grid-action-buttons">
@@ -145,8 +145,8 @@
                                 <div *ngIf="similarSelection && similarSelection.length>1" >                                          
                                     <div style="background: #f1f1f3;display: inline-flex; margin-left: 8px; height: 32px; align-items: center;">
                                         <span style="padding-left: 16px;padding-right: 8px;">{{similarSelection.length}} items selected</span>
-                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu3.toggle($event)" [darkMode]="true"></button>
                                         <ig-popup-menu (onSelect)="onMenuSelect($event, similarSelection, 'similar', true)" #menu3 [tabIndex]="1" [items]="multiselectMenuItems"></ig-popup-menu>
+                                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu3.toggle($event)" [darkMode]="true"></button>
                                     </div>
                                 </div>
                                 <div class="grid-action-buttons">
@@ -290,32 +290,37 @@
                 Edit Tags
             </ng-container>
             <ng-container content>
-                <div *ngIf="!selectedAssetUids || selectedAssetUids.length === 0">
-                    <span>
-                        None of the selected items has a tag field.<br />
-                        If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field.
-                    </span>
-                </div>
-                <div *ngIf="selectedAssetUids && selectedAssetUids.length > 0">
-                    Showing {{selectedAssetUids.length>1 ? 'common' : ''}} tags for the {{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1 ? (selectedAssetUids.length + selectedAssetsWithoutTagField.length) : ''}} selected item{{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1? 's' : ''}} in <b>{{tagMatchType}} Fields</b>
-                    <div *ngIf="selectedAssetUids.length > 1">
-                        <d3s-tag-view [data]="getCommonTags" [assetUIDList]="selectedAssetUids" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
+                <div *ngIf="isDrawerLoading">
+                    <d3s-loading [isLoading]="isDrawerLoading"></d3s-loading>
+                </div>                
+                <div *ngIf="!isDrawerLoading">
+                    <div *ngIf="!selectedAssetUids || selectedAssetUids.length === 0">
+                        <span>
+                            None of the selected items has a tag field.<br />
+                            If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field.
+                        </span>
                     </div>
-                    <div *ngIf="selectedAssetUids.length == 1">
-                        <d3s-tag-view [data]="selectedAssetsWithTagField[0].tags" [assetUID]="selectedAssetsWithTagField[0].uid" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
-                    </div>
-                    <div class="no-tags-note" *ngIf="selectedAssetsWithoutTagField && selectedAssetsWithoutTagField.length>0">
-                        Please note that {{selectedAssetsWithoutTagField.length}} of the selected items do not have a <b>Tag</b> field. These items will remain unchanged.<br />
-                        If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field to the following <b>Asset Types</b>:
-                        <div *ngIf="selectedAssetsWithoutTagField.length == 1">
-                            {{selectedAssetsWithoutTagField[0].path}}
+                    <div *ngIf="selectedAssetUids && selectedAssetUids.length > 0">
+                        Showing {{selectedAssetUids.length>1 ? 'common' : ''}} tags for the {{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1 ? (selectedAssetUids.length + selectedAssetsWithoutTagField.length) : ''}} selected item{{(selectedAssetUids.length + selectedAssetsWithoutTagField.length)>1? 's' : ''}} in <b>{{tagMatchType}} Fields</b>
+                        <div *ngIf="selectedAssetUids.length > 1">
+                            <d3s-tag-view [data]="getCommonTags" [assetUIDList]="selectedAssetUids" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
                         </div>
-                        <div *ngIf="selectedAssetsWithoutTagField.length > 1" class="no-tags-asset-list">
-                            <ul>
-                                <li class="no-tags-asset-list-item" *ngFor="let i of selectedAssetsWithoutTagField">
-                                    {{i.path}}
-                                </li>
-                            </ul>
+                        <div *ngIf="selectedAssetUids.length == 1">
+                            <d3s-tag-view [data]="selectedAssetsWithTagField[0].tags" [assetUID]="selectedAssetsWithTagField[0].uid" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
+                        </div>
+                        <div class="no-tags-note" *ngIf="selectedAssetsWithoutTagField && selectedAssetsWithoutTagField.length>0">
+                            Please note that {{selectedAssetsWithoutTagField.length}} of the selected items {{(selectedAssetsWithoutTagField.length === 1? 'does' : 'do')}} not have a <b>Tag</b> field. These items will remain unchanged.<br />
+                            If you wish to tag these items, you must first ask your system configurators to add a <b>Tag</b> field to the following <b>Asset Types</b>:
+                            <div *ngIf="assetTypePathsforNonTagged.length == 1" class="no-tags-single-type">
+                                {{this.assetTypePathsforNonTagged[0]}}
+                            </div>
+                            <div *ngIf="assetTypePathsforNonTagged.length > 1" class="no-tags-asset-list">
+                                <ul>
+                                    <li class="no-tags-asset-list-item" *ngFor="let path of assetTypePathsforNonTagged">
+                                        {{path}}
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>                

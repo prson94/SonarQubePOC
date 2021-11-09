@@ -3,6 +3,7 @@ import { match } from "core-js/fn/symbol";
 import { MetricFieldTypeViewModel, ScoreType, MetricAssetDefinitionViewModel } from "../../../../models/metrics.model";
 import { Operator } from "../../../../models/operator.model";
 import { PointBreakdown, PointBreakDownConditionItem} from "../../../../models/score.model";
+import { CompanySettingsService } from "../../../../services/settings.service";
 import { BaseComponent } from "../../base.component";
 
 @Component({
@@ -27,6 +28,10 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
     summedMeasures: number = 0;
 
     isRuleResultsModalVisible: boolean = false;
+
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["selected"] && changes["selected"].currentValue != null) {

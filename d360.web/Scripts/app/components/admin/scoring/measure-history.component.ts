@@ -1,10 +1,11 @@
 ﻿import { Component, Input, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
+import { MetricAssetHistoryViewModel, MetricAssetViewModel } from '../../../models/metrics.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { TreeNode } from 'primeng/api';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'measure-history',
@@ -29,9 +30,10 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
     showPassTest: boolean;
 
     constructor(
-        private metricsService: MetricsService
+        private metricsService: MetricsService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnDestroy(): void {

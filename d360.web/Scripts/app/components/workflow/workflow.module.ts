@@ -42,6 +42,7 @@ import { EditorModule } from 'primeng/editor';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.module';
 import { ResourceMultiSelectGridModule } from '../shared/resource-multiselect-grid.component';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @NgModule({
     imports: [
@@ -65,6 +66,7 @@ import { ResourceMultiSelectGridModule } from '../shared/resource-multiselect-gr
         AutoCompleteModule,
         SharedModule,
         TableModule,
+        RadioButtonModule,
 
 
         SharedWorkflowMonitorModule,

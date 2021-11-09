@@ -12,6 +12,7 @@ import { AssetTypeClass, AssetTypeApiModel } from "../../../models/asset.model";
 import { StringConstants } from "../../../static/string-constants";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { AssetService } from "../../../services/asset.service";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: "d3s-admin-rules-component",
@@ -28,14 +29,17 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     theDeleteCallback: Function;
     private isDimensionsVisible: boolean = false;
 
-    constructor(private stateService: StateService, protected secondaryNavService: SecondaryNavService,
+    constructor(
+        private stateService: StateService,
+        protected secondaryNavService: SecondaryNavService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private assetTypeService: AssetTypeService,
         private assetsService: AssetService,
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title)
     {
-        super(headerBreadcrumbService, titleService, secondaryNavService);        
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);        
         this.areaName = StringConstants.Section_Rules;
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);

@@ -1,0 +1,12 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ output extension=".cs" #>
+namespace d360.core
+{
+    public static class versioning
+    {
+        public const string COPYRIGHT = "Copyright © Precisely. <#=DateTime.UtcNow.ToString("yyyy")#>";
+        public const string PRODUCT_VERSION = "<#=DateTime.UtcNow.ToString("yyyy.MM.dd")#>.*";
+        public const string PRODUCT_VERSION_NOREVISION = "<#=DateTime.UtcNow.ToString("yyyy.MM.dd")#>";
+    }
+}

@@ -19,7 +19,7 @@ import { CompanySettingEnum } from '../../models/settings.model';
 @Component({
     selector: 'd3s-rule-results-grid',
     templateUrl: './rule-results-grid.component.html',
-    providers: [RulesService, CompanySettingsService],
+    providers: [RulesService],
     styleUrls: ['rule-results-grid.component.less']
 })
 
@@ -62,9 +62,9 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     constructor(
         private ruleService: RulesService,
         private route: ActivatedRoute,
-        private settings: CompanySettingsService
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
 
         this.route.queryParams.subscribe((params) => {
             if (params["debug"]) {
@@ -85,7 +85,6 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     }
 
     getData() {
-
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
@@ -100,43 +99,41 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
             }
         }
 
-        this.settings.getSettings()
-            .subscribe((data) => {
-                this.ruleResultsExportLimit = data.MaxExcelExportRows;
+        let exportSetting = this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows);
+        this.ruleResultsExportLimit = <number>exportSetting.ScalarValue;
 
-                this.isLoading = true;
-                if (this.getRuleResultsSub) {
-                    this.getRuleResultsSub.unsubscribe();
+        this.isLoading = true;
+        if (this.getRuleResultsSub) {
+            this.getRuleResultsSub.unsubscribe();
+        }
+        this.getRuleResultsSub = this.ruleService
+            .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters?.filter)
+            .pipe(debounceTime(300))
+            .subscribe((res) => {
+                this.results = res;
+                if (this.results != null) {
+                    this.totalRecords = this.results.total;
+                    if (this.totalRecords > this.ruleResultsExportLimit) {
+                        this.ruleResultsExportTooltip = `Number of items is greater than ${this.ruleResultsExportLimit}.`;
+                        this.ruleResultsExportEnabled = false;
+                    }
+                    else {
+                        this.ruleResultsExportTooltip = "Export to Excel";
+                        this.ruleResultsExportEnabled = true;
+                    }
+                    this.items = this.results.items;
+                    this.items.forEach((item) => {
+                        var date = new Date(item.RunDate as string);
+                        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                        item.RunDate = date;
+                    });
+                    this.isLoading = false;
                 }
-                this.getRuleResultsSub = this.ruleService
-                    .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters?.filter)
-                    .pipe(debounceTime(300))
-                    .subscribe((res) => {
-                        this.results = res;
-                        if (this.results != null) {
-                            this.totalRecords = this.results.total;
-                            if (this.totalRecords > this.ruleResultsExportLimit) {
-                                this.ruleResultsExportTooltip = `Number of items is greater than ${this.ruleResultsExportLimit}.`;
-                                this.ruleResultsExportEnabled = false;
-                            }
-                            else {
-                                this.ruleResultsExportTooltip = "Export to Excel";
-                                this.ruleResultsExportEnabled = true;
-                            }
-                            this.items = this.results.items;
-                            this.items.forEach((item) => {
-                                var date = new Date(item.RunDate as string);
-                                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-                                item.RunDate = date;
-                            });
-                            this.isLoading = false;
-                        }
-                    },
-                        err => {
-                            this.isLoading = false;
-                        }
-                    );
-            });
+            },
+                err => {
+                    this.isLoading = false;
+                }
+            );
     }
 
     loadRuleResultsLazy(event: LazyLoadEvent) {

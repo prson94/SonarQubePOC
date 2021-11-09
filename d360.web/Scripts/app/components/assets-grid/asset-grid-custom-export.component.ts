@@ -6,6 +6,7 @@ import { BaseComponent } from '../shared/base.component';
 import { SortOrder } from '../../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
 import { RulesService } from '../../services/rules.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-asset-grid-custom-export',
@@ -44,9 +45,10 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
     constructor(
         protected artifactService: ArtifactService,
         protected rulesService: RulesService,
+        protected settingsService: CompanySettingsService,
         protected exportTempalteService: ExportTemplateService,
         private changeDetectorRef: ChangeDetectorRef
-    ) { super(); }
+    ) { super(settingsService); }
 
     ngOnInit() {
         this.load();

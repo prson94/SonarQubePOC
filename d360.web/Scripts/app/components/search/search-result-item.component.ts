@@ -7,8 +7,8 @@ import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { DatePipe } from '@angular/common';
 import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
     selector: 'd3s-search-result-item',
@@ -40,14 +40,16 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     constructor(private router: Router,
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private ref: ChangeDetectorRef,
         private elementRef: ElementRef,
         private datePipe: DatePipe) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {
-        if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() === "true") {
+        let showCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
+        if (showCart) {
             this.menuitems.push({ title: "Add to Cart" });
         }
 
@@ -71,8 +73,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     get type() {
         if (this.result) {
             switch (this.result.Group) {
-                case 'FusionAttributes':
-                    return 'FusionAttribute';
                 case 'Reference':
                     return 'ReferenceItemType';
                 default:

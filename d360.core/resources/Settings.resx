@@ -255,12 +255,6 @@
   <data name="FramingDomains_Name" xml:space="preserve">
     <value>Framing</value>
   </data>
-  <data name="FusionEnabled_Desc" xml:space="preserve">
-    <value>This setting indicates whether the Govern UI should display Fusion options.</value>
-  </data>
-  <data name="FusionEnabled_Name" xml:space="preserve">
-    <value>Enable Fusion</value>
-  </data>
   <data name="GovernanceRoleReferenceListUid_Desc" xml:space="preserve">
     <value>The Uid of the reference list that contains the Governance Roles that the Diagram Designer depends on.</value>
   </data>

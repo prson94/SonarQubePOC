@@ -3,6 +3,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { IResponsibilityTypeService, ResponsibilityTypeAllocation, ResponsibilityTypeRelation_FormData, ResponsibilityTypeRelationAllocationOption } from '../../../models/responsibility-type.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-responsibility-relations',
@@ -40,8 +41,11 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
     private theDeleteCallback: Function;
 
     
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private responsibilityTypeService: ResponsibilityTypeService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
 
         this.theDeleteCallback = this.deleteResponsibilityTypeRelation.bind(this);
     }

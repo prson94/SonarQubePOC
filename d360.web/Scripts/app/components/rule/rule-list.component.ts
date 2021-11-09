@@ -20,6 +20,7 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 declare var CurrentResourceID;
 
@@ -60,9 +61,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         webAnalyticsService: WebAnalyticsService,
     ) {
-        super();
+        super(settingsService);
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
     }

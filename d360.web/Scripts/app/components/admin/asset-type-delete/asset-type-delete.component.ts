@@ -4,6 +4,7 @@ import { ArtifactService } from "../../../services/artifacts.service";
 import { BaseComponent } from "../../shared/base.component";
 import { AssetTypeClass } from "../../../models/asset.model";
 import { ActivatedRoute } from "@angular/router";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: "d3s-asset-type-delete",
@@ -26,9 +27,10 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
     private sub: any;
 
     constructor(
+        protected settingsService: CompanySettingsService,
         private route: ActivatedRoute
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

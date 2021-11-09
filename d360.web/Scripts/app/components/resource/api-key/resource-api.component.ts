@@ -3,6 +3,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { ResourceAPICredentials } from '../../../models/resource.model';
 import { ResourcesService } from '../../../services/resources.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 declare var CurrentResourceID;
 
@@ -20,11 +21,13 @@ export class ResourceApiComponent extends BaseComponent {
 
     isSaving = false;
 
-    constructor(private resourcesService: ResourcesService,
+    constructor(
+        private resourcesService: ResourcesService,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
     }
 

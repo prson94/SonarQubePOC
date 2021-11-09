@@ -20,13 +20,11 @@
                             (onChange)="loadColumns()"
                             name="Type">
                     <ng-template let-item pTemplate="item">
-                        <div *ngIf="selectedAction !== 'R'">{{item.label}}</div>
-                        <div *ngIf="selectedAction === 'R'" [innerHTML]="item.label"></div>
+                        <div [innerHTML]="item.label"></div>
                     </ng-template>
 
                     <ng-template let-item pTemplate="selectedItem">
-                        <div *ngIf="selectedAction !== 'R'">{{item.label}}</div>
-                        <div *ngIf="selectedAction === 'R'" [innerHTML]="item.label"></div>
+                        <div [innerHTML]="item.label"></div>
                     </ng-template>
                 </p-dropdown>
             </div>

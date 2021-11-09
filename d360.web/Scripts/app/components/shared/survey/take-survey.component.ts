@@ -2,6 +2,7 @@
 import { SurveysService } from '../../../services/surveys.service';
 import { BaseComponent } from '../../shared/base.component';
 import { Survey, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyQuestionOption, SurveyTypeDisplayStyle, SurveyTypeDetails, Question, SurveyResultsApiModel, SurveyQuestionResponseApiModel } from '../../../models/survey.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 
 @Component({
@@ -33,9 +34,11 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     private currentQuestion: Question;
 
 
-    constructor(private surveysService: SurveysService,
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private surveysService: SurveysService,
         private ref: ChangeDetectorRef) {
-        super();
+        super(settingsService);
     }
 
     ngOnChanges(changes: SimpleChanges): void {

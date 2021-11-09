@@ -109,7 +109,6 @@ namespace d360.model
             switch (obj)
             {
                 case "ArtifactType":
-                case "FusionAttributeType":
                 case "ReferenceItemType":
                     predicateType = PredicateType.InterTypeHierarchy;
                     break;
@@ -616,7 +615,6 @@ where	ExecutionID = @executionID
                     where   A.ExecutionID = @executionID
                             and A.ItemNumber between @beginItemNumber and @endItemNumber 
                             and A.Success is null 
-                            and A.[Object] not in( 'FusionAttribute' )
                             and ADV.DisplayValue is not null
             ";
 
@@ -1444,14 +1442,6 @@ where T.ExecutionId = @executionid;
                             success = false;
                         }
                         if (validationFieldProperties != null) validationFieldProperties.ContainsColorField = true;
-                    }
-                    else if (ot == "FusionAttributeType")
-                    {
-                        if (fieldName != "FusionID" && fieldName != "Name" && fieldName != "SourceID")
-                        {
-                            success = false;
-                            errorMessages.Add($"{fieldName} is not a valid field");
-                        }
                     }
                     else if (ot == "ReferenceItemType")
                     {
@@ -4527,36 +4517,13 @@ where   ExecutionID = @ExecutionID
                                 }
                             }
 
-                            if (success && isInsert)
+                            if (success && isInsert && at.Object == "ReferenceItemType")
                             {
-                                if (at.Object == "FusionAttributeType")
+                                // Check to ensure Code is present.
+                                success = model.Fields.ContainsKey("Code");
+                                if (!success)
                                 {
-                                    // Check to ensure Name is present.
-                                    success = model.Fields.ContainsKey("Name");
-                                    if (!success)
-                                    {
-                                        errorMessage = "Asset is missing a required Name field value";
-                                    }
-
-                                    // Check to ensure FusionID is present.
-                                    if (success)
-                                    {
-                                        success = model.Fields.ContainsKey("FusionID");
-                                        if (!success)
-                                        {
-                                            errorMessage = "Asset is missing a required FusionID field value";
-                                        }
-                                    }
-                                }
-
-                                if (at.Object == "ReferenceItemType")
-                                {
-                                    // Check to ensure Code is present.
-                                    success = model.Fields.ContainsKey("Code");
-                                    if (!success)
-                                    {
-                                        errorMessage = "Asset is missing a required Code field value";
-                                    }
+                                    errorMessage = "Asset is missing a required Code field value";
                                 }
                             }
 

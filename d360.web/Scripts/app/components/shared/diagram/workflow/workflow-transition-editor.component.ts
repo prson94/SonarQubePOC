@@ -12,6 +12,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
 
 import * as _ from 'lodash';
 import * as go from 'gojs';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-transition-editor',
@@ -45,8 +46,11 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     FormMode = FormMode;
 
 
-    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        private workflowFieldsService: WorkflowFieldsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

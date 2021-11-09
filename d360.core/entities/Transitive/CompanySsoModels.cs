@@ -1,6 +1,7 @@
 ﻿using d360.core.enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Security.Authentication;
 
 namespace d360.core.entities
@@ -10,19 +11,6 @@ namespace d360.core.entities
         string type { get; set; }
     }
 
-    public interface IAuthenticationExtraParameters
-    {
-
-    }
-
-    public class NoneAuthenticationExtraParameters : IAuthenticationExtraParameters
-    {
-    }
-
-    public class OktaAuthenticationExtraParameters : IAuthenticationExtraParameters
-    {
-        public string idp { get; set; }
-    }
 
     public class CompanyOpenIdAuthenticationSettings: ICompanyAuthenticationSettings
     {
@@ -34,23 +22,6 @@ namespace d360.core.entities
         public string audience { get; set; }
         public string nameClaimType { get; set; }
         public JObject extraParameters { get; set; }
-
-        public IAuthenticationExtraParameters GetStructuredExtraParameters()
-        {
-            IAuthenticationExtraParameters p;
-
-            switch (type)
-            {
-                case "Okta":
-                    p = extraParameters.ToObject<OktaAuthenticationExtraParameters>();
-                    break;
-                default:
-                    p = new NoneAuthenticationExtraParameters();
-                    break;
-            }
-
-            return p;
-        }
     }
 
     public class CompanySsoModel
@@ -75,7 +46,7 @@ namespace d360.core.entities
             get
             {
                 return JsonConvert.DeserializeObject<CompanyOpenIdAuthenticationSettings>(
-                    AuthenticationSettings
+                    AuthenticationSettings ?? "{}"
                     );
             }
         }

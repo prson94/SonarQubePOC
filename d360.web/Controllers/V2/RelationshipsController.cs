@@ -688,15 +688,15 @@ namespace d360.web.Controllers.V2
 
 
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
-                long pageSize = 5000;
-                long pageNum = 1;
+                int pageSize = 5000;
+                int pageNum = 1;
                 bool includeTotal = true;
                 string owner = null;
 
                 if (queryParams.Any(x => x.Key.ToLower() == "_pagenum"))
                 {
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value;
-                    if (!long.TryParse(value, out pageNum))
+                    if (!int.TryParse(value, out pageNum))
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest,  ApiMessages.Invalid_PageNum);
                     }
@@ -705,7 +705,7 @@ namespace d360.web.Controllers.V2
                 if (queryParams.Any(x => x.Key.ToLower() == "_pagesize"))
                 {
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value;
-                    if (!long.TryParse(value, out pageSize))
+                    if (!int.TryParse(value, out pageSize))
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.Invalid_PageSize);
                     }

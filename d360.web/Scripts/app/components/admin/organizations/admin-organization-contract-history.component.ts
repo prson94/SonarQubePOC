@@ -7,6 +7,7 @@ import {OrganizationsService} from '../../../services/organizations.service';
 
 import {BaseComponent} from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-organization-contract-history',
@@ -117,9 +118,10 @@ export class AdminOrganizationContractHistoryComponent extends BaseComponent imp
         private route: ActivatedRoute,
         private router: Router,
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

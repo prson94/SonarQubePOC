@@ -61,6 +61,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Api Info.
+        /// </summary>
+        public static string Common_ApiInfoSheetName {
+            get {
+                return ResourceManager.GetString("Common_ApiInfoSheetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to mm/dd/yyyy.
         /// </summary>
         public static string Common_ExcelDateFormat {
@@ -75,6 +84,33 @@ namespace d360.core.resources {
         public static string Common_ItemsSheetName {
             get {
                 return ResourceManager.GetString("Common_ItemsSheetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pageNum.
+        /// </summary>
+        public static string Common_PageNum {
+            get {
+                return ResourceManager.GetString("Common_PageNum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pageSize.
+        /// </summary>
+        public static string Common_PageSize {
+            get {
+                return ResourceManager.GetString("Common_PageSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to total.
+        /// </summary>
+        public static string Common_Total {
+            get {
+                return ResourceManager.GetString("Common_Total", resourceCulture);
             }
         }
         
@@ -165,6 +201,24 @@ namespace d360.core.resources {
         public static string OwnedResources_ViaType {
             get {
                 return ResourceManager.GetString("OwnedResources_ViaType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to relationship type items {Now:d}.
+        /// </summary>
+        public static string Relationships_DocumentName {
+            get {
+                return ResourceManager.GetString("Relationships_DocumentName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationships.
+        /// </summary>
+        public static string Relationships_SheetName {
+            get {
+                return ResourceManager.GetString("Relationships_SheetName", resourceCulture);
             }
         }
         

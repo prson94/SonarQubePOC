@@ -3,6 +3,7 @@ import { BaseComponent } from "../../../shared/base.component";
 import * as _ from "lodash";
 import { NodeModel } from "../../../../models/workflow.model";
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
+import { CompanySettingsService } from "../../../../services/settings.service";
 
 @Component({
     selector: "d3s-workflow-step-http",
@@ -41,8 +42,10 @@ export class WorkflowStepHttpComponent extends BaseComponent implements OnInit  
         "DELETE"
     ];
 
-    constructor(private workflowFieldsService: WorkflowFieldsService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowFieldsService: WorkflowFieldsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

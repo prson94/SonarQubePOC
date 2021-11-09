@@ -1989,7 +1989,10 @@ from	IntersectType I
 					                inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
 		                end
 
-                   select * from fieldtype where assettypeid = @referenceid
+                   select * from fieldtype
+                        where assettypeid = @referenceid and IsListable = 1
+				        order by ColumnOrder asc, FriendlyName asc;
+
                         ", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
                 return fields;
@@ -2051,7 +2054,7 @@ from	IntersectType I
                     {
                         var it = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
 
-                        if (!forUiFiltering)
+                        if (!forUiFiltering && it != null)
                         {
                             var ft = new FieldType();
 
@@ -2061,15 +2064,16 @@ from	IntersectType I
                             ft.LookupObjectType = "IntersectType";
                             ft.LookupObjectID = it.ID;
                             fields.Add(ft);
-                        }
-                        var ft2 = new FieldType();
 
-                        ft2.Name = "$Related:" + it.uid;
-                        ft2.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
-                        ft2.Type = DataType.Relationship.ToString();
-                        ft2.LookupObjectType = "IntersectType";
-                        ft2.LookupObjectID = it.ID;
-                        fields.Add(ft2);
+                            var ft2 = new FieldType();
+
+                            ft2.Name = "$Related:" + it.uid;
+                            ft2.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
+                            ft2.Type = DataType.Relationship.ToString();
+                            ft2.LookupObjectType = "IntersectType";
+                            ft2.LookupObjectID = it.ID;
+                            fields.Add(ft2);
+                        }
                     }
                     else
                     {
@@ -2095,9 +2099,28 @@ from	IntersectType I
             var maps = definition.GetFieldMapings();
             List<string> selects = new List<string>();
             List<string> wheres = new List<string>();
+            List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping
+                = new List<Tuple<int, FieldTypeComplexLookupRelationDirection>>();
 
-            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects);
-            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, new List<string>(), isCountQuery: true);
+            foreach (var relFt in definition.Fields.Where(x => x.FieldTypeName.StartsWith("Related Item.")))
+            {
+                bool isSubject = Company.Query<bool>(@"declare @object nvarchar(255)
+                    declare @objectid int
+                    select @object = object, @objectid = objectid from AssetType where uid = @AssetTypeUid
+
+                    select count(1) from intersecttype
+                    where id = @FieldTypeID and Subject = @object and SubjectID = @objectid",
+                    new { relFt.FieldTypeID, relFt.AssetTypeUid })
+                    .FirstOrDefault();
+
+                fieldRelationDirectionMapping.Add(
+                    new Tuple<int, FieldTypeComplexLookupRelationDirection>(
+                        relFt.FieldTypeID,
+                    isSubject ? FieldTypeComplexLookupRelationDirection.Forward : FieldTypeComplexLookupRelationDirection.Back));
+            }
+
+            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects, fieldRelationDirectionMapping);
+            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, new List<string>(), fieldRelationDirectionMapping, isCountQuery: true);
 
             (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
@@ -2269,7 +2292,7 @@ from	IntersectType I
             List<string> joins = new List<string>();
             List<string> wheres = new List<string>();
 
-            int assetTypeId = await GetAssetTypeIdForRefListField(dbArgs);
+            int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs);
 
             wheres.Add("A.AssetTypeID = @assetTypeId");
             wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");
@@ -2488,9 +2511,9 @@ from	IntersectType I
             return (Columns, Fields, Values, count);
         }
 
-        private async Task<int> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
+        private async Task<int?> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
         {
-            return (await Company.QueryAsync<int>($@"declare @isSubject bit,
+            return (await Company.QueryAsync<int?>($@"declare @isSubject bit,
 				                        @referenceItemTypeID int
 		                        select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
 		                        from	IntersectType I 

@@ -15,6 +15,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { Subscription } from 'rxjs';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-reference-list',
@@ -64,18 +65,19 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     private replaceUrl: boolean = true;
 
     constructor(
-        secondaryNavService: SecondaryNavService,
-        private route: ActivatedRoute,
-        private router: Router,
-        private permissionsService: PermissionsService,
-        protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected referenceService: ReferenceService,
+        private assetTypeService: AssetTypeService,
         protected authenticationService: AuthenticationService,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        private permissionsService: PermissionsService,
+        protected referenceService: ReferenceService,
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
+        protected titleService: Title,
         private uriBasedService: UriBasedService,
-        private assetTypeService: AssetTypeService
+        private route: ActivatedRoute,
+        private router: Router
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = headerBreadcrumbService;
     }

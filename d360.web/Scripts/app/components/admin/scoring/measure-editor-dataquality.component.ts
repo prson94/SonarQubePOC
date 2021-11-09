@@ -4,19 +4,19 @@ import { MetricFieldTypeViewModel, MetricAssetDefinitionViewModel, MetricRuleRes
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
-import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldType, FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
-import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { AppSettingsEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'dataquality-measure-editor',
     templateUrl: './measure-editor-dataquality.component.html',
-    providers: [MetricsService, CompanySettingsService, FieldsObservableService],
+    providers: [MetricsService, FieldsObservableService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
     .row-label{
@@ -46,7 +46,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     //#region Tooltip data
 
-    helpUri = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
+    helpUri: string = "";
 
     ruleResultsTooltip: string = 'In order to collect scoring results from rules, you need '
         + 'to define at least one relationship type to associate the asset type you are scoring '
@@ -80,13 +80,17 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.loadFieldData();
     }, 200);
 
-    constructor(protected metricsService: MetricsService,
+    constructor(
+        protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
         protected fb: FormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
-        super(fieldsService, metricsService, messagesService, cdRef);
+        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
+        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
     }
 
     ngOnChanges(changes: SimpleChanges): void {

@@ -2,6 +2,7 @@
 import { CommonModule }       from '@angular/common';
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from './base.component';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-grid-paging-info',
@@ -17,6 +18,10 @@ export class GridPagingInfoComponent extends BaseComponent {
     @Input() first: number;
     @Input() rows: number;
     @Input() totalRecords: number;
+
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 
     get startValue() {
         if (this.first != undefined) {

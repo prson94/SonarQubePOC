@@ -8,6 +8,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AssetService } from '../../../services/asset.service';
 import { forkJoin, Subscription } from 'rxjs';
 import * as _ from 'lodash';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-object-relationships',
@@ -46,11 +47,13 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     @ViewChild(DynamicRelationshipGridComponent, { static: false }) private relGrid: DynamicRelationshipGridComponent;
 
-    constructor(protected relationshipsService: RelationshipsService,
-        private objectDetailService: ObjectDetailService,
+    constructor(
         private assetService: AssetService,
+        private objectDetailService: ObjectDetailService,
+        protected relationshipsService: RelationshipsService,
+        protected settingsService: CompanySettingsService,
         private changeDetectorRef: ChangeDetectorRef) {
-        super();
+        super(settingsService);
     }
 
     ngOnDestroy(): void {
@@ -278,9 +281,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             case "Policy":
                 cs += "fa-university";
                 break;
-            case "FusionAttribute":
-                cs += "fa-database";
-                break;
             case "Resource":
                 cs += "fa-user";
                 break;
@@ -315,9 +315,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                     break;
                 case "Policy":
                     tooltip = "Policy";
-                    break;
-                case "FusionAttribute":
-                    tooltip = "Fusion Attribute";
                     break;
                 case "Resource":
                     tooltip = "Resource";

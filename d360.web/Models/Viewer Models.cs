@@ -283,8 +283,16 @@ namespace d360.web.Models
 
         [DataMember]
         public string DataType { get; set; }
+
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+
+        /// <summary>
+        /// Gets or sets if field identifies object.
+        /// Is not-null only for dynamic fields of assets
+        /// </summary>
+        [DataMember]
+        public bool? IsPartOfKey { get; set; }
     }
 
     [DataContract]

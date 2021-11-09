@@ -15,8 +15,8 @@ import {SiteUrlHelpers} from "../../static/site-url-helpers";
 
 import {BaseComponent} from "../shared/base.component";
 import { CommentType } from "../../models/social.model";
-
-declare var CompanySettings;
+import { CompanySettingsService } from "../../services/settings.service";
+import { CompanySettingEnum } from "../../models/settings.model";
 
 @Component({
     selector: "home",
@@ -60,9 +60,10 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         webAnalyticsService: WebAnalyticsService,
         protected router: Router,
         secondaryNavService: SecondaryNavService,
-        private dashboardService: DashboardService
+        private dashboardService: DashboardService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
 
@@ -83,17 +84,22 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.clearSidebar();
 
         this.secondaryNavService.showHeader(false);
-        this.showActivityTile = CompanySettings.ShowHomeActivityTile == "true";
-        this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == "true";
-        this.showBoardTile = CompanySettings.ShowHomeBoardTile == "true";
+        this.showActivityTile = this.settingsService.getSettingById(CompanySettingEnum.ShowHomeActivityTile).BooleanSetting.Value;
+        this.showAssignmentTile = this.settingsService.getSettingById(CompanySettingEnum.ShowHomeAssignmentTile).BooleanSetting.Value;
+        this.showBoardTile = this.settingsService.getSettingById(CompanySettingEnum.ShowHomeBoardTile).BooleanSetting.Value;
 
-        this.showTitle = CompanySettings.ShowHomePageTitle == "true";
-        this.title = CompanySettings.BrowserTitlePrefix;
-        this.titleSize = CompanySettings.HomePageTitleSize;
-        this.titleColor = CompanySettings.HomePageTitleColor;
+        this.showTitle = this.settingsService.getSettingById(CompanySettingEnum.ShowHomePageTitle).BooleanSetting.Value;
+        this.title = this.settingsService.getSettingById(CompanySettingEnum.BrowserTitlePrefix).StringSetting.Value;
+        this.titleSize = this.settingsService.getSettingById(CompanySettingEnum.HomePageTitleSize).StringSetting.Value;
+        this.titleColor = this.settingsService.getSettingById(CompanySettingEnum.HomePageTitleColor).StringSetting.Value;
 
-        if (CompanySettings.HomePageBackgroundImage != null && CompanySettings.HomePageBackgroundImage != "")
-            this.backgroundImage = CompanySettings.HomePageBackgroundImage;
+        let bgImage = this.settingsService.getSettingById(CompanySettingEnum.HomePageBackgroundImage).StringSetting.Value;
+        if (bgImage !== null && bgImage !== "") {
+            this.backgroundImage = bgImage;
+        }
+        else {
+            this.backgroundImage = "/content/images/home.background.new.jpg";
+        }
 
         this.numTiles = (this.showAssignmentTile ? 1 : 0)
             + (this.showBoardTile ? 1 : 0)

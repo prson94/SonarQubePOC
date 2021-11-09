@@ -17,7 +17,7 @@ namespace d360.model.DataAccessLayer
         IntersectType GetRelationshipTypeByUID(Guid relationshipTypUid);
         Intersect GetRelationshipByUID(Guid relationshipUid);
         Task<IEnumerable<PredicateApiViewModel>> GetPredicates(Guid? PredicateUid, PredicateType? Type, string Name, string Inverse ,bool? IsUsed);
-        Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
+        Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false);
         IQueryable<IntersectType> GetIntersectTypeById(int id);
         IntersectType GetIntersectTypeByUid(Guid intersectTypeUid);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
@@ -40,7 +40,7 @@ namespace d360.model.DataAccessLayer
         List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution);
         List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution);
         Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
-        Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal, string owner);
+        Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, int pageSize, int pageNum, bool includeTotal, string owner);
         Task<JObject> GetRelationship(Guid uid);
     }
 }

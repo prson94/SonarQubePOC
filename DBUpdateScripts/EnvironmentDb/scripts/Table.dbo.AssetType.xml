@@ -158,7 +158,7 @@ END
   </changeSet>
   
   
-  <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterInsert-v1">
+  <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterInsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -171,7 +171,7 @@ AS
 	SET NOCOUNT ON;
 	
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Add', [queue].WriteIndexXml('', [Object], ObjectID, coalesce(CreatedBy, 0)), [Object], ObjectID from inserted where [Object] != 'FusionAttributeType';
+        select 'Add', [queue].WriteIndexXml('', [Object], ObjectID, coalesce(CreatedBy, 0)), [Object], ObjectID from inserted;
 		]]>
     </sql>
 	<rollback>
@@ -181,7 +181,7 @@ AS
 	</rollback>
   </changeSet>
   
-  <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterUpdate-v1">
+  <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -194,7 +194,7 @@ AS
 	SET NOCOUNT ON;
 	
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', [Object], ObjectID, coalesce(UpdatedBy, 0)), [Object], ObjectID from inserted where [Object] != 'FusionAttributeType';
+        select 'Update', [queue].WriteIndexXml('', [Object], ObjectID, coalesce(UpdatedBy, 0)), [Object], ObjectID from inserted;
 		]]>
     </sql>
 	<rollback>

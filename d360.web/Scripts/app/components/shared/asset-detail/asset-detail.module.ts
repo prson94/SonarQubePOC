@@ -24,6 +24,7 @@ import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/adva
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
 import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.module";
 import { PeopleResponsibilitiesModule } from "../responsibilities/people-responsibilities.tile";
+import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 
 
 @NgModule({
@@ -45,7 +46,8 @@ import { PeopleResponsibilitiesModule } from "../responsibilities/people-respons
         AdvancedFiltersModule,
         SearchFieldModule,
         ScoreBadgeModule,
-        PeopleResponsibilitiesModule
+        PeopleResponsibilitiesModule,
+        DynamicFieldNameModule,
     ],
     declarations: [
         AssetDetailFieldComponent,

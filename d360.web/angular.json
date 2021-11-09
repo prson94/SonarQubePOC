@@ -23,14 +23,17 @@
             "main": "Scripts/main.ts",
             "polyfills": "Scripts/polyfills.ts",
             "tsConfig": "Scripts/tsconfig.aot.json",
-            "aot": true,
-            "namedChunks": false,
             "assets": [],
             "styles": [
               "Content/styles/angular.less"
             ],
             "scripts": [
-            ]
+            ],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false
           },
           "configurations": {
             "production": {
@@ -43,9 +46,7 @@
               "optimization": true,
               "outputHashing": "none",
               "sourceMap": false,
-              "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": true,
               "buildOptimizer": true,
               "budgets": [
                 {
@@ -55,7 +56,8 @@
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",

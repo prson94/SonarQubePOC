@@ -12,8 +12,6 @@ export class TechnicalNameToDisplayValuePipe implements PipeTransform {
                 return "Policy";
             case "TAXONOMYTYPE":
                 return "Model";
-            case "FUSIONATTRIBUTETYPE":
-                return "Fusion";
             case "RULETYPE":
                 return "Rule";
             case "REFERENCEITEMTYPE":

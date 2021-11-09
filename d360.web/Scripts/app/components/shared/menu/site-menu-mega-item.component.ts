@@ -4,6 +4,7 @@ import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenuItem, NavigationState } from '../../../models/site-menu.model';
 import { StringConstants } from "../../../static/string-constants";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: 'd3s-site-menu-mega-item',    
@@ -13,7 +14,8 @@ import { StringConstants } from "../../../static/string-constants";
                         <div class="caret" (click)="handleArrowClick($event)">
                             <i *ngIf="item.Items" [class]="!item.ShowChildren ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
                         </div>
-                        <div class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
+                        <div *ngIf="searchText" class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
+                        <div *ngIf="!searchText" class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerText]="highlight()"></div>
                         <div *ngIf="count > 0" class="d3s-badge pull-right">{{count}}</div>
                         <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home home-icon"></span></ng-container>
                     </div>
@@ -37,8 +39,11 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     @Output() activeChange = new EventEmitter();
     numberLoading: boolean;    
 
-    constructor(private router: Router, private menuService: SiteMenuService) {
-        super();
+    constructor(
+        private menuService: SiteMenuService,
+        protected settingsService: CompanySettingsService,
+        private router: Router) {
+        super(settingsService);
     }
 
     getSubIndent() {

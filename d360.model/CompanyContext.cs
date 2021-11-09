@@ -38,7 +38,7 @@ namespace d360.model
     {
         internal IQueueSource QueueSource;
         internal IStorageProvider Storage;
-
+        internal IMailProvider Mail;
         readonly CommunityContext Community;
 
         bool IsEventingEnabled;
@@ -53,13 +53,20 @@ namespace d360.model
 
         #region Ctors
 
-        public CompanyContext(ICommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, IStorageProvider storage, bool skipCacheCheck = false)
+        public CompanyContext(
+            ICommunityContext community, 
+            ICachingProvider caching, 
+            IQueueSource queueSource, IMailProvider mail, 
+            ISecurityContextProvider context, 
+            IStorageProvider storage, 
+            bool skipCacheCheck = false)
             : base(community.GetCompanyConnectionString(skipCacheCheck))
         {
             Database.SetInitializer<CompanyContext>(null); //dont create any tables if they dont exist.
 
             Community = (CommunityContext)community;
             Caching = caching;
+            Mail = mail;
             QueueSource = queueSource;
             Storage = storage;
 
@@ -208,20 +215,11 @@ namespace d360.model
                     {
                         Set<Field>().Attach(item);
                         Entry(item).State = (string.IsNullOrEmpty(item.Value)) ? EntityState.Deleted : EntityState.Modified;
-                        if (item.ObjectType == "FusionAttribute")
-                        {
-                            item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
-                        }
-
                     }
                     else //ADD
                     {
                         if (!string.IsNullOrEmpty(item.Value))
                         {
-                            if (item.ObjectType == "FusionAttribute")
-                            {
-                                item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
-                            }
                             Set<Field>().Add(item);
                         }
                     }

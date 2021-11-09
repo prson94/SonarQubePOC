@@ -8,6 +8,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'governance-measure-editor',
@@ -78,15 +79,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         "DiagramUse",
         "DiagramReference",
         "InterTypeHierarchy",
-        "IntraTypeHierarchy",
-        "FusionMapping"
+        "IntraTypeHierarchy"
     ];
-    restrictedTypes = [
-        "FusionAttribute",
-        "FusionAttributeType",
-        "FusionType",
-        "FusionExecution"
-    ];
+    restrictedTypes = [];
     updateFrequencyOptions: MetricUpdateFrequency[] = [];
 
     //#endregion
@@ -98,11 +93,12 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
     constructor(protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
         protected fb: FormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
-        super(fieldsService, metricsService, messagesService, cdRef);
+        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -202,11 +198,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         }
 
         if (this.screenReferences.relationships && this.screenReferences.relationships.length) {
-            let fusionFiltered = this.screenReferences.relationships
-                .filter(x => this.restrictedTypes.indexOf(x.Subject.Class) == -1)
-                .filter(x => this.restrictedTypes.indexOf(x.Object.Class) == -1);
-
-            this.relationshipTypes = fusionFiltered
+            this.relationshipTypes = this.screenReferences.relationships
                 .filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1)
                 .map(x => {
                     let isSubject = (x.Subject.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());

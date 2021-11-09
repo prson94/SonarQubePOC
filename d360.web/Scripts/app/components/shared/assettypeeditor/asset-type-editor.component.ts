@@ -2,10 +2,8 @@
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { FlowObjectType, AssetTypeClass, AssetTypeEditorModel } from '../../../models/asset.model';
-import { ApiResult } from '../../../models/apiresult.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-
-declare var CompanySettings: any;
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-asset-type-editor',
@@ -21,7 +19,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Input() parentID: number;
     @Input() assetTypeClass: AssetTypeClass;
     @Input() showDisplayFormat: boolean = true;
-    @Input() fusionId: number;
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
     @Output() onFail = new EventEmitter();
@@ -36,28 +33,24 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     showAssetStyles: boolean = true;
     showAssetDepthSettings: boolean = false;
-    showFusionOwnerSettings: boolean = false;
     showAssetArtifactSettings: boolean = false;
     showNotesField: boolean = false;
     showParentPredicates: boolean = true;
 
-    private lineageVersion: number = 1;
-
     private flowObjectDDL: any[] = [];
 
-    constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private assetTypeService: AssetTypeService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
         this.flowObjectDDL.push({ value: FlowObjectType.Event, label: 'Event' });
         this.flowObjectDDL.push({ value: FlowObjectType.Activity, label: 'Activity' });
         this.flowObjectDDL.push({ value: FlowObjectType.Gateway, label: 'Gateway' });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-
-        if (CompanySettings != null && CompanySettings.LineageVersion != null) {
-            this.lineageVersion = CompanySettings.LineageVersion;
-        }
-
         let triggerLoad = false;
         for (let p in changes) {
             if (p == 'id' || p == 'parentID' || p == 'topTypeID') {
@@ -75,12 +68,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         this.isLoading = true;
 
         switch (+this.assetTypeClass) {
-            case AssetTypeClass.FusionAttribute:
-                this.showParentPredicates = false;
-                break;
             case AssetTypeClass.BusinessAsset:
                 this.showAssetArtifactSettings = true;
-                this.showFusionOwnerSettings = true;
                 break;
             case AssetTypeClass.TechnicalAsset:
                 this.showAssetArtifactSettings = true;
@@ -157,8 +146,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     private save(): void {
         this.isSaving = true;
         this.model.AssetType.Class = this.assetTypeClass;
-        if (this.fusionId)
-            this.model.AssetType.FusionID = this.fusionId;
 
         if (this.model.AssetType.Class != AssetTypeClass.DiagramAsset) {
             delete this.model.AssetType.FlowObjectType;

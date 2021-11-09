@@ -16,15 +16,13 @@ import { SearchDetail } from '../../../models/search-result.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 
-
-declare var CompanySettings
 declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-right-sidebar',
     templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService, CompanySettingsService],
+    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
     host: { '(window:resize)': 'checkSize()' }
 })
 
@@ -89,7 +87,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
-        private settingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private router: Router,
         private route: ActivatedRoute
     ) {
@@ -238,21 +236,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
 
                 if (item.tag === 'GovernanceRoles') {
-                    this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).subscribe(res => {
-                        if (res) {
-                            if (res[0]) {
-                                if (res[0].StringSetting && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
-                                    item.warningMessage = `GovRoleWarning`;
-                                    this.ref.markForCheck();
-                                }
-                                else if (res[0].GuidSetting && res[0].GuidSetting.Value === '00000000-0000-0000-0000-000000000000') {
-                                    item.warningMessage = `GovRoleWarning`;
-                                    this.ref.markForCheck();
-                                }
-                            }
-                        }
-                    });
-
+                    let setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
+                    if (!setting.ScalarValue || setting.ScalarValue === "00000000-0000-0000-0000-000000000000") {
+                        item.warningMessage = `GovRoleWarning`;
+                        this.ref.markForCheck();
+                    }
                 }
             });
 
@@ -365,7 +353,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             result => {
                 this.status = result;
                 if (this.status != undefined && this.status != null && this.status.length > 0) {
-                    var draftValues = <string>CompanySettings.RequestCertificationDraft;
+                    var draftValues = this.settingsService.getSettingById(CompanySettingEnum.RequestCertificationDraft).StringSetting.Value;
 
                     if (!draftValues) {
                         draftValues = "DRAFT";

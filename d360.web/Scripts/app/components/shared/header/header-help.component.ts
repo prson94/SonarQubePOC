@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnInit, HostListener } from "@angular/core";
-import { CurrentEnvironmentSettings } from "../../../static/environment-settings";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ResourcesService } from "../../../services/resources.service";
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
@@ -14,7 +13,7 @@ declare var VersionNumber: string;
     selector: 'd3s-header-help',
     templateUrl: `header-help.component.html`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [CompanySettingsService, HelpMenuService],
+    providers: [HelpMenuService],
     styles: [`
         .licence-info{
             list-style: disc;
@@ -46,7 +45,7 @@ export class HeaderHelpComponent implements OnInit {
 
     licenceData: any;
 
-    private items: HelpMenu[] = [];
+    public items: HelpMenu[] = [];
     isAdmin: boolean = false;
 
     constructor(

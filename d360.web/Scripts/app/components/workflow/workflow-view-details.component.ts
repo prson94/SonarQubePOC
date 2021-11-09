@@ -10,6 +10,7 @@ import { StepType, WorkflowActivityType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { HeaderActions } from '../../models/header.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 
 @Component({
@@ -28,16 +29,18 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     itemStepId: any;
     detailVisible: boolean;
     private workflowTypeId: number;
+
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        secondaryNavService: SecondaryNavService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        protected titleService: Title,
         private headerActionsService: HeaderActionsService,
-        protected workflowService: WorkflowService
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
+        protected titleService: Title,
+        protected workflowService: WorkflowService,
+        private route: ActivatedRoute,
+        private router: Router
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = headerBreadcrumbService;
     }

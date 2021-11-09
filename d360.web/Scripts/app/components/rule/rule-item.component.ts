@@ -11,8 +11,8 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { StringConstants } from '../../static/string-constants';
 import { Subscription } from 'rxjs';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
     selector: 'd3s-rule-item',
@@ -46,9 +46,10 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
+        protected settingsService: CompanySettingsService,
         webAnalyticsService: WebAnalyticsService
     ) {
-        super();
+        super(settingsService);
 
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
@@ -64,7 +65,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             this.load(ruleId);
         });
 
-        this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
+        this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
     }
 
     ngOnDestroy() {

@@ -4,6 +4,7 @@ import {ResourcesService} from '../../services/resources.service';
 import {CountObject} from '../../models/resource.model';
 import {Group} from '../../models/group.model';
 import {BaseComponent} from '../shared/base.component';
+import { CompanySettingsService } from '../../services/settings.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -42,8 +43,11 @@ export class GroupResponsibilityComponent extends BaseComponent implements OnCha
     selected: CountObject;
     showFilter: boolean = true;
 
-    constructor(private groupService: GroupService) {
-        super();
+    constructor(
+        private groupService: GroupService,
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

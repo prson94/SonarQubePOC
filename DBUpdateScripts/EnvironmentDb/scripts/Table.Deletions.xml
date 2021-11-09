@@ -5,28 +5,93 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.ScoreItem_Backup-v1">
+  <changeSet author="Pappas" id="Table.Deletions-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-DROP TABLE IF EXISTS [metrics].[ScoreItem_Backup]
-		]]>
+drop table if exists [dbo].Fusion_backup
+GO
+drop table if exists [dbo].FusionType_backup
+GO
+drop table if exists [dbo].FusionAttribute_backup
+GO
+drop table if exists [dbo].FusionAttributeType_backup
+GO
+drop table if exists [dbo].FusionAttributeTypeCustomQuery_bak
+GO
+drop table if exists [dbo].FusionOwner_backup
+GO
+drop table if exists [dbo].FusionProfile_backup
+GO
+drop table if exists [dbo].FusionQueryAttribute_backup
+GO
+drop table if exists [dbo].FusionQueryAttributeType_backup
+GO
+drop table if exists [dbo].FusionStatusLog_backup
+GO
+drop table if exists [fusion].AgentError
+GO
+drop table if exists [fusion].AgentErrorItem_backup
+GO
+drop table if exists [fusion].Error_backup
+GO
+drop table if exists [fusion].Execution_backup
+GO
+drop table if exists [fusion].MarkitLineageData_backup
+GO
+drop table if exists [fusion].MarkitLineageHistory_backup
+GO
+drop table if exists [fusion].MarkitLineageMapToBusinessItems_backup
+GO
+drop table if exists [fusion].MarkitLineageMapping_backup
+GO
+drop table if exists [fusion].MarkitLineageSetting_backup
+GO
+drop table if exists [fusion].Result_backup
+GO
+drop table if exists [fusion].StagingRelation_backup
+GO
+drop table if exists [fusion].StagingRelationUnresolved_backup
+GO
+drop table if exists [integration].AssetField_backup
+GO
+drop table if exists [integration].AssetFieldRelationship_backup
+GO
+drop table if exists [integration].AssetHash_backup
+GO
+drop table if exists [integration].ExecutionAssetField_backup
+GO
+drop table if exists [integration].ExecutionAssetType_backup
+GO
+drop table if exists [integration].ExecutionAssetTypeError_backup
+GO
+drop table if exists [integration].ExecutionAssetTypeLog_backup
+GO
+drop table if exists [integration].Setting_backup
+GO
+drop table if exists [integration].SynchedAssetType_backup
+GO
+drop table if exists [integration].SynchedAssetTypeFieldItem_backup
+GO
+drop table if exists [integration].SynchedAssetTypeRelationItem_backup
+GO
+drop table if exists [integration].SynchedAssetTypeRelationItemTarget_backup
+GO
+drop table if exists [integration].SynchedAssetTypeRoleItem_backup
+GO
+drop table if exists [integration].UnresolvedRelationships_backup
+GO
+drop table if exists [metrics].[Score_Backup]
+GO
+drop table if exists [metrics].[ScoreItem_Backup]
+GO
+drop table if exists [reporting].[Dates_backup]
+]]>
     </sql>
 		<![CDATA[
 		]]>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.metrics.Score_Backup-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DROP TABLE IF EXISTS [metrics].[Score_Backup]
-		]]>
-    </sql>
   </changeSet>
 
   <changeSet author="Pappas" id="Table.Deletions.Rule-v1.1">
@@ -84,5 +149,5 @@ GO
 		]]>
     </sql>
   </changeSet>
-
+   
 </databaseChangeLog>

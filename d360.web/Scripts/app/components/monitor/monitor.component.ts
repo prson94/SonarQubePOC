@@ -7,6 +7,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-monitor',
@@ -125,10 +126,11 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     constructor(
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
         protected router: Router,
         protected route: ActivatedRoute,
         secondaryNavService: SecondaryNavService) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
     }
 

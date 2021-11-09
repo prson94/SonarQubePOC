@@ -16,7 +16,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 @Component({
     selector: 'd3s-governance-roles',
     templateUrl: './governance-roles-sidebar.component.html',
-    providers: [AssetTypeService, CompanySettingsService],
+    providers: [AssetTypeService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -30,10 +30,10 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
         private assetsService: AssetTypeService,
         breadcrumbService: HeaderBreadcrumbService,
         private cdRef: ChangeDetectorRef,
-        private settingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private messagesService: MessagesObservableService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }
@@ -65,25 +65,16 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
 
             });
 
-        this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid)
-            .subscribe((r3) => {
-                this.originalModel = new GovernanceRole();
-                if (r3[0].StringSetting) {
-                    this.originalModel.RefListUid = r3[0].StringSetting.Value;
-                    this.datatype = 0;
-                }
-                else if (r3[0].GuidSetting)
-                {
-                    this.originalModel.RefListUid = r3[0].GuidSetting.Value;
-                    this.datatype = 4;
-                }
+        let setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
+        this.originalModel = new GovernanceRole();
+        if (setting.ScalarValue && setting.ScalarValue !== "00000000-0000-0000-0000-000000000000") {
+            this.originalModel.RefListUid = setting.ScalarValue;
+            this.datatype = 4;
+        }
 
-                this.model = this.getInitialData();
-                this.isLoading = false;
-                this.cdRef.detectChanges();
-
-            });
-
+        this.model = this.getInitialData();
+        this.isLoading = false;
+        this.cdRef.detectChanges();
     }
 
     discard() {

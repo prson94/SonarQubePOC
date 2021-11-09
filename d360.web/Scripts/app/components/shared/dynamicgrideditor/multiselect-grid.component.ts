@@ -12,6 +12,7 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { EditorField } from '../../../models/editor-field.model';
 import { ResourcesService } from '../../../services/resources.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -55,8 +56,9 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         private assetTypeService: AssetTypeService,
         private relationshipService: RelationshipsService,
         private resourceService: ResourcesService,
+        protected settingsService: CompanySettingsService,
         private ref: ChangeDetectorRef) {
-        super();
+        super(settingsService);
     }
 
     get isLazyLoad() {

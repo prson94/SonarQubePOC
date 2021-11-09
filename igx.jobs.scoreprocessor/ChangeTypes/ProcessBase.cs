@@ -34,7 +34,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         internal ICompanyContext GetCompanyContext()
         {
             // Create EF connection
-            return JobDbContextCreator.CreateWebjobCompanyContext(this.Info.CompanyID, 0, "", true);
+            return JobDbContextCreator.CreateCompanyContext(this.Info.CompanyID, 0, "", true);
         }
 
         internal MetConditionsModel CheckMeasureConditions(

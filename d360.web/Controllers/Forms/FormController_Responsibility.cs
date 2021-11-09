@@ -512,7 +512,6 @@ order by case Object
             from	ResponsibilityTypeRelation R
 		            inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and R.ResponsibilityTypeID = @id
                     cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-                    where R.ObjectType <> 'FusionAttributeType'
             order by {QueryConstants.HighLevelTypeCaseStatement} + coalesce(P.[Path], T.[Name])", new { id });
 
             return new JsonNetResult

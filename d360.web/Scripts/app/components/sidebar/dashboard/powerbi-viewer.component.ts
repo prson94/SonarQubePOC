@@ -2,6 +2,7 @@
 import * as pbi from "powerbi-client";
 import { Dashboard, DashboardTokens } from "../../../models/dashboard.model";
 import { DashboardService } from "../../../services/dashboard.service";
+import { CompanySettingsService } from "../../../services/settings.service";
 import { WebAnalyticsService } from "../../../services/web-analytics.service";
 import { BaseComponent } from "../../shared/base.component";
 
@@ -21,9 +22,10 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
     constructor(
         protected el: ElementRef,
         protected dashboardService: DashboardService,
-        webAnalyticsService: WebAnalyticsService
+        webAnalyticsService: WebAnalyticsService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.webAnalyticsService = webAnalyticsService;
     }
 
