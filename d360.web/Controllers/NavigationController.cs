@@ -437,7 +437,7 @@ namespace d360.web.Controllers
             {
                 if (folder == null)
                 {
-                    throw new ArgumentNullException("Invalid folder.");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidFolder);
                 }
                 var siteNav = Company.GetById<SiteNav>(folder.ID);
                 if (siteNav == null)

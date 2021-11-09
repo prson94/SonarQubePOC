@@ -70,7 +70,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api endpoint uri successfully removed..
+        ///   Looks up a localized string similar to Api endpoint uri successfully removed..
         /// </summary>
         public static string ApiEndPointUriRemoved {
             get {
@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api endpoint version successfully removed..
+        ///   Looks up a localized string similar to Api endpoint version successfully removed..
         /// </summary>
         public static string ApiEndPointVersionRemoved {
             get {
@@ -88,7 +88,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api field.
+        ///   Looks up a localized string similar to Api field.
         /// </summary>
         public static string ApiField {
             get {
@@ -97,7 +97,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api field successfully removed..
+        ///   Looks up a localized string similar to Api field successfully removed..
         /// </summary>
         public static string ApiFieldRemoved {
             get {
@@ -133,7 +133,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api service.
+        ///   Looks up a localized string similar to Api service.
         /// </summary>
         public static string ApiService {
             get {
@@ -142,7 +142,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api service endpoint.
+        ///   Looks up a localized string similar to Api service endpoint.
         /// </summary>
         public static string ApiServiceEndpoint {
             get {
@@ -196,7 +196,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api service successfully removed..
+        ///   Looks up a localized string similar to Api service successfully removed..
         /// </summary>
         public static string ApiServiceRemoved {
             get {
@@ -214,7 +214,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api service version.
+        ///   Looks up a localized string similar to Api service version.
         /// </summary>
         public static string apiserviceversion {
             get {
@@ -223,7 +223,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api service version entity.
+        ///   Looks up a localized string similar to Api service version entity.
         /// </summary>
         public static string ApiServiceVersionEntity {
             get {
@@ -232,7 +232,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api service version uri.
+        ///   Looks up a localized string similar to Api service version uri.
         /// </summary>
         public static string ApiServiceVersionUri {
             get {
@@ -241,7 +241,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to asset type.
+        ///   Looks up a localized string similar to Asset type.
         /// </summary>
         public static string AssetType {
             get {
@@ -259,7 +259,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to authentication failed.
+        ///   Looks up a localized string similar to Authentication failed.
         /// </summary>
         public static string AuthenticationFailed {
             get {
@@ -268,7 +268,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to bottom..
+        ///   Looks up a localized string similar to Bottom..
         /// </summary>
         public static string bottomConstant {
             get {
@@ -277,7 +277,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to company settings.
+        ///   Looks up a localized string similar to Company settings.
         /// </summary>
         public static string CompanySettings {
             get {
@@ -286,7 +286,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to contract.
+        ///   Looks up a localized string similar to Contract.
         /// </summary>
         public static string Contract {
             get {
@@ -304,7 +304,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to custom synonym.
+        ///   Looks up a localized string similar to Custom synonym.
         /// </summary>
         public static string CustomSynonym {
             get {
@@ -358,7 +358,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to endpoint.
+        ///   Looks up a localized string similar to Endpoint.
         /// </summary>
         public static string endpoint {
             get {
@@ -367,7 +367,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to end point successfully removed..
+        ///   Looks up a localized string similar to End point successfully removed..
         /// </summary>
         public static string EndPointRemoved {
             get {
@@ -412,7 +412,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to field.
+        ///   Looks up a localized string similar to Field.
         /// </summary>
         public static string field {
             get {
@@ -673,7 +673,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to issue type.
+        ///   Looks up a localized string similar to Issue type.
         /// </summary>
         public static string IssueType {
             get {
@@ -790,7 +790,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to api namespace successfully removed..
+        ///   Looks up a localized string similar to Api namespace successfully removed..
         /// </summary>
         public static string NamespaceRemoved {
             get {
@@ -826,7 +826,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to no favorite above.
+        ///   Looks up a localized string similar to No favorite above.
         /// </summary>
         public static string NoFavoriteAbove {
             get {
@@ -835,7 +835,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to no favorite below.
+        ///   Looks up a localized string similar to No favorite below.
         /// </summary>
         public static string NoFavoriteBelow {
             get {
@@ -1006,7 +1006,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to organizationType.
+        ///   Looks up a localized string similar to OrganizationType.
         /// </summary>
         public static string organizationType {
             get {
@@ -1024,7 +1024,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to policy type.
+        ///   Looks up a localized string similar to Policy type.
         /// </summary>
         public static string PolicyType {
             get {
@@ -1033,7 +1033,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to policy type level.
+        ///   Looks up a localized string similar to Policy type level.
         /// </summary>
         public static string PolicyTypeLevel {
             get {
@@ -1123,7 +1123,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to resource.
+        ///   Looks up a localized string similar to Resource.
         /// </summary>
         public static string Resource {
             get {
@@ -1132,7 +1132,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to response type.
+        ///   Looks up a localized string similar to Response type.
         /// </summary>
         public static string ResponseType {
             get {
@@ -1141,7 +1141,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to responsibility.
+        ///   Looks up a localized string similar to Responsibility.
         /// </summary>
         public static string Responsibility {
             get {
@@ -1168,7 +1168,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to responsibility type rule.
+        ///   Looks up a localized string similar to Responsibility type rule.
         /// </summary>
         public static string ResponsibilityTypeRule {
             get {
@@ -1186,7 +1186,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to service.
+        ///   Looks up a localized string similar to Service.
         /// </summary>
         public static string serviceConstant {
             get {
@@ -1357,7 +1357,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to survey type.
+        ///   Looks up a localized string similar to Survey type.
         /// </summary>
         public static string SurveyType {
             get {
@@ -1366,7 +1366,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to synonym.
+        ///   Looks up a localized string similar to Synonym.
         /// </summary>
         public static string Synonym {
             get {
@@ -1393,7 +1393,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to taxonomy type.
+        ///   Looks up a localized string similar to Taxonomy type.
         /// </summary>
         public static string TaxonomyType {
             get {
@@ -1402,7 +1402,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to taxonomy type level.
+        ///   Looks up a localized string similar to Taxonomy type level.
         /// </summary>
         public static string TaxonomyTypeLevel {
             get {
@@ -1411,7 +1411,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to top..
+        ///   Looks up a localized string similar to Top..
         /// </summary>
         public static string TopConstant {
             get {
@@ -1456,7 +1456,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to uri.
+        ///   Looks up a localized string similar to Uri.
         /// </summary>
         public static string uriConstant {
             get {
@@ -1483,7 +1483,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to user does not have admin privileges..
+        ///   Looks up a localized string similar to User does not have admin privileges..
         /// </summary>
         public static string UserDoesnotAdmin {
             get {
@@ -1492,7 +1492,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to version.
+        ///   Looks up a localized string similar to Version.
         /// </summary>
         public static string version {
             get {

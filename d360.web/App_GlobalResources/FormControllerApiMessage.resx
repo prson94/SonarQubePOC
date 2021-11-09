@@ -121,16 +121,16 @@
     <value>An error occurred - there are more than 1 open carts for this user</value>
   </data>
   <data name="ApiEndPointUriRemoved" xml:space="preserve">
-    <value>api endpoint uri successfully removed.</value>
+    <value>Api endpoint uri successfully removed.</value>
   </data>
   <data name="ApiEndPointVersionRemoved" xml:space="preserve">
-    <value>api endpoint version successfully removed.</value>
+    <value>Api endpoint version successfully removed.</value>
   </data>
   <data name="ApiField" xml:space="preserve">
-    <value>api field</value>
+    <value>Api field</value>
   </data>
   <data name="ApiFieldRemoved" xml:space="preserve">
-    <value>api field successfully removed.</value>
+    <value>Api field successfully removed.</value>
   </data>
   <data name="ApiFieldUpdated" xml:space="preserve">
     <value>Api Field successfully updated.</value>
@@ -142,10 +142,10 @@
     <value>API Namespace is null</value>
   </data>
   <data name="ApiService" xml:space="preserve">
-    <value>api service</value>
+    <value>Api service</value>
   </data>
   <data name="ApiServiceEndpoint" xml:space="preserve">
-    <value>api service endpoint</value>
+    <value>Api service endpoint</value>
   </data>
   <data name="APIServiceEndpointNameNull" xml:space="preserve">
     <value>API Service Endpoint Name is null</value>
@@ -163,43 +163,43 @@
     <value>API Service Prefix is null</value>
   </data>
   <data name="ApiServiceRemoved" xml:space="preserve">
-    <value>api service successfully removed.</value>
+    <value>Api service successfully removed.</value>
   </data>
   <data name="ApiServiceUriFormatIsNull" xml:space="preserve">
     <value>API Service Endpoint Version URI format is null</value>
   </data>
   <data name="apiserviceversion" xml:space="preserve">
-    <value>api service version</value>
+    <value>Api service version</value>
   </data>
   <data name="ApiServiceVersionEntity" xml:space="preserve">
-    <value>api service version entity</value>
+    <value>Api service version entity</value>
   </data>
   <data name="ApiServiceVersionUri" xml:space="preserve">
-    <value>api service version uri</value>
+    <value>Api service version uri</value>
   </data>
   <data name="AssetType" xml:space="preserve">
-    <value>asset type</value>
+    <value>Asset type</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>No Asset Type found for given Guid</value>
   </data>
   <data name="AuthenticationFailed" xml:space="preserve">
-    <value>authentication failed</value>
+    <value>Authentication failed</value>
   </data>
   <data name="bottomConstant" xml:space="preserve">
-    <value>bottom.</value>
+    <value>Bottom.</value>
   </data>
   <data name="CompanySettings" xml:space="preserve">
-    <value>company settings</value>
+    <value>Company settings</value>
   </data>
   <data name="Contract" xml:space="preserve">
-    <value>contract</value>
+    <value>Contract</value>
   </data>
   <data name="CoultNotFindPermission" xml:space="preserve">
     <value>Could not find existing permission</value>
   </data>
   <data name="CustomSynonym" xml:space="preserve">
-    <value>custom synonym</value>
+    <value>Custom synonym</value>
   </data>
   <data name="CustomSynonymNotFound" xml:space="preserve">
     <value>Custom Synonym not found</value>
@@ -217,10 +217,10 @@
     <value>The email you entered is not valid</value>
   </data>
   <data name="endpoint" xml:space="preserve">
-    <value>endpoint</value>
+    <value>Endpoint</value>
   </data>
   <data name="EndPointRemoved" xml:space="preserve">
-    <value>end point successfully removed.</value>
+    <value>End point successfully removed.</value>
   </data>
   <data name="ErrorOccurred" xml:space="preserve">
     <value>Error Occurred!</value>
@@ -235,7 +235,7 @@
     <value>Favorite moved successfully.</value>
   </data>
   <data name="field" xml:space="preserve">
-    <value>field</value>
+    <value>Field</value>
   </data>
   <data name="FieldCreated" xml:space="preserve">
     <value>Field successfully created.</value>
@@ -322,7 +322,7 @@
     <value>IP Restrictions</value>
   </data>
   <data name="IssueType" xml:space="preserve">
-    <value>issue type</value>
+    <value>Issue type</value>
   </data>
   <data name="IssueTypeNotFound" xml:space="preserve">
     <value>No Issue Type found for given Guid</value>
@@ -361,7 +361,7 @@
     <value>Namespace successfully created.</value>
   </data>
   <data name="NamespaceRemoved" xml:space="preserve">
-    <value>api namespace successfully removed.</value>
+    <value>Api namespace successfully removed.</value>
   </data>
   <data name="NamespaceUpdated" xml:space="preserve">
     <value>Namespace successfully updated.</value>
@@ -373,10 +373,10 @@
     <value>No asset type ID provided (id parameter).</value>
   </data>
   <data name="NoFavoriteAbove" xml:space="preserve">
-    <value>no favorite above</value>
+    <value>No favorite above</value>
   </data>
   <data name="NoFavoriteBelow" xml:space="preserve">
-    <value>no favorite below</value>
+    <value>No favorite below</value>
   </data>
   <data name="NoFavoriteRoute" xml:space="preserve">
     <value>no favorite with supplied route</value>
@@ -433,16 +433,16 @@
     <value>Organization invitation</value>
   </data>
   <data name="organizationType" xml:space="preserve">
-    <value>organizationType</value>
+    <value>OrganizationType</value>
   </data>
   <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
     <value>Please specify a valid username and password.</value>
   </data>
   <data name="PolicyType" xml:space="preserve">
-    <value>policy type</value>
+    <value>Policy type</value>
   </data>
   <data name="PolicyTypeLevel" xml:space="preserve">
-    <value>policy type level</value>
+    <value>Policy type level</value>
   </data>
   <data name="PowerBICredentials" xml:space="preserve">
     <value>Power BI Credentials</value>
@@ -472,13 +472,13 @@
     <value>Users password has been successfully updated!</value>
   </data>
   <data name="Resource" xml:space="preserve">
-    <value>resource</value>
+    <value>Resource</value>
   </data>
   <data name="ResponseType" xml:space="preserve">
-    <value>response type</value>
+    <value>Response type</value>
   </data>
   <data name="Responsibility" xml:space="preserve">
-    <value>responsibility</value>
+    <value>Responsibility</value>
   </data>
   <data name="ResponsibilityNameMax250" xml:space="preserve">
     <value>Name provided must be less then 250 characters in length.</value>
@@ -487,13 +487,13 @@
     <value>ResponsibilityType</value>
   </data>
   <data name="ResponsibilityTypeRule" xml:space="preserve">
-    <value>responsibility type rule</value>
+    <value>Responsibility type rule</value>
   </data>
   <data name="SelectPredicate" xml:space="preserve">
     <value>Please select a predicate for this relationship.</value>
   </data>
   <data name="serviceConstant" xml:space="preserve">
-    <value>service</value>
+    <value>Service</value>
   </data>
   <data name="ServiceCreated" xml:space="preserve">
     <value>Service successfully created.</value>
@@ -550,10 +550,10 @@
     <value>Survey question</value>
   </data>
   <data name="SurveyType" xml:space="preserve">
-    <value>survey type</value>
+    <value>Survey type</value>
   </data>
   <data name="Synonym" xml:space="preserve">
-    <value>synonym</value>
+    <value>Synonym</value>
   </data>
   <data name="SynonymCreated" xml:space="preserve">
     <value>Synonym {0} successfully created.</value>
@@ -562,13 +562,13 @@
     <value>Synonym successfully removed</value>
   </data>
   <data name="TaxonomyType" xml:space="preserve">
-    <value>taxonomy type</value>
+    <value>Taxonomy type</value>
   </data>
   <data name="TaxonomyTypeLevel" xml:space="preserve">
-    <value>taxonomy type level</value>
+    <value>Taxonomy type level</value>
   </data>
   <data name="TopConstant" xml:space="preserve">
-    <value>top.</value>
+    <value>Top.</value>
   </data>
   <data name="TypeConstant" xml:space="preserve">
     <value>Type</value>
@@ -583,7 +583,7 @@
     <value>Unsupported hierarchy type specified to Hierarchy_EditFields.  Supported types are taxonomy and policy.</value>
   </data>
   <data name="uriConstant" xml:space="preserve">
-    <value>uri</value>
+    <value>Uri</value>
   </data>
   <data name="UriCreated" xml:space="preserve">
     <value>Uri successfully created.</value>
@@ -592,10 +592,10 @@
     <value>A user with this email address is already registered to this organization</value>
   </data>
   <data name="UserDoesnotAdmin" xml:space="preserve">
-    <value>user does not have admin privileges.</value>
+    <value>User does not have admin privileges.</value>
   </data>
   <data name="version" xml:space="preserve">
-    <value>version</value>
+    <value>Version</value>
   </data>
   <data name="VersionCreated" xml:space="preserve">
     <value>Version successfully created.</value>
