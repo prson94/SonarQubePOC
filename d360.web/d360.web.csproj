@@ -871,10 +871,11 @@
       <LastGenOutput>MetricsApiMessages.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
-    <Content Include="App_GlobalResources\OthersMessages.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
+    <EmbeddedResource Include="App_GlobalResources\OthersMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>OthersMessages.designer.cs</LastGenOutput>
-    </Content>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RelationshipsApiMessages.designer.cs</LastGenOutput>

@@ -164,13 +164,13 @@ namespace d360.web.Controllers.V2
                 {
                     if (!f.LookupObjectID.HasValue)
                     {
-                        throw new Exception(OthersMessages.NoRelationshipTypeFoundToLookup);
+                        throw new ArgumentNullException(OthersMessages.NoRelationshipTypeFoundToLookup);
                     }
                     var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
 
                     if (intersectType == null)
                     {
-                        throw new Exception(OthersMessages.InvalidOrDeletedRelationshipType);
+                        throw new ArgumentNullException(OthersMessages.InvalidOrDeletedRelationshipType);
                     }
 
                     fieldJoins.Add($@"

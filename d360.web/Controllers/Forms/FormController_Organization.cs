@@ -838,7 +838,7 @@ namespace d360.web.Controllers
 
                 if (execution.Error > 0)
                 {
-                    throw new Exception(FormControllerApiMessage.NotDeleteOrganizationType);
+                    throw new ArgumentNullException(FormControllerApiMessage.NotDeleteOrganizationType);
                 }
 
                 dynamic custom = new

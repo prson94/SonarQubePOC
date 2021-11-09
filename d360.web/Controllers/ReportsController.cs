@@ -47,7 +47,7 @@ namespace d360.web.Controllers
 
             if (string.IsNullOrEmpty(groupId))
             {
-                throw new Exception(FormControllerApiMessage.PowerBINotSetupOnGovernEnvironment);
+                throw new ArgumentNullException(FormControllerApiMessage.PowerBINotSetupOnGovernEnvironment);
             }
 
             // Create a user password cradentials.
@@ -59,7 +59,7 @@ namespace d360.web.Controllers
 
             if (authenticationResult == null)
             {
-                throw new Exception(FormControllerApiMessage.AuthenticationFailed);
+                throw new ArgumentNullException(FormControllerApiMessage.AuthenticationFailed);
             }
 
             var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
@@ -71,7 +71,7 @@ namespace d360.web.Controllers
 
                 if (report == null)
                 {
-                    throw new Exception(FormControllerApiMessage.NoSuchReport);
+                    throw new ArgumentNullException(FormControllerApiMessage.NoSuchReport);
                 }
 
                 Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest(accessLevel: "view");
@@ -80,7 +80,7 @@ namespace d360.web.Controllers
 
                 if (tokenResponse == null)
                 {
-                    throw new Exception(FormControllerApiMessage.FailedGenerateToken);
+                    throw new ArgumentNullException(FormControllerApiMessage.FailedGenerateToken);
                 }
 
                 var viewModel = new PowerBIReportViewModel

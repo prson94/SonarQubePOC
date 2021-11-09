@@ -164,7 +164,7 @@ namespace d360.web.Controllers
             {
                 if (string.IsNullOrWhiteSpace(item.Name))
                 {
-                    throw new Exception(FormControllerApiMessage.FolderNameNotEmpty);
+                    throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
                 }
 
                 var deleteExisting = Company.Query<SiteNav>(@"with s as
@@ -215,7 +215,7 @@ namespace d360.web.Controllers
                 var fi = Company.GetById<SiteNav>(id);
                 if (fi == null)
                 {
-                    throw new Exception(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
                 }
                 Company.Delete(fi);
                 Company.SaveChanges();
@@ -249,7 +249,7 @@ namespace d360.web.Controllers
                 var folder = Company.GetById<SiteNav>(id);
                 if (folder == null)
                 {
-                    throw new Exception(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
                 }
                 string originalImage = folder.ImageIconUrl;
                 if (!string.IsNullOrEmpty(originalImage))
@@ -292,7 +292,7 @@ namespace d360.web.Controllers
             {
                 if (string.IsNullOrWhiteSpace(model.Folder.Name))
                 {
-                    throw new Exception(FormControllerApiMessage.FolderNameNotEmpty);
+                    throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
                 }
 
                 if (!string.IsNullOrEmpty(model.Folder.IconPayload))
@@ -360,11 +360,11 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new Exception(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
                 }
                 if (siteNavAbove == null)
                 {
-                    throw new Exception(FormControllerApiMessage.FolderAlreadySortedToTop);
+                    throw new ArgumentNullException(FormControllerApiMessage.FolderAlreadySortedToTop);
                 }
 
                 siteNavAbove.SortOrder++;
@@ -400,12 +400,12 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new Exception(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
                 }
 
                 if (siteNavBelow == null)
                 {
-                    throw new Exception(FormControllerApiMessage.FolderAlreadySortedToBottom);
+                    throw new ArgumentNullException(FormControllerApiMessage.FolderAlreadySortedToBottom);
                 }
 
                 siteNavBelow.SortOrder--;
@@ -436,11 +436,13 @@ namespace d360.web.Controllers
             try
             {
                 if (folder == null)
-                    throw new Exception("Invalid folder.");
+                {
+                    throw new ArgumentNullException("Invalid folder.");
+                }
                 var siteNav = Company.GetById<SiteNav>(folder.ID);
                 if (siteNav == null)
                 {
-                    throw new Exception(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.ID.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.ID.ToString()));
                 }
                 string originalImage = siteNav.ImageIconUrl;
 
@@ -511,11 +513,11 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new Exception(string.Format(FormControllerApiMessage.FolderIdNotFound,targetFolderId.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,targetFolderId.ToString()));
                 }
                 if (siteNavBelow == null)
                 {
-                    throw new Exception(string.Format(FormControllerApiMessage.FolderIdNotFound, adjacentFolderId.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, adjacentFolderId.ToString()));
                 }
 
                 int? tmpSortOrder = siteNav.SortOrder;
@@ -753,7 +755,7 @@ namespace d360.web.Controllers
             {
                 if (admin && !Company.CurrentResourceIsAdmin)
                 {
-                    throw new Exception(FormControllerApiMessage.UserDoesnotAdmin);
+                    throw new ArgumentNullException(FormControllerApiMessage.UserDoesnotAdmin);
                 }
 
                 var resid = admin ? 0 : Company.CurrentResourceID;
@@ -762,14 +764,14 @@ namespace d360.web.Controllers
 
                 if (favorite == null)
                 {
-                    throw new Exception(FormControllerApiMessage.NoFavoriteRoute);
+                    throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteRoute);
                 }
                 if (moveUp)
                 {
                     var above = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder - 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
                     if (above == null)
                     {
-                        throw new Exception(FormControllerApiMessage.NoFavoriteAbove);
+                        throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteAbove);
                     }
                     favorite.SortOrder--;
                     above.SortOrder++;
@@ -779,7 +781,7 @@ namespace d360.web.Controllers
                     var below = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder + 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
                     if (below == null)
                     {
-                        throw new Exception(FormControllerApiMessage.NoFavoriteBelow);
+                        throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteBelow);
                     }
                     favorite.SortOrder++;
                     below.SortOrder--;

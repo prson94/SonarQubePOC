@@ -26,7 +26,9 @@ namespace d360.web.Controllers
         public JsonResult Hierarchy_AddFields(SystemObjects hierarchyType, int t, int p)
         {
             if (hierarchyType != SystemObjects.PolicyType && hierarchyType != SystemObjects.TaxonomyType)
-                throw new Exception(FormControllerApiMessage.UnsupportedHierarchyAssetTypeAddField);
+            {
+                throw new ArgumentNullException(FormControllerApiMessage.UnsupportedHierarchyAssetTypeAddField);
+            }
 
             if (!Company.HasAssetTypePermission(hierarchyType, t, Permission.AddAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -46,7 +48,10 @@ namespace d360.web.Controllers
         public JsonResult Hierarchy_EditFields(SystemObjects hierarchy, int id)
         {
             if (hierarchy != SystemObjects.Policy && hierarchy != SystemObjects.Taxonomy)
-                throw new Exception(FormControllerApiMessage.UnsupportedHierarchyTypeEditField);
+            {
+                throw new ArgumentNullException(FormControllerApiMessage.UnsupportedHierarchyTypeEditField);
+            }
+                
 
             if (!Company.HasAssetPermission(hierarchy, id, Permission.EditAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);

@@ -54,7 +54,7 @@ namespace d360.web.Controllers
 
                             if (importResult.ImportState == "Failed")
                             {
-                                throw new Exception(FormControllerApiMessage.FailedToLoadPowerBI);
+                                throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
                             }
                             datasetID = importResult.Datasets.FirstOrDefault().Id;
                             powerBIID = importResult.Reports.FirstOrDefault().Id.ToString();
@@ -156,7 +156,7 @@ namespace d360.web.Controllers
 
                     if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
                     {
-                        throw new Exception(FormControllerApiMessage.UnableToFindPowerBISettings);
+                        throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
                     }
 
                     try
@@ -197,7 +197,7 @@ namespace d360.web.Controllers
 
                 if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pwd))
                 {
-                    throw new Exception(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
+                    throw new ArgumentNullException(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
                 }
                 var companySettings = SettingsRepository.GetSettings();
                 var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
@@ -205,14 +205,14 @@ namespace d360.web.Controllers
 
                 if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
                 {
-                    throw new Exception(FormControllerApiMessage.UnableToFindPowerBISettings);
+                    throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
                 }
                 // if the workspace id is null create a new one and update the companysettings
                 groupId = await checkPowerBIValidWorkspace(groupId, clientId);
 
                 if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
                 {
-                    throw new Exception(FormControllerApiMessage.UnableToFindPowerBISettings);
+                    throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
                 }
                 //save password in this workspace for all ds's
                 await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, user, pwd);
@@ -265,7 +265,7 @@ namespace d360.web.Controllers
 
                         if (importResult.ImportState == "Failed")
                         {
-                            throw new Exception(FormControllerApiMessage.FailedToLoadPowerBI);
+                            throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
                         }
 
                         datasetID = importResult.Datasets.FirstOrDefault().Id;
@@ -393,7 +393,7 @@ namespace d360.web.Controllers
 
             if (string.IsNullOrEmpty(clientId))
             {
-                throw new Exception(FormControllerApiMessage.UnableToFindPowerBISettings);
+                throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
             }
             // if the workspace id is null create a new one and update the companysettings
             groupId = await checkPowerBIValidWorkspace(groupId, clientId);

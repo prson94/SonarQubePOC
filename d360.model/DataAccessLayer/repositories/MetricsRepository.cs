@@ -457,11 +457,11 @@ namespace d360.model.DataAccessLayer
                     }
                     else if (op.MinimumValueCount == op.MaximumValueCount)
                     {
-                        error = string.Format(MetricsErrors.OperatorAcceptExactValue, checkType, valueCount.ToString(), op.MaximumValueCount.ToString()); ;
+                        error = string.Format(MetricsErrors.OperatorAcceptExactValue, checkType, valueCount.ToString(), op.MaximumValueCount.ToString());
                     }
                     else
                     {
-                        error = string.Format(MetricsErrors.OperatorAcceptRangeValue, checkType, valueCount.ToString(), op.MinimumValueCount.ToString(), op.MaximumValueCount.ToString()); ;
+                        error = string.Format(MetricsErrors.OperatorAcceptRangeValue, checkType, valueCount.ToString(), op.MinimumValueCount.ToString(), op.MaximumValueCount.ToString());
                     }
                 }
                 return error;

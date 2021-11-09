@@ -49,14 +49,14 @@ namespace d360.model.DataAccessLayer
             var model = tagsToDelete.FirstOrDefault(i => i.uid == uid);
             if (model == null && model.State != State.Deleted)
             {
-                throw new Exception(string.Format(TagErrors.TagUidNotExists, uid.ToString()));
+                throw new ArgumentNullException(string.Format(TagErrors.TagUidNotExists, uid.ToString()));
             }
 
             var anyAssetTagsForDeletion = companyContext.AssetTags.Any(x => x.TagID == model.ID);
 
             if (anyAssetTagsForDeletion && !cascade)
             {
-                throw new Exception(string.Format(TagErrors.DeleteCascadeTagRelateAsset, uid.ToString()));
+                throw new ArgumentNullException(string.Format(TagErrors.DeleteCascadeTagRelateAsset, uid.ToString()));
             }
 
             model.State = State.Deleted;
@@ -611,7 +611,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                            throw new Exception(TagErrors.InvalidPageSize);
+                            throw new ArgumentNullException(TagErrors.InvalidPageSize);
                         }
                         break;
                 }
@@ -851,7 +851,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                            throw new Exception(TagErrors.InvalidPageNumber);
+                            throw new ArgumentNullException(TagErrors.InvalidPageNumber);
                         }
                         break;
                     case "sortby":

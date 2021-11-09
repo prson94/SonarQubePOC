@@ -96,7 +96,7 @@ namespace d360.web.Controllers
                         }
                         else
                         {
-                            throw new ApplicationException(OthersMessages.FailedToVerifySignature);
+                            throw new ArgumentNullException(OthersMessages.FailedToVerifySignature);
                         }
                     }
                     else
@@ -107,7 +107,7 @@ namespace d360.web.Controllers
                         }
                         else
                         {
-                            throw new ApplicationException(OthersMessages.FailedToVerifySignatureNoIDP);
+                            throw new ArgumentNullException(OthersMessages.FailedToVerifySignatureNoIDP);
                         }
                     }
                 }

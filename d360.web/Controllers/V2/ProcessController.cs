@@ -201,12 +201,12 @@ namespace d360.web.Controllers.V2
                 bool isModelEmpty = model.linkDataArray == null && model.linkFromPortIdProperty == null && model.linkToPortIdProperty == null && model.nodeDataArray == null;
                 if (!sourceAssetUid.HasValue && isModelEmpty)
                 {
-                    throw new Exception(OthersMessages.ModelNotEmpty);
+                    throw new ArgumentNullException(OthersMessages.ModelNotEmpty);
                 }
 
                 if (sourceAssetUid.HasValue && !isModelEmpty)
                 {
-                    throw new Exception(OthersMessages.SourceAssetUidModelNotEmpty);
+                    throw new ArgumentNullException(OthersMessages.SourceAssetUidModelNotEmpty);
                 }
 
                 targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
@@ -217,16 +217,16 @@ namespace d360.web.Controllers.V2
                     sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
                     if (sourceAsset == null)
                     {
-                        throw new Exception(OthersMessages.SourceUidNotExists);
+                        throw new ArgumentNullException(OthersMessages.SourceUidNotExists);
                     }
 
                     if (sourceAsset.ID == targetAsset.ID)
                     {
-                        throw new Exception(OthersMessages.SourceTargetNotSame);
+                        throw new ArgumentNullException(OthersMessages.SourceTargetNotSame);
                     }
                     if (sourceAsset.AssetTypeID != targetAsset.AssetTypeID)
                     {
-                        throw new Exception(OthersMessages.SourceTargetTypeMustSame);
+                        throw new ArgumentNullException(OthersMessages.SourceTargetTypeMustSame);
                     }
 
                     model = ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
@@ -308,7 +308,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (item.from == Guid.Empty || item.to == Guid.Empty)
                     {
-                        throw new Exception(OthersMessages.LinkWithoutFromToDetected);
+                        throw new ArgumentNullException(OthersMessages.LinkWithoutFromToDetected);
                     }
                 }
 

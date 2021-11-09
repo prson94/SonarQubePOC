@@ -2111,11 +2111,13 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var detail = Company.GetById<Nym>(id);
 
                 if (detail == null)
-                    throw new NullReferenceException(FormControllerApiMessage.CustomSynonymNotFound);
-
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.CustomSynonymNotFound);
+                }
                 if (!Company.HasAssetPermission(detail.Object, detail.ObjectID, Permission.DeleteRelationships))
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
+                }
                 if (detail != null)
                 {
                     Company.Delete(detail);
