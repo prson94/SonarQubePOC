@@ -17,6 +17,7 @@
             <d3s-site-menu-category-panel
                 [menu]="menu"
                 [isActive]="isActive"
+                (activeItemChanged)="activeItemChanged.emit($event)"
                 (contentSizeChanged)="positionMenu()">
                 <ng-content additionalButtons select="[additionalButtons]"></ng-content>
             </d3s-site-menu-category-panel>

@@ -17,6 +17,7 @@ export class SiteMenuCategoryPanelComponent extends BaseComponent implements Aft
     @Input() isActive: boolean = false;
 
     @Output() contentSizeChanged = new EventEmitter();
+    @Output() activeItemChanged = new EventEmitter();
 
     ngOnChanges(changes: SimpleChanges) {
         if (this.isActive) {
