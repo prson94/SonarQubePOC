@@ -319,7 +319,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     }
                 }
 
-                let curCategory = this.categories.find(dc => dc.name === currentCategory);
+                let curCategory = this.categories.find((dc) => dc.name === currentCategory);
 
                 let r = curCategory.rows.find((r) => r.Row === (f.Row || 0));
                 if (r) {
@@ -404,7 +404,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     var arrValue: SelectItem[] = [];
                     arr.forEach((tag) => {
                         arrValue.push({ title: tag, value: '' });
-                    })
+                    });
                     field.Value = arrValue;
 
                 }
@@ -460,7 +460,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 if (validation.rule && validation.rule.startsWith('length=')) {
                     var vals = validation.rule.split(',');
 
-                    if (vals.length == 2) {
+                    if (vals.length === 2) {
                         maxLen = +vals[1];
 
                         if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
@@ -566,10 +566,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         this.form.value[p] = simpleDate;
                     }
                     else if (field !== null && field.FieldType === 'DateTime' && this.isV2API) {
-                        if (this.form.value[p] !== 'Invalid Date')
+                        if (this.form.value[p] !== 'Invalid Date') {
                             this.form.value[p] = new Date(this.form.value[p]).toISOString();
-                        else
+                        }
+                        else {
                             this.form.value[p] = '';
+                        }
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
@@ -690,7 +692,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     this.ref.markForCheck();
 
                     if (res && res.Message && res.Message.indexOf('Key values match another') !== -1) {
-                        this.dyFieldRef.forEach((fld) => fld.setKeyFieldsErrorMessage(this.fields.filter(x => x.IsPartOfKey).length < 2));
+                        this.dyFieldRef.forEach((fld) => fld.setKeyFieldsErrorMessage(this.fields.filter((x) => x.IsPartOfKey).length < 2));
                     }
                 }
 
@@ -714,7 +716,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         if (this.objectType === "ExportTemplate" && field.Name === "Asset Type") {
             var item = field.Items.filter((x) => {
-                return x.Value == field.Value
+                return x.Value === field.Value;
             })[0];
             if (item && item.Text.startsWith("Rule")) {
                 this.fields.find(x => x.FieldName === "IncludeParent").FieldType = "no-display";

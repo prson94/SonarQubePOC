@@ -239,7 +239,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (this.field.DelayedLoadType === 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
-                res => {
+                (res) => {
                     this.field.Items = res.items;
                     this.filterException = res.exceptionMessage;
                     this.ref.markForCheck();
@@ -319,7 +319,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 }
             });
 
-            if (this.field.Value === null && this.field.Items.some((x) => x.Selected == true)) {
+            if (this.field.Value === null && this.field.Items.some((x) => x.Selected === true)) {
                 this.field.Value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
             }
             if (this.field?.MultiSelect && this.field.Value) {
@@ -741,7 +741,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     lastParams: any;
     loadListLazy($params) {
-        var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };;
+        var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };
         loadParams["isForAssetForm"] = true;
 
         if ($params.globalFilter) {
@@ -898,7 +898,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.selectionScrollHeight = calculatedHeight + "px";
         }
         catch (ex) {
-            console.warn(ex);
             this.selectionScrollHeight = "320px";
         }
         this.ref.markForCheck();
