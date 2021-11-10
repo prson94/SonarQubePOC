@@ -236,6 +236,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                 this.metricForm.addControl("ruleResultOperation", new FormControl('', [Validators.required]));
                 this.metricForm.addControl("ruleResultMatchType", new FormControl(''));
                 this.metricForm.addControl("matchType", new FormControl(''));
+                this.loadConditions();
             }
         }
         this.metricForm.updateValueAndValidity();
