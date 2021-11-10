@@ -14,6 +14,7 @@ using d360.web.Filters;
 using d360.web.Models;
 using System.Collections.Generic;
 using System.Linq;
+using d360.core.types;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Utilities;
@@ -26,6 +27,11 @@ namespace d360.web
         public IContainer GetContainer()
         {
             var builder = new ContainerBuilder();
+
+            builder.RegisterType<DateTimeService>().As<IDateTimeService>().SingleInstance();
+            builder.RegisterType<DecimalService>().As<IDecimalService>().SingleInstance();
+            builder.RegisterType<Int64Service>().As<IInt64Service>().SingleInstance();
+            builder.RegisterType<DependencyInjectionTypeServiceProvider>().As<ITypeServiceProvider>().SingleInstance();
 
             #region Extension DI
 

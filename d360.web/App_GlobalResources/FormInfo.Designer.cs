@@ -97,15 +97,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fusion Attribute.
-        /// </summary>
-        public static string FusionAttributeType {
-            get {
-                return ResourceManager.GetString("FusionAttributeType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The relationship type you are trying to delete has established relationships.  Please delete these prior to deleting the relationship type..
         /// </summary>
         public static string InUse_Error_Delete {

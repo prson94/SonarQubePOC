@@ -75,6 +75,7 @@ export class DetailField {
     Data: any;
     DataType: string;
     ShowIfEmpty: boolean;
+    IsPartOfKey: boolean
 }
 
 export class Synonym {

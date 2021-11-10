@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using d360.model.DataAccessLayer;
 using d360.utils.excel;
 using d360.core.resources;
+using SmartFormat;
 
 namespace d360.web.Models
 {
@@ -68,7 +69,7 @@ from	FollowDetail F
 
             var query = Company.Query<dynamic>(sql, new { r = resourceID, type, id });
 
-            var document = new ExcelDocument(string.Format(ExcelExports.FollowedResources_DocumentName, DateTime.Now))
+            var document = new ExcelDocument(Smart.Format(ExcelExports.FollowedResources_DocumentName, new { DateTime.Now }))
             {
                 new ExcelSheet(ExcelExports.Common_ItemsSheetName)
                 {
@@ -141,7 +142,7 @@ from	FollowDetail F
 
             var query = Company.Query<dynamic>(sql, new { resourceID, type = new DbString { Value = type, IsFixedLength = true, Length = 20, IsAnsi = true }, id, responsibilityTypeId });
 
-            var document = new ExcelDocument(string.Format(ExcelExports.OwnedResources_DocumentName, DateTime.Now))
+            var document = new ExcelDocument(Smart.Format(ExcelExports.OwnedResources_DocumentName, new { DateTime.Now }))
             {
                 new ExcelSheet(ExcelExports.Common_ItemsSheetName)
                 {
@@ -595,14 +596,7 @@ Order by ColumnOrder,Name
                         desc = Company.Query<string>(desSql, new { ty = objectType, id = objectID }).FirstOrDefault();
                         typeName = "Model Type";
                     }
-                    else if (objectType == "Fusion")
-                    {
-                        var fusionSql = @"select f.name from fusion f 
-                                            where f.id=@id";
-                        var fusionName = Company.Query<string>(fusionSql, new { id = objectID }).FirstOrDefault();
-                        dispName = fusionName;
-                    }
-                    else if ((objectType == "Artifact") || (objectType == "Taxonomy") || (objectType == "FusionAttribute") || (objectType == "Policy"))
+                    else if ((objectType == "Artifact") || (objectType == "Taxonomy") || (objectType == "Policy"))
                     {
                         string query = string.Format("[dbo].[GetAssetHierarchy] {0}, '{1}'", objectID, objectType);
                         levels = Company.Query<TooltipFieldLevelPathModel>(query).ToList<TooltipFieldLevelPathModel>();

@@ -10,10 +10,10 @@ namespace igx.UnitTests.ScoringTests
     public class OperatorTestsDateTimeCompares : BaseTest
     {
         string dataType = DataType.DateTime.ToString();
-        string valueToCompare = DateTime.Now.ToString();
-        List<string> pastValues = new List<string>() { DateTime.Now.AddDays(-1).ToString() };
-        List<string> currentValues = new List<string>() { DateTime.Now.ToString() };
-        List<string> futureValues = new List<string>() { DateTime.Now.AddDays(1).ToString() };
+        private readonly string valueToCompare = DateTime.Now.Date.ToShortDateStringInvariantCulture();
+        private readonly List<string> pastValues = new List<string>() { DateTime.Now.AddDays(-1).Date.ToShortDateStringInvariantCulture() };
+        private readonly List<string> currentValues = new List<string>() { DateTime.Now.Date.ToShortDateStringInvariantCulture() };
+        private readonly List<string> futureValues = new List<string>() { DateTime.Now.AddDays(1).Date.ToShortDateStringInvariantCulture() };
         string falseFormatStatement = "The [DateTime] result of the [{0}] (with {1}) comparison is true, but it should be false.";
         string trueFormatStatement = "The [DateTime] result of the [{0}] (with {1}) comparison is false, but it should be true.";
 

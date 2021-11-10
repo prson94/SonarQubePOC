@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetAssetTextPathById-v1">
+  <changeSet author="Pappas" id="Function.dbo.GetAssetTextPathById-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,36 +20,7 @@ RETURNS TABLE
 AS
 RETURN 
 (
-
-	with c as (
-		select	T.ID as AssetID,
-				P.ID as ParentID,
-				T.Object as AssetObject,
-				T.ObjectID as AssetObjectID,
-				T.ID,
-				T.Object,
-				T.ObjectID,
-				D.DisplayValue,
-				1 as Level
-		from	Asset T
-				outer apply dbo.GetAssetDisplayValueById(T.ID) D
-				outer apply dbo.GetParentByAssetID(T.ID) P
-		where	T.ID = @Id
-		union all
-		select	c.AssetID,
-				P.ID as ParentID,
-				c.AssetObject,
-				c.AssetObjectID,
-				T.ID,
-				T.Object,
-				T.ObjectID,
-				D.DisplayValue + @delimiter + c.DisplayValue as DisplayValue,
-				c.Level + 1 as Level
-		from	Asset T
-				outer apply dbo.GetAssetDisplayValueById(T.ID) D
-				outer apply dbo.GetParentByAssetID(T.ID) P
-				inner join c on c.ParentID = T.ID
-	), c2 as (
+	with c2 as (
 		select	T.ID as AssetID,
 				P.ID as ParentID,
 				T.Object as AssetObject,
@@ -79,25 +50,14 @@ RETURN
 				inner join c2 on c2.ParentID = T.ID
 	)
 
-	(select	top 1 
-			AssetID as ID, 
-			AssetObject as Object, 
-			AssetObjectID as ObjectID, 
-			DisplayValue as TextPath, 
-			Level 
-	from	c
-	where c.AssetObject = 'FusionAttribute'
-	order by Level desc)
-	union all
-	(select	top 1 
+	select	top 1 
 			AssetID as ID, 
 			AssetObject as Object, 
 			AssetObjectID as ObjectID, 
 			DisplayValue as TextPath, 
 			Level 
 	from	c2
-	where c2.AssetObject != 'FusionAttribute'
-	order by Level desc)
+	order by Level desc
 )
 		]]>
     </sql>

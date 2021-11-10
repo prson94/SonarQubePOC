@@ -19,7 +19,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Input() parentID: number;
     @Input() assetTypeClass: AssetTypeClass;
     @Input() showDisplayFormat: boolean = true;
-    @Input() fusionId: number;
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
     @Output() onFail = new EventEmitter();
@@ -34,7 +33,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     showAssetStyles: boolean = true;
     showAssetDepthSettings: boolean = false;
-    showFusionOwnerSettings: boolean = false;
     showAssetArtifactSettings: boolean = false;
     showNotesField: boolean = false;
     showParentPredicates: boolean = true;
@@ -70,12 +68,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         this.isLoading = true;
 
         switch (+this.assetTypeClass) {
-            case AssetTypeClass.FusionAttribute:
-                this.showParentPredicates = false;
-                break;
             case AssetTypeClass.BusinessAsset:
                 this.showAssetArtifactSettings = true;
-                this.showFusionOwnerSettings = true;
                 break;
             case AssetTypeClass.TechnicalAsset:
                 this.showAssetArtifactSettings = true;
@@ -152,8 +146,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     private save(): void {
         this.isSaving = true;
         this.model.AssetType.Class = this.assetTypeClass;
-        if (this.fusionId)
-            this.model.AssetType.FusionID = this.fusionId;
 
         if (this.model.AssetType.Class != AssetTypeClass.DiagramAsset) {
             delete this.model.AssetType.FlowObjectType;

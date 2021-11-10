@@ -199,12 +199,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
         fields.push({
             Name: "Description", FriendlyName: "Description", Type: new FieldType("Text"), Category: "", RemovePopulatedOperator: true
         });
-        /*
-         * GOV-15445, adding the Path as an option to the UI postponed to Sprint 2021/10
         fields.push({
             Name: "Path", FriendlyName: "Asset Path", Type: new FieldType("Path"), Category: "", RemovePopulatedOperator: true
         });
-        */
         fields.push({
             Name: "Tags", FriendlyName: "Tags", Type: new FieldType("Tag"), Category: "", RemovePopulatedOperator: true
         });
@@ -223,6 +220,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
             if (af.Field === "Tags") {
                 condition.value = af.Values.map((v) => { return { title: v, value: v }; });
                 condition.fieldType = "Tag";
+            } else if (af.Field === "Path") {
+                condition.value = af.Values;
+                condition.fieldType = "Path";
             } else {
                 condition.value = af.Values[0];
                 condition.fieldType = "Text";

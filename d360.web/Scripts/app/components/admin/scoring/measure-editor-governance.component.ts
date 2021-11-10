@@ -79,15 +79,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         "DiagramUse",
         "DiagramReference",
         "InterTypeHierarchy",
-        "IntraTypeHierarchy",
-        "FusionMapping"
+        "IntraTypeHierarchy"
     ];
-    restrictedTypes = [
-        "FusionAttribute",
-        "FusionAttributeType",
-        "FusionType",
-        "FusionExecution"
-    ];
+    restrictedTypes = [];
     updateFrequencyOptions: MetricUpdateFrequency[] = [];
 
     //#endregion
@@ -204,11 +198,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         }
 
         if (this.screenReferences.relationships && this.screenReferences.relationships.length) {
-            let fusionFiltered = this.screenReferences.relationships
-                .filter(x => this.restrictedTypes.indexOf(x.Subject.Class) == -1)
-                .filter(x => this.restrictedTypes.indexOf(x.Object.Class) == -1);
-
-            this.relationshipTypes = fusionFiltered
+            this.relationshipTypes = this.screenReferences.relationships
                 .filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1)
                 .map(x => {
                     let isSubject = (x.Subject.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());

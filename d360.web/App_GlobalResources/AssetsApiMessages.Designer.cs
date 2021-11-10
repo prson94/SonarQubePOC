@@ -241,15 +241,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can Own Fusion can be set only asset types that are of class Business.
-        /// </summary>
-        public static string fusionSetBusinessClassOnly {
-            get {
-                return ResourceManager.GetString("fusionSetBusinessClassOnly", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Governance Role Reference List with UID &apos;{0}&apos; does not exist.
         /// </summary>
         public static string GovernRoleReferListNotExists {
@@ -273,15 +264,6 @@ namespace Resources {
         public static string InvalidAssetTypeClass {
             get {
                 return ResourceManager.GetString("InvalidAssetTypeClass", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid class type for Fusion type UID..
-        /// </summary>
-        public static string InvalidClassFusionTypeUid {
-            get {
-                return ResourceManager.GetString("InvalidClassFusionTypeUid", resourceCulture);
             }
         }
         

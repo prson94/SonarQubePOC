@@ -265,7 +265,7 @@ namespace d360.core.validators
                     int orderID = 0;
                     order = order.Split(new[] { "Field" }, StringSplitOptions.None)[1];
                     orderID = int.Parse(order);
-                    var orderName = CompanyContext.FieldTypes.Where(f => f.ID == orderID).FirstOrDefault();
+                    var orderName = CompanyContext.FieldTypes.FirstOrDefault(f => f.ID == orderID);
                     if (orderName != null)
                         return true;
                 }
@@ -278,12 +278,6 @@ namespace d360.core.validators
             var fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
 
             string[] validFields = { "name", "sourceid", "textpath", "code" };
-
-            if (assetType.Object == "FusionAttributeType")
-            {
-                var valid = validFields.Contains(fieldName.Trim().ToLower());
-                if (valid) return true;
-            }
 
             var doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower());
             List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
@@ -370,22 +364,48 @@ namespace d360.core.validators
             return true;
         }
 
+        // source is nullable
+        // result is not nullable
+        private IEnumerable<Guid> FindAssets(IEnumerable<KeyValuePair<string, string>> source, string assetKey)
+        {
+            string value = null;
+            foreach (var pair in source.Safe())
+            {
+                if (string.Equals(pair.Key, assetKey, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    value = pair.Value;
+                    break;
+                }
+            }
+
+            return (value?.Split(',') ?? Enumerable.Empty<string>()).Select(Guid.Parse);
+        }
+
+        // queryparams is nullable
         public bool IsValidGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            if (queryParams.Any(x => x.Key.Trim().ToLower() == "_assetuid"))
-            {
-                List<Guid> assetUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid")
-                    .Value.Split(',').Select(x =>
-                    {
-                        var guid = Guid.Empty;
-                        Guid.TryParse(x, out guid);
-                        return guid;
-                    }).ToList();
+            var assets = FindAssets(queryParams, "_assetuid").ToArray();
+            return assets.Length == 0 || assets.All(x => x != Guid.Empty);
+            //var pair = queryParams.Safe().FirstOrDefault(x => string.Equals(x.Key, assetKey, StringComparison.InvariantCultureIgnoreCase)); 
+            
 
-                if (assetUids.Any(x => x == Guid.Empty))
-                    return false;
-            }
-            return true;
+            //return pair == 
+            //       || pair.Value.Split(',').Select(Guid.Parse).All(x => x != Guid.Empty);
+            //pair.Value.Any(x => x)
+            //if (queryParams.Any(x => x.Key.Trim().ToLower() == assetKey))
+            //{
+            //    List<Guid> assetUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == assetKey)
+            //        .Value.Split(',').Select(x =>
+            //        {
+            //            var guid = Guid.Empty;
+            //            Guid.TryParse(x, out guid);
+            //            return guid;
+            //        }).ToList();
+
+            //    if (assetUids.Any(x => x == Guid.Empty))
+            //        return false;
+            //}
+            //return true;
         }
     }
 }

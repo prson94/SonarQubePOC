@@ -1,12 +1,12 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { ScoreTypeAllocation, ScoreType } from '../../../models/metrics.model';
+import { ScoreTypeAllocation } from '../../../models/metrics.model';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
-import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AppSettingsEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'allocation-editor',
@@ -37,7 +37,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
     originalSelection: ScoreTypeAllocation = null;
 
-    public scoringHelpPage: string = CurrentEnvironmentSettings.HelpBaseUri + 'Default.htm#d-admin/scoring.htm?Highlight=scoring';
+    public scoringHelpPage: string = "";
 
     rangeValues: number[] = [];
     @ViewChild('slider', { static: true }) slider: ElementRef;
@@ -49,6 +49,9 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         private elementRef: ElementRef,
         private cdRef: ChangeDetectorRef) {
         super(settingsService);
+
+        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        this.scoringHelpPage = helpBaseUri + "Default.htm#d-admin/scoring.htm?Highlight=scoring";
         this.selection = new ScoreTypeAllocation();
         this.selection.isExternallyCalculated = false;
         this.selection.lowerThreshold = 50;

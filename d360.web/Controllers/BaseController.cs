@@ -660,7 +660,8 @@ namespace d360.web.Controllers
                             FieldDescription = f.FormDescription,
                             Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage, f.Increment, f.Precision),
                             Category = categoryName,
-                            FieldTypeID = f.ID
+                            FieldTypeID = f.ID,
+                            IsPartOfKey = f.IsPartOfKey
                         };
 
                         if (!string.IsNullOrEmpty(f.DefaultValue))
@@ -912,7 +913,8 @@ namespace d360.web.Controllers
                             FieldDescription = ft.FormDescription,
                             Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage, ft.Increment, ft.Precision),
                             Category = categoryName,
-                            FieldTypeID = ft.ID
+                            FieldTypeID = ft.ID,
+                            IsPartOfKey = ft.IsPartOfKey
                         };
 
                         #region Lookup

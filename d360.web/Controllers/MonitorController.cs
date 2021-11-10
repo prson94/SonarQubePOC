@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using d360.model.DataAccessLayer;
 using d360.utils.excel;
 using d360.core.resources;
+using SmartFormat;
 
 namespace d360.web.Controllers
 {
@@ -39,7 +40,7 @@ namespace d360.web.Controllers
             var list = Company.Query<dynamic>(sql, dbArgs);
 
             var dateStyle = ExcelCell.MakeStyle(style => style.FormatCode = ExcelExports.Common_ExcelDateFormat);
-            var document = new ExcelDocument(string.Format(ExcelExports.WorkflowMonitor_DocumentName, DateTime.Now))
+            var document = new ExcelDocument(Smart.Format(ExcelExports.WorkflowMonitor_DocumentName, new { DateTime.Now }))
             {
                 new ExcelSheet(ExcelExports.Common_ItemsSheetName)
                 {
@@ -110,9 +111,6 @@ namespace d360.web.Controllers
                     break;
                 case "Rule":
                     objType = "RuleType";
-                    break;
-                case "Fusion":
-                    objType = "FusionType";
                     break;
             }
             return objType;
@@ -266,8 +264,6 @@ namespace d360.web.Controllers
                             'Relationship'                    
                             when assettype.[Object] = 'ReferenceItemType' then 
                             'Reference List'  
-                            when assettype.[Object] = 'FusionType'  then
-                            'Fusion'
                             else
                             ''
                             end as 'Type',                    

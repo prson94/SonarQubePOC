@@ -82,10 +82,8 @@ namespace igx.jobs.apiexecutionprocessor
         const int DEFAULT_SQL_BULK_COPY_BLOCK_SIZE = 5000;
         const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
         const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
-        
         AzureQueueSource queue;
-        CommunityContext community;
-        CompanyContext company;
+        private CompanyContext company;
         AzureStorageProvider storage;
         ApiExecutionInfo Info;
 
@@ -98,18 +96,19 @@ namespace igx.jobs.apiexecutionprocessor
 
             #region Create EF connection
 
+            queue = new AzureQueueSource();
+            storage = new AzureStorageProvider();
             company = JobDbContextCreator.CreateCompanyContext(
                 Info.CompanyID,
                 Info.ResourceID ?? 0,
                 Info.CompanyDomainPrefix,
-                false);
+                false, queue, storage);
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;
             var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
             if (resource != null)
             {
-                community.CurrentResourceIsAdmin = resource.IsAdministrator;
                 company.CurrentResourceIsAdmin = resource.IsAdministrator;
             }
             #endregion

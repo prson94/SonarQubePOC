@@ -17,7 +17,7 @@ namespace d360.model.DataAccessLayer
         IntersectType GetRelationshipTypeByUID(Guid relationshipTypUid);
         Intersect GetRelationshipByUID(Guid relationshipUid);
         Task<IEnumerable<PredicateApiViewModel>> GetPredicates(Guid? PredicateUid, PredicateType? Type, string Name, string Inverse ,bool? IsUsed);
-        Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
+        Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false);
         IQueryable<IntersectType> GetIntersectTypeById(int id);
         IntersectType GetIntersectTypeByUid(Guid intersectTypeUid);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");

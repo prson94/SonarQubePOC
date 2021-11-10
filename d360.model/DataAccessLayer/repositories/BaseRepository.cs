@@ -543,19 +543,7 @@ namespace d360.model.DataAccessLayer.repositories
                         {
                             if (key == "_order")
                             {
-                                if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "name")
-                                {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.Name {orderDirection} ";
-                                }
-                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "sourceid")
-                                {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.SourceID {orderDirection} ";
-                                }
-                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "textpath")
-                                {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.TextPath {orderDirection} ";
-                                }
-                                else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
+                                if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"A.Code {orderDirection} ";
                                 }
@@ -661,22 +649,7 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else
                         {
-                            if (assetType.Object == "FusionAttributeType" && key == "name")
-                            {
-                                whereStatements.Add($"FA.[Name] = @faName");
-                                dbArgs.Add($"@faName", q.Value);
-                            }
-                            else if (assetType.Object == "FusionAttributeType" && key == "sourceid")
-                            {
-                                whereStatements.Add($"FA.[SourceID] = @sourceID");
-                                dbArgs.Add($"@sourceID", q.Value);
-                            }
-                            else if (assetType.Object == "FusionAttributeType" && key == "textpath")
-                            {
-                                whereStatements.Add($"FA.[TextPath] = @textpath");
-                                dbArgs.Add($"@textpath", q.Value);
-                            }
-                            else if (assetType.Object == "ReferenceItemType" && key == "code")
+                            if (assetType.Object == "ReferenceItemType" && key == "code")
                             {
                                 whereStatements.Add($"RI.[Code] = @code");
                                 dbArgs.Add($"@code", q.Value);

@@ -21,8 +21,8 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { StringConstants } from '../../static/string-constants';
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
-declare var CompanySettings;
 declare var CurrentResourceID;
 
 @Component({
@@ -87,7 +87,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private selectedOption: string = 'other';
     private issueType: WorkflowIssueType;
     private issueTypes: WorkflowIssueType[] = [];
-    private actionMessage: string = CompanySettings.ActionMessage;
+    private actionMessage: string = "";
     private searchSub: ISubscription;
     private resourceId: number = CurrentResourceID;
     private resourceUid: any;
@@ -108,6 +108,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
+        this.actionMessage = this.getStringSetting(CompanySettingEnum.ActionMessage);
     }
 
     ngOnInit() {

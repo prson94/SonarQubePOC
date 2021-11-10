@@ -28,6 +28,7 @@ using d360.model.DataAccessLayer;
 using d360.web.Extensions;
 using Resources;
 using d360.core.Models;
+using SmartFormat;
 
 namespace d360.web.Controllers
 {
@@ -104,7 +105,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -123,7 +125,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
@@ -192,7 +195,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -231,7 +235,8 @@ from	metrics.Score S
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -297,7 +302,8 @@ from	metrics.Score S
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = jsonElementDataType,
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -362,7 +368,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = "Html",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -382,7 +389,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -1125,7 +1133,6 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 model.Add("Name", assetType.Name);
                 model.Add("Description", assetType.Description);
                 model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
-                model.Add("CanOwnFusion", false);
                 model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
                 model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
                 model.Add("Class", assetType.Class);
@@ -1293,8 +1300,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         FieldName = ft.Name,
                         ShowIfEmpty = true,
                         DataType = "tag",
-                        Values = GetTagsValues(type, id)
-
+                        Values = GetTagsValues(type, id),
+                        IsPartOfKey = ft.IsPartOfKey
                     }
                 },
                 Category = ft.Category
@@ -1344,7 +1351,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                                         LookupFieldTypeID = ft.ID,
                                         LookupType = (int)((DataType)Enum.Parse(typeof(DataType), ft.Type)),
                                         ShowIfEmpty = ft.ShowIfEmpty,
-                                        DataType = ft.Type
+                                        DataType = ft.Type,
+                                        IsPartOfKey = ft.IsPartOfKey
                                     }
                                 },
                         Category = ft.Category
@@ -1361,7 +1369,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         FieldName = ft.Name,
                         Values = null,
                         DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                        ShowIfEmpty = ft.ShowIfEmpty
+                        ShowIfEmpty = ft.ShowIfEmpty,
+                        IsPartOfKey = ft.IsPartOfKey
                     };
 
                     list.Add(new DetailReadOnlyRowModel
@@ -1509,7 +1518,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 FieldName = ft.Name,
                 Values = values,
                 ShowIfEmpty = ft.ShowIfEmpty,
-                DataType = ft.Type
+                DataType = ft.Type,
+                IsPartOfKey = ft.IsPartOfKey
             };
 
             list.Add(new DetailReadOnlyRowModel
@@ -1662,7 +1672,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
             if (selected.ContainsKey("RelationshipError"))
             {
-                var errorMessage = string.Format(AssetTypeErrors.InvalidRelationshipFieldType, (string)selected["RelationshipError"]);
+                var errorMessage = Smart.Format(AssetTypeErrors.InvalidRelationshipFieldType, new
+                {
+                    FriendlyName = (string)selected["RelationshipError"]
+                });
 
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, errorMessage);
             }
@@ -2245,10 +2258,6 @@ from    (
 
             Dapper.DynamicParameters dbParams = new DynamicParameters();
 
-            List<string> objectsToExclude = new List<string> { "FusionAttribute" };
-
-            if (!string.IsNullOrEmpty(excludeObjects)) objectsToExclude.AddRange(excludeObjects.Split(','));
-
             var sql = @"select 
 										c.[Object], 
 										c.ObjectID, 
@@ -2265,12 +2274,11 @@ from    (
 										inner join  AssetDisplayValue as AD   on
 										AD.AssetID = C.ID
 										cross apply [dbo].getAssetUrlById(c.ID) cU                              
-										where c.[Object] not in @exclude and (AD.DisplayValue like @beginsWith or (len(@val) > 2 and AD.DisplayValue like @contains))";
+										where (AD.DisplayValue like @beginsWith or (len(@val) > 2 and AD.DisplayValue like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
             dbParams.Add("val", $"{phrase}%");
             dbParams.Add("contains", $"%{phrase}%");
-            dbParams.Add("exclude", objectsToExclude);
 
             var tags = Company.Query<TagSuggestionModel>(sql, dbParams);
 
