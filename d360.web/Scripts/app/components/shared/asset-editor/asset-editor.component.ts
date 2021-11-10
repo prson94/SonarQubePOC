@@ -734,7 +734,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             value = event.value.join();
         }
 
-        this.fields.forEach(editorField => {
+        this.fields.forEach((editorField) => {
             if (editorField.ParentFieldTypeID === field.FieldTypeID) {
                 this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);
             }
