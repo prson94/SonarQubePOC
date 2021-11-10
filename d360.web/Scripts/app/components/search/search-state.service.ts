@@ -308,8 +308,9 @@ export class SearchStateService extends BaseObservableService {
             tap(val => { this._loading.next(true); }),
             switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery))
         ).subscribe((res) => {
+            const pageNumber = this._query.From ?? 0 / this._query.Size ?? 25;
             this._resultCount.next(res.Result.Matches);
-            this._pageNumber.next(this._query.From / this._query.Size);
+            this._pageNumber.next(pageNumber);
             this._results.next(res.Result.Results);
             this._loading.next(false);
         });
@@ -353,7 +354,11 @@ export class SearchStateService extends BaseObservableService {
      * Will be merged with the aggregate result from search
      **/
     private getBaseCategoryTree() {
-        if (typeof this._baseCategoryTree === "undefined" && this.searchTypes.length > 0) {
+        if (typeof this._baseCategoryTree === "undefined") {
+            if (this.searchTypes.length === 0) {
+                return []; //this.searchTypes not yet populated
+            }
+
             this._baseCategoryTree = this.searchTypes.map((val) => {
                 return {
                     "label": val.title,
@@ -363,8 +368,6 @@ export class SearchStateService extends BaseObservableService {
                     "key": val.value
                 }
             })
-        } else {
-            return []; //this.searchTypes not yet populated
         }
         return this._baseCategoryTree;
     }
