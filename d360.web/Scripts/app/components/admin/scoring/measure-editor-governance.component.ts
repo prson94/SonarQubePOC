@@ -378,6 +378,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 this.conditionGroups = [];
             } else {
                 this.metricForm.addControl("check", new FormControl(''));
+                this.loadConditions();
             }
         }
         this.cdRef.markForCheck();
