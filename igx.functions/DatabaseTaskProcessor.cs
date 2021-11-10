@@ -48,7 +48,7 @@ namespace igx.functions.databasetaskprocessor
 
                 companies.Shuffle(); //Randomize
 
-                companies.AsParallel().ForAll(c =>
+                companies.ForEach(c =>
                 {
                     try
                     {
