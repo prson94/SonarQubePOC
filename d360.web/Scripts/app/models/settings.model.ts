@@ -87,6 +87,11 @@ export class CompanyRebuildJobStatusApiModel {
     validationMessage: string;
 }
 
+export class AppSettingsEnum {
+    static HelpBaseUri: string = "HelpBaseUri";
+    static AppInsightsKey: string = "AppInsightsInstrumentationKey";
+}
+
 export enum CompanySettingEnum {
     DisableCommunityPosting = 1,
     CompanyLogo = 2,
@@ -178,6 +183,11 @@ export class GuidSetting {
     Value: string;
 }
 
+export class AppSettingModel {
+    Name: string;
+    Value: any;
+}
+
 export class SettingsGetModel {
     SettingID: number;
     Locked: boolean;
@@ -224,8 +234,6 @@ export module SettingsHelper {
             new SearchType("Rules", "Rule"),
             new SearchType("Reference Lists", "Reference"),
             new SearchType("Grammatic Types", "Synonym"),
-            new SearchType("Fusion", "FusionAttributes"),
-            new SearchType("Fusion Types", "FusionType"),
             new SearchType("Groups", "Group"),
             new SearchType("Users", "User"),
         ];

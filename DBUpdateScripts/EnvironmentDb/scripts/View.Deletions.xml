@@ -5,36 +5,31 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="View.reporting.RuleImplementations_All-v1">
-    <sql dbms="mssql"
+  <changeSet author="Puneet Gupta" id="View.Deletions.v1">
+  <comment></comment>
+  <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-				drop view if exists [reporting].[RuleImplementations_All]
+drop view if exists [reporting].[Fusion_All]
+GO
+drop view if exists [reporting].[Fusion_Fields]
+GO
+drop view if exists [reporting].[FusionQuery_All]
+GO
+drop view if exists [reporting].[FusionQuery_Fields]
+GO
+drop view if exists [reporting].[Integration_ExecutionErrors]
+GO
+drop view if exists [reporting].[Integration_Mappings]
+GO
+drop view if exists [reporting].[RuleImplementations_All]
+GO
+drop view if exists [reporting].[RuleImplementations_ResultQualifiers]
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
+	<rollback></rollback>
   </changeSet>
-  
-  <changeSet author="Core" id="View.reporting.RuleImplementations_ResultQualifiers-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-      drop view if exists [reporting].[RuleImplementations_ResultQualifiers]
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>  
 
 </databaseChangeLog>

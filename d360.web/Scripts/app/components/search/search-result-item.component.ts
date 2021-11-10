@@ -73,8 +73,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     get type() {
         if (this.result) {
             switch (this.result.Group) {
-                case 'FusionAttributes':
-                    return 'FusionAttribute';
                 case 'Reference':
                     return 'ReferenceItemType';
                 default:

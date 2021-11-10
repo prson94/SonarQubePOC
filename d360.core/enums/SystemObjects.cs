@@ -79,8 +79,6 @@ namespace d360.core
         MetricAllocation = 35,
         [Description("Rule Type"), AllowSurvey(false), IsType(true)]
         RuleType = 36,
-        [Description("Fusion Execution"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionExecution = 37,
         [Description("Workflow Relation"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
         WorkflowTypeRelation = 38,
         [Description("Predicate"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
@@ -97,12 +95,6 @@ namespace d360.core
         ReferenceItem = 44,
         [Description("Reference Item Type"), AllowSurvey(false), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Score | DataType.Counter)]
         ReferenceItemType = 45,
-        [Description("Fusion Query Attribute"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionQueryAttribute = 46,
-        [Description("Fusion Query Attribute Type"), IsType(true),
-                    ExcludeDataType(DataType.ComplexRelationLookup | DataType.FieldFromRelationship | DataType.JSON | DataType.JsonElement |
-                    DataType.Link | DataType.Lookup | DataType.OwnershipLookup | DataType.Path | DataType.RefListRelationship | DataType.Relationship | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionQueryAttributeType = 47,
         [Description("Monitor"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
         Monitor = 48,
         [Description("Issue Type"), IsType(true), 

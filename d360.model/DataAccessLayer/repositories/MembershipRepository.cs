@@ -1548,7 +1548,6 @@ order by	q.SortOrder";
             {
                 case "artifact":
                 case "domain":
-                case "fusion":
                 case "policy":
                 case "reference":
                     return char.ToUpper(prefix[0]) + prefix.ToLower().Substring(1);
@@ -1563,8 +1562,6 @@ order by	q.SortOrder";
                     return "Resource";
                 case "cart":
                     return "ShoppingCart";
-                case "fusion/fusionattribute":
-                    return "FusionAttribute";
                 case "group":
                 case "groups":
                     return "Group";

@@ -129,9 +129,6 @@
   <data name="Edit_Asset_Type_Title" xml:space="preserve">
     <value>Modify {0} Type</value>
   </data>
-  <data name="FusionAttributeType" xml:space="preserve">
-    <value>Fusion Attribute</value>
-  </data>
   <data name="InUse_Error_Delete" xml:space="preserve">
     <value>The relationship type you are trying to delete has established relationships.  Please delete these prior to deleting the relationship type.</value>
   </data>

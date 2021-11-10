@@ -112,9 +112,6 @@ namespace d360.web.Controllers
                 case "Rule":
                     objType = "RuleType";
                     break;
-                case "Fusion":
-                    objType = "FusionType";
-                    break;
             }
             return objType;
         }
@@ -267,8 +264,6 @@ namespace d360.web.Controllers
                             'Relationship'                    
                             when assettype.[Object] = 'ReferenceItemType' then 
                             'Reference List'  
-                            when assettype.[Object] = 'FusionType'  then
-                            'Fusion'
                             else
                             ''
                             end as 'Type',                    

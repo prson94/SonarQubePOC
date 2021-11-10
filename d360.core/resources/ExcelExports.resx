@@ -117,11 +117,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Common_ApiInfoSheetName" xml:space="preserve">
+    <value>Api Info</value>
+  </data>
   <data name="Common_ExcelDateFormat" xml:space="preserve">
     <value>mm/dd/yyyy</value>
   </data>
   <data name="Common_ItemsSheetName" xml:space="preserve">
     <value>Items</value>
+  </data>
+  <data name="Common_PageNum" xml:space="preserve">
+    <value>pageNum</value>
+  </data>
+  <data name="Common_PageSize" xml:space="preserve">
+    <value>pageSize</value>
+  </data>
+  <data name="Common_Total" xml:space="preserve">
+    <value>total</value>
   </data>
   <data name="FollowedResources_AssetID" xml:space="preserve">
     <value>Asset ID</value>
@@ -152,6 +164,60 @@
   </data>
   <data name="OwnedResources_ViaType" xml:space="preserve">
     <value>Via Type</value>
+  </data>
+  <data name="Relationships_DocumentName" xml:space="preserve">
+    <value>Relationships {0}</value>
+  </data>
+  <data name="Relationships_Object_Asset_Path" xml:space="preserve">
+    <value>Object Asset Path</value>
+  </data>
+  <data name="Relationships_Object_Asset_Type_Path" xml:space="preserve">
+    <value>Object Asset Type Path</value>
+  </data>
+  <data name="Relationships_Object_Asset_Type_UID" xml:space="preserve">
+    <value>Object Asset Type UID</value>
+  </data>
+  <data name="Relationships_Object_Display_Name" xml:space="preserve">
+    <value>Object Display Name</value>
+  </data>
+  <data name="Relationships_Object_UID" xml:space="preserve">
+    <value>Object UID</value>
+  </data>
+  <data name="Relationships_Predicate_Inverse" xml:space="preserve">
+    <value>Predicate Inverse</value>
+  </data>
+  <data name="Relationships_Predicate_Name" xml:space="preserve">
+    <value>Predicate Name</value>
+  </data>
+  <data name="Relationships_Predicate_Type" xml:space="preserve">
+    <value>Predicate Type</value>
+  </data>
+  <data name="Relationships_Predicate_UID" xml:space="preserve">
+    <value>Predicate UID</value>
+  </data>
+  <data name="Relationships_Relationship_Type_UID" xml:space="preserve">
+    <value>Relationship Type UID</value>
+  </data>
+  <data name="Relationships_Relationship_UID" xml:space="preserve">
+    <value>Relationship UID</value>
+  </data>
+  <data name="Relationships_SheetName" xml:space="preserve">
+    <value>Relationships</value>
+  </data>
+  <data name="Relationships_Subject_Asset_Path" xml:space="preserve">
+    <value>Subject Asset Path</value>
+  </data>
+  <data name="Relationships_Subject_Asset_Type_Path" xml:space="preserve">
+    <value>Subject Asset Type Path</value>
+  </data>
+  <data name="Relationships_Subject_Asset_Type_UID" xml:space="preserve">
+    <value>Subject Asset Type UID</value>
+  </data>
+  <data name="Relationships_Subject_Display_Name" xml:space="preserve">
+    <value>Subject Display Name</value>
+  </data>
+  <data name="Relationships_Subject_UID" xml:space="preserve">
+    <value>Subject UID</value>
   </data>
   <data name="WorkflowMonitor_Asset" xml:space="preserve">
     <value>Asset</value>

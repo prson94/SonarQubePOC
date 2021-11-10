@@ -143,29 +143,31 @@ export class LoadForm implements OnInit, OnChanges {
         this.errorMessage = "";
         this.isSaving = true;
 
-        FormHelper.getDataUrl(this.file)
-            .then(
-                s => {
-                    model.File = s;
-                    model.LoadAction = this.selectedAction;
-                    model.Type = this.selectedType;
-                    model.Notes = this.notes;
-                }
-            )
-            .then(() => {
-                    this.loadService.postLoad(model).subscribe(
-                        data => {
-                            if (data["type"] == 'error') {
-                                this.onError.emit(null);
-                                this.errorMessage = data["message"];
-                            } else {
-                                this.onSuccess.emit(null);
+        if (this.file) {
+            FormHelper.getDataUrl(this.file)
+                .then(
+                    s => {
+                        model.File = s;
+                        model.LoadAction = this.selectedAction;
+                        model.Type = this.selectedType;
+                        model.Notes = this.notes;
+                    }
+                )
+                .then(() => {
+                        this.loadService.postLoad(model).subscribe(
+                            data => {
+                                if (data["type"] == 'error') {
+                                    this.onError.emit(null);
+                                    this.errorMessage = data["message"];
+                                } else {
+                                    this.onSuccess.emit(null);
+                                }
+                                this.isSaving = false;
+                                this.onComplete.emit(null);
                             }
-                            this.isSaving = false;
-                            this.onComplete.emit(null);
-                        }
-                    )
-                }
-            );
+                        )
+                    }
+                );
+        }
     }
 }

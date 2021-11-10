@@ -42,6 +42,7 @@ import { IgNumberFieldModule } from '../controls/number-picker/number-input.comp
 import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-list.component";
 import { AssetEditorComponent } from './asset-editor.component';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 
 @NgModule({
     imports: [
@@ -66,6 +67,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         IgDateModule,
         IgNumberFieldModule,
         OwnershipListModule,
+        DynamicFieldNameModule,
+
         //prime        
         CalendarModule,
         DropdownModule,
