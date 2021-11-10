@@ -1,5 +1,4 @@
 ﻿import { Component } from '@angular/core';
-import * as _ from 'lodash';
 import { map } from 'rxjs/operators';
 import { FavoritesManagementService } from './FavoritesManagementService';
 
@@ -23,13 +22,12 @@ export class SiteMenuManageFavoritesPanelComponent {
     allFavoritesRemovalStatus$ = this.store.state$.pipe(
         map(state => {
             const allFavoriteIds = state.homepageAndFavorites.Favorites.map(f => f.Id);
-            const removalStatus = allFavoriteIds.map(id => state.removeFavoritesByIds.get(id) ?? false);
-            const removeEverything = _.every(removalStatus, x => x === true);
+            const removeEverything = state.removeFavoriteIds.size === allFavoriteIds.length;
             if (removeEverything) {
                 return true;
             }
 
-            const removeNothing = _.every(removalStatus, x => x === false);
+            const removeNothing = state.removeFavoriteIds.size === 0;
             if (removeNothing) {
                 return false;
             }
@@ -38,13 +36,13 @@ export class SiteMenuManageFavoritesPanelComponent {
         })
     )
 
-    canRemove$ = this.allFavoritesRemovalStatus$.pipe(
-        map(removalStatus => removalStatus != false)
+    canRemove$ = this.store.state$.pipe(
+        map(state => state.removeFavoriteIds.size > 0)
     );
 
     getFavoriteRemovalStatus(favoriteId: number){
         return this.store.state$.pipe(
-            map(state => state.removeFavoritesByIds.get(favoriteId) ?? false)
+            map(state => state.removeFavoriteIds.has(favoriteId) ?? false)
         );
     }
 

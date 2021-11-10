@@ -75,32 +75,31 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
         });
     }
 
-    public setFavoriteRemovalAction(payload: { favoriteId: number, remove: boolean }) {
+    public setFavoriteRemovalAction(payload: { favoriteId: number, removeOn: boolean }) {
         this.mutate(state => {
-            state.removeFavoritesByIds.set(payload.favoriteId, payload.remove);
+            if (payload.removeOn) {
+                state.removeFavoriteIds.add(payload.favoriteId)
+            } else {
+                state.removeFavoriteIds.delete(payload.favoriteId)
+            }
         });
     }
 
-    public setAllFavoritesRemovalAction(payload: { remove: boolean }) {
-        this.mutate(state => {
-            for (const favorite of state.homepageAndFavorites.Favorites) {
-                state.removeFavoritesByIds.set(favorite.Id, payload.remove);
-            }
-        });
+    public setAllFavoritesRemovalSaga(payload: { removeOn: boolean }) {
+        for (const favorite of this.currentState.homepageAndFavorites.Favorites) {
+            this.setFavoriteRemovalAction({favoriteId: favorite.Id, removeOn: payload.removeOn});
+        }
     }
 
     public setFavoritesAction(payload: { homefav: HomepageAndFavoritesModel }) {
         this.mutate(state => {
             state.homepageAndFavorites = payload.homefav;
-            state.removeFavoritesByIds = new Map();
+            state.removeFavoriteIds = new Set();
         })
     }
 
     public removeFavoritesSaga() {
-        const favoriteIds = Array
-            .from(this.currentState.removeFavoritesByIds.entries())
-            .filter(([id, remove]) => remove === true)
-            .map(([id]) => id);
+        const favoriteIds = Array.from(this.currentState.removeFavoriteIds);
 
         this.increaseLoadingCounterAction();
         this.favoritesService.deleteCurrentUsersFavoritesV2(favoriteIds).subscribe(
@@ -138,14 +137,13 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
 interface FavoritesManagementState {
     isManageFavoritesModeEnabled: boolean;
     homepageAndFavorites: HomepageAndFavoritesModel | null;
-    // TODO: consider using Set
-    removeFavoritesByIds: Map<number, boolean>;
+    removeFavoriteIds: Set<number>;
     loadingCounter: number;
 }
 
 const initialState: FavoritesManagementState = {
     isManageFavoritesModeEnabled: false,
     homepageAndFavorites: null,
-    removeFavoritesByIds: new Map(),
+    removeFavoriteIds: new Set(),
     loadingCounter: 0
 }

@@ -29,7 +29,7 @@
 					<div class="mega-item-container">
 						<!-- TODO: support intermediate state -->
 						<p-checkbox [ngModel]="allFavoritesRemovalStatus$ | async"
-							(ngModelChange)="store.setAllFavoritesRemovalAction({ remove: $event })"
+							(ngModelChange)="store.setAllFavoritesRemovalSaga({ removeOn: $event })"
 							name="all"
 							label="All"
 							igCheckbox
@@ -44,7 +44,7 @@
 						<p-checkbox [name]="favorite.Id"
 							[label]="favorite.Name"
 							[ngModel]="getFavoriteRemovalStatus(favorite.Id) | async"
-							(ngModelChange)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, remove: $event })"
+							(ngModelChange)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: $event })"
 							igCheckbox
 							binary="true">
 						</p-checkbox>
