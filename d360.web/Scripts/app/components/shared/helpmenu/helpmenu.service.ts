@@ -23,7 +23,7 @@ export class HelpMenuService extends BaseObservableService {
     }
 
     public addHelpMenuItems(addItems: HelpMenu[]): Observable<any[]> {
-        var headers = new HttpHeaders({ 'Content-Type': 'application/json' })
+        var headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         return this.http.post('api/v2/environment/help', JSON.stringify(addItems), { headers })
             .pipe(
                 map((response) => <any>response),
@@ -42,9 +42,9 @@ export class HelpMenuService extends BaseObservableService {
 
     public deleteHelpMenuItems(deleteItems: HelpMenu[]): Observable<any[]> {
         var model = [];
-        deleteItems.forEach(item => {
-            model.push({ uid: item.uid })
-        })
+        deleteItems.forEach((item) => {
+            model.push({ uid: item.uid });
+        });
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
             body: model
