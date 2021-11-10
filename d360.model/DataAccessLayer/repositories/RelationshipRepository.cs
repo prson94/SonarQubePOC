@@ -678,12 +678,6 @@ from	IntersectType I
             return executionInfo;
         }
 
-        public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
-        {
-            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
-            return await BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
-        }
-
         public IEnumerable<dynamic> GetExportModel(int id)
         {
             return companyContext.Query<dynamic>(
@@ -775,12 +769,6 @@ from	IntersectType I
             await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
             return executionInfo;
-        }
-
-        public async Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
-        {
-            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
-            return await BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
         }
 
         public List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution)

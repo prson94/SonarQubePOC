@@ -627,4 +627,7 @@
   <data name="ExecutionStatusInvalid" xml:space="preserve">
     <value>Invalid value for status. Valid values are Pending, Running and Completed.</value>
   </data>
+  <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
+    <value>ApplicationId length cannot exceed 200 characters</value>
+  </data>
 </root>
