@@ -6,8 +6,9 @@ import * as _ from 'lodash';
 import { StringConstants } from "../../../static/string-constants";
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FavoritesManagementService } from './FavoritesManagementService';
-import { distinct, map } from 'rxjs/operators';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import { isEqual } from 'lodash';
 
 @Component({
     selector: 'd3s-site-menu-favorites',
@@ -37,7 +38,7 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
 
     menu$ = this.store.state$.pipe(
         map(x => x.homepageAndFavorites),
-        distinct(),
+        distinctUntilChanged(isEqual),
         map(homefav => {
             if (homefav == null) {
                 return null;
