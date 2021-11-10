@@ -38,11 +38,13 @@ namespace d360.web.Controllers.V2
     {
         IStorageProvider _storage;
         IAssetRepository _assetRepository;
+        readonly ICompanyContext _company;
 
         public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             _storage = storage;
             _assetRepository = assetRepository;
+            _company = company;
 
         }
 
@@ -932,6 +934,227 @@ namespace d360.web.Controllers.V2
                 SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetLicensingDetails => " } });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Gets help menu items.
+        /// </summary>
+        /// <returns></returns>
+        [
+           HttpGet,
+           MapToApiVersion("2.0"),
+           Route("help"),
+           SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.OK, "Gets help menu items.", typeof(List<HelpMenuItem>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetHelpMenuItems()
+        {
+            const string supportUrl = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
+            const string aboutUrl = "about";
+            var baseUrl = System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString();
+
+            try
+            {
+                var items = Company.HelpResources.ToList();
+                List<HelpMenuItem> helpItems = new List<HelpMenuItem>();
+
+                foreach (var item in items)
+                {
+                    HelpMenuItem help = new HelpMenuItem();
+                    help.ID = item.ID;
+                    help.Description = item.Description;
+                    help.Name = item.Name;
+                    if (item.isSystem && (item.Url != aboutUrl && item.Url != supportUrl))
+                    {
+                        help.Url = baseUrl + item.Url;
+                    }
+                    else
+                    {
+                        help.Url = item.Url;
+                    }
+                    help.order = item.order;
+                    help.visibilty = item.visibilty;
+                    help.uid = (Guid)item.uid;
+                    help.isEditable = item.isEditable;
+                    help.isSystem = item.isSystem;
+
+                    helpItems.Add(help);
+                }
+
+                var response = Request.CreateResponse(HttpStatusCode.OK, helpItems);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
+
+
+        /// <summary>
+        /// Add new help menu items.
+        /// </summary>
+        /// <returns></returns>
+        [
+           HttpPost,
+           MapToApiVersion("2.0"),
+           Route("help"),
+           SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.OK, "Adds new help menu items.", typeof(ConfirmResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> AddHelpMenuItems(List<AddHelpMenuItem> items)
+        {
+            List<int> visibilties = new List<int> { 1, 2, 3 };
+            try
+            {
+                foreach (var item in items)
+                {
+                    if (item.Name.Trim() == "")
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+                    }
+                    if (item.Name.Length > 500)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
+                    }
+                    if (item.Url.Trim() == "")
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+                    }
+                    if (item.Url.Length > 2000)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
+                    }
+                    if (!visibilties.Contains(item.visibilty))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
+                    }
+
+                    var uid = Guid.NewGuid();
+                    _company.HelpResources.Add(new HelpResource
+                    {
+                        Name = item.Name,
+                        Description = item.Description,
+                        Url = item.Url,
+                        uid = uid,
+                        isEditable = true,
+                        visibilty = item.visibilty,
+                        order = item.order,
+                        isSystem = false
+                    });
+                }
+
+                _company.SaveChanges();
+                return successMessageResponse(HttpStatusCode.OK, ApiMessages.HelpMenuItemsCreated, ApiMessages.HelpItemsAdded);
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Updates a list of help menu items.
+        /// </summary>
+        /// <returns></returns>
+        [
+           HttpPut,
+           MapToApiVersion("2.0"),
+           Route("help"),
+           SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.OK, "Updates already exisiting help menu items.", typeof(ConfirmResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> UpdateHelpMenuItems(List<UpdateHelpMenuItem> items)
+        {
+            List<int> visibilties = new List<int> { 1, 2, 3 };
+            try
+            {
+                foreach (var item in items)
+                {
+                    HelpResource helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
+
+                    if (item.Name.Trim() == "")
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+                    }
+                    if (item.Name.Length > 500)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
+                    }
+                    if (item.Url.Trim() == "")
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+                    }
+                    if (item.Url.Length > 2000)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
+                    }
+                    if (!visibilties.Contains(item.visibilty))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
+                    }
+
+                    if (helpItem != null)
+                    {
+                        helpItem.Description = item.Description;
+                        helpItem.Name = item.Name;
+                        helpItem.order = item.order;
+                        helpItem.visibilty = item.visibilty;
+                        if (!helpItem.isSystem)
+                        {
+                            helpItem.Url = item.Url;
+                        }
+                    }
+                }
+
+                _company.SaveChanges();
+                return successMessageResponse(HttpStatusCode.OK, ApiMessages.HelpMenuItemsUpdated, ApiMessages.HelpMenuSuccess);
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a list of help menu items.
+        /// </summary>
+        /// <returns></returns>
+        [
+           HttpDelete,
+           MapToApiVersion("2.0"),
+           Route("help"),
+           SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.OK, "Deletes currently created help menu items.", typeof(ConfirmResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> DeleteHelpMenuItems(List<DeleteMenuItem> items)
+        {
+            try
+            {
+                foreach (var item in items)
+                {
+                    var helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
+                    if (helpItem != null && helpItem.isSystem)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorDeletingDefaultHelpItem)).ConfigureAwait(false);
+                    }
+                    if (helpItem != null && !helpItem.isSystem)
+                    {
+                        _company.HelpResources.Remove(helpItem);
+                    }
+                }
+
+                _company.SaveChanges();
+                return successMessageResponse(HttpStatusCode.OK, ApiMessages.HelpMenuItemsDeleted, ApiMessages.HelpItemsDeleted);
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
             }
         }
     }

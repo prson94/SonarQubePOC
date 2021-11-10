@@ -1,5 +1,5 @@
 ﻿export class HelpMenu {
-    Uid: string;
+    uid: string;
     ID: number;
     Name: string;
     Url: string;

@@ -18,6 +18,8 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     @Input() items: HelpMenu[] = [];
     @Output() deletedRecordsChange = new EventEmitter();
     @Input() deletedRecords: HelpMenu[] = [];
+    @Output() addedRecordsChange = new EventEmitter();
+    @Input() addedRecords: HelpMenu[] = [];
     private selectedItem: HelpMenu = null;
     formMode = FormMode.Default;
     FormMode = FormMode;
@@ -79,6 +81,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
                 this.itemsChange.emit(this.items);
                 this.deletedRecordsChange.emit(this.deletedRecords);
+                this.addedRecordsChange.emit(this.addedRecords);
             });
     }
 
@@ -129,6 +132,8 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
         this.items.push(newItem);
         this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
+        this.addedRecords.push(newItem);
+        this.addedRecords.sort((a, b) => (a.order < b.order ? -1 : 1));
         this.formMode = FormMode.Default;
     }
 
