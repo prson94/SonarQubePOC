@@ -181,7 +181,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         }
     }
 
-    private getElementRightPosition(element) {
+    getElementRightPosition(element) {
         if (element && element.getBoundingClientRect) {
             return element.getBoundingClientRect().right
         }
@@ -348,7 +348,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.emitChanges();
     }
 
-    private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, HasRequestCertificationWorkflow: boolean) {
+    loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, HasRequestCertificationWorkflow: boolean) {
         this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "status").subscribe(
             result => {
                 this.status = result;
@@ -532,14 +532,16 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return icon.replace(/^URL-+/i, '');
     }
 
-    private requestCertification() {
+    requestCertification() {
         this.showCertifyModal = true;
         this.showCertify = false;
     }
+
     closeCertifyModal() {
         this.showCertifyModal = false;
         this.showCertify = true;
     }
+
     certify() {
         this.showCertifyModal = false;
         if (this.currentObject && this.currentObject.Uid)
@@ -558,20 +560,22 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.showSurveyPopup = true;
         }
     }
+
     closeSurveyPopup() {
         this.showSurveyPopup = false;
         this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
     }
+
     handleComplete(event) {
         this.closeSurveyPopup();
         this.showSurvey = false;
     }
 
-    OpenScoring() {
+    OpenScoring(scoreType: string) {
         if (this.currentObject.Uid) {
             let scoreItems = this.items.filter(x => x.title === 'Scoring');
             if (scoreItems.length == 1) {
-                this.itemClicked(scoreItems[0]);
+                this.router.navigateByUrl(`/sidebar/score/${this.currentObject.Uid}/${scoreType}`);
             }
         }
     }
