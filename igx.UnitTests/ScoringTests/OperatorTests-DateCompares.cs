@@ -2,6 +2,7 @@
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Xunit;
 
 namespace igx.UnitTests.ScoringTests
@@ -9,36 +10,36 @@ namespace igx.UnitTests.ScoringTests
     [Trait("Unit tests", "Scoring - Operators For Date Comparison")]
     public class OperatorTestsDateCompares : BaseTest
     {
-        string dataType = DataType.Date.ToString();
-        string valueToCompare = DateTime.Now.Date.ToShortDateString();
-        List<string> pastValues = new List<string>() { DateTime.Now.AddDays(-1).Date.ToShortDateString() };
-        List<string> currentValues = new List<string>() { DateTime.Now.Date.ToShortDateString() };
-        List<string> futureValues = new List<string>() { DateTime.Now.AddDays(1).Date.ToShortDateString() };
-        string falseFormatStatement = "The [Date] result of the [{0}] (with {1}) comparison is true, but it should be false.";
-        string trueFormatStatement = "The [Date] result of the [{0}] (with {1}) comparison is false, but it should be true.";
+        private readonly string _dataType = DataType.Date.ToString();
+        private readonly string _valueToCompare = DateTime.Now.Date.ToShortDateStringInvariantCulture();
+        private readonly List<string> _pastValues = new List<string>() { DateTime.Now.AddDays(-1).Date.ToShortDateStringInvariantCulture() };
+        private readonly List<string> _currentValues = new List<string>() { DateTime.Now.Date.ToShortDateStringInvariantCulture() };
+        private readonly List<string> _futureValues = new List<string>() { DateTime.Now.AddDays(1).Date.ToShortDateStringInvariantCulture() };
+        private const string FalseFormatStatement = "The [Date] result of the [{0}] (with {1}) comparison is true, but it should be false.";
+        private const string TrueFormatStatement = "The [Date] result of the [{0}] (with {1}) comparison is false, but it should be true.";
 
         [Fact]
         public void AfterOperator_Past()
         {
             Operator op = Operator.After;
-            var result = op.TestTwoValues(dataType, false, pastValues, valueToCompare);
-            Assert.True(result, string.Format(trueFormatStatement, op.GetDisplayName(), "past date"));
+            var result = op.TestTwoValues(_dataType, false, _pastValues, _valueToCompare);
+            Assert.True(result, string.Format(TrueFormatStatement, op.GetDisplayName(), "past date"));
         }
 
         [Fact]
         public void AfterOperator_Current()
         {
             Operator op = Operator.After;
-            var result = op.TestTwoValues(dataType, false, currentValues, valueToCompare);
-            Assert.False(result, string.Format(falseFormatStatement, op.GetDisplayName(), "equal date"));
+            var result = op.TestTwoValues(_dataType, false, _currentValues, _valueToCompare);
+            Assert.False(result, string.Format(FalseFormatStatement, op.GetDisplayName(), "equal date"));
         }
 
         [Fact]
         public void AfterOperator_Future()
         {
             Operator op = Operator.After;
-            var result = op.TestTwoValues(dataType, false, futureValues, valueToCompare);
-            Assert.False(result, string.Format(falseFormatStatement, op.GetDisplayName(), "future date"));
+            var result = op.TestTwoValues(_dataType, false, _futureValues, _valueToCompare);
+            Assert.False(result, string.Format(FalseFormatStatement, op.GetDisplayName(), "future date"));
         }
 
 
@@ -46,24 +47,24 @@ namespace igx.UnitTests.ScoringTests
         public void BeforeOperator_Past()
         {
             Operator op = Operator.Before;
-            var result = op.TestTwoValues(dataType, false, pastValues, valueToCompare);
-            Assert.False(result, string.Format(falseFormatStatement, op.GetDisplayName(), "past date"));
+            var result = op.TestTwoValues(_dataType, false, _pastValues, _valueToCompare);
+            Assert.False(result, string.Format(FalseFormatStatement, op.GetDisplayName(), "past date"));
         }
 
         [Fact]
         public void BeforeOperator_Current()
         {
             Operator op = Operator.Before;
-            var result = op.TestTwoValues(dataType, false, currentValues, valueToCompare);
-            Assert.False(result, string.Format(falseFormatStatement, op.GetDisplayName(), "equal date"));
+            var result = op.TestTwoValues(_dataType, false, _currentValues, _valueToCompare);
+            Assert.False(result, string.Format(FalseFormatStatement, op.GetDisplayName(), "equal date"));
         }
 
         [Fact]
         public void BeforeOperator_Future()
         {
             Operator op = Operator.Before;
-            var result = op.TestTwoValues(dataType, false, futureValues, valueToCompare);
-            Assert.True(result, string.Format(trueFormatStatement, op.GetDisplayName(), "future date"));
+            var result = op.TestTwoValues(_dataType, false, _futureValues, _valueToCompare);
+            Assert.True(result, string.Format(TrueFormatStatement, op.GetDisplayName(), "future date"));
         }
 
 
@@ -72,10 +73,10 @@ namespace igx.UnitTests.ScoringTests
         {
             Operator op = Operator.Between;
             var values = new List<string>();
-            values.AddRange(currentValues);
-            values.AddRange(futureValues);
-            var result = op.TestTwoValues(dataType, false, values, valueToCompare);
-            Assert.True(result, string.Format(trueFormatStatement, op.GetDisplayName(), "current/future dates"));
+            values.AddRange(_currentValues);
+            values.AddRange(_futureValues);
+            var result = op.TestTwoValues(_dataType, false, values, _valueToCompare);
+            Assert.True(result, string.Format(TrueFormatStatement, op.GetDisplayName(), "current/future dates"));
         }
 
         [Fact]
@@ -83,10 +84,10 @@ namespace igx.UnitTests.ScoringTests
         {
             Operator op = Operator.Between;
             var values = new List<string>();
-            values.AddRange(futureValues);
-            values.AddRange(pastValues);
-            var result = op.TestTwoValues(dataType, false, values, valueToCompare);
-            Assert.False(result, string.Format(falseFormatStatement, op.GetDisplayName(), "future/past dates"));
+            values.AddRange(_futureValues);
+            values.AddRange(_pastValues);
+            var result = op.TestTwoValues(_dataType, false, values, _valueToCompare);
+            Assert.False(result, string.Format(FalseFormatStatement, op.GetDisplayName(), "future/past dates"));
         }
 
         [Fact]
@@ -94,10 +95,10 @@ namespace igx.UnitTests.ScoringTests
         {
             Operator op = Operator.Between;
             var values = new List<string>();
-            values.AddRange(pastValues);
-            values.AddRange(currentValues);
-            var result = op.TestTwoValues(dataType, false, values, valueToCompare);
-            Assert.True(result, string.Format(trueFormatStatement, op.GetDisplayName(), "past/current dates"));
+            values.AddRange(_pastValues);
+            values.AddRange(_currentValues);
+            var result = op.TestTwoValues(_dataType, false, values, _valueToCompare);
+            Assert.True(result, string.Format(TrueFormatStatement, op.GetDisplayName(), "past/current dates"));
         }
 
         [Fact]
@@ -105,10 +106,10 @@ namespace igx.UnitTests.ScoringTests
         {
             Operator op = Operator.Between;
             var values = new List<string>();
-            values.AddRange(pastValues);
-            values.AddRange(futureValues);
-            var result = op.TestTwoValues(dataType, false, values, valueToCompare);
-            Assert.True(result, string.Format(trueFormatStatement, op.GetDisplayName(), "past/future dates"));
+            values.AddRange(_pastValues);
+            values.AddRange(_futureValues);
+            var result = op.TestTwoValues(_dataType, false, values, _valueToCompare);
+            Assert.True(result, string.Format(TrueFormatStatement, op.GetDisplayName(), "past/future dates"));
         }
 
 
@@ -116,24 +117,24 @@ namespace igx.UnitTests.ScoringTests
         public void EqualsOperator_Past()
         {
             Operator op = Operator.Equals;
-            var result = op.TestTwoValues(dataType, false, pastValues, valueToCompare);
-            Assert.False(result, string.Format(falseFormatStatement, op.GetDisplayName(), "past date"));
+            var result = op.TestTwoValues(_dataType, false, _pastValues, _valueToCompare);
+            Assert.False(result, string.Format(FalseFormatStatement, op.GetDisplayName(), "past date"));
         }
 
         [Fact]
         public void EqualsOperator_Current()
         {
             Operator op = Operator.Equals;
-            var result = op.TestTwoValues(dataType, false, currentValues, valueToCompare);
-            Assert.True(result, string.Format(trueFormatStatement, op.GetDisplayName(), "equal date"));
+            var result = op.TestTwoValues(_dataType, false, _currentValues, _valueToCompare);
+            Assert.True(result, string.Format(TrueFormatStatement, op.GetDisplayName(), "equal date"));
         }
 
         [Fact]
         public void EqualsOperator_Future()
         {
             Operator op = Operator.Equals;
-            var result = op.TestTwoValues(dataType, false, futureValues, valueToCompare);
-            Assert.False(result, string.Format(falseFormatStatement, op.GetDisplayName(), "future date"));
+            var result = op.TestTwoValues(_dataType, false, _futureValues, _valueToCompare);
+            Assert.False(result, string.Format(FalseFormatStatement, op.GetDisplayName(), "future date"));
         }
 
 
@@ -141,24 +142,24 @@ namespace igx.UnitTests.ScoringTests
         public void NotEqualsOperator_Past()
         {
             Operator op = Operator.NotEquals;
-            var result = op.TestTwoValues(dataType, false, pastValues, valueToCompare);
-            Assert.True(result, string.Format(trueFormatStatement, op.GetDisplayName(), "past date"));
+            var result = op.TestTwoValues(_dataType, false, _pastValues, _valueToCompare);
+            Assert.True(result, string.Format(TrueFormatStatement, op.GetDisplayName(), "past date"));
         }
 
         [Fact]
         public void NotEqualsOperator_Current()
         {
             Operator op = Operator.NotEquals;
-            var result = op.TestTwoValues(dataType, false, currentValues, valueToCompare);
-            Assert.False(result, string.Format(falseFormatStatement, op.GetDisplayName(), "equal date"));
+            var result = op.TestTwoValues(_dataType, false, _currentValues, _valueToCompare);
+            Assert.False(result, string.Format(FalseFormatStatement, op.GetDisplayName(), "equal date"));
         }
 
         [Fact]
         public void NotEqualsOperator_Future()
         {
             Operator op = Operator.NotEquals;
-            var result = op.TestTwoValues(dataType, false, futureValues, valueToCompare);
-            Assert.True(result, string.Format(trueFormatStatement, op.GetDisplayName(), "future date"));
+            var result = op.TestTwoValues(_dataType, false, _futureValues, _valueToCompare);
+            Assert.True(result, string.Format(TrueFormatStatement, op.GetDisplayName(), "future date"));
         }
     }
 }

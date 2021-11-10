@@ -1,4 +1,4 @@
-﻿using ComponentSpace.SAML2.Assertions;
+using ComponentSpace.SAML2.Assertions;
 using ComponentSpace.SAML2.Profiles.SingleLogout;
 using ComponentSpace.SAML2.Profiles.SSOBrowser;
 using ComponentSpace.SAML2.Protocols;
@@ -1862,38 +1862,59 @@ namespace d360.web.Controllers
 
             if (resource != null)
             {
-                // delete any pending requests for this resource id
+                ResourcePasswordReset latest, resetModel;
+                bool hasExistingRecord = false;
 
+                //find any pending requests for this resource
                 var pending = Company.ResourcePasswordResets.Where(x => x.ResourceID == resource.ResourceID);
 
                 if (pending.Any())
                 {
-                    Company.ResourcePasswordResets.RemoveRange(pending);
-                    Company.SaveChanges();
+                    latest = pending.OrderByDescending(x => x.CreateDate).First();
+                    hasExistingRecord = latest.CreateDate >= DateTime.UtcNow.AddMinutes(-5);
+
+                    //if the most recent record is less than 5 minutes old, leave it and remove the others
+                    if (hasExistingRecord)
+                    {
+                        pending = pending.Where(x => x.ID != latest.ID);
+                    }
+
+                    //remove any other pending requests
+                    if (pending.Any())
+                    {
+                        Company.ResourcePasswordResets.RemoveRange(pending);
+                        Company.SaveChanges();
+                    }                   
+
                 }
 
-                // add record for password reset request
-                var resetModel = new ResourcePasswordReset
+                //if there are no records add one and send the reset email
+                if (!hasExistingRecord)
                 {
-                    CreateDate = DateTime.UtcNow,
-                    ResourceID = resource.ResourceID
-                };
+                    var templateValues = new Dictionary<string, string>();
+                    string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
 
-                Company.ResourcePasswordResets.Add(resetModel);
-                Company.SaveChanges();
+                    //add record for password reset request
+                    resetModel = new ResourcePasswordReset
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        ResourceID = resource.ResourceID
+                    };
 
-                //send email with link
-                var templateValues = new Dictionary<string, string>();
+                    Company.ResourcePasswordResets.Add(resetModel);
+                    Company.SaveChanges();
 
-                string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
-                strUrl += $"doreset?id={resetModel.ID}";
+                    strUrl += $"doreset?id={resetModel.ID}";
 
-                templateValues["firstname"] = resource.FirstName;
-                templateValues["request_url"] = strUrl;
+                    //send email with link                   
+                    templateValues["firstname"] = resource.FirstName;
+                    templateValues["request_url"] = strUrl;
 
-                //email user 
-                Mail.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
+                    //email user 
+                    Mail.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
+                }
             }
+
             //redirect to login page
             FormsAuthentication.RedirectToLoginPage();
             return new EmptyResult();

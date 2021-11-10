@@ -1,13 +1,19 @@
 ﻿using d360.core.enums.Workflow;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
+using d360.core.types;
 
 namespace d360.model.workflow
 {
+    //TODO: should be refactored to service + model
     internal class WorkflowCriteriaExpressionModel
     {
+        //TODO: this should be injected to service
+        private readonly IDateTimeService DateTimeService = new DateTimeService();
+
         public object Value { get; set; }
         public int FieldTypeId { get; set; }
         public CriteriaOperator Operator { get; set; }
@@ -163,7 +169,7 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Integer:
                 case CriteriaValueDataType.Double:
                     double? dVal = null;
-                    if (double.TryParse(val, out double dValParsed))
+                    if (double.TryParse(val, NumberStyles.Any, CultureInfo.InvariantCulture, out double dValParsed))
                     {
                         dVal = dValParsed;
                     }
@@ -203,48 +209,49 @@ namespace d360.model.workflow
             // dates are number of days from the date field value
             if (this.ValueDataType == CriteriaValueDataType.Date)
             {
-                DateTime dt = DateTime.MinValue;
-
                 if (Operator == CriteriaOperator.NotPopulated)
                 {
-                    return string.IsNullOrEmpty(givenValue) || !DateTime.TryParse(givenValue, out _);
+                    return string.IsNullOrEmpty(givenValue) || !DateTimeService.CanParse(givenValue);
                 }
-                else if (Operator == CriteriaOperator.Populated)
+                
+                if (Operator == CriteriaOperator.Populated)
                 {
-                    return DateTime.TryParse(givenValue, out _);
+                    return DateTimeService.CanParse(givenValue);
                 }
-                else if (!DateTime.TryParse(givenValue, out dt))
+                
+                if (!DateTimeService.TryParse(givenValue, out var parsedDateTime))
                 {
                     return false;
                 }
 
-                DateTime currentDate = DateTime.UtcNow;
+                var currentDate = DateTimeService.Now();
 
-                var numDays = (dt.Date - currentDate.Date).TotalDays;
+                var numDays = Convert.ToInt32((parsedDateTime.Date - currentDate.Date).TotalDays);
+                var value = (int)Value;
 
                 if (Operator == CriteriaOperator.Equal)
                 {
-                    return (numDays == (int)Value);
+                    return (numDays == value);
                 }
                 else if (Operator == CriteriaOperator.NotEqual)
                 {
-                    return (numDays != (int)Value);
+                    return (numDays != value);
                 }
                 else if (Operator == CriteriaOperator.GreaterThan)
                 {
-                    return (numDays > (int)Value);
+                    return (numDays > value);
                 }
                 else if (Operator == CriteriaOperator.GreaterThanOrEqual)
                 {
-                    return (numDays >= (int)Value);
+                    return (numDays >= value);
                 }
                 else if (Operator == CriteriaOperator.LessThan)
                 {
-                    return (numDays < (int)Value);
+                    return (numDays < value);
                 }
                 else if (Operator == CriteriaOperator.LessThanOrEqual)
                 {
-                    return (numDays <= (int)Value);
+                    return (numDays <= value);
                 }
 
                 throw new Exception("INVALID DATE OPERATION");

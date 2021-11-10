@@ -192,7 +192,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     loadFavorites() {
-        if (this.getBooleanSetting(CompanySettingEnum.ShowFavorites)) {
+        if (!this.getBooleanSetting(CompanySettingEnum.ShowFavorites)) {
             return;
         }
 
