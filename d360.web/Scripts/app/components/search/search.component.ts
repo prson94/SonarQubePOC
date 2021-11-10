@@ -220,6 +220,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
             if (af.Field === "Tags") {
                 condition.value = af.Values.map((v) => { return { title: v, value: v }; });
                 condition.fieldType = "Tag";
+            } else if (af.Field === "Path") {
+                condition.value = af.Values;
+                condition.fieldType = "Path";
             } else {
                 condition.value = af.Values[0];
                 condition.fieldType = "Text";

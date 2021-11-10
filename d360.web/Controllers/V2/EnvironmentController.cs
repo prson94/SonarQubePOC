@@ -935,10 +935,9 @@ namespace d360.web.Controllers.V2
                             1
 		                    from #AssetTypesWithResponsibilities AT
 			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
-			                    where 1 = Case 
-		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm > 0 then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END
+			                    where ((permission.PermissionsBitMask is null and gr.IsAdministrator = 1)
+		                               or (permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm > 0)
+		                               or (permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd))
 
                     )   
                     and gr.Email not like '%@infogix.com' 

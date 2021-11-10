@@ -120,7 +120,8 @@ namespace d360.model.helpers
                             selects.Add($"(@{cnt_prefix} + try_cast(F{ft.ID}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
                             break;
                         case "jsonelement":
-                            selects.Add($"JSON_VALUE(F_{ft.ID}.FormattedValue,'$.'+FT_JSON_{ft.ID}.Name) as [{fieldAlias}]");
+                            var pathElementSelector = $"JSON_VALUE(FT_JSON_{ft.ID}.Definition, '$.Path')";
+                            selects.Add($"JSON_VALUE(F_{ft.ID}.FormattedValue,'$.'+{pathElementSelector}) as [{fieldAlias}]");
                             break;
                         default:
                             selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");

@@ -2849,17 +2849,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
         public async Task<APIExecutionAPIModelResult> GetExecutionItems(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            int pageNum = 1;
-            int pageSize = 200;
             string orderDirection = "asc";
-            string orderBySql = "";
-            string offsetSql = "";
             string filterSql = "";
             if (queryParams.Any(x => x.Key == "_direction"))
             {
-                string[] allowedDirections = new string[] { "asc", "desc" };
-                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
-                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                var allowedDirections = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim();
+                if (!allowedDirections.Contains(order))
                 {
                     return new APIExecutionAPIModelResult
                     {
@@ -2867,9 +2863,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         StatusCode = HttpStatusCode.BadRequest
                     };
                 }
-                orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+                orderDirection = order;
             }
 
+            string orderBySql = "";
             if (!queryParams.Any(p => p.Key == "_order"))
             {
                 orderBySql = $" order by [CompletedOn] {orderDirection} ";
@@ -2878,25 +2875,30 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
 
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                string[] validOrderByFields = { "executionid", "resourceuid", "resource", "total",
-                                                "processed", "error", "errormessage", "processingstartedon",
-                                                "startedon", "completedon", "method", "route", "fields" };
-                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                var validOrderByFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { 
+                    "executionid", "resourceuid", "resource", "total",
+                    "processed", "error", "errormessage", "processingstartedon",
+                    "startedon", "completedon", "method", "route", "fields", "applicationid" };
+                if (!validOrderByFields.Contains(orderByCol))
                     return new APIExecutionAPIModelResult
                     {
                         Message = AssetTypeErrors.InvalidOrderPassed,
                         StatusCode = HttpStatusCode.BadRequest
                     };
-                orderBySql = $" order by {orderByCol} {orderDirection} ";
+                orderBySql = $" order by [{orderByCol}] {orderDirection} ";
             }
 
+            int pageNum = 1;
             if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
-                    if (pageNum < 1) pageNum = 1;
+                {
+                }
 
+            int pageSize = 200;
             if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
-                    if (pageSize < 1) pageSize = 1;
+                {
+                }
 
             if (pageSize > 0 || pageNum > 0)
             {
@@ -2904,9 +2906,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 if (pageNum < 1) pageNum = 1;
                 if (pageSize > 25000) pageSize = 25000;
                 if (pageNum > 10000) pageNum = 10000;
-
-
-                offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
             }
 
             if (queryParams.Any(p => p.Key == "_status"))
@@ -2943,12 +2942,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                               ,[Method]
                               ,[Route]
                               ,[Fields]
+                              ,[ApplicationId]
                           FROM [api].[Execution] Ex
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID  
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID] 
                           {filterSql}
                           {orderBySql}
-                          {offsetSql}
+                          offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only
                         ";
 
             var countSQL = $@"
@@ -2958,39 +2958,46 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID]
                           {filterSql}
                         ";
-            var executions = await CompanyContext.QueryAsync<dynamic>(sql, ApiTimeout);
-            var count = await CompanyContext.QueryAsync<int>(countSQL, ApiTimeout);
 
-            var items = executions.Select(x =>
+            var multiSQL = $"{sql}; {countSQL}";
+            using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, null, ApiTimeout))
             {
-                var f = string.IsNullOrEmpty(x.Fields) ? "{}" : x.Fields;
-                return new APIExecutionAPIModel
+                var executions = multi.Read<dynamic>().ToList();
+                var count = multi.Read<int>().First();
+
+                var items = executions.Select(x =>
                 {
-                    CompletedOn = x.CompletedOn,
-                    Error = x.Error,
-                    ErrorMessage = x.ErrorMessage,
-                    ExecutionID = x.ExecutionID,
-                    Fields = JsonConvert.DeserializeObject<dynamic>(f),
-                    Method = x.Method,
-                    Processed = x.Processed,
-                    ProcessingStartedOn = x.ProcessingStartedOn,
-                    Resource = x.Resource,
-                    ResourceUid = x.ResourceUid,
-                    Route = x.Route,
-                    StartedOn = x.StartedOn,
-                    Total = x.Total
-                };
-            });
-            var resultsModel = new APIExecutionAPIModelResult
-            {
-                items = items,
-                total = count.FirstOrDefault(),
-                pageNum = pageNum,
-                pageSize = pageSize,
-                StatusCode = HttpStatusCode.OK
-            };
+                    var f = string.IsNullOrEmpty(x.Fields) ? "{}" : x.Fields;
+                    return new APIExecutionAPIModel
+                    {
+                        CompletedOn = x.CompletedOn,
+                        Error = x.Error,
+                        ErrorMessage = x.ErrorMessage,
+                        ExecutionID = x.ExecutionID,
+                        Fields = JsonConvert.DeserializeObject<dynamic>(f),
+                        Method = x.Method,
+                        Processed = x.Processed,
+                        ProcessingStartedOn = x.ProcessingStartedOn,
+                        Resource = x.Resource,
+                        ResourceUid = x.ResourceUid,
+                        Route = x.Route,
+                        StartedOn = x.StartedOn,
+                        Total = x.Total,
+                        ApplicationId = x.ApplicationId
+                    };
+                });
 
-            return resultsModel;
+                var resultsModel = new APIExecutionAPIModelResult
+                {
+                    items = items,
+                    total = count,
+                    pageNum = pageNum,
+                    pageSize = pageSize,
+                    StatusCode = HttpStatusCode.OK
+                };
+
+                return resultsModel;
+            }
         }
 
         public async Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string component, string status)
