@@ -1,8 +1,13 @@
-﻿<div #switch 
-     [ngClass]="{'switch':true,'checked':value ===true,'unset':value===undefined,'disabled':disabled}"
-     [attr.id]="inputId" [attr.tabindex]="(disabled ? -1 : tabindex)" 
+﻿<div #switch
+     [ngClass]="{'switch':true,'checked':value ===true,'unset':value===undefined,'disabled':disabled,'required':!optional && value === undefined}"
+     [attr.id]="inputId" [attr.tabindex]="(disabled ? -1 : tabindex)"
      [ngStyle]="style" [class]="styleClass" role="checkbox" [attr.aria-checked]="(value===undefined? 'indeterminate' : value)"
-     (keydown.space)="toggle($event)" [attr.aria-labelledby]="ariaLabelledBy" >
+     (keydown.space)="toggle($event)" [attr.aria-labelledby]="ariaLabelledBy">
     <button type="button" tabindex="-1" (click)="tryChangeValue(true)" class="check">{{trueLabel}}</button>
     <button type="button" tabindex="-1" (click)="tryChangeValue(false)" class="uncheck">{{falseLabel}}</button>
 </div>
+<span *ngIf="!optional && value === undefined" class="switch-required-message">
+    <span>
+        Value required
+    </span>
+</span>

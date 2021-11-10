@@ -2063,7 +2063,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
             ]
-        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null)
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, bool isForAssetForm = false)
         {
             var prefix = "Fields.GetFilterVales => ";
             try
@@ -2086,6 +2086,13 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     return Request.CreateResponse(HttpStatusCode.OK, new { items = classInfos.Select(x => x.Name).ToList() });
                 }
 
+                int fieldTypeId = -1;
+
+                var assetTypeId = Company.AssetTypes
+                    .FirstOrDefault(x => x.uid == assetTypeUid).ID;
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
+
+
                 string pagingQuery = "";
                 string whereQuery = "";
                 if (skip != null && take != null)
@@ -2093,17 +2100,46 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
                 }
 
-                if (!string.IsNullOrEmpty(filter))
+
+
+                //list items for parent field
+                if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
                 {
-                    filter = "%" + filter + "%";
-                    whereQuery += " and text like @filter ";
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        filter = "%" + filter + "%";
+                        whereQuery += " and node.displaypath like @filter ";
+                    }
+                    var sql = $@"declare @target nvarchar(255) 
+                                declare @targetid int
+                                
+                                select @target = ito.Subject, @targetid = ito.SubjectId from AssetType at
+                                left join [IntersectType] ito on ito.Object = at.Object and ito.ObjectId = at.objectid
+                                left join [Predicate] po on ito.PredicateID = po.ID and po.Type in (3,4)
+                                where at.id = @assettypeid
+                                
+                                declare @parentAssetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
+                                
+                                select cast(a.uid as nvarchar(36)) as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @parentAssetTypeId {whereQuery}
+                                order by node.displaypath 
+                                {pagingQuery};
+
+                                select count(*) from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @parentAssetTypeId {whereQuery};";
+
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { assetTypeId, skip, take, filter });
+
+                    var data = new
+                    {
+                        items = resultsAssets.Read<DDLSelectItem>().ToList(),
+                        count = resultsAssets.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
                 }
-
-                int fieldTypeId = -1;
-
-                var assetTypeId = Company.AssetTypes
-                    .FirstOrDefault(x => x.uid == assetTypeUid).ID;
-                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
 
                 //case when fieldname coming from complex relation grid with coded names from procedure
                 if (fieldType == null && fieldName.Contains("_"))
@@ -2121,24 +2157,154 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     fieldTypeId = fieldType.ID;
                 }
 
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    filter = "%" + filter + "%";
+                    if (fieldType.Type == "Relationship")
+                    {
+                        whereQuery += " and node.displaypath like @filter ";
+                    }
+                    else
+                    {
+                        whereQuery += " and text like @filter ";
+                    }
+                }
+
+                if (fieldType.Type == "Relationship")
+                {
+                    var sql = $@"
+                                declare @target nvarchar(255) 
+                                declare @targetid int
+
+                                select  
+                                @targetid = 
+                                case when ft.object = it.subject and ft.objectid = it.subjectid then it.ObjectID
+                                else it.SubjectID
+                                end, 
+                                @target = case when ft.object = it.subject and ft.objectid = it.subjectid then it.Object
+                                else it.Subject
+                                end
+                                 from fieldtype ft
+                                inner join [IntersectType] IT on IT.ID = ft.LookupObjectID
+                                where ft.id = @fieldtypeid
+
+                                declare @assetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
+
+                                select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @assetTypeId {whereQuery}
+                                order by node.displaypath
+                                {pagingQuery};
+
+                                select count(*) from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @assetTypeId {whereQuery};";
+
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { fieldTypeId, skip, take, filter });
+
+                    var data = new
+                    {
+                        items = resultsAssets.Read<DDLSelectItem>().ToList(),
+                        count = resultsAssets.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+
+
+                bool hasColor = false;
+
+                var colorjoin = $@"
+                                        outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
+                                                    from Asset A 
+                                                    outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
+													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
+                                        )colorJSON 
+                                        ";
+
+                string selectStatement = "v.text";
+                string resourceJoin = "";
+
+                if (fieldType.LookupObjectType == "Resource")
+                {
+                    bool hideData3SixtyUsers = HideData3SixtyUsers();
+                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
+                    resourceJoin = $@"
+                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+                                        ";
+                }
+
+
+                if (isForAssetForm)
+                {
+                    hasColor = Company.Connection.Query<int>(@"select count(1) from fieldtype ft
+                    inner join assettype at on at.Object = ft.LookupObjectType + 'Type' and at.ObjectID = ft.LookupObjectID
+                    inner join asset a on a.AssetTypeID = at.ID
+                    where ft.id = @fieldTypeId and a.color is not null", new { fieldTypeId }).FirstOrDefault() > 0;
+                    if (hasColor)
+                    {
+                        selectStatement = "JSON_VALUE(colorJson.FV,'$.name') AS text,JSON_VALUE(colorJson.FV,'$.color') AS color, v.value";
+                    }
+                    else
+                    {
+                        selectStatement = "v.text, v.value";
+                        colorjoin = "";
+                    }
+                }
+
+
+
                 var query = $@"
-                    select text from FieldLookupValue where @fieldTypeId = FieldTypeID
+                    select {selectStatement} 
+                    from FieldLookupValue V
+                    {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
+                    {colorjoin}
+                    where @fieldTypeId = v.FieldTypeID
                     {whereQuery}
                     order by text asc
 					{pagingQuery};
 
-                    select count(1) from FieldLookupValue where @fieldTypeId = FieldTypeID {whereQuery};
+                    select count(1) from FieldLookupValue V
+                        {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
+                        where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
 
-                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter });
+                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel });
 
-                var data = new
+                if (!isForAssetForm)
                 {
-                    items = results.Read<string>().ToList(),
-                    count = results.Read<int>().FirstOrDefault()
-                };
+                    var data = new
+                    {
+                        items = results.Read<string>().ToList(),
+                        count = results.Read<int>().FirstOrDefault()
+                    };
 
-                return Request.CreateResponse(HttpStatusCode.OK, data);
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+                else
+                {
+                    var items = new List<DDLSelectItem>();
+                    if (fieldType.AllowAllValue)
+                    {
+                        items.Add(new DDLSelectItem { text = fieldType.AllowAllLabel, value = "0" });
+                    }
+
+                    items.AddRange(results.Read<DDLSelectItem>().ToList());
+                    var count = results.Read<int>().FirstOrDefault();
+                    if (items.Any(x => x.value == "0"))
+                    {
+                        count++;
+                    }
+
+                    var data = new
+                    {
+                        items,
+                        count
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+
 
             }
             catch (Exception ex)
@@ -2150,6 +2316,13 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
+        }
+
+        public class DDLSelectItem
+        {
+            public string text { get; set; }
+            public string value { get; set; }
+            public string color { get; set; }
         }
 
         /// <summary>

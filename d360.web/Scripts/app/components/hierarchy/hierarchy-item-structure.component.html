@@ -1,11 +1,11 @@
 ﻿<div class="row hierarchy-grid">
     <div class="col s12" style="display:flex">
         <div class="tile tile-detail main-panel">
-            <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
+            <div *ngIf="!showDelete && assetType && assetType.Description && assetType.Description.length >0"
                  [innerHtml]="assetType.Description"
                  class="item-description"></div>
 
-            <div class="grid-actions-header" *ngIf="!showDelete && !showEditor">
+            <div class="grid-actions-header" *ngIf="!showDelete">
                 <div class="simple-search">
                     <ig-search-field mode="Keypress"
                                      [debounce]="600"
@@ -23,6 +23,7 @@
                             tooltipStyleClass="ig-tooltip"
                             class="ig-button-primary"
                             icon="fa-plus"
+                            [disabled]="isLoading"
                             (click)="showAdd(0)">
                     </button>
 
@@ -39,7 +40,7 @@
                 </div>
             </div>
 
-            <div class="tree-wrapper" *ngIf="!showDelete && !showEditor">
+            <div class="tree-wrapper" *ngIf="!showDelete">
                 <p-treeTable #treeTable
                              [pageLinks]="3"
                              [paginator]="true"
@@ -118,16 +119,27 @@
                                      (onDeleted)="onDeleted();">
             </d3s-asset-delete-editor>
 
-            <d3s-asset-editor *ngIf="showEditor"
-                              [assetUid]="selected?.data?.AssetUid"
-                              [assetTypeUid]="assetTypeUid"
-                              [parentAssetUid]="selectedParentId"
-                              [title]="selected?.data?.Path ? selected?.data?.Path : assetTypeTitle"
+            <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+                       (onClose)="showEditor=false"
+                       [showTitle]="false"
+                       [isVisible]="showEditor">
+                <asset-editor #dynamicEditor
+                              *ngIf="showEditor"
+                              [objectID]="selected ? selected?.ObjectID : objectTypeId"
+                              [objectType]="object"
+                              [title]="selected ? 'Edit Asset' : 'Create New Asset'"
                               [selection]="selected?.data"
-                              (saveClick)="save()"
-                              (closeClick)="closeEditor();"></d3s-asset-editor>
+                              [objectTypeUid]="assetTypeUid"
+                              [parentID]="selectedParentId"
+                              [assetTypePath]="selected ? selected?.data?.Path : assetType?.Path"
+                              (saveClick)="save($event)"
+                              [showAsModal]="true"
+                              [isV2API]="true"
+                              (closeClick)="closeEditor()"></asset-editor>
+
+            </d3s-modal>
         </div>
-        <div class="tile tile-detail side-panel" *ngIf="!isLoading && (!showEditor || (showEditor && selected != null))">
+        <div class="tile tile-detail side-panel">
             <side-panel [(expanded)]="sidePanelOpen"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [selectedItem]="selected?.data"
@@ -155,7 +167,8 @@
                                          [isSidePanel]="true"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
-                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                         [hasDeleteRelationshipsPermissions]="false"
+                                         (onEditClick)="showEditor=true"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
             </side-panel>

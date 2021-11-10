@@ -41,6 +41,7 @@ import { UserListComponent } from './user/user-list.component';
 import { SiteModalModule } from './modal/gov-modal.module';
 import { AssetDetailModule } from './asset-detail/asset-detail.module';
 import { ResourceMultiSelectGridModule } from './resource-multiselect-grid.component';
+import { AssetEditorModule } from './asset-editor/asset-editor.module';
 
 @NgModule({
     declarations: [                           
@@ -87,6 +88,7 @@ import { ResourceMultiSelectGridModule } from './resource-multiselect-grid.compo
         PipesModule,                    
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
+        AssetEditorModule,
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
         SimpleAccordionModule,        

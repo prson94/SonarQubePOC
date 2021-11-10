@@ -1,4 +1,4 @@
-﻿<div class="ig-property-group" [ngClass]="showHeaderLine ? 'ig-pg-header-line' : null">
+﻿<div class="ig-property-group" [ngClass]="showHeaderLine ? 'ig-pg-header-line' : null" [style.display]="hideIfNoTitle && !title ? 'none' : 'block'">
     <div class="header-wrapper">
         <div class="ig-pg-header" (click)="expanded = !expanded; expandedChange.emit(expanded);" tabindex="1" (keypress)="onInputKeyUp($event)">
             <span class="fa fa-chevron-circle-right" [ngClass]="{'down': expanded}"></span>

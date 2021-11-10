@@ -3136,5 +3136,44 @@ select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Descri
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
+        /// <summary>
+        /// Return asset path for asset uid.
+        /// </summary>
+        /// <param name="assetUid"></param>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            MapToApiVersion("2.0"),
+            Route("{assetUid}/path"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            ]
+        public async Task<HttpResponseMessage> GetAssetPathByUid(Guid assetUid)
+        {
+            var prefix = "Assets.GetAssetPathByUid => ";
+            var errorMessage = "";
+
+            try
+            {
+                var query = $@" exec graph.UpdateAssetNode @assetuid,1
+                        select DisplayPath from asset a
+                           inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                         where a.uid = @assetuid
+                        ";
+
+                var results = await Company.QueryAsync<dynamic>(query, new { assetUid });
+
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
     }
 }

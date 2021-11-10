@@ -88,7 +88,7 @@ namespace d360.web.Controllers
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
             }
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(type, at).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(type, at).ToList(), 2, loadLookupValues: false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -152,7 +152,8 @@ namespace d360.web.Controllers
                     list,
                     Company.GetFieldTypesByObject(type, a.AssetType.ObjectID).ToList(),
                     Company.GetFieldRelationsByObject(obj, id).ToList(),
-                    2
+                    2,
+                    loadOnlySelectedLookupValue: true
                 )
             );
 

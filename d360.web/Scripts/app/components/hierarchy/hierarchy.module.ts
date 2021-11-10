@@ -40,6 +40,8 @@ import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
+import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
 
 @NgModule({
     imports: [
@@ -74,6 +76,8 @@ import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.compon
         SharedAssetScoreModule,
         SharedDynamicGridEditorModule,
         SharedAssetEditorsModule,
+        AssetEditorModule,
+        SiteModalModule,
         TilesModule,
         AssetDetailModule,
         DataProfileModule,

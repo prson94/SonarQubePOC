@@ -13,6 +13,7 @@ import { SharedGridPagingInfoModule } from "../shared/grid-paging-info.component
 import { SharedDeleteFormModule } from "../shared/delete.form";
 import { SharedDynamicGridEditorModule } from "../shared/dynamicgrideditor/shared-dynamic-grid-editor.module";
 import { SharedAssetEditorsModule } from "../shared/asseteditors/shared-asset-editor.module";
+import { AssetEditorModule } from "../shared/asset-editor/asset-editor.module";
 import { PopupMenuModule } from "../shared/controls/popup-menu/popup-menu.component";
 
 import { SharedModule } from "primeng/api";
@@ -32,7 +33,7 @@ import { AssetGridComponent } from "./asset-grid.component";
 import { SharedAssetScoreModule } from "../shared/asset-score/shared-asset-score.module";
 import { AdvancedFiltersModule } from "./advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
-
+import { SiteModalModule } from "../shared/modal/gov-modal.module";
 
 @NgModule({
     imports: [
@@ -58,9 +59,11 @@ import { SearchFieldModule } from "../shared/controls/search-field/search-field.
         CoreModule,
         PipesModule,
         PopupMenuModule,
+        SiteModalModule,
 
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
+        AssetEditorModule,
         SharedDynamicGridEditorModule,
         SharedAssetScoreModule,
         SharedAssetEditorsModule,

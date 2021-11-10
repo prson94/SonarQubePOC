@@ -38,7 +38,7 @@ namespace d360.web.Controllers
             var parentUid = p > 0 ? Company.GetAssetUid(p, hierarchyType == SystemObjects.TaxonomyType ? SystemObjects.Taxonomy : SystemObjects.Policy).ToString() : "";
             list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid.ToString() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(hierarchyType, t).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(hierarchyType, t).ToList(), 1, loadLookupValues: false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -114,7 +114,8 @@ namespace d360.web.Controllers
                          list,
                          Company.GetFieldTypesByObject((hierarchy == SystemObjects.Taxonomy ? SystemObjects.TaxonomyType : SystemObjects.PolicyType), (int)model.HierarchyTypeID).ToList(),
                          Company.GetFieldRelationsByObject(hierarchy, id).ToList(),
-                         3
+                         3,
+                         loadOnlySelectedLookupValue: true
                      )
                  );
             }

@@ -33,7 +33,6 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
         }
     }
 
-
     ngOnChanges(changes: SimpleChanges) {
         if (changes.isVisible !== undefined && (changes.isVisible.previousValue != changes.isVisible.currentValue)) {
             if (changes.isVisible.currentValue) {
@@ -86,7 +85,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
         }
     }
 
-    closePopUp() {
+    public closePopUp() {
         if (this.modalDiv) {
             this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " begin-hide";
             window.setTimeout(function () {
