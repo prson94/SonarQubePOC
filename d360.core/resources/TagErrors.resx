@@ -117,82 +117,40 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DirectionAllowedForRelation" xml:space="preserve">
-    <value>_direction parameter is allowed only when RelationshipTypeUid is passed</value>
+  <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
+    <value>Tag with uid '{0}' have related assets. Use cascade='true' to delete this tag!</value>
   </data>
-  <data name="InvalidIntersectTypeUid" xml:space="preserve">
-    <value>Invalid Intersect Type Uid provided {0}.</value>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>Invalid value [{0}] passed in the request.</value>
   </data>
-  <data name="InvalidInverseLength" xml:space="preserve">
-    <value>Inverse must be less then 250 characters.</value>
+  <data name="InvalidOrderBy" xml:space="preserve">
+    <value>Invalid value [{0}] passed in the request</value>
   </data>
-  <data name="InvalidNameLength" xml:space="preserve">
-    <value>Name must be less then 100 characters.</value>
+  <data name="InvalidPageNumber" xml:space="preserve">
+    <value>Invalid value for page number parametar!</value>
   </data>
-  <data name="InvalidObjectUid" xml:space="preserve">
-    <value>Invalid Object Uid passed in the request</value>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Invalid value for page size parametar!</value>
   </data>
-  <data name="InvalidOrderValue" xml:space="preserve">
-    <value>Invalid _order value in the request</value>
+  <data name="InvalidParaMeter" xml:space="preserve">
+    <value>Invalid parameters supplied. Parameter DisplayValue, AssetType, TagsasString not allowed to used when globalSearch parameter is present.</value>
   </data>
-  <data name="InvalidParameter" xml:space="preserve">
-    <value>The type parameter is invalid.</value>
+  <data name="InvalidSortBy" xml:space="preserve">
+    <value>Invalid sortby value provided in the request.</value>
   </data>
-  <data name="InvalidPredicateUid" xml:space="preserve">
-    <value>Invalid Predicate Uid passed in the request</value>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>Invalid sort order value provided in the request.</value>
   </data>
-  <data name="InvalidRelatioshipTypeUid" xml:space="preserve">
-    <value>Invalid Relationship Type Uid passed in the request</value>
+  <data name="InvalidTagUid" xml:space="preserve">
+    <value>Invalid value [{0}] passed in the request</value>
   </data>
-  <data name="InvalidSubjectUid" xml:space="preserve">
-    <value>Invalid Subject Uid passed in the request</value>
+  <data name="Invalid_IncludeTotal" xml:space="preserve">
+    <value>Invalid value [{0}] provided for _includetotal parameter in the request.</value>
   </data>
-  <data name="Invalid_includeTotal" xml:space="preserve">
-    <value>Invalid _includeTotal parameter passed in the request, value must be true false or not specified</value>
+  <data name="InvalueTotalValue" xml:space="preserve">
+    <value>Invalid value [{0}] passed in the request.</value>
   </data>
-  <data name="Invalid_owner" xml:space="preserve">
-    <value>Invalid _owner parameter passed in the request, maximum length is 100 characters.</value>
-  </data>
-  <data name="MaxRelationShipLimit" xml:space="preserve">
-    <value>You may only provide a maximum of {0} relationships in this request. Please call the BATCH API to submit more than {1} items.</value>
-  </data>
-  <data name="ObjectUidNotFound" xml:space="preserve">
-    <value>Object with Uid [{0}] could not be found.</value>
-  </data>
-  <data name="OrderForRelation" xml:space="preserve">
-    <value>_order parameter is allowed only when RelationshipTypeUid is passed</value>
-  </data>
-  <data name="PassedValidForExistingRelationType" xml:space="preserve">
-    <value>Invalid relationship type uid specified.  Please specify a valid uid for an existing relationship type.</value>
-  </data>
-  <data name="PassedValidRelationTypeUid" xml:space="preserve">
-    <value>Invalid relationship type uid specified.  Please specify a valid uid.</value>
-  </data>
-  <data name="PredicateLimit" xml:space="preserve">
-    <value>You may only provide a maximum of {0} predicates in this request.</value>
-  </data>
-  <data name="PredicateRequired" xml:space="preserve">
-    <value>You have not provided any predicates to process in this request.</value>
-  </data>
-  <data name="PredicateUidNotFound" xml:space="preserve">
-    <value>Predicate with Uid [{0}] could not be found.</value>
-  </data>
-  <data name="RelationNotProvided" xml:space="preserve">
-    <value>You have not provided any relationships to process in this request.</value>
-  </data>
-  <data name="RelationshipSucessfullyRemoved" xml:space="preserve">
-    <value>Relationship successfully removed</value>
-  </data>
-  <data name="RelationshipTypeLimit" xml:space="preserve">
-    <value>You may only provide a maximum of {0} relationship types in this request.</value>
-  </data>
-  <data name="RelationShipUidNotFound" xml:space="preserve">
-    <value>Specified relationship with uid [{0}] could not be found.</value>
-  </data>
-  <data name="SubjectUidNotFound" xml:space="preserve">
-    <value>Subject with Uid [{0}] could not be found.</value>
-  </data>
-  <data name="ViewthisRelationNotAllowed" xml:space="preserve">
-    <value>You are not allowed to view this relationship.</value>
+  <data name="TagUidNotExists" xml:space="preserve">
+    <value>Tag with uid '{0}' does not exists!</value>
   </data>
 </root>

@@ -533,7 +533,7 @@ namespace d360.web.Controllers.V2
                 int _temppageSize;
                 if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value, out _temppageSize))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageSize value provided.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, Validation.InvalidPageSize);
                 }
                 _pageSize = _temppageSize;
             }
@@ -543,7 +543,7 @@ namespace d360.web.Controllers.V2
                 int _temppageNum;
                 if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value, out _temppageNum))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageNum value provided.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, Validation.InvalidPageNum);
                 }
                 _pageNum = _temppageNum;
             }
@@ -553,7 +553,7 @@ namespace d360.web.Controllers.V2
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                 if (!allowedDirections.Contains(order.Trim().ToLower()))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid direction passed in the request.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ActionApiMessages.InvalidDirectionPassed);
                 }
                 _direction = allowedDirections.Contains(order.Trim().ToLower()) ? order : "desc";
             }
@@ -570,7 +570,7 @@ namespace d360.web.Controllers.V2
                                                 "requestedbyname" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter,ActionApiMessages.InvalidOrder);
                 }
                 orderBySql = $" order by {orderByCol} {_direction} ";
             }
@@ -737,7 +737,7 @@ from	[Load] L
                 int _temppageSize;
                 if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value, out _temppageSize))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageSize value provided.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, Validation.InvalidPageSize);
                 }
                 _pageSize = _temppageSize;
             }
@@ -747,7 +747,7 @@ from	[Load] L
                 int _temppageNum;
                 if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value, out _temppageNum))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid pageNum value provided.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, Validation.InvalidPageNum);
                 }
                 _pageNum = _temppageNum;
             }
@@ -757,7 +757,7 @@ from	[Load] L
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                 if (!allowedDirections.Contains(order.Trim().ToLower()))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid direction passed in the request.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ActionApiMessages.InvalidDirectionPassed);
                 }
                 _direction = allowedDirections.Contains(order.Trim().ToLower()) ? order : "desc";
             }
@@ -777,7 +777,7 @@ from	[Load] L
                                                 "column20", "status","statusmessage" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, "Invalid order passed in the request.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ActionApiMessages.InvalidOrder);
                 }
                 orderBySql = $" order by {orderByCol} {_direction} ";
             }

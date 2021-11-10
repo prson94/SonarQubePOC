@@ -24,6 +24,7 @@ using d360.core.entities;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using d360.model.DataAccessLayer;
+using Resources;
 
 namespace d360.web.Controllers.Services
 {
@@ -431,7 +432,7 @@ namespace d360.web.Controllers.Services
 
                 if (config.Count() <= 0)
                 {
-                    return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
+                    return CreateCustomApiError(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
                 }
 
                 var acceptHeaders = Request.Headers.Accept;
@@ -546,7 +547,7 @@ namespace d360.web.Controllers.Services
 
                 if (asset == null)
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound,OthersMessages.ItemNotFound);
                 }
 
                 //process multiselect values
@@ -613,7 +614,7 @@ namespace d360.web.Controllers.Services
             {
                 SendException(r, new Dictionary<string, string>());
 
-                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occurred. Please try your request again at a later time");
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, OthersMessages.ServerErrorOccurred);
             }
         }
 
@@ -635,7 +636,7 @@ namespace d360.web.Controllers.Services
             {
                 if (Request.RequestUri.ToString().Length > 16000)
                 {
-                    return CreateCustomApiError(HttpStatusCode.NotFound, "Request URI must not exceed 16,000 characters.");
+                    return CreateCustomApiError(HttpStatusCode.NotFound, OthersMessages.RequestURINotExceed16Kchar);
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -677,7 +678,7 @@ namespace d360.web.Controllers.Services
 
                 if (config.Count <= 0)
                 {
-                    return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
+                    return CreateCustomApiError(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
                 }
 
                 var maxAge = config[0].MaximumCacheAge;
@@ -725,7 +726,7 @@ namespace d360.web.Controllers.Services
                         }
 
                         if (pageSize > 200)
-                            return CreateCustomApiError(HttpStatusCode.BadRequest, "_pageSize parameter has a maximum supported value of 200.");
+                            return CreateCustomApiError(HttpStatusCode.BadRequest,OthersMessages._PageSizeMax200);
                     }
                 }
 
@@ -746,7 +747,7 @@ namespace d360.web.Controllers.Services
                     }
 
                     if(pageNumber < 1)
-                        return CreateCustomApiError(HttpStatusCode.BadRequest, "_pageNum parameter must be greater than 0.");
+                        return CreateCustomApiError(HttpStatusCode.BadRequest,OthersMessages._PageNumGT0);
                 }
                 var currentPageNumber = pageNumber; //Nees to stay in this location as it records the unchanged current page, that will be used in later page number query string links.
 
@@ -996,7 +997,7 @@ namespace d360.web.Controllers.Services
                 if (filterErrors.Count > 0)
                 {
                     //There are errors parsing the filters. Return an error HTTP status to the caller.                    
-                    return CreateCustomApiError(HttpStatusCode.BadRequest, $"Filter expressions contained the following errors: {string.Join("; ", filterErrors)}.");
+                    return CreateCustomApiError(HttpStatusCode.BadRequest,string.Format(OthersMessages.FilterExpressionErrors, string.Join("; ", filterErrors)));
                 }
 
                 var columnSql = "";
@@ -1439,7 +1440,7 @@ namespace d360.web.Controllers.Services
                         }
                         else if (filter is SearchFilterModel)
                         {
-                            return CreateCustomApiError(HttpStatusCode.BadRequest, $"Search filters are invalid in your filter query parameter: last_modified.");
+                            return CreateCustomApiError(HttpStatusCode.BadRequest,OthersMessages.SearchFilterInvalid);
                         }
 
                         if (!string.IsNullOrEmpty(additionalWhereSql))
@@ -1475,7 +1476,7 @@ namespace d360.web.Controllers.Services
                 {
                     if (arrSort.Count > 0)
                     {
-                        return CreateCustomApiError(HttpStatusCode.BadRequest, "You have invalid fields in your _order query parameter.");
+                        return CreateCustomApiError(HttpStatusCode.BadRequest,OthersMessages.InvalidField_OrderParameter);
                     }
                 }
                 #endregion
@@ -1487,7 +1488,7 @@ namespace d360.web.Controllers.Services
                     {
                         var badFilterFieldNames = string.Join(", ", filters.Select(i => i.FieldName));
 
-                        return CreateCustomApiError(HttpStatusCode.BadRequest, $"You have invalid fields in your filter query parameters: {badFilterFieldNames}.");
+                        return CreateCustomApiError(HttpStatusCode.BadRequest,string.Format(OthersMessages.InvalidFieldFilterParameter,badFilterFieldNames));
                     }
                 }
                 #endregion
@@ -1501,7 +1502,7 @@ namespace d360.web.Controllers.Services
                     {
                         var badSelectFieldNames = string.Join(", ", arrSelect);
 
-                        return CreateCustomApiError(HttpStatusCode.BadRequest, $"You have invalid fields in your select query parameters: {badSelectFieldNames}.");
+                        return CreateCustomApiError(HttpStatusCode.BadRequest,string.Format(OthersMessages.InvalidFieldSelectQueryParameter,badSelectFieldNames));
                     }
                 }
 
@@ -1677,7 +1678,7 @@ namespace d360.web.Controllers.Services
             {
                 SendException(r, new Dictionary<string,string>());
 
-                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occurred. Please try your request again at a later time");
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, OthersMessages.ServerErrorOccurred);
             }
         }
 
@@ -1722,7 +1723,7 @@ namespace d360.web.Controllers.Services
 
                 if (config == null)
                 {
-                    return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
+                    return CreateCustomApiError(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
                 }
 
                 var acceptHeaders = Request.Headers.Accept;
@@ -1761,7 +1762,7 @@ namespace d360.web.Controllers.Services
             }
             catch (Exception)
             {
-                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occurred. Please try your request again at a later time");
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, OthersMessages.ServerErrorOccurred);
             }
         }
         #endregion
@@ -1803,12 +1804,12 @@ namespace d360.web.Controllers.Services
 
                 if (config == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "Endpoint not found.");
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError,OthersMessages.EndPointNotFound);
                 }
             }
             catch (Exception)
             {
-                return Request.CreateResponse(HttpStatusCode.InternalServerError, "The underlying data source is not reachable.");
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, OthersMessages.DatasourceNotReachable);
             }
             finally
             {

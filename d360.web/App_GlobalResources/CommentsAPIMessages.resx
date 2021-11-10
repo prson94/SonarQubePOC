@@ -129,6 +129,9 @@
   <data name="CommentViewPermission" xml:space="preserve">
     <value>You do not have permissions to view comments.</value>
   </data>
+  <data name="ErrorDeletingComment" xml:space="preserve">
+    <value>Error deleting this comment</value>
+  </data>
   <data name="ErrorGetComment" xml:space="preserve">
     <value>Error retrieving comments</value>
   </data>
@@ -152,5 +155,8 @@
   </data>
   <data name="VotePermission" xml:space="preserve">
     <value>You do not have permissions to see voters for this comment.</value>
+  </data>
+  <data name="VotingOnCommentUsingEmoji" xml:space="preserve">
+    <value>Error while voting on the comment using this emoji</value>
   </data>
 </root>

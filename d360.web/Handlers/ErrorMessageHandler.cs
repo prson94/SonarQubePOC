@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using Resources;
 
 namespace d360.web.Handlers
 {
@@ -52,7 +53,7 @@ namespace d360.web.Handlers
                             var responseMetadata = new ErrorResponse
                             {
                                 message = errorMessage,
-                                title = "Bad request submitted"
+                                title = OthersMessages.BadRequestSubmitted
                             };
                             var result = request.CreateResponse(response.StatusCode, responseMetadata);
                             return result;
@@ -62,7 +63,7 @@ namespace d360.web.Handlers
                             var responseMetadata = new ErrorResponse
                             {
                                 message = (responseContent as Exception).Message,
-                                title = "Bad request submitted"
+                                title = OthersMessages.BadRequestSubmitted
                             };
                             return request.CreateResponse(response.StatusCode, responseMetadata);
                         }
@@ -82,7 +83,7 @@ namespace d360.web.Handlers
                             var responseMetadata = new ErrorResponse
                             {
                                 message = errorMessage,
-                                title = "Bad request submitted"
+                                title = OthersMessages.BadRequestSubmitted
                             };
                             return request.CreateResponse(response.StatusCode, responseMetadata);                            
                         }

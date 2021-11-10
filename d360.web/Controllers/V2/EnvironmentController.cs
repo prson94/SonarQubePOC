@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
+using static d360.model.CommunityContext;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -101,7 +103,7 @@ namespace d360.web.Controllers.V2
                             break;
                     }
 
-                    return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "Rebuild request received and accepted.", id = "" });
+                    return Request.CreateResponse(HttpStatusCode.Created, new { type = ApiMessages.confirm, title = ApiMessages.Success, action =ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" });
                 }
                 else
                 {

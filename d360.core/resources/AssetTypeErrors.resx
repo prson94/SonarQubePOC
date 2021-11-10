@@ -366,4 +366,22 @@
   <data name="InvalidRelationshipFieldType" xml:space="preserve">
     <value>Invalid or deleted relationship type encountered on Relationship field with friendly name "{FriendlyName}".</value>
   </data>
+  <data name="InvalidValueincludedashboardflag" xml:space="preserve">
+    <value>Invalid value for parameter [includedashboardflag]</value>
+  </data>
+  <data name="UnhandledError" xml:space="preserve">
+    <value>An unhandled error occured. Please try your request again.</value>
+  </data>
+  <data name="TypeNotFound" xml:space="preserve">
+    <value>Type not found.</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>Invalid User</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="DuplicateItem" xml:space="preserve">
+    <value>Duplicate items found in request</value>
+  </data>
 </root>

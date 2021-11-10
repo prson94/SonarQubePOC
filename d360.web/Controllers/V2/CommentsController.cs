@@ -119,7 +119,7 @@ namespace d360.web.Controllers.V2
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error while voting on the comment using this emoji",
+                    CommentsAPIMessages.VotingOnCommentUsingEmoji,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "AddVote" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
                 );
@@ -163,7 +163,7 @@ namespace d360.web.Controllers.V2
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error deleting this comment",
+                    CommentsAPIMessages.ErrorDeletingComment,
                     messages,
                     new Dictionary<string, string> { { "Method Name", "DeleteComment" }, { "CommentUid", commentUid.ToString() } }
                 );

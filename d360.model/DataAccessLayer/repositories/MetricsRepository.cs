@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.Data;
 using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
+using d360.core.resources;
 using d360.core.exceptions;
 using System.Runtime.CompilerServices;
 using Microsoft.SqlServer.Server;
@@ -276,17 +277,17 @@ namespace d360.model.DataAccessLayer
 
             var operatorInfos = Operator.After.GetAsList();
 
-            var errorTitle = "Error updating measure";
+            var errorTitle = MetricsErrors.ErrorUpdatingMeasure;
             if (model == null)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You are have provided a null metric.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.MetricNotNull);
             }
 
             isNew = (model.Uid == null || model.Uid == Guid.Empty);
 
             if (isNew)
             {
-                errorTitle = "Error creating measure";
+                errorTitle = MetricsErrors.ErrorCreatingMeasure;
             }
 
             if (model.Uid != null && model.Uid != Guid.Empty)
@@ -295,7 +296,7 @@ namespace d360.model.DataAccessLayer
                 metricAsset = Company.GetByUid<MetricAsset>(model.Uid, i => i.Allocation);
                 if (metricAsset == null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.NotFound, errorTitle, $"Metric with UID {model.Uid} does not exist.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, errorTitle, string.Format(MetricsErrors.MetricUidNotExists, model.Uid.ToString()));
                 }
                 Guid assetTypeId = metricAsset.Allocation.AssetTypeUid;
                 targetAssetType = Company.Filter<AssetType>(x => x.uid == assetTypeId).SingleOrDefault();
@@ -313,7 +314,7 @@ namespace d360.model.DataAccessLayer
                 }
                 else
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide a valid AllocationUid.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.AllocationUidInvalid);
                 }
             }
 
@@ -335,7 +336,7 @@ namespace d360.model.DataAccessLayer
                 }
                 if (definitionJsonToCheck.Length > 4000)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Definition must not exceed 4000 characters.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.DefinitionNotExceed4000);
                 }
                 definitionJsonToCheck = null;
             }
@@ -350,11 +351,11 @@ namespace d360.model.DataAccessLayer
                 {
                     if (model.Definition.DataQuality != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "A measure belonging to an externally calculated score may not have a DataQuality definition.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.DataQualityMustNotExternalCalc);
                     }
                     else if (model.Definition.Governance != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "A measure belonging to an externally calculated score may not have a Governance definition.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.GovernanceMustNotExternalCalc);
                     }
                 }
             }
@@ -362,11 +363,11 @@ namespace d360.model.DataAccessLayer
             {
                 if (model.Weight <= 0 || model.Weight > 1)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Weight must be a value between 0 and 1");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.WeightRangeCheck);
                 }
                 else if (decimal.Round(model.Weight, 2) != model.Weight)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Weight can have a maximum of 2 decimal places.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.WeightDecimalCheck);
                 }
             }
 
@@ -450,18 +451,17 @@ namespace d360.model.DataAccessLayer
                 var valueCount = values != null ? values.Count : 0;
                 if (valueCount < op.MinimumValueCount || valueCount > op.MaximumValueCount)
                 {
-                    error = $"The operator used on your {checkType} does not support {valueCount} values. You must ";
                     if (op.MinimumValueCount == 0 && op.MaximumValueCount == 0)
                     {
-                        error += "not provide any values for this operator.";
+                        error = string.Format(MetricsErrors.OperatorNotAcceptAnyValue, checkType, valueCount.ToString());
                     }
                     else if (op.MinimumValueCount == op.MaximumValueCount)
                     {
-                        error += $"provide exactly {op.MaximumValueCount} value(s) for this operator.";
+                        error = string.Format(MetricsErrors.OperatorAcceptExactValue, checkType, valueCount.ToString(), op.MaximumValueCount.ToString());
                     }
                     else
                     {
-                        error += $"provide between {op.MinimumValueCount} and {op.MaximumValueCount} values for this operator.";
+                        error = string.Format(MetricsErrors.OperatorAcceptRangeValue, checkType, valueCount.ToString(), op.MinimumValueCount.ToString(), op.MaximumValueCount.ToString());
                     }
                 }
                 return error;
@@ -474,13 +474,13 @@ namespace d360.model.DataAccessLayer
                 var checkOperatorInfo = op.GetAsInfo();
                 if (checkOperatorInfo == null)
                 {
-                    status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance {check.GetDisplayName()} does not support the selected operator.");
+                    status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.GovernanceNotSupportOperator, check.GetDisplayName()));
                 }
                 else
                 {
                     if (!checkOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == check))
                     {
-                        status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance {check.GetDisplayName()} does not support the selected operator.");
+                        status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.GovernanceNotSupportOperator, check.GetDisplayName()));
                     }
                 }
 
@@ -492,7 +492,7 @@ namespace d360.model.DataAccessLayer
             {
                 if (model.Definition == null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Definition object property must not be empty.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.DefinitionObjectPropertyNotEmpty);
                 }
 
                 switch (model.Allocation.ScoreType)
@@ -503,21 +503,21 @@ namespace d360.model.DataAccessLayer
                         var dq = model.Definition.DataQuality;
                         if (dq == null)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide the DataQuality object property under Definition.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ProvideDataQualityUnderDefinition);
                         }
                         if (model.Definition.Governance != null)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not provide a Governance object property under Definition.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.NotProvideGovernanceUnderDefinition);
                         }
                         if (model.Definition.DataQuality.ResultPathUid == Guid.Empty)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "ResultPathUid may not be an empty identifier.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ResultPathUidNotEmpty);
                         }
                         else
                         {
                             if (!Company.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.RollupPath where Uid = @ResultPathUid and AssetTypeID = @ID and [State] = 1", new { model.Definition.DataQuality.ResultPathUid, targetAssetType.ID }).Single())
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"ResultPathUid with the specified identifier {model.Definition.DataQuality.ResultPathUid} does not exist or does not correspond to the asset type you are scoring.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ResultPathUidNotValid, model.Definition.DataQuality.ResultPathUid.ToString()));
                             }
                         }
                         if (model.Allocation.IsThresholdBased)
@@ -526,19 +526,19 @@ namespace d360.model.DataAccessLayer
                             {
                                 if (model.Threshold <= 0 || model.Threshold > 1)
                                 {
-                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Threshold must be a value between 0 and 1");
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdRangeCheck);
                                 }
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Because the score definition is threshold-based, you must provide a valid Threshold between 0 and 1.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdValidValue);
                             }
                         }
                         else
                         {
                             if (model.Threshold.HasValue)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based score definition.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle,MetricsErrors.ProvideValueForNotThresholdBasedScoring);
                             }
                         }
                         if (dq.Filters != null)
@@ -547,12 +547,12 @@ namespace d360.model.DataAccessLayer
                             {
                                 if (dq.Filters.Any(f => f.AssetTypeUid == Guid.Empty))
                                 {
-                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide valid (non-empty) asset type identifiers when using Rule Result Filters.");
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ValidAssetTypeUidWhenRuleResultFilterUse);
                                 }
 
                                 if (dq.Filters.Any(f => string.IsNullOrEmpty(f.FieldTypeName)))
                                 {
-                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide valid (non-empty) field names (API Name of the field definition) when using Rule Result Filters.");
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ValidApiFieldNameWhenRuleResultFilterUse);
                                 }
 
                                 var dqFilterFieldTypes = Company.Query<dynamic>(@"
@@ -580,16 +580,16 @@ from	metrics.RollupPath P
                                         if (dqFilterOperatorInfo == null)
                                         {
                                             isSuccess = false;
-                                            dqFilterErrorMessage += $"A DataQuality filter uses an invalid operator. ";
+                                            dqFilterErrorMessage += MetricsErrors.DataQualityInvalidOperator;
                                         }
                                         else
                                         {
                                             if (!dqFilterOperatorInfo.AllowedDataTypes.Any(dt => dt.Name == dqFilterFieldType.Type))
                                             {
                                                 isSuccess = false;
-                                                dqFilterErrorMessage += $"A DataQuality filter uses an operator ({dqFilterOperatorInfo.Name}) that is not valid for fields with a data type of {dqFilterFieldType.Type}. ";
+                                                dqFilterErrorMessage += string.Format(MetricsErrors.DataQualityInvalidOperatorForDataType, dqFilterOperatorInfo.Name, dqFilterFieldType.Type);
                                             }
-                                            var dqValueCountErrorMessage = checkValidValuesCount(f.Values, dqFilterOperatorInfo, "Data Quality Result Filter");
+                                            var dqValueCountErrorMessage = checkValidValuesCount(f.Values, dqFilterOperatorInfo, MetricsErrors.DataQualityResultFilter);
                                             if (!string.IsNullOrEmpty(dqValueCountErrorMessage))
                                             {
                                                 isSuccess = false;
@@ -601,13 +601,13 @@ from	metrics.RollupPath P
                                         if (!dqValuesValidForType)
                                         {
                                             isSuccess = false;
-                                            dqFilterErrorMessage += $"One or more values used on your DataQuality filters are not supported by the data type ({dqFilterFieldType.Type}) of the referenced field. ";
+                                            dqFilterErrorMessage += string.Format(MetricsErrors.OneMoreValueDataQualityNotSupportDataType, dqFilterFieldType.Type);
                                         }
                                     }
                                     else
                                     {
                                         isSuccess = false;
-                                        dqFilterErrorMessage += "You have referenced an invalid field as part of your DataQuality filters, either because it was not found or is using an improper operator.";
+                                        dqFilterErrorMessage += MetricsErrors.ReferInvalidFieldDataQualityFilters;
                                     }
 
 
@@ -628,11 +628,11 @@ from	metrics.RollupPath P
                         var gov = model.Definition.Governance;
                         if (gov == null)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide the Governance object property under Definition.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ProvideGovernanceUnderDefinition);
                         }
                         if (model.Definition.DataQuality != null)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not provide a DataQuality object property under Definition.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.NotProvideDataQualityUnderDefinition);
                         }
                         var checkObjectCorrespondsToCheckErrorMessage = gov.ValidateCheckObjectCorrespondsToCheck();
                         if (!string.IsNullOrEmpty(checkObjectCorrespondsToCheckErrorMessage))
@@ -644,7 +644,7 @@ from	metrics.RollupPath P
                         {
                             if (!string.IsNullOrEmpty(gov.External.Instructions) && gov.External.Instructions.Length > 500)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error " + ((isNew) ? "adding" : "updating") + " metric", "Instructions for External check cannot be longer than 500 characters.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, ((isNew) ? MetricsErrors.Erroraddingmetric : MetricsErrors.Errorupdatingmetric), MetricsErrors.InstrunctionExternalCheckMax500Char);
                             }
                         }
                         else if (gov.Field != null)
@@ -652,7 +652,7 @@ from	metrics.RollupPath P
                             var governanceCheckFieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == targetAssetType.ID && x.Name == gov.Field.FieldTypeName);
                             if (governanceCheckFieldType == null)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The field type name ({gov.Field.FieldTypeName}) used on your Governance Field Check does not exist on this asset type.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.InvalidFieldTypeGovernanceFieldCheck, gov.Field.FieldTypeName));
                             }
 
                             var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Field.Operator, gov.Check);
@@ -664,10 +664,10 @@ from	metrics.RollupPath P
                             var operatorInfo = gov.Field.Operator.GetAsInfo();
                             if (!operatorInfo.AllowedDataTypes.Any(t => t.Name == governanceCheckFieldType.Type))
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The field type name ({model.Definition.Governance.Field.FieldTypeName}) used on your Governance Field Check does not support the selected operator.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.InvalidOperatorGovernanceFieldCheck, model.Definition.Governance.Field.FieldTypeName));
                             }
 
-                            var governanceFieldCheckValueCountErrorMessage = checkValidValuesCount(gov.Field.Values, operatorInfo, "Governance Field Check");
+                            var governanceFieldCheckValueCountErrorMessage = checkValidValuesCount(gov.Field.Values, operatorInfo, MetricsErrors.GovernanceFieldCheck);
                             if (!string.IsNullOrEmpty(governanceFieldCheckValueCountErrorMessage))
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, governanceFieldCheckValueCountErrorMessage);
@@ -676,7 +676,7 @@ from	metrics.RollupPath P
                             var governanceFieldCheckValuesValidForType = checkValidValuesByDataType(gov.Field.Values, governanceCheckFieldType.Type, governanceCheckFieldType.LookupObjectType, governanceCheckFieldType.LookupObjectID);
                             if (!governanceFieldCheckValuesValidForType)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your Governance Field Check are not supported by the data type ({governanceCheckFieldType.Type}) of the referenced field.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.OneMoreValueGovernanceNotSupportDataType, governanceCheckFieldType.Type));
                             }
                         }
                         else if (gov.Owner != null)
@@ -691,7 +691,7 @@ from	metrics.RollupPath P
                                                                             ).Any();
                             if (!governanceCheckResponsibilityTypeExists)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Owner Check does not correspond to a known responsibility type.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.UidGovernanceOwnerCheck);
                             }
 
                             var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Owner.Operator, gov.Check);
@@ -711,7 +711,7 @@ from	metrics.RollupPath P
                                                                     ).Any();
                             if (!governanceCheckPredicateExists)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Predicate Check does not correspond to a known predicate.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.UidGovernancePredicateCheck);
                             }
 
                             var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Predicate.Operator, gov.Check);
@@ -730,7 +730,7 @@ from	metrics.RollupPath P
                                                                         ).Any();
                             if (!governanceCheckIntersectTypeExists)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Relation Check does not correspond to a known relationship type.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.UidGovernanceRelationCheck);
                             }
 
                             var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Relation.Operator, gov.Check);
@@ -739,7 +739,7 @@ from	metrics.RollupPath P
                                 return operatorCheckStatus;
                             }
                             var operatorInfo = gov.Relation.Operator.GetAsInfo();
-                            var relationCheckValueCountErrorMessage = checkValidValuesCount(gov.Relation.Values, operatorInfo, "Governance Relation Check");
+                            var relationCheckValueCountErrorMessage = checkValidValuesCount(gov.Relation.Values, operatorInfo, MetricsErrors.GovernanceRelationCheck);
                             if (!string.IsNullOrEmpty(relationCheckValueCountErrorMessage))
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, relationCheckValueCountErrorMessage);
@@ -759,14 +759,14 @@ from	metrics.RollupPath P
 
                             if (!governanceRelationCheckValuesValidForType)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your Governance Relation Check are not supported. All values must correspond to existing asset Uids.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.OneMoreValueGovernanceRelationNotSupport);
                             }
                         }
 
                         #endregion
                         break;
                     default:
-                        throw new ArgumentException(string.Format("Allocation ScoreType not recognised.  Value {0}", model.Allocation.ScoreType));
+                        throw new ArgumentException(string.Format(MetricsErrors.AllocationScoreTypeNotRecognised, model.Allocation.ScoreType));
                 }
             }
 
@@ -778,26 +778,26 @@ from	metrics.RollupPath P
                 foreach (var group in model.ConditionGroups)
                 {
                     #region Condition group validation
-                    var groupErrorPrefix = $"Condition group in position {group.Position}";
+
                     if (model.Allocation.IsThresholdBased)
                     {
                         if (group.Threshold.HasValue)
                         {
                             if (group.Threshold <= 0 || group.Threshold > 1)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"{groupErrorPrefix} must contain a Threshold value between 0 and 1");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ConditionGroupThresholdValue, group.Position.ToString()));
                             }
                         }
                         else
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Because the score definition is threshold-based, {groupErrorPrefix} must contain a valid Threshold between 0 and 1.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ScoreDefinitionThresholdBased, group.Position.ToString()));
                         }
                     }
                     else
                     {
                         if (group.Threshold.HasValue)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"{groupErrorPrefix} must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based score definition.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ScoreDefinitionNotThresholdBased, group.Position.ToString()));
                         }
                     }
                     #endregion
@@ -819,12 +819,12 @@ from	metrics.RollupPath P
 
                         if (fieldType == null)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "FieldType does not exist!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.FieldTypeNotFound);
                         }
 
                         if (targetAssetType.Object != fieldType.Object || targetAssetType.ObjectID != fieldType.ObjectID)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Invalid FieldType for this asset!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.InvalidFieldTypeAsset);
                         }
 
                         condition.ConditionFieldTypeID = fieldType.ID;
@@ -832,16 +832,16 @@ from	metrics.RollupPath P
                         var operatorInfo = condition.Operator.GetAsInfo();
                         if (!operatorInfo.AllowedDataTypes.Any(dt => dt.Name == fieldType.Type))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"A condition uses an operator ({operatorInfo.Name}) that is not valid for fields with a data type of {fieldType.Type}. ");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ConditionOperatorNotValid, operatorInfo.Name, fieldType.Type));
                         }
 
                         var conditionValuesValidForType = checkValidValuesByDataType(condition.Values, fieldType.Type, fieldType.LookupObjectType, fieldType.LookupObjectID);
                         if (!conditionValuesValidForType)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your condition is not supported by the data type ({fieldType.Type}) of the referenced field. ");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ValueNotSupportByDataType, fieldType.Type));
                         }
 
-                        var conditionValueCountErrorMessage = checkValidValuesCount(condition.Values, operatorInfo, "Condition Value");
+                        var conditionValueCountErrorMessage = checkValidValuesCount(condition.Values, operatorInfo, MetricsErrors.ConditionValue);
                         if (!string.IsNullOrEmpty(conditionValueCountErrorMessage))
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, conditionValueCountErrorMessage);
@@ -852,7 +852,7 @@ from	metrics.RollupPath P
 
             if (!string.IsNullOrEmpty(model.Name) && model.Name.Length > 250)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error " + ((isNew) ? "adding" : "updating") + " metric", "Name cannot be longer than 250 characters.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ((isNew) ? MetricsErrors.Erroraddingmetric : MetricsErrors.Errorupdatingmetric) , MetricsErrors.NameMax250Char);
             }
 
             int metricExistsCount = 0;
@@ -865,8 +865,8 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle,
                     (model.ParentUid.HasValue && model.ParentUid != Guid.Empty) ?
-                    "You may not add a metric with the same name under the same grouping." :
-                    $"Measure with name '{model.Name}' already exists.");
+                    MetricsErrors.DuplicateMetricSameGroup :
+                    string.Format(MetricsErrors.MeasureNameAlreadyExists, model.Name));
             }
 
             if (Company.Connection.State != ConnectionState.Open)
@@ -904,7 +904,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
                             if (!parentExists)
                             {
-                                throw new WorkStatusException(HttpStatusCode.NotFound, "Parent metric not found.");
+                                throw new WorkStatusException(HttpStatusCode.NotFound, MetricsErrors.ParentMetricNotFound);
                             }
 
                             metricAsset.ParentUid = model.ParentUid;
@@ -931,13 +931,13 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                         // If results, then you cannot change. 
                         if (existingAllVersionsResultCount > 0 && model.IsGroup && !metricAsset.IsGroup)
                         {
-                            throw new WorkStatusException(HttpStatusCode.BadRequest, $"You may not convert this metric to a grouping as there are results already associated with it.");
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsErrors.ErrorConvertMetricToGroup);
                         }
 
                         // If has child metrics, you cannot change.
                         if (childMetricCount > 0 && !model.IsGroup)
                         {
-                            throw new WorkStatusException(HttpStatusCode.BadRequest, $"You may not convert this grouping to a metric as there are child metrics already associated with it.");
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsErrors.ErrorConvertGroupToMetricChildExists);
                         }
 
                         // If made it past above, then we can save the grouping change.
@@ -962,7 +962,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     {
                         if (maxEffectiveDate.Value > effectiveDate.Date)
                         {
-                            throw new WorkStatusException(HttpStatusCode.BadRequest, $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(MetricsErrors.MetricBackDateEntryNotAllowed, maxEffectiveDate.Value.ToShortDateString()));
                         }
                     }
 
@@ -1112,22 +1112,22 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         {
                             if (metricAssetVersion.Weight != model.Weight)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the weight of this metric without also altering its effective date.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ErrorWeightalter);
                             }
 
                             if (metricAssetVersion.MatchConditionsOnly != model.MatchConditionsOnly)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the condition type of this metric without also altering its effective date.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ErrorConditionTypeAlter);
                             }
 
                             if (existingDefinitionHash != newDefinitionHash)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the definition of this metric without also altering its effective date.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ErrorDefinitionAlter);
                             }
 
                             if (newConditionHash != existingConditionHash)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the conditions of this metric without also altering its effective date.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ErrorConditionAlter);
                             }
                         }
 
@@ -1539,7 +1539,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
                     catch
                     {
                     }
-                    return new WorkHttpStatus(HttpStatusCode.InternalServerError, errorTitle, $"An unhandled error occured. Please try your request again.");
+                    return new WorkHttpStatus(HttpStatusCode.InternalServerError, errorTitle, AssetTypeErrors.UnhandledError);
                 }
             }
 
@@ -2563,29 +2563,29 @@ offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
             if (measure == null)
             {
-                throw new GenericException(HttpStatusCode.NotFound, $"Measure with Uid of {measureUid} could not be found.");
+                throw new GenericException(HttpStatusCode.NotFound, string.Format(MetricsErrors.MeasureUidNotFound, measureUid.ToString()));
             }
 
             if (measure.AllocationUid != allocationUid)
             {
-                throw new GenericException(HttpStatusCode.NotFound, $"Measure does not belong to allocation with Uid of {allocationUid}.");
+                throw new GenericException(HttpStatusCode.NotFound, string.Format(MetricsErrors.MeasureNotAllocationUid, allocationUid.ToString()));
             }
 
             if (measure.Allocation == null)
             {
-                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not belong to a valid Allocation, indicating an invalid measure.");
+                throw new GenericException(HttpStatusCode.Conflict, MetricsErrors.MeasureInvalidAllocation);
             }
 
             if (measure.Versions == null)
             {
-                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
+                throw new GenericException(HttpStatusCode.Conflict, MetricsErrors.MeasureWithNoVersion);
             }
 
             var latestVersion = measure.Versions.OrderByDescending(v => v.EffectiveDate).FirstOrDefault();
 
             if (latestVersion == null)
             {
-                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
+                throw new GenericException(HttpStatusCode.Conflict, MetricsErrors.MeasureWithNoVersion);
             }
 
             var startedOnLimit = DateTime.UtcNow.AddHours(-2);
@@ -2593,7 +2593,7 @@ offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
             if (existingExecutions)
             {
-                throw new GenericException(HttpStatusCode.BadRequest, $"Measure is currently being recalculated. Please wait until we have completed this action then try again.");
+                throw new GenericException(HttpStatusCode.BadRequest, MetricsErrors.MeasureRecalculated);
             }
 
             return Company.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);

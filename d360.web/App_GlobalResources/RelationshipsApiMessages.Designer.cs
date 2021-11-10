@@ -250,6 +250,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Relationship successfully removed.
+        /// </summary>
+        public static string RelationshipSucessfullyRemoved {
+            get {
+                return ResourceManager.GetString("RelationshipSucessfullyRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may only provide a maximum of {0} relationship types in this request..
         /// </summary>
         public static string RelationshipTypeLimit {

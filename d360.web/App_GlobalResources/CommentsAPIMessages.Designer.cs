@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error deleting this comment.
+        /// </summary>
+        internal static string ErrorDeletingComment {
+            get {
+                return ResourceManager.GetString("ErrorDeletingComment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error retrieving comments.
         /// </summary>
         internal static string ErrorGetComment {
@@ -165,6 +174,15 @@ namespace Resources {
         internal static string VotePermission {
             get {
                 return ResourceManager.GetString("VotePermission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while voting on the comment using this emoji.
+        /// </summary>
+        internal static string VotingOnCommentUsingEmoji {
+            get {
+                return ResourceManager.GetString("VotingOnCommentUsingEmoji", resourceCulture);
             }
         }
     }

@@ -428,6 +428,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MetricsApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\OthersMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>OthersMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\RelationshipsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -865,6 +870,11 @@
     <EmbeddedResource Include="App_GlobalResources\MetricsApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>MetricsApiMessages.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\OthersMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>OthersMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.resx">

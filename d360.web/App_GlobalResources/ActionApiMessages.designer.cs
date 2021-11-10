@@ -259,11 +259,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid direction passed in the request..
+        /// </summary>
+        public static string InvalidDirectionPassed {
+            get {
+                return ResourceManager.GetString("InvalidDirectionPassed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Limit To Active Workflows value provided is not valid..
         /// </summary>
         public static string InvalidLimitActiveWorkflow {
             get {
                 return ResourceManager.GetString("InvalidLimitActiveWorkflow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid order passed in the request..
+        /// </summary>
+        public static string InvalidOrder {
+            get {
+                return ResourceManager.GetString("InvalidOrder", resourceCulture);
             }
         }
         

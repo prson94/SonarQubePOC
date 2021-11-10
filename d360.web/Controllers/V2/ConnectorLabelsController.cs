@@ -475,7 +475,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
             }
 
             try

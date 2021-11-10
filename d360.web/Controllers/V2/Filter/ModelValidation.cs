@@ -4,6 +4,7 @@ using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using System.Linq;
 using d360.web.Models;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -28,8 +29,8 @@ namespace d360.web.Controllers.V2
 
                     if (isJsonParsingError)
                     {
-                        var errorTitle = "Invalid JSON Message";
-                        var errorMessage = "You have not provided a valid JSON structure for this request.";
+                        var errorTitle = ApiMessages.InvalidJson;
+                        var errorMessage = ApiMessages.JSONValidMessage;
 
                         try
                         {
@@ -45,7 +46,7 @@ namespace d360.web.Controllers.V2
 
                             if (errors.Count > 0)
                             {
-                                errorTitle = "Invalid Enumeration Value in JSON";
+                                errorTitle = ApiMessages.InvalidEnumValueInJson;
                                 errorMessage = string.Join("; ", errors.Select(e => $"{e.Field} has error: {e.Message}"));
                             }
                         }

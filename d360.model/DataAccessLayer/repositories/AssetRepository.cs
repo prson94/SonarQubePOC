@@ -175,7 +175,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid value for parameter [includedashboardflag]", includeString);
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
                     }
                 }
 

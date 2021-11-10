@@ -169,6 +169,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate items found in request.
+        /// </summary>
+        public static string DuplicateItem {
+            get {
+                return ResourceManager.GetString("DuplicateItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate Name Found.
         /// </summary>
         public static string DuplicateNameFound {
@@ -457,6 +466,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid User.
+        /// </summary>
+        public static string InvalidUser {
+            get {
+                return ResourceManager.GetString("InvalidUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter [autoDisplayDescription].
         /// </summary>
         public static string InvalidValueautoDisplayDescription {
@@ -489,6 +507,15 @@ namespace d360.core.resources {
         public static string InvalidValueHierachical {
             get {
                 return ResourceManager.GetString("InvalidValueHierachical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [includedashboardflag].
+        /// </summary>
+        public static string InvalidValueincludedashboardflag {
+            get {
+                return ResourceManager.GetString("InvalidValueincludedashboardflag", resourceCulture);
             }
         }
         
@@ -718,6 +745,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Success.
+        /// </summary>
+        public static string Success {
+            get {
+                return ResourceManager.GetString("Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Wrong Organization.
         /// </summary>
         public static string TitleWrongOrganization {
@@ -745,11 +781,29 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type not found..
+        /// </summary>
+        public static string TypeNotFound {
+            get {
+                return ResourceManager.GetString("TypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not parse value of _includeFields.
         /// </summary>
         public static string UnableParse_IncludeFields {
             get {
                 return ResourceManager.GetString("UnableParse_IncludeFields", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unhandled error occured. Please try your request again..
+        /// </summary>
+        public static string UnhandledError {
+            get {
+                return ResourceManager.GetString("UnhandledError", resourceCulture);
             }
         }
         
