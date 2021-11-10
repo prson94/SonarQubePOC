@@ -648,7 +648,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     private onEditorChange(event: any) {
         if (event === null || event.field === null)
-            return;
+            {return;}
 
         let field = event.field;
 
