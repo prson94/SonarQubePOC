@@ -1,5 +1,8 @@
-﻿<li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" 
-    (mouseenter)="show(item)" (click)="navigateToUrl(url)" style="cursor: pointer;">
+﻿<li #item 
+    [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}"
+    title="{{title}}" 
+    (mouseenter)="show(item)" (click)="navigateToUrl(url)" 
+    style="cursor: pointer;">
     <div class="menu-category-box">
         <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
         <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
@@ -9,8 +12,9 @@
             <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
         </div>
     </div>
-    <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" 
-        class="menu-child megamenu-panel" title="" 
+    <div *ngIf="menu?.NavigationItems?.length > 0; else emptyHintContainer" 
+        class="menu-child megamenu-panel" 
+        title="" 
         [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" 
         (click)="stopNavigation($event)">
         <ng-template #defaultPanelContent>
@@ -26,4 +30,13 @@
         <ng-container [ngTemplateOutlet]="customPanelContent || defaultPanelContent">            
         </ng-container>
     </div>
+
+    <ng-template #emptyHintContainer>
+        <div *ngIf="emptyHint && menu.isActiveItem" 
+            class="menu-child megamenu-panel empty-hint-panel"
+            title="">
+            <ng-container [ngTemplateOutlet]="emptyHint">            
+            </ng-container>
+        </div>
+    </ng-template>
 </li>       

@@ -299,20 +299,17 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     changeActiveMenu($event) {
         this.isMenuActive = false;
-
-        if ($event) {
-            [...Array.from(this.menuRefs), ...Array.from(this.favoritesMenuRefs)].forEach((item) => {
-                if ($event.item.title != item.title) {
-                    if (item.menu)
-                        item.menu.isActiveItem = false;
-                } else {
-                    if (item.menu && item.menu.NavigationItems && item.menu.NavigationItems.length > 0) { 
-                        item.menu.isActiveItem = true;
-                        this.isMenuActive = true;
-                    }
+        [...Array.from(this.menuRefs), ...Array.from(this.favoritesMenuRefs)].forEach((item) => {
+            if ($event?.item?.title != item.title) {
+                if (item.menu)
+                    item.menu.isActiveItem = false;
+            } else {
+                if (item.menu) {
+                    item.menu.isActiveItem = true;
+                    this.isMenuActive = true;
                 }
-            });
-        }
+            }
+        });
         this.ref.detectChanges();
     }
 

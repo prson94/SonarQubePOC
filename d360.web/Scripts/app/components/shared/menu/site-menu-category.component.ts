@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'd3s-site-menu-category',
     templateUrl: 'site-menu-category.component.html',
+    styleUrls: ['./site-menu-category.component.less'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -21,6 +22,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
     @Input() countData: any[];
     @Input() isActive: boolean = false;
     @Input() customPanelContent: TemplateRef<any>;
+    @Input() emptyHint: TemplateRef<any>;
 
     @Output() clearClick = new EventEmitter();
     @Output() activeItemChanged = new EventEmitter();;
