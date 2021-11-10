@@ -59,6 +59,8 @@
     <Compile Include="Core\Helpers.cs" />
     <Compile Include="Core\MessagesHelper.cs" />
     <Compile Include="Core\SqlConstants.cs" />
+    <Compile Include="ExtensionsTests\DynamicHelperTests.cs" />
+    <Compile Include="ExtensionsTests\DynamicQueryableTests.cs" />
     <Compile Include="FilterParserTests\ComplexFieldsFilteringTests.cs" />
     <Compile Include="FilterParserTests\FieldHelpersTests.cs" />
     <Compile Include="ExtensionsTests\HttpRequestMessageExtensionsTests.cs" />
@@ -135,9 +137,7 @@
       <Name>d360.web</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ExtensionTests\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <PackageReference Include="AutoFixture">
       <Version>4.17.0</Version>

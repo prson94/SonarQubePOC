@@ -71,55 +71,6 @@ namespace d360.model
             return dataTable.AsTableValuedParameter(typeName);
         }
 
-        public static IQueryable Take(this IQueryable source, int count)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-            return source.Provider.CreateQuery(
-                Expression.Call(
-                    typeof(Queryable), "Take",
-                    new[] { source.ElementType },
-                    source.Expression, Expression.Constant(count)));
-        }
-
-        public static IQueryable Skip(this IQueryable source, int count)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-            return source.Provider.CreateQuery(
-                Expression.Call(
-                    typeof(Queryable), "Skip",
-                    new[] { source.ElementType },
-                    source.Expression, Expression.Constant(count)));
-        }
-
-        public static bool Any(this IQueryable source)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-            return (bool)source.Provider.Execute(
-                Expression.Call(
-                    typeof(Queryable), "Any",
-                    new[] { source.ElementType }, source.Expression));
-        }
-
-        public static int Count(this IQueryable source)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-            return (int)source.Provider.Execute(
-                Expression.Call(
-                    typeof(Queryable), "Count",
-                    new[] { source.ElementType }, source.Expression));
-        }
     }
 
     #endregion
@@ -146,16 +97,6 @@ namespace d360.model
         public static bool IsSimpleType(this Type type)
         {
             return type.IsPrimitive || _writeTypes.Contains(type);
-        }
-
-        /// <summary>
-        /// Converts the specified dynamic object to XML.
-        /// </summary>
-        /// <param name="dynamicObject">The dynamic object.</param>
-        /// <returns>Returns an Xml representation of the dynamic object.</returns>
-        public static XElement ConvertToXml(dynamic dynamicObject)
-        {
-            return ConvertToXml(dynamicObject, null);
         }
 
         /// <summary>
@@ -218,18 +159,6 @@ namespace d360.model
             }
 
             return ret;
-        }
-
-        /// <summary>
-        /// Generates an XML string from the dynamic object.
-        /// </summary>
-        /// <param name="dynamicObject">The dynamic object.</param>
-        /// <returns>Returns an XML string.</returns>
-        public static string ToXmlString(dynamic dynamicObject)
-        {
-            XElement xml = DynamicHelper.ConvertToXml(dynamicObject);
-
-            return xml.ToString();
         }
 
         /// <summary>
