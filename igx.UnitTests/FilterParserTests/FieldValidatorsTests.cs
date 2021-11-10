@@ -34,21 +34,6 @@ namespace igx.UnitTests.FilterExpressionTests
             Assert.True(test.UpdatedValue == null);
         }
 
-
-        [Theory]
-        [InlineData(1, 1)]
-        [InlineData(1.124, 1.124)]
-        [InlineData(-800, -800)]
-        [InlineData("500", 500)]
-        [InlineData(-15.5, -15.5)]
-        public void DecimalFieldValidator(object value, double expectedValue)
-        {
-            var validator = new DecimalFieldValidator();
-            var test = validator.CheckValue(value, "", "");
-            Assert.True(test.Status);
-            Assert.True(test.UpdatedValue.ToString() == expectedValue.ToString());
-        }
-
         [Theory]
         [InlineData("text")]
         [InlineData("'15'")]

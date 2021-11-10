@@ -106,6 +106,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ApplicationId length cannot exceed 200 characters.
+        /// </summary>
+        public static string ApplicationIdMaxLengthViolated {
+            get {
+                return ResourceManager.GetString("ApplicationIdMaxLengthViolated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset Not found.
         /// </summary>
         public static string AssetNotfound {

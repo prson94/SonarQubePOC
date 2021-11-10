@@ -69,9 +69,6 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
         switch (atc) {
             case AssetTypeClass.DiagramAsset:
             case AssetTypeClass.Reference:
-            case AssetTypeClass.Fusion:
-            case AssetTypeClass.FusionAttribute:
-            case AssetTypeClass.FusionQuery:
                 return false;
             default:
                 return true;

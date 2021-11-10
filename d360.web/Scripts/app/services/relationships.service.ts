@@ -325,7 +325,7 @@ export class RelationshipsService extends BaseObservableService {
         }
         else {
             this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-                .subscribe((data) => this.downloadFile(data, 'relationship type items'));
+                .subscribe((data) => this.downloadFile(data, 'Relationships'));
         }
     }
 

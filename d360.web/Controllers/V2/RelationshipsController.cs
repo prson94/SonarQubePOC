@@ -1095,13 +1095,22 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships, bool triggerWorkflow = false, bool lookupFieldsPassedByValue = false)
+        public async Task<IHttpActionResult> PostRelationshipsAsync(
+            Guid intersectTypeUid, 
+            RelationshipInserts relationships, 
+            bool triggerWorkflow = false, 
+            bool lookupFieldsPassedByValue = false,
+            string applicationId = null)
         {
             var prefix = "Relationships.PostRelationshipsAsync => ";
-            var errorMessage = "";
 
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
                 if (intersectType == null)
@@ -1124,7 +1133,10 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
                 }
 
-                var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid });
+                var execution = getApiExecution(
+                    relationships.Count, 
+                    new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
+                    applicationId: applicationId);
 
                 Company.Add(execution);
 
@@ -1162,7 +1174,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
@@ -1186,13 +1198,20 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships, bool triggerWorkflow = false)
+        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(
+            Guid intersectTypeUid,
+            RelationshipInserts relationships, 
+            bool triggerWorkflow = false,
+            string applicationId = null)
         {
             var prefix = "Relationships.PostBulkRelationshipsAsync => ";
-            var errorMessage = "";
-
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
                 if (intersectType == null)
@@ -1210,7 +1229,12 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
                 }
 
-                ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, this.getApiExecution, triggerWorkflow);
+                var execution = getApiExecution(
+                    relationships.Count, 
+                    new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid }, 
+                    applicationId: applicationId);
+
+                ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -1228,7 +1252,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
@@ -1332,13 +1356,21 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
+        public async Task<IHttpActionResult> DeleteBulkRelationshipsAsync(
+            Guid intersectTypeUid, 
+            RelationshipDeletes relationships,
+            bool triggerWorkflow = false,
+            string applicationId = null)
         {
             var prefix = "Relationships.DeleteBulkRelationshipsAsync => ";
-            var errorMessage = "";
 
             try
             {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
                 IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
                 if (intersectType == null)
@@ -1356,7 +1388,12 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
                 }
 
-                ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, this.getApiExecution, triggerWorkflow);
+                var execution = getApiExecution(
+                    relationships.Count, 
+                    new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid }, 
+                    applicationId: applicationId);
+
+                ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -1374,7 +1411,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
@@ -1404,8 +1441,17 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete relationship of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
+        public async Task<IHttpActionResult> DeleteRelationships(
+            Guid intersectTypeUid, 
+            RelationshipDeletes relationships, 
+            bool triggerWorkflow = false,
+            string applicationId = null)
         {
+            if (applicationId != null && applicationId.Length > 200)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+            }
+
             IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
             if (intersectType == null)
@@ -1433,7 +1479,10 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
             }
 
-            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid });
+            var execution = getApiExecution(
+                relationships.Count,
+                new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid },
+                applicationId: applicationId);
 
             Company.Add(execution);
 

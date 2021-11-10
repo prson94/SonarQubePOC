@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnInit, HostListener } from "@angular/core";
-import { CurrentEnvironmentSettings } from "../../../static/environment-settings";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ResourcesService } from "../../../services/resources.service";
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';

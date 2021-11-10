@@ -1418,16 +1418,12 @@ order by wi.StartedOn desc";
                         .ToList();
                     break;
                 case ChangeType.RequestCertification:
-                    types = types.Where(t => t.type != "IssueType" &&
-                    t.type != "ReferenceItemType" && t.type != "IntersectType"
-                    && t.type != "Fusion")
+                    types = types.Where(t => t.type != "IssueType" && t.type != "ReferenceItemType" && t.type != "IntersectType")
                         .OrderBy(t => t.name)
                         .ToList();
                     break;
                 default:
-                    types = types.Where(t => t.type != "Fusion")
-                        .OrderBy(t => t.name)
-                        .ToList();
+                    types = types.OrderBy(t => t.name).ToList();
                     break;
             }
 

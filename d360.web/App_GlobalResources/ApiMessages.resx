@@ -639,4 +639,7 @@
   <data name="HelpMenuItemsDeleted" xml:space="preserve">
     <value>Help Menu Items Deleted.</value>
   </data>
+  <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
+    <value>ApplicationId length cannot exceed 200 characters</value>
+  </data>
 </root>

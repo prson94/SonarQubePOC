@@ -1490,8 +1490,6 @@ namespace d360.extensions.search
 
             switch (temp)
             {
-                case "FUSIONATTRIBUTES":
-                    return "Fusion";
                 case "BUSINESSASSET":
                     return CommonNames.AssetTypeClass_Business;
                 case "TECHNICALASSET":

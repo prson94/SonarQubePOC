@@ -316,63 +316,6 @@ namespace d360.web.Models
         public string Message { get; set; }
     }
 
-    public class FieldTypeFusionItemEditorModel
-    {
-        public int ID { get; set; }
-        public int SourceFusionAttributeType { get; set; }
-        public int ReferenceType { get; set; }
-        public int? TargetFusionAttributeType { get; set; }
-        public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
-        public bool HideHeader { get; set; }
-        public bool HideFooter { get; set; }
-
-        public FieldValidity Validation()
-        {
-            var prefix = "You are missing a";
-            var valid = new FieldValidity();
-            if (SourceFusionAttributeType <= 0)
-            {
-                valid.Valid = false;
-                valid.Message = $"{prefix} target item.";
-            }
-            else
-            {
-                if (ReferenceType <= 0)
-                {
-                    valid.Valid = false;
-                    valid.Message = $"{prefix} reference type.";
-                }
-                else
-                {
-                    if (ReferenceType > 1 && !TargetFusionAttributeType.HasValue)
-                    {
-                        valid.Valid = false;
-                        valid.Message = $"{prefix} reference item.";
-                    }
-                }
-            }
-
-            if (valid.Valid)
-            {
-                if (DisplayFields == null)
-                {
-                    valid.Valid = false;
-                    valid.Message = $"{prefix} reference column.";
-                }
-                else
-                {
-                    if (DisplayFields.Count == 0)
-                    {
-                        valid.Valid = false;
-                        valid.Message = $"{prefix} reference column.";
-                    }
-                }
-            }
-
-            return valid;
-        }
-    }
-
     public class FieldTypeRelationItemEditorModel
     {
         public int ID { get; set; }
@@ -474,8 +417,6 @@ namespace d360.web.Models
         public bool FieldIsUsed { get; set; }
 
         public FieldType FieldType { get; set; }
-
-        public ICollection<FieldTypeFusionItemEditorModel> FusionItems { get; set; }
 
         public FieldTypeRelationItemEditorModel RelationItem { get; set; }
 

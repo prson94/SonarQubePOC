@@ -2053,7 +2053,7 @@ from	IntersectType I
                     {
                         var it = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
 
-                        if (!forUiFiltering)
+                        if (!forUiFiltering && it != null)
                         {
                             var ft = new FieldType();
 
@@ -2063,15 +2063,16 @@ from	IntersectType I
                             ft.LookupObjectType = "IntersectType";
                             ft.LookupObjectID = it.ID;
                             fields.Add(ft);
-                        }
-                        var ft2 = new FieldType();
 
-                        ft2.Name = "$Related:" + it.uid;
-                        ft2.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
-                        ft2.Type = DataType.Relationship.ToString();
-                        ft2.LookupObjectType = "IntersectType";
-                        ft2.LookupObjectID = it.ID;
-                        fields.Add(ft2);
+                            var ft2 = new FieldType();
+
+                            ft2.Name = "$Related:" + it.uid;
+                            ft2.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
+                            ft2.Type = DataType.Relationship.ToString();
+                            ft2.LookupObjectType = "IntersectType";
+                            ft2.LookupObjectID = it.ID;
+                            fields.Add(ft2);
+                        }
                     }
                     else
                     {

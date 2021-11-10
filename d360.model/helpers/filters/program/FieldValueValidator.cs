@@ -23,8 +23,7 @@ namespace d360.model.helpers.filters.program
         {
             var result = new FieldValueValidatorResult();
             result.Status = true;
-            int number = 0;
-            if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
+            if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out int number))
             {
                 //parsing of thousands seperator fails on - symbol
                 if (!int.TryParse(value.ToString(), out number))
@@ -45,14 +44,13 @@ namespace d360.model.helpers.filters.program
         {
             var result = new FieldValueValidatorResult();
             result.Status = true;
-            decimal dnumber = 0;
-            if (!decimal.TryParse(value.ToString(), out dnumber))
+            if (!decimal.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var updatedValue))
             {
                 result.Status = false;
                 result.Message = $"Invalid decimal value for field '{fieldName}'";
                 return result;
             }
-            result.UpdatedValue = dnumber;
+            result.UpdatedValue = updatedValue;
             return result;
         }
     }

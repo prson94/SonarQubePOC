@@ -678,12 +678,6 @@ from	IntersectType I
             return executionInfo;
         }
 
-        public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
-        {
-            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
-            return await BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
-        }
-
         public IEnumerable<dynamic> GetExportModel(int id)
         {
             return companyContext.Query<dynamic>(
@@ -775,12 +769,6 @@ from	IntersectType I
             await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
             return executionInfo;
-        }
-
-        public async Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
-        {
-            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
-            return await BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
         }
 
         public List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution)
@@ -933,6 +921,7 @@ from	IntersectType I
         }
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
+            var apiTimeout = ApiTimeout;
             JObject results = await GetRelationships(queryParams, isExport: true).ConfigureAwait(false);
             var includeTotal = true;
             var includeAssetPath = false;
@@ -960,7 +949,7 @@ from	IntersectType I
 
             var apiInfo = results.Children().ToList();
 
-            var excelDocument = new ExcelDocument(string.Format(ExcelExports.FollowedResources_DocumentName, DateTime.Now));
+            var excelDocument = new ExcelDocument(string.Format(ExcelExports.Relationships_DocumentName, DateTime.Now));
                    
             var fields = new List<FieldType>();
 
@@ -968,28 +957,28 @@ from	IntersectType I
             var itemsSheet = new ExcelSheet(ExcelExports.Relationships_SheetName);
 
             //add default fields
-            fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = "Relationship UID" });
-            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "Uid", FriendlyName = "Subject Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "DisplayName", FriendlyName = "Subject Display Name" });
+            fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = ExcelExports.Relationships_Relationship_UID });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "Uid", FriendlyName = ExcelExports.Relationships_Subject_UID });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "DisplayName", FriendlyName = ExcelExports.Relationships_Subject_Display_Name });
             if (includeAssetPath)
             {
-                fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "[Path]", FriendlyName = "Subject Asset Path" });
+                fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "[Path]", FriendlyName = ExcelExports.Relationships_Subject_Asset_Path });
             }
-            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypePath", FriendlyName = "Subject Asset Type Path" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Name", FriendlyName = "Predicate Name" });
-            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "Uid", FriendlyName = "Object Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "DisplayName", FriendlyName = "Object Display Name" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypePath", FriendlyName = ExcelExports.Relationships_Subject_Asset_Type_Path });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Name", FriendlyName = ExcelExports.Relationships_Predicate_Name });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "Uid", FriendlyName = ExcelExports.Relationships_Object_UID });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "DisplayName", FriendlyName = ExcelExports.Relationships_Object_Display_Name });
             if (includeAssetPath)
             {
-                fields.Add(new FieldType { Type = "string", Object = "Object", Name = "[Path]", FriendlyName = "Object Asset Path" });
+                fields.Add(new FieldType { Type = "string", Object = "Object", Name = "[Path]", FriendlyName = ExcelExports.Relationships_Object_Asset_Path });
             }
-            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypePath", FriendlyName = "Object Asset Type Path" });
-            fields.Add(new FieldType { Type = "string", Object = "RelationshipTypeUid", Name = "", FriendlyName = "Relationship Type Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject Asset Type Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object Asset Type Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = "Predicate Uid" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });
-            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypePath", FriendlyName = ExcelExports.Relationships_Object_Asset_Type_Path });
+            fields.Add(new FieldType { Type = "string", Object = "RelationshipTypeUid", Name = "", FriendlyName = ExcelExports.Relationships_Relationship_Type_UID });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = ExcelExports.Relationships_Subject_Asset_Type_UID });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = ExcelExports.Relationships_Object_Asset_Type_UID });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = ExcelExports.Relationships_Predicate_UID });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = ExcelExports.Relationships_Predicate_Type });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = ExcelExports.Relationships_Predicate_Inverse });
 
             #region Populate Excel Document            
 
@@ -1020,19 +1009,21 @@ from	IntersectType I
                 foreach (var row in rowData)
                 {
                     var relationshipTypeUid = row["RelationshipTypeUid"];
-                    var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString());
+                    var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString(), apiTimeout);
 
                     if (customColumns.Count() > 0)
                     {
+                        int customCount = 0;
                         foreach (var cus in customColumns)
-                        {
+                        {                            
                             var name = cus.Name;
                             var friendlyName = cus.FriendlyName;
                             var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
                             if (exists == null)
                             {
                                 var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
-                                fields.Insert((includeAssetPath ? 11 : 9), cusField);
+                                fields.Insert((includeAssetPath ? 10 : 8) + customCount, cusField);
+                                customCount++;
                             }
                         }
                     }
@@ -1073,12 +1064,13 @@ from	IntersectType I
             return document;
         }
 
-        public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid)
+        public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid, int apiTimeout)
         {
             return companyContext.Query<dynamic>(
-                @"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName from fieldtype f  
+                @"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName, f.ColumnOrder from fieldtype f  
 				inner join IntersectType i on i.uid = @uid
-				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid }, ApiTimeout);
+				 where f.[object] = 'IntersectType' and f.objectid = i.ID and IsListable = 1
+				 order by f.ColumnOrder", new { uid = intersectUid }, apiTimeout);
         }
 
         public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, int pageSize, int pageNum, bool includeTotal, string owner)
