@@ -72,7 +72,12 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
         }));
 
         this.subs.push(this.menu$.subscribe(menu => {
+            const wasActive = this.menu?.isActiveItem;
             this.menu = menu;
+            if (wasActive) {
+                this.menu.isActiveItem = true;
+            }
+            
             this.ref.markForCheck();
         }))
     }

@@ -1,6 +1,5 @@
 ﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
@@ -21,17 +20,17 @@ export class SiteMenuCategoryPanelComponent extends BaseComponent implements Aft
 
     ngOnChanges(changes: SimpleChanges) {
         if (this.isActive) {
-            this.searchInput.focus();
+            if (this.searchInput) {
+                this.searchInput.focus();
+            }
+            
             this.clearInput();
         }
     }
 
     public searchText: string = "";
 
-    constructor(
-        protected settingsService: CompanySettingsService,
-        private siteMenuService: SiteMenuService
-    ) {
+    constructor(protected settingsService: CompanySettingsService) {
         super(settingsService);
     }
 

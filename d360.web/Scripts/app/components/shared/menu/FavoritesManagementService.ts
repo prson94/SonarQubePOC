@@ -9,6 +9,7 @@ import { CompanySettingEnum } from '../../../models/settings.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { BaseComponent } from '../base.component';
 import { HeaderActionsService } from '../../../services/header-actions.service';
+import { SiteMenuComponent } from './site-menu.component';
 
 
 // readability: this can & should be replaced with reduxjs-toolkit
@@ -52,7 +53,8 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
         private favoritesService: FavoritesService,
         private headerActionsService: HeaderActionsService,
         protected settingsService: CompanySettingsService,
-        private messagesService: MessagesObservableService) {
+        private messagesService: MessagesObservableService,
+        private siteMenuComponent: SiteMenuComponent) {
         super(settingsService);
         this.init(initialState);
     }
@@ -100,6 +102,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
 
     public removeFavoritesSaga() {
         const favoriteIds = Array.from(this.currentState.removeFavoriteIds);
+        const removingEverything = this.currentState.removeFavoriteIds.size === this.currentState.homepageAndFavorites.Favorites.length;
 
         this.increaseLoadingCounterAction();
         this.favoritesService.deleteCurrentUsersFavoritesV2(favoriteIds).subscribe(
@@ -108,7 +111,9 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
                 this.headerActionsService.emitFavoritesChange();
                 this.toggleManageFavoritesAction();
                 this.decreaseLoadingCounterAction();
-                // TODO: close menu if there are no items left
+                if (removingEverything) {
+                    this.siteMenuComponent.changeActiveMenu(null);
+                }
             },
             error => {
                 this.decreaseLoadingCounterAction();
