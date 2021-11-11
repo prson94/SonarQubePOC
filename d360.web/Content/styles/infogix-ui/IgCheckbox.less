@@ -59,6 +59,18 @@ p-tristatecheckbox {
     }
 }
 
+p-tristatecheckbox[igcheckbox] {
+    display: inline-flex;
+}
+
+p-checkbox, p-tristatecheckbox {
+    &[igcheckbox] {
+        .p-checkbox {
+            background: none;
+        }
+    }
+}
+
 p-checkbox, p-tristatecheckbox {
     .p-checkbox-label {
         color: @ig-black;

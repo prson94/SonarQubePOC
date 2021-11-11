@@ -338,13 +338,20 @@
     min-width: 220px;
     line-height: 18px;
 
-    .hide-menu-button {
-      margin-left: 4px;
-      background-color: @ig-grey-t5;
-      color: @ig-black;
+    .additional-buttons {
+      display: flex;
 
-      &:hover {
-        background-color: #878a98;
+      > * {
+        margin-left: 4px;
+      }
+
+      .hide-menu-button {
+        background-color: @ig-grey-t5;
+        color: @ig-black;
+
+        &:hover {
+          background-color: #878a98;
+        }
       }
     }
   }

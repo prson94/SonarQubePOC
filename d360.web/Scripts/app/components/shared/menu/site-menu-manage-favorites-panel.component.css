@@ -16,3 +16,9 @@
 d3s-loading {
     color: black;
 }
+
+.favorite-container {
+    display: flex;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
