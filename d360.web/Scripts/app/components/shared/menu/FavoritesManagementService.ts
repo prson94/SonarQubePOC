@@ -71,9 +71,17 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
         });
     }
 
-    public toggleManageFavoritesAction() {
+    public toggleManageFavoritesOnAction() {
         this.mutate(state => {
             state.isManageFavoritesModeEnabled = !state.isManageFavoritesModeEnabled;
+            state.removeFavoriteIds = new Set();
+        });
+    }
+
+    public toggleManageFavoritesOffAction() {
+        this.mutate(state => {
+            state.isManageFavoritesModeEnabled = false;
+            state.removeFavoriteIds = new Set();
         });
     }
 
@@ -109,7 +117,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
             result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.headerActionsService.emitFavoritesChange();
-                this.toggleManageFavoritesAction();
+                this.toggleManageFavoritesOffAction();
                 this.decreaseLoadingCounterAction();
                 if (removingEverything) {
                     this.siteMenuComponent.changeActiveMenu(null);

@@ -2,7 +2,7 @@
 	<ng-container *ngLet="isLoading$ | async as isLoading">
 		<div class="megamenu-header truncate manageFavoritesHeader">
 			<button [disabled]="isLoading"
-				(click)="store.toggleManageFavoritesAction()"
+				(click)="store.toggleManageFavoritesOffAction()"
 				igButton
 				icon="fa-arrow-left"
 				pTooltip="Back to favorites"

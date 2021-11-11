@@ -9,6 +9,7 @@ import { FavoritesManagementService } from './FavoritesManagementService';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { isEqual } from 'lodash';
+import { SiteMenuComponent } from './site-menu.component';
 
 @Component({
     selector: 'd3s-site-menu-favorites',
@@ -28,7 +29,8 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
         private headerActionsService: HeaderActionsService,
         protected settingsService: CompanySettingsService,
         private ref: ChangeDetectorRef,
-        public store: FavoritesManagementService) {
+        public store: FavoritesManagementService,
+        private siteMenu: SiteMenuComponent) {
         super(settingsService);
     }
 
@@ -77,9 +79,15 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
             if (wasActive) {
                 this.menu.isActiveItem = true;
             }
-            
+
             this.ref.markForCheck();
         }))
+
+        this.subs.push(this.siteMenu.activeMenu$.subscribe((activeMenu: SiteMenu | undefined) => {
+            if (activeMenu?.MenuID != this.menu.MenuID) {
+                this.store.toggleManageFavoritesOffAction();
+            }
+        }));
     }
 
     ngOnDestroy() {

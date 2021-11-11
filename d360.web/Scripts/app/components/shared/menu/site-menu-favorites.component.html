@@ -1,4 +1,3 @@
-<!-- TODO: should reset manage mode when unfocus ??? -->
 <d3s-site-menu-category 
 	*ngIf="menu"
 	[expanded]="expanded"
@@ -19,7 +18,7 @@
 	</ng-template>
 	
 	<ng-container additionalButtons>
-		<button (click)="store.toggleManageFavoritesAction()"
+		<button (click)="store.toggleManageFavoritesOnAction()"
 			igButton
 			icon="fa-edit"
 			pTooltip="Manage favorites"

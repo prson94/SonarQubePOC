@@ -11,6 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-site-menu',
@@ -50,6 +51,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     documentClick(event: MouseEvent) {
         this.isMenuActive = false;
     }
+
+    public activeMenu$ = new Subject();
 
     constructor(
         private authenticationService: AuthenticationService,
@@ -310,6 +313,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 }
             }
         });
+        this.activeMenu$.next($event?.item?.menu);
         this.ref.detectChanges();
     }
 
