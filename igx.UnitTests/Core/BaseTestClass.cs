@@ -689,6 +689,28 @@ namespace igx.UnitTests
 
             return mock.Object;
         }
+
+        public IResourceRepository GetResourceRepository()
+        {
+            var mock = new Mock<IResourceRepository>();
+
+            mock.Setup(x => x.GetResouceByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) =>
+                uid == Guid.Parse(DataConstants.ValidGUID) ? new GlobalReportingResource() : null);
+
+            return mock.Object;
+        }
+
+        public ISurveyRepository GetSurveyRepository()
+        {
+            var mock = new Mock<ISurveyRepository>();
+            mock.Setup(x => x.GetSurveyTypeByUid(It.IsAny<Guid>()))
+                .Returns((Guid uid) =>
+                uid == Guid.Parse(DataConstants.ValidGUID) ? new SurveyType() : null);
+
+            return mock.Object;
+        }
+
         #endregion
     }
 
