@@ -74,6 +74,7 @@ import { DirectivesModule } from '../../../directives/directives.module';
 import { SharedResponsibilitiesModule } from '../responsibilities/shared-responsibilities.module';
 import { AssetDetailModule } from '../asset-detail/asset-detail.module';
 import { SidePanelModule } from '../sidepanel/side-panel.module';
+import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 
 
 @NgModule({
@@ -102,6 +103,7 @@ import { SidePanelModule } from '../sidepanel/side-panel.module';
         SharedResponsibilitiesModule,
         AssetDetailModule,
         SidePanelModule,
+        AssetEditorModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,

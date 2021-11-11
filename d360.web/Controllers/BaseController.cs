@@ -137,7 +137,7 @@ namespace d360.web.Controllers
             return Request.CreateResponse<GenericHttpError>(status, new GenericHttpError { Code = status, Message = message }, asJson ? "application/json" : "application/xml");
         }
 
-        public class StatusCodeErrorMessage 
+        public class StatusCodeErrorMessage
         {
             public HttpStatusCode Status { get; set; }
             public string ErrorMessage { get; set; }
@@ -169,7 +169,7 @@ namespace d360.web.Controllers
                 return errorMessageResponse((ex as GenericException).StatusCode, errorHeading, (ex as GenericException).StatusDescription);
             }
             else
-            { 
+            {
                 if (ex.Message.ToLower().Contains("invalid filter expression"))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, $"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}");
@@ -402,7 +402,7 @@ namespace d360.web.Controllers
             return sql;
         }
 
-        protected internal ApiExecution getApiExecution(int total = 0, object fields = null, int error = 0, int processed = 0)
+        protected internal ApiExecution getApiExecution(int total = 0, object fields = null, string applicationId = null)
         {
 
             var execution = new ApiExecution
@@ -414,8 +414,9 @@ namespace d360.web.Controllers
                 ResourceID = Company.CurrentResourceID,
                 Total = total,
                 Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
-                Error = error,
-                Processed = processed
+                Error = 0,
+                Processed = 0,
+                ApplicationId = applicationId
             };
 
             return execution;
@@ -541,11 +542,11 @@ namespace d360.web.Controllers
             {
                 if (string.IsNullOrEmpty(validationMessage))
                 {
-                    if(fieldType == "Number")
+                    if (fieldType == "Number")
                     {
                         validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a whole number");
                     }
-                    if(fieldType == "Decimal")
+                    if (fieldType == "Decimal")
                     {
                         validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a decimal number");
                     }
@@ -612,7 +613,7 @@ namespace d360.web.Controllers
             return SettingsRepository.GetSettingValue<bool>(Setting.ShowAllUsersAPIKey);
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true, bool loadLookupValues = true)
         {
             var row = startRow;
             const string defaultCategoryName = "General";
@@ -707,7 +708,7 @@ namespace d360.web.Controllers
                                         fld.DelayedLoadType = "Predicate";
                                     }
                                 }
-                                else
+                                else if (loadLookupValues || !string.IsNullOrEmpty(f?.DefaultValue))
                                 {
                                     if (!f.IsRequired && !f.AllowMultipleValues)
                                     {
@@ -753,7 +754,27 @@ namespace d360.web.Controllers
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
-                                    if (f.AllowMultipleValues)
+                                    if (!loadLookupValues && f != null && !string.IsNullOrEmpty(f.DefaultValue))
+                                    {
+                                        List<int> lookupValues = f.DefaultValue.Split(',').Select(x => int.Parse(x)).ToList();
+
+                                        if (lookupValues.Count > 0)
+                                        {
+                                            itemSql += " and V.Value in @lookupValues";
+
+                                            fld.Items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupValues, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
+                                                    .OrderBy(o => o.Text)
+                                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                                    .ToList();
+
+                                            fld.Items.ForEach(x => x.Selected = true);
+                                        }
+                                        else
+                                        {
+                                            fld.Items = new List<SelectListItem>();
+                                        }
+                                    }
+                                    else if (f.AllowMultipleValues)
                                     {
                                         var items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
                                             .OrderBy(o => o.Text)
@@ -863,7 +884,7 @@ namespace d360.web.Controllers
             return list;
         }
 
-        internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true)
+        internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true, bool loadOnlySelectedLookupValue = false)
         {
             var row = startRow;
             const string defaultCategoryName = "General";
@@ -970,12 +991,12 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-                                    if (!ft.IsRequired && !ft.AllowMultipleValues)
+                                    if (!ft.IsRequired && !ft.AllowMultipleValues && !loadOnlySelectedLookupValue)
                                     {
                                         fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
                                     }
 
-                                    if (ft.AllowAllValue)
+                                    if ((ft.AllowAllValue && !loadOnlySelectedLookupValue) || (loadOnlySelectedLookupValue && f?.Value == "0"))
                                     {
                                         fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
                                     }
@@ -1004,11 +1025,22 @@ namespace d360.web.Controllers
                                         )colorJSON 
                                         ";
 
+                                    string loadOnlySelectedLookupValueSQL = "";
+                                    List<int> lookupValues = new List<int>();
+                                    if (loadOnlySelectedLookupValue)
+                                    {
+                                        if (!string.IsNullOrEmpty(f?.Value))
+                                        {
+                                            lookupValues = f.Value.Split(',').Select(x => int.Parse(x)).ToList();
+                                            loadOnlySelectedLookupValueSQL = " and V.Value in @lookupValues";
+                                        }
+                                    }
+
                                     var itemSql = $@"select {columns} 
                                         from FieldLookupValue V
                                         {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
                                         {(fld.UseColorControl ? colorjoin : "")}
-                                        where V.FieldTypeID = @fieldTypeId
+                                        where V.FieldTypeID = @fieldTypeId {loadOnlySelectedLookupValueSQL}
                                         ";
 
                                     var countSql = $@"select count(*)
@@ -1018,9 +1050,26 @@ namespace d360.web.Controllers
                                         where V.FieldTypeID = @fieldTypeId
                                         ";
 
-                                    if (ft.AllowMultipleValues)
+
+                                    if (loadOnlySelectedLookupValue)
                                     {
-                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID })
+                                        if (lookupValues.Count > 0)
+                                        {
+                                            items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
+                                                    .OrderBy(o => o.Text)
+                                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                                    .ToList();
+
+                                            items.ForEach(x => x.Selected = true);
+                                        }
+                                        else
+                                        {
+                                            items = new List<SelectListItem>();
+                                        }
+                                    }
+                                    else if (ft.AllowMultipleValues)
+                                    {
+                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
                                             .OrderBy(o => o.Text)
                                             .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                             .ToList();
@@ -1082,6 +1131,8 @@ namespace d360.web.Controllers
 
                                     }
 
+
+
                                     if (items != null) // missing null check causes exception if items is null GOV-6041
                                     {
                                         fld.Items.AddRange(
@@ -1139,7 +1190,7 @@ namespace d360.web.Controllers
                             fld.Required = (ft.MinimumLength > 0 || ft.Length > 0 || ft.IsRequired);
                         }
                         else
-                            if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
+                    if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
                         {
                             fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
                         }
@@ -1204,7 +1255,7 @@ namespace d360.web.Controllers
         {
             Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
         }
-        
+
         internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, DynamicParameters dbArgs, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null, string idColumn = "A.ID")
         {
             var columnBuilder = new StringBuilder();

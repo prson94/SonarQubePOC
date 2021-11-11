@@ -69,10 +69,25 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="resources\IssueErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>IssueErrors.resx</DependentUpon>
+    </Compile>
+    <Compile Update="resources\MemberShipErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MemberShipErrors.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\Messages.Designer.cs">
       <DependentUpon>Messages.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\MetricsErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetricsErrors.resx</DependentUpon>
     </Compile>
     <Compile Update="resources\Notifications.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -93,6 +108,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.resx</DependentUpon>
+    </Compile>
+    <Compile Update="resources\TagErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TagErrors.resx</DependentUpon>
     </Compile>
     <Compile Update="resources\Types.Designer.cs">
       <DependentUpon>Types.resx</DependentUpon>
@@ -151,10 +171,22 @@
       <LastGenOutput>Fields.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Update="resources\IssueErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>IssueErrors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\MemberShipErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>MemberShipErrors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="resources\Messages.resx">
       <SubType>Designer</SubType>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\MetricsErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>MetricsErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Notifications.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -171,6 +203,10 @@
     <EmbeddedResource Update="resources\Settings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\TagErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TagErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Types.resx">
       <SubType>Designer</SubType>

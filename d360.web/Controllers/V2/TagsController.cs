@@ -783,7 +783,7 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting asset tag details", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorAssetTagDetail, e.Message);
             }
 
         }

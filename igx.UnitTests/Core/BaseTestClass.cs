@@ -456,7 +456,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.AnyPredicateExists(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? true : false);
 
-            mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<Func<int, object, int, int, ApiExecution>>(), It.IsAny<bool>()))
+            mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                 .Returns(Task.FromResult(new ApiExecutionInfo() { Action = ApiExecutionAction.PostRelationships, CompanyDomainPrefix = "", CompanyID = -1, ExecutionID = Guid.NewGuid(), ResourceID = 56 }));
 
             mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
@@ -689,6 +689,28 @@ namespace igx.UnitTests
 
             return mock.Object;
         }
+
+        public IResourceRepository GetResourceRepository()
+        {
+            var mock = new Mock<IResourceRepository>();
+
+            mock.Setup(x => x.GetResouceByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) =>
+                uid == Guid.Parse(DataConstants.ValidGUID) ? new GlobalReportingResource() : null);
+
+            return mock.Object;
+        }
+
+        public ISurveyRepository GetSurveyRepository()
+        {
+            var mock = new Mock<ISurveyRepository>();
+            mock.Setup(x => x.GetSurveyTypeByUid(It.IsAny<Guid>()))
+                .Returns((Guid uid) =>
+                uid == Guid.Parse(DataConstants.ValidGUID) ? new SurveyType() : null);
+
+            return mock.Object;
+        }
+
         #endregion
     }
 

@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -163,13 +164,13 @@ namespace d360.web.Controllers.V2
                 {
                     if (!f.LookupObjectID.HasValue)
                     {
-                        throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+                        throw new ArgumentNullException(OthersMessages.NoRelationshipTypeFoundToLookup);
                     }
                     var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
 
                     if (intersectType == null)
                     {
-                        throw new Exception("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                        throw new ArgumentNullException(OthersMessages.InvalidOrDeletedRelationshipType);
                     }
 
                     fieldJoins.Add($@"
@@ -865,7 +866,7 @@ namespace d360.web.Controllers.V2
             if (!Guid.TryParse(allocationUid, out uid))
             {
                 status.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                status.Message = $"allocationUid {allocationUid} is not a correctly formatted identifier.";
+                status.Message = string.Format(OthersMessages.AllocationUidNotCorrectlyFormatted, allocationUid);
             }
             else
             {
@@ -873,7 +874,7 @@ namespace d360.web.Controllers.V2
                 if (!Company.Any<core.entities.Metric.MetricAllocation>(i => i.Uid == auid))
                 {
                     status.StatusCode = System.Net.HttpStatusCode.NotFound;
-                    status.Message = $"Allocation identifier with value {uid} does not correspond to a valid allocation.";
+                    status.Message = string.Format(OthersMessages.AllocationIdentifierDoesnotValidAllocation, uid.ToString());
                 }
             }
 
@@ -887,7 +888,7 @@ namespace d360.web.Controllers.V2
             if (!Guid.TryParse(assetUid, out uid))
             {
                 status.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                status.Message = $"assetUid {assetUid} is not a correctly formatted identifier.";
+                status.Message =string.Format(OthersMessages.AssetuidNotCorrectlyFormatted, assetUid);
             }
             else
             {
@@ -897,7 +898,7 @@ namespace d360.web.Controllers.V2
                 if (asset == null)
                 {
                     status.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                    status.Message = $"Asset identifier with value {uid} does not correspond to a valid asset.";
+                    status.Message = string.Format(OthersMessages.AssetIdentifierDoesnotValidAsset,uid.ToString());
                 }
                 else
                 {
@@ -905,7 +906,7 @@ namespace d360.web.Controllers.V2
                     if (!canRead)
                     {
                         status.StatusCode = System.Net.HttpStatusCode.Forbidden;
-                        status.Message = $"You do not have permissions to view score history on this asset.";
+                        status.Message = OthersMessages.NoPremissiontoviewScoreHistory;
                     }
                 }
             }

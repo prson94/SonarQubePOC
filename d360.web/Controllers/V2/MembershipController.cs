@@ -1246,7 +1246,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 if (string.IsNullOrWhiteSpace(favorite.Name))
                 {
-                    string message = "Name is required.";
+                    string message = ApiMessages.NameRequired;
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
                 }
                 else
@@ -1255,7 +1255,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
                 if (favorite.Type == FavoriteType.Page && string.IsNullOrWhiteSpace(favorite.Route))
                 {
-                    string message = "Favorites of type Page cannot have an empty route.";
+                    string message = ApiMessages.FavoritesEmptyRoute;
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
                 }
                 else
@@ -1269,7 +1269,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
                 else
                 {
-                    string message = "Uid Invalid for " + favorite.Type.ToString();
+                    string message = string.Format(ApiMessages.UidInvalid,favorite.Type.ToString());
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, message)).ConfigureAwait(false);
                 }
             }
@@ -1470,7 +1470,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
                 if (!allowedValues.Contains(order))
                 {
-                    isValid = $"{order} is not a valid _order field";
+                    isValid =string.Format(AssetsApiMessages.InvalidOrder,order);
                 }
             }
 

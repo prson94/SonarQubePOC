@@ -1015,12 +1015,12 @@ order by Sort, title";
                 // Perform checks to make sure fields are populated.
                 if (string.IsNullOrEmpty(model.Type))
                 {
-                    throw new NoFormDataException("Type");
+                    throw new NoFormDataException(FormControllerApiMessage.TypeConstant);
                 }
 
                 if (string.IsNullOrEmpty(model.LoadAction))
                 {
-                    throw new NoFormDataException("LoadAction");
+                    throw new NoFormDataException(FormControllerApiMessage.LoadAction);
                 }
 
                 var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
@@ -1257,7 +1257,7 @@ order by Sort, title";
                     await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
-                    json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), "A", HttpStatusCode.Created);
+                    json = jsonSuccess(FormControllerApiMessage.FileUploadedAndQueueProcessing, load.ID.ToString(), "A", HttpStatusCode.Created);
                 }
                 else
                 {
@@ -1499,17 +1499,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
             else if (carts.Count > 1)
             {
-                return jsonException("An error occurred - there are more than 1 open carts for this user", HttpStatusCode.InternalServerError);
+                return jsonException(FormControllerApiMessage.AnErrorOccurMorethan1OpenCart, HttpStatusCode.InternalServerError);
             }
 
             if (myCart == null)
             {
-                return jsonException("The specified cart could not be found", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.SpecificCartNotFound, HttpStatusCode.NotFound);
             }
 
             if (myCart.ResourceID != Company.CurrentResourceID)
             {
-                return jsonException("You do not have permission to add items to this cart", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionAddItemInCart, HttpStatusCode.Forbidden);
             }
 
             var existingItem = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == myCart.ID && i.Object == type && i.ObjectID == id).FirstOrDefault();
@@ -1535,10 +1535,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
             else
             {
-                return jsonException("This item is already in your cart", HttpStatusCode.OK);
+                return jsonException(FormControllerApiMessage.ItemAlreadyInCart, HttpStatusCode.OK);
             }
 
-            return jsonSuccess("The item has been added to your cart", id.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ItemAddedCart, id.ToString(), "add", HttpStatusCode.OK);
 
         }
 
@@ -1550,16 +1550,16 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if (cart == null)
             {
-                return jsonException("Could not find the shopping cart specified.", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NotFoundShoppingCart, HttpStatusCode.NotFound);
             }
 
             if (cart.ResourceID != Company.CurrentResourceID)
-                return jsonException("You do not have permission to remove this item", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionRemoveItem, HttpStatusCode.Forbidden);
 
             var item = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == shoppingCartID && i.Object == type && i.ObjectID == id).FirstOrDefault();
             if (item == null)
             {
-                return jsonException("Shopping cart item could not be found", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.ShoppingCartNotFound, HttpStatusCode.NotFound);
             }
 
             try
@@ -1571,7 +1571,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-            return jsonSuccess("Shopping cart item removed successfully", id.ToString(), "delete", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShoppingCartRemoved, id.ToString(), "delete", HttpStatusCode.OK);
         }
 
         [HttpGet, Route("shoppingcart/list/{typeID:int}")]
@@ -1642,12 +1642,12 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var myCart = Company.GetById<ShoppingCart>(cart.ID);
             if (myCart == null)
             {
-                return jsonException("Could not find shopping cart", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NotFoundShoppingCart, HttpStatusCode.NotFound);
             }
 
             if (myCart.ResourceID != Company.CurrentResourceID)
             {
-                return jsonException("You do not have permission to request this shopping cart.", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionRequestCart, HttpStatusCode.Forbidden);
             }
 
             try
@@ -1662,7 +1662,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Your request has been submitted", cart.ID.ToString(), "update", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.RequestSubmitted, cart.ID.ToString(), "update", HttpStatusCode.OK);
 
         }
 
@@ -1674,12 +1674,12 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var cart = Company.GetById<ShoppingCart>(cartID);
                 if (cart == null)
                 {
-                    return jsonException("Could not find the specified cart.", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.NotFoundShoppingCart, HttpStatusCode.NotFound);
                 }
 
                 if (cart.ResourceID != Company.CurrentResourceID)
                 {
-                    return jsonException("You do not have permission to clear this cart.", HttpStatusCode.Forbidden);
+                    return jsonException(FormControllerApiMessage.NoPremissionClearCart, HttpStatusCode.Forbidden);
                 }
 
                 var items = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == cartID).ToList();
@@ -1691,7 +1691,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Shopping cart cleared successfully", cartID.ToString(), "update", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShoppingCartCleared, cartID.ToString(), "update", HttpStatusCode.OK);
 
         }
 
@@ -1704,17 +1704,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
             }
 
             if (string.IsNullOrEmpty(shortcut.Name))
             {
-                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
+                return jsonException(FormControllerApiMessage.ShortCutRequireName, HttpStatusCode.BadRequest);
             }
 
             if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconPayload))
             {
-                return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
+                return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
             }
 
             try
@@ -1750,7 +1750,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Shortcut added successfully", shortcut.ID.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShortcutAdded , shortcut.ID.ToString(), "add", HttpStatusCode.OK);
 
         }
 
@@ -1760,24 +1760,24 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if (!Company.CurrentResourceIsAdmin)
             {
-                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
             }
 
             var existing = Company.GetById<Shortcut>(shortcut.ID);
 
             if (existing == null)
             {
-                return jsonException($"The shortcut with id {shortcut.ID} could not be found.", HttpStatusCode.BadRequest);
+                return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound,shortcut.ID.ToString()), HttpStatusCode.BadRequest);
             }
 
             if (string.IsNullOrEmpty(shortcut.Name))
             {
-                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
+                return jsonException(FormControllerApiMessage.ShortCutRequireName, HttpStatusCode.BadRequest);
             }
 
             if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconUrl) && string.IsNullOrEmpty(shortcut.IconPayload))
             {
-                return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
+                return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
             }
 
             try
@@ -1840,7 +1840,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Shortcut modified successfully", shortcut.ID.ToString(), "edit", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShortcutModified, shortcut.ID.ToString(), "edit", HttpStatusCode.OK);
         }
 
         [HttpDelete, Route("shortcut/delete/{id:int}")]
@@ -1848,14 +1848,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
             }
 
             var existing = Company.GetById<Shortcut>(id);
 
             if (existing == null)
             {
-                return jsonException($"The shortcut with the id {id} could not be found.", HttpStatusCode.BadRequest);
+                return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound,id.ToString()), HttpStatusCode.BadRequest);
             }
 
             try
@@ -1881,7 +1881,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Shortcut deleted successfully.", id.ToString(), "delete", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShortcutDeleted, id.ToString(), "delete", HttpStatusCode.OK);
         }
 
         [HttpPut, Route("shortcut/Move")]
@@ -1895,7 +1895,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var shortcut = Company.GetById<Shortcut>(id);
                 if (shortcut == null)
                 {
-                    throw new ArgumentNullException($"Shortcut Id ${id} not found");
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutIDNotFound,id.ToString()));
                 }
 
                 direction = moveUp ? "up" : "down";
@@ -1910,7 +1910,9 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 }
 
                 if (adjacentShortcut == null)
-                    throw new ArgumentNullException($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutAlreadySorted, (moveUp ? FormControllerApiMessage.TopConstant  : FormControllerApiMessage.bottomConstant)));
+                }
 
 
                 int newOrder = adjacentShortcut.DisplayOrder;
@@ -1919,7 +1921,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
 
                 Company.SaveChanges();
-                message = $"Shortcut {shortcut.Name} moved {direction} successfully.";
+                message = string.Format(FormControllerApiMessage.ShortcutMoved,shortcut.Name,direction);
             }
             catch (Exception ex)
             {
@@ -2038,7 +2040,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     }
                 }
 
-                return jsonSuccess("Grammar allocation successfully modified.", "", "add", HttpStatusCode.Created);
+                return jsonSuccess(FormControllerApiMessage.GrammarAllocationModified, "", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -2056,7 +2058,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("custom synonym");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.CustomSynonym);
+                }
 
                 var name = parseTextField(form, "Name");
                 var predicateId = parseIntField(form, "PredicateID");
@@ -2079,7 +2084,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
                 Company.Add(model);
 
-                return jsonSuccess("Synonym " + model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(FormControllerApiMessage.SynonymCreated,model.Name), model.ID.ToString(),"add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -2097,23 +2102,28 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("synonym");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.Synonym);
+                }
                 var id = parseIntField(form, "ID");
 
                 var detail = Company.GetById<Nym>(id);
 
                 if (detail == null)
-                    throw new NullReferenceException("Custom Synonym not found");
-
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.CustomSynonymNotFound);
+                }
                 if (!Company.HasAssetPermission(detail.Object, detail.ObjectID, Permission.DeleteRelationships))
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
+                }
                 if (detail != null)
                 {
                     Company.Delete(detail);
                 }
 
-                return jsonSuccess("Synonym successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.SynRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

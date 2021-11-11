@@ -428,6 +428,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MetricsApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\OthersMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>OthersMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\RelationshipsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -867,6 +872,11 @@
       <LastGenOutput>MetricsApiMessages.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\OthersMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>OthersMessages.designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RelationshipsApiMessages.designer.cs</LastGenOutput>
@@ -1003,6 +1013,8 @@
     <Content Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.html" />
     <Content Include="Scripts\app\components\shared\asset-detail\asset-detail.component.html" />
     <Content Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-editor\asset-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-editor\asset-editor-field.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
@@ -1035,6 +1047,7 @@
     <None Include="Scripts\app\components\rule\rule-results-grid.component.less" />
     <Content Include="Scripts\app\components\search\search.component.less" />
     <Content Include="Scripts\app\components\search\search-result-item.component.less" />
+    <Content Include="Scripts\app\components\shared\asset-editor\asset-editor.component.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -1232,6 +1245,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-lookup-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-editor\asset-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-editor\asset-editor-field.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-editor\asset-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.ts" />
@@ -1266,7 +1282,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
     <Content Include="Scripts\app\components\shared\header\header-profile.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.ts" />

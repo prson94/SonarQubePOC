@@ -23,6 +23,8 @@ import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.mo
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 
 declare var CurrentResourceID;
 
@@ -87,17 +89,18 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
     @ViewChild("inputBox", { static: false }) filterText: any;
+    @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 
     simpleFilterValue: string = '';
     areAllExpanded: boolean = false;
     loadNodesSub: Subscription;
 
-    private sidePanelOpen: boolean = false;
-    private sidePanelLoading: boolean = false;
-    private sidePanelTab: string;
-    private sidePanelStorageKey: string;
+    sidePanelOpen: boolean = false;
+    sidePanelLoading: boolean = false;
+    sidePanelTab: string;
+    sidePanelStorageKey: string;
 
-    private hasProfiling: boolean = false;
+    hasProfiling: boolean = false;
     dataProfile: any;
 
     readonly menuKey: string = '~menu';
@@ -119,7 +122,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         protected settingsService: CompanySettingsService,
         webAnalyticsService: WebAnalyticsService,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         super(settingsService);
 
@@ -429,14 +433,26 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         }
     }
 
-    private save(event) {
-        this.showEditor = false;
-        this.selected = null;
-        this.selectedLevel = null;
-        this.selectedParentId = null;
-        this.loadNodes();
-        this.headerActionsService.emitFavoritesChange();
-        this.isLoading = false;
+    private save($event) {
+        if ($event && $event.addAnother) {
+            this.showAdd(this.selectedLevel, this.selectedParentId);
+            this.loadNodes(false);
+        }
+        else if ($event && $event.action === 'new') {
+            var newUrl = '/asset/' + $event.assetUid;
+            this.router.navigateByUrl(newUrl);
+        }
+        else {
+            this.showEditor = false;
+            this.selected = null;
+            this.selectedLevel = null;
+            this.selectedParentId = null;
+            this.loadNodes();
+            this.headerActionsService.emitFavoritesChange();
+            this.isLoading = false;
+        }
+        this.changeDetectorRef.markForCheck();
+
     }
 
     private closeEditor() {
@@ -444,6 +460,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.selected = null;
         this.selectedLevel = null;
         this.selectedParentId = null;
+
     }
 
     private exportExcel(level: number) {
@@ -481,6 +498,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.selectedLevel = level;
         this.selected = null;
         this.showEditor = true;
+        //reload dynamic editor if it already exists to trigger change detection
+        if (this.dynamicEditor) {
+            this.dynamicEditor.load();
+        }
     }
 
     private displayChildAdd(level: number) {
@@ -590,7 +611,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         setTimeout(() => this.loadNodes(), 20);
     }
 
-    loadNodes() {
+    loadNodes(autoSelect: boolean = true) {
         this.expandedNodes = this.treeState;
         this.areAllExpanded = false;
         if (this.assetTypeUid) {
@@ -637,10 +658,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
                 if (this.hierarchy.length !== 0) {
                     this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
-                    if (this.treeNodeArray.length > 0) {
-                        this.selectAsset(this.treeNodeArray[0]);
-                    } else {
-                        this.selectAsset(null);
+                    if (autoSelect) {
+                        if (this.treeNodeArray.length > 0) {
+                            this.selectAsset(this.treeNodeArray[0]);
+                        } else {
+                            this.selectAsset(null);
+                        }
                     }
                     this.buildScoreAllocationThresholds();
                 }

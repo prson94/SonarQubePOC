@@ -115,6 +115,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Record does not exist for AssetUid {0} and ProfileSetDate {1}.
+        /// </summary>
+        internal static string AssetUidProfileSetDateRecordNotfound {
+            get {
+                return ResourceManager.GetString("AssetUidProfileSetDateRecordNotfound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Url.
         /// </summary>
         internal static string AssetUrlColumn {
@@ -124,11 +133,56 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint..
+        /// </summary>
+        internal static string DataProfileDeleteMaxLimit {
+            get {
+                return ResourceManager.GetString("DataProfileDeleteMaxLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You may only provide a maximum of {0} Data Profile records in this request. Please call the BATCH API to submit more than {1} items..
+        /// </summary>
+        internal static string DataProfileRecordsLimit {
+            get {
+                return ResourceManager.GetString("DataProfileRecordsLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate.
         /// </summary>
         internal static string Duplicate {
             get {
                 return ResourceManager.GetString("Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate Records: {0}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch..
+        /// </summary>
+        internal static string DuplicateRecordBatchProfile {
+            get {
+                return ResourceManager.GetString("DuplicateRecordBatchProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Elements in bottomK cannot be Empty strings.
+        /// </summary>
+        internal static string ElementBottomKNotEmpty {
+            get {
+                return ResourceManager.GetString("ElementBottomKNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Elements in topK cannot be Empty string.
+        /// </summary>
+        internal static string ElementTopKNotEmpty {
+            get {
+                return ResourceManager.GetString("ElementTopKNotEmpty", resourceCulture);
             }
         }
         
@@ -264,6 +318,24 @@ namespace Resources {
         internal static string OrderInvalid {
             get {
                 return ResourceManager.GetString("OrderInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Record already exists for AssetUid {0} and ProfileSetDate {1}.
+        /// </summary>
+        internal static string ProfileRecordAlreadyExists {
+            get {
+                return ResourceManager.GetString("ProfileRecordAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The asset class {0} does not support data profiling. Profiling data can only be associated with Business or Technical Asset types..
+        /// </summary>
+        internal static string ProfilingNotSupportAssetClass {
+            get {
+                return ResourceManager.GetString("ProfilingNotSupportAssetClass", resourceCulture);
             }
         }
         

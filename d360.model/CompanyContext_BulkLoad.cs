@@ -422,7 +422,8 @@ from	[Load] L
                         LoadID = load.ID
                     }) : null,
                 Error = 0,
-                Processed = 0
+                Processed = 0,
+                ApplicationId = "Internal/BulkLoad/Promote"
             };
 
             return execution;
@@ -446,7 +447,8 @@ from	[Load] L
                         LoadID = load.ID
                     }) : null,
                 Error = 0,
-                Processed = 0
+                Processed = 0,
+                ApplicationId = "Internal/BulkLoad/Relate"
             };
 
             return execution;

@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
 using d360.core.Models;
+using d360.core.resources;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -67,7 +68,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Action Type not found based on Uid provided [{actionTypeUid.ToString()}].");
+                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.ActionTypeUidNotFound, actionTypeUid.ToString()));
                     }
                 }
             }
@@ -75,7 +76,7 @@ namespace d360.model.DataAccessLayer
             {
                 if (actionTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.");
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.ParameterError, FieldErrors.AssetTypeUidNotRequiredIfActionTypeUidProvided);
                 }
                 else
                 {
@@ -92,12 +93,12 @@ namespace d360.model.DataAccessLayer
                         }
                         else
                         {
-                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Asset Type not found based on Uid provided [{assetTypeUid.ToString()}].");
+                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.AssetTypeUidNotFound, assetTypeUid.ToString()));
                         }
                     }
                     else
                     {
-                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Invalid Asset Type Uid provided [{assetTypeUidString}].");
+                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.InvalidAssetTypeUid, assetTypeUidString));
                     }
                 }
             }
@@ -105,11 +106,11 @@ namespace d360.model.DataAccessLayer
             {
                 if (actionTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.");
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfActionTypeUidProvided);
                 }
                 else if (assetTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.");
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
                 }
                 else
                 {
@@ -126,7 +127,7 @@ namespace d360.model.DataAccessLayer
                         }
                         else
                         {
-                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Relationship Type not found based on Uid provided [{relationshipTypeUid.ToString()}].");
+                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound,AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, relationshipTypeUid.ToString()));
                         }
                     }
                 }
@@ -636,7 +637,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             {
                 if (reservedWords.Contains(f.Name.ToLower()))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use {f.Name} as the Name of your field because it is a reserved word.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError , string.Format(FieldErrors.NameReservedword, f.Name));
                 }
 
                 var newFieldType = new FieldType
@@ -691,7 +692,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Score type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseScoreTypeOnActionAndRelationshipType, f.Name));
                     }
 
                     var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
@@ -704,7 +705,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                     if (disallowedClasses.Contains(assetType.Class))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Score type on an asset of type {assetType.Class.ToString()} for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseSCoreTypeAssetForField, assetType.Class.ToString(), f.Name));
                     }
 
                     var types = Company.Query<int>(
@@ -713,7 +714,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                     if (!types.Contains((int)f.Type.Score.ScoreType))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Score type {f.Type.Score.ScoreType.ToString()} cannot be allocated to this asset type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.ScoreTypeCannotAllocateAssetType, f.Type.Score.ScoreType.ToString(), f.Name));
                     }
 
                     newFieldType.Type = DataType.Score.ToString();
@@ -740,7 +741,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Ownership Lookup type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUserOwnershipLookup, f.Name));
                     }
 
                     newFieldType.Type = DataType.OwnershipLookup.ToString();
@@ -810,7 +811,7 @@ from	IntersectType I
                     }).FirstOrDefault();
                     if (relationshipsFieldType == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Relationship Type/Field not found", $"Relationship Type or Field Type not found based on Uid provided [{f.Type.ComputedRelationshipField.IntersectTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound,FieldErrors.RelationshipTypeFieldNotFound, string.Format(FieldErrors.RelationshipTypeOrFieldTypeNotFound, f.Type.ComputedRelationshipField.IntersectTypeUid));
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipsFieldType.IntersectTypeID;
@@ -837,21 +838,21 @@ from	IntersectType I
 
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Relationship Lookup type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseRelationshipLookupField, f.Name));
                     }
 
                     var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
                     if (assetType.Class == AssetTypeClass.User)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a ComputedRelationshipLookup type on an asset of type {assetType.Class.ToString()} for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
                     }
 
                     if (f.Type.ComputedRelationshipLookup.Definition == null
                         || !f.Type.ComputedRelationshipLookup.Definition.Fields.Any()
                         || !f.Type.ComputedRelationshipLookup.Definition.Relations.Any())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You must provide a definition for the computed relationship lookup field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.ProvideComputedRealtionshipLookupField, f.Name));
                     }
 
                     newFieldType.Type = DataType.ComplexRelationLookup.ToString();
@@ -1039,7 +1040,7 @@ from	IntersectType I
 
                     if (hasDefinitionError)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", definitionErrorMessage);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, definitionErrorMessage);
                     }
 
                     #endregion
@@ -1061,7 +1062,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Reference Item List from Relationship type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseReferenceListItemList, f.Name));
                     }
 
                     newFieldType.Type = DataType.RefListRelationship.ToString();
@@ -1075,7 +1076,7 @@ from	IntersectType I
                     var relationshipsFieldType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.ComputedRelationshipReferenceList.IntersectTypeUid }).FirstOrDefault();
                     if (relationshipsFieldType <= 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Relationship Type not found", $"Relationship Type or Field Type not found based on Uid provided [{f.Type.ComputedRelationshipReferenceList.IntersectTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeNotFound, string.Format(FieldErrors.RelationshipTypeNotFoundBasedOnUid, f.Type.ComputedRelationshipReferenceList.IntersectTypeUid));
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipsFieldType;
@@ -1225,7 +1226,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a JSON type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
                     }
                     newFieldType.Type = DataType.JSON.ToString();
                     newFieldType.ColumnOrder = f.Type.Json.ColumnOrder.HasValue ? f.Type.Json.ColumnOrder.Value : ++maxColumnIndex;
@@ -1244,7 +1245,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a JSON Element type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
                     }
                     newFieldType.Type = DataType.JsonElement.ToString();
                     newFieldType.ColumnOrder = f.Type.JsonElement.ColumnOrder.HasValue ? f.Type.JsonElement.ColumnOrder.Value : ++maxColumnIndex;
@@ -1271,11 +1272,11 @@ from	IntersectType I
                     {
                         if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Text) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Text))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You must provide a link Text value if setting a default value for {f.Name}.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkTextValue, f.Name));
                         }
                         if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Url) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Url))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You must provide a link Url value if setting a default value for {f.Name}.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkUrlValue, f.Name));
                         }
                         newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
                     }
@@ -1315,7 +1316,7 @@ from	IntersectType I
                         var parentField = Company.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
                         if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
                         {
-                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid parent Field", $"Parent field [{f.Type.Lookup.ParentFieldTypeName}] of type ReferenceItem not found on this asset.");
+                            return new WorkHttpStatus(HttpStatusCode.NotFound,FieldErrors.InvalidparentField, string.Format(FieldErrors.ParentFieldRefernceItemNotfound, f.Type.Lookup.ParentFieldTypeName));
                         }
                         newFieldType.ParentFieldTypeID = parentField.ID;
                     }
@@ -1345,7 +1346,7 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound, "List Asset Type not found", $"Asset Type not found for field [{f.Name}].");
+                                return new WorkHttpStatus(HttpStatusCode.NotFound,FieldErrors.ListAssetTypeNotFound, string.Format(FieldErrors.AssetTypeNotFoundField, f.Name));
                             }
                         }
                         else if (f.Type.Lookup.List.Class.HasValue && !f.Type.Lookup.List.Uid.HasValue)
@@ -1362,7 +1363,7 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a valid class specified.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeListNotSpecified,FieldErrors.LookupFieldTypeIsIncomplete);
                             }
                         }
                         else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
@@ -1381,17 +1382,17 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound, "List Asset Type not found", $"Asset Type not found for field [{f.Name}].");
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.ListAssetTypeNotFound, string.Format(FieldErrors.AssetTypeNotFoundField, f.Name));
                             }
                         }
                         else
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
                         }
                     }
                     else
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
                     }
                     if (f.Type.Lookup.Filter != null)
                     {
@@ -1403,7 +1404,7 @@ from	IntersectType I
                             filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
                             if (filterFieldType <= 0)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.FieldTypeNotFound, string.Format(FieldErrors.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
                             }
                         }
                         else if (string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName) && typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString())
@@ -1416,7 +1417,7 @@ from	IntersectType I
                             filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
                             if (filterPredicate <= 0)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.FieldTypeNotFound, string.Format(FieldErrors.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
                             }
                             filterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
                         }
@@ -1431,7 +1432,7 @@ from	IntersectType I
                     }
                     else
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Lookup display Format", $"List Display Format is required for Lookup Field Type.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidLookupDisplayFormat, FieldErrors.MissingListDisplayFormat);
                     }
                     newFieldType.IsDisplayable = f.Type.Lookup.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Lookup.IsEditable;
@@ -1525,7 +1526,7 @@ from	IntersectType I
                     var relationshipType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.Relationship.IntersectTypeUid }).FirstOrDefault();
                     if (relationshipType <= 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Relationship Type not found", $"Relationship Type not found based on Uid provided [{f.Type.Relationship.IntersectTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, f.Type.Relationship.IntersectTypeUid));
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipType;
@@ -1632,7 +1633,7 @@ from	IntersectType I
                 }
                 else
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "No valid type defined", $"You have not included a valid type for the field type [{f.Name}].");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoValidTypeDefined, string.Format(FieldErrors.NotIncludedValidTypeFieldType, f.Name));
                 }
 
                 var currentFieldType = currentFieldTypes.SingleOrDefault(c => c.Name == f.Name);
@@ -1644,7 +1645,7 @@ from	IntersectType I
                 {
                     if (!allowedConversions.Any(i => i.FromType == currentFieldType.Type && i.ToType == newFieldType.Type) && (currentFieldType.Type != newFieldType.Type))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field conversion error", $"You may not convert field {newFieldType.Name} from a {currentFieldType.Type} to a {newFieldType.Type} or a field with the same name and different type may already exist.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldConversionError, string.Format(FieldErrors.FieldTypeConversionError, newFieldType.Name, currentFieldType.Type, newFieldType.Type));
                     }
 
                     currentFieldType.AllowAllLabel = newFieldType.AllowAllLabel;

@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { DetailRow, DetailField, DetailFieldType, NymType, Category, ComplexLookupType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -37,6 +37,8 @@ export class AssetDetailComponent implements OnChanges {
     @Input() synonymPermission: SynonymPermission;
     
     @Input() assetDetail: any;
+
+    @Output() onEditClick = new EventEmitter();
 
     assetUID: string;
     assetTypeUID: string;

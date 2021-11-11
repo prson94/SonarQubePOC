@@ -1,17 +1,17 @@
-﻿import {Input, Output, Component, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
-import {ObjectDetailService} from '../../services/object-detail.service';
-import {HeaderActionsService} from '../../services/header-actions.service';
-import {DetailRow, DetailField, DetailModel, IObjectDetailService} from '../../models/object-detail.model';
-import {ObjectDetail} from '../../models/object-detail.model';
-import {BaseComponent} from '../shared/base.component';
-import {NymType} from '../../models/object-detail.model';
-import {ResponsibilityTypeRelationPermission} from '../../models/responsibility-type.model';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { ObjectDetailService } from '../../services/object-detail.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { ObjectDetail } from '../../models/object-detail.model';
+import { BaseComponent } from '../shared/base.component';
+import { NymType } from '../../models/object-detail.model';
+import { ResponsibilityTypeRelationPermission } from '../../models/responsibility-type.model';
 import { FormMode } from '../../models/form.model';
 import { AssetService } from '../../services/asset.service';
 import { AssetEditorModel } from '../../models/asset.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SynonymPermission } from '../../models/artifacts.model';
 import { CompanySettingsService } from '../../services/settings.service';
+import { D3SModal } from './modal/gov-modal.component';
 
 @Component({
     selector: 'd3s-object-definition-tile',
@@ -33,15 +33,20 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
 
+    modalEditorVisible: boolean = false;
+
     protected object: ObjectDetail = null;
 
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
+
+    @ViewChild('modal', { static: false }) modal: D3SModal;
 
     constructor(
         private objectDetailService: ObjectDetailService,
         private headerActionsService: HeaderActionsService,
         private assetService: AssetService,
         private messagesService: MessagesObservableService,
+        private cdRef: ChangeDetectorRef,
         protected settingsService: CompanySettingsService
     ) {
         super(settingsService);
@@ -66,10 +71,24 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         this.objectDetailService.getObject(this.objectID, type).subscribe(
             r => {
                 this.object = r;
-                
+
                 this.isLoading = false;
             }
         );
+    }
+
+    editClick() {
+        this.formMode = FormMode.Editing;
+        this.formModeChange.emit(this.formMode);
+        this.modalEditorVisible = true;
+        this.cdRef.markForCheck();
+    }
+
+    closeEditor() {
+        this.formMode = FormMode.Default;
+        this.formModeChange.emit(this.formMode);
+        this.modalEditorVisible = false;
+        this.cdRef.markForCheck();
     }
 
     save(e): void {
@@ -114,7 +133,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
                 asset.Fields[p] = values[p];
             }
         }
-        
+
         if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
         this.isLoading = false;
 
@@ -124,5 +143,6 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         this.onEditComplete.emit(this.object);
         this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);
+        this.modalEditorVisible = false;
     }
 }

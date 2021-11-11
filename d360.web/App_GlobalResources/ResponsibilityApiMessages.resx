@@ -117,11 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AllocationNotFound" xml:space="preserve">
+    <value>Allocation not found.</value>
+  </data>
   <data name="assigneeUidFilterValidation" xml:space="preserve">
     <value>In order to use the _assigneeuid filter the _assetTypeUid or _assetUid filter must also be specified.</value>
   </data>
   <data name="DuplicateResponsibilityRule" xml:space="preserve">
     <value>Non Unique Responsibility Rule Uids: {0}. Identifiers must be unique within a table.</value>
+  </data>
+  <data name="InvalidAssetTypeClass" xml:space="preserve">
+    <value>Invalid AssetTypeClass. [{0}] is not valid.</value>
+  </data>
+  <data name="InvalidPermissionProvided" xml:space="preserve">
+    <value>Invalid Permission provided. [{0}]</value>
   </data>
   <data name="InvalidResourceGroupUid" xml:space="preserve">
     <value>Uid '{0}' is not valid Resource or Group.</value>

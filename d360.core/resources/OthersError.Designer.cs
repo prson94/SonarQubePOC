@@ -79,11 +79,110 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The request contains duplicate combinations of assetUid, metricAssetUid, and effectiveDate. You must send in unique combinations for those three fields..
+        /// </summary>
+        public static string DuplicateCombination {
+            get {
+                return ResourceManager.GetString("DuplicateCombination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for assetTypeUid parameter.
+        /// </summary>
+        public static string InvalidAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Measure Found.
+        /// </summary>
+        public static string InvalidMeasureFound {
+            get {
+                return ResourceManager.GetString("InvalidMeasureFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for order parameter. Use Name|ValidForDays|CreatedOn|UpdatedOn|NumberOfResponses.
+        /// </summary>
+        public static string InvalidOrderSurvey {
+            get {
+                return ResourceManager.GetString("InvalidOrderSurvey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for page num parameter.
+        /// </summary>
+        public static string InvalidPageNum {
+            get {
+                return ResourceManager.GetString("InvalidPageNum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for page size parameter.
+        /// </summary>
+        public static string InvalidPageSize {
+            get {
+                return ResourceManager.GetString("InvalidPageSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid response no data.
         /// </summary>
         public static string InvalidResponseData {
             get {
                 return ResourceManager.GetString("InvalidResponseData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for surveyTypeUid parameter.
+        /// </summary>
+        public static string InvalidSurveyTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidSurveyTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This job is currently in an Active state and cannot be scheduled again until complete..
+        /// </summary>
+        public static string JobinActiveState {
+            get {
+                return ResourceManager.GetString("JobinActiveState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This job is not currently running and cannot be marked as complete..
+        /// </summary>
+        public static string JobIsNotRunning {
+            get {
+                return ResourceManager.GetString("JobIsNotRunning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Job is currently running.
+        /// </summary>
+        public static string JobIsRunning {
+            get {
+                return ResourceManager.GetString("JobIsRunning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Job is not currently running.
+        /// </summary>
+        public static string JobNotRunning {
+            get {
+                return ResourceManager.GetString("JobNotRunning", resourceCulture);
             }
         }
         
@@ -102,6 +201,33 @@ namespace d360.core.resources {
         public static string NotDetermineServerVersion {
             get {
                 return ResourceManager.GetString("NotDetermineServerVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profile record does not exist for provided Uid..
+        /// </summary>
+        public static string ProfileRecordNotExists {
+            get {
+                return ResourceManager.GetString("ProfileRecordNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signature Type is invalid..
+        /// </summary>
+        public static string SignatureTypeInvalid {
+            get {
+                return ResourceManager.GetString("SignatureTypeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signature Type is required..
+        /// </summary>
+        public static string SignatureTypeRequired {
+            get {
+                return ResourceManager.GetString("SignatureTypeRequired", resourceCulture);
             }
         }
         

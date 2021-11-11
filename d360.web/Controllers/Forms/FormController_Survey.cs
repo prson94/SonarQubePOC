@@ -73,8 +73,10 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("survey type");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.SurveyType);
+                }
                 var otVal = form["Object"].Split('|').ToList();
                 var ot = (SystemObjects)Enum.Parse(typeof(SystemObjects), otVal[0]);
                 var oid = int.Parse(otVal[1]);                
@@ -89,7 +91,7 @@ namespace d360.web.Controllers
                 };
                 Company.Add(model);
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, model.Name), model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -110,8 +112,10 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("survey type");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.SurveyType);
+                }
                 var id = parseIntField(form, "ID");
                 // delete this surveys questions..
 
@@ -121,7 +125,7 @@ namespace d360.web.Controllers
                 Company.Delete<QuestionType>(i => i.SurveyTypeID == id);
                 Company.Delete<SurveyType>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved,FormControllerApiMessage.Item), id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -142,19 +146,23 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("survey type");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.SurveyType);
+                }
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<SurveyType>(id);
-                if (model == null) throw new NotFoundException("survey type");
-
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.SurveyType);
+                }
                 model.Name = parseTextField(form, "Name");
                 model.ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1);
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, model.Name), id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -242,7 +250,7 @@ namespace d360.web.Controllers
 
                 if (!val.Valid)
                 {
-                    throw new ConflictException("Error Occurred!", val.Message);
+                    throw new ConflictException(FormControllerApiMessage.ErrorOccurred, val.Message);
                 }
 
                 var qt = new QuestionType
@@ -265,7 +273,7 @@ namespace d360.web.Controllers
 
                 Company.Add(qt);
 
-                return jsonSuccess("Survey question successfully created.", qt.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.SurveyQuestion), qt.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -286,12 +294,14 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("response type");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.ResponseType);
+                }
                 var id = parseIntField(form, "ID");
                 Company.Delete<QuestionType>(i => i.ID == id);
 
-                return jsonSuccess("Survey question successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved,FormControllerApiMessage.SurveyQuestion), id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -316,14 +326,15 @@ namespace d360.web.Controllers
 
                 if (!val.Valid)
                 {
-                    throw new ConflictException("Error Occurred!", val.Message);
+                    throw new ConflictException(FormControllerApiMessage.ErrorOccurred, val.Message);
                 }
 
                 var qt = Company.GetById<QuestionType>(model.ID, i => i.QuestionTypeOptions);
 
                 if (qt == null)
-                    throw new NotFoundException("Question");
-
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Question);
+                }
                 qt.Name = model.Name;
                 qt.DisplayStyle = model.DisplayStyle;
                 qt.Description = model.Description;
@@ -367,7 +378,7 @@ namespace d360.web.Controllers
 
                 Company.Update(qt);
 
-                return jsonSuccess("Survey question successfully updated.", qt.ID.ToString(), "update", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.SurveyQuestion), qt.ID.ToString(), "update", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

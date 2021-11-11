@@ -25,7 +25,13 @@
 <ng-template #singleValue>
     <ng-container *ngIf="field.Type == DetailFieldType.Field">
         <ng-container *ngIf="shouldShowEmptyValue; else showFieldValue">
-            <div class="ig-value">{{emptyValue}}</div>
+            <div *ngIf="fieldDataType !== 'path'" class="ig-value">{{emptyValue}}</div>
+            <div *ngIf="fieldDataType == 'path'" class="ig-value path-value-empty">
+                Generating... <a (click)="refreshPath()">
+                    <i class="fa fa-refresh {{isPathRefreshing ? 'fa-spin' : ''}}" aria-hidden="true"></i>
+                    Refresh
+                </a>
+            </div>
         </ng-container>
         <ng-template #showFieldValue>
             <ng-container [ngSwitch]="fieldDataType">

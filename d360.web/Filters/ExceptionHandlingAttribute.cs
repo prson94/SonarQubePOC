@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Filters;
+using Resources;
 
 namespace d360.web.Filters
 {
@@ -27,8 +28,8 @@ namespace d360.web.Filters
             {
                 throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.InternalServerError)
                 {
-                    Content = new StringContent("An error occurred, please try again or contact the administrator."),
-                    ReasonPhrase = "Critical Exception"
+                    Content = new StringContent(OthersMessages.NeedAdministratorHelp),
+                    ReasonPhrase = OthersMessages.CriticalException
                 });
             }
         }

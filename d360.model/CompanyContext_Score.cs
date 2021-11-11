@@ -5,6 +5,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
+using d360.core.resources;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -95,7 +96,7 @@ namespace d360.model
 
             if (dupes)
             {
-                var message = "The request contains duplicate combinations of assetUid, metricAssetUid, and effectiveDate. You must send in unique combinations for those three fields.";
+                var message = OthersError.DuplicateCombination;
                 execution.Error = 1;
                 execution.Processed = 0;
                 execution.CompletedOn = DateTime.UtcNow;
@@ -104,7 +105,7 @@ namespace d360.model
                 Update(execution);
                 throw new GenericException(
                     System.Net.HttpStatusCode.BadRequest,
-                    "Duplicate items found in request",
+                    AssetTypeErrors.DuplicateItem,
                     message);
             }
             else

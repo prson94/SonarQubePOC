@@ -29,6 +29,7 @@ export class ArtifactType {
     AssetTypeUID: string;
     Class: AssetTypeClass;
     AutoDisplayParent: boolean;
+    AssetTypePath: string;
 
     public static AsGridObject(artifact: ArtifactType): AssetGridObject {
         var ago = new AssetGridObject();
@@ -41,6 +42,7 @@ export class ArtifactType {
         ago.Object = 'Artifact';
         ago.ObjectType = 'ArtifactType';
         ago.AutoDisplayParent = artifact.AutoDisplayParent
+        ago.AssetTypePath = artifact.AssetTypePath;
         return ago;
     }
 

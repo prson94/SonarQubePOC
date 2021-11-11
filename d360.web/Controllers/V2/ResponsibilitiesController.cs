@@ -321,7 +321,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Invalid AssetTypeUid uid provided.",
+                            Message = ActionApiMessages.InvalidAssetTypeUid,
                             Success = false
                         });
                         continue;
@@ -340,7 +340,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Invalid AssetTypeClass. [{assetType.Class.ToString()}] is not valid.",
+                            Message =string.Format (ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
                             Success = false
                         });
                         continue;
@@ -352,7 +352,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Invalid Permission provided. [{string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())}]",
+                            Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
                             Success = false
                         });
                         continue;
@@ -363,7 +363,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Allocation already exists.",
+                            Message = ActionApiMessages.UniqueAllocation,
                             Success = false
                         });
                         continue;
@@ -426,7 +426,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Invalid AssetTypeUid uid provided.",
+                            Message = ActionApiMessages.InvalidAssetTypeUid,
                             Success = false
                         });
                         continue;
@@ -446,7 +446,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Invalid AssetTypeClass. [{assetType.Class.ToString()}] is not valid.",
+                            Message = string.Format (ResponsibilityApiMessages.InvalidAssetTypeClass,assetType.Class.ToString()),
                             Success = false
                         });
                         continue;
@@ -458,7 +458,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Invalid Permission provided. [{string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())}]",
+                            Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided,string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
                             Success = false
                         });
                         continue;
@@ -469,7 +469,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Allocation not found.",
+                            Message = ResponsibilityApiMessages.AllocationNotFound,
                             Success = false
                         });
                         continue;
@@ -533,7 +533,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Invalid AssetTypeUid uid provided.",
+                            Message = ActionApiMessages.InvalidAssetTypeUid,
                             Success = false
                         });
                         continue;
@@ -553,7 +553,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Invalid AssetTypeClass. [{assetType.Class.ToString()}] is not valid.",
+                            Message = string.Format (ResponsibilityApiMessages.InvalidAssetTypeClass,assetType.Class.ToString()),
                             Success = false
                         });
                         continue;
@@ -564,7 +564,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Allocation not found.",
+                            Message = ResponsibilityApiMessages.AllocationNotFound,
                             Success = false
                         });
                         continue;

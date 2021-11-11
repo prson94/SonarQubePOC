@@ -83,7 +83,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -100,7 +100,7 @@ namespace d360.web.Controllers.V2
 
             if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {assetUid} is invalid");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest,string.Format(ApiMessages.InvalidAssetUid,assetUid.ToString()));
             }
 
             if (isValid.Length > 0)
@@ -112,7 +112,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _includeTotal provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidIncludeTotal);
                 }
             }
 
@@ -121,7 +121,7 @@ namespace d360.web.Controllers.V2
 
                 if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_startdate").Value, out DateTime endDate))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _startDate provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidStartDate);
                 }
 
             }
@@ -131,7 +131,7 @@ namespace d360.web.Controllers.V2
 
                 if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_enddate").Value, out DateTime endDate))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _endDate provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidEndDate);
                 }
             }
 
@@ -139,7 +139,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out bool includeTotal))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _includeChildAssets provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.Invalid_includeChildAssetsProvided);
                 }
             }
 
@@ -179,7 +179,7 @@ namespace d360.web.Controllers.V2
 
                 if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,string.Format(DataProfileAPIMessages.DataProfileRecordsLimit,MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(),MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(models.Count);
@@ -195,7 +195,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -233,7 +233,7 @@ namespace d360.web.Controllers.V2
 
                 if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,string.Format(DataProfileAPIMessages.DataProfileRecordsLimit,MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(),MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(models.Count);
@@ -249,7 +249,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -286,19 +286,19 @@ namespace d360.web.Controllers.V2
 
                 if (asset == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {assetUid} is invalid")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,string.Format(ApiMessages.InvalidAssetUid,assetUid.ToString()))).ConfigureAwait(false);
                 }
 
                 var recordCount = Company.AssetDataProfile.Count(x => x.ID == asset.ID && x.ProfileSetDate >= startDate.Date && x.ProfileSetDate <= endDate.Date);
 
                 if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only delete a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} dataprofile records in this request. Please use the BATCH API endpoint.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidRequest,string.Format(DataProfileAPIMessages.DataProfileDeleteMaxLimit,MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
                 }
 
                 if (startDate > endDate)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Start Date must be before the end date")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.StartEndDateValidation)).ConfigureAwait(false);
                 }
 
                 var results = DataProfiles.DeleteDataProfiles(asset, startDate, endDate, execution, cascade);
@@ -312,7 +312,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -373,7 +373,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -434,7 +434,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -486,7 +486,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -575,7 +575,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -622,7 +622,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -708,7 +708,7 @@ namespace d360.web.Controllers.V2
         {
             if (models == null || models.Count == 0)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "You have not provided a valid JSON structure for this request.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.JSONValidMessage);
             }
 
             //Key Field Validation
@@ -719,7 +719,7 @@ namespace d360.web.Controllers.V2
             var dupRecords = models.GroupBy(i => new { i.assetUid, i.profileSetDate }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
             if (dupRecords.Any())
             {
-                var ErrorMessage = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"(AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate.Date: yyyy-MM-dd})"))}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch.";
+                var ErrorMessage = string.Format(DataProfileAPIMessages.DuplicateRecordBatchProfile, string.Join(", ", dupRecords.Select(i => $"(AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate.Date: yyyy-MM-dd})")));
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ErrorMessage);
             }
 
@@ -731,12 +731,12 @@ namespace d360.web.Controllers.V2
 
                 if (asset == null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {model.assetUid} is invalid");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest,string.Format(ApiMessages.InvalidAssetUid,model.assetUid.ToString()));
                 }
 
                 if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"The asset class {asset.AssetType.Class} does not support data profiling. Profiling data can only be associated with Business or Technical Asset types.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest,string.Format(DataProfileAPIMessages.ProfilingNotSupportAssetClass,asset.AssetType.Class.ToString()));
                 }
 
                 var profileSetDate = model.profileSetDate.Date;                
@@ -744,22 +744,22 @@ namespace d360.web.Controllers.V2
                 //check insert
                 if (recordExists && IsInsert)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record already exists for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest,string.Format(DataProfileAPIMessages.ProfileRecordAlreadyExists,model.assetUid.ToString(),model.profileSetDate.Date.ToString("yyyy-MM-dd")));
                 }
                 //check update
                 if (!recordExists && !IsInsert)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record does not exist for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.AssetUidProfileSetDateRecordNotfound,model.assetUid.ToString(),model.profileSetDate.Date.ToString("yyyy-MM-dd")));
                 }
 
                 if (model.topK !=null && model.topK.Any(x=> x.Trim() == string.Empty))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in topK cannot be Empty strings");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest,DataProfileAPIMessages.ElementTopKNotEmpty);
                 }
 
                 if (model.bottomK != null && model.bottomK.Any(x => x.Trim() == string.Empty))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in bottomK cannot be Empty strings");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest,DataProfileAPIMessages.ElementBottomKNotEmpty);
                 }
 
                 bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);

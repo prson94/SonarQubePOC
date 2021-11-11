@@ -756,7 +756,7 @@ order by V.Emoji";
             }
             else
             {
-                throw new NotFoundException("comment");
+                throw new NotFoundException(CommentErrors.comment);
             }
         }
 
