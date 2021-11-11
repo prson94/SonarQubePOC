@@ -214,6 +214,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Govern environment you requested is currently inactive. Please contact Precisely support for additional information..
+        /// </summary>
+        public static string GovernEnvironmentInactive {
+            get {
+                return ResourceManager.GetString("GovernEnvironmentInactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The user name or password provided is incorrect..
         /// </summary>
         public static string IncorrectPassword {

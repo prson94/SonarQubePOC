@@ -26,7 +26,7 @@ namespace d360.web.Controllers.V2
 
             if (!isCompanyActive)
             {
-                throw new RestApiException(System.Net.HttpStatusCode.Forbidden, ApiMessages.CompanyInactive, "The Govern environment you requested is currently inactive. Please contact Infogix support for additional information.");
+                throw new RestApiException(System.Net.HttpStatusCode.Forbidden, ApiMessages.CompanyInactive,OthersMessages.GovernEnvironmentInactive);
             }
         }
     }
