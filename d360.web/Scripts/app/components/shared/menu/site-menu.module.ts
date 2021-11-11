@@ -21,6 +21,7 @@ import { SiteMenuManageFavoritesPanelComponent } from './site-menu-manage-favori
 import { CheckboxModule } from 'primeng/checkbox';
 import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 import { CoreModule } from '../core.module';
+import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 
 @NgModule({
     imports: [
@@ -36,7 +37,8 @@ import { CoreModule } from '../core.module';
         SearchFieldModule,
         CheckboxModule,
         IgCheckboxModule,
-        CoreModule
+        CoreModule,
+        TriStateCheckboxModule
     ],
     declarations: [
         SiteMenuComponent,

@@ -10,6 +10,7 @@ import { AutoFocusDirective } from './ig-autofocus.directive';
 import { CheckboxDirective, IgCheckboxModule } from './ig-checkbox-directive';
 import { DropdownModule, DropdownDirective } from './ig-dropdown.directive';
 import { RadioButtonDirective, IgRadioButtonModule } from './ig-radio-button-directive';
+import { NgLetDirective } from './ng-let-directive';
 
 
 @NgModule({ 
@@ -27,6 +28,7 @@ import { RadioButtonDirective, IgRadioButtonModule } from './ig-radio-button-dir
         CopyClipboardDirective,
         ClickOutsideDirective,  
         AutoFocusDirective,
+        NgLetDirective
     ],
     exports: [
         TextHighlightDirective,
@@ -39,7 +41,8 @@ import { RadioButtonDirective, IgRadioButtonModule } from './ig-radio-button-dir
         AutoFocusDirective,        
         DropdownDirective,
         RadioButtonDirective,
-        CheckboxDirective
+        CheckboxDirective,
+        NgLetDirective
     ]
 })
 export class DirectivesModule { }
