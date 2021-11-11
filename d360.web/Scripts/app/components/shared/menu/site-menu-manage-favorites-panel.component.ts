@@ -21,8 +21,8 @@ export class SiteMenuManageFavoritesPanelComponent {
 
     allFavoritesRemovalStatus$ = this.store.state$.pipe(
         map(state => {
-            const allFavoriteIds = state.homepageAndFavorites.Favorites.map(f => f.Id);
-            const removeEverything = state.removeFavoriteIds.size === allFavoriteIds.length;
+            const allFavorites = state.homepageAndFavorites.Favorites;
+            const removeEverything = state.removeFavoriteIds.size === allFavorites.length;
             if (removeEverything) {
                 return true;
             }
