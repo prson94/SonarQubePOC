@@ -557,15 +557,19 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             if (this.form.value.hasOwnProperty(p)) {
                 let field = this.fields.find((f) => f.FieldName == p);
 
+                if (field === null || typeof field === "undefined") {
+                    continue;
+                }
+
                 if (this.form.value[p] instanceof Date) {
-                    if (field != null && field.FieldType === 'Date' && this.isV2API) {
+                    if (field.FieldType === 'Date' && this.isV2API) {
                         let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         if (simpleDate.indexOf('NaN') !== -1) {
                             simpleDate = '';
                         }
                         this.form.value[p] = simpleDate;
                     }
-                    else if (field !== null && field.FieldType === 'DateTime' && this.isV2API) {
+                    else if (field.FieldType === 'DateTime' && this.isV2API) {
                         if (this.form.value[p] !== 'Invalid Date') {
                             this.form.value[p] = new Date(this.form.value[p]).toISOString();
                         }
@@ -577,13 +581,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
                     }
                 }
-                else if (field !== null && field.FieldType === 'Tag') {
+                else if (field.FieldType === 'Tag') {
                     var arr = this.form.value[p] as SelectItem[];
                     if (arr) {
                         this.form.value[p] = arr.map((x) => x.title).join('|');
                     }
                 }
-                else if (field != null && (field.FieldType === 'Number' || field.FieldType === 'Decimal')) {
+                else if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                     if (this.form.value[p]) {
                         this.form.value[p] = +this.form.value[p];
                     }
