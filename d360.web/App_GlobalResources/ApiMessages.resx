@@ -627,4 +627,7 @@
   <data name="ExecutionStatusInvalid" xml:space="preserve">
     <value>Invalid value for status. Valid values are Pending, Running and Completed.</value>
   </data>
+  <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>Successfully deleted specified favorites</value>
+  </data>
 </root>

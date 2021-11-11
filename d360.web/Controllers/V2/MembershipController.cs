@@ -1167,7 +1167,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
         /// <summary>
-        /// Given list of routes, deletes the favorite for the current user
+        /// Given list of favorte ids, deletes the favorites for the current user
         /// </summary>
         /// <returns></returns>
         [
@@ -1178,19 +1178,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> DeleteFavorites(List<int> favoriteIds)
         {
-            // TODO: autogenerate prefix via CallerMemberName attribute
-            var prefix = $"Membership.ClearFavorites => ";
+            var prefix = $"Membership.DeleteFavorites => ";
 
             try
             {
-                var result = membershipRepository.DeleteFavorites(_company.CurrentResourceID, favoriteIds);
-
-                if (result.StatusCode != HttpStatusCode.OK)
-                {
-                    return errorMessageResponse(result.StatusCode, result.Error, result.Message);
-                }
-
-                return successMessageResponse(result.StatusCode, ApiMessages.Success, result.Message);
+                await membershipRepository.DeleteFavorites(_company.CurrentResourceID, favoriteIds);
+                return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
             }
             catch (Exception ex)
             {
@@ -1199,7 +1192,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
             }
         }
 

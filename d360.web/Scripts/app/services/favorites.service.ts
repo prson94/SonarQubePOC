@@ -99,7 +99,7 @@ export class FavoritesService extends BaseObservableService {
     }
 
     //Private message that clears Favorties and Homepage cache. Called by the toggle methods
-    clearCache() {
+    private clearCache() {
         this.reload$.next();
         this.homefavoritecache$ = null;
     }

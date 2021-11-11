@@ -1570,21 +1570,9 @@ order by	q.SortOrder";
             }
         }
 
-        // TODO: get rid of WorkHttpStatus
-        public WorkHttpStatus DeleteFavorites(int resourceID, List<int> favoriteIds)
+        public async Task DeleteFavorites(int resourceID, List<int> favoriteIds)
         {
-            try
-            {
-                // TODO: make async??
-                // TODO: ensure that delete deletes everything
-                CompanyContext.Delete<Favorite>(i => i.ResourceID == resourceID && !i.IsHomePage && favoriteIds.Contains(i.ID));
-                // TODO: resources
-                return new WorkHttpStatus(HttpStatusCode.OK, "Success", "Successfully deleted specified favorites");
-            }
-            catch
-            {
-                return new WorkHttpStatus(HttpStatusCode.InternalServerError, "Internal Server Error", $"An internal server error occurred");
-            }
+            await CompanyContext.DeleteAsync<Favorite>(i => i.ResourceID == resourceID && favoriteIds.Contains(i.ID));
         }
 
         public async Task<List<OrganizationModel>> GetOrganizationsByType(Guid organizationTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams)

@@ -1407,6 +1407,23 @@ where	I.ID is null";
         }
 
         /// <summary>
+        /// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
+        /// </summary>
+        public async Task DeleteAsync<T>(Expression<Func<T, bool>> predicate) where T: BaseObject
+        {
+            try
+            {
+                var items = await Filter(predicate).ToListAsync();
+                items.ForEach(i => Set<T>().Remove(i));
+                await SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw resolveToRealException(ex);
+            }
+        }
+
+        /// <summary>
         /// Removes the item from the system, as well as any dynamic fields associated with this item, if any.
         /// </summary>
         public bool Delete(SystemObjects type, int id)

@@ -565,6 +565,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Successfully deleted specified favorites.
+        /// </summary>
+        public static string FavoritesSuccessfullyDeleted {
+            get {
+                return ResourceManager.GetString("FavoritesSuccessfullyDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field moved successfully..
         /// </summary>
         public static string FieldMovedSuccessfully {

@@ -15,7 +15,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false , bool IsChangePasswordReqeust = false);
         Task<List<FavoriteApiViewModel>> GetFavorites(int resourceID);
         Task<bool> ToggleFavorite(int resourceID, FavoriteApiModel favorite, bool isHomepage = false);
-        WorkHttpStatus DeleteFavorites(int resourceID, List<int> favoriteIds);
+        Task DeleteFavorites(int resourceID, List<int> favoriteIds);
         Task<FavoriteApiViewModel> GetHomePage(int resourceID);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
