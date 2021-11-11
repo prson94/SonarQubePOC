@@ -162,6 +162,9 @@
   <data name="FilterExpressionErrors" xml:space="preserve">
     <value>Filter expressions contained the following errors: {0}.</value>
   </data>
+  <data name="GovernEnvironmentInactive" xml:space="preserve">
+    <value>The Govern environment you requested is currently inactive. Please contact Precisely support for additional information.</value>
+  </data>
   <data name="IncorrectPassword" xml:space="preserve">
     <value>The user name or password provided is incorrect.</value>
   </data>
