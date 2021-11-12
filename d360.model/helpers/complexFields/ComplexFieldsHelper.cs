@@ -213,7 +213,6 @@ namespace d360.model.helpers
         {
             List<GridColumn> Columns = new List<GridColumn>();
             List<GridField> Fields = new List<GridField>();
-            int currentRel = 0;
 
             foreach (var f in definition.Fields.OrderBy(x => x.DisplayOrder))
             {
@@ -303,7 +302,7 @@ namespace d360.model.helpers
                             break;
                     }
 
-                    if ((currentRel == f.RelationIndex && gField.type != "html") || gField.apiName.ToLowerInvariant() == "name")
+                    if (f.FieldTypeName.ToLowerInvariant() == "name")
                     {
                         gField.type = gColumn.columntype = "preview";
                         gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
@@ -311,8 +310,6 @@ namespace d360.model.helpers
 
                         Fields.Add(new GridField { name = gColumn.uidfield, type = "text" });
                         Fields.Add(new GridField { name = gColumn.urlfield, type = "text" });
-
-                        currentRel++;
                     }
 
                     if (f.Show)
