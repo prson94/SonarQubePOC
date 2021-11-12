@@ -18,11 +18,18 @@ namespace d360.model.helpers
             int idx = 1;
             foreach (var rel in definition.Relations)
             {
-                if (definition.Relations.IndexOf(rel) == 0)
+                var previewColumns = new List<string> { "displayvalue", "name", "_assetpath", "code" };
+                var hasPreviewColumn = definition.Fields.Where(x => (x.RelationIndex + 1) == idx)
+                    .Any(x => previewColumns.Contains(x.FieldTypeName.ToLowerInvariant()));
+
+                if (hasPreviewColumn)
                 {
                     selects.Add($"concat('asset/', H{idx}.Uid) as [H{idx}_Url]");
                     selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
+                }
 
+                if (definition.Relations.IndexOf(rel) == 0)
+                {
                     if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
                     {
                         joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
@@ -36,16 +43,6 @@ namespace d360.model.helpers
                 }
                 else
                 {
-                    var previewColumns = new List<string> { "displayvalue", "name", "_assetpath", "code" };
-                    var hasPreviewColumn = definition.Fields.Where(x => (x.RelationIndex + 1) == idx)
-                        .Any(x => previewColumns.Contains(x.FieldTypeName.ToLowerInvariant()));
-
-                    if (hasPreviewColumn)
-                    {
-                        selects.Add($"concat('asset/', H{idx}.Uid) as [H{idx}_Url]");
-                        selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
-                    }
-
                     if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
                     {
                         joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$from_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
