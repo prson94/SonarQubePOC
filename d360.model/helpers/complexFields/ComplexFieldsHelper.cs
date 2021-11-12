@@ -18,11 +18,11 @@ namespace d360.model.helpers
             int idx = 1;
             foreach (var rel in definition.Relations)
             {
-                selects.Add($"concat('asset/', H{idx}.Uid) as [H{idx}_Url]");
-                selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
-
                 if (definition.Relations.IndexOf(rel) == 0)
                 {
+                    selects.Add($"concat('asset/', H{idx}.Uid) as [H{idx}_Url]");
+                    selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
+
                     if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
                     {
                         joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
@@ -36,6 +36,16 @@ namespace d360.model.helpers
                 }
                 else
                 {
+                    var previewColumns = new List<string> { "displayvalue", "name", "_assetpath", "code" };
+                    var hasPreviewColumn = definition.Fields.Where(x => (x.RelationIndex + 1) == idx)
+                        .Any(x => previewColumns.Contains(x.FieldTypeName.ToLowerInvariant()));
+
+                    if (hasPreviewColumn)
+                    {
+                        selects.Add($"concat('asset/', H{idx}.Uid) as [H{idx}_Url]");
+                        selects.Add($"H{idx}.Uid as [H{idx}_Uid]");
+                    }
+
                     if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
                     {
                         joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$from_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
@@ -124,7 +134,7 @@ namespace d360.model.helpers
                             selects.Add($"JSON_VALUE(F_{ft.ID}.FormattedValue,'$.'+{pathElementSelector}) as [{fieldAlias}]");
                             break;
                         default:
-                            selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");
+                            selects.Add($"{fieldSelector}.FormattedValue as [{fieldAlias}]");
                             break;
                     }
 
@@ -205,22 +215,25 @@ namespace d360.model.helpers
             List<GridField> Fields = new List<GridField>();
             int currentRel = 0;
 
-            foreach (var f in definition.Fields.Where(x => x.Show == true).OrderBy(x => x.DisplayOrder))
+            foreach (var f in definition.Fields.OrderBy(x => x.DisplayOrder))
             {
                 string fieldName = string.IsNullOrEmpty(f.OverrideDisplayName) ? f.FieldTypeName : f.OverrideDisplayName;
                 int? colWidth = f.Width;
 
                 if (f.FieldTypeName.StartsWith("Related Item."))
                 {
-                    Columns.Add(new GridColumn
+                    if (f.Show)
                     {
-                        text = fieldName,
-                        columnWidth = colWidth,
-                        columntype = "preview",
-                        datafield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue",
-                        uidfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid",
-                        urlfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url"
-                    });
+                        Columns.Add(new GridColumn
+                        {
+                            text = fieldName,
+                            columnWidth = colWidth,
+                            columntype = "preview",
+                            datafield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue",
+                            uidfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid",
+                            urlfield = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url"
+                        });
+                    }
 
                     Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid" });
                     Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url" });
@@ -302,7 +315,10 @@ namespace d360.model.helpers
                         currentRel++;
                     }
 
-                    Columns.Add(gColumn);
+                    if (f.Show)
+                    {
+                        Columns.Add(gColumn);
+                    }
                     Fields.Add(gField);
                 }
                 else if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
@@ -314,7 +330,10 @@ namespace d360.model.helpers
                     gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
                     gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
 
-                    Columns.Add(gColumn);
+                    if (f.Show)
+                    {
+                        Columns.Add(gColumn);
+                    }
                     Fields.Add(gField);
                 }
                 else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
@@ -326,7 +345,10 @@ namespace d360.model.helpers
                     gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
                     gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
 
-                    Columns.Add(gColumn);
+                    if (f.Show)
+                    {
+                        Columns.Add(gColumn);
+                    }
                     Fields.Add(gField);
                 }
                 else if (f.FieldTypeName.ToLowerInvariant() == "code")
@@ -336,7 +358,10 @@ namespace d360.model.helpers
                     gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
 
                     var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text" };
-                    Columns.Add(gColumn);
+                    if (f.Show)
+                    {
+                        Columns.Add(gColumn);
+                    }
                     Fields.Add(gField);
                 }
 
@@ -362,7 +387,10 @@ namespace d360.model.helpers
                         defaultFilter = f.Filter,
                         sortOrder = f.SortOrder
                     };
-                    Columns.Add(gColumn);
+                    if (f.Show)
+                    {
+                        Columns.Add(gColumn);
+                    }
                     Fields.Add(gField);
 
                     Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Uid", type = "text" });
@@ -480,7 +508,7 @@ namespace d360.model.helpers
                             selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
                             break;
                         default:
-                            selects.Add($"{fieldSelector}.FormattedValue as {fieldAlias}");
+                            selects.Add($"{fieldSelector}.FormattedValue as [{fieldAlias}]");
                             break;
                     }
 

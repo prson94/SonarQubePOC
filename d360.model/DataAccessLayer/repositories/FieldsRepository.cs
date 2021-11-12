@@ -110,7 +110,7 @@ namespace d360.model.DataAccessLayer
                 }
                 else if (assetTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
                 }
                 else
                 {
@@ -127,7 +127,7 @@ namespace d360.model.DataAccessLayer
                         }
                         else
                         {
-                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound,AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, relationshipTypeUid.ToString()));
+                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, relationshipTypeUid.ToString()));
                         }
                     }
                 }
@@ -637,7 +637,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             {
                 if (reservedWords.Contains(f.Name.ToLower()))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError , string.Format(FieldErrors.NameReservedword, f.Name));
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
                 }
 
                 var newFieldType = new FieldType
@@ -811,7 +811,7 @@ from	IntersectType I
                     }).FirstOrDefault();
                     if (relationshipsFieldType == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound,FieldErrors.RelationshipTypeFieldNotFound, string.Format(FieldErrors.RelationshipTypeOrFieldTypeNotFound, f.Type.ComputedRelationshipField.IntersectTypeUid));
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeFieldNotFound, string.Format(FieldErrors.RelationshipTypeOrFieldTypeNotFound, f.Type.ComputedRelationshipField.IntersectTypeUid));
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipsFieldType.IntersectTypeID;
@@ -838,14 +838,14 @@ from	IntersectType I
 
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseRelationshipLookupField, f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseRelationshipLookupField, f.Name));
                     }
 
                     var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
                     if (assetType.Class == AssetTypeClass.User)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
                     }
 
                     if (f.Type.ComputedRelationshipLookup.Definition == null
@@ -1272,11 +1272,11 @@ from	IntersectType I
                     {
                         if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Text) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Text))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkTextValue, f.Name));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkTextValue, f.Name));
                         }
                         if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Url) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Url))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkUrlValue, f.Name));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkUrlValue, f.Name));
                         }
                         newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
                     }
@@ -1316,7 +1316,7 @@ from	IntersectType I
                         var parentField = Company.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
                         if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
                         {
-                            return new WorkHttpStatus(HttpStatusCode.NotFound,FieldErrors.InvalidparentField, string.Format(FieldErrors.ParentFieldRefernceItemNotfound, f.Type.Lookup.ParentFieldTypeName));
+                            return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.InvalidparentField, string.Format(FieldErrors.ParentFieldRefernceItemNotfound, f.Type.Lookup.ParentFieldTypeName));
                         }
                         newFieldType.ParentFieldTypeID = parentField.ID;
                     }
@@ -1346,7 +1346,7 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound,FieldErrors.ListAssetTypeNotFound, string.Format(FieldErrors.AssetTypeNotFoundField, f.Name));
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.ListAssetTypeNotFound, string.Format(FieldErrors.AssetTypeNotFoundField, f.Name));
                             }
                         }
                         else if (f.Type.Lookup.List.Class.HasValue && !f.Type.Lookup.List.Uid.HasValue)
@@ -1363,7 +1363,7 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeListNotSpecified,FieldErrors.LookupFieldTypeIsIncomplete);
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupFieldTypeIsIncomplete);
                             }
                         }
                         else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
@@ -1392,7 +1392,7 @@ from	IntersectType I
                     }
                     else
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
                     }
                     if (f.Type.Lookup.Filter != null)
                     {
@@ -1432,7 +1432,7 @@ from	IntersectType I
                     }
                     else
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidLookupDisplayFormat, FieldErrors.MissingListDisplayFormat);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.InvalidLookupDisplayFormat, FieldErrors.MissingListDisplayFormat);
                     }
                     newFieldType.IsDisplayable = f.Type.Lookup.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Lookup.IsEditable;
@@ -1633,7 +1633,7 @@ from	IntersectType I
                 }
                 else
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoValidTypeDefined, string.Format(FieldErrors.NotIncludedValidTypeFieldType, f.Name));
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.NoValidTypeDefined, string.Format(FieldErrors.NotIncludedValidTypeFieldType, f.Name));
                 }
 
                 var currentFieldType = currentFieldTypes.SingleOrDefault(c => c.Name == f.Name);
@@ -1645,7 +1645,7 @@ from	IntersectType I
                 {
                     if (!allowedConversions.Any(i => i.FromType == currentFieldType.Type && i.ToType == newFieldType.Type) && (currentFieldType.Type != newFieldType.Type))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldConversionError, string.Format(FieldErrors.FieldTypeConversionError, newFieldType.Name, currentFieldType.Type, newFieldType.Type));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldConversionError, string.Format(FieldErrors.FieldTypeConversionError, newFieldType.Name, currentFieldType.Type, newFieldType.Type));
                     }
 
                     currentFieldType.AllowAllLabel = newFieldType.AllowAllLabel;
@@ -2129,7 +2129,17 @@ from	IntersectType I
 
             foreach (var field in Fields.Where(x => !string.IsNullOrEmpty(x.defaultFilter)))
             {
-                defaultFilters.Add($"({field.apiName} ct '{HttpUtility.UrlEncode(field.defaultFilter)}')");
+                var value = HttpUtility.UrlEncode(field.defaultFilter);
+                if (field.type == "bool")
+                {
+                    bool parsedResult;
+                    if (bool.TryParse(field.defaultFilter, out parsedResult))
+                    {
+                        value = parsedResult ? "1" : "0";
+                    }
+                }
+
+                defaultFilters.Add($"({field.apiName} ct '{value}')");
             }
 
             if (defaultFilters.Count > 0)
@@ -2174,7 +2184,7 @@ from	IntersectType I
 
                 foreach (var item in sortFields)
                 {
-                    idxs.Add(selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())));
+                    idxs.Add(selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())) + 1);
                 }
 
                 orderByClause = "order by " + string.Join(",", idxs);
