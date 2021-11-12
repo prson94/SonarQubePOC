@@ -76,7 +76,7 @@ namespace d360.model.DataAccessLayer
             {
                 if (actionTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.AssetTypeUidNotRequiredIfActionTypeUidProvided);
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.ParameterError, FieldErrors.AssetTypeUidNotRequiredIfActionTypeUidProvided);
                 }
                 else
                 {
@@ -106,11 +106,11 @@ namespace d360.model.DataAccessLayer
             {
                 if (actionTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfActionTypeUidProvided);
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfActionTypeUidProvided);
                 }
                 else if (assetTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
                 }
                 else
                 {
@@ -637,7 +637,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             {
                 if (reservedWords.Contains(f.Name.ToLower()))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
                 }
 
                 var newFieldType = new FieldType
@@ -692,7 +692,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseScoreTypeOnActionAndRelationshipType, f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseScoreTypeOnActionAndRelationshipType, f.Name));
                     }
 
                     var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
@@ -705,7 +705,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                     if (disallowedClasses.Contains(assetType.Class))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseSCoreTypeAssetForField, assetType.Class.ToString(), f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseSCoreTypeAssetForField, assetType.Class.ToString(), f.Name));
                     }
 
                     var types = Company.Query<int>(
@@ -714,7 +714,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                     if (!types.Contains((int)f.Type.Score.ScoreType))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.ScoreTypeCannotAllocateAssetType, f.Type.Score.ScoreType.ToString(), f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.ScoreTypeCannotAllocateAssetType, f.Type.Score.ScoreType.ToString(), f.Name));
                     }
 
                     newFieldType.Type = DataType.Score.ToString();
@@ -741,7 +741,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUserOwnershipLookup, f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUserOwnershipLookup, f.Name));
                     }
 
                     newFieldType.Type = DataType.OwnershipLookup.ToString();
@@ -838,21 +838,21 @@ from	IntersectType I
 
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseRelationshipLookupField, f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseRelationshipLookupField, f.Name));
                     }
 
                     var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
                     if (assetType.Class == AssetTypeClass.User)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
                     }
 
                     if (f.Type.ComputedRelationshipLookup.Definition == null
                         || !f.Type.ComputedRelationshipLookup.Definition.Fields.Any()
                         || !f.Type.ComputedRelationshipLookup.Definition.Relations.Any())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.ProvideComputedRealtionshipLookupField, f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.ProvideComputedRealtionshipLookupField, f.Name));
                     }
 
                     newFieldType.Type = DataType.ComplexRelationLookup.ToString();
@@ -1040,7 +1040,7 @@ from	IntersectType I
 
                     if (hasDefinitionError)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, definitionErrorMessage);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, definitionErrorMessage);
                     }
 
                     #endregion
@@ -1062,7 +1062,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseReferenceListItemList, f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseReferenceListItemList, f.Name));
                     }
 
                     newFieldType.Type = DataType.RefListRelationship.ToString();
@@ -1226,7 +1226,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
                     }
                     newFieldType.Type = DataType.JSON.ToString();
                     newFieldType.ColumnOrder = f.Type.Json.ColumnOrder.HasValue ? f.Type.Json.ColumnOrder.Value : ++maxColumnIndex;
@@ -1245,7 +1245,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
                     }
                     newFieldType.Type = DataType.JsonElement.ToString();
                     newFieldType.ColumnOrder = f.Type.JsonElement.ColumnOrder.HasValue ? f.Type.JsonElement.ColumnOrder.Value : ++maxColumnIndex;
@@ -1272,11 +1272,11 @@ from	IntersectType I
                     {
                         if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Text) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Text))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkTextValue, f.Name));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkTextValue, f.Name));
                         }
                         if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Url) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Url))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkUrlValue, f.Name));
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkUrlValue, f.Name));
                         }
                         newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
                     }
@@ -1363,7 +1363,7 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupFieldTypeIsIncomplete);
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupFieldTypeIsIncomplete);
                             }
                         }
                         else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
@@ -1387,12 +1387,12 @@ from	IntersectType I
                         }
                         else
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
                         }
                     }
                     else
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
                     }
                     if (f.Type.Lookup.Filter != null)
                     {
@@ -1432,7 +1432,7 @@ from	IntersectType I
                     }
                     else
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidLookupDisplayFormat, FieldErrors.MissingListDisplayFormat);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.InvalidLookupDisplayFormat, FieldErrors.MissingListDisplayFormat);
                     }
                     newFieldType.IsDisplayable = f.Type.Lookup.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Lookup.IsEditable;
@@ -1633,7 +1633,7 @@ from	IntersectType I
                 }
                 else
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoValidTypeDefined, string.Format(FieldErrors.NotIncludedValidTypeFieldType, f.Name));
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.NoValidTypeDefined, string.Format(FieldErrors.NotIncludedValidTypeFieldType, f.Name));
                 }
 
                 var currentFieldType = currentFieldTypes.SingleOrDefault(c => c.Name == f.Name);
@@ -1645,7 +1645,7 @@ from	IntersectType I
                 {
                     if (!allowedConversions.Any(i => i.FromType == currentFieldType.Type && i.ToType == newFieldType.Type) && (currentFieldType.Type != newFieldType.Type))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldConversionError, string.Format(FieldErrors.FieldTypeConversionError, newFieldType.Name, currentFieldType.Type, newFieldType.Type));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldConversionError, string.Format(FieldErrors.FieldTypeConversionError, newFieldType.Name, currentFieldType.Type, newFieldType.Type));
                     }
 
                     currentFieldType.AllowAllLabel = newFieldType.AllowAllLabel;
