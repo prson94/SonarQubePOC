@@ -868,7 +868,7 @@ namespace d360.web.Controllers.V2
             bool triggersWorkflow = true, 
             bool lookupFieldsPassedByValue = false,
             bool useTempTablesForFieldValues = true,
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Assets.PostBulkAssetsAsync => ";
 
@@ -961,7 +961,7 @@ namespace d360.web.Controllers.V2
             bool triggersWorkflow = true,
             bool lookupFieldsPassedByValue = false,
             bool useTempTablesForFieldValues = true,
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Assets.PutAssetsAsync => ";
             try
@@ -1034,7 +1034,7 @@ namespace d360.web.Controllers.V2
             Guid assetTypeUid, 
             AssetDeletes assets, 
             bool triggersWorkflow = true, 
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Assets.DeleteAssetsAsync => ";
             var errorMessage = "";
@@ -1800,7 +1800,7 @@ namespace d360.web.Controllers.V2
             Guid assetTypeUid, 
             List<AssetInsert> assets, 
             bool triggersWorkflow = true, 
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Assets.PostBulkAssetsAsync => ";
 
@@ -1881,7 +1881,7 @@ namespace d360.web.Controllers.V2
             Guid assetTypeUid, 
             List<AssetUpdate> assets,
             bool triggersWorkflow = true, 
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Assets.PutBulkAssetsAsync => ";
             try
@@ -1964,7 +1964,7 @@ namespace d360.web.Controllers.V2
             AssetDeletes assets,
             bool clearAllAssetsFromType = false, 
             bool triggersWorkflow = true,
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Assets.DeleteBulkAssetsAsync => ";
             try
