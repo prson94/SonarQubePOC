@@ -2120,7 +2120,6 @@ from	IntersectType I
             }
 
             string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects, fieldRelationDirectionMapping);
-            string countSql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, new List<string>(), fieldRelationDirectionMapping, isCountQuery: true);
 
             (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
@@ -2260,7 +2259,7 @@ from	IntersectType I
                             {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
                             {orderByClause} {direction}
                             offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
-            var countSQL = $@"{countSql}
+            var countSQL = $@"{sql}
                               {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
 
             if (countOnly)
@@ -2269,7 +2268,7 @@ from	IntersectType I
             }
 
             var reader = await Company.QueryMultipleAsync(
-                $"{itemsSQL}; {countSQL}", dbArgs);
+                $"{itemsSQL}; select count(1) from ({countSQL})a", dbArgs);
 
             var Values = new List<dynamic>();
             if (!countOnly)

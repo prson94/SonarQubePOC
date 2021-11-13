@@ -10,7 +10,7 @@ namespace d360.model.helpers
     public static class ComplexFieldsHelper
     {
 
-        public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping, bool isCountQuery = false)
+        public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping)
         {
             Guid resourceTypeUid = Guid.Parse("00000001-0000-0000-0000-a00000000011");
 
@@ -189,15 +189,6 @@ namespace d360.model.helpers
                     }
 
                 }
-
-
-            }
-
-            if (isCountQuery)
-            {
-                return $@"select distinct count(*)
-                                from graph.AssetNode H1
-                                {(string.Join("\n", joins))}";
             }
 
             return $@"select distinct 
