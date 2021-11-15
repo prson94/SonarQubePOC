@@ -441,6 +441,49 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
+        public async void ERR_PutRelationshipAsync_InvalidUid()
+        {
+            var model = new RelationshipUpdates();
+
+            var actionResult = await relationshipsController.PutRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID), model);
+            var result = await actionResult.ExecuteAsync(new CancellationToken());
+            var str = result.Content.ReadAsStringAsync();
+
+            Assert.True(!result.IsSuccessStatusCode);
+            Assert.True(result.StatusCode == HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async void ERR_PutRelationshipAsync_InvalidModel()
+        {
+            var model = new RelationshipUpdates();
+
+            var actionResult = await relationshipsController.PutRelationshipsAsync(Guid.Parse(DataConstants.ValidGUID), null);
+            var result = await actionResult.ExecuteAsync(new CancellationToken());
+            var str = result.Content.ReadAsStringAsync();
+
+            Assert.True(!result.IsSuccessStatusCode);
+            Assert.True(result.StatusCode == HttpStatusCode.InternalServerError);
+        }
+
+        [Fact]
+        public async void ERR_PutRelationshipAsync_MaxLimitReached()
+        {
+            var model = new RelationshipUpdates();
+            for (int i = 0; i <= 251; i++)
+            {
+                model.Add(new RelationshipUpdate());
+            }
+
+            var actionResult = await relationshipsController.PutRelationshipsAsync(Guid.Parse(DataConstants.ValidGUID), model);
+            var result = await actionResult.ExecuteAsync(new CancellationToken());
+            var str = result.Content.ReadAsStringAsync();
+
+            Assert.True(!result.IsSuccessStatusCode);
+            Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
         public async void ERR_PostBulkRelationshipAsync_InvalidUid()
         {
             var model = new RelationshipInserts();

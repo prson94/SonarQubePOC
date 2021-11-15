@@ -78,6 +78,11 @@ namespace d360.core.entities
         public Guid IntersectTypeUid { get; set; }
     }
 
+    public class ApiExecutionFields_PutRelationships
+    {
+        public Guid IntersectTypeUid { get; set; }
+    }
+
     public class ApiExecutionFields_DeleteRelationships
     {
         public Guid IntersectTypeUid { get; set; }
