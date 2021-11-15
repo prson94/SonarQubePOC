@@ -320,7 +320,7 @@ namespace igx.jobs.apiexecutionprocessor
                                     dbExecutionItem.Error = putRelationshipsResults.Count(i => !i.Success);
                                     log.WriteLine($"PUT Relationships (DB Complete): Total results: {putRelationshipsResults.Count}.");
 
-                                    await SaveResultsJsonToAzure(putRelationshipsResults, log, "Relationships", HttpMethod.Put);
+                                    await SaveResultsJsonToAzure(putRelationshipsResults, log, "Relationships", HttpMethod.Put).ConfigureAwait(false);
                                     company.SendApiGraphEvent(Info);
                                 }
                                 else
