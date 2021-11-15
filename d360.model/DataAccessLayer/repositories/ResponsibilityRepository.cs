@@ -692,7 +692,7 @@ where 1=1
                     if (cascade)
                     {
                         //delete rules
-                        await DeleteResponsibilityRules(responsibility.UID, ruleUids);
+                        await DeleteResponsibilityRulesAsync(responsibility.UID, ruleUids);
 
                         Company.Execute(
                             "delete T from ResponsibilityTypeRelationOverrideItem T inner join Asset A on A.AssetTypeID = @AssetTypeID and A.ID = T.AssetID and T.ResponsibilityTypeID = @ResponsibilityTypeID",
@@ -933,7 +933,7 @@ where 1=1
             return results;
         }
 
-        public async Task<List<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion)
+        public async Task<IReadOnlyList<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRulesAsync(Guid responsibilityTypeUid, IReadOnlyList<Guid> rulesForDeletion)
         {
             if (Company.Connection.State != ConnectionState.Open)
                 Company.Connection.Open();

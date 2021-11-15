@@ -3,15 +3,15 @@ using d360.web.Controllers.V2;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Xunit;
 using igx.UnitTests.Core;
 using System.Net;
+using System.Threading;
 using d360.core.entities;
+using d360.extensions;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -22,7 +22,8 @@ namespace igx.UnitTests.V2ControllerTests
 
         public ResponsibilitiesControllerTest()
         {
-            this.responsibilitiesController = new ResponsibilitiesController(GetCommunity(), GetCompany(), GetResponsibilityRepository(), GetAssetRepository(), GetSettingsRepository())
+            this.responsibilitiesController = new ResponsibilitiesController(GetCommunity(), GetCompany(), GetResponsibilityRepository(), GetAssetRepository(),
+                GetSettingsRepository(), GetMediator())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -98,6 +99,5 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
             AssertJSON.True<AssetResponsibilitiesApiModel>(str);
         }
-
     }
 }
