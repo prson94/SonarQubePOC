@@ -39,6 +39,7 @@ import { TagPickerModule } from '../controls/tag-picker/tag-picker';
 import { SwitchModule } from '../controls/switch/switch';
 import { IgDateModule } from '../controls/date/date';
 import { IgNumberFieldModule } from '../controls/number-picker/number-input.component';
+import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 
 @NgModule({
     imports: [
@@ -61,6 +62,8 @@ import { IgNumberFieldModule } from '../controls/number-picker/number-input.comp
         IgColorPickerModule,
         IgDateModule,
         IgNumberFieldModule,
+        DynamicFieldNameModule,
+        
         //prime        
         CalendarModule,
         DropdownModule,

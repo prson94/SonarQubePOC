@@ -39,6 +39,7 @@ import { PropertyGroupModule } from '../controls/property-group/property-group.c
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
 import { AssetEditorComponent } from './asset-editor.component';
 import { AssetEditorFieldComponent } from './asset-editor-field.component';
+import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 
 @NgModule({
     imports: [
@@ -47,6 +48,7 @@ import { AssetEditorFieldComponent } from './asset-editor-field.component';
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
+        
         //d3s
         CoreModule,
         SharedDeleteFormModule,
@@ -63,6 +65,8 @@ import { AssetEditorFieldComponent } from './asset-editor-field.component';
         PropertyGroupModule,
         MultiSelectModule,
         SearchFieldModule,
+        DynamicFieldNameModule,
+        
         //prime        
         CalendarModule,
         DropdownModule,

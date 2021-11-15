@@ -3,11 +3,7 @@
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <div [ngSwitch]="getFieldTypeForSwitch(field.FieldType)" class="col s12" *ngIf="field.FieldType!='Hidden'">
             <div class="FieldName">
-                <span *ngIf="fieldTooltip"
-                      pTooltip="{{fieldTooltip}}"
-                      tooltipPosition="top"
-                      tooltipStyleClass="ig-tooltip">{{currentFieldName}}</span>
-                <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
+                <d3s-dynamic-field-name [field]="field"></d3s-dynamic-field-name>
             </div>
             <div class="input-wrapper">
                 <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
