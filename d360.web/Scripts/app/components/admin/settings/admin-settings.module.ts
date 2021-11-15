@@ -12,6 +12,7 @@ import { HelpMenuModule } from '../../shared/helpmenu/helpmenu.module';
 import { IconPickerModule } from '../../shared/controls/icon-picker/icon-picker.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { DayOfWeekInputModule } from "../../shared/small-widgets/dayofweek-input/dayofweek-input.component";
+import { IgNumberFieldModule } from "../../shared/controls/number-picker/number-input.component";
 
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
@@ -61,7 +62,8 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
         D3SSharedModule,
         ResourceMultiSelectGridModule,
         PipesModule,
-        IgCheckboxModule
+        IgCheckboxModule,
+        IgNumberFieldModule,
     ],
     declarations: [
         AdminSettingsComponent,

@@ -79,7 +79,13 @@
             <div class="directions">
                 The maximum number of items able to be exported in an excel spreadsheet.
             </div>
-            <input type="number" min="0" [(ngModel)]="companySettings.MaxExcelExportRows" style="width: 95%" /> <br />
+            <ng-container>
+                <ig-number-input igSize="full" min="1" max="100000" [(ngModel)]="companySettings.MaxExcelExportRows" (ngModelChange)="validateExcelSize();" #excelval="ngModel"></ig-number-input>            
+                 <div *ngIf="excelval.invalid && (excelval.dirty || excelval.touched)">
+                    <div *ngIf="excelval.errors.underMin" class="ig-text-required">Please enter a positive value of 100,000 or less</div>
+                    <div *ngIf="excelval.errors.overMax" class="ig-text-required">Please enter a value of 100,000 or less</div>
+                </div>
+            </ng-container>
             <div class="FieldName">Asset Definition Panel Column Width</div>
             <div class="directions">
                 Width of columns (in pixels) used to lay out fields on the asset Definition panel.
