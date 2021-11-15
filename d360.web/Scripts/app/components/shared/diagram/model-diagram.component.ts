@@ -23,7 +23,7 @@ declare var CurrentResourceID;
     providers: [ModelsService]
 })
 
-export class ModelDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ModelDiagramComponent extends DiagramBaseComponent implements OnInit, OnDestroy {
     @Input() id: number = 0;
     @ViewChild('diagram', { static: false }) diagramRef;
 
@@ -62,12 +62,8 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
             { icon: 'fa fa-info-circle menu-icon' }
         );
 
-        this.initializeDiagram();
         this.sidePanelStorageKey = 'detail_' + AssetTypeClass.Model + '_' + CurrentResourceID;
-    }
-
-    public ngAfterViewInit() {
-        this.resizeDiagram();
+        this.initializeDiagram();
     }
 
     public ngOnDestroy() {
@@ -100,6 +96,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
                 this.diagram.model = new go.TreeModel(this.items);
                 this.isLoading = false;
+                this.resizeDiagram();
             }
         );
 
