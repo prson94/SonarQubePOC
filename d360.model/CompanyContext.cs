@@ -1374,6 +1374,7 @@ where	I.ID is null";
         /// <summary>
         /// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
         /// </summary>
+        [Obsolete("Please, use DeleteAsync. Delete is non-async & not transactional")]
         public override bool Delete<T>(Expression<Func<T, bool>> predicate)
         {
             var items = Filter(predicate).ToList();
