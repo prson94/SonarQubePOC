@@ -69,7 +69,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     keyFieldError: string = "";
 
-    private fieldTooltip: string;
     private cascadeSub: any;
     private excludedRelationitems = {};
     private relationItemsLoading = false;
@@ -272,11 +271,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 }
             }
         }
-
-        if (this.field && this.field.FieldDescription) {
-            this.fieldTooltip = this.field.FieldDescription ? String(this.field.FieldDescription).replace(/<[^>]+>/gm, '') : '';
-        }
-
 
         if (this.field.FieldType === 'Color') {
             this.assetService.getAllColors().subscribe((x) => {
