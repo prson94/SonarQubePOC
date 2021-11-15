@@ -133,6 +133,15 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.groups.unshift({ label: '[Administrators]', value: 0 });
                 this.isLoading = false;
             });
+        this.resetSaveButton();
+
+        this.settingsService.getRebuildRequestStatuses()
+            .subscribe(data => {
+                this.rebuildStatuses = data;
+            });
+    }
+
+    resetSaveButton() {
         this.secondaryNavService.clearButtons();
         this.SaveButton = new DynamicButton("Save Changes");
         this.secondaryNavService.showButton(this.SaveButton);
@@ -141,11 +150,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             this.SaveButton.isLoading = true;
             this.save();
         };
-
-        this.settingsService.getRebuildRequestStatuses()
-            .subscribe(data => {
-                this.rebuildStatuses = data;
-            });
     }
 
     save(): void {
@@ -350,9 +354,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             .subscribe(
                 (data) => {
                     this.isLoading = false;
-                    this.SaveButton.disabled = false;
-                    this.SaveButton.isLoading = false;
                     if (data && data.type === "error") {
+                        this.resetSaveButton();
                         this.messagesService.showError(data.title, data.message);
                     }
                     else {
