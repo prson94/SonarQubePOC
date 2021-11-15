@@ -714,4 +714,7 @@
   <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
     <value>Successfully deleted specified favorites</value>
   </data>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>Favorites List Cleared.</value>
+  </data>
 </root>

@@ -1571,6 +1571,12 @@ order by	q.SortOrder";
             }
         }
 
+        [Obsolete]
+        public async Task ClearFavorites(int resourceID)
+        {
+            await CompanyContext.DeleteAsync<Favorite>(i => i.ResourceID == resourceID && !i.IsHomePage);
+        }
+
         public async Task DeleteFavorites(int resourceID, List<int> favoriteIds)
         {
             await CompanyContext.DeleteAsync<Favorite>(i => i.ResourceID == resourceID && favoriteIds.Contains(i.ID));

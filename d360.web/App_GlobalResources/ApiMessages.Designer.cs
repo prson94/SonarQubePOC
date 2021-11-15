@@ -115,6 +115,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ApplicationId length cannot exceed 200 characters.
+        /// </summary>
+        public static string ApplicationIdMaxLengthViolated {
+            get {
+                return ResourceManager.GetString("ApplicationIdMaxLengthViolated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset cross reference already exists..
         /// </summary>
         public static string AssetCorssRefAlreadyExists {
@@ -129,14 +138,6 @@ namespace Resources {
         public static string AssetCrossReferenceNotHaveRequiredField {
             get {
                 return ResourceManager.GetString("AssetCrossReferenceNotHaveRequiredField", resourceCulture);
-            }
-        }
-
-        ///   Looks up a localized string similar to ApplicationId length cannot exceed 200 characters.
-        /// </summary>
-        public static string ApplicationIdMaxLengthViolated {
-            get {
-                return ResourceManager.GetString("ApplicationIdMaxLengthViolated", resourceCulture);
             }
         }
         
@@ -632,6 +633,15 @@ namespace Resources {
         public static string FavoritesEmptyRoute {
             get {
                 return ResourceManager.GetString("FavoritesEmptyRoute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Favorites List Cleared..
+        /// </summary>
+        public static string FavoritesListCleared {
+            get {
+                return ResourceManager.GetString("FavoritesListCleared", resourceCulture);
             }
         }
         

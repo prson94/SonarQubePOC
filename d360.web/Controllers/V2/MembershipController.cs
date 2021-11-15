@@ -1121,7 +1121,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 var results = await membershipRepository.GetFavorites(_company.CurrentResourceID);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
             }
             catch (Exception ex)
             {
@@ -1130,7 +1130,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage);
             }
         }
 
@@ -1167,9 +1167,42 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
         /// <summary>
-        /// Given list of favorte ids, deletes the favorites for the current user
+        /// Clears the list of favorite items for the current user.
+        /// This endpoint is obsolete, please prefer to use POST /api/v2/users/me/favorites/bulkDelete
         /// </summary>
         /// <returns></returns>
+        [
+            HttpDelete,
+            Route("users/me/favorites"),
+            SwaggerResponse(HttpStatusCode.OK, ""),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            Obsolete
+        ]
+        public async Task<IHttpActionResult> ClearFavorites()
+        {
+            var prefix = $"Membership.ClearFavorites => ";
+
+            try
+            {
+                await membershipRepository.ClearFavorites(_company.CurrentResourceID);
+                return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Given list of favorite ids, deletes the favorites for the current user
+        /// </summary>
+        /// <param name="favoriteIds">List of favorite ids</param>
+        /// <returns>Status</returns>
         [
             HttpPost,
             Route("users/me/favorites/bulkDelete"),
