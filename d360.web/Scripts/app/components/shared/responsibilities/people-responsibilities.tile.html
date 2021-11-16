@@ -83,8 +83,8 @@
                         </td>
                         <td>
                             <div [hidden]="true">{{item.ResponsibilityUid}}</div>
-                            <div *ngIf="item.AssignedBy.toLowerCase()=='user' && hasModifyResponsibilitiesPermissions() && showRowTools" class="RowTools">
-                                <a (click)="selectedRow = item; edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <div *ngIf="showEdit(item)" class="RowTools">
+                                <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                             </div>
                         </td>
                         <td>
