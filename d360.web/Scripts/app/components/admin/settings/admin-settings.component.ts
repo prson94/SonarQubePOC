@@ -38,7 +38,8 @@ import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 
 export class AdminSettingsComponent extends AdminBaseComponent {
     items: HelpMenu[] = []; 
-    deletedRecords: HelpMenu[] = []; 
+    deletedRecords: HelpMenu[] = [];
+    addedRecords: HelpMenu[] = [];
     companySettings: CompanySettings = new CompanySettings();
     searchTypes: SearchType[];
     companyLogo: CompanyImage = new CompanyImage();
@@ -163,8 +164,12 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         for (let i = 0; i < this.items.length; i++) {
             this.items[i].order = i;
         }
-        this.helpMenuService.updateHelpMenuItems(this.items, this.deletedRecords).subscribe((r) => {
+        this.helpMenuService.deleteHelpMenuItems(this.deletedRecords).subscribe((r) => {
         });
+        this.helpMenuService.updateHelpMenuItems(this.items).subscribe((r) => {
+        });
+        this.helpMenuService.addHelpMenuItems(this.addedRecords).subscribe((r) => { });
+        
 
         //#region Translate to settings array for v2 API.
 

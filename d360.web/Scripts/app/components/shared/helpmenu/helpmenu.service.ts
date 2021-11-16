@@ -15,25 +15,44 @@ export class HelpMenuService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     public getHelpMenuItems(): Observable<HelpMenu[]> {
-        return this.http.get('api/v2/helpmenu')
+        return this.http.get('api/v2/environment/help')
             .pipe(
                 map((response) => <HelpMenu[]>response),
                 catchError((err) => this.handleError(err))
             );
     }
 
-    updateHelpMenuItems(addItems: HelpMenu[], deleteItems: HelpMenu[]): Observable<any[]> {
-        const httpOptions = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-            body: [{ adds: addItems, deletes: deleteItems }]
-        };
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/json'
-        });
-        return this.http.post('api/v2/helpmenu', JSON.stringify({ adds: addItems, deletes: deleteItems }), { headers })
+    public addHelpMenuItems(addItems: HelpMenu[]): Observable<any[]> {
+        var headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.post('api/v2/environment/help', JSON.stringify(addItems), { headers })
             .pipe(
                 map((response) => <any>response),
                 catchError((err) => this.handleError(err))
             );
-    }  
+    }
+
+    public updateHelpMenuItems(updateItems: HelpMenu[]): Observable<any[]> {
+        var headers = new HttpHeaders({ 'Content-Type': 'application/json' })
+        return this.http.put('api/v2/environment/help', JSON.stringify(updateItems), { headers })
+            .pipe(
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    public deleteHelpMenuItems(deleteItems: HelpMenu[]): Observable<any[]> {
+        var model = [];
+        deleteItems.forEach((item) => {
+            model.push({ uid: item.uid });
+        });
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: model
+        };
+        return this.http.delete('api/v2/environment/help', httpHeaders)
+            .pipe(
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
 }

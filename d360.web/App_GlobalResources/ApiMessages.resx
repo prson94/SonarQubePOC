@@ -697,16 +697,28 @@
     <value>{0} successfully edited.</value>
   </data>
   <data name="HelpMenuSuccess" xml:space="preserve">
-    <value>Help Menu items successfully updated.</value>
+    <value>Help Menu items have been successfully updated.</value>
   </data>
-  <data name="HelpMenuUpdated" xml:space="preserve">
-    <value>Help Menu Updated.</value>
+  <data name="HelpMenuItemsUpdated" xml:space="preserve">
+    <value>Help Menu Items Updated.</value>
   </data>
   <data name="HelpMenuVisibilityError" xml:space="preserve">
     <value>Item visibility must be set to 1, 2 or 3.</value>
   </data>
   <data name="ExecutionStatusInvalid" xml:space="preserve">
     <value>Invalid value for status. Valid values are Pending, Running and Completed.</value>
+  </data>
+  <data name="HelpItemsAdded" xml:space="preserve">
+    <value>Help menu items have been successfully created.</value>
+  </data>
+  <data name="HelpItemsDeleted" xml:space="preserve">
+    <value>Help menu items have been successfully removed.</value>
+  </data>
+  <data name="HelpMenuItemsCreated" xml:space="preserve">
+    <value>Help Menu Items Created.</value>
+  </data>
+  <data name="HelpMenuItemsDeleted" xml:space="preserve">
+    <value>Help Menu Items Deleted.</value>
   </data>
   <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
     <value>ApplicationId length cannot exceed 200 characters</value>

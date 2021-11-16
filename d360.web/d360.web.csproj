@@ -500,7 +500,6 @@
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CommentsController.cs" />
     <Compile Include="Controllers\V2\DataProfilesController.cs" />
-    <Compile Include="Controllers\V2\HelpMenuController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
