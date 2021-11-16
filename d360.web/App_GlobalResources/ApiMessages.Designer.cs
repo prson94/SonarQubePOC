@@ -115,6 +115,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ApplicationId length cannot exceed 200 characters.
+        /// </summary>
+        public static string ApplicationIdMaxLengthViolated {
+            get {
+                return ResourceManager.GetString("ApplicationIdMaxLengthViolated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset cross reference already exists..
         /// </summary>
         public static string AssetCorssRefAlreadyExists {
@@ -129,14 +138,6 @@ namespace Resources {
         public static string AssetCrossReferenceNotHaveRequiredField {
             get {
                 return ResourceManager.GetString("AssetCrossReferenceNotHaveRequiredField", resourceCulture);
-            }
-        }
-
-        ///   Looks up a localized string similar to ApplicationId length cannot exceed 200 characters.
-        /// </summary>
-        public static string ApplicationIdMaxLengthViolated {
-            get {
-                return ResourceManager.GetString("ApplicationIdMaxLengthViolated", resourceCulture);
             }
         }
         
@@ -884,6 +885,15 @@ namespace Resources {
         public static string InvalidAssetTypeID {
             get {
                 return ResourceManager.GetString("InvalidAssetTypeID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No match found for AssetTypeUid provided..
+        /// </summary>
+        public static string InvalidAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
             }
         }
         

@@ -711,4 +711,7 @@
   <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
     <value>ApplicationId length cannot exceed 200 characters</value>
   </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>No match found for AssetTypeUid provided.</value>
+  </data>
 </root>

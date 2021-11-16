@@ -1057,7 +1057,7 @@ order by Sort, title";
                             UpdatedBy = Company.CurrentResourceID,
                             AssetTypeUid = assetTypeUid,
                             IntersectTypeUid = intersectTypeUid
-                    };
+                        };
 
                         xls = new SLDocument(stream);
 

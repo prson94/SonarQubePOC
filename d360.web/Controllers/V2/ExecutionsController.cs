@@ -1142,44 +1142,94 @@ from	[Load] L
             }
         }
         /// <summary>
-        /// Retrieves bulk load info for a given load unique identifier.
+        /// Creates a new Bulk load.
         /// </summary>
-        /// <param name="assetTypeUid">The unique identifier of the load which details are returned for.</param>
-        /// <param name="type">The unique identifier of the load which details are returned for.</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+        /// <param name="type">The bulkload type of the load you are creating.</param>
+        /// <param name="notes">Add notes to the load.</param>
         /// <returns></returns>
         [
             HttpPost,
             MapToApiVersion("2.0"),
             Route("bulkload"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Gets bulk load info.", typeof(SingleLoadDetail)),
+            SwaggerResponse(HttpStatusCode.OK, "Creates a new Bulk load.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-           
+            SwaggerParameter("file", "File to be upload", DataType = "file", ParameterType = "formData", Required = false),
+
         ]
 
-        public async Task<IHttpActionResult> AddLoad(Guid? assetTypeUid = null, BulkLoadType? type = null)
+        public async Task<IHttpActionResult> AddLoad(Guid? assetTypeUid = null, BulkLoadType type = BulkLoadType.Promotion, string notes = "")
         {
             try
             {
-                //Stream inputStream = Request.InputStream;
-                Stream inputStream = null;
-                string postJson = new StreamReader(inputStream).ReadToEnd();
-                LoadFilePostModel model = JsonConvert.DeserializeObject<LoadFilePostModel>(postJson);
+                string root = Path.GetTempPath();
+                var provider = new MultipartFormDataStreamProvider(root);
+                //var task = await Request.Content.ReadAsMultipartAsync(provider);
 
+                Stream reqStream = Request.Content.ReadAsStreamAsync().Result;
+                MemoryStream tempStream = new MemoryStream();
+                reqStream.CopyTo(tempStream);
+
+
+
+                tempStream.Seek(0, SeekOrigin.End);
+                StreamWriter writer = new StreamWriter(tempStream);
+                writer.WriteLine();
+                writer.Flush();
+                tempStream.Position = 0;
+
+
+                StreamContent streamContent = new StreamContent(tempStream);
+                foreach (var header in Request.Content.Headers)
+                {
+                    streamContent.Headers.Add(header.Key, header.Value);
+                }
+
+                // Read the form data and return an async task.
+                //var a = await streamContent.ReadAsFormDataAsync();
+
+                //var task1 = await Request.Content.ReadAsMultipartAsync();
+                //Task<Stream> task = Request.Content.ReadAsStreamAsync();
+                //task.Wait();
+                //FileStream requestStream = (FileStream)task.Result;
+                string inputContent = "";
+                //using (StreamReader inputStreamReader = new StreamReader(task.Result))
+                //{
+                //    inputContent = inputStreamReader.ReadToEnd();
+                //}
+
+
+
+                //var queryParams = Request.GetQueryNameValuePairs();
+                //Stream inputStream = Request.InputStream;
+                //Stream inputStream = requestStream;
+                //string file = new StreamReader(inputStream).ReadToEnd();
+
+                var test123 = Request.Content.ReadAsStreamAsync();
+                //var queryParams = Request.GetQueryNameValuePairs();
+                ////Stream inputStream = Request.InputStream;
+                Stream inputStream = test123.Result;
+                string file = new StreamReader(inputStream).ReadToEnd();
+                var abc = JsonConvert.DeserializeObject<dynamic>(file);
+
+                var assetType = Company.AssetTypes.Where(r => r.uid == assetTypeUid).FirstOrDefault();
 
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
                 }
 
-                if (type == null)
+                if(assetType == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, "test")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
                 }
-
-                var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
+                //var mimeType = MimeMapping.GetMimeMapping(inputContent);
+                //var i = mimeType.sin
+                
+                var match = MimeTypeExtensionsMap.RegEx.Match(inputContent);
 
                 var mime = match.Groups["mime"].Value;
                 var data = match.Groups["data"].Value;
@@ -1194,16 +1244,16 @@ from	[Load] L
                 {
                     if (extension == ".xlsx")
                     {
-                        var objectType = Company.Query<string>("select [Object] from AssetType uid =  @uid", assetTypeUid).FirstOrDefault();
-                        var objectID = Company.Query<int>("select [ObjectID] from AssetType uid =  @uid", assetTypeUid).FirstOrDefault();
+                        var objectType = assetType.Object;
+                        var objectID = assetType.ObjectID;
                         var intersectTypeUid = Company.Query<Guid?>("select [uid] from [IntersectType] where ID = @objectID and @objectType = 'IntersectType'", new { objectType, objectID }).FirstOrDefault();
 
                         load = new Load
                         {
                             File = stream.ToArray(),
-                            Action = model.LoadAction,
+                            Action = type.GetDisplayName(),
                             Extension = extension,
-                            Notes = model.Notes,
+                            Notes = notes,
                             Object = objectType,
                             ObjectID = objectID,
                             DateStarted = DateTime.UtcNow,
@@ -1224,7 +1274,7 @@ from	[Load] L
                             var testValue = xls.GetCellValueAsString(1, i);
                             if (string.IsNullOrEmpty(testValue))
                             {
-                                errorMessages.Add($"Invalid column header in column {i}.");
+                                errorMessages.Add($"Invalid column header in column {i}. ");
                             }
                             else
                             {
@@ -1249,14 +1299,14 @@ from	[Load] L
 
                                     if (!fieldTypeNames.Any(x => x.Name == columnName))
                                     {
-                                        errorMessages.Add($"Unexpected column found [{columnName}]");
+                                        errorMessages.Add($"Unexpected column found [{columnName}]. ");
                                     }
                                     else
                                     {
 
                                         if (load.Action == "P" && load.LoadColumns.Any(l => l.Name == columnName))
                                         {
-                                            errorMessages.Add($"Duplicate column found [{columnName}]");
+                                            errorMessages.Add($"Duplicate column found [{columnName}]. ");
                                         }
                                         else
                                         {
@@ -1359,14 +1409,14 @@ from	[Load] L
                                         errorMessages.AddRange(
                                             levelFields
                                             .Where(f => f.Level == l.Level && f.PartOfKey && f.Required && f.ColumnIndex == -1)
-                                            .Select(f => $"Key column not provided [{f.Name}]")
+                                            .Select(f => $"Key column not provided [{f.Name}]. ")
                                         );
 
                                         // Log any missing required, non-key field errors.
                                         errorMessages.AddRange(
                                             levelFields
                                             .Where(f => f.Level == l.Level && f.Required && !f.PartOfKey && f.ColumnIndex == -1)
-                                            .Select(f => $"Required column not provided [{f.Name}]")
+                                            .Select(f => $"Required column not provided [{f.Name}]. ")
                                         );
 
                                         // Get any key columns that do not have data populated for this level.
@@ -1383,22 +1433,22 @@ from	[Load] L
 
                                 if (invalidKeyFields.Count > 0)
                                 {
-                                    errorMessages.Add($"One or more values not populated for Key column{(invalidKeyFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidKeyFields)}]");
+                                    errorMessages.Add($"One or more values not populated for Key column{(invalidKeyFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidKeyFields)}]. ");
                                 }
                                 if (invalidRequiredFields.Count > 0)
                                 {
-                                    errorMessages.Add($"One or more values not populated for Required column{(invalidRequiredFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidRequiredFields)}]");
+                                    errorMessages.Add($"One or more values not populated for Required column{(invalidRequiredFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidRequiredFields)}]. ");
                                 }
                             }
                             else
                             {
-                                errorMessages.Add("The number of columns in the spreadsheet exceeds the number of defined fields for this load type.");
+                                errorMessages.Add("The number of columns in the spreadsheet exceeds the number of defined fields for this load type. ");
                             }
                         }
                     }
                     else
                     {
-                        errorMessages.Add("Incorrect file type");
+                        errorMessages.Add("Incorrect file type. ");
                     }
                 }
 
@@ -1420,7 +1470,12 @@ from	[Load] L
                 }
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, "test")).ConfigureAwait(false);
+                    string error = "";
+                    foreach(var i in errorMessages)
+                    {
+                        error += i;
+                    }
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, error)).ConfigureAwait(false);
                 }
             }
             catch (Exception e)

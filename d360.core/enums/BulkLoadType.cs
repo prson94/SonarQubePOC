@@ -9,10 +9,12 @@ namespace d360.core.enums
         Promotion = 0,
         [Name("R")]
         Relation = 1,
-        [Name("UR")]
-        Unrelation = 2,
-        [Name("UG")]
-        UsersGroups = 3
+        [Name("O")]
+        Responsibilities = 2,
+        [Name("U")]
+        Unrelation = 3,
+        [Name("M")]
+        UsersGroups = 4
     }
 
     public class BulkLoadTypeInfo
