@@ -21,8 +21,6 @@ import { CoreModule } from "../core.module";
 import { AssetDetailModule } from "../asset-detail/asset-detail.module";
 import { ModalDrawerModule } from '../modal-drawer/gov-modal-drawer.module';
 import { TagPickerModule } from '../controls/tag-picker/tag-picker';
-import { MessagesModule } from 'primeng/messages';
-import { MessageModule } from 'primeng/message';
 import { DropdownModule } from 'primeng/dropdown';
 import { DataProfileTimeSeriesComponent } from "./dataprofile-time-series.component";
 
@@ -47,8 +45,6 @@ import { DataProfileTimeSeriesComponent } from "./dataprofile-time-series.compon
         AssetDetailModule,
         ModalDrawerModule,
         TagPickerModule,
-        MessagesModule,
-        MessageModule,
         DropdownModule
     ],
     declarations: [

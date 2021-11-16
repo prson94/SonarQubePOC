@@ -134,10 +134,10 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
 
     private renderTimeSeriesChart(chartType: string) {
         this.graphTitle = this.graphType[chartType].title;
-        let series = []
+        let series = [];
 
         if (this.graphType[chartType].seriesType === "combined" && this.graphType[chartType]?.series?.length > 0) {
-            this.graphType[chartType].series.forEach((s) => series.push(this.generateSeries(s)))
+            this.graphType[chartType].series.forEach((s) => series.push(this.generateSeries(s)));
         } else {
             series.push(this.generateSeries(chartType));
         }
@@ -183,7 +183,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                         mindate.setSeconds(0);
                         mindate.setMilliseconds(0);
 
-                        let currentProfileDate = new Date(this.dataProfileList[0].profileSetDate);                        
+                        let currentProfileDate = new Date(this.dataProfileList[0].profileSetDate);
                         if (currentProfileDate.getTime() <= maxdate.getTime()) {
                             d.setMonth(baseMonth - 1);
                             if (isCustom && (mindate.getTime() - d.getTime() === 0)) { // 1 Months
@@ -203,7 +203,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                                 isCustom = false;
                             }
                             if (isCustom) {
-                                let lastProfileDate = new Date(this.dataProfileList[this.dataProfileList.length-1].profileSetDate);
+                                let lastProfileDate = new Date(this.dataProfileList[this.dataProfileList.length - 1].profileSetDate);
                                 if (lastProfileDate.getTime() >= mindate.getTime()) { //All
                                     isCustom = false;
                                 }
@@ -228,7 +228,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 min: this.graphType[chartType]?.dataType === "percentage" ? 0 : null,
                 max: this.graphType[chartType]?.dataType === "percentage" ? 100 : null,
             }
-        }
+        };
 
         this.timeSeriesChart = Stockcharts.chart('timeSeries', chartOptions);
 
@@ -249,10 +249,10 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 let value = x[chartType];
                 if (this.graphType[chartType]?.dataType) {
                     if (this.graphType[chartType]?.dataType === "string") {
-                        value = Number(x[chartType])
+                        value = Number(x[chartType]);
                     }
                     if (this.graphType[chartType]?.dataType === "percentage") {
-                        value = x[chartType] * 100
+                        value = x[chartType] * 100; 
                     }
                 }
                 return [new Date(x.profileSetDate).getTime(), value];                
@@ -275,6 +275,6 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
             },
             showInNavigator: true
 
-        }
+        };
     }
 }
