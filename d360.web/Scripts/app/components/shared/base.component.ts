@@ -410,7 +410,7 @@ export class BaseComponent {
                     'Scoring',
                     'Scoring',
                     ['fa-sitemap'],
-                    `/sidebar/score/${this.objectType}/${this.uid}`, null, 7
+                    `/sidebar/score/${this.uid}`, null, 7
                 );
 
                 this.secondaryNavService.showItem(this.scoreSidebar);
@@ -991,7 +991,7 @@ export class BaseComponent {
         components.push(this.connectorLabels);
 
         components.forEach((cmp) => {
-            if (cmp && cmp.url == currentComponentUrl) {
+            if (cmp && currentComponentUrl.startsWith(cmp.url)) {
                 cmp.active = true;
             }
 
