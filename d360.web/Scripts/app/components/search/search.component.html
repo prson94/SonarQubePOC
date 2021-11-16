@@ -75,7 +75,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection?.AssetUid != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selection.AssetUid"

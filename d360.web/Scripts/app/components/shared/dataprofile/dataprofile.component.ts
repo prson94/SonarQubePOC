@@ -14,10 +14,14 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class DataProfileComponent extends BaseComponent implements OnInit {
     @Input() dataProfile: any;
+    @Input() dataProfileList: any[] = [];
     @Input() isModal: boolean = false;  
     @Input() assetData: any;
     @Output() linkClicked = new EventEmitter();
-    
+    @Output() showTimeSeries = new EventEmitter();
+    showMaxValueGraphIcon: boolean;
+    showMinValueGraphIcon: boolean;
+
     constructor(
         private assetService: AssetService,
         private assetTypeService: AssetTypeService,
@@ -39,7 +43,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private bottomSamplesToShow: number = 5;
     private topSamples: any;
     private bottomSamples: any;
-
+    
     private sampleBarChart: any;
 
     private ShowBoolean: boolean = false;
@@ -57,6 +61,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private hasValidCounts: boolean = true;
     private maxValue: any;
     private minValue: any;
+    private maxValueStr: any;
+    private minValueStr: any;
+    private lastMaxValue: any;
+    private lastMinValue: any;
     private validCount: number;
     private distinctCount: number;
     private invalidCount: number;
@@ -64,6 +72,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private showSimilar: boolean = true;
     private assetName: string;
     private assetTypeName: string;
+    private hideInfoMessage: boolean = false;
+    public displayChart: boolean = false;
+    private hideDataProfileInstructionMessageKey = "hideDataProfileInstructionMessage";
+    public chartType: string;
 
     isMatchDetectionPopupVisible: boolean = false;
     matchType: string = "";
@@ -90,7 +102,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                         this.isLoading = false;
                     });
                 });
-        }        
+        }
     }    
     
     ngAfterViewInit() {
@@ -99,7 +111,15 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         }            
     }
 
-    initialize() {                        
+    initialize() {
+        if (localStorage.getItem(this.hideDataProfileInstructionMessageKey)) {
+            //this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === 'true';
+            //uncomment this
+        }
+        if (!this.dataProfile) {
+            this.dataProfile = this.dataProfileList[0];
+        }
+        
         this.validPercentage = ((this.dataProfile.matchCount / this.dataProfile.totalCount) * 100);
 
         this.nullBlankCountTotal = ((this.dataProfile.nullCount ?? 0) + (this.dataProfile.blankCount ?? 0));
@@ -245,19 +265,25 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private setMinAndMaxText() {
         if (this.dataProfile.type && (this.dataProfile.type.toLowerCase() === 'double' || this.dataProfile.type.toLowerCase() === 'long')) {
             if (isNaN(Number(this.dataProfile?.max))) {
-                this.maxValue = this.dataProfile?.max;
+                this.maxValueStr = this.dataProfile?.max;
             } else {
-                this.maxValue = Number(this.dataProfile?.max).toLocaleString();
+                this.maxValue = Number(this.dataProfile?.max);
+                this.maxValueStr = Number(this.dataProfile?.max).toLocaleString();
+                this.lastMaxValue = Number(this.dataProfileList[1]?.max);
+                this.showMaxValueGraphIcon = true;
             }
 
             if (isNaN(Number(this.dataProfile?.min))) {
-                this.minValue = this.dataProfile?.min;
+                this.minValueStr = this.dataProfile?.min;
             } else {
-                this.minValue = Number(this.dataProfile?.min).toLocaleString();
+                this.minValue = Number(this.dataProfile?.min);
+                this.minValueStr = Number(this.dataProfile?.min).toLocaleString();
+                this.lastMinValue = Number(this.dataProfileList[1]?.min);
+                this.showMinValueGraphIcon = true;
             }
         } else {
-            this.maxValue = this.dataProfile?.max;
-            this.minValue = this.dataProfile?.min;
+            this.maxValueStr = this.dataProfile?.max;
+            this.minValueStr = this.dataProfile?.min;
         }
     }
 
@@ -676,4 +702,14 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         this.isMatchDetectionPopupVisible = false;
         this.matchAssetUid = this.dataProfile.assetUid;
     }
+
+    private hideChartInfoMessage() {
+        localStorage.setItem("hideDataProfileInstructionMessage", "true");
+        this.hideInfoMessage = true;
+    }
+
+    private openChart(chartType: string) {
+        this.displayChart = true;
+        this.chartType = chartType;       
+    }  
 }
