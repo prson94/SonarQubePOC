@@ -305,6 +305,31 @@ namespace igx.jobs.apiexecutionprocessor
 
                                 break;
                             #endregion
+                            case ApiExecutionAction.PutRelationships:
+                                #region
+                                var putRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutRelationships>(dbExecutionItem.Fields);
+                                intersectType = company.Filter<IntersectType>(i => i.uid == putRelationshipsFields.IntersectTypeUid).SingleOrDefault();
+
+                                if (intersectType != null)
+                                {
+                                    var putRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipUpdates>(Info.StorageFolder, Info.RequestFileName);
+
+                                    log.WriteLine($"PUT Relationships (DB Start): Total raw assets: {putRelationships.Count}. Intersect Type Uid: {putRelationshipsFields.IntersectTypeUid}.");
+                                    var putRelationshipsResults = company.PutRelationships(dbExecutionItem, intersectType, putRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
+                                    dbExecutionItem.Processed = putRelationshipsResults.Count(i => i.Success);
+                                    dbExecutionItem.Error = putRelationshipsResults.Count(i => !i.Success);
+                                    log.WriteLine($"PUT Relationships (DB Complete): Total results: {putRelationshipsResults.Count}.");
+
+                                    await SaveResultsJsonToAzure(putRelationshipsResults, log, "Relationships", HttpMethod.Put).ConfigureAwait(false);
+                                    company.SendApiGraphEvent(Info);
+                                }
+                                else
+                                {
+                                    dbExecutionItem.ErrorMessage = $"Intersect Type for uid [{putRelationshipsFields.IntersectTypeUid}] not found.";
+                                }
+
+                                break;
+                            #endregion
                             case ApiExecutionAction.DeleteRelationships:
                                 #region
                                 var deleteRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(dbExecutionItem.Fields);

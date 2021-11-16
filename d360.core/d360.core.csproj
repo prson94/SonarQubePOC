@@ -49,6 +49,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="resources\CompanyContextApiError.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyContextApiError.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\CompanyContextErrors.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -152,6 +157,10 @@
     <EmbeddedResource Update="resources\CommonNames.resx">
       <LastGenOutput>CommonNames.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\CompanyContextApiError.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>CompanyContextApiError.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\CompanyContextErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

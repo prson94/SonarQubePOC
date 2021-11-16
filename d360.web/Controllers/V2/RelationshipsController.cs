@@ -1181,6 +1181,110 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Takes a given set of relationships and updates them. Use this endpoint if you want to process under 250 items and need immediate results.
+        /// </summary>
+        /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+        /// <param name="relationships">The payload of your request. Must include Uid.</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
+        /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPut,
+            MapToApiVersion("2.0"),
+            Route("{intersectTypeUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipUpdateResult>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden you dont have permissions to update a relationship of this type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutRelationshipsAsync(
+            Guid intersectTypeUid,
+            RelationshipUpdates relationships,
+            bool triggerWorkflow = false,
+            bool lookupFieldsPassedByValue = false,
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))]  string applicationId = null)
+        {
+            var prefix = "Relationships.PutRelationshipsAsync => ";
+
+            try
+            {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
+                IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
+
+                if (intersectType == null)
+                {
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
+                }
+
+                if (relationships == null)
+                {
+                    relationships = readRequestJsonContent<RelationshipUpdates>(Request, true).Result;
+                }
+
+                if (relationships == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
+                }
+
+                if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
+                }
+
+                var execution = getApiExecution(
+                    relationships.Count,
+                    new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
+                    applicationId: applicationId);
+
+                Company.Add(execution);
+
+                List<DatabaseBulkRelationshipUpdateResult> results = null;
+                try
+                {
+                    results = Company.PutRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
+
+                    // Close execution record.
+                    execution.Processed = results.Count;
+                    execution.Error = results.Count(i => !i.Success);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+
+                    // Quick sync of graph.
+                    try
+                    {
+                        Company.SynchronizeExecutionRelationshipWithGraph(execution.ExecutionID);
+                    }
+                    catch
+                    {
+                        //Do nothing, as graph topic will eventually synch.
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = message;
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
 
         /// <summary>
         /// Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
@@ -1259,6 +1363,84 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
+        /// </summary>
+        /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid. Uid is optional.</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPut,
+            MapToApiVersion("2.0"),
+            Route("batch/{intersectTypeUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)), SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden you dont have permissions to update a relationship of this type.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> PutBulkRelationshipsAsync(
+            Guid intersectTypeUid,
+            RelationshipUpdates relationships,
+            bool triggerWorkflow = false,
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))]  string applicationId = null)
+        {
+            var prefix = "Relationships.PutBulkRelationshipsAsync => ";
+            try
+            {
+                if (applicationId != null && applicationId.Length > 200)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+                }
+
+                IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
+
+                if (intersectType == null)
+                {
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
+                }
+
+                if (relationships == null)
+                {
+                    relationships = readRequestJsonContent<RelationshipUpdates>(Request, true).Result;
+                }
+
+                if (relationships == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
+                }
+
+                var execution = getApiExecution(
+                    relationships.Count,
+                    new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
+                    applicationId: applicationId);
+
+                ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPutRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = ApiMessages.ExecutionIDStatus,
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/relationships/executions/{executionInfo.ExecutionID}/status"
+                            }
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
 
         /// <summary>
         /// GETs the status of an execution record, including the results for the execution.

@@ -339,6 +339,27 @@ namespace d360.core.entities
 
     [JsonArray]
     [DataContract(Name = "relationships")]
+    public class RelationshipUpdates : List<RelationshipUpdate>
+    {
+
+    }
+
+    public class RelationshipUpdate
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+        [DataMember]
+        public string Owner { get; set; }
+    }
+
+    [JsonArray]
+    [DataContract(Name = "relationships")]
     public class RelationshipDeletes : List<RelationshipDelete>
     {
     }
@@ -478,6 +499,36 @@ namespace d360.core.entities
         [DataMember]
         public bool Success { get; set; }
         [DataMember]
+        public bool IsNew { get; set; }
+
+        public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }
+
+        public string Object { get { return "Intersect"; } set { } }
+
+        public int ObjectID { get { return IntersectID; } set { } }
+
+        [DataMember]
+        public Guid uid { get; set; }
+    }
+
+    [DataContract]
+    public class DatabaseBulkRelationshipUpdateResult : IWorkflowEnabledAsset, IGraphAsset
+    {
+        public Guid ExecutionID { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public int ItemNumber { get; set; }
+
+        public int IntersectID { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+
         public bool IsNew { get; set; }
 
         public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }
