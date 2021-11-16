@@ -45,7 +45,7 @@
 
 p-tristatecheckbox {
     .ig-checkbox {
-        span:not(.pi-times):not(.pi-check) {
+        &:not(.p-highlight) span.pi-times {
             &:before {
                 content: "\e90f";
             }
@@ -55,6 +55,18 @@ p-tristatecheckbox {
             &:before {
                 content: "";
             }
+        }
+    }
+}
+
+p-tristatecheckbox[igcheckbox] {
+    display: inline-flex;
+}
+
+p-checkbox, p-tristatecheckbox {
+    &[igcheckbox] {
+        .p-checkbox {
+            background: none;
         }
     }
 }

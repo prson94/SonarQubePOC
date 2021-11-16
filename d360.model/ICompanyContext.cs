@@ -155,8 +155,11 @@ namespace d360.model
         void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType);
         Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false);
         bool Delete(SystemObjects type, int id);
+
+        [Obsolete("Please, use DeleteAsync. Delete is non-async & not transactional")]
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
+        Task DeleteAsync<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         bool DeleteRelationship(int id);
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);

@@ -30,13 +30,14 @@ export class FavoritesService extends BaseObservableService {
             );
     }
 
-    deleteCurrentUsersFavoritesV2(): Observable<JsonResult> {
+    deleteCurrentUsersFavoritesV2(favoriteIds: number[]): Observable<JsonResult> {
         return this
             .http
-            .delete('api/v2/membership/users/me/favorites')
+            .post('api/v2/membership/users/me/favorites/bulkDelete', favoriteIds)
             .pipe(
                 map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
+                catchError(err => this.handleError(err)),
+                tap(res => this.clearCache())
             );
     }
 

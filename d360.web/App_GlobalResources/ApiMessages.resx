@@ -711,4 +711,10 @@
   <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
     <value>ApplicationId length cannot exceed 200 characters</value>
   </data>
+  <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>Successfully deleted specified favorites</value>
+  </data>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>Favorites List Cleared.</value>
+  </data>
 </root>

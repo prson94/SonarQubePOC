@@ -1374,6 +1374,7 @@ where	I.ID is null";
         /// <summary>
         /// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
         /// </summary>
+        [Obsolete("Please, use DeleteAsync. Delete is non-async & not transactional")]
         public override bool Delete<T>(Expression<Func<T, bool>> predicate)
         {
             var items = Filter(predicate).ToList();
@@ -1399,6 +1400,23 @@ where	I.ID is null";
             {
                 Set<T>().Remove(entity);
                 return (SaveChanges() > 0);
+            }
+            catch (Exception ex)
+            {
+                throw resolveToRealException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
+        /// </summary>
+        public async Task DeleteAsync<T>(Expression<Func<T, bool>> predicate) where T: BaseObject
+        {
+            try
+            {
+                var items = await Filter(predicate).ToListAsync();
+                items.ForEach(i => Set<T>().Remove(i));
+                await SaveChangesAsync();
             }
             catch (Exception ex)
             {

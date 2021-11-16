@@ -79,15 +79,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Favorites List Cleared..
-        /// </summary>
-        public static string FavoritesListCleared {
-            get {
-                return ResourceManager.GetString("FavoritesListCleared", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Field type for key [{0}] not found on this asset.
         /// </summary>
         public static string FieldTypeKeyNotFound {
