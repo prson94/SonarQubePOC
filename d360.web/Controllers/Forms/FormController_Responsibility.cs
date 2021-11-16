@@ -210,7 +210,8 @@ namespace d360.web.Controllers
                     default:
                         break;
                 }
-                overrideID = Company.ResponsibilityTypeRelationOverrideItems.FirstOrDefault(ro => ro.ResponsibilityTypeID == responsibilityID && ro.AssetID == assetID && ro.SecurityAssetID == Resource.ObjectID && ro.SecurityAsset == resourceType).ID;
+                var responsibilityTypeRelationOverrideItem = Company.ResponsibilityTypeRelationOverrideItems.FirstOrDefault(ro => ro.ResponsibilityTypeID == responsibilityID && ro.AssetID == assetID && ro.SecurityAssetID == Resource.ObjectID && ro.SecurityAsset == resourceType);
+                overrideID = responsibilityTypeRelationOverrideItem?.ID;
             }
 
             List<SelectListItem> resources;
