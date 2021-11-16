@@ -158,7 +158,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 enabled: true,
                 dropdown: "always"
             },
-            series: series,
+            series,
             navigator: {
                 enabled: true,
                 height: 50,
@@ -263,7 +263,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
             chartType: "Highstock",
             name: this.graphType[chartType].title,
             color: this.graphType[chartType]?.color ?? '#597897',
-            data: data,
+            data,
             marker: {
                 enabled: true,
                 radius: 4
