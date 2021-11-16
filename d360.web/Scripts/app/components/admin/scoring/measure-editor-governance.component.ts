@@ -13,45 +13,9 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'governance-measure-editor',
     templateUrl: './measure-editor-governance.component.html',
-    providers: [MetricsService, FieldsObservableService ],
+    providers: [MetricsService, FieldsObservableService],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [`
-    .row-label{
-        margin: 0px 0px -16px 0px;
-    }
-    .conditions-row{
-        display: flex;
-    }   
-    .condition{
-        margin-left: 8px;
-        flex-shrink: 0;
-        flex-grow: 0;
-        width: 100%;
-        max-width: 150px;
-    }
-    .condition-med{
-        max-width: 308px;
-        flex-grow: 1;
-    }
-    .field-row{
-        margin-bottom: 8px;
-    }
-    .top-margin{
-        margin-top: 8px;
-    }
-    .weight-container{
-        dislpay:flex;
-    }
-    .weight-row{
-        display: inline-flex;
-        margin-right: auto;
-        width: 100%;
-    }
-    .right{
-        margin-left:auto
-    }
-    `]
-
+    styleUrls: ['measure-editor.less']
 })
 export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent implements OnInit, OnChanges {
 
@@ -542,9 +506,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                     (updated.Governance.Relation.IntersectTypeUid != original.Governance.Relation.IntersectTypeUid)
                     || !(updated.Governance.Relation.Operator == original.Governance.Relation.Operator || Operator[updated.Governance.Relation.Operator] == <any>original.Governance.Relation.Operator)
                     || (
-                        updated.Governance.Relation.Values && 
+                        updated.Governance.Relation.Values &&
                         !updated.Governance.Relation.Values.every(v => original.Governance.Relation.Values.indexOf(v) > -1)
-                        )
+                    )
                 )
             ) {
                 return true;
