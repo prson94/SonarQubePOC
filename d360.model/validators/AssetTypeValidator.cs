@@ -39,11 +39,11 @@ namespace d360.core.validators
 
             if (string.IsNullOrWhiteSpace(model.Name))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsEmpty} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));
-            
+
             var invalidChars = new[] { '\0' };
             if (model.Name.Any(invalidChars.Contains))
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsInvalid} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));   
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsInvalid} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));
             }
 
             if ((isInsert && (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty)) || (!isInsert && model.DisplayFormat != null && model.DisplayFormat.Trim() == string.Empty))
@@ -377,8 +377,7 @@ namespace d360.core.validators
                     break;
                 }
             }
-
-            return (value?.Split(',') ?? Enumerable.Empty<string>()).Select(Guid.Parse);
+            return (value?.Split(',') ?? Enumerable.Empty<string>()).Select(g => Guid.TryParse(g, out Guid x) ? x : Guid.Empty);
         }
 
         // queryparams is nullable
@@ -386,26 +385,6 @@ namespace d360.core.validators
         {
             var assets = FindAssets(queryParams, "_assetuid").ToArray();
             return assets.Length == 0 || assets.All(x => x != Guid.Empty);
-            //var pair = queryParams.Safe().FirstOrDefault(x => string.Equals(x.Key, assetKey, StringComparison.InvariantCultureIgnoreCase)); 
-            
-
-            //return pair == 
-            //       || pair.Value.Split(',').Select(Guid.Parse).All(x => x != Guid.Empty);
-            //pair.Value.Any(x => x)
-            //if (queryParams.Any(x => x.Key.Trim().ToLower() == assetKey))
-            //{
-            //    List<Guid> assetUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == assetKey)
-            //        .Value.Split(',').Select(x =>
-            //        {
-            //            var guid = Guid.Empty;
-            //            Guid.TryParse(x, out guid);
-            //            return guid;
-            //        }).ToList();
-
-            //    if (assetUids.Any(x => x == Guid.Empty))
-            //        return false;
-            //}
-            //return true;
         }
     }
 }
