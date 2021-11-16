@@ -239,13 +239,13 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
         let data = [];
 
         if (this.graphType[chartType]?.seriesType === "sum" && this.graphType[chartType]?.fields && Array.isArray(this.graphType[chartType].fields)) {
-            data = this.dataProfileList.map(x => {
+            data = this.dataProfileList.map((x) => {
                 let v = 0;
                 this.graphType[chartType].fields.forEach((f) => v += x[f]);
                 return [new Date(x.profileSetDate).getTime(), v];
             });
         } else {
-            data = this.dataProfileList.map(x => {
+            data = this.dataProfileList.map((x) => {
                 let value = x[chartType];
                 if (this.graphType[chartType]?.dataType) {
                     if (this.graphType[chartType]?.dataType === "string") {
