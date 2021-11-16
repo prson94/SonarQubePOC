@@ -1006,6 +1006,7 @@
     <Content Include="fonts\precisely\Precisely-RegularIt.ttf" />
     <Content Include="fonts\precisely\Precisely-Thin.ttf" />
     <Content Include="fonts\precisely\Precisely-ThinIt.ttf" />
+    <Content Include="Scripts\app\components\admin\scoring\measure-editor.less" />
     <None Include="Scripts\app\components\resource\api-key\resource-api.component.less" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
