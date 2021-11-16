@@ -1104,6 +1104,133 @@ where   Success is null", transaction: trans);
             };
 
             return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
-        }        
+        }
+
+        public async Task<ResponsibilityRuleTestResponseModel> GetResponsibilityRuleTestResults(ResponsibilityRuleUpsertModel test, bool hideD3SUsers, bool includeThen, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            int pageSize = 200;
+            int pageNum = 1;
+            bool includeTotal = false;
+            string direction = "asc";
+
+            string errorMessage = null;
+            ResponsibilityTypeRelationRule testModel = new ResponsibilityTypeRelationRule();
+            var executionId = Guid.NewGuid();
+            var sourceTable = "#ResponsibilityRuleTest";
+
+            #region Parse Query Params
+
+            string queryValue;
+
+            queryValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value ?? "asc";
+            direction = queryValue;
+            
+            queryValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value ?? "false";
+            bool.TryParse(queryValue, out includeTotal);
+
+            queryValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value ?? "200";
+            int.TryParse(queryValue, out pageSize);
+
+            queryValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value ?? "1";
+            int.TryParse(queryValue, out pageNum);
+
+            #endregion
+
+            if (Company.Connection.State != ConnectionState.Open)
+                Company.Connection.Open();
+
+            using (var trans = Company.Connection.BeginTransaction())
+            {
+                try
+                {
+                    Company.Connection.Execute($@"drop table if exists {sourceTable}
+                    create table {sourceTable}
+                    (
+	                    ExecutionID uniqueidentifier,
+	                    ItemNumber int,
+	                    AssetTypeUid uniqueidentifier,
+	                    [Definition] nvarchar(max),
+	                    DefinitionConverted nvarchar(max),
+	                    [Message] nvarchar(2500),
+	                    Success bit
+                    )"
+                    , transaction: trans, commandTimeout: 3600);
+
+                    Company.Connection.Execute($@"insert into {sourceTable} (ExecutionID, ItemNumber, AssetTypeUid, [Definition]) values (@executionId, 1, @AssetTypeUid, @Definition)"
+                   , new { executionId, test.AssetTypeUid, Definition = JsonConvert.SerializeObject(test.Definition) }, transaction: trans, commandTimeout: 3600);
+
+                    Company.ParseResponsibilityRuleModel(executionId, trans, 3600, sourceTable);
+
+                    var result = Company.Connection.QueryFirst<dynamic>($"select s.*, t.Object, t.ObjectID from {sourceTable} s left join AssetType t on t.uid = s.AssetTypeUid", transaction: trans);
+                    errorMessage = result.Success == false ? result.Message : null;
+                    
+                    testModel.ApplyToType = test.ApplyToType;
+                    testModel.Object = result.Object;
+                    testModel.ObjectID = result.ObjectID;
+                    testModel.StructuredDefinition = JsonConvert.DeserializeObject<ResponsibilityRuleDefinition>(result.DefinitionConverted);
+                    testModel.SetRawFromDefinition();
+                }
+                catch
+                {
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+               
+            };
+
+            if (!string.IsNullOrEmpty(errorMessage))
+            {
+                throw new ArgumentException(errorMessage);
+            }
+
+            int? total = null;
+            string resultsSql;
+            var orderSql = $" order by [path] {direction} ";
+            var pagingSql = " OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY ";
+
+            if (includeThen)
+            {
+                resultsSql = Company.GetThenResultsSql(testModel, hideD3SUsers, null);
+                resultsSql = resultsSql.Replace(" {0} ", "");
+            }
+            else
+            {
+                resultsSql = await Company.GetWhenResultsSql(testModel, null);
+            }
+
+            if (string.IsNullOrWhiteSpace(resultsSql))
+            {
+                return new ResponsibilityRuleTestResponseModel
+                {
+                    pageNum = pageNum,
+                    pageSize = pageSize,
+                    total = includeTotal ? 0 : (int?)null,
+                    items = new List<ResponsibilityRuleTestResultModel>()
+                };
+            }
+
+            if (includeTotal)
+            {
+                total = await Company.QueryFirstOrDefaultAsync<int>($"select count(*) from ({resultsSql})x");
+            }
+            
+            var items = await Company.QueryAsync<ResponsibilityRuleTestResultModel>(resultsSql + orderSql + pagingSql, new { offset = (pageSize * (pageNum - 1)), rows = pageSize });
+
+            return new ResponsibilityRuleTestResponseModel
+            {
+                pageNum = pageNum,
+                pageSize = pageSize,
+                total = total,
+                items = items
+            };
+        }
     }
 }

@@ -1616,5 +1616,96 @@ namespace d360.web.Controllers.V2
             var result = response.ItemCollection;
             return Ok(result);
         }
+
+
+        /// <summary>
+        /// Test a responsibility rule definition to see which assets it will apply to.
+        /// </summary>
+        /// 
+        /// <remarks>
+        ///###Rules###
+        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource, Group or Organization)
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
+        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce, Group or Organization rule applies to</td><td>Cannot be empty</td></tr>
+        ///</table>
+        /// <br/>
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Field**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>Field</td><td>ApiName</td><td>API Name of the field</td><td>Must be a valid field Name for given Asset Type</td></tr>
+        /// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
+        /// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
+        /// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
+        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource, Group or Organization</td><td>Type must match to AssigneeTypeUid.</td></tr>
+        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType, GroupType or OrganizationType</td><td>Must be valid UID</td></tr>
+        /// </table>
+        /// <br/>
+        /// **Notes:** 
+        /// * Only administrators can use this endpoint.
+        /// 
+        /// </remarks>
+        /// <param name="testType">The type of test to perform. Valid values are 'when' and 'then'</param>
+        /// <param name="responsibilityRule">A responsibility rule definition to test.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            Route("test/{testType}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is false meaning the total count is excluded.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the responsibility rule", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of assets which are applicable to the rule definition.", typeof(List<ResponsibilityRuleTestResponseModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> TestResponsibilityRules(string testType, [FromBody] ResponsibilityRuleUpsertModel responsibilityRule)
+        {
+            var prefix = "Relationships.TestResponsibilityRules => ";
+            var errorMessage = "";
+            try
+            {
+                var allowedTests = new[] { "when", "then" };
+                if (!allowedTests.Contains(testType.ToLower()))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidTestType)).ConfigureAwait(false);
+                }
+
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+                }
+
+                var hideD3SUsers = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+                var queryParams = Request.GetQueryNameValuePairs();
+                var includeThen = testType.ToLower() == "then";
+
+                var pageValid = isPageSizeAndNumValid(queryParams);
+                if (!string.IsNullOrEmpty(pageValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, pageValid)).ConfigureAwait(false);
+                }
+
+                var allowedValues = new[] { "asc", "desc" };
+                var direction = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value ?? "asc";
+
+                if (!allowedValues.Contains(direction.Trim().ToLower()))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidDirection)).ConfigureAwait(false);
+                }
+
+                var results = await ResponsibilityRepository.GetResponsibilityRuleTestResults(responsibilityRule, hideD3SUsers, includeThen, queryParams);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+            }
+        }
     }
 }

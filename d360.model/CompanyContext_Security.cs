@@ -510,8 +510,8 @@ order by RT.Name", new { id }).AsQueryable();
             {
                 try
                 {
-                    var thenSql = GetThenResultsSql(rule, false, transaction, false);
-                    var whenSql = await GetWhenResultsSql(rule, transaction, false).ConfigureAwait(false);
+                    var thenSql = GetThenResultsSql(rule, false, transaction, false,"", false);
+                    var whenSql = await GetWhenResultsSql(rule, transaction, false, false).ConfigureAwait(false);
 
                     thenSql = string.Format(thenSql, "");
 
@@ -733,7 +733,7 @@ from    #changes C
         }
 
 
-        private async Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true)
+        public async Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true)
         {
             string whenSql = "";
 
@@ -741,6 +741,11 @@ from    #changes C
             if (includeName)
             {
                 whenSql += ", utility.GetAssetDisplayValueWrapper(A.ID) as Name ";
+            }
+
+            if (includeUid)
+            {
+                whenSql += ", A.uid, graph.GetPathByAssetId(a.id,'>', '/') as Path ";
             }
 
             whenSql += $"from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ";
@@ -795,7 +800,7 @@ from    #changes C
             return then.MatchType == ResponsibilityMatchType.And ? "and" : "or";
         }
 
-        private string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "")
+        public string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true)
         {            
             StringBuilder thenSql = new StringBuilder();
             
@@ -811,20 +816,20 @@ from    #changes C
                 if (rule.StructuredDefinition.Then.Object == "OrganizationType")
                 {
                     obj = "Organization";
-                    thenSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} from Organization O ");
+                    thenSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from Organization O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Organization' " : "")}  ");
                 }
 
                 if (rule.StructuredDefinition.Then.Object == "GroupType")
                 {
                     obj = "Group";
-                    thenSql.Append($"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")}  from	[Group] O ");
+                    thenSql.Append($"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, O.uid " : "")} from	[Group] O ");
                 }
 
                 if (rule.StructuredDefinition.Then.Object == "ResourceType")
                 {
                     obj = "Resource";
                     uniqueIdField = "ResourceID";
-                    thenSql.Append($@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} from reporting.Global_Resource O ");
+                    thenSql.Append($@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} {(includeUid ? ", O.FirstName + ' ' + O.LastName as Path, O.uid " : "")} from reporting.Global_Resource O ");
                 }
 
                 if (rule.StructuredDefinition.Then.Conditions != null)

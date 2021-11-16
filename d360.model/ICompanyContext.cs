@@ -205,11 +205,13 @@ namespace d360.model
         AssetType GetParentType(int id, SystemObjects obj);
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
-        Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
+        Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");     
         IEnumerable<SecurityResult> GetThenResults(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null);
+        string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true);
         List<PermissionInfo> GetTypePermissions(string type, int typeID);
         string GetUserHomePage();
         Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null);
+        Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);
         bool HasAssetPermission(long id, Permission permission);
@@ -232,6 +234,7 @@ namespace d360.model
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
         Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
+        void ParseResponsibilityRuleModel(Guid executionId, SqlTransaction trans = null, int timeout = 3600, string sourceTable = "api.ExecutionResponsibilityRule");
         Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false);
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue);
         Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200);
