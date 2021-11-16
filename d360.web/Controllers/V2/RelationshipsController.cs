@@ -1100,7 +1100,7 @@ namespace d360.web.Controllers.V2
             RelationshipInserts relationships, 
             bool triggerWorkflow = false, 
             bool lookupFieldsPassedByValue = false,
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Relationships.PostRelationshipsAsync => ";
 
@@ -1202,7 +1202,7 @@ namespace d360.web.Controllers.V2
             Guid intersectTypeUid,
             RelationshipInserts relationships, 
             bool triggerWorkflow = false,
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Relationships.PostBulkRelationshipsAsync => ";
             try
@@ -1360,7 +1360,7 @@ namespace d360.web.Controllers.V2
             Guid intersectTypeUid, 
             RelationshipDeletes relationships,
             bool triggerWorkflow = false,
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Relationships.DeleteBulkRelationshipsAsync => ";
 
@@ -1445,7 +1445,7 @@ namespace d360.web.Controllers.V2
             Guid intersectTypeUid, 
             RelationshipDeletes relationships, 
             bool triggerWorkflow = false,
-            string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             if (applicationId != null && applicationId.Length > 200)
             {
