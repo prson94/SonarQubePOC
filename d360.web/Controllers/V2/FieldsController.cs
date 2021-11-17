@@ -391,7 +391,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                (TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model);
+                (TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model).ConfigureAwait(false);
 
                 if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
@@ -498,7 +498,9 @@ namespace d360.web.Controllers.V2
             #region Security check
 
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
+            }
 
             #endregion
 
@@ -535,8 +537,6 @@ namespace d360.web.Controllers.V2
                     throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
                 }
 
-                //                FieldsRepository.DeleteFields(currentFieldTypes, fieldNamesToDelete);
-
                 var execution = getApiExecution(fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete });
 
                 var executionInfo = await FieldsRepository.BatchDeleteFields(execution);
@@ -553,10 +553,7 @@ namespace d360.web.Controllers.V2
                             }
                         )
                     )
-                );
-
-
-//                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully removed.", Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
+                ).ConfigureAwait(false);
             }
             catch (RestApiException ex)
             {
