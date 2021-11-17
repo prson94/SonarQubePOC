@@ -868,7 +868,7 @@ namespace d360.web.Controllers.V2
 
         /// <summary>
         /// Retrieves environment licensing info. 
-        /// Infogix users are excluded from user counts.
+        /// Precisely users are excluded from user counts.
         /// </summary>
         /// <returns></returns>
         [
@@ -904,6 +904,7 @@ namespace d360.web.Controllers.V2
                 var allusers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
                                                                             WHERE gr.Email not like '%@infogix.com'
                                                                             and gr.Email not like '%@data3sixty.com'
+                                                                            and gr.Email not like '%@precisely.com'
                                                                             and gr.State = 1").ConfigureAwait(false);
             
 
@@ -911,6 +912,7 @@ namespace d360.web.Controllers.V2
                 var allAdminUsers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
                                                                             WHERE gr.Email not like '%@infogix.com'
                                                                             and gr.Email not like '%@data3sixty.com'
+                                                                            and gr.Email not like '%@precisely.com'
                                                                             and gr.State = 1 
                                                                             and gr.IsAdministrator = 1").ConfigureAwait(false);
               
@@ -944,6 +946,7 @@ namespace d360.web.Controllers.V2
                     )   
                     and gr.Email not like '%@infogix.com' 
                     and gr.Email not like '%@data3sixty.com'  
+                    and gr.Email not like '%@precisely.com'
                     and gr.State = 1
                     and gr.IsAdministrator = 0
                 ";
