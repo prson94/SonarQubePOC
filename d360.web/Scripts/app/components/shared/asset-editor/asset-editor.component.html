@@ -19,7 +19,7 @@
                 <ng-template ngFor
                              let-category
                              [ngForOf]="categories">
-                    <ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true">
+                    <ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true" (expandedChange)="expandChanged()">
                         <div inputs>
                             <div class="row"
                                  *ngFor="let row of category.rows">

@@ -154,12 +154,18 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             var maxHeight = window.innerHeight - 260;
             if (this.propertyGroups) {
                 this.propertyGroups.forEach((pg) => {
-                    groupsHeight += pg.inputContainer.nativeElement.offsetHeight;
+                    var height = pg.inputContainer.nativeElement.offsetHeight;
+                    groupsHeight += height !== 0 ? (height + 32) : 32;
                 });
             }
 
-            this.modalFormMaxHeight = groupsHeight > maxHeight ? maxHeight : groupsHeight + 34;
+            this.modalFormMaxHeight = groupsHeight > maxHeight ? maxHeight : groupsHeight;
+            this.ref.markForCheck();
         }
+    }
+
+    expandChanged() {
+        setTimeout(() => this.setFormHeight(), 10);
     }
 
     ngOnInit() {
