@@ -391,36 +391,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                #region GetData
-                TypeIdentifierInfoModel typeIdentifierInfoModel = null;
-
-                IEnumerable<TypeIdentifierInfoModel> actionTypeIdentifierInfoModels = null;
-                TypeIdentifierInfoModel actionTypeIdentifierInfoModel = null;
-
-                IEnumerable<TypeIdentifierInfoModel> assetTypeIdentifierInfoModels = null;
-                TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null;
-
-                IEnumerable<TypeIdentifierInfoModel> relationshipTypeIdentifierInfoModels = null;
-                TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel = null;
-
-                if (model.ActionTypeUid.HasValue)
-                {
-                    actionTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
-                    typeIdentifierInfoModel = actionTypeIdentifierInfoModel = actionTypeIdentifierInfoModels.SingleOrDefault();
-                }
-
-                if (model.AssetTypeUid.HasValue)
-                {
-                    assetTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
-                    typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
-                }
-
-                if (model.RelationshipTypeUid.HasValue)
-                {
-                    relationshipTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
-                    typeIdentifierInfoModel = relationshipTypeIdentifierInfoModel = relationshipTypeIdentifierInfoModels.SingleOrDefault();
-                }
-                #endregion
+                (TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model);
 
                 if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
@@ -456,7 +427,6 @@ namespace d360.web.Controllers.V2
 
                 #region Validation
 
-                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                 {
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
@@ -503,6 +473,143 @@ namespace d360.web.Controllers.V2
             }
 
         }
+
+        /// <summary>
+        /// Removes field types contained within your environment in batch.
+        /// </summary>
+        /// <remarks>
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid. Additionally, please keep in mind that the **Name** property for each item in the Fields collection refers to the **API Name** of the field.
+        /// </remarks>
+        /// <returns>The execution id of the batch process.</returns>
+        [
+            HttpDelete,
+            Route("batch"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "User is not an administrator.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteFieldTypesBacthAsync(FieldTypesApiDeleteModel model)
+        {
+            var prefix = "Fields.DeleteFieldTypesBacthAsync => ";
+            var errorMessage = "";
+
+            #region Security check
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+
+            #endregion
+
+            try
+            {
+                (TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model);
+
+                if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+                {
+                    if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
+                    }
+                }
+
+                if (validationStatus.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+                }
+
+                bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
+
+                List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f => f.Name == x.Name)));
+
+                if (anyResponsibilitiesUsingField)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.UsedinResponsibilityRules, ApiMessages.FieldUseInResponsibilityRule);
+                }
+
+                (var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
+                if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
+                }
+
+                //                FieldsRepository.DeleteFields(currentFieldTypes, fieldNamesToDelete);
+
+                var execution = getApiExecution(fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete });
+
+                var executionInfo = await FieldsRepository.BatchDeleteFields(execution);
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = ApiMessages.ExecutionIDStatus,
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
+                            }
+                        )
+                    )
+                );
+
+
+//                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully removed.", Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage))).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+        private async Task<(TypeIdentifierInfoModel, WorkHttpStatus)> GetTypeIdentifierInfoModelAndValidate(FieldTypesApiDeleteModel model)
+        {
+            TypeIdentifierInfoModel typeIdentifierInfoModel = null;
+
+            IEnumerable<TypeIdentifierInfoModel> actionTypeIdentifierInfoModels = null;
+            TypeIdentifierInfoModel actionTypeIdentifierInfoModel = null;
+
+            IEnumerable<TypeIdentifierInfoModel> assetTypeIdentifierInfoModels = null;
+            TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null;
+
+            IEnumerable<TypeIdentifierInfoModel> relationshipTypeIdentifierInfoModels = null;
+            TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel = null;
+
+            if (model.ActionTypeUid.HasValue)
+            {
+                actionTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
+                typeIdentifierInfoModel = actionTypeIdentifierInfoModel = actionTypeIdentifierInfoModels.SingleOrDefault();
+            }
+
+            if (model.AssetTypeUid.HasValue)
+            {
+                assetTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
+                typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
+            }
+
+            if (model.RelationshipTypeUid.HasValue)
+            {
+                relationshipTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
+                typeIdentifierInfoModel = relationshipTypeIdentifierInfoModel = relationshipTypeIdentifierInfoModels.SingleOrDefault();
+            }
+
+            var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
+
+            return (typeIdentifierInfoModel, validationStatus);
+        }
+
 
         #region FormHelpers NOT TO BE EXPOSED IN SWAGGER DOC
 

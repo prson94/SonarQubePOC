@@ -4,13 +4,15 @@ using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities;
 using d360.core.Models;
+using d360.core.queue;
 using Dapper;
 
 namespace d360.model.DataAccessLayer
 {
     public interface IFieldsRepository
     {
-        void DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete);
+        int DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete);
+        Task<ApiExecutionInfo> BatchDeleteFields(ApiExecution execution);
         Task<Tuple<FieldTypesApiViewModel, WorkHttpStatus>> GetFieldTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
         List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel);
         List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType);

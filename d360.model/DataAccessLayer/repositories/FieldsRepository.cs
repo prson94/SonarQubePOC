@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.core.Models;
 using d360.core.resources;
+using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -1826,7 +1827,7 @@ from	IntersectType I
 
 
 
-        public void DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
+        public int DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
         {
             var fieldsRemoved = false;
             bool shouldRefreshPath = false;
@@ -1894,6 +1895,21 @@ from	IntersectType I
             {
                 Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
             }
+            return deletedFieldTypes.Count();
+        }
+
+        public async Task<ApiExecutionInfo> BatchDeleteFields(ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = Company.CurrentCompanyID,
+                CompanyDomainPrefix = Company.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.DeleteFieldTypes
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, null, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel)
