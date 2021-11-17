@@ -5,7 +5,7 @@ import { FavoritesManagementService } from './FavoritesManagementService';
 @Component({
     selector: 'd3s-site-menu-manage-favorites-panel',
     templateUrl: './site-menu-manage-favorites-panel.component.html',
-    styleUrls: ['./site-menu-manage-favorites-panel.component.css']
+    styleUrls: ['./site-menu-manage-favorites-panel.component.less']
 })
 export class SiteMenuManageFavoritesPanelComponent {
     constructor(public store: FavoritesManagementService) {

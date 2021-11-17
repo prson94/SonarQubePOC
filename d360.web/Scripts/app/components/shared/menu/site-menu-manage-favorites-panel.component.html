@@ -5,19 +5,19 @@
 				(click)="store.toggleManageFavoritesOffAction()"
 				igButton
 				icon="fa-arrow-left"
-				pTooltip="Back to favorites"
+				pTooltip="Back to Favorites"
 				tooltipPosition="top"
 				tooltipStyleClass="ig-tooltip">
 			</button>
 			<div class="manageFavoritesHeaderText">Manage Favorites</div>
 			<button [disabled]="!(canRemove$ | async) || isLoading"
+				[loading]="isLoading"
 				(click)="store.removeFavoritesSaga()"
 				igButton
 				icon="fa-trash"
 				pTooltip="Remove selected favorites"
 				tooltipPosition="top"
 				tooltipStyleClass="ig-tooltip"
-				[loading]="isLoading"
 				class="removeButton">
 			</button>
 		</div>
@@ -39,19 +39,22 @@
 							</ng-container>
 						</div>
 					</div>
-					<div *ngFor="let favorite of favorites$ | async"
-						class="menu-item truncate">
-						<div [style.paddingLeft]="'20px'"
-							class="favorite-container">
-							<p-checkbox [name]="favorite.Id"
-								[label]="favorite.Name"
-								[ngModel]="getFavoriteRemovalStatus(favorite.Id) | async"
-								(ngModelChange)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: $event })"
-								igCheckbox
-								binary="true">
-							</p-checkbox>
-						</div>
-					</div>
+					<ng-container *ngFor="let favorite of favorites$ | async">
+						<ng-container *ngLet="getFavoriteRemovalStatus(favorite.Id) | async as removalStatus">
+							<div [class.on]="removalStatus" class="menu-item truncate">
+								<div [style.paddingLeft]="'20px'"
+									class="favorite-container">
+									<p-checkbox [name]="favorite.Id"
+										[label]="favorite.Name"
+										[ngModel]="removalStatus"
+										(ngModelChange)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: $event })"
+										igCheckbox
+										binary="true">
+									</p-checkbox>
+								</div>
+							</div>
+						</ng-container>
+					</ng-container>
 				</ul>
 			</div>
 		</div>
