@@ -41,26 +41,26 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
         }
     ];
 
-    private graphType: { [key: string]: any } =
-        {
-            'totalCount': { title: "Total Row Count" },
-            "confidence": { title: "Type Confidence", decimals: 2, dataType: "percentage" },
-            "matchCount": { title: "Valid", color: "#2e9b61" },
-            "cardinality": { title: "Distinct", color: "#2e9b61" },
-            "outlierCount": { title: "Invalid/Outliers", color: "#d73961" },
-            "nullCount": { title: "Null Count", },
-            "blankCount": { title: "Blank Count" },
-            "mean": { title: "Mean" },
-            "standardDeviation": { title: "Standard Deviation" },
-            "leadingZeroCount": { title: "Leading Zero Count" },
-            "minLength": { title: "Minimum Length" },
-            "maxLength": { title: "Maximum Length" },
-            "min": { title: "Minimum Value", dataType: "string" },
-            "max": { title: "Maximum Value", dataType: "string" },
+    private graphType = new Map(
+        [
+            [ "totalCount", { title: "Total Row Count" } ],
+            [ "confidence", { title: "Type Confidence", decimals: 2, dataType: "percentage" } ],
+            [ "matchCount", { title: "Valid", color: "#2e9b61" } ],
+            [ "cardinality", { title: "Distinct", color: "#2e9b61" } ],
+            [ "outlierCount", { title: "Invalid/Outliers", color: "#d73961" } ],
+            [ "nullCount", { title: "Null Count", } ],
+            [ "blankCount", { title: "Blank Count" } ],
+            [ "mean", { title: "Mean" } ],
+            [ "standardDeviation", { title: "Standard Deviation" } ],
+            [ "leadingZeroCount", { title: "Leading Zero Count" } ],
+            [ "minLength", { title: "Minimum Length" } ],
+            [ "maxLength", { title: "Maximum Length" } ],
+            [ "min", { title: "Minimum Value", dataType: "string" } ],
+            [ "max", { title: "Maximum Value", dataType: "string" } ],
 
-            "nullBlankCount": { title: "Null/Blank", color: "#b2c1cf", seriesType: "sum", fields: ["nullCount", "blankCount"] },
-            "allSampleQuality": { title: "Sample Quality", seriesType: "combined", series: ["matchCount", "outlierCount", "nullBlankCount"] },
-        }
+            [ "nullBlankCount", { title: "Null/Blank", color: "#b2c1cf", seriesType: "sum", fields: ["nullCount", "blankCount"] } ],
+            [ "allSampleQuality", { title: "Sample Quality", seriesType: "combined", series: ["matchCount", "outlierCount", "nullBlankCount"] } ],
+        ]);
 
     matchAssetUid: string = "";
     private timeSeriesChart: Stockcharts.Chart;
@@ -133,11 +133,11 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
     }
 
     private renderTimeSeriesChart(chartType: string) {
-        this.graphTitle = this.graphType[chartType].title;
+        this.graphTitle = this.graphType.get(chartType).title;
         let graphSeries = [];
 
-        if (this.graphType[chartType].seriesType === "combined" && this.graphType[chartType]?.series?.length > 0) {
-            this.graphType[chartType].series.forEach((s) => graphSeries.push(this.generateSeries(s)));
+        if (this.graphType.get(chartType).seriesType === "combined" && this.graphType.get(chartType)?.series?.length > 0) {
+            this.graphType.get(chartType).series.forEach((s) => graphSeries.push(this.generateSeries(s)));
         } else {
             graphSeries.push(this.generateSeries(chartType));
         }
@@ -222,11 +222,11 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                     reserveSpace: false
                 },
                 labels: {
-                    format: this.graphType[chartType]?.dataType === "percentage" ? '{text}%' : '{text}'
+                    format: this.graphType.get(chartType)?.dataType === "percentage" ? '{text}%' : '{text}'
 
                 },
-                min: this.graphType[chartType]?.dataType === "percentage" ? 0 : null,
-                max: this.graphType[chartType]?.dataType === "percentage" ? 100 : null,
+                min: this.graphType.get(chartType)?.dataType === "percentage" ? 0 : null,
+                max: this.graphType.get(chartType)?.dataType === "percentage" ? 100 : null,
             }
         };
 
@@ -238,20 +238,20 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
     private generateSeries(chartType: string) {
         let graphData = [];
 
-        if (this.graphType[chartType]?.seriesType === "sum" && this.graphType[chartType]?.fields && Array.isArray(this.graphType[chartType].fields)) {
+        if (this.graphType.get(chartType)?.seriesType === "sum" && this.graphType.get(chartType)?.fields && Array.isArray(this.graphType.get(chartType).fields)) {
             graphData = this.dataProfileList.map((x) => {
                 let v = 0;
-                this.graphType[chartType].fields.forEach((f) => v += x[f]);
+                this.graphType.get(chartType).fields.forEach((f) => v += x[f]);
                 return [new Date(x.profileSetDate).getTime(), v];
             });
         } else {
             graphData = this.dataProfileList.map((x) => {
                 let value = x[chartType];
-                if (this.graphType[chartType]?.dataType) {
-                    if (this.graphType[chartType]?.dataType === "string") {
+                if (this.graphType.get(chartType)?.dataType) {
+                    if (this.graphType.get(chartType)?.dataType === "string") {
                         value = Number(x[chartType]);
                     }
-                    if (this.graphType[chartType]?.dataType === "percentage") {
+                    if (this.graphType.get(chartType)?.dataType === "percentage") {
                         value = x[chartType] * 100; 
                     }
                 }
@@ -261,8 +261,8 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
 
         return {
             chartType: "Highstock",
-            name: this.graphType[chartType].title,
-            color: this.graphType[chartType]?.color ?? '#597897',
+            name: this.graphType.get(chartType).title,
+            color: this.graphType.get(chartType)?.color ?? '#597897',
             data: graphData,
             marker: {
                 enabled: true,
@@ -270,17 +270,11 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
             },
             shadow: false,
             tooltip: {
-                valueDecimals: this.graphType[chartType]?.decimals ?? 0,
-                valueSuffix: this.graphType[chartType]?.dataType === "percentage" ? '%' : '',
+                valueDecimals: this.graphType.get(chartType)?.decimals ?? 0,
+                valueSuffix: this.graphType.get(chartType)?.dataType === "percentage" ? '%' : '',
             },
             showInNavigator: true
 
         };
-    }
-
-    private getGraphType(chartType: string) {
-        let retval = '';
-        retval = this.graphType[chartType];
-        return retval;
     }
 }
