@@ -699,4 +699,14 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     public triggerEdit() {
         this.onEdit(this.selected);
     }
+
+    getAssetPath() {
+        if (this.selected && this.selected.Path) {
+            let path = this.selected.Path as string;
+            path = path.substring(1, path.length - 1);
+            path = path.split("].[").join(` > `);
+            return this.gridObject?.AssetTypePath + ' > ' + path;
+        }
+        return this.gridObject?.AssetTypePath;
+    }
 }

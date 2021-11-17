@@ -572,7 +572,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         let val = +e.target.value;
         let newVal = +val.toFixed(precision);
 
-        if (e === null || e.target === null || precision === null) {
+        if (e === null || e.target === null || precision === null || typeof precision === "undefined") {
             return;
         }
 
@@ -641,8 +641,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     private onEditorChange(event: any) {
-        if (event === null || event.field === null)
-            {return;}
+        if (event === null || event.field === null) { return; }
 
         let field = event.field;
 
@@ -771,7 +770,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.isLookupValuesLoading = false;
             this.lastParams = loadParams;
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
+            this.setSelectionVirtualScrollHeight();
             this.ref.detectChanges();
+            setTimeout(() => {
+                this.overlayPanel.align();
+            }, 10);
         });
     }
 
@@ -864,8 +867,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             let calculatedHeight: number = 0;
             let maxHeight: number = 320;
             let minHeight: number = 50;
-            let margins: number = 180;
-            let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
 
             if (count < 10) {
                 calculatedHeight = count * 32;
@@ -876,11 +877,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
             else {
                 calculatedHeight = maxHeight;
-            }
-
-            var diff = window.innerHeight - calculatedHeight - margins - bottomPos;
-            if (diff < 0) {
-                calculatedHeight += diff;
             }
 
             if (calculatedHeight > maxHeight) {

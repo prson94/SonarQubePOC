@@ -176,7 +176,7 @@
                   [selection]="selected"
                   [rowID]="rowID"
                   [objectTypeUid]="gridObject?.AssetTypeUID"
-                  [assetTypePath]="gridObject?.AssetTypePath"
+                  [assetTypePath]="getAssetPath()"
                   (saveClick)="saveItem($event)"
                   [showAsModal]="true"
                   [isV2API]="true"

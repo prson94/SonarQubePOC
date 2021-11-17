@@ -131,7 +131,7 @@
                               [selection]="selected?.data"
                               [objectTypeUid]="assetTypeUid"
                               [parentID]="selectedParentId"
-                              [assetTypePath]="selected ? selected?.data?.Path : assetType?.Path"
+                              [assetTypePath]="getAssetPath()"
                               (saveClick)="save($event)"
                               [showAsModal]="true"
                               [isV2API]="true"
