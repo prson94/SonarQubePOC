@@ -21,6 +21,8 @@ import { CoreModule } from "../core.module";
 import { AssetDetailModule } from "../asset-detail/asset-detail.module";
 import { ModalDrawerModule } from '../modal-drawer/gov-modal-drawer.module';
 import { TagPickerModule } from '../controls/tag-picker/tag-picker';
+import { DropdownModule } from 'primeng/dropdown';
+import { DataProfileTimeSeriesComponent } from "./dataprofile-time-series.component";
 
 @NgModule({
     imports: [        
@@ -42,11 +44,13 @@ import { TagPickerModule } from '../controls/tag-picker/tag-picker';
         CoreModule,
         AssetDetailModule,
         ModalDrawerModule,
-        TagPickerModule
+        TagPickerModule,
+        DropdownModule
     ],
     declarations: [
         DataProfileComponent,
-        MatchDetectionComponent
+        MatchDetectionComponent,
+        DataProfileTimeSeriesComponent
     ],
     exports: [
         DataProfileComponent,

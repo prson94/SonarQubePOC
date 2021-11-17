@@ -164,3 +164,86 @@
     }
   }
 }
+
+.ig-text-info {
+  background: @ig-lightblue-t2;
+  padding: 3px 8px;
+  font-size: 14px;
+  color: black;
+  border-radius: 4px;
+  width: fit-content;
+  display: block;
+  margin-top: 2px;
+  line-height: 18px;
+}
+
+.trendIcon {
+  color: @ig-slate;
+  font-size: 20px;
+  line-height: 16px;
+
+  &.same {
+    font-size: 16px;
+  }
+}
+
+.time-series-tile {
+  z-index: 20000;
+  position: absolute;
+  right: 410px;
+  top: 40px;
+  float: right;
+  background: white;
+  width: calc(100vw - 640px);
+  bottom: 40px;
+  box-shadow: rgb(0 0 0 / 33%) 0 5px 10px;
+  border-radius: 4px;
+  height: calc(100vh - 270px);
+
+  .time-series-graph {
+    margin: 20px;
+    height: 100%;
+
+    .time-series-header {
+      background-color: transparent;
+      color: #202020;
+      font-weight: bold;
+      font-size: 18px;
+
+      .title {
+        display: table-cell;
+        height: 32px;
+        vertical-align: middle;
+      }
+    }
+
+    .body {
+      margin: 10px;
+      height: calc(100vh - 340px);
+    }
+  }
+}
+
+.trend-icon-info-message {
+  background: @ig-lightblue-t2;
+  font-size: 14px;
+  color: black;
+  border-radius: 4px;
+  width: fit-content;
+  margin-top: 2px;
+  line-height: 18px;
+  display: flex;
+  padding: 10px;
+
+  .message {
+    flex: 1;
+    font-size: 0.95em;
+  }
+
+  .closeIcon {
+    flex: 0;
+    vertical-align: top;
+    width: 32px;
+    margin-left: 10px;
+  }
+}

@@ -258,7 +258,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile'">
-                        <data-profile [dataProfile]="dataProfile" [isModal]="true" (linkClicked)="changeMatchAsset($event)" [assetData]="assetData"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList" [isModal]="true" (linkClicked)="changeMatchAsset($event)" [assetData]="assetData"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selection.uid"
