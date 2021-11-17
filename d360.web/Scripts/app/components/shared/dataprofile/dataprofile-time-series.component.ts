@@ -66,8 +66,8 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
     private timeSeriesChart: Stockcharts.Chart;
 
     @HostListener('document:click', ['$event'])
-    documentClick(event: any) {
-        if (!(event.path.filter((f) => f?.classList?.contains("time-series-tile") || f?.classList?.contains("trendIcon")).length>0)) {
+    documentClick(event: any) {        
+        if (!(event.path.filter((f) => f?.classList?.contains("time-series-tile") || f?.classList?.contains("trendIcon") || f?.classList?.contains("sampleBarChart")).length>0)) {
             this.close.emit();
         }
     }
