@@ -111,6 +111,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     fore: EditorField;
     back: EditorField;
     selectedTagID: number;
+    hasUpdateFormChanged: boolean = false;
 
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
@@ -348,13 +349,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             }
 
             this.form = this.toFormGroup(this.fields);
-            if (this.useModelBinding) {
-                this.form.valueChanges.subscribe((x) => {
-                    this.onSubmit();
-                });
 
-                setTimeout(() => this.onSubmit(), 20);
-            }
+            setTimeout(() => {
+                this.form.valueChanges.subscribe((change) => {
+                    if (this.selection) {
+                        this.hasUpdateFormChanged = true;
+                    }
+                })
+            }, 500);
         }
 
         this.ref.markForCheck();
@@ -749,5 +751,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);
             }
         });
+    }
+
+    formHasChanges() {
+        if (this.selection && !this.hasUpdateFormChanged) {
+            return false;
+        }
+        return true;
     }
 }

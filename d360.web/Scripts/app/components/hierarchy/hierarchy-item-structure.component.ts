@@ -736,4 +736,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     get getNodesStateKey() {
         return "nodeState_" + this.assetTypeUid;
     }
+
+    getAssetPath() {
+        if (this.selected && this.selected?.data?.Path) {
+            let path = this.selected.data.Path as string;
+            path = path.substring(1, path.length - 1);
+            path = path.split("].[").join(` > `);
+            return this.assetType?.Path + ' > ' + path;
+        }
+        return this.assetType?.Path;
+    }
 }
