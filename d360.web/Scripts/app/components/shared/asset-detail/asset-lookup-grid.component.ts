@@ -33,7 +33,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     isReferenceListFromRelationship = false;
     showDescription = false;
     lookupField: LookupGridField;
-
+    minwidth: number = 0;
     isComplex = false;
     showSimpleFilter = true;
     isColumnsLoaded = false;
@@ -44,7 +44,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     currentFilters: any;
 
     showAdvancedFilterField: boolean = true;
-
     simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
 *account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
 
@@ -65,6 +64,12 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     ngOnInit() {
         this.showAdvancedFilterField = !this.router.url.startsWith("/sidebar/visualization/") && !this.isSidePanel;
+        if (this.isSidePanel) {
+            this.minwidth = 320;
+        }
+        else {
+            this.minwidth = 0;
+        }
         this.areFiltersLoaded = true;
     }
 
