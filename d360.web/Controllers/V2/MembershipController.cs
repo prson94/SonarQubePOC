@@ -398,6 +398,7 @@ namespace d360.web.Controllers.V2
                 if (hide && !IsCurrentUser)
                 {                    
                     queries.Add("email not like '%@infogix.com'");
+                    queries.Add("email not like '%@precisely.com'");
                 }
 
                 if (queries.Count() > 0)

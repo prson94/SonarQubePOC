@@ -219,7 +219,7 @@ namespace d360.web.Controllers
                 ";
 
             var resourceJoin = $@"
-                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'
                 ";
 
             var itemsSql = $@"

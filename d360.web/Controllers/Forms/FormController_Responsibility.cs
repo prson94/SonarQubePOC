@@ -114,7 +114,7 @@ namespace d360.web.Controllers
 
             if (HideData3SixtyUsers())
             {
-                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com')";
+                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
             }
 
             if (resTypeId == 0 && resTypeUid != null)
@@ -600,7 +600,7 @@ for json path, WITHOUT_ARRAY_WRAPPER
 
             if (HideData3SixtyUsers())
             {
-                hideUsersSql = " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com')";
+                hideUsersSql = " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com')";
             }
 
             if (type == SystemObjects.ResourceType)
