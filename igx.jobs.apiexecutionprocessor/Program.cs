@@ -462,6 +462,7 @@ namespace igx.jobs.apiexecutionprocessor
                             case ApiExecutionAction.DeleteFieldTypes:
                                 var deleteFieldtypes = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteFieldtypes>(dbExecutionItem.Fields);
 
+                                company.SetApiExecutionProcessingStartTime(dbExecutionItem.ExecutionID);
                                 log.WriteLine($"DELETE Field Type (DB Start): Total field types: {deleteFieldtypes.FieldNamesToDelete.Count}");
                                 List<FieldType> currentFieldTypes = fieldsRepository.GetFieldTypes(deleteFieldtypes.TypeIdentifierInfo);
                                 var result = fieldsRepository.DeleteFields(currentFieldTypes, deleteFieldtypes.FieldNamesToDelete);
