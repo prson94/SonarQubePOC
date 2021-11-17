@@ -24,6 +24,7 @@ using SpreadsheetLight;
 using System.IO;
 using System.Web.Http.Results;
 using d360.core;
+using DocumentFormat.OpenXml.Packaging;
 
 namespace d360.web.Controllers.V2
 {
@@ -1152,7 +1153,7 @@ from	[Load] L
             HttpPost,
             MapToApiVersion("2.0"),
             Route("bulkload"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerConsumes("application/octet-stream"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Creates a new Bulk load.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
@@ -1165,55 +1166,8 @@ from	[Load] L
         {
             try
             {
-                string root = Path.GetTempPath();
-                var provider = new MultipartFormDataStreamProvider(root);
-                //var task = await Request.Content.ReadAsMultipartAsync(provider);
-
-                Stream reqStream = Request.Content.ReadAsStreamAsync().Result;
-                MemoryStream tempStream = new MemoryStream();
-                reqStream.CopyTo(tempStream);
-
-
-
-                tempStream.Seek(0, SeekOrigin.End);
-                StreamWriter writer = new StreamWriter(tempStream);
-                writer.WriteLine();
-                writer.Flush();
-                tempStream.Position = 0;
-
-
-                StreamContent streamContent = new StreamContent(tempStream);
-                foreach (var header in Request.Content.Headers)
-                {
-                    streamContent.Headers.Add(header.Key, header.Value);
-                }
-
-                // Read the form data and return an async task.
-                //var a = await streamContent.ReadAsFormDataAsync();
-
-                //var task1 = await Request.Content.ReadAsMultipartAsync();
-                //Task<Stream> task = Request.Content.ReadAsStreamAsync();
-                //task.Wait();
-                //FileStream requestStream = (FileStream)task.Result;
-                string inputContent = "";
-                //using (StreamReader inputStreamReader = new StreamReader(task.Result))
-                //{
-                //    inputContent = inputStreamReader.ReadToEnd();
-                //}
-
-
-
-                //var queryParams = Request.GetQueryNameValuePairs();
-                //Stream inputStream = Request.InputStream;
-                //Stream inputStream = requestStream;
-                //string file = new StreamReader(inputStream).ReadToEnd();
-
-                var test123 = Request.Content.ReadAsStreamAsync();
-                //var queryParams = Request.GetQueryNameValuePairs();
-                ////Stream inputStream = Request.InputStream;
-                Stream inputStream = test123.Result;
-                string file = new StreamReader(inputStream).ReadToEnd();
-                var abc = JsonConvert.DeserializeObject<dynamic>(file);
+                var c = await Request.Content.ReadAsMultipartAsync();
+                var bytes = await c.Contents[0].ReadAsByteArrayAsync();
 
                 var assetType = Company.AssetTypes.Where(r => r.uid == assetTypeUid).FirstOrDefault();
 
@@ -1226,27 +1180,22 @@ from	[Load] L
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
                 }
-                //var mimeType = MimeMapping.GetMimeMapping(inputContent);
-                //var i = mimeType.sin
-                
-                var match = MimeTypeExtensionsMap.RegEx.Match(inputContent);
 
-                var mime = match.Groups["mime"].Value;
-                var data = match.Groups["data"].Value;
-                var extension = MimeTypeExtensionsMap.GetExtension(mime);
-                var byteArray = Convert.FromBase64String(data);
+                var extension = ".xlsx";
+
 
                 Load load = null;
                 var errorMessages = new List<string>();
                 SLDocument xls;
 
-                using (var stream = new MemoryStream(byteArray))
+                using (var stream = new MemoryStream(bytes))
                 {
                     if (extension == ".xlsx")
                     {
                         var objectType = assetType.Object;
                         var objectID = assetType.ObjectID;
-                        var intersectTypeUid = Company.Query<Guid?>("select [uid] from [IntersectType] where ID = @objectID and @objectType = 'IntersectType'", new { objectType, objectID }).FirstOrDefault();
+                        //var intersectTypeUid = Company.Query<Guid?>("select [uid] from [IntersectType] where ID = @objectID and @objectType = 'IntersectType'", new { objectType, objectID }).FirstOrDefault();
+                        var intersectTypeUid = assetTypeUid;
 
                         load = new Load
                         {
@@ -1457,7 +1406,8 @@ from	[Load] L
                     load.File = null;
                     Company.Add<Load>(load);
                     await Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
-                    await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
+                    //await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
+                    await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(bytes));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     return  await Task.FromResult<IHttpActionResult>(
