@@ -572,7 +572,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         let val = +e.target.value;
         let newVal = +val.toFixed(precision);
 
-        if (e === null || e.target === null || precision === null) {
+        if (e === null || e.target === null || precision === null || typeof precision === "undefined") {
             return;
         }
 
