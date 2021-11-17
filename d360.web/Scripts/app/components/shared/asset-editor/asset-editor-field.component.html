@@ -1,4 +1,4 @@
-﻿<div class="field-wrapper {{(!isValid ? 'invalid' : '')}} {{(isRequired() ? 'required-field' : '')}} {{(!field.Value || field.Value.length == 0) ? 'empty-field' : '' }}">
+﻿<div class="field-wrapper field-wrapper-type-{{field.FieldType}} {{(!isValid ? 'invalid' : '')}} {{(isRequired() ? 'required-field' : '')}} {{(!field.Value || field.Value.length == 0) ? 'empty-field' : '' }}">
     <div [formGroup]="form">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <div [ngSwitch]="getFieldTypeForSwitch(field.FieldType)" class="col s12" *ngIf="field.FieldType!='Hidden'">
