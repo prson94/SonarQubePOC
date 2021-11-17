@@ -506,7 +506,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                (TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model);
+                (TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model).ConfigureAwait(false);
 
                 if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
