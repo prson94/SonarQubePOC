@@ -20,12 +20,11 @@
                              let-category
                              [ngForOf]="categories">
                     <ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true" (expandedChange)="expandChanged()">
-                        <div inputs>
+                        <div inputs class="inputs-wrapper">
                             <div class="row"
                                  *ngFor="let row of category.rows">
                                 <div *ngFor="let field of row.Fields"
-                                     [class]="'field-col col ' + row.getColClass()"
-                                     style="padding-bottom:10px;">
+                                     [class]="'field-col col ' + row.getColClass()">
                                     <asset-editor-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
                                                         [form]="form"
                                                         (listItemChange)="listSelectionChanged($event)"

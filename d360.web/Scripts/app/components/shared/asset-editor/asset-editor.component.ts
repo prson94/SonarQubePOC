@@ -155,7 +155,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             if (this.propertyGroups) {
                 this.propertyGroups.forEach((pg) => {
                     var height = pg.inputContainer.nativeElement.offsetHeight;
-                    groupsHeight += height !== 0 ? (height + 32) : 32;
+                    groupsHeight += height !== 0 ? (height + 34) : 34;
                 });
             }
 
