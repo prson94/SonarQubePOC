@@ -41,7 +41,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
         }
     ];
 
-    private graphType: any =
+    private graphType: { [key: string]: any } =
         {
             'totalCount': { title: "Total Row Count" },
             "confidence": { title: "Type Confidence", decimals: 2, dataType: "percentage" },
@@ -134,12 +134,12 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
 
     private renderTimeSeriesChart(chartType: string) {
         this.graphTitle = this.graphType[chartType].title;
-        let series = [];
+        let graphSeries = [];
 
         if (this.graphType[chartType].seriesType === "combined" && this.graphType[chartType]?.series?.length > 0) {
-            this.graphType[chartType].series.forEach((s) => series.push(this.generateSeries(s)));
+            this.graphType[chartType].series.forEach((s) => graphSeries.push(this.generateSeries(s)));
         } else {
-            series.push(this.generateSeries(chartType));
+            graphSeries.push(this.generateSeries(chartType));
         }
 
         let chartOptions: Stockcharts.Options = {
@@ -158,7 +158,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 enabled: true,
                 dropdown: "always"
             },
-            series,
+            series: graphSeries,
             navigator: {
                 enabled: true,
                 height: 50,
@@ -236,16 +236,16 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
     }
 
     private generateSeries(chartType: string) {
-        let data = [];
+        let graphData = [];
 
         if (this.graphType[chartType]?.seriesType === "sum" && this.graphType[chartType]?.fields && Array.isArray(this.graphType[chartType].fields)) {
-            data = this.dataProfileList.map((x) => {
+            graphData = this.dataProfileList.map((x) => {
                 let v = 0;
                 this.graphType[chartType].fields.forEach((f) => v += x[f]);
                 return [new Date(x.profileSetDate).getTime(), v];
             });
         } else {
-            data = this.dataProfileList.map((x) => {
+            graphData = this.dataProfileList.map((x) => {
                 let value = x[chartType];
                 if (this.graphType[chartType]?.dataType) {
                     if (this.graphType[chartType]?.dataType === "string") {
@@ -263,7 +263,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
             chartType: "Highstock",
             name: this.graphType[chartType].title,
             color: this.graphType[chartType]?.color ?? '#597897',
-            data,
+            data: graphData,
             marker: {
                 enabled: true,
                 radius: 4
@@ -276,5 +276,11 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
             showInNavigator: true
 
         };
+    }
+
+    private getGraphType(chartType: string) {
+        let retval = '';
+        retval = this.graphType[chartType];
+        return retval;
     }
 }

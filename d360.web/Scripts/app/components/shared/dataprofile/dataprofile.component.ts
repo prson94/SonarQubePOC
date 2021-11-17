@@ -113,8 +113,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     initialize() {
         if (localStorage.getItem(this.hideDataProfileInstructionMessageKey)) {
-            //this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === 'true';
-            //uncomment this
+            this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === 'true';            
         }
         if (!this.dataProfile) {
             this.dataProfile = this.dataProfileList[0];
