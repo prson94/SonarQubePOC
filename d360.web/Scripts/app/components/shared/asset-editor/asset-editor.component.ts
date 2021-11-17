@@ -355,7 +355,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     if (this.selection) {
                         this.hasUpdateFormChanged = true;
                     }
-                })
+                });
             }, 500);
         }
 
