@@ -37,12 +37,17 @@ namespace d360.web.Controllers.V2
     public class ResponsibilitiesController : BaseV2ApiController
     {
         private IMediator Mediator { get; }
+        private IApplicationUriProvider ApplicationUriProvider { get; }
+
         IResponsibilityRepository ResponsibilityRepository;
+
         IAssetRepository AssetRepository;
-        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository, IMediator mediator)
+
+        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository, IMediator mediator, IApplicationUriProvider applicationUriProvider)
             : base(community, company, settingsRepository)
         {
             Mediator = mediator;
+            ApplicationUriProvider = applicationUriProvider;
             this.ResponsibilityRepository = responsibilityRepository;
             this.AssetRepository = assetRepository;
         }
@@ -1537,9 +1542,8 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("breakdown"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(List<ResponsibilityBreakdownResponse>)),
+            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(IReadOnlyList<ResponsibilityBreakdownResponse>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            //TracePrefix("Relationships.GetResponsibilityTypeBreakdown")
         ]
         public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown(Guid? uid = null)
         {
@@ -1557,9 +1561,34 @@ namespace d360.web.Controllers.V2
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets the breakdown of responsibilities
+        /// </summary>
+        /// <returns>An Array of responsibility type breakdowns.</returns>
+        [
+            HttpGet,
+            Route("breakdown/{resourceUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(IReadOnlyList<ResponsibilityGetBreakdownByResourceModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetResponsibilityBreakdownByResource(Guid resourceUid, Guid? resourceTypeUid = null)
+        {
+            // create business logic request model
+            var request = new ResponsibilityGetBreakdownByResourceRequest()
+            {
+                ResourceUid = resourceUid,
+                ResourceTypeUid = resourceTypeUid
+            };
+
+            // call business logic
+            var response = await Mediator.Send(request);
+
+            // convert result to UI (API) representation.
+            var result = response.ItemCollection;
+            return Ok(result);
+        }
     }
-
-
 
     public class TracePrefixAttribute : Attribute
     {
@@ -1568,6 +1597,20 @@ namespace d360.web.Controllers.V2
         public TracePrefixAttribute(string text)
         {
             Text = text;
+        }
+    }
+
+    public interface IApplicationUriProvider
+    {
+        [Obsolete("This method should work without using of request parameter")]
+        string GetExecutionByIdLink(HttpRequestMessage request, Guid id);
+    }
+
+    internal sealed class ApplicationUriProvider : IApplicationUriProvider
+    {
+        public string GetExecutionByIdLink(HttpRequestMessage request, Guid id)
+        {
+            return $"{request.RequestUri.Scheme}://{request.RequestUri.Host}/api/v2/executions/{id}";
         }
     }
 }

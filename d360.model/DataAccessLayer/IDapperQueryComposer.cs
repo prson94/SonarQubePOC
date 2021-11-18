@@ -33,7 +33,7 @@ namespace d360.model.DataAccessLayer
         Task<SqlMapper.GridReader> StoredProcedureMultipleResultsAsync(
             string procedureName,
             SqlMapper.IDynamicParameters parameters,
-            int? commandTimeout);
+            int? commandTimeout = null);
 
         Task<TItem> StoredProcedureSingleAsync<TItem>(
             string procedureName,

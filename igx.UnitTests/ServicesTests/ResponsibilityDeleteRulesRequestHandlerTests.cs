@@ -131,5 +131,13 @@ namespace igx.UnitTests.ServicesTests
 
             return fixture.Create<T>();
         }
+
+        public static IEnumerable<T> CreateClassWithRecursiveDataEnumerable<T>(int count = 3)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                yield return CreateClassWithRecursiveData<T>();
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ using System.Net;
 using System.Threading;
 using d360.core.entities;
 using d360.extensions;
+using Moq;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -23,7 +24,7 @@ namespace igx.UnitTests.V2ControllerTests
         public ResponsibilitiesControllerTest()
         {
             this.responsibilitiesController = new ResponsibilitiesController(GetCommunity(), GetCompany(), GetResponsibilityRepository(), GetAssetRepository(),
-                GetSettingsRepository(), GetMediator())
+                GetSettingsRepository(), GetMediator(), new Mock<IApplicationUriProvider>().Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
