@@ -340,6 +340,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type cannot be empty. Please select a type from the dropdown..
+        /// </summary>
+        public static string EmptyType {
+            get {
+                return ResourceManager.GetString("EmptyType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to End value {0} is not a valid IP Address.
         /// </summary>
         public static string EndIPAddressNotValid {

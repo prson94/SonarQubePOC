@@ -1146,7 +1146,8 @@ from	[Load] L
         /// Creates a new Bulk load.
         /// </summary>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-        /// <param name="type">The bulkload type of the load you are creating.</param>
+        /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+        /// <param name="type">The bulkload type of the load you are creating. Default is Promotion.</param>
         /// <param name="notes">Add notes to the load.</param>
         /// <returns></returns>
         [
@@ -1158,44 +1159,63 @@ from	[Load] L
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerParameter("file", "File to be upload", DataType = "file", ParameterType = "formData", Required = false),
+            SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = false),
 
         ]
 
-        public async Task<IHttpActionResult> AddLoad(Guid? assetTypeUid = null, BulkLoadType type = BulkLoadType.Promotion, string notes = "")
+        public async Task<IHttpActionResult> AddLoad(Guid? assetTypeUid = null, Guid? intersectTypeUid = null, BulkLoadType type = BulkLoadType.Promotion, string notes = "")
         {
             try
             {
                 var c = await Request.Content.ReadAsMultipartAsync();
                 var bytes = await c.Contents[0].ReadAsByteArrayAsync();
 
+                var contentType = c.Contents[0].Headers.ContentType;
+                var extension = MimeTypeExtensionsMap.GetExtension(contentType.ToString());
+
                 var assetType = Company.AssetTypes.Where(r => r.uid == assetTypeUid).FirstOrDefault();
+                var intersectType = Company.IntersectTypes.Where(i => i.uid == intersectTypeUid).FirstOrDefault();
 
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
                 }
 
-                if(assetType == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
-                }
-
-                var extension = ".xlsx";
-
-
                 Load load = null;
                 var errorMessages = new List<string>();
                 SLDocument xls;
-
+                string objectType = "";
+                int objectID = 0;
                 using (var stream = new MemoryStream(bytes))
                 {
                     if (extension == ".xlsx")
                     {
-                        var objectType = assetType.Object;
-                        var objectID = assetType.ObjectID;
-                        //var intersectTypeUid = Company.Query<Guid?>("select [uid] from [IntersectType] where ID = @objectID and @objectType = 'IntersectType'", new { objectType, objectID }).FirstOrDefault();
-                        var intersectTypeUid = assetTypeUid;
+                        if(type == BulkLoadType.Users)
+                        {
+                            objectType = "Membership";
+                            objectID = 1;
+                        }
+                        else if(type == BulkLoadType.Groups)
+                        {
+                            objectType = "Membership";
+                            objectID = 0;
+                        }
+                        else if (type == BulkLoadType.Responsibilities)
+                        {
+                            objectType = "ArtifactType";
+                            objectID = 0;
+                        }
+                        else if(intersectType != null)
+                        {
+                            objectType = "IntersectType";
+                            objectID = intersectType.ID;
+                        }
+                        else
+                        {
+                            objectType = assetType.Object;
+                            objectID = assetType.ObjectID;
+                        }
+                        
 
                         load = new Load
                         {
@@ -1406,7 +1426,6 @@ from	[Load] L
                     load.File = null;
                     Company.Add<Load>(load);
                     await Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
-                    //await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
                     await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(bytes));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 

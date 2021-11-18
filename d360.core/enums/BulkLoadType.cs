@@ -14,7 +14,9 @@ namespace d360.core.enums
         [Name("U")]
         Unrelation = 3,
         [Name("M")]
-        UsersGroups = 4
+        Users = 4,
+        [Name("M")]
+        Groups = 5
     }
 
     public class BulkLoadTypeInfo

@@ -714,4 +714,7 @@
   <data name="InvalidAssetTypeUid" xml:space="preserve">
     <value>No match found for AssetTypeUid provided.</value>
   </data>
+  <data name="EmptyType" xml:space="preserve">
+    <value>Type cannot be empty. Please select a type from the dropdown.</value>
+  </data>
 </root>
