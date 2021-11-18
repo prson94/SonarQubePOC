@@ -119,7 +119,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
             if (isNaN(this.selectedGraphRangeOption)) {
                 if (this.selectedGraphRangeOption === "YTD") {
                     d.setMonth(0);
-                    d.setDate(0);
+                    d.setDate(1);
                 }
                 if (this.selectedGraphRangeOption === "All") {
                     d = null;
