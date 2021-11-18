@@ -20,6 +20,7 @@ using d360.core.entities.Metric;
 using System.Threading;
 using System.Net.Http;
 using Microsoft.Extensions.Hosting;
+using d360.model.DataAccessLayer;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -111,6 +112,9 @@ namespace igx.jobs.apiexecutionprocessor
             {
                 company.CurrentResourceIsAdmin = resource.IsAdministrator;
             }
+
+            FieldsRepository fieldsRepository = new FieldsRepository(company, queue, storage);
+
             #endregion
 
             var dbExecutionItem = company.Filter<ApiExecution>(i => i.ExecutionID == Info.ExecutionID).SingleOrDefault();
@@ -454,6 +458,16 @@ namespace igx.jobs.apiexecutionprocessor
                                 log.WriteLine($"POST Responsibility Override (DB Complete): Total Error: {dbExecutionItem.Error}.");
 
                                 await SaveResultsJsonToAzure(postResponsibilityOverrideResult, log, "Responsibility Override", HttpMethod.Post).ConfigureAwait(false);
+                                break;
+                            case ApiExecutionAction.DeleteFieldTypes:
+                                var deleteFieldtypes = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteFieldtypes>(dbExecutionItem.Fields);
+
+                                company.SetApiExecutionProcessingStartTime(dbExecutionItem.ExecutionID);
+                                log.WriteLine($"DELETE Field Type (DB Start): Total field types: {deleteFieldtypes.FieldNamesToDelete.Count}");
+                                List<FieldType> currentFieldTypes = fieldsRepository.GetFieldTypes(deleteFieldtypes.TypeIdentifierInfo);
+                                var result = fieldsRepository.DeleteFields(currentFieldTypes, deleteFieldtypes.FieldNamesToDelete);
+                                dbExecutionItem.Processed = result;
+                                log.WriteLine($"DELETE Field Type (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
                                 break;
                         }
                     }

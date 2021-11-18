@@ -98,6 +98,12 @@ namespace d360.core.entities
         public Guid PredicateUid { get; set; }
     }
 
+    public class ApiExecutionFields_DeleteFieldtypes
+    {
+        public TypeIdentifierInfoModel TypeIdentifierInfo { get; set; }
+        public List<string> FieldNamesToDelete { get; set; }
+    }
+
 
     public class APIExecutionAPIModelResult : PagedApiBaseViewModel
     {
