@@ -1,4 +1,5 @@
 ﻿import { Component, Input, OnChanges, SimpleChange, ChangeDetectorRef, AfterViewChecked, ViewEncapsulation, ViewChildren } from '@angular/core';
+import { Location } from '@angular/common';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
@@ -84,6 +85,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         protected scoreService: ScoreService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
+        private location: Location,
         private router: Router
     ) {
         super(settingsService);
@@ -181,10 +183,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 if (x.length > 0) {
                     let selectedScoreTypeIndex = this.scoreTypes.findIndex(a => { return a == this.selectedScoreType });
                     if (selectedScoreTypeIndex > -1) {
-                        this.setSelectedButton(this.scoreTypes[selectedScoreTypeIndex]);
+                        this.scoreType = <any>ScoreType[this.scoreTypes[selectedScoreTypeIndex]];
                     }
                     else {
-                        this.setSelectedButton(this.scoreTypes[0]);
+                        this.scoreType = <any>ScoreType[this.scoreTypes[0]];
                     }
                 }
                 this.allocationData.forEach(alloc => {
@@ -232,6 +234,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 });
                 break;
             default:
+                break;
         }
     }
 
@@ -485,7 +488,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private setSelectedButton(scoreType: ScoreType) {
         scoreType = <any>ScoreType[scoreType];
-        this.router.navigateByUrl(`/sidebar/score/${this.uid}/${scoreType}`);
+        if (this.selectedScoreType !== scoreType) {
+            this.router.navigateByUrl(`/sidebar/score/${this.uid}/${scoreType}`);
+        }
     }
 
     private setCollapsed(val: boolean) {
