@@ -70,7 +70,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     }
 
     updateCurrentPath(oldValue: string, value: string) {
-        this.updateCurrentObjectPath.next({ oldValue, value: value });
+        this.updateCurrentObjectPath.next({ oldValue, value });
     }
 
     setCurrentObjectInfo(type: string, id: number) {
