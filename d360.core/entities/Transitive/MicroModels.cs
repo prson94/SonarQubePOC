@@ -412,14 +412,6 @@ namespace d360.core.entities
         public Guid RequestedByUid { get; set; }
     }
 
-    public class LoadFilePostModel
-    {
-        public string LoadAction { get; set; }
-        public string Type { get; set; }
-        public string Notes { get; set; }
-        public string File { get; set; }
-    }
-
     public class LevelField
     {
         public int Level { get; set; }
