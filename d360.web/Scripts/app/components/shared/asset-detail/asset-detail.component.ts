@@ -335,4 +335,13 @@ export class AssetDetailComponent implements OnChanges {
     clickTab(key: string) {
         this.tab = key;
     }
+
+    isEditLinkVisible() {
+        var isAllowedObject = false;
+        if (this.objectType) {
+            isAllowedObject = this.objectType === 'Artifact' || this.objectType === 'Taxonomy' || this.objectType === 'Policy' || this.objectType === 'Rule';
+        }
+
+        return this.hasEditLink && isAllowedObject;
+    }
 }

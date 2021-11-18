@@ -15,7 +15,7 @@
                     {{model?.AssetTypeName}}
                 </div>
                 <div>
-                    <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="hasEditLink"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
+                    <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
                 </div>
             </div>
         </ng-container>
