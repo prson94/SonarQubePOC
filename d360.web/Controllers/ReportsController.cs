@@ -232,9 +232,15 @@ namespace d360.web.Controllers
         }
 
         [Route("byid/{id:int}")]
-        public JsonNetResult GetReportsByID(int id)
+        public ActionResult GetReportsByID(int id)
         {
             var report = Company.Reports.Include(rpt => rpt.Responsibilities).FirstOrDefault(x => x.ID == id && x.ReportType != "legacy");
+
+            if(report == null)
+            {
+                return new HttpNotFoundResult();
+            }
+
             var type = report.ObjectType;
 
             bool isType = type.Contains("Type");

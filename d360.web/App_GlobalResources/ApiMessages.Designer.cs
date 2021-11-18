@@ -646,6 +646,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Favorites List Cleared..
+        /// </summary>
+        public static string FavoritesListCleared {
+            get {
+                return ResourceManager.GetString("FavoritesListCleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully deleted specified favorites.
+        /// </summary>
+        public static string FavoritesSuccessfullyDeleted {
+            get {
+                return ResourceManager.GetString("FavoritesSuccessfullyDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field moved successfully..
         /// </summary>
         public static string FieldMovedSuccessfully {
@@ -781,20 +799,56 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Help Menu items successfully updated..
+        ///   Looks up a localized string similar to Help menu items have been successfully created..
         /// </summary>
-        public static string HelpMenuSuccess {
+        public static string HelpItemsAdded {
             get {
-                return ResourceManager.GetString("HelpMenuSuccess", resourceCulture);
+                return ResourceManager.GetString("HelpItemsAdded", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Help Menu Updated..
+        ///   Looks up a localized string similar to Help menu items have been successfully removed..
         /// </summary>
-        public static string HelpMenuUpdated {
+        public static string HelpItemsDeleted {
             get {
-                return ResourceManager.GetString("HelpMenuUpdated", resourceCulture);
+                return ResourceManager.GetString("HelpItemsDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help Menu Items Created..
+        /// </summary>
+        public static string HelpMenuItemsCreated {
+            get {
+                return ResourceManager.GetString("HelpMenuItemsCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help Menu Items Deleted..
+        /// </summary>
+        public static string HelpMenuItemsDeleted {
+            get {
+                return ResourceManager.GetString("HelpMenuItemsDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help Menu Items Updated..
+        /// </summary>
+        public static string HelpMenuItemsUpdated {
+            get {
+                return ResourceManager.GetString("HelpMenuItemsUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help Menu items have been successfully updated..
+        /// </summary>
+        public static string HelpMenuSuccess {
+            get {
+                return ResourceManager.GetString("HelpMenuSuccess", resourceCulture);
             }
         }
         

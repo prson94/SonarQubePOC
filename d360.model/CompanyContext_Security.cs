@@ -875,7 +875,7 @@ from    #changes C
                     whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.[State] = 1";
                     if (IsHideData3SixtyUsers)
                     {
-                        whenSuffix += " and (O.Email not like '%@data3sixty.com' and O.Email not like '%@infogix.com')";
+                        whenSuffix += " and (O.Email not like '%@data3sixty.com' and O.Email not like '%@infogix.com' and O.Email not like '%@precisely.com')";
                     }
                 }
             }

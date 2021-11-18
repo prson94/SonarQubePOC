@@ -1,0 +1,26 @@
+﻿<d3s-links-keyboard-navigation>
+    <div class="ie-min-content">
+        <div class="megamenu-header truncate">
+            <ig-search-field #searchinput [darkMode]="true" mode="Keypress" (onSearch)="contentSizeChanged.emit();" [(ngModel)]="searchText" [placeholder]="'Search menu...'"></ig-search-field><br />
+            <div class="additional-buttons">
+                <button *ngIf="showVisiblityToggle"
+                        igButton
+                        (click)="toggleEmptyVisibility()"
+                        class="hide-menu-button"
+                        icon="{{(hideEmptyItems ? 'fa-eye' : 'fa-eye-slash')}}"
+                        pTooltip="{{(hideEmptyItems ? 'Show empty collections' : 'Hide empty collections')}}"
+                        tooltipPosition="top"
+                        tooltipStyleClass="ig-tooltip">
+                </button>
+                <ng-content select="[additionalButtons]"></ng-content>
+            </div>
+        </div>
+        <div class="row megamenu-items" [ngStyle]="{'max-height': getMaxHeight()}">
+            <div class="col s12 megamenu-items-container" *ngFor="let item of visibleMenuItems | simpleSearch: searchText">
+                <ul class="menu-group">
+                    <d3s-site-menu-mega-item [category]="menu.MenuID" [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count" (activeChange)="activeItemChanged.emit();"></d3s-site-menu-mega-item>
+                </ul>
+            </div>
+        </div>
+    </div>
+</d3s-links-keyboard-navigation>

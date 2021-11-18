@@ -19,13 +19,12 @@
                 <ng-template ngFor
                              let-category
                              [ngForOf]="categories">
-                    <ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true">
-                        <div inputs>
+                    <ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true" (expandedChange)="expandChanged()">
+                        <div inputs class="inputs-wrapper">
                             <div class="row"
                                  *ngFor="let row of category.rows">
                                 <div *ngFor="let field of row.Fields"
-                                     [class]="'field-col col ' + row.getColClass()"
-                                     style="padding-bottom:10px;">
+                                     [class]="'field-col col ' + row.getColClass()">
                                     <asset-editor-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
                                                         [form]="form"
                                                         (listItemChange)="listSelectionChanged($event)"
@@ -46,12 +45,12 @@
             </div>
 
             <div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
-                <button igButton type="button" label="Cancel" tooltip="Cancel" (click)="closeClick.emit();"></button>
+                <button igButton type="button" label="{{hasUpdateFormChanged ? 'Discard Changes' : 'Cancel'}}" tooltip="Cancel" (click)="closeClick.emit();"></button>
 
                 <div class="flex-grow"></div>
                 <button *ngIf="!selection" type="button" igButton [disabled]="!form.valid || savingInProgress" label="Create and Add Another" tooltip="Create and Add Another" [loading]="savingInProgress && savingInProgressWithAddNew" (click)="onSubmit(true)"></button>
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <button type="submit" class="ig-button-primary" igButton [disabled]="!form.valid || savingInProgress" label="{{selection ? 'Save Changes' : 'Create'}}" tooltip="{{selection ? 'Save Changes' : 'Create'}}" [loading]="savingInProgress && !savingInProgressWithAddNew"></button>
+                <button type="submit" class="ig-button-primary" igButton [disabled]="!form.valid || savingInProgress || !formHasChanges()" label="{{selection ? 'Save Changes' : 'Create'}}" tooltip="{{selection ? 'Save Changes' : 'Create'}}" [loading]="savingInProgress && !savingInProgressWithAddNew"></button>
             </div>
         </form>
     </div>

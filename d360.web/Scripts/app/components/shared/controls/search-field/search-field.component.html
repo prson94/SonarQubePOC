@@ -1,4 +1,4 @@
-﻿<span class="ig-search-field {{infoTooltip ? 'has-tooltip' : ''}} {{darkMode ? 'dark-mode' : ''}}">
+﻿<span class="ig-search-field {{infoTooltip ? 'has-tooltip' : ''}} {{darkMode ? 'dark-mode' : ''}}" [style.min-width.px]="minWidth > 0 ? minWidth: 'null'">
     <input igInput #iginput
            [tabindex]="tabindex"
            type="text" autocomplete="off" placeholder="{{placeholder}}" maxlength="{{maxLength}}"

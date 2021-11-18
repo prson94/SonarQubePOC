@@ -61,7 +61,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Output() relationItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
-    private fieldTooltip: string;
     private cascadeSub: any;
     private relationSource$ = new Subject<any>();
     private relationSub: any;
@@ -359,11 +358,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                 }
             }
         }
-
-        if (this.field && this.field.FieldDescription) {
-            this.fieldTooltip = this.field.FieldDescription ? String(this.field.FieldDescription).replace(/<[^>]+>/gm, '') : '';
-        }
-
 
         if (this.field.FieldType == 'Color') {
             this.assetService.getAllColors().subscribe(x => {

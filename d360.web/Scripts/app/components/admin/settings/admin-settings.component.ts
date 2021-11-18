@@ -38,7 +38,8 @@ import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 
 export class AdminSettingsComponent extends AdminBaseComponent {
     items: HelpMenu[] = []; 
-    deletedRecords: HelpMenu[] = []; 
+    deletedRecords: HelpMenu[] = [];
+    addedRecords: HelpMenu[] = [];
     companySettings: CompanySettings = new CompanySettings();
     searchTypes: SearchType[];
     companyLogo: CompanyImage = new CompanyImage();
@@ -133,6 +134,15 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.groups.unshift({ label: '[Administrators]', value: 0 });
                 this.isLoading = false;
             });
+        this.resetSaveButton();
+
+        this.settingsService.getRebuildRequestStatuses()
+            .subscribe(data => {
+                this.rebuildStatuses = data;
+            });
+    }
+
+    resetSaveButton() {
         this.secondaryNavService.clearButtons();
         this.SaveButton = new DynamicButton("Save Changes");
         this.secondaryNavService.showButton(this.SaveButton);
@@ -141,11 +151,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             this.SaveButton.isLoading = true;
             this.save();
         };
-
-        this.settingsService.getRebuildRequestStatuses()
-            .subscribe(data => {
-                this.rebuildStatuses = data;
-            });
     }
 
     save(): void {
@@ -159,8 +164,12 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         for (let i = 0; i < this.items.length; i++) {
             this.items[i].order = i;
         }
-        this.helpMenuService.updateHelpMenuItems(this.items, this.deletedRecords).subscribe((r) => {
+        this.helpMenuService.deleteHelpMenuItems(this.deletedRecords).subscribe((r) => {
         });
+        this.helpMenuService.updateHelpMenuItems(this.items).subscribe((r) => {
+        });
+        this.helpMenuService.addHelpMenuItems(this.addedRecords).subscribe((r) => { });
+        
 
         //#region Translate to settings array for v2 API.
 
@@ -350,9 +359,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             .subscribe(
                 (data) => {
                     this.isLoading = false;
-                    this.SaveButton.disabled = false;
-                    this.SaveButton.isLoading = false;
                     if (data && data.type === "error") {
+                        this.resetSaveButton();
                         this.messagesService.showError(data.title, data.message);
                     }
                     else {

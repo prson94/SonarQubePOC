@@ -678,6 +678,29 @@ from	IntersectType I
             return executionInfo;
         }
 
+        public async Task<ApiExecutionInfo> BulkPutRelationships(Guid intersectTypeUid, RelationshipUpdates relationships, ApiExecution execution, bool triggerWorkflow = false)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = companyContext.CurrentCompanyID,
+                ResourceID = companyContext.CurrentResourceID,
+                CompanyDomainPrefix = companyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                Action = ApiExecutionAction.PutRelationships,
+                SendWorkflowEvents = triggerWorkflow
+            };
+
+            await Storage.CreateFolder(executionInfo.StorageFolder);
+            await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
+
+            execution.ExecutionID = executionInfo.ExecutionID;
+            companyContext.Add(execution);
+
+            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+
+            return executionInfo;
+        }
+
         public IEnumerable<dynamic> GetExportModel(int id)
         {
             return companyContext.Query<dynamic>(

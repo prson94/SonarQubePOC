@@ -322,7 +322,13 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 const tempFields: FieldTypeAPIModelFieldCondition[] = [];
                 res.forEach((f) => {
                     if (FieldTypeHelper.isFieldForOperator(f.Type)) {
-                        tempFields.push(f as FieldTypeAPIModelFieldCondition);
+                        let allowAdd: boolean = true;
+                        if (f.Type.Lookup !== null && f.Type.Lookup !== undefined) {
+                            allowAdd = f.Type.Lookup.List.Class !== "Model";
+                        }
+                        if (allowAdd) {
+                            tempFields.push(f as FieldTypeAPIModelFieldCondition);
+                        }
                     }
                 });
                 tempFields.forEach(f => {

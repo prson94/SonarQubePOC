@@ -1,43 +1,43 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, NgModule } from '@angular/core';
-import { ResponsibilityItemDetailV2 } from '../../../models/responsibility.model';
-import { ResponsibilityService } from '../../../services/responsibility.service';
-import { PermissionsService } from '../../../services/permissions.service';
-import { BaseComponent } from '../../shared/base.component';
-import { Router, RouterModule } from '@angular/router';
-import * as _ from 'lodash';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { TableModule } from 'primeng/table';
-import { SharedModule } from 'primeng/api';
-import { TooltipModule } from 'primeng/tooltip';
-import { EditorModule } from 'primeng/editor';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { SelectButtonModule } from 'primeng/selectbutton';
-import { DropdownModule } from 'primeng/dropdown';
-import { ButtonModule } from 'primeng/button';
-import { TreeTableModule } from 'primeng/treetable';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputSwitchModule } from 'primeng/inputswitch';
-import { ToastModule } from 'primeng/toast';
-import { CoreModule } from '../core.module';
-import { PipesModule } from '../../../pipes/pipes.module';
-import { SharedDeleteFormModule } from '../delete.form';
-import { ResourceMultiSelectGridModule } from '../resource-multiselect-grid.component';
-import { TilesModule } from '../tiles/tiles.module';
-import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
-import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
-import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
-import { SearchFieldModule } from '../controls/search-field/search-field.component';
-import { ResponsibilityItemFormModule } from './responsibility-item.form';
-import { CompanySettingsService } from '../../../services/settings.service';
+﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, NgModule } from "@angular/core";
+import { ResponsibilityItemDetailV2 } from "../../../models/responsibility.model";
+import { ResponsibilityService } from "../../../services/responsibility.service";
+import { PermissionsService } from "../../../services/permissions.service";
+import { BaseComponent } from "../../shared/base.component";
+import { Router, RouterModule } from "@angular/router";
+import * as _ from "lodash";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
+import { TableModule } from "primeng/table";
+import { SharedModule } from "primeng/api";
+import { TooltipModule } from "primeng/tooltip";
+import { EditorModule } from "primeng/editor";
+import { MultiSelectModule } from "primeng/multiselect";
+import { AutoCompleteModule } from "primeng/autocomplete";
+import { SelectButtonModule } from "primeng/selectbutton";
+import { DropdownModule } from "primeng/dropdown";
+import { ButtonModule } from "primeng/button";
+import { TreeTableModule } from "primeng/treetable";
+import { InputTextModule } from "primeng/inputtext";
+import { InputSwitchModule } from "primeng/inputswitch";
+import { ToastModule } from "primeng/toast";
+import { CoreModule } from "../core.module";
+import { PipesModule } from "../../../pipes/pipes.module";
+import { SharedDeleteFormModule } from "../delete.form";
+import { ResourceMultiSelectGridModule } from "../resource-multiselect-grid.component";
+import { TilesModule } from "../tiles/tiles.module";
+import { SharedObjectDetailsModule } from "../objectdetails/shared-object-details.module";
+import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
+import { SharedDynamicGridEditorModule } from "../dynamicgrideditor/shared-dynamic-grid-editor.module";
+import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
+import { SearchFieldModule } from "../controls/search-field/search-field.component";
+import { ResponsibilityItemFormModule } from "./responsibility-item.form";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
-    selector: 'd3s-people-responsibilities-tile',
-    templateUrl: './people-responsibilities.tile.html',
+    selector: "d3s-people-responsibilities-tile",
+    templateUrl: "./people-responsibilities.tile.html",
     providers: [ResponsibilityService, PermissionsService],
 })
 
@@ -76,14 +76,14 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'assetID') {
-                this.assetID = changes['assetID'].currentValue;
+            if (p === "assetID") {
+                this.assetID = changes["assetID"].currentValue;
             }
-            if (p == 'assetUid') {
-                this.assetUid = changes['assetUid'].currentValue;
+            if (p === "assetUid") {
+                this.assetUid = changes["assetUid"].currentValue;
             } 
-            if (p == 'overrideItemID') {
-                this.overrideItemID = changes['overrideItemID'].currentValue;
+            if (p === "overrideItemID") {
+                this.overrideItemID = changes["overrideItemID"].currentValue;
             }            
         }
 
@@ -98,7 +98,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         
         this.responsibilityService.getResponsibilityDetail(this.assetUid)
             .subscribe(data => {
-                this.responsibilities = data.filter((x) => x.IsVisible === true);
+                this.responsibilities = data.filter((x) => x.IsVisible);
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
                 this.ref.markForCheck();
@@ -110,6 +110,14 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     edit(item): void {  
         this.selectedRow = item;
         this.isEditing = true;
+    }
+
+    canEdit(item): boolean {
+        return item != null && item.AssignedBy.toLowerCase() === "user" && this.hasModifyResponsibilitiesPermissions(null);
+    }
+
+    showEdit(item): boolean {
+        return this.showRowTools && this.canEdit(item);
     }
 
     delete(id: number): void {        
@@ -127,18 +135,16 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     onDoubleClick(item: any) {
-        if (item == null)
-            return;
-
-        if (item.AssigningItemID == item.ObjectID && item.AssigningItemType == item.ObjectType)
-            this.isEditing = true;
+        if (this.canEdit(item)) {
+            this.edit(item);
+        }
     }
 
     private columnSort(event) {
         console.log(event);
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
-        this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+        this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? "desc" : "asc"]);
     }
 
     private deleteResponsibility() {

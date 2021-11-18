@@ -145,4 +145,8 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         this.formModeChange.emit(this.formMode);
         this.modalEditorVisible = false;
     }
+
+    getAssetTypePath() {
+        return this.object.TypeName + ' > ' + this.object.TextPath;
+    }
 }

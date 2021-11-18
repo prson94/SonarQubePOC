@@ -64,7 +64,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CompletedOn.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_status", "Filter by execution status. Allowed values are Pending, Running, Completed", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_status", "Filter by execution status. Allowed values are Pending, Running, Completed", DataType = "string", ParameterType = "query", Required = false, Enum = typeof(ExecutionInternalStatus)),
         ]
         public async Task<IHttpActionResult> GetExecutions()
         {

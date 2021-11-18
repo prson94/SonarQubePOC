@@ -19,7 +19,8 @@ namespace d360.core.queue
         PostDataProfile,
         PutDataProfile,
         DeleteDataProfile,
-        PostResponsibilityOverride
+        PostResponsibilityOverride,
+        DeleteFieldTypes
     }
     public class ApiExecutionInfo: IServiceBusMessageType
     {

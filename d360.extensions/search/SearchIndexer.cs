@@ -639,7 +639,7 @@ namespace d360.extensions.search
 	                        a.uid as Uid,
 	                        u.email as Email,
 	                        CASE
-                            WHEN u.Email not like '%@data3sixty.com' and Email not like '%@infogix.com'
+                            WHEN u.Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com'
                                 THEN '0'
                                 ELSE '1'
                             END as Data3SixtyUser

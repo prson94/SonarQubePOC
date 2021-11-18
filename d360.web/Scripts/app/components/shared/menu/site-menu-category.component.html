@@ -1,4 +1,8 @@
-﻿<li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(null, item);" (click)="navigateToUrl(url)" style="cursor: pointer;">
+﻿<li #item 
+    [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}"
+    title="{{title}}" 
+    (mouseenter)="show(item)" (click)="navigateToUrl(url)" 
+    style="cursor: pointer;">
     <div class="menu-category-box">
         <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
         <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
@@ -8,28 +12,31 @@
             <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
         </div>
     </div>
-    <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" title="" [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
-        <div class="ie-min-content">
-            <div class="megamenu-header truncate">
+    <div *ngIf="menu?.NavigationItems?.length > 0; else emptyHintContainer" 
+        class="menu-child megamenu-panel" 
+        title="" 
+        [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" 
+        (click)="stopNavigation($event)">
+        <ng-template #defaultPanelContent>
+            <d3s-site-menu-category-panel
+                [menu]="menu"
+                [isActive]="isActive"
+                (activeItemChanged)="activeItemChanged.emit($event)"
+                (contentSizeChanged)="positionMenu()">
+                <ng-content additionalButtons select="[additionalButtons]"></ng-content>
+            </d3s-site-menu-category-panel>
+        </ng-template>
 
-                <ig-search-field #searchinput [darkMode]="true" mode="Keypress" (onSearch)="positionMenu($event,item);" [(ngModel)]="searchText" [placeholder]="'Search menu...'"></ig-search-field><br />
-                <button *ngIf="showVisiblityToggle"
-                        igButton
-                        (click)="toggleEmptyVisibility()"
-                        class="hide-menu-button"
-                        icon="{{(hideEmptyItems ? 'fa-eye' : 'fa-eye-slash')}}"
-                        pTooltip="{{(hideEmptyItems ? 'Show empty collections' : 'Hide empty collections')}}"
-                        tooltipPosition="top"
-                        tooltipStyleClass="ig-tooltip">
-                </button>
-            </div>
-            <div class="row megamenu-items" [ngStyle]="{'max-height': getMaxHeight()}">
-                <div class="col s12 megamenu-items-container" *ngFor="let item of visibleMenuItems | simpleSearch: searchText">
-                    <ul class="menu-group">
-                        <d3s-site-menu-mega-item [category]="menu.MenuID" [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count" (activeChange)="activeItemChanged.emit();"></d3s-site-menu-mega-item>
-                    </ul>
-                </div>
-            </div>
-        </div>
+        <ng-container [ngTemplateOutlet]="customPanelContent || defaultPanelContent">            
+        </ng-container>
     </div>
+
+    <ng-template #emptyHintContainer>
+        <div *ngIf="emptyHint && menu.isActiveItem" 
+            class="menu-child megamenu-panel empty-hint-panel"
+            title="">
+            <ng-container [ngTemplateOutlet]="emptyHint">            
+            </ng-container>
+        </div>
+    </ng-template>
 </li>       

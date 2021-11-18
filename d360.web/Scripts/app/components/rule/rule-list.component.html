@@ -3,9 +3,10 @@
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div class="tile tile-detail main-panel"
              *ngIf="!isLoading">
-            <d3s-asset-grid [gridObject]="gridObject" 
-                            (selectedChange)="selectAsset($event)" 
-                            (hasProfilingChange)="hasProfiling=$event" 
+            <d3s-asset-grid #grid
+                            [gridObject]="gridObject"
+                            (selectedChange)="selectAsset($event)"
+                            (hasProfilingChange)="hasProfiling=$event"
                             (showEditorChange)="showEditor=$event"
                             (isLoadingChange)="gridLoading=$event"
                             (isDefinitionLoadedChange)="definitionLoaded=$event"></d3s-asset-grid>
@@ -23,7 +24,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selection.AssetUid"
@@ -36,9 +37,11 @@
                                          [spacerHeight]="'16px'"
                                          [paddingLeft]="'11px'"
                                          [isSidePanel]="true"
+                                         [hasEditLink]="true"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
-                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                         [hasDeleteRelationshipsPermissions]="false"
+                                         (onEditClick)="assetGrid.triggerEdit()"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
             </side-panel>

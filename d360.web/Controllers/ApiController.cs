@@ -554,7 +554,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                             filterItems = Company.Query<string>(@"
                                 select V.Text
                                 from FieldLookupValue V
-                                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com and R.Email not like '%@precisely.com'
                                 where V.LookupObjectType = @lookupObjectType and V.LookupObjectID = @lookupObjectId
                                 order by V.Text", new { lookupObjectId = item.LookupObjectID, lookupObjectType = item.LookupObjectType })
                                 .ToList();
@@ -2155,7 +2155,7 @@ from    (
 
             if (HideData3SixtyUsers())
             {
-                querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
+                querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com' and A.Email not like '%@precisely.com')";
             }
 
             if (!string.IsNullOrEmpty(filter))

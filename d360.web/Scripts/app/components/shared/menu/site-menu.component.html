@@ -7,18 +7,12 @@
             <d3s-site-menu-category [expanded]="menuOpen"
                                     [title]="'Home'"
                                     [url]="'home'"
-                                    (clearSearchesEvent)="clearSearches($event)"
                                     [rootIconName]="'fa-home'"
                                     (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
-            <d3s-site-menu-category *ngIf="favorites"
-                                    [expanded]="menuOpen"
-                                    [title]="'Favorites'"
-                                    showClearButton="true"
-                                    (clearClick)="clearFavorites()"
-                                    (clearSearchesEvent)="clearSearches($event)"
-                                    [menu]="favorites"
-                                    rootIconName="fa-star"
-                                    (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
+            <d3s-site-menu-favorites 
+                [expanded]="menuOpen"
+                (activeItemChanged)="changeActiveMenu($event)">
+            </d3s-site-menu-favorites>
             <ng-template ngFor
                          let-menu
                          [ngForOf]="siteMenu">
@@ -27,7 +21,6 @@
                                         [url]="menu.ngUrl"
                                         [title]="menu.Title"
                                         [rootIconName]="menu.Icon"
-                                        (clearSearchesEvent)="clearSearches($event)"
                                         [imageUrl]="menu.FullURL"
                                         [menu]="menu"
                                         [countData]="countData"
@@ -38,14 +31,12 @@
                                     [expanded]="menuOpen"
                                     [title]="'Configuration'"
                                     rootIconName="fa-sliders"
-                                    (clearSearchesEvent)="clearSearches($event)"
                                     [menu]="configMenu"
                                     [isActive]="configMenu.isActiveItem"
                                     (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
             <d3s-site-menu-category *ngIf="isAdmin"
                                     [expanded]="menuOpen"
                                     [title]="'Administration'"
-                                    (clearSearchesEvent)="clearSearches($event)"
                                     rootIconName="fa-cog"
                                     [menu]="adminMenu"
                                     [isActive]="adminMenu.isActiveItem"

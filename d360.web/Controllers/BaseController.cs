@@ -728,7 +728,7 @@ namespace d360.web.Controllers
                                         V.Value,
                                         {(fld.UseColorControl ? "colorJson.FV AS Text" : "V.Text")}";
 
-                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
+                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
 
                                     var resourceJoin = $@"
                                         inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
@@ -1011,7 +1011,7 @@ namespace d360.web.Controllers
                                         V.Value,
                                         {(fld.UseColorControl ? "colorJson.FV AS Text" : "V.Text")}";
 
-                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
+                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
 
                                     var resourceJoin = $@"
                                         inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}

@@ -398,6 +398,7 @@ namespace d360.web.Controllers.V2
                 if (hide && !IsCurrentUser)
                 {                    
                     queries.Add("email not like '%@infogix.com'");
+                    queries.Add("email not like '%@precisely.com'");
                 }
 
                 if (queries.Count() > 0)
@@ -1121,7 +1122,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 var results = await membershipRepository.GetFavorites(_company.CurrentResourceID);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
             }
             catch (Exception ex)
             {
@@ -1130,7 +1131,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage);
             }
         }
 
@@ -1167,29 +1168,25 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
         /// <summary>
-        /// Clears the list of favorite items for the current user
+        /// Clears the list of favorite items for the current user.
+        /// This endpoint is obsolete, please prefer to use POST /api/v2/users/me/favorites/bulkDelete
         /// </summary>
         /// <returns></returns>
         [
-        HttpDelete,
-        Route("users/me/favorites"),
-        SwaggerResponse(HttpStatusCode.OK, ""),
-        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            HttpDelete,
+            Route("users/me/favorites"),
+            SwaggerResponse(HttpStatusCode.OK, ""),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            Obsolete
         ]
         public async Task<IHttpActionResult> ClearFavorites()
         {
-            var prefix = "Membership.ClearFavorites => ";
+            var prefix = $"Membership.ClearFavorites => ";
 
             try
             {
-                var result = membershipRepository.DeleteFavorites(_company.CurrentResourceID);
-
-                if (result.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message)).ConfigureAwait(false);
-                }
-
-                return await Task.FromResult(successMessageResponse(result.StatusCode,ApiMessages.Success, result.Message)).ConfigureAwait(false);
+                await membershipRepository.ClearFavorites(_company.CurrentResourceID);
+                return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
             }
             catch (Exception ex)
             {
@@ -1198,7 +1195,38 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Given list of favorite ids, deletes the favorites for the current user
+        /// </summary>
+        /// <param name="favoriteIds">List of favorite ids</param>
+        /// <returns>Status</returns>
+        [
+            HttpPost,
+            Route("users/me/favorites/bulkDelete"),
+            SwaggerResponse(HttpStatusCode.OK, ""),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> DeleteFavorites(List<int> favoriteIds)
+        {
+            var prefix = $"Membership.DeleteFavorites => ";
+
+            try
+            {
+                await membershipRepository.DeleteFavorites(_company.CurrentResourceID, favoriteIds);
+                return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
             }
         }
 

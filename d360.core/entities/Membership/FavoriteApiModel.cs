@@ -26,6 +26,7 @@ namespace d360.core.entities.Membership
 
     public class FavoriteApiViewModel : IFavoriteUpsert
     {
+        public int Id { get; set; }
 
         [DataMember]
         public string Name { get; set; }
@@ -39,6 +40,4 @@ namespace d360.core.entities.Membership
         [DataMember]
         public Guid? Uid { get; set; }
     }
-
-
 }

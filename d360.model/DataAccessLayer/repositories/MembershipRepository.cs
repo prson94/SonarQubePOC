@@ -1229,12 +1229,13 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             dbArgs.Add("resourceId", resourceID);
 
-            string sql = $@"select q.[Name], q.[Route], q.[Type], q.[Uid] from (
+            string sql = $@"select q.[Id], q.[Name], q.[Route], q.[Type], q.[Uid] from (
 select	coalesce(AName.DisplayValue, TA.[Name]) as [Name],
 		lower(f.[Type] +'/' + convert(nvarchar(50),f.[Uid])) as [Route],
 		f.[Type],
 		f.SortOrder,
-        f.[Uid]
+        f.[Uid],
+        f.[ID] as Id
 from	Favorite f
 		left join Asset a on a.[Object] = f.[Object] and a.[ObjectID] = f.[ObjectID]
 		left join AssetType ta on ta.[Object] = f.[Object] and ta.[ObjectID] = f.[ObjectID]
@@ -1245,7 +1246,8 @@ select		coalesce(f.Name, f.Route) as Name,
 			f.Route as [Route],
 			f.[Type],
 			f.SortOrder,
-            f.[Uid]
+            f.[Uid],
+            f.[ID] as Id
 from		Favorite f	
 where		f.ObjectID is null 
 			and f.ResourceID = @resourceId
@@ -1569,17 +1571,15 @@ order by	q.SortOrder";
             }
         }
 
-        public WorkHttpStatus DeleteFavorites(int resourceID)
+        [Obsolete]
+        public async Task ClearFavorites(int resourceID)
         {
-            try
-            {
-                CompanyContext.Delete<Favorite>(i => i.ResourceID == resourceID && !i.IsHomePage);
-                return new WorkHttpStatus(HttpStatusCode.OK,AssetTypeErrors.Success, MemberShipErrors.FavoritesListCleared);
-            }
-            catch
-            {
-                return new WorkHttpStatus(HttpStatusCode.InternalServerError,AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
-            }
+            await CompanyContext.DeleteAsync<Favorite>(i => i.ResourceID == resourceID && !i.IsHomePage);
+        }
+
+        public async Task DeleteFavorites(int resourceID, List<int> favoriteIds)
+        {
+            await CompanyContext.DeleteAsync<Favorite>(i => i.ResourceID == resourceID && favoriteIds.Contains(i.ID));
         }
 
         public async Task<List<OrganizationModel>> GetOrganizationsByType(Guid organizationTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams)

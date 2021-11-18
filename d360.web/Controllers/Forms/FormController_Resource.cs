@@ -172,7 +172,7 @@ namespace d360.web.Controllers
 
             if (HideData3SixtyUsers())
             {
-                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com')";
+                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
             }
 
             querySql = @"
