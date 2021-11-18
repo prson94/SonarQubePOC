@@ -184,11 +184,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     let selectedScoreTypeIndex = this.scoreTypes.findIndex(a => { return a == this.selectedScoreType });
                     if (selectedScoreTypeIndex > -1) {
                         this.scoreType = <any>ScoreType[this.scoreTypes[selectedScoreTypeIndex]];
-                        //this.setSelectedButton(this.scoreTypes[selectedScoreTypeIndex]);
                     }
                     else {
                         this.scoreType = <any>ScoreType[this.scoreTypes[0]];
-                        //this.setSelectedButton(this.scoreTypes[0]);
                     }
                 }
                 this.allocationData.forEach(alloc => {
