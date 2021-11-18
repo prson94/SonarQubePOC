@@ -9,3 +9,6 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("d360.web")]
 [assembly: InternalsVisibleTo("igx.UnitTests")]
 [assembly: AssemblyVersion(versioning.PRODUCT_VERSION)]
+
+[assembly: InternalsVisibleTo("igx.UnitTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

@@ -87,12 +87,19 @@
     <Compile Include="DataAccessLayer\ISettingsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\CompanyDbConnectionProvider.cs" />
+    <Compile Include="DataAccessLayer\repositories\DapperQueryComposer.cs" />
+    <Compile Include="DataAccessLayer\repositories\DapperRepositoryBase.cs" />
     <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\GraphFilterRepository.cs" />
     <Compile Include="DataAccessLayer\IProcessRepository.cs" />
     <Compile Include="DataAccessLayer\IConnectorLabelRepository.cs" />
+    <Compile Include="DataAccessLayer\ICompanyDbConnectionProvider.cs" />
+    <Compile Include="DataAccessLayer\IDapperQueryComposer.cs" />
+    <Compile Include="DataAccessLayer\IDbConnectionProvider.cs" />
+    <Compile Include="DataAccessLayer\IResponsibilityDapperRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
@@ -106,6 +113,7 @@
     <Compile Include="DataAccessLayer\repositories\ProcessRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\ResponsibilityDapperRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\SettingsRepository.cs" />
@@ -115,6 +123,7 @@
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\WorkflowRepository.cs" />
+    <Compile Include="DependencyInjectionExtensions.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="helpers\complexFields\ComplexFieldsHelper.cs" />
     <Compile Include="helpers\CustomJSONContract.cs" />
@@ -204,8 +213,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Autofac">
+      <Version>6.2.0</Version>
+    </PackageReference>
     <PackageReference Include="Dapper">
       <Version>2.0.90</Version>
+    </PackageReference>
+    <PackageReference Include="Dapper.ParameterExtensions">
+      <Version>2018.12.7.1</Version>
+    </PackageReference>
+    <PackageReference Include="DapperExtensionsReloaded">
+      <Version>5.0.0</Version>
     </PackageReference>
     <PackageReference Include="DocumentFormat.OpenXml">
       <Version>2.14.0</Version>

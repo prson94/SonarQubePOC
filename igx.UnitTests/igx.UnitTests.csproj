@@ -34,6 +34,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SmartFormat, Version=2.7.0.0, Culture=neutral, PublicKeyToken=568866805651201f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SmartFormat.NET.2.7.0\lib\net461\SmartFormat.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -88,8 +92,25 @@
     <Compile Include="ScoringTests\OperatorTests-DateCompares.cs" />
     <Compile Include="SearchTests\ElasticSourceTests.cs" />
     <Compile Include="SearchTests\SearchIndexerTests.cs" />
+    <Compile Include="ServicesTests\AssetServiceTests.cs" />
+    <Compile Include="ServicesTests\CommonExceptionHandlerTests.cs" />
+    <Compile Include="ServicesTests\Exceptions\ExceptionTestBase.cs" />
+    <Compile Include="ServicesTests\Exceptions\ExceptionWithDefaultConstructorsTestBase.cs" />
+    <Compile Include="ServicesTests\Exceptions\ForbiddenBusinessLayerExceptionTests.cs" />
+    <Compile Include="ServicesTests\Exceptions\NotFoundBusinessLayerExceptionTests.cs" />
+    <Compile Include="ServicesTests\Exceptions\RecoverableBusinessLayerExceptionTests.cs" />
+    <Compile Include="ServicesTests\Exceptions\UnauthorizedBusinessLayerExceptionTests.cs" />
+    <Compile Include="ServicesTests\Exceptions\UnrecoverableBusinessLayerExceptionTests.cs" />
+    <Compile Include="ServicesTests\ResponsibilityDeleteRulesRequestHandlerTests.cs" />
+    <Compile Include="ServicesTests\ResponsibilityGetBreakdownByResourceRequestHandlerTests.cs" />
+    <Compile Include="ServicesTests\ResponsibilityGetTypeBreakdownRequestHandlerTests.cs" />
     <Compile Include="SettingsTests\SettingsTests-Get.cs" />
     <Compile Include="V2ControllerTests\EnvironmentControllerTest.cs" />
+    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.cs" />
+    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.GetResponsibilityBreakdownByResource.cs" />
+    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.GetResponsibilityTypeBreakdown.cs" />
+    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.DeleteResponsibilityRules.cs" />
+    <Compile Include="V2ControllerTests\TestExtensions.cs" />
     <Compile Include="ValidatorTests\SurveyApiModelValidatorTests.cs" />
     <Compile Include="WebControllerTests\NavigationControllerTest.cs" />
     <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />
@@ -152,6 +173,9 @@
     <PackageReference Include="FluentAssertions">
       <Version>6.2.0</Version>
     </PackageReference>
+    <PackageReference Include="MediatR">
+      <Version>9.0.0</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi">
       <Version>5.2.7</Version>
     </PackageReference>
@@ -160,6 +184,9 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="SmartFormat.NET">
+      <Version>2.7.0</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
       <Version>4.7.1</Version>

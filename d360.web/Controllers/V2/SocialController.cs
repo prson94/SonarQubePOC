@@ -141,7 +141,6 @@ select
 ";
 
             var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID }, ApiTimeout);
-
             return Request.CreateResponse(HttpStatusCode.OK, query);
         }
 

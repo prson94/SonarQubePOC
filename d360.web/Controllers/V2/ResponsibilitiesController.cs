@@ -6,6 +6,7 @@ using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -19,6 +20,10 @@ using System.Web.Http.Description;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
+using d360.web.Services;
+using d360.web.Utilities;
+using DocumentFormat.OpenXml.Drawing;
+using MediatR;
 
 namespace d360.web.Controllers.V2
 {
@@ -32,11 +37,18 @@ namespace d360.web.Controllers.V2
     ]
     public class ResponsibilitiesController : BaseV2ApiController
     {
+        private IMediator Mediator { get; }
+        private IApplicationUriProvider ApplicationUriProvider { get; }
+
         IResponsibilityRepository ResponsibilityRepository;
+
         IAssetRepository AssetRepository;
-        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+
+        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository, IMediator mediator, IApplicationUriProvider applicationUriProvider)
             : base(community, company, settingsRepository)
         {
+            Mediator = mediator;
+            ApplicationUriProvider = applicationUriProvider;
             this.ResponsibilityRepository = responsibilityRepository;
             this.AssetRepository = assetRepository;
         }
@@ -1501,37 +1513,29 @@ namespace d360.web.Controllers.V2
             Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleDeleteResponse>)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
+        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] IReadOnlyList<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
         {
-            var prefix = "Relationships.DeleteResponsibilityRules => ";
-            var errorMessage = "";
-            try
+            ValidateParameters();
+
+            // create business logic request model
+            var request = new ResponsibilityDeleteRulesRequest()
             {
-                if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                TypeUid = responsibilityTypeUid,
+                RuleDeleteUidCollection = responsibilityRulesDeletes.Select(x => x.Uid).ToList()
+            };
 
-                var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
+            // call business logic
+            var response = await Mediator.Send(request);
 
-                if (responsibility == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
-                }
-
-                var results = await ResponsibilityRepository.DeleteResponsibilityRules(responsibilityTypeUid, responsibilityRulesDeletes.Select(x => x.Uid).ToList());
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+            // convert result to UI (API) representation.
+            var result = response.Data;
+            return Ok(result);
         }
 
         /// <summary>
@@ -1542,27 +1546,70 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("breakdown"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(List<ResponsibilityBreakdownResponse>)),
+            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(IReadOnlyList<ResponsibilityBreakdownResponse>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown()
+        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? uid = null)
         {
-            var prefix = "Relationships.GetResponsibilityTypeBreakdown => ";
-            try
+            ValidateParameters();
+
+            // create business logic request model
+            var request = new ResponsibilityGetTypeBreakdownRequest()
             {
-                var results = await Company.QueryAsync<ResponsibilityBreakdownResponse>(@"exec [dbo].[GetResponsibilityTypeBreakdown]");
+                TypeUid = uid
+            };
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+            // call business logic
+            var response = await Mediator.Send(request);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
-
+            // convert result to UI (API) representation.
+            var result = response.Data;
+            return Ok(result);
         }
 
+        /// <summary>
+        /// This is temporary fix for validation .. probably need to be moved somewhere else and extended.
+        /// </summary>
+        private void ValidateParameters()
+        {
+            if (ModelState.IsValid == false)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE));
+            }
+        }
+
+        /// <summary>
+        /// Gets the breakdown of responsibilities
+        /// </summary>
+        /// <returns>An Array of responsibility type breakdowns.</returns>
+        [
+            HttpGet,
+            Route("breakdown/{resourceUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(IReadOnlyList<ResponsibilityGetBreakdownByResourceModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetResponsibilityBreakdownByResource(Guid resourceUid, [FromUri] Guid? resourceTypeUid = null)
+        {
+            ValidateParameters();
+
+            // create business logic request model
+            var request = new ResponsibilityGetBreakdownByResourceRequest()
+            {
+                ResourceUid = resourceUid,
+                ResourceTypeUid = resourceTypeUid
+            };
+
+            // call business logic
+            var response = await Mediator.Send(request);
+
+            // convert result to UI (API) representation.
+            var result = response.ItemCollection;
+            return Ok(result);
+        }
     }
 }

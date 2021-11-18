@@ -27,6 +27,7 @@ using System.Dynamic;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using d360.model.helpers.filters;
+using MediatR;
 
 namespace igx.UnitTests
 {
@@ -640,6 +641,12 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetSettings())
                 .Returns(Setting.ActionMessage.GetAsList());
 
+            return mock.Object;
+        }
+
+        public IMediator GetMediator()
+        {
+            var mock = new Mock<IMediator>();
             return mock.Object;
         }
 
