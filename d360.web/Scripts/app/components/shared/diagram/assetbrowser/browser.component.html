@@ -167,7 +167,8 @@
                                             <ng-container *ngIf="panel_InformationHasReadAccess == true">
                                                 <div #infoDetailPanel class="scroll-panel">
                                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                                    <ig-asset-detail *ngIf="!panel_Loading && selectedDiagramAsset && selectedDiagramAsset.Object"
+                                                    <ig-asset-detail #assetDetailComponent
+                                                                     *ngIf="!panel_Loading && selectedDiagramAsset && selectedDiagramAsset.Object"
                                                                      [objectType]="selectedDiagramAsset.Object"
                                                                      [objectID]="selectedDiagramAsset.ObjectId"
                                                                      [useAccordion]="true"

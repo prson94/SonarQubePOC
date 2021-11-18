@@ -337,9 +337,10 @@ export class AssetDetailComponent implements OnChanges {
     }
 
     isEditLinkVisible() {
+        var allowedObjects: string[] = ['Artifact', 'Taxonomy', 'Policy', 'Rule']
         var isAllowedObject = false;
         if (this.objectType) {
-            isAllowedObject = this.objectType === 'Artifact' || this.objectType === 'Taxonomy' || this.objectType === 'Policy' || this.objectType === 'Rule';
+            isAllowedObject = allowedObjects.indexOf(this.objectType) !== -1;
         }
 
         return this.hasEditLink && isAllowedObject;
