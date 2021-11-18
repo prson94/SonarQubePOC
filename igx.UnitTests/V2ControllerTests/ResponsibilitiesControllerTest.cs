@@ -12,6 +12,7 @@ using System.Net;
 using System.Threading;
 using d360.core.entities;
 using d360.extensions;
+using d360.web.Utilities;
 using Moq;
 
 namespace igx.UnitTests.V2ControllerTests

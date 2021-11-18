@@ -21,6 +21,7 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
 using d360.web.Services;
+using d360.web.Utilities;
 using DocumentFormat.OpenXml.Drawing;
 using MediatR;
 
@@ -1515,10 +1516,13 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleDeleteResponse>)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] IReadOnlyList<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
         {
+            ValidateParameters();
+
             // create business logic request model
             var request = new ResponsibilityDeleteRulesRequest()
             {
@@ -1544,9 +1548,13 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(IReadOnlyList<ResponsibilityBreakdownResponse>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown(Guid? uid = null)
+        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? uid = null)
         {
+            ValidateParameters();
+
             // create business logic request model
             var request = new ResponsibilityGetTypeBreakdownRequest()
             {
@@ -1562,6 +1570,17 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// This is temporary fix for validation .. probably need to be moved somewhere else and extended.
+        /// </summary>
+        private void ValidateParameters()
+        {
+            if (ModelState.IsValid == false)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE));
+            }
+        }
+
+        /// <summary>
         /// Gets the breakdown of responsibilities
         /// </summary>
         /// <returns>An Array of responsibility type breakdowns.</returns>
@@ -1571,9 +1590,13 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(IReadOnlyList<ResponsibilityGetBreakdownByResourceModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetResponsibilityBreakdownByResource(Guid resourceUid, Guid? resourceTypeUid = null)
+        public async Task<IHttpActionResult> GetResponsibilityBreakdownByResource(Guid resourceUid, [FromUri] Guid? resourceTypeUid = null)
         {
+            ValidateParameters();
+
             // create business logic request model
             var request = new ResponsibilityGetBreakdownByResourceRequest()
             {
@@ -1587,30 +1610,6 @@ namespace d360.web.Controllers.V2
             // convert result to UI (API) representation.
             var result = response.ItemCollection;
             return Ok(result);
-        }
-    }
-
-    public class TracePrefixAttribute : Attribute
-    {
-        public string Text { get; }
-
-        public TracePrefixAttribute(string text)
-        {
-            Text = text;
-        }
-    }
-
-    public interface IApplicationUriProvider
-    {
-        [Obsolete("This method should work without using of request parameter")]
-        string GetExecutionByIdLink(HttpRequestMessage request, Guid id);
-    }
-
-    internal sealed class ApplicationUriProvider : IApplicationUriProvider
-    {
-        public string GetExecutionByIdLink(HttpRequestMessage request, Guid id)
-        {
-            return $"{request.RequestUri.Scheme}://{request.RequestUri.Host}/api/v2/executions/{id}";
         }
     }
 }
