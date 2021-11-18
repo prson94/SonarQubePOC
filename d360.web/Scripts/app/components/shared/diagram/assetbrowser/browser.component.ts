@@ -47,6 +47,7 @@ import { ResponsibilityService } from '../../../../services/responsibility.servi
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { CompanySettingEnum } from '../../../../models/settings.model';
+import { AssetDetailComponent } from '../../asset-detail/asset-detail.component';
 
 declare var window: any;
 @Component({
@@ -82,6 +83,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     @ViewChild('relationshipBadges', { static: false }) relationshipBadgesRef: ElementRef;
     @ViewChild('relationshipBadgesTooltip', { static: false }) relationshipBadgesTooltipRef: ElementRef;
+
+    @ViewChild('assetDetailComponent', { static: false }) assetDetailComponent: AssetDetailComponent;
 
     private diagramData: AssetBrowserResponseModel;
 
@@ -4087,5 +4090,49 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     onEditClick($event) {
         this.selectedDiagramAsset.AssetTypeUid = $event.assetTypeUid;
         this.showEditor = true;
+    }
+
+    saveClicked($event) {
+        this.showEditor = false;
+        var uid = $event.assetUid as string;
+        var keys: string[] = [];
+        this.diagram.nodes.each((node) => {
+            var assetUid = (node.data.assetUid as string).toLowerCase()
+            if (assetUid === uid.toLowerCase()) {
+                keys.push(node.data.key);
+            }
+        });
+
+        if (uid) {
+            this.assetService.getAssetPath(uid).subscribe((res) => {
+                var assetPath = res[0].DisplayPath;
+                var currentPath = "";
+                if (assetPath) {
+                    var startIdx = assetPath.lastIndexOf('>') + 1;
+                    var newPath = assetPath.substring(startIdx, assetPath.length);
+                    try {
+                        var model = this.diagram.model;
+
+                        keys.forEach((key) => {
+                            var data = model.findNodeDataForKey(key);
+                            currentPath = data.text;
+
+                            model.startTransaction("modified property");
+                            model.set(data, "text", newPath);
+                            model.commitTransaction("modified property");
+                        });
+                    } catch (e) {
+                    }
+
+                    this.diagram.redraw();
+
+                    if (this.assetUid.toLowerCase() === uid.toLowerCase()) {
+                        this.secondaryNavService.updateObject('areaTitle', newPath);
+                    }
+                    this.breadcrumbsService.updateCurrentPath(currentPath, newPath);
+                    this.assetDetailComponent.load();
+                }
+            });
+        }
     }
 }

@@ -35,7 +35,8 @@ export class AssetDetailComponent implements OnChanges {
     @Input() isSidePanel: boolean = false;
     @Input() useAssetDetailColumnDefinition: boolean = false;
     @Input() synonymPermission: SynonymPermission;
-    
+    @Input() hasEditLink: boolean = false;
+
     @Input() assetDetail: any;
 
     @Output() onEditClick = new EventEmitter();
@@ -90,7 +91,7 @@ export class AssetDetailComponent implements OnChanges {
             if (this.objectType && this.objectUID) {
                 detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
             }
-        }        
+        }
 
         if (detailSub) {
             this.isLoading = true;
@@ -333,5 +334,15 @@ export class AssetDetailComponent implements OnChanges {
 
     clickTab(key: string) {
         this.tab = key;
+    }
+
+    isEditLinkVisible() {
+        var allowedObjects: string[] = ['Artifact', 'Taxonomy', 'Policy', 'Rule'];
+        var isAllowedObject = false;
+        if (this.objectType) {
+            isAllowedObject = allowedObjects.indexOf(this.objectType) !== -1;
+        }
+
+        return this.hasEditLink && isAllowedObject;
     }
 }

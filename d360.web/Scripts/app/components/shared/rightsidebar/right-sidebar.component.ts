@@ -61,7 +61,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private menuWarningType: string = '';
     private showOnlyMainTab: boolean = false;
 
-    status: string;    
+    status: string;
     showStatus = false;
     showCertify = false;
     showHeader: boolean = false;
@@ -339,8 +339,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             if (res) {
                 if (res.key == 'firstTabTitle') {
                     this.items[0].title = res.value;
-                    this.ref.markForCheck();
                 }
+                if (res.key === 'areaTitle') {
+                    this.area.title = res.value;
+                }
+                this.ref.markForCheck();
             }
         })
 
@@ -389,14 +392,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "dataClassification", false).subscribe(
             result => {
                 this.dataClassification = result;
-                try {                 
-                    let dataClassificationAttributes  = JSON.parse(this.dataClassification);
-                    if (this.dataClassification != undefined && this.dataClassification != null && dataClassificationAttributes.length > 0) {                    
+                try {
+                    let dataClassificationAttributes = JSON.parse(this.dataClassification);
+                    if (this.dataClassification != undefined && this.dataClassification != null && dataClassificationAttributes.length > 0) {
                         this.showDataClassification = true;
                     }
-                    else {             
-                        this.showDataClassification = false;                    
-                    }                 
+                    else {
+                        this.showDataClassification = false;
+                    }
                 } catch (e) {
                     this.showDataClassification = false;
                 }

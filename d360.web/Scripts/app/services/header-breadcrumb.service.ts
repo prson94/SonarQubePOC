@@ -39,6 +39,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     private currentObjectInfoSource = new Subject<any>();
     private buildFromStorageSource = new Subject<Breadcrumb[]>();
     private currentObjectStateSource = new Subject<string>();
+    private updateCurrentObjectPath = new Subject<any>();
 
     // Observable streams
     breadcrumbs$ = this.breadcrumbSource.asObservable();
@@ -48,6 +49,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     currentObjectInfo$ = this.currentObjectInfoSource.asObservable();
     buildFromStorage$ = this.buildFromStorageSource.asObservable();
     currentObjectStateSource$ = this.currentObjectStateSource.asObservable();
+    updateCurrentObjectPath$ = this.updateCurrentObjectPath.asObservable();
     currentObject: any;
 
 
@@ -65,6 +67,10 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     clearCurrentObjectInfo() {
         this.currentObject = { type: null, id: null };
         this.currentObjectInfoSource.next({ type: null, id: null });
+    }
+
+    updateCurrentPath(oldValue: string, value: string) {
+        this.updateCurrentObjectPath.next({ oldValue, value });
     }
 
     setCurrentObjectInfo(type: string, id: number) {
