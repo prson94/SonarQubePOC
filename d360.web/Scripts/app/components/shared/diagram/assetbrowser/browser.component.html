@@ -194,7 +194,7 @@
                                                                   [selection]="selectedDiagramAsset"
                                                                   [objectTypeUid]="selectedDiagramAsset.AssetTypeUid"
                                                                   [assetTypePath]="selectedDiagramAsset.TypeName"
-                                                                  (saveClick)="showEditor=false;"
+                                                                  (saveClick)="saveClicked($event)"
                                                                   [showAsModal]="true"
                                                                   [isV2API]="true"
                                                                   (closeClick)="showEditor = false;"></asset-editor>
