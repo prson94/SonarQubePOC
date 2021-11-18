@@ -65,7 +65,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     ngOnInit() {
         this.showAdvancedFilterField = !this.router.url.startsWith("/sidebar/visualization/") && !this.isSidePanel;
         if (this.isSidePanel) {
-            this.minwidth = 320;
+            this.minwidth = 310;
         }
         else {
             this.minwidth = 0;
