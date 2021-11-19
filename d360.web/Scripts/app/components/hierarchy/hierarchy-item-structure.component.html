@@ -64,7 +64,8 @@
                         <tr>
                             <th *ngFor="let column of columns"
                                 [ttSortableColumn]="column.sortable === true ? column.datafield : null"
-                                (click)="onSort()">
+                                (click)="onSort()"
+                                [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
                                 {{column.text}}
                                 <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
                             </th>
@@ -75,7 +76,7 @@
                                  let-rowNode
                                  let-item="rowData">
                         <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (focus)="selectAsset(rowNode.node)">
-                            <td class="no-text-overflow" *ngFor="let column of columns; let i = index">
+                            <td class="no-text-overflow" *ngFor="let column of columns; let i = index" [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
                                 <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
                                 <ng-container *ngIf="i === linkColumnIndex">
                                     <a (click)="showHierarchy(item)"
