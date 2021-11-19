@@ -70,15 +70,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Uid.
-        /// </summary>
-        public static string InvalidUid {
-            get {
-                return ResourceManager.GetString("InvalidUid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You do not have permission to modify relationships on the object asset..
         /// </summary>
         public static string NotPermissionModifyRelationobjectAsset {
@@ -106,6 +97,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UID of the relationship is invalid..
+        /// </summary>
+        public static string RelationshipInvalidUid {
+            get {
+                return ResourceManager.GetString("RelationshipInvalidUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship with this UID not found..
+        /// </summary>
+        public static string RelationshipUidNotFound {
+            get {
+                return ResourceManager.GetString("RelationshipUidNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This relationship is specified more than once. Each relationship must be unique within a given request..
         /// </summary>
         public static string RelatioshipSpecifiedMoreThanOnce {
@@ -115,20 +124,11 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to failed due to relationship uid is specified with different relationship type..
+        ///   Looks up a localized string similar to Relationship UID specified is of a different relationship type..
         /// </summary>
         public static string RelatioshipUidExistWithDifferentType {
             get {
                 return ResourceManager.GetString("RelatioshipUidExistWithDifferentType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Uid Not Found..
-        /// </summary>
-        public static string UidNotFound {
-            get {
-                return ResourceManager.GetString("UidNotFound", resourceCulture);
             }
         }
     }

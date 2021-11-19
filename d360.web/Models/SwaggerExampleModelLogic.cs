@@ -1,13 +1,9 @@
-﻿using d360.core;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Web;
 using System.Web.Http.Description;
 
 namespace d360.web.Models
@@ -17,6 +13,30 @@ namespace d360.web.Models
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
             SetRequestModelExamples(operation, schemaRegistry, apiDescription);
+            SetPrimitives(schemaRegistry, apiDescription);
+        }
+
+        private void SetPrimitives(SchemaRegistry schemaRegistry, ApiDescription apiDescription)
+        {
+            RegisterPrimitiveType(typeof(int), 1);
+
+            void RegisterPrimitiveType(Type type, int value)
+            {
+                object result = SerializeValue(value);
+
+                var schema = schemaRegistry.GetOrRegister(type);
+                schema.example = result;
+                schemaRegistry.Definitions[schema.type] = schema;
+            }
+
+            object SerializeValue(int value)
+            {
+                var controllerSerializerSettings = apiDescription?.ActionDescriptor?.ControllerDescriptor?.Configuration?.Formatters?.JsonFormatter?.SerializerSettings;
+                var serializerSettings = SerializerSettings(controllerSerializerSettings, null, null, ignoreNulls: true);
+                var jsonString = JsonConvert.SerializeObject(value, serializerSettings);
+                var result = JsonConvert.DeserializeObject(jsonString);
+                return result;
+            }
         }
 
         private static void SetRequestModelExamples(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)

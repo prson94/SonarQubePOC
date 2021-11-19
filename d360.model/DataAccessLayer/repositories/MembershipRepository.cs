@@ -555,7 +555,12 @@ namespace d360.model.DataAccessLayer
                 }
                 row["ItemNumber"] = user.ItemNumber;
                 row["Username"] = user.Username;
+
+                user.FirstName = SanitizeValue(user.FirstName);
+
                 row["FirstName"] = user.FirstName;
+
+                user.LastName = SanitizeValue(user.LastName);
                 row["LastName"] = user.LastName;
                 row["Password"] = user.Password;
                 if (user.State.HasValue && !IsChangePasswordReqeust)
@@ -1223,6 +1228,13 @@ namespace d360.model.DataAccessLayer
             return await CreateApiBatchJob(executionInfo, execution, model, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
+        private string SanitizeValue(string ParameterValue)
+        {
+            var sanitizer = new Ganss.XSS.HtmlSanitizer();
+            sanitizer.AllowedSchemes.Add("data");
+            return sanitizer.Sanitize(ParameterValue);
+
+        }
         private bool validatePassword(string password)
         {
             if (string.IsNullOrEmpty(password))
