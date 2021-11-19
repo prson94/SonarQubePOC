@@ -136,19 +136,5 @@ export class AssetDetailFieldComponent {
             return "Error";
         }
     }
-
-    //#endregion
-
-    isPathRefreshing: boolean = false;
-    refreshPath() {
-        this.isPathRefreshing = true;
-        this.assetService.getAssetPath(this.assetUid)
-            .subscribe((res) => {
-                if (res && res[0].DisplayPath) {
-                    this.field.Value = res[0].DisplayPath;
-                }
-                this.isPathRefreshing = false;
-            });
-    }
 }
 

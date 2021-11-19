@@ -63,14 +63,14 @@ namespace d360.model.DataAccessLayer
             string condition = string.Empty;
             string extraJoins = string.Empty;
             var extraColumns = string.Empty;
-            
+
             if (Class.HasValue)
             {
                 var Id = (int)Class;
                 dbArgs.Add("@Id", Id.ToString());
                 condition = " and A.[Class]=@Id";
             }
-            
+
             List<string> whereStatements = new List<string>();
             if (queryParams != null)
             {
@@ -2261,6 +2261,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 // Quick sync of graph.
                 try
                 {
+                    // Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
+                    if (results.Count == 1)
+                    {
+                        CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
+                    }
+
                     CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
                 }
                 catch
@@ -2324,7 +2330,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Hierarchical = false,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation,                        
+                        UseAsTransformation = model.UseAsTransformation,
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         CanEditParent = model.CanEditParent
@@ -2448,7 +2454,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Hierarchical = true,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation,                        
+                        UseAsTransformation = model.UseAsTransformation,
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         FlowObjectType = model.FlowObjectType,
@@ -2499,6 +2505,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 // Quick sync of graph.
                 try
                 {
+                    // Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
+                    if (results.Count == 1)
+                    {
+                        CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
+                    }
+
                     CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
                 }
                 catch
@@ -2559,11 +2571,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.AutoDisplayParent = model.AutoDisplayParent;
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
-                        assetType.UseAsTransformation = model.UseAsTransformation;                        
+                        assetType.UseAsTransformation = model.UseAsTransformation;
                     }
                     else
                     {
-                        assetType.UseAsTransformation = false;                        
+                        assetType.UseAsTransformation = false;
                     }
                     assetType.Class = model.Class;
                     assetType.Notes = model.Notes;
@@ -2875,7 +2887,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
 
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                var validOrderByFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { 
+                var validOrderByFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                     "executionid", "resourceuid", "resource", "total",
                     "processed", "error", "errormessage", "processingstartedon",
                     "startedon", "completedon", "method", "route", "fields", "applicationid" };
@@ -2910,9 +2922,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             if (queryParams.Any(p => p.Key == "_status"))
             {
-                if(Enum.TryParse(queryParams.FirstOrDefault(p => p.Key == "_status").Value, out ExecutionInternalStatus status))
+                if (Enum.TryParse(queryParams.FirstOrDefault(p => p.Key == "_status").Value, out ExecutionInternalStatus status))
                 {
-                    switch(status)
+                    switch (status)
                     {
                         case ExecutionInternalStatus.Pending:
                             filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NULL";
