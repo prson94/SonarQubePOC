@@ -249,7 +249,7 @@ namespace d360.web.Controllers.V2
 
         }
 
-        private static readonly Dictionary<string, byte[]> ValidImagefileHeaders = new Dictionary<string, byte[]>()
+        private static readonly Dictionary<string, byte[]> ValidImagefileHeaders = new Dictionary<string, byte[]>
         {
             { "image/jpeg", new byte[]{ 0xFF, 0xD8 }},
             { "image/gif", new byte[]{ 0x47, 0x49, 0x46 }},
