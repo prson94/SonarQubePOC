@@ -1057,7 +1057,7 @@ order by Sort, title";
                             UpdatedBy = Company.CurrentResourceID,
                             AssetTypeUid = assetTypeUid,
                             IntersectTypeUid = intersectTypeUid
-                    };
+                        };
 
                         xls = new SLDocument(stream);
 
@@ -1294,7 +1294,11 @@ order by Sort, title";
 
             if (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue)
             {
-                itemSql = @"select L.RowIndex, EA.[Message] as StatusMessage from LoadItem L
+                switch (load.Action)
+                {
+                    case "P":
+                        {
+                            itemSql = @"select L.RowIndex, EA.[Message] as StatusMessage from LoadItem L
 inner join (
 		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where success = 0
 		union all
@@ -1302,7 +1306,7 @@ inner join (
 	 )  EA on EA.ExecutionItemUid = L.ExecutionItemUid
 where L.LoadID = @id order by RowIndex asc";
 
-                itemColumnSql = @"
+                            itemColumnSql = @"
 select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
 from LoadItem I 
 inner join (
@@ -1314,6 +1318,41 @@ left join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex an
 left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
 left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
 order by I.RowIndex asc, C.ColumnIndex asc";
+                            break;
+                        }
+                    case "R":
+                        {
+                            itemSql = @"
+select
+	I.RowIndex as RowIndex,
+	coalesce(EA.Message, ER.Message) as StatusMessage
+from LoadItem I
+	left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid
+	left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid
+where I.LoadID = @id 
+and EA.Success = 0
+order by RowIndex asc
+";
+
+                            itemColumnSql = @"
+select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
+from LoadItem I 
+join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex 
+	left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+	left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid
+	left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid
+	left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
+where I.LoadID = @id  and EA.Success = 0
+order by I.RowIndex asc, C.ColumnIndex asc";
+                            break;
+                        }
+                    case "U":
+                        {
+                            throw new NotImplementedException($"Load of type {load.Action} is not supported");
+                            break;
+                        }
+                    default: throw new NotImplementedException($"Load of type {load.Action} is not supported");
+                }
             }
 
 
@@ -1750,7 +1789,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess(FormControllerApiMessage.ShortcutAdded , shortcut.ID.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShortcutAdded, shortcut.ID.ToString(), "add", HttpStatusCode.OK);
 
         }
 
@@ -1767,7 +1806,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if (existing == null)
             {
-                return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound,shortcut.ID.ToString()), HttpStatusCode.BadRequest);
+                return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound, shortcut.ID.ToString()), HttpStatusCode.BadRequest);
             }
 
             if (string.IsNullOrEmpty(shortcut.Name))
@@ -1855,7 +1894,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if (existing == null)
             {
-                return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound,id.ToString()), HttpStatusCode.BadRequest);
+                return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound, id.ToString()), HttpStatusCode.BadRequest);
             }
 
             try
@@ -1895,7 +1934,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var shortcut = Company.GetById<Shortcut>(id);
                 if (shortcut == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutIDNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutIDNotFound, id.ToString()));
                 }
 
                 direction = moveUp ? "up" : "down";
@@ -1911,7 +1950,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
                 if (adjacentShortcut == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutAlreadySorted, (moveUp ? FormControllerApiMessage.TopConstant  : FormControllerApiMessage.bottomConstant)));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutAlreadySorted, (moveUp ? FormControllerApiMessage.TopConstant : FormControllerApiMessage.bottomConstant)));
                 }
 
 
@@ -1921,7 +1960,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
 
                 Company.SaveChanges();
-                message = string.Format(FormControllerApiMessage.ShortcutMoved,shortcut.Name,direction);
+                message = string.Format(FormControllerApiMessage.ShortcutMoved, shortcut.Name, direction);
             }
             catch (Exception ex)
             {
@@ -2084,7 +2123,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
                 Company.Add(model);
 
-                return jsonSuccess(string.Format(FormControllerApiMessage.SynonymCreated,model.Name), model.ID.ToString(),"add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(FormControllerApiMessage.SynonymCreated, model.Name), model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -2096,7 +2135,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-        
+
         [HttpDelete, Route("DeleteCustomSynonym")]
         public JsonResult DeleteCustomSynonym(FormCollection form)
         {
