@@ -1175,6 +1175,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpDelete,
             Route("users/me/favorites"),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, ""),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             Obsolete
@@ -1200,14 +1201,16 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
         /// <summary>
-        /// Given list of favorite ids, deletes the favorites for the current user
+        /// Removes a given set of favorites for the current user based on their Id. 
         /// </summary>
-        /// <param name="favoriteIds">List of favorite ids</param>
+        /// <param name="favoriteIds">List of Ids corresponding to favorites</param>
         /// <returns>Status</returns>
         [
-            HttpPost,
-            Route("users/me/favorites/bulkDelete"),
+            HttpDelete,
+            Route("users/me/favorites/bulk"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, ""),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> DeleteFavorites(List<int> favoriteIds)
