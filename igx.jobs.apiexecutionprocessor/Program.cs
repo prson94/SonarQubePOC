@@ -86,7 +86,6 @@ namespace igx.jobs.apiexecutionprocessor
         const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
         AzureQueueSource queue;
         private CompanyContext company;
-        private CommunityContext community;
         AzureStorageProvider storage;
         ApiExecutionInfo Info;
 
@@ -106,7 +105,7 @@ namespace igx.jobs.apiexecutionprocessor
                 Info.ResourceID ?? 0,
                 Info.CompanyDomainPrefix,
                 false, queue, storage);
-            community = JobDbContextCreator.CreateCommunityContext(
+            CommunityContext community = JobDbContextCreator.CreateCommunityContext(
                 Info.CompanyID,
                 Info.ResourceID ?? 0,
                 Info.CompanyDomainPrefix, true);
