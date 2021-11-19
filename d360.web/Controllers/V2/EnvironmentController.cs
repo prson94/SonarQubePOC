@@ -249,6 +249,41 @@ namespace d360.web.Controllers.V2
 
         }
 
+        private static readonly Dictionary<string, byte[]> ValidImagefileHeaders = new Dictionary<string, byte[]>()
+        {
+            { "image/jpeg", new byte[]{ 0xFF, 0xD8 }},
+            { "image/gif", new byte[]{ 0x47, 0x49, 0x46 }},
+            { "image/png", new byte[]{ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }},
+            { "image/x-icon", new byte[]{ 0x00, 0x00, 0x01, 0x00 }},
+            { "image/vnd.microsoft.icon", new byte[]{ 0x00, 0x00, 0x01, 0x00 }},
+        };
+
+        private bool IsValidImageData(string data)
+        {
+            if(string.IsNullOrEmpty(data))
+            {
+                return true;
+            }
+            var match = MimeTypeExtensionsMap.RegEx.Match(data);
+            var imgMime = match.Groups["mime"].Value;
+
+            if (ValidImagefileHeaders.ContainsKey(imgMime))
+            {
+                var imgByteArray = Convert.FromBase64String(match.Groups["data"].Value);
+
+                if (imgByteArray.Length >= ValidImagefileHeaders[imgMime].Length)
+                {
+                    var slice = imgByteArray.Take(ValidImagefileHeaders[imgMime].Length);
+                    if (slice.SequenceEqual(ValidImagefileHeaders[imgMime]))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private async Task<string> updateSingleSettingImageFile(string folder, string url, string data)
         {
             if (string.IsNullOrEmpty(data))
@@ -413,6 +448,14 @@ namespace d360.web.Controllers.V2
                     value = model.StringSetting.Value;
 
                     break;
+            }
+
+            if(setting.ID == Setting.CompanyLogo || setting.ID == Setting.CompanyIcon || setting.ID == Setting.HomePageBackgroundImage)
+            {
+                if (!IsValidImageData(value))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
+                }
             }
 
             // Sanitize allowed CORS origins
