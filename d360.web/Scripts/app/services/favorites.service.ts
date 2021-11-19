@@ -33,7 +33,7 @@ export class FavoritesService extends BaseObservableService {
     deleteCurrentUsersFavoritesV2(favoriteIds: number[]): Observable<JsonResult> {
         return this
             .http
-            .post('api/v2/membership/users/me/favorites/bulkDelete', favoriteIds)
+            .delete('api/v2/membership/users/me/favorites/bulk', { body: favoriteIds })
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err => this.handleError(err)),
