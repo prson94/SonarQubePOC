@@ -6306,14 +6306,14 @@ end",
 
                     Connection.Execute($@"
                     update	T
-                    set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.InvalidUid}',
+                    set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.RelationshipInvalidUid}',
 		                    T.Success = 0
                     from	api.ExecutionRelationship T
 		            where   T.ExecutionID = @ExecutionID and T.uid is null
 
 
                     update	T
-                    set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.UidNotFound}',
+                    set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.RelationshipUidNotFound}',
 		                    T.Success = 0
                     from	api.ExecutionRelationship T
 		            where T.ExecutionID = @ExecutionID and T.Uid Is not null 

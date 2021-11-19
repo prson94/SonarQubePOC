@@ -120,9 +120,6 @@
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>Duplicate execution item identifiers: {0}. Identifiers must be unique within a batch.</value>
   </data>
-  <data name="InvalidUid" xml:space="preserve">
-    <value>Invalid Uid</value>
-  </data>
   <data name="NotPermissionModifyRelationobjectAsset" xml:space="preserve">
     <value>You do not have permission to modify relationships on the object asset.</value>
   </data>
@@ -132,13 +129,16 @@
   <data name="OwnerValueMaxLength" xml:space="preserve">
     <value>Owner value max length exceeded : {0}. Max length of Owner field is 100 characters.</value>
   </data>
+  <data name="RelationshipInvalidUid" xml:space="preserve">
+    <value>UID of the relationship is invalid.</value>
+  </data>
+  <data name="RelationshipUidNotFound" xml:space="preserve">
+    <value>Relationship with this UID not found.</value>
+  </data>
   <data name="RelatioshipSpecifiedMoreThanOnce" xml:space="preserve">
     <value>This relationship is specified more than once. Each relationship must be unique within a given request.</value>
   </data>
   <data name="RelatioshipUidExistWithDifferentType" xml:space="preserve">
-    <value>failed due to relationship uid is specified with different relationship type.</value>
-  </data>
-  <data name="UidNotFound" xml:space="preserve">
-    <value>Uid Not Found.</value>
+    <value>Relationship UID specified is of a different relationship type.</value>
   </data>
 </root>
