@@ -17,6 +17,8 @@ using d360.model.helpers;
 using Newtonsoft.Json.Linq;
 using d360.model.helpers.filters;
 using d360.core.helpers;
+using d360.core.queue;
+using d360.extensions;
 
 namespace d360.model.DataAccessLayer
 {
@@ -25,12 +27,17 @@ namespace d360.model.DataAccessLayer
         internal ICompanyContext CompanyContext;
         internal ICommunityContext CommunityContext;
         internal IAssetRepository AssetRepository;
-        public MembershipRepository(ICompanyContext companyContext, ICommunityContext communityContext, IAssetRepository assetRepository)
+        internal IQueueSource QueueSource;
+        internal IStorageProvider StorageProvider;
+
+        public MembershipRepository(ICompanyContext companyContext, ICommunityContext communityContext, IAssetRepository assetRepository, IQueueSource queueSource, IStorageProvider storageProvider)
             : base(companyContext)
         {
-            this.CompanyContext = companyContext;
-            this.CommunityContext = communityContext;
-            this.AssetRepository = assetRepository;
+            CompanyContext = companyContext;
+            CommunityContext = communityContext;
+            AssetRepository = assetRepository;
+            QueueSource = queueSource;
+            StorageProvider = storageProvider;
         }
         public async Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
@@ -193,9 +200,31 @@ namespace d360.model.DataAccessLayer
         }
         public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
         {
-            const int ResourceTypeID = 1;
-
             CompanyContext.Add(execution);
+            IEnumerable<UserApiUpsertResult> results;
+            try
+            {
+                results = await ProcessUpsertUsers(execution, users, lookupFieldsPassedByValue, isInsert, IsChangePasswordReqeust).ConfigureAwait(false);
+
+            } catch (Exception ex)
+            {
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+                throw ex;
+            }
+            execution.CompletedOn = DateTime.UtcNow;
+            execution.Error = results.Count(r => r.Success == false);
+            execution.Processed = results.Count(r => r.Success == true);
+            CompanyContext.Update(execution);
+            return results;
+
+        }
+
+        public async Task<IEnumerable<UserApiUpsertResult>> ProcessUpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
+        {
+            const int ResourceTypeID = 1;
 
             var executionID = execution.ExecutionID;
             var results = new List<UserApiUpsertResult>();
@@ -344,11 +373,6 @@ namespace d360.model.DataAccessLayer
                 }
                 catch (Exception ex)
                 {
-                    string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-                    execution.ErrorMessage = message;
-                    execution.CompletedOn = DateTime.UtcNow;
-                    CompanyContext.Update(execution);
-
                     try
                     {
                         if (trans != null)
@@ -756,10 +780,6 @@ namespace d360.model.DataAccessLayer
                 }
                 catch (Exception ex)
                 {
-                    string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-                    execution.ErrorMessage = message;
-                    execution.CompletedOn = DateTime.UtcNow;
-                    CompanyContext.Update(execution);
                     try
                     {
                         if (trans != null)
@@ -1102,12 +1122,6 @@ namespace d360.model.DataAccessLayer
                     catch
                     {
                     }
-
-                    string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-                    execution.ErrorMessage = message;
-                    execution.CompletedOn = DateTime.UtcNow;
-                    CompanyContext.Update(execution);
-
                     throw ex;
                 }
             }
@@ -1196,12 +1210,22 @@ namespace d360.model.DataAccessLayer
 
             #endregion
 
-            execution.CompletedOn = DateTime.UtcNow;
-            execution.Error = results.Count(r => r.Success == false);
-            execution.Processed = results.Count(r => r.Success == true);
-            CompanyContext.Update(execution);
-
             return results;
+        }
+
+        public async Task<ApiExecutionInfo> UpsertBulkUsers(ApiExecution execution, UserUpsertModel model)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.UpsertUsers,
+                
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, model, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         private string SanitizeValue(string ParameterValue)

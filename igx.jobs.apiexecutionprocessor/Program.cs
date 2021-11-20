@@ -21,6 +21,7 @@ using System.Threading;
 using System.Net.Http;
 using Microsoft.Extensions.Hosting;
 using d360.model.DataAccessLayer;
+using d360.core.entities.Membership;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -104,6 +105,10 @@ namespace igx.jobs.apiexecutionprocessor
                 Info.ResourceID ?? 0,
                 Info.CompanyDomainPrefix,
                 false, queue, storage);
+            CommunityContext community = JobDbContextCreator.CreateCommunityContext(
+                Info.CompanyID,
+                Info.ResourceID ?? 0,
+                Info.CompanyDomainPrefix, true);
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;
@@ -114,6 +119,8 @@ namespace igx.jobs.apiexecutionprocessor
             }
 
             FieldsRepository fieldsRepository = new FieldsRepository(company, queue, storage);
+            AssetRepository assetRepository = new AssetRepository(company, queue, storage, community);
+            MembershipRepository membershipRepository = new MembershipRepository(company, community, assetRepository, queue, storage); 
 
             #endregion
 
@@ -468,6 +475,18 @@ namespace igx.jobs.apiexecutionprocessor
                                 var result = fieldsRepository.DeleteFields(currentFieldTypes, deleteFieldtypes.FieldNamesToDelete);
                                 dbExecutionItem.Processed = result;
                                 log.WriteLine($"DELETE Field Type (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                break;
+                            case ApiExecutionAction.UpsertUsers:
+                                UserUpsertModel model = await storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(Info.StorageFolder, Info.RequestFileName);
+                                string operation = model.IsInsert ? "POST" : "PUT";
+
+                                log.WriteLine($"{operation} Users (DB Start): Total users: {model.Users.Count()}");
+
+                                var userResult = await membershipRepository.ProcessUpsertUsers(dbExecutionItem, model.Users, model.LookupFieldsPassedByValue, model.IsInsert, false).ConfigureAwait(false);
+                                dbExecutionItem.Processed = userResult.Count(i => i.Success);
+                                dbExecutionItem.Error = userResult.Count(i => !i.Success);
+                                log.WriteLine($"{operation} Users (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"{operation} Users (DB Complete): Total Error: {dbExecutionItem.Error}.");
                                 break;
                         }
                     }
