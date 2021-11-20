@@ -51,7 +51,7 @@ namespace d360.model
 
         private string escapeForSQLLike(string value, bool isContains = true)
         {
-            char[] escapeChars = new char[] { '%', '_', '^', '['};
+            char[] escapeChars = new char[] { '%', '_', '^', '[' };
             string escapedValue = "";
 
             foreach (char c in value)
@@ -109,6 +109,11 @@ namespace d360.model
         public void SynchronizeExecutionRelationshipWithGraph(Guid executionUid)
         {
             Connection.Execute("[graph].[SynchronizeRelationshipExecution] @executionUid", new { executionUid });
+        }
+
+        public void UpdateAssetNode(Guid assetUid)
+        {
+            Connection.Execute("[graph].[UpdateAssetNode] @assetuid, 1", new { assetUid });
         }
 
         #endregion

@@ -60,7 +60,7 @@ namespace d360.model
         DbSet<FieldType> FieldTypes { get; set; }
         DbSet<FieldWithRelation> FieldWithRelations { get; set; }
         DbSet<FollowDetail> FollowDetails { get; set; }
-        DbSet<Follow> Follows { get; set; }                        
+        DbSet<Follow> Follows { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
         DbSet<GraphFilter> GraphFilters { get; set; }
         DbSet<Group> Groups { get; set; }
@@ -254,6 +254,7 @@ namespace d360.model
         void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);
         void SynchronizeExecutionAssetsWithGraph(Guid executionUid);
         void SynchronizeExecutionRelationshipWithGraph(Guid executionUid);
+        void UpdateAssetNode(Guid assetUid);
         bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy);
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
@@ -278,7 +279,7 @@ namespace d360.model
 
         List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
         List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
-        List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);        
+        List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
         string GetEscapedFilterString(string filter, bool isContains = false);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
@@ -294,7 +295,7 @@ namespace d360.model
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200, int maxRetryCount = 10);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
-        bool LookupFieldHasColorItem(FieldType f);        
+        bool LookupFieldHasColorItem(FieldType f);
         string GetDiagramUrlForDiagramAsset(Guid assetUid);
         bool HasRelationshipInProcessDiagram(Guid intersectTypeUid);
         void CreateEventsForAddedActions(List<Issue> actions);
