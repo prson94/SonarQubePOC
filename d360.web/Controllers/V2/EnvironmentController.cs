@@ -1097,7 +1097,7 @@ namespace d360.web.Controllers.V2
                                     HttpStatusCode.OK, result
                                 )
                             )
-                        );
+                        ).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -1179,7 +1179,7 @@ namespace d360.web.Controllers.V2
                                     HttpStatusCode.OK, result
                                 )
                             )
-                        );
+                        ).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -1233,7 +1233,7 @@ namespace d360.web.Controllers.V2
                                         HttpStatusCode.OK, result
                                     )
                                 )
-                            );
+                            ).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1244,7 +1244,7 @@ namespace d360.web.Controllers.V2
                                         HttpStatusCode.OK, result
                                     )
                                 )
-                            );
+                            ).ConfigureAwait(false);
                 }
             }
             catch (Exception e)
