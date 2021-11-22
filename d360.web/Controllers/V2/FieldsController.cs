@@ -2289,7 +2289,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     }
                     var data = new
                     {
-                        items = items,
+                        items,
                         count = resultsAssets.Read<int>().FirstOrDefault()
                     };
 
