@@ -1348,7 +1348,28 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                         }
                     case "U":
                         {
-                            throw new NotImplementedException($"Load of type {load.Action} is not supported");
+                            itemSql = @"
+select
+	I.RowIndex as RowIndex,
+	coalesce(EA.Message, I.StatusMessage) as StatusMessage
+from LoadItem I
+	left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid
+where I.LoadID = @id 
+and coalesce(EA.Success,I.Status) = 0
+order by RowIndex asc
+";
+
+                            itemColumnSql = @"
+select C.LoadID, C.RowIndex, C.ColumnIndex,
+coalesce(EF.FieldValue, C.[Value]) as [Value] 
+from LoadItem I 
+join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex 
+	left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+	left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid
+	left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
+where I.LoadID = @id 
+	and coalesce(EA.Success,I.Status) = 0
+order by I.RowIndex asc, C.ColumnIndex asc";
                             break;
                         }
                     default: throw new NotImplementedException($"Load of type {load.Action} is not supported");
