@@ -1043,6 +1043,10 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var item in items)
                 {
+                    if (item.Name == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+                    }
                     if (item.Name.Trim() == "")
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
@@ -1108,6 +1112,10 @@ namespace d360.web.Controllers.V2
                 {
                     HelpResource helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
 
+                    if (item.Name == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+                    }
                     if (item.Name.Trim() == "")
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
