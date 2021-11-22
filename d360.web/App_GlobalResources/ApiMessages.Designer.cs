@@ -1033,6 +1033,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No valid uid provided to be deleted..
+        /// </summary>
+        public static string InvalidHelpDeleteUid {
+            get {
+                return ResourceManager.GetString("InvalidHelpDeleteUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name cannot be empty..
         /// </summary>
         public static string InvalidHelpName {

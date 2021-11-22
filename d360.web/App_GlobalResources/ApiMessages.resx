@@ -729,4 +729,7 @@
   <data name="FavoritesListCleared" xml:space="preserve">
     <value>Favorites List Cleared.</value>
   </data>
+  <data name="InvalidHelpDeleteUid" xml:space="preserve">
+    <value>No valid uid provided to be deleted.</value>
+  </data>
 </root>
