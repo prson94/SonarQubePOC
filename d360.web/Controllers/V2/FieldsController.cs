@@ -2167,7 +2167,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
             ]
-        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, bool isForAssetForm = false)
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, bool isForAssetForm = false, Guid? assetUid = null)
         {
             var prefix = "Fields.GetFilterVales => ";
             try
@@ -2192,9 +2192,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                 int fieldTypeId = -1;
 
-                var assetTypeId = Company.AssetTypes
-                    .FirstOrDefault(x => x.uid == assetTypeUid).ID;
-                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
+                var assetType = Company.AssetTypes
+                    .FirstOrDefault(x => x.uid == assetTypeUid);
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
 
 
                 string pagingQuery = "";
@@ -2209,12 +2209,17 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 //list items for parent field
                 if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
                 {
-                    if (!string.IsNullOrEmpty(filter))
+                    string sql = "";
+                    bool isHierarchyGrid = assetType.Object == "TaxonomyType" || assetType.Object == "PolicyType";
+
+                    if (!isHierarchyGrid)
                     {
-                        filter = "%" + filter + "%";
-                        whereQuery += " and node.displaypath like @filter ";
-                    }
-                    var sql = $@"declare @target nvarchar(255) 
+                        if (!string.IsNullOrEmpty(filter))
+                        {
+                            filter = "%" + filter + "%";
+                            whereQuery += " and node.displaypath like @filter ";
+                        }
+                        sql = $@"declare @target nvarchar(255) 
                                 declare @targetid int
                                 
                                 select @target = ito.Subject, @targetid = ito.SubjectId from AssetType at
@@ -2224,7 +2229,10 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                                 
                                 declare @parentAssetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
                                 
-                                select cast(a.uid as nvarchar(36)) as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
+                                select 
+                                cast(a.uid as nvarchar(36)) as value,
+                                coalesce(node.DisplayPath,'Path Missing') as text 
+                                from Asset A
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
                                 where a.AssetTypeID = @parentAssetTypeId {whereQuery}
                                 order by node.displaypath 
@@ -2233,12 +2241,55 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                                 select count(*) from Asset A
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
                                 where a.AssetTypeID = @parentAssetTypeId {whereQuery};";
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(filter))
+                        {
+                            filter = "%" + filter + "%";
+                            whereQuery += " and P.TextPath like @filter ";
+                        }
 
-                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { assetTypeId, skip, take, filter });
+                        var hierarchyItem = Company.Query<dynamic>($@"
+                                                    select L.Level
+                                                    from	Asset A
+		                                                    inner join AssetType T on T.ID = A.AssetTypeID
+		                                                    cross apply dbo.GetAssetLevelById(A.ID) L
+                                                    where	A.uid = @assetUid
+                                                    ", new { assetUid }).SingleOrDefault();
 
+                        sql = $@"select	
+		                                P.TextPath as text,
+                                        cast(a.uid as nvarchar(36)) as value
+                                from	Asset A
+                                        inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
+		                                cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
+                                        cross apply dbo.GetAssetLevelById(A.ID) LV
+                                where coalesce(LV.[Level], 1) <= '{ hierarchyItem?.Level ?? 1}' {whereQuery}
+                                order by P.TextPath 
+                                {pagingQuery}
+                                option (maxrecursion 100)
+
+                                select	count(*)
+                                from	Asset A
+                                        inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
+		                                cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
+                                        cross apply dbo.GetAssetLevelById(A.ID) LV
+                                where coalesce(LV.[Level], 1) <= '{ hierarchyItem?.Level ?? 1}' {whereQuery}
+                                option (maxrecursion 100)";
+                    }
+
+
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { assetType.ID, skip, take, filter });
+
+                    var items = resultsAssets.Read<DDLSelectItem>().ToList();
+                    if (isHierarchyGrid)
+                    {
+                        items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
+                    }
                     var data = new
                     {
-                        items = resultsAssets.Read<DDLSelectItem>().ToList(),
+                        items = items,
                         count = resultsAssets.Read<int>().FirstOrDefault()
                     };
 

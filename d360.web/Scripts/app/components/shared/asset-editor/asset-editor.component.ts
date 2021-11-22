@@ -92,6 +92,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() disallowedNames: string[] = [];
     savingInProgress: boolean = false;
     savingInProgressWithAddNew: boolean = false;
+    loadedAssetUid: string = '';
 
     isInError: boolean = false;
     isInErrorMessage: string = "";
@@ -238,6 +239,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             if (this.isV2API && this.selection.AssetUid) {
                 id = this.selection.AssetUid;
             }
+            this.loadedAssetUid = id;
         }
         this.isLoading = true;
         if (this.parentID && this.parentID.toString().length === 36) {
@@ -663,12 +665,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
             }
         }
-
+        console.log(this.objectType);
         //convert artifact to an asset
         for (var p in values) {
             if (p.toUpperCase() === "PARENTUID") {
-                if (values[p] !== "00000000-0000-0000-0000-000000000000")
+                if (values[p] !== "00000000-0000-0000-0000-000000000000" || (this.objectType === 'Taxonomy' || this.objectType === 'Policy')) {
                     asset.ParentUid = values[p];
+                }
             }
             else if (p.toUpperCase() === "UID") {
                 asset.Uid = values[p];
