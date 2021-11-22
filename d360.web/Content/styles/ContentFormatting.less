@@ -318,10 +318,13 @@ button.WhiteButton {
 
 .main-panel {
   flex: 1;
-  height: calc(100vh - 190px);
+  height: calc(100vh - 150px);
   overflow: auto;
 }
 
+.maincontent-second .main-panel {
+  height: calc(100vh - 190px);
+}
 
 .modal-with-side-panel {
   display: flex;
@@ -400,12 +403,11 @@ button.WhiteButton {
 .side-panel {
   margin-left: 15px;
   flex: 0;
-  height: 100%;
   background-color: white;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
   margin-right: -16px;
-  height: calc(100vh - 190px);
+  height: calc(100vh - 150px);
 
   .panel-header {
     letter-spacing: normal;
@@ -426,6 +428,11 @@ button.WhiteButton {
     }
   }
 }
+
+.maincontent-second .side-panel {
+  height: calc(100vh - 190px);
+}
+
 
 .tile-clickable {
   cursor: pointer;
