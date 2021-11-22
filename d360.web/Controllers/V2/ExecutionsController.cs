@@ -615,7 +615,12 @@ namespace d360.web.Controllers.V2
         else 
             L.DateCompleted 
         end as DateCompleted,
-        coalesce(C_D.[Name], 'Default') as AssetTypeName,
+        case 
+			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
+			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
+            when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[Deleted]')  
+			else coalesce(C_D.[Name], 'Default') 
+		end as AssetTypeName,
         C_D.[uid] as AssetTypeUid,
         L.DateStarted as DateStarted,
         coalesce(EA.ErrorMessage, '' ) + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
@@ -1085,7 +1090,12 @@ from	[Load] L
             when 'S' then 'Synonyms'
 			when 'W' then 'Promotion (via Propose Workflow)'
 		end as [Action],
-        coalesce(C_D.[Name], 'Default') as AssetTypeName,
+        case 
+			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
+			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
+            when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[Deleted]')  
+			else coalesce(C_D.[Name], 'Default') 
+		end as AssetTypeName,
         C_D.[uid] as AssetTypeUid,
         S.C as Success,
         E.C as Error,
