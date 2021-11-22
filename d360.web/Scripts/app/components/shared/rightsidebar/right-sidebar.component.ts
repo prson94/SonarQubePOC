@@ -342,6 +342,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 }
                 if (res.key === 'areaTitle') {
                     this.area.title = res.value;
+                    this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
                 }
                 this.ref.markForCheck();
             }
