@@ -47,6 +47,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     groups: SelectItem[];
     sub: any;
     routeValidationMessage = "";
+    disableExcel: boolean = false;
 
     rebuildStatuses: CompanyRebuildJobStatusApiModel[] = [];
 
@@ -364,27 +365,20 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
     validateExcelSize() {
         if ((this.companySettings.MaxExcelExportRows < 0) || (this.companySettings.MaxExcelExportRows > 100000)) {
-            this.secondaryNavService.clearButtons();
-            this.SaveButton = new DynamicButton("Save Changes");
-            this.secondaryNavService.showButton(this.SaveButton);
-            this.SaveButton.disabled = true;
-            this.SaveButton.dynamicCallback = () => {
-                this.SaveButton.disabled = true;
-                this.SaveButton.isLoading = true;
-                this.save();
-            };
+            this.disableExcel = true;
         }
         else {
-            this.secondaryNavService.clearButtons();
-            this.SaveButton = new DynamicButton("Save Changes");
-            this.secondaryNavService.showButton(this.SaveButton);
-            this.SaveButton.disabled = false;
-            this.SaveButton.dynamicCallback = () => {
-                this.SaveButton.disabled = true;
-                this.SaveButton.isLoading = true;
-                this.save();
-            };
+            this.disableExcel = false;
         }
+        this.secondaryNavService.clearButtons();
+        this.SaveButton = new DynamicButton("Save Changes");
+        this.secondaryNavService.showButton(this.SaveButton);
+        this.SaveButton.disabled = this.disableExcel;
+        this.SaveButton.dynamicCallback = () => {
+            this.SaveButton.disabled = true;
+            this.SaveButton.isLoading = true;
+            this.save();
+        };
     }
 
     validateRoute() {
