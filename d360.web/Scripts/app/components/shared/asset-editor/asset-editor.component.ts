@@ -665,7 +665,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
             }
         }
-        console.log(this.objectType);
+
         //convert artifact to an asset
         for (var p in values) {
             if (p.toUpperCase() === "PARENTUID") {

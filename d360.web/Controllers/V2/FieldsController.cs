@@ -2223,9 +2223,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                                 declare @targetid int
                                 
                                 select @target = ito.Subject, @targetid = ito.SubjectId from AssetType at
-                                left join [IntersectType] ito on ito.Object = at.Object and ito.ObjectId = at.objectid
-                                left join [Predicate] po on ito.PredicateID = po.ID and po.Type in (3,4)
-                                where at.id = @assettypeid
+                                inner join [IntersectType] ito on ito.Object = at.Object and ito.ObjectId = at.objectid
+                                inner join [Predicate] po on ito.PredicateID = po.ID and po.Type in (3,4)
+                                where at.id = @id
                                 
                                 declare @parentAssetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
                                 
