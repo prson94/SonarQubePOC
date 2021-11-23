@@ -116,7 +116,6 @@ namespace d360.core.entities
     {
         public string Object { get; set; }
         public int ObjectID { get; set; }
-        public int AssetUID { get; set; }
         public List<ResponsibilityRuleDefinitionWhen> Conditions { get; set; }
         public ResponsibilityMatchType MatchType { get; set; } = ResponsibilityMatchType.And;
     }
