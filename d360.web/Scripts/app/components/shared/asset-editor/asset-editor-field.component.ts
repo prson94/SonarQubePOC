@@ -736,6 +736,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     loadListLazy($params) {
         var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };
         loadParams["isForAssetForm"] = true;
+        loadParams["assetUid"] = this.assetUid;
 
         if ($params.globalFilter) {
             loadParams["filter"] = $params.globalFilter;
