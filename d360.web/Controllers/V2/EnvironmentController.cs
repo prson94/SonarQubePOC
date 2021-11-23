@@ -1169,17 +1169,31 @@ namespace d360.web.Controllers.V2
                 }
 
                 _company.SaveChanges();
-                foreach (var i in uids)
+                if (uids.Count > 0)
                 {
-                    result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsUpdated, message = ApiMessages.HelpMenuSuccess });
-                }
-                return await Task.FromResult<IHttpActionResult>(
-                            ResponseMessage(
-                                Request.CreateResponse(
-                                    HttpStatusCode.OK, result
+                    foreach (var i in uids)
+                    {
+                        result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsUpdated, message = ApiMessages.HelpMenuSuccess });
+                    }
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
                                 )
-                            )
-                        ).ConfigureAwait(false);
+                            ).ConfigureAwait(false);
+                }
+                else
+                {
+                    result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.BadRequest, message = ApiMessages.InvalidHelpUpdateUid });
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {
@@ -1237,7 +1251,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.HelpMenuItemsDeleted, message = ApiMessages.InvalidHelpDeleteUid });
+                    result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.BadRequest, message = ApiMessages.InvalidHelpDeleteUid });
                     return await Task.FromResult<IHttpActionResult>(
                                 ResponseMessage(
                                     Request.CreateResponse(

@@ -732,4 +732,7 @@
   <data name="InvalidHelpDeleteUid" xml:space="preserve">
     <value>No valid uid provided to be deleted.</value>
   </data>
+  <data name="InvalidHelpUpdateUid" xml:space="preserve">
+    <value>No valid uid provided to be updated.</value>
+  </data>
 </root>

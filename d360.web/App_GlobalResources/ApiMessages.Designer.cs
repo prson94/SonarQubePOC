@@ -1060,6 +1060,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No valid uid provided to be updated..
+        /// </summary>
+        public static string InvalidHelpUpdateUid {
+            get {
+                return ResourceManager.GetString("InvalidHelpUpdateUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Url cannot be empty..
         /// </summary>
         public static string InvalidHelpUrl {
