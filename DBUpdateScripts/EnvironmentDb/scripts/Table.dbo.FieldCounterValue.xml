@@ -44,7 +44,7 @@ END
   </changeSet>
   
   
-  <changeSet author="TDuric" id="Table.dbo.FieldCounterValue_AfterInsert-v2.2">
+  <changeSet author="TDuric" id="Table.dbo.FieldCounterValue_AfterInsert-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -92,20 +92,15 @@ while exists (select 1 from #fieldTypeIds)
 	where fieldtypeid = @currentFieldTypeId
 
 	drop table if exists #indexList
+	create table #indexList([SEQUENCE] int)
 
 	declare @start int = @lastIndex
 	declare @end   int = @start + (select count(*) from #indexMap)
 
-	;with numcte  
-	AS  
-	(  
-	  SELECT @start [SEQUENCE] 
-	  UNION all  
-	  SELECT [SEQUENCE] + 1 FROM numcte WHERE [SEQUENCE] < @end 
-	)      
-	SELECT * 
-	into #indexList
-	FROM numcte
+	insert into #indexList
+	select top (select count(*) from #indexMap) ROW_NUMBER() 
+	over(order by a.assetid) + (@start-1) as [SEQUENCE]
+    from inserted a
 
 	drop table if exists #toInsert
 
