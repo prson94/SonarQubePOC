@@ -1,7 +1,7 @@
 @import '../../../../../Content/styles/_Variables.less';
 
 .summarySection {
-  padding: 16px 11px 6px 11px;
+  padding: 0px 16px 6px 11px;
   overflow-y: auto;
   -webkit-flex: 1 1 auto;
   height: calc(100vh - 255px);
@@ -78,6 +78,10 @@
           padding-left: 8px;
           color: @d3s-gray-2;
         }
+      }
+
+      .statistic{
+        margin-bottom: 16px;
       }
     }
 
@@ -176,29 +180,31 @@
   margin-top: 2px;
   line-height: 18px;
 }
+i.fa {
+  &.turn {
+    transform: rotate(45deg);
+    font-size: .5em;
+  }
+}
+
 
 .trendIcon {
   color: @ig-slate;
   font-size: 20px;
   line-height: 16px;
-
-  &.same {
-    font-size: 16px;
-  }
 }
 
 .time-series-tile {
   z-index: 20000;
   position: absolute;
   right: 410px;
-  top: 40px;
   float: right;
   background: white;
-  width: calc(100vw - 640px);
+  width: calc(100vw - 650px);
   bottom: 40px;
   box-shadow: rgb(0 0 0 / 33%) 0 5px 10px;
   border-radius: 4px;
-  height: calc(100vh - 270px);
+  height: calc(100vh - 230px);
 
   .time-series-graph {
     margin: 20px;
@@ -237,7 +243,6 @@
 
   .message {
     flex: 1;
-    font-size: 0.95em;
   }
 
   .closeIcon {
@@ -245,5 +250,6 @@
     vertical-align: top;
     width: 32px;
     margin-left: 10px;
+    color:@ig-black;
   }
 }
