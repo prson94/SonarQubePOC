@@ -99,7 +99,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
         this.graphRangeOptions.forEach((g) => {
             let d = new Date();
             if (isNaN(g.value)) {
-                d.setFullYear(2021, 0, 1);
+                d.setFullYear(d.getFullYear(), 0, 1);
                 if (g.value === "YTD" && d > currentDate) {
                     g.disabled = true;
                 }
