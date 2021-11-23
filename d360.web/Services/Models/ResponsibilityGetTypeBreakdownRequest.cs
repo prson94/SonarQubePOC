@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Web;
 using MediatR;
 
 namespace d360.web.Services
@@ -12,7 +10,10 @@ namespace d360.web.Services
             
         }
 
-        // change to init later
-        public Guid? TypeUid { get; set; }
+        //TODO: change to init setter later
+        /// <summary>
+        /// Resource Type UID
+        /// </summary>
+        public Guid? ResourceTypeUid { get; set; }
     }
 }
