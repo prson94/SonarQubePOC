@@ -748,6 +748,13 @@ namespace d360.web.Models
         public Guid uid { get; set; }
     }
 
+    public class HelpMenuItemMessage
+    {
+        public Guid uid { get; set; }
+        public string title { get; set; }
+        public string message { get; set; }
+    }
+
     public class HelpMenuModel
     {
         public List<HelpMenuItem> Adds { get; set; }

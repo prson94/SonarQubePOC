@@ -1076,12 +1076,15 @@ namespace d360.web.Controllers.V2
            MapToApiVersion("2.0"),
            Route("help"),
            SwaggerProduces("application/json"),
-           SwaggerResponse(HttpStatusCode.OK, "Adds new help menu items.", typeof(ConfirmResponse)),
+           SwaggerResponse(HttpStatusCode.OK, "Adds new help menu items.", typeof(List<HelpMenuItemMessage>)),
            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> AddHelpMenuItems(List<AddHelpMenuItem> items)
         {
             List<int> visibilties = new List<int> { 1, 2, 3 };
+            List<Guid> uids = new List<Guid>();
+            List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
+
             try
             {
                 foreach (var item in items)
@@ -1112,6 +1115,7 @@ namespace d360.web.Controllers.V2
                     }
 
                     var uid = Guid.NewGuid();
+                    uids.Add(uid);
                     _company.HelpResources.Add(new HelpResource
                     {
                         Name = item.Name,
@@ -1126,7 +1130,17 @@ namespace d360.web.Controllers.V2
                 }
 
                 _company.SaveChanges();
-                return successMessageResponse(HttpStatusCode.OK, ApiMessages.HelpMenuItemsCreated, ApiMessages.HelpItemsAdded);
+                foreach(var i in uids)
+                {
+                    result.Add(new HelpMenuItemMessage{ uid = i, title = ApiMessages.HelpMenuItemsCreated, message = ApiMessages.HelpItemsAdded });
+                }
+                return await Task.FromResult<IHttpActionResult>(
+                            ResponseMessage(
+                                Request.CreateResponse(
+                                    HttpStatusCode.OK, result
+                                )
+                            )
+                        ).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -1143,12 +1157,15 @@ namespace d360.web.Controllers.V2
            MapToApiVersion("2.0"),
            Route("help"),
            SwaggerProduces("application/json"),
-           SwaggerResponse(HttpStatusCode.OK, "Updates already exisiting help menu items.", typeof(ConfirmResponse)),
+           SwaggerResponse(HttpStatusCode.OK, "Updates already exisiting help menu items.", typeof(List<HelpMenuItemMessage>)),
            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> UpdateHelpMenuItems(List<UpdateHelpMenuItem> items)
         {
             List<int> visibilties = new List<int> { 1, 2, 3 };
+            List<Guid> uids = new List<Guid>();
+            List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
+
             try
             {
                 foreach (var item in items)
@@ -1182,6 +1199,7 @@ namespace d360.web.Controllers.V2
 
                     if (helpItem != null)
                     {
+                        uids.Add((Guid)helpItem.uid);
                         helpItem.Description = item.Description;
                         helpItem.Name = item.Name;
                         helpItem.order = item.order;
@@ -1194,7 +1212,31 @@ namespace d360.web.Controllers.V2
                 }
 
                 _company.SaveChanges();
-                return successMessageResponse(HttpStatusCode.OK, ApiMessages.HelpMenuItemsUpdated, ApiMessages.HelpMenuSuccess);
+                if (uids.Count > 0)
+                {
+                    foreach (var i in uids)
+                    {
+                        result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsUpdated, message = ApiMessages.HelpMenuSuccess });
+                    }
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
+                else
+                {
+                    result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.BadRequest, message = ApiMessages.InvalidHelpUpdateUid });
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {
@@ -1211,11 +1253,14 @@ namespace d360.web.Controllers.V2
            MapToApiVersion("2.0"),
            Route("help"),
            SwaggerProduces("application/json"),
-           SwaggerResponse(HttpStatusCode.OK, "Deletes currently created help menu items.", typeof(ConfirmResponse)),
+           SwaggerResponse(HttpStatusCode.OK, "Deletes currently created help menu items.", typeof(List<HelpMenuItemMessage>)),
            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> DeleteHelpMenuItems(List<DeleteMenuItem> items)
         {
+            List<Guid> uids = new List<Guid>();
+            List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
+
             try
             {
                 foreach (var item in items)
@@ -1227,12 +1272,37 @@ namespace d360.web.Controllers.V2
                     }
                     if (helpItem != null && !helpItem.isSystem)
                     {
+                        uids.Add(item.uid);
                         _company.HelpResources.Remove(helpItem);
                     }
                 }
 
                 _company.SaveChanges();
-                return successMessageResponse(HttpStatusCode.OK, ApiMessages.HelpMenuItemsDeleted, ApiMessages.HelpItemsDeleted);
+                if (uids.Count > 0)
+                {
+                    foreach (var i in uids)
+                    {
+                        result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsDeleted, message = ApiMessages.HelpItemsDeleted });
+                    }
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
+                else
+                {
+                    result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.BadRequest, message = ApiMessages.InvalidHelpDeleteUid });
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {

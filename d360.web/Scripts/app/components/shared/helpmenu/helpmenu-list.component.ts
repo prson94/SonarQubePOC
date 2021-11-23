@@ -108,6 +108,10 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
             return;
         }
 
+        const index = this.addedRecords.indexOf(this.selectedItem);
+        if (index > -1) {
+            this.addedRecords.splice(index, 1);
+        }
         this.deletedRecords.push(this.selectedItem);
         this.items.forEach((element, index) => {
             if (element.ID === this.selectedItem.ID) {
