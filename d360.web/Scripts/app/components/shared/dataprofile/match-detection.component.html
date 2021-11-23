@@ -305,7 +305,7 @@
                         <div *ngIf="selectedAssetUids.length > 1">
                             <d3s-tag-view [data]="getCommonTags" [assetUIDList]="selectedAssetUids" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
                         </div>
-                        <div *ngIf="selectedAssetUids.length == 1">
+                        <div style="padding-top: 8px" *ngIf="selectedAssetUids.length == 1">
                             <d3s-tag-view [data]="selectedAssetsWithTagField[0].tags" [assetUID]="selectedAssetsWithTagField[0].uid" [isEditable]="true" [allowAddTag]="true" [ignoreResizing]="true" [placeHolder]="'Add Tag'" (tagsChanged)="tagsChanged=true;onTagsChanged();"></d3s-tag-view>
                         </div>
                         <div class="no-tags-note" *ngIf="selectedAssetsWithoutTagField && selectedAssetsWithoutTagField.length>0">
