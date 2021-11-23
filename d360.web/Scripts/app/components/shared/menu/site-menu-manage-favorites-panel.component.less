@@ -28,3 +28,10 @@ d3s-loading {
     padding-top: 6px;
     padding-bottom: 6px;
 }
+
+// This magic fixes GOV-16402 - issue with having two scrollbars
+// For some reason, browser incorrectly propagates height of inner content to one of parent containters
+// position:relative causes this element to be independent of parent containers
+.favorites-scroll-fix {
+    position: relative;
+}
