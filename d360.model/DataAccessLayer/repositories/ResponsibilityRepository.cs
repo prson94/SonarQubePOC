@@ -165,7 +165,7 @@ namespace d360.model.DataAccessLayer
 
         public async Task<IEnumerable<ResponsibilityTypeRuleViewModel>> GetResponsibilityRules(Guid responsibilityTypeUid)
         {
-            return await Company.QueryAsync<ResponsibilityTypeRuleViewModel>(@"
+            var results = await Company.QueryAsync<ResponsibilityTypeRuleViewModel>(@"
                             select
                                 rtr.[uid]
 	                            ,rtr.[name]
@@ -183,6 +183,33 @@ namespace d360.model.DataAccessLayer
                             where 
 	                            r.[uid] = @uid 
                             ", new { uid = responsibilityTypeUid.ToString() }, ApiTimeout);
+
+            results.ToList().ForEach((res) =>
+            {
+                var definition = res.Definition;
+                definition?.When?.FindAll((d) => d.IntersectTypeID > 0)?.ForEach((when) =>
+                {
+                    when.IntersectTypeUID = Company.IntersectTypes.FirstOrDefault(x => x.ID == when.IntersectTypeID).uid;
+                });
+
+                definition?.When?.FindAll((d) => d.TargetObjectID > 0 && d.TargetObject != null)?.ForEach((asset) =>
+                {
+                    asset.AssetUID = Company.Assets.FirstOrDefault(x => x.Object == asset.TargetObject && x.ObjectID == asset.TargetObjectID).uid;
+                });
+
+                definition?.Then?.Conditions?.FindAll((d) => d.IntersectTypeID > 0)?.ForEach((when) =>
+                {
+                    when.IntersectTypeUID = Company.IntersectTypes.FirstOrDefault(x => x.ID == when.IntersectTypeID).uid;
+                });
+
+                definition?.Then?.Conditions?.FindAll((d) => d.TargetObjectID > 0 && d.TargetObject != null)?.ForEach((asset) =>
+                {
+                    asset.AssetUID = Company.Assets.FirstOrDefault(x => x.Object == asset.TargetObject && x.ObjectID == asset.TargetObjectID).uid;
+                });
+
+                res.DefinitionRaw = JsonConvert.SerializeObject(definition);
+            });
+            return results;
         }
 
         public async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid responsibilityTypeUid)
