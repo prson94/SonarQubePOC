@@ -1357,7 +1357,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />
-    <Content Include="Views\Shared\Unsupported.cshtml" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
     <Content Include="Content\styles\images\check_black.png" />
@@ -1586,6 +1585,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.less" />
     <Content Include="Scripts\app\components\shared\modal-drawer\gov-modal-drawer.component.less" />
     <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
+    <Content Include="Views\Shared\Unsupported.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
