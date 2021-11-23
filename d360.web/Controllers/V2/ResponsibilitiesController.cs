@@ -1541,6 +1541,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Gets the breakdown of responsibilities
         /// </summary>
+        /// <param name="resourceTypeUid">Resource Type UID</param>
         /// <returns>An Array of responsibility type breakdowns.</returns>
         [
             HttpGet,
@@ -1551,14 +1552,14 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? uid = null)
+        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? resourceTypeUid = null)
         {
             ValidateParameters();
 
             // create business logic request model
             var request = new ResponsibilityGetTypeBreakdownRequest()
             {
-                TypeUid = uid
+                ResourceTypeUid = resourceTypeUid
             };
 
             // call business logic
@@ -1583,6 +1584,8 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Gets the breakdown of responsibilities
         /// </summary>
+        /// <param name="resourceUid">Resource UID</param>
+        /// <param name="resourceTypeUid">Resource Type UID</param>
         /// <returns>An Array of responsibility type breakdowns.</returns>
         [
             HttpGet,

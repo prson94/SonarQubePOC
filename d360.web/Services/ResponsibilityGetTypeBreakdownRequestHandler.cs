@@ -17,7 +17,7 @@ namespace d360.web.Services
         public async Task<ResponsibilityGetTypeBreakdownResponse> Handle(ResponsibilityGetTypeBreakdownRequest request, CancellationToken cancellationToken)
         {
             var result = new ResponsibilityGetTypeBreakdownResponse();
-            result.Data = await ResponsibilityRepository.GetResponsibilityTypeBreakdownAsync(request.TypeUid);
+            result.Data = await ResponsibilityRepository.GetResponsibilityTypeBreakdownAsync(request.ResourceTypeUid);
             return result;
         }
     }

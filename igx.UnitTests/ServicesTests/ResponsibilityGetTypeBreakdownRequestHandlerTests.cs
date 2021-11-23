@@ -23,7 +23,7 @@ namespace igx.UnitTests.ServicesTests
             // assign
             mockResponsibilityDapperRepository.Setup(x => x.GetResponsibilityTypeBreakdownAsync(typeUid)).ReturnsAsync(repositoryResult);
             var request = new ResponsibilityGetTypeBreakdownRequest();
-            request.TypeUid = typeUid;
+            request.ResourceTypeUid = typeUid;
             var testedClass = new ResponsibilityGetTypeBreakdownRequestHandler(mockResponsibilityDapperRepository.Object);
 
             // act
@@ -40,7 +40,7 @@ namespace igx.UnitTests.ServicesTests
             // assign
             mockResponsibilityDapperRepository.Setup(x => x.GetResponsibilityTypeBreakdownAsync(typeUid)).ThrowsAsync(exception);
             var request = new ResponsibilityGetTypeBreakdownRequest();
-            request.TypeUid = typeUid;
+            request.ResourceTypeUid = typeUid;
             var testedClass = new ResponsibilityGetTypeBreakdownRequestHandler(mockResponsibilityDapperRepository.Object);
 
             // act
