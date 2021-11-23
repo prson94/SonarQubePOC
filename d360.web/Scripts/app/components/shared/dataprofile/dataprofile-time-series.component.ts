@@ -95,16 +95,23 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
 
     private disableChartOptions() {
         let lastDate = new Date(this.dataProfileList[this.dataProfileList.length - 1].profileSetDate);
-
-        this.graphRangeOptions.filter((f) => !isNaN(f.value)).forEach((g) => {
+        let currentDate = new Date(this.dataProfileList[0].profileSetDate);
+        this.graphRangeOptions.forEach((g) => {
             let d = new Date();
-            d.setMonth(d.getMonth() - g.value);
-            if (lastDate > d || d > (new Date(this.dataProfileList[0].profileSetDate))) {
-                g.disabled = true;
+            if (isNaN(g.value)) {
+                d.setFullYear(d.getFullYear(), 0, 1);
+                if (g.value === "YTD" && d > currentDate) {
+                    g.disabled = true;
+                }
+            } else {                
+                d.setMonth(d.getMonth() - g.value);
+                if (lastDate > d || d > currentDate) {
+                    g.disabled = true;
+                }                
             }
             if (!g.disabled && !this.selectedGraphRangeOption) {
                 this.selectedGraphRangeOption = g.value;
-            }
+            }            
         }
         );
     }
@@ -116,6 +123,10 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
         d.setMilliseconds(0);
 
         if (this.selectedGraphRangeOption !== "C") {
+            if (!this.selectedGraphRangeOption) {
+                this.selectedGraphRangeOption = this.graphRangeOptions.filter((x) => !x.disabled)[0].value;
+            }
+
             if (isNaN(this.selectedGraphRangeOption)) {
                 if (this.selectedGraphRangeOption === "YTD") {
                     d.setMonth(0);
@@ -126,6 +137,10 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 }
             } else {
                 d.setMonth(d.getMonth() - this.selectedGraphRangeOption);
+            }
+
+            if (d < new Date(this.dataProfileList[this.dataProfileList.length - 1].profileSetDate)) {
+                d = null;
             }
 
             this.timeSeriesChart.xAxis[0].setExtremes(d?.getTime(), null);
@@ -211,10 +226,10 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                         }
 
                         if (isCustom) {
-                            this.selectedGraphRangeOption = "";
+                            this.selectedGraphRangeOption = "C";
                         }
                     }
-                }
+                },                
             },
             yAxis: {
                 title: {
@@ -227,6 +242,9 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 },
                 min: this.graphType.get(chartType)?.dataType === "percentage" ? 0 : null,
                 max: this.graphType.get(chartType)?.dataType === "percentage" ? 100 : null,
+                maxPadding: 0.5,
+                minPadding: 0.3,
+                endOnTick: false,                
             }
         };
 

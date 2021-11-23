@@ -6,8 +6,8 @@
                 <div *ngIf="!hideInfoMessage" style="margin-bottom:20px">
                     <div class="trend-icon-info-message">
                         <div class="message">
-                            Click on the sample quality bar and trend indicators <br />
-                            <span style="color:#48646a;font-size:16px"> <i class="fa fa-caret-up"></i> <i class="fa fa-caret-down"></i> <span style="font-size:0.75em">&#9670;</span></span>
+                            Click on the sample quality bar and trend indicators
+                            <span style="color:#48646a;font-size:16px"> <i class="fa fa-caret-up"></i> <i class="fa fa-caret-down"></i> <i class="fa fa-square turn"></i></span>
                             to view historical values over time.
                         </div>
                         <div class="closeIcon">
@@ -375,7 +375,7 @@
 </ng-template>
 
 <ng-template #regExpTemplate>
-    <div *ngIf="dataProfile.regExp">
+    <div *ngIf="dataProfile.regExp" class="statistic">
         <span class="summaryRow">
             <label class="ig-label">Validation Regular Expression</label>
             <ng-container *ngTemplateOutlet="validationTooltip"></ng-container>
@@ -386,7 +386,7 @@
     </div>
 </ng-template>
 
-<ng-template #blankCountTemplate>
+<ng-template #blankCountTemplate class="statistic">
     <div *ngIf="dataProfile.blankCount!=null">
         <label class="ig-label">Blank Count</label>
         <div>
@@ -399,7 +399,7 @@
 </ng-template>
 
 <ng-template #nullCountTemplate>
-    <div *ngIf="dataProfile.nullCount!=null">
+    <div *ngIf="dataProfile.nullCount!=null" class="statistic">
         <label class="ig-label">Null Count</label>
         <div>
             <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.nullCount, currentValue: dataProfile.nullCount, chartType:'nullCount'}"></ng-container>
@@ -411,7 +411,7 @@
 </ng-template>
 
 <ng-template #minTemplate>
-    <div *ngIf="dataProfile.min!=null">
+    <div *ngIf="dataProfile.min!=null" class="statistic">
         <label class="ig-label">Minimum Value</label>
         <div>
             <span *ngIf="showMinValueGraphIcon">
@@ -425,7 +425,7 @@
 </ng-template>
 
 <ng-template #maxTemplate>
-    <div *ngIf="dataProfile.max!=null">
+    <div *ngIf="dataProfile.max!=null" class="statistic">
         <label class="ig-label">Maximum Value</label>
         <div>
             <span *ngIf="showMaxValueGraphIcon">
@@ -439,7 +439,7 @@
 </ng-template>
 
 <ng-template #meanTemplate>
-    <div *ngIf="dataProfile.mean!=null">
+    <div *ngIf="dataProfile.mean!=null" class="statistic">
         <label class="ig-label">Mean</label>        
         <div>
             <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.mean, currentValue: dataProfile.mean, chartType:'mean'}"></ng-container>
@@ -451,7 +451,7 @@
 </ng-template>
 
 <ng-template #standardDeviationTemplate>
-    <div *ngIf="dataProfile.standardDeviation!=null">
+    <div *ngIf="dataProfile.standardDeviation!=null" class="statistic">
         <label class="ig-label">Standard Deviation</label>
         <div>
             <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.standardDeviation, currentValue: dataProfile.standardDeviation, chartType:'standardDeviation'}"></ng-container>
@@ -463,7 +463,7 @@
 </ng-template>
 
 <ng-template #leadingZeroCountTemplate>
-    <div *ngIf="dataProfile.leadingZeroCount!=null">
+    <div *ngIf="dataProfile.leadingZeroCount!=null" class="statistic">
         <label class="ig-label">Leading Zero Count</label>
         <div>
             <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.leadingZeroCount, currentValue: dataProfile.leadingZeroCount, chartType:'leadingZeroCount'}"></ng-container>
@@ -475,7 +475,7 @@
 </ng-template>
 
 <ng-template #minLengthTemplate>
-    <div *ngIf="dataProfile.minLength!=null">
+    <div *ngIf="dataProfile.minLength!=null" class="statistic">
         <label class="ig-label">Minimum Length</label>
         <div>
             <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.minLength, currentValue: dataProfile.minLength, chartType:'minLength'}"></ng-container>
@@ -487,7 +487,7 @@
 </ng-template>
 
 <ng-template #maxLengthTemplate>
-    <div *ngIf="dataProfile.maxLength!=null">
+    <div *ngIf="dataProfile.maxLength!=null" class="statistic">
         <label class="ig-label">Maximum Length</label>
         <div>
             <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.maxLength, currentValue: dataProfile.maxLength, chartType:'maxLength'}"></ng-container>
@@ -499,7 +499,7 @@
 </ng-template>
 
 <ng-template #multilineTemplate>
-    <div *ngIf="dataProfile.multiline!=null">
+    <div *ngIf="dataProfile.multiline!=null" class="statistic">
         <label class="ig-label">Multiline</label>
         <div class="ig-value">
             {{capitaliseBoolean(dataProfile.multiline)}}
@@ -508,7 +508,7 @@
 </ng-template>
 
 <ng-template #leadingWhiteSpaceTemplate>
-    <div *ngIf="dataProfile.leadingWhiteSpace!=null">
+    <div *ngIf="dataProfile.leadingWhiteSpace!=null" class="statistic">
         <label class="ig-label">Leading Whitespace</label>
         <div class="ig-value">
             {{capitaliseBoolean(dataProfile.leadingWhiteSpace)}}
@@ -517,7 +517,7 @@
 </ng-template>
 
 <ng-template #trailingWhiteSpaceTemplate>
-    <div *ngIf="dataProfile.trailingWhiteSpace!=null">
+    <div *ngIf="dataProfile.trailingWhiteSpace!=null" class="statistic">
         <label class="ig-label">Trailing Whitespace</label>
         <div class="ig-value">
             {{capitaliseBoolean(dataProfile.trailingWhiteSpace)}}
@@ -536,7 +536,7 @@
            tooltipStyleClass="ig-tooltip"
            tooltipPosition="left">
         <span *ngIf="dataProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue !== currentValue" class="trendIcon" style="cursor:pointer;"><i class="fa {{(previousValue>currentValue ? 'fa-caret-down' : 'fa-caret-up')}}"></i></span>
-        <span *ngIf="dataProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue === currentValue" class="trendIcon same" style="cursor:pointer;">&#9670;</span>
+        <span *ngIf="dataProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue === currentValue" class="trendIcon same" style="cursor:pointer;"><i class="fa fa-square turn"></i></span>
     </label>
 </ng-template>
 
