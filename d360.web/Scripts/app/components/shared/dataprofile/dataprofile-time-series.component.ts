@@ -124,7 +124,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
 
         if (this.selectedGraphRangeOption !== "C") {
             if (!this.selectedGraphRangeOption) {
-                this.selectedGraphRangeOption = this.graphRangeOptions.filter((x) => !x.disabled)[0].value
+                this.selectedGraphRangeOption = this.graphRangeOptions.filter((x) => !x.disabled)[0].value;
             }
 
             if (isNaN(this.selectedGraphRangeOption)) {
