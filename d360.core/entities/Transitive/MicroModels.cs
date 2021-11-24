@@ -419,14 +419,14 @@ namespace d360.core.entities
         public bool PartOfKey { get; set; }
         public bool Required { get; set; }
         public int ColumnIndex { get; set; }
-        public bool DataLoaded { get; set; } = false;
+        public bool DataLoaded { get; set; }
     }
 
     public class LoadLevelStatus
     {
         public int Level { get; set; }
         public bool Required { get; set; }
-        public bool DataLoaded { get; set; } = false;
+        public bool DataLoaded { get; set; }
     }
 
     public class LoadLevelStatusComparer : IEqualityComparer<LoadLevelStatus>

@@ -25,6 +25,7 @@ using System.IO;
 using System.Web.Http.Results;
 using d360.core;
 using DocumentFormat.OpenXml.Packaging;
+using System.Text;
 
 namespace d360.web.Controllers.V2
 {
@@ -1265,7 +1266,10 @@ from	[Load] L
                                 {
                                     var columnName = (xls.GetCellValueAsString(1, i) ?? string.Empty).Trim();
 
-                                    if (string.IsNullOrEmpty(columnName)) continue;
+                                    if (string.IsNullOrEmpty(columnName))
+                                    {
+                                        continue;
+                                    }
 
                                     if (!fieldTypeNames.Any(x => x.Name == columnName))
                                     {
@@ -1440,12 +1444,13 @@ from	[Load] L
                 }
                 else
                 {
-                    string error = "";
-                    foreach(var i in errorMessages)
+                    StringBuilder error = new StringBuilder();
+                    foreach (var i in errorMessages)
                     {
-                        error += i;
+                        error.Append(i);
                     }
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, error)).ConfigureAwait(false);
+                    string err = error.ToString();
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, err)).ConfigureAwait(false);
                 }
             }
             catch (Exception e)
