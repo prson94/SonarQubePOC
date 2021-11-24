@@ -412,4 +412,34 @@ namespace d360.core.entities
         public Guid RequestedByUid { get; set; }
     }
 
+    public class LevelField
+    {
+        public int Level { get; set; }
+        public string Name { get; set; }
+        public bool PartOfKey { get; set; }
+        public bool Required { get; set; }
+        public int ColumnIndex { get; set; }
+        public bool DataLoaded { get; set; }
+    }
+
+    public class LoadLevelStatus
+    {
+        public int Level { get; set; }
+        public bool Required { get; set; }
+        public bool DataLoaded { get; set; }
+    }
+
+    public class LoadLevelStatusComparer : IEqualityComparer<LoadLevelStatus>
+    {
+        public bool Equals(LoadLevelStatus x, LoadLevelStatus y)
+        {
+            return (x.Level == y.Level);
+        }
+
+        public int GetHashCode(LoadLevelStatus obj)
+        {
+            return obj.Level.GetHashCode();
+        }
+    }
+
 }

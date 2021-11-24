@@ -20,6 +20,12 @@ using Newtonsoft.Json;
 using Resources;
 using d360.core.enums;
 using static d360.core.entities.Resource;
+using SpreadsheetLight;
+using System.IO;
+using System.Web.Http.Results;
+using d360.core;
+using DocumentFormat.OpenXml.Packaging;
+using System.Text;
 
 namespace d360.web.Controllers.V2
 {
@@ -1131,6 +1137,321 @@ from	[Load] L
                                 )
                             )
                         );
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
+        /// <summary>
+        /// Creates a new Bulk load.
+        /// </summary>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+        /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+        /// <param name="type">The bulkload type of the load you are creating. Default is Promotion.</param>
+        /// <param name="notes">Add notes to the load.</param>
+        /// <returns></returns>
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            Route("bulkload"),
+            SwaggerConsumes("application/octet-stream"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Creates a new Bulk load.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = false),
+
+        ]
+
+        public async Task<IHttpActionResult> AddLoad(Guid? assetTypeUid = null, Guid? intersectTypeUid = null, BulkLoadType type = BulkLoadType.Promotion, string notes = "")
+        {
+            try
+            {
+                var response = new ConfirmResponse();
+                var c = await Request.Content.ReadAsMultipartAsync();
+                var bytes = await c.Contents[0].ReadAsByteArrayAsync();
+
+                var contentType = c.Contents[0].Headers.ContentType;
+                var extension = MimeTypeExtensionsMap.GetExtension(contentType.ToString());
+
+                var assetType = Company.AssetTypes.Where(r => r.uid == assetTypeUid).FirstOrDefault();
+                var intersectType = Company.IntersectTypes.Where(i => i.uid == intersectTypeUid).FirstOrDefault();
+
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+                }
+
+                Load load = null;
+                var errorMessages = new List<string>();
+                SLDocument xls;
+                string objectType = "";
+                int objectID = 0;
+                using (var stream = new MemoryStream(bytes))
+                {
+                    if (extension == ".xlsx")
+                    {
+                        if(type == BulkLoadType.Users)
+                        {
+                            objectType = "Membership";
+                            objectID = 1;
+                        }
+                        else if(type == BulkLoadType.Groups)
+                        {
+                            objectType = "Membership";
+                            objectID = 0;
+                        }
+                        else if (type == BulkLoadType.Responsibilities)
+                        {
+                            objectType = "ArtifactType";
+                            objectID = 0;
+                        }
+                        else if(intersectType != null)
+                        {
+                            objectType = "IntersectType";
+                            objectID = intersectType.ID;
+                        }
+                        else
+                        {
+                            objectType = assetType.Object;
+                            objectID = assetType.ObjectID;
+                        }
+                        
+
+                        load = new Load
+                        {
+                            File = stream.ToArray(),
+                            Action = type.GetDisplayName(),
+                            Extension = extension,
+                            Notes = notes,
+                            Object = objectType,
+                            ObjectID = objectID,
+                            DateStarted = DateTime.UtcNow,
+                            UpdatedBy = Company.CurrentResourceID,
+                            AssetTypeUid = assetTypeUid,
+                            IntersectTypeUid = intersectTypeUid
+                        };
+
+                        xls = new SLDocument(stream);
+
+                        var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);
+
+                        var stats = xls.GetWorksheetStatistics();
+                        int columnCount = 0;
+
+                        for (int i = 1; i <= stats.NumberOfColumns; i++)
+                        {
+                            var testValue = xls.GetCellValueAsString(1, i);
+                            if (string.IsNullOrEmpty(testValue))
+                            {
+                                errorMessages.Add($"Invalid column header in column {i}. ");
+                            }
+                            else
+                            {
+                                columnCount++;
+                            }
+                        }
+
+                        if (errorMessages.Count == 0)
+                        {
+                            // Spreadsheet should not have more columns than the type has, but it can have less.
+                            // Spreadsheet should only contain columns that the type has.
+                            if (columnCount <= fieldTypeNames.Count)
+                            {
+                                load.LoadColumns = new List<LoadColumn>();
+
+                                #region Loop through spreadsheet columns and make sure type has that column defined.
+                                for (var i = stats.StartColumnIndex; i <= stats.EndColumnIndex; i++)
+                                {
+                                    var columnName = (xls.GetCellValueAsString(1, i) ?? string.Empty).Trim();
+
+                                    if (string.IsNullOrEmpty(columnName))
+                                    {
+                                        continue;
+                                    }
+
+                                    if (!fieldTypeNames.Any(x => x.Name == columnName))
+                                    {
+                                        errorMessages.Add($"Unexpected column found [{columnName}]. ");
+                                    }
+                                    else
+                                    {
+
+                                        if (load.Action == "P" && load.LoadColumns.Any(l => l.Name == columnName))
+                                        {
+                                            errorMessages.Add($"Duplicate column found [{columnName}]. ");
+                                        }
+                                        else
+                                        {
+                                            load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = columnName });
+                                        }
+                                    }
+                                }
+                                #endregion
+
+                                Func<int, bool> allColumnRowsHaveValue = delegate (int columnIndex)
+                                {
+                                    bool returnValue = true;
+
+                                    if (columnIndex >= 0)
+                                    {
+                                        returnValue = stats.EndRowIndex > stats.StartRowIndex; // If there is only header row, this fails.
+
+                                        for (var i = stats.StartRowIndex + 1; i <= stats.EndRowIndex; i++)
+                                        {
+                                            if (returnValue) // Continue checking ONLY if we are still set to TRUE.
+                                            {
+                                                var rowValue = (xls.GetCellValueAsString(i, columnIndex) ?? string.Empty).Trim();
+
+                                                if (string.IsNullOrEmpty(rowValue))
+                                                {
+                                                    returnValue = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        returnValue = false;
+                                    }
+
+                                    return returnValue;
+                                };
+
+                                // This is where we do our key check, split by ordered Level.
+                                var levelFields = (
+                                                  from fl in fieldTypeNames
+                                                  select new LevelField
+                                                  {
+                                                      Level = fl.Level,
+                                                      Name = fl.Name,
+                                                      PartOfKey = fl.PartOfKey,
+                                                      Required = fl.Required,
+                                                      ColumnIndex = load.LoadColumns.Any(lc => lc.Name == fl.Name) ? load.LoadColumns.First(lc => lc.Name == fl.Name).ColumnIndex : -1
+                                                  }
+                                                  ).OrderBy(i => i.Level).ToList();
+
+                                // Determine which key/required columns are fully loaded.
+                                foreach (var lf in levelFields.Where(f => f.PartOfKey || f.Required))
+                                {
+                                    lf.DataLoaded = allColumnRowsHaveValue(lf.ColumnIndex);
+                                }
+
+                                var requiredLevels = levelFields
+                                    .Select(i => new LoadLevelStatus
+                                    {
+                                        Level = i.Level,
+                                        Required = false
+                                    })
+                                    .Distinct(new LoadLevelStatusComparer())
+                                    .OrderByDescending(l => l.Level)
+                                    .ToList();
+
+                                // Determine which levels are required.
+                                requiredLevels.ForEach(l =>
+                                {
+                                    l.DataLoaded = !levelFields.Any(f => f.Level == l.Level && (f.PartOfKey || f.Required) && !f.DataLoaded);
+
+                                    if (l.Level == 1)
+                                    {
+                                        // Level 1 is always required.
+                                        l.Required = true;
+                                    }
+                                    else
+                                    {
+                                        if (requiredLevels.Any(p => p.Level == l.Level + 1 && p.DataLoaded))
+                                        {
+                                            l.Required = true; // Since level below CURRENT is data-populated, then CURRENT is required.
+                                        }
+                                        else
+                                        {
+                                            l.Required = l.DataLoaded;
+                                        }
+                                    }
+                                });
+
+                                List<string> invalidKeyFields = new List<string>();
+                                List<string> invalidRequiredFields = new List<string>();
+
+                                // Log missing required column messages.
+                                requiredLevels.ForEach(l =>
+                                {
+                                    if (l.Required)
+                                    {
+                                        // Log any missing key field errors.
+                                        errorMessages.AddRange(
+                                            levelFields
+                                            .Where(f => f.Level == l.Level && f.PartOfKey && f.Required && f.ColumnIndex == -1)
+                                            .Select(f => $"Key column not provided [{f.Name}]. ")
+                                        );
+
+                                        // Log any missing required, non-key field errors.
+                                        errorMessages.AddRange(
+                                            levelFields
+                                            .Where(f => f.Level == l.Level && f.Required && !f.PartOfKey && f.ColumnIndex == -1)
+                                            .Select(f => $"Required column not provided [{f.Name}]. ")
+                                        );
+
+                                        // Get any key columns that do not have data populated for this level.
+                                        invalidKeyFields.AddRange(
+                                            levelFields.Where(lf => lf.Level == l.Level && lf.PartOfKey && lf.Required && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
+                                        );
+
+                                        // Get any required, non-key columns that do not have data populated for this level.
+                                        invalidRequiredFields.AddRange(
+                                            levelFields.Where(lf => lf.Level == l.Level && lf.Required && !lf.PartOfKey && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
+                                        );
+                                    }
+                                });
+
+                                if (invalidKeyFields.Count > 0)
+                                {
+                                    errorMessages.Add($"One or more values not populated for Key column{(invalidKeyFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidKeyFields)}]. ");
+                                }
+                                if (invalidRequiredFields.Count > 0)
+                                {
+                                    errorMessages.Add($"One or more values not populated for Required column{(invalidRequiredFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidRequiredFields)}]. ");
+                                }
+                            }
+                            else
+                            {
+                                errorMessages.Add("The number of columns in the spreadsheet exceeds the number of defined fields for this load type. ");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        errorMessages.Add("Incorrect file type. ");
+                    }
+                }
+
+                if (errorMessages.Count == 0)
+                {
+                    load.File = null;
+                    Company.Add<Load>(load);
+                    await Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
+                    await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(bytes));
+                    Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+                    response.message = FormControllerApiMessage.FileUploadedAndQueueProcessing;
+                    return  await Task.FromResult<IHttpActionResult>(
+                            ResponseMessage(
+                                Request.CreateResponse(
+                                    HttpStatusCode.OK, response
+                                )
+                            )
+                        );
+                }
+                else
+                {
+                    StringBuilder error = new StringBuilder();
+                    foreach (var i in errorMessages)
+                    {
+                        error.Append(i);
+                    }
+                    string err = error.ToString();
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, err)).ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {

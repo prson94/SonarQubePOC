@@ -340,6 +340,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type cannot be empty. Please select a type from the dropdown..
+        /// </summary>
+        public static string EmptyType {
+            get {
+                return ResourceManager.GetString("EmptyType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to End value {0} is not a valid IP Address.
         /// </summary>
         public static string EndIPAddressNotValid {
@@ -939,6 +948,15 @@ namespace Resources {
         public static string InvalidAssetTypeID {
             get {
                 return ResourceManager.GetString("InvalidAssetTypeID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No match found for AssetTypeUid provided..
+        /// </summary>
+        public static string InvalidAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
             }
         }
         
