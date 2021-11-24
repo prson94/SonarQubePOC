@@ -1,13 +1,11 @@
 ﻿<div *ngIf="assetID">
-    <div *ngIf="showTitle === true">
+    <div *ngIf="showTitle === true && !isLoading">
         <header>
             {{title}}
             <d3s-tile-actions [hasAdd]="hasAddResponsibilitiesPermissions()" (addClick)="add();" *ngIf="!isEditing && !isAdding && !isDeleting" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
     </div>
-    <div *ngIf="isLoading" style="width:100%; text-align:center;">
-        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-    </div>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <div *ngIf="!isEditing && !isDeleting && !isAdding">
 

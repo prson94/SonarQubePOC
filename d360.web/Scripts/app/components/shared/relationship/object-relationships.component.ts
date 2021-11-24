@@ -1,7 +1,7 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
+﻿import { Input, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipCount, RelationshipType, RelationshipTypeUIModel } from '../../../models/relationship.model';
+import { RelationshipCount, RelationshipTypeUIModel } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
@@ -66,6 +66,13 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        const hasApiParameterChanges = ('objectId' in changes || 'objectType' in changes);
+        if (!hasApiParameterChanges) {
+            return;
+        }
+
+        this.isLoading = true;
+        this.changeDetectorRef.markForCheck();
         this.objectDetailService.getObject(this.objectID, this.objectType).subscribe((res) => {
             let uid: string = '';
             if (res["Uid"]) {
@@ -92,6 +99,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     load(): void {
         this.isLoading = true;
+        this.changeDetectorRef.markForCheck();
 
         if (!this.assetTypeUid || !this.assetUid) {
             return;
@@ -109,6 +117,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         var countsSub = this.relationshipsService.getRelationshipsCountsForAsset(this.assetUid);
 
         this.loadDataSubs = forkJoin([relationshipSub, countsSub]).subscribe((res) => {
+            this.isLoading = false;
+            this.changeDetectorRef.markForCheck();
             var allItems = res[0] as RelationshipTypeUIModel[];
             var counts = res[1] as RelationshipCount[];
 
@@ -163,7 +173,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
         this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
 
-        this.isLoading = false;
         this.updateCardinality();
         this.changeDetectorRef.detectChanges();
     }

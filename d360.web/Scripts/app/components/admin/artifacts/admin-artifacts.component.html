@@ -6,7 +6,8 @@
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
             </header>
             
-            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" (onNodeSelect)="selectedItemChange()" [globalFilterFields]="['name']" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3" (onFilter)="expandNodes()" (onPage)="onPageEvent($event)">
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <p-treeTable *ngIf="!isLoading" #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" (onNodeSelect)="selectedItemChange()" [globalFilterFields]="['name']" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3" (onFilter)="expandNodes()" (onPage)="onPageEvent($event)">
                 <ng-template pTemplate="caption">
                     <div>
                         <input type="text" pInputText placeholder="Search" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
