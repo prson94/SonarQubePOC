@@ -15,33 +15,31 @@ namespace d360.web.Handlers
 {
     internal class ApplicationExceptionFilterAttribute : ExceptionFilterAttribute
     {
-        public override async Task OnExceptionAsync(HttpActionExecutedContext context, CancellationToken cancellationToken)
+        public override void OnException(HttpActionExecutedContext context)
         {
-            await Task.CompletedTask;
-
             // compose error message (probably better formatting is needed)
             var ex = context.Exception;
-            var errorMessage = ex.Message + (ex.InnerException?.Message ?? "");
+            var errorMessage = ex.Message; // + (ex.InnerException?.Message ?? "");
 
-            #region I don't understand why this trace is needed however moved it here for now... ask @pungupta
+            //#region I don't understand why this trace is needed however moved it here for now... ask @pungupta
 
-            var traceAttribute = context.ActionContext.ActionDescriptor.GetCustomAttributes<TracePrefixAttribute>().FirstOrDefault();
-            var traceScope = "UNKNOWN";
+            //var traceAttribute = context.ActionContext.ActionDescriptor.GetCustomAttributes<TracePrefixAttribute>().FirstOrDefault();
+            //var traceScope = "UNKNOWN";
 
-            if (traceAttribute != null)
-            {
-                traceScope = traceAttribute.Text;
-            }
-            else
-            {
-                var controllerName = context.ActionContext.ControllerContext.ControllerDescriptor.ControllerName;
-                var actionName = context.ActionContext.ActionDescriptor.ActionName;
-                traceScope = $"{controllerName}.{actionName}";
-            }
+            //if (traceAttribute != null)
+            //{
+            //    traceScope = traceAttribute.Text;
+            //}
+            //else
+            //{
+            //    var controllerName = context.ActionContext.ControllerContext.ControllerDescriptor.ControllerName;
+            //    var actionName = context.ActionContext.ActionDescriptor.ActionName;
+            //    traceScope = $"{controllerName}.{actionName}";
+            //}
 
-            Trace.TraceError("{0} => {1}", traceScope, errorMessage);
+            //Trace.TraceError("{0} => {1}", traceScope, errorMessage);
 
-            #endregion
+            //#endregion
 
             switch (context.Exception)
             {
