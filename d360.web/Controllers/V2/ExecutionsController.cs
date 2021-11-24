@@ -1115,10 +1115,11 @@ from	[Load] L
 		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy 
         left join (select top(1) Success, ExecutionID from api.ExecutionAsset) M on M.ExecutionID in (L.PostExecutionID, L.PutExecutionID) 
+        left join(select top(1) Success,ExecutionID from api.ExecutionAsset) EAA on  EAA.ExecutionID = L.PostExecutionID
         cross apply (select top 1 Status,ExecutionItemUid from LoadItem where LoadID = L.ID) LI 
         left join api.ExecutionRelationship ER on LI.[ExecutionItemUid] = ER.ExecutionItemUid and ER.ExecutionID = L.PostExecutionID
         left join api.ExecutionDeletedRelationship EDR on LI.[ExecutionItemUid] = EDR.ExecutionItemUid and EDR.ExecutionID = L.PostExecutionID
-        left join(select top(1) Success,ExecutionID from api.ExecutionAsset) EAA on  EAA.ExecutionID = L.PostExecutionID "
+         "
         + countSql + " where L.uid = @loadUid ) X ";
 
             try
