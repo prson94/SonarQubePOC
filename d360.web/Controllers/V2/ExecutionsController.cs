@@ -1101,7 +1101,7 @@ from	[Load] L
         E.C as Error,
         I.C as Incomplete,
 		T.C as Total,
-        case coalesce(M.Success,LI.[Status]) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
+        case coalesce(M.Success,LI.[Status],ER.Success,EDR.Success,EAA.Success) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
         R.FirstName + ' ' + R.LastName as RequestedByName,
         R.uid as RequestedByUid
 from	[Load] L
@@ -1115,7 +1115,10 @@ from	[Load] L
 		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy 
         left join (select top(1) Success, ExecutionID from api.ExecutionAsset) M on M.ExecutionID in (L.PostExecutionID, L.PutExecutionID) 
-        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI "
+        cross apply (select top 1 Status,ExecutionItemUid from LoadItem where LoadID = L.ID) LI 
+        left join api.ExecutionRelationship ER on LI.[ExecutionItemUid] = ER.ExecutionItemUid and ER.ExecutionID = L.PostExecutionID
+        left join api.ExecutionDeletedRelationship EDR on LI.[ExecutionItemUid] = EDR.ExecutionItemUid and EDR.ExecutionID = L.PostExecutionID
+        left join(select top(1) Success,ExecutionID from api.ExecutionAsset) EAA on  EAA.ExecutionID = L.PostExecutionID "
         + countSql + " where L.uid = @loadUid ) X ";
 
             try
