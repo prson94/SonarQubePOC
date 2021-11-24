@@ -1,19 +1,17 @@
 ﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, ViewChildren, QueryList, ViewEncapsulation, ViewChild, ElementRef, HostListener, AfterContentInit } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { HeaderActionsService } from '../../../services/header-actions.service';
 import { StateService } from '../../../services/state.service';
-import { FavoritesService } from '../../../services/favorites.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { SiteMenu, SiteMenuItem, SiteMenuModel, NavigationState } from '../../../models/site-menu.model';
+import { SiteMenu, SiteMenuItem, NavigationState } from '../../../models/site-menu.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { StringConstants } from "../../../static/string-constants";
 import { ActivatedRoute } from '@angular/router';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-site-menu',
@@ -32,15 +30,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     public hideNav: boolean = false;
     public isAdmin: boolean = false;
     public siteMenu: SiteMenu[] = [];
-    public favorites: SiteMenu;
 
     private adminMenu: SiteMenu;
     private configMenu: SiteMenu;
     private subSiteNav: any;
-    private subFavorites: any;
     private subParams: any;
 
-    private subReloadCounts: any;
     protected countData: any[];
 
     isScrollerVisable: boolean = false;
@@ -48,6 +43,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     scrollTitle: string = "Scroll down";
 
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
+    @ViewChildren(SiteMenuFavoritesComponent) favoritesMenuRefs: QueryList<SiteMenuFavoritesComponent>;
     @ViewChild("menu", { static: false }) menu: ElementRef;
     isMenuActive: boolean;
 
@@ -56,11 +52,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.isMenuActive = false;
     }
 
+    public activeMenu$ = new Subject();
+
     constructor(
         private authenticationService: AuthenticationService,
-        private favoritesService: FavoritesService,
-        private headerActionsService: HeaderActionsService,
-        private messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         private siteMenuService: SiteMenuService,
         private stateService: StateService,
@@ -76,20 +71,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     ngOnInit() {
         this.loadMenu();
-        this.loadFavorites();
 
-        this.subReloadCounts = this.headerActionsService.onSiteCountsChange.subscribe(() => {
-            this.rebuildCounts();
-        });
 
         this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();
         });
-
-        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
-            this.loadFavorites();
-        });
-
+        
         this.subParams = this.route.queryParams.subscribe((params) => {
             let markForCheck = false;
 
@@ -118,23 +105,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         if (this.subSiteNav) {
             this.subSiteNav.unsubscribe();
         }
-        if (this.subFavorites) {
-            this.subFavorites.unsubscribe();
-        }
+        
         if (this.subParams) {
             this.subParams.unsubscribe();
         }
-    }
-
-    clearSearches($event) {
-
-        this.menuRefs.forEach((item) => {
-            if ($event.item.title != item.title) {
-                if (item.menu)
-                    item.menu.isActiveItem = false;
-                item.clearInput();
-            }
-        });
     }
 
     doScroll() {
@@ -189,34 +163,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     @HostListener('window:resize', ['$event'])
     onResize(event) {
         this.checkScroller();
-    }
-
-    loadFavorites() {
-        if (!this.getBooleanSetting(CompanySettingEnum.ShowFavorites)) {
-            return;
-        }
-
-        this.favoritesService.getHomePageAndFavorites().subscribe(
-            homefav => {
-                this.favorites = new SiteMenu();
-                this.favorites.MenuID = StringConstants.MenuId_Favorites;
-                this.favorites.NavigationItems = [];
-
-                for (let favorite of homefav.Favorites) {
-                    let isHomePage = _.isEqual(favorite, homefav.Homepage);
-                    this.favorites.NavigationItems.push({
-                        Name: favorite.Name,
-                        Url: favorite.Route,
-                        IsLink: false,
-                        Items: null,
-                        IsHomePage: isHomePage,
-                        count: null
-                    });
-                }
-
-                this.ref.markForCheck();
-            }
-        );
     }
 
     loadMenu() {
@@ -349,16 +295,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
     }
 
-    protected clearFavorites() {
-        this.favoritesService.deleteCurrentUsersFavoritesV2().subscribe(
-            result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.loadFavorites(); // reload favorites because the user could still have global favorites.
-                this.headerActionsService.emitFavoritesChange()
-            }
-        );
-    }
-
     toggleMenu() {
         this.menuOpen = !this.menuOpen;
         this.menuChanged.emit(this.menuOpen);
@@ -366,19 +302,18 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     changeActiveMenu($event) {
         this.isMenuActive = false;
-
-        if ($event) {
-            this.menuRefs.forEach((item) => {
-                if ($event.item.title != item.title) {
-                    if (item.menu)
-                        item.menu.isActiveItem = false;
-                } else {
-                    if (item.menu && item.menu.NavigationItems && item.menu.NavigationItems.length > 0) {
-                        this.isMenuActive = true;
-                    }
+        [...Array.from(this.menuRefs), ...Array.from(this.favoritesMenuRefs)].forEach((item) => {
+            if ($event?.item?.title != item.title) {
+                if (item.menu)
+                    item.menu.isActiveItem = false;
+            } else {
+                if (item.menu) {
+                    item.menu.isActiveItem = true;
+                    this.isMenuActive = true;
                 }
-            });
-        }
+            }
+        });
+        this.activeMenu$.next($event?.item?.menu);
         this.ref.detectChanges();
     }
 

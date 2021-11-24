@@ -102,7 +102,7 @@
     }
 
     .menu-category-box {
-      display: inline-flex;
+      display: flex;
 
       > i {
         padding: 10px;
@@ -113,14 +113,14 @@
         max-height: 20px;
         margin: 10px 10px 10px 10px;
       }
+  
+      &:active {
+        background: @ig-purple-t4;
+      }
     }
 
     &:hover {
       background: @ig-purple-t5;
-    }
-
-    &:active {
-      background: @ig-purple-t4;
     }
   }
 }
@@ -335,13 +335,20 @@
     min-width: 220px;
     line-height: 18px;
 
-    .hide-menu-button {
-      margin-left: 4px;
-      background-color: @ig-grey-t5;
-      color: @ig-black;
+    .additional-buttons {
+      display: flex;
 
-      &:hover {
-        background-color: #878a98;
+      > * {
+        margin-left: 4px;
+      }
+
+      .hide-menu-button {
+        background-color: @ig-grey-t5;
+        color: @ig-black;
+
+        &:hover {
+          background-color: #878a98;
+        }
       }
     }
   }

@@ -16,12 +16,13 @@
 <div class="ig-lookup-grid-filter-container" *ngIf="filtersLoadIdentifier">
     <div class="grid-actions-header" [style.padding]="hideFilter ? '0 0 0 0' : null">
         <ng-container *ngIf="!hideFilter">
-            <div class="simple-search">
+            <div [ngClass]="minwidth ===0 ? 'simple-search' : 'flexsimple-search'">
                 <ig-search-field mode="Keypress"
                                  [debounce]="600"
                                  (onSearch)="loadData($event)"
                                  [(ngModel)]="simpleTextFilter"
-                                 [infoTooltip]="simpleSearchTooltipHTML">
+                                 [infoTooltip]="simpleSearchTooltipHTML"
+                                 [minWidth]="minwidth">
                 </ig-search-field>
             </div>
             <advanced-filtering *ngIf="showAdvancedFilterField" [externalAllocations]="externalAllocations" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>

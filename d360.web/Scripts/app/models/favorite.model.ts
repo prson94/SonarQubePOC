@@ -1,4 +1,5 @@
 ﻿export class FavoriteApiModel{
+    Id: number;
     Route: string;
     Name: string;
     Type: string;

@@ -10,9 +10,13 @@
 
     .sub-header {
       color: @igx-gray-color;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: normal;
     }
+  }
+
+  .error-message {
+    font-size: 14px;
   }
 
   .form-wrapper {
@@ -58,6 +62,12 @@
         height: 150px;
         background: @ig-lightblue-t4;
         font-family: 'Precisely', sans-serif;
+
+        .ql-blank::before {
+          font-style: normal;
+          font-size: 14px;
+          font-family: 'Precisely', sans-serif;
+        }
       }
     }
   }
@@ -128,6 +138,27 @@
     .input-wrapper {
       pointer-events: none;
       opacity: 0.33;
+    }
+  }
+
+  .ig-property-group {
+    .pg-collapsable-content {
+      padding-bottom: 30px;
+
+      .inputs-wrapper {
+        .FieldName {
+          height: 38px;
+          line-height: 49px;
+          padding-bottom: 8px;
+        }
+
+        .row:first-child {
+          .FieldName {
+            height: 24px;
+            line-height: 24px;
+          }
+        }
+      }
     }
   }
 }

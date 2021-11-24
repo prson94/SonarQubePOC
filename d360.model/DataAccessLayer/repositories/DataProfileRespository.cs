@@ -106,12 +106,13 @@ namespace d360.model.DataAccessLayer
             var dataProfileIdsSql = $@"
                                     drop table if exists #assetdataprofileids
                                     create table #assetdataprofileids (
-	                                    id bigint
+	                                    id bigint, 
+                                        ProfileSetDate Date
                                     );
                                     {descendantsSQL}
                                     insert into #assetdataprofileids
 		                            select 
-			                            ADP.id 
+			                            ADP.id, ADP.ProfileSetDate
 		                            from 
 			                            descendants A
 			                            inner join 
@@ -217,7 +218,8 @@ namespace d360.model.DataAccessLayer
                                                             lower(SampleType) = 'topk'
                                                         for json path
                                                         ) as [value]
-                                                ) topK ";
+                                                ) topK 
+                                order by ids.[ProfileSetDate] desc";
 
             dbArgs.Add("@startDate", startDate.Date);
             dbArgs.Add("@endDate", endDate.Date);
@@ -225,7 +227,7 @@ namespace d360.model.DataAccessLayer
 
             string sql = $@"
                         {dataProfileIdsSql}
-                        order by ADP.[ID]
+                        order by ADP.[ProfileSetDate] desc
 			            {offset}
                         {dataProfileSQL}
                         for Json Path";

@@ -58,7 +58,10 @@ All matches are case insensitive.
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
         this.properties.push({ Name: "infoTooltip", Type: "string", Description: "Tooltip in HTML format", Default: "" });
+        this.properties.push({ Name: "minWidth", Type: "number", Description: "The minWidth set the control width. Set 0 means not set min width. Value set in Pixels(px)", Default: "0" });
 
+
+        
         this.events = new Array();
         this.events.push({ Name: "onSearch", Description: "Fired when a search is invoked according to the set mode" });
 

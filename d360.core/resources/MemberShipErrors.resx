@@ -123,9 +123,6 @@
   <data name="CurrentPasswordWrong" xml:space="preserve">
     <value>Your password was not updated, since the provided current password does not match.</value>
   </data>
-  <data name="FavoritesListCleared" xml:space="preserve">
-    <value>Favorites List Cleared.</value>
-  </data>
   <data name="FieldTypeKeyNotFound" xml:space="preserve">
     <value>Field type for key [{0}] not found on this asset</value>
   </data>

@@ -43,7 +43,7 @@
                       (closeClick)="closeEditor()"
                       [title]="'Edit Asset'"
                       [rowID]="rowID"
-                      [assetTypePath]="gridObject?.AssetTypePath"
+                      [assetTypePath]="getAssetTypePath()"
                       [showAsModal]="true"></asset-editor>
     </d3s-modal>
 </ng-container>

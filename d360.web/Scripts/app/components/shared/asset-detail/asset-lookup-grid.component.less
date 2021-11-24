@@ -49,30 +49,37 @@
 .ig-lookup-grid-cell {
   word-break: break-word;
   word-wrap: break-word;
+  height: 25px;
 }
 
 .grid-actions-header {
-  display: inline-flex;
-  padding: 8px 0;
-  width: 100%;
+    display: inline-flex;
+    padding: 8px 0;
+    width: 100%;
 
-  .grid-action-buttons {
-    div {
-      display: inline-block;
+    .grid-action-buttons {
+        div {
+            display: inline-block;
+        }
+
+        button {
+            margin-left: 8px;
+        }
     }
 
-    button {
-      margin-left: 8px;
+    &.hidden {
+        display: none;
     }
-  }
 
-  &.hidden {
-    display: none;
-  }
+    .simple-search {
+        width: 200px;
+    }
 
-  .simple-search {
-    width: 200px;
-  }
+    .flexsimple-search {
+        display: flex;
+        min-width: 310px;
+        width: 310px;
+    }
 }
 
 .asset-grid-wrapper {

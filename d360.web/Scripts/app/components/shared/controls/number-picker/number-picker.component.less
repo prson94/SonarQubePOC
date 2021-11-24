@@ -1,181 +1,169 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
 @import "../../../../../../Content/styles/_Variables.less";
+
 ig-number-input {
-    .ig-number-input {
-        position: relative;
-
-        &.ig-input-small {
-            width: @ig-field-width-small !important;
-        }
-
-        &.ig-input-medium {
-            width: @ig-field-width-medium !important;
-        }
-
-        &.ig-input-large {
-            width: @ig-field-width-large !important;
-        }
-
-        &.ig-input-full {
-            width: @ig-field-width-full !important;
-        }
-    }
-
-    .ig-number-field {
-        font-family: @ig-field-font-family;
-        font-size: 14px;
-        color: @ig-black;
-        background: @ig-white;
-        padding: 0 32px 0 8px;
-        border: 1px solid rgba(0, 0, 0, 0.2);
-        height: @ig-field-height;
-        line-height: 30px;
-        border-radius: @ig-field-border-radius;
-        width: 100% !important;
-
-        &:enabled:focus:not(.p-state-error) {
-            outline: 0 none;
-            outline-offset: 0;
-            box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
-            border-color: @ig-field-border-color;
-        }
-
-
-        &[type=number]::-webkit-inner-spin-button,
-        &[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none !important;
-            margin: 0 !important;
-        }
-
-        &[type=number] {
-            -moz-appearance: textfield !important;
-        }
-
-        &.disabled {
-            opacity: 0.33;
-        }
-
-        &.invalid {
-            background: @ig-red-t5;
-            border-color: none;
-        }
-
-        &:required {
-            background: @ig-lightblue-t4;
-            border-color: @ig-field-border-color;
-        }
-
-        &:required:valid {
-            background: @ig-white;
-            border-color: none;
-            box-shadow: none;
-        }
-    }
-
-    &.ng-valid[required], .ng-valid.required {
-        .ig-number-field {
-            outline: 0 none;
-            outline-offset: 0;
-            box-shadow: none;
-        }
-    }
-
-    &.ng-invalid[required], .ng-invalid.required {
-        .ig-number-field {
-            background: @ig-lightblue-t4;
-            border-color: @ig-field-border-color;
-        }
-    }
-
-    &.ng-dirty.ng-invalid,
-    &.ng-touched.ng-invalid {
-        .ig-number-field.value-set {
-            background: @ig-red-t5;
-            border-color: none;
-        }
-    }
-}
-
-.ig-button-container {
-    float: right;
-    right: 4px;
-    position: absolute;
-    bottom: 0px;
-    height: 32px;
-}
-
-.ig-number-field-button {
+  .ig-number-input {
     position: relative;
-    cursor: pointer;
-    width: 24px;
-    text-align: center;
-    background: rgba(0,0,0,0.07);
-    font-size: 8px;
-    line-height: 12px;
-    color: @ig-grey;
-    -webkit-transform: translateX(-100%);
-    transform: translateX(-100%);
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    user-select: none;
 
-    &:hover {
-        background: rgba(0,0,0,0.14);
+    &.ig-input-small {
+      width: @ig-field-width-small;
     }
 
-    &:active {
-        background: rgba(0,0,0,0.21);
+    &.ig-input-medium {
+      width: @ig-field-width-medium !important;
+    }
+
+    &.ig-input-large {
+      width: @ig-field-width-large !important;
+    }
+
+    &.ig-input-full {
+      width: @ig-field-width-full !important;
+    }
+  }
+
+  .ig-number-field {
+    font-family: @ig-field-font-family;
+    font-size: 14px;
+    color: @ig-black;
+    background: @ig-white;
+    padding: 0 32px 0 8px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    height: @ig-field-height;
+    line-height: 30px;
+    border-radius: @ig-field-border-radius;
+    width: 100% !important;
+
+    &:enabled:focus:not(.p-state-error) {
+      outline: 0 none;
+      outline-offset: 0;
+      box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+      border-color: @ig-field-border-color;
+    }
+
+
+    &[type=number]::-webkit-inner-spin-button,
+    &[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none !important;
+      margin: 0 !important;
+    }
+
+    &[type=number] {
+      -moz-appearance: textfield !important;
     }
 
     &.disabled {
-        opacity: 0.33;
-        cursor: default;
-        background: rgba(0,0,0,0.07) !important;
+      opacity: 0.33;
     }
 
-    &.up {
-        position: absolute;
-        top: 4px;
-        height: 12px;
-        border-radius: 4px 4px 0px 0px;
+    &:required:not(.value-set) {
+      background: @ig-lightblue-t4;
+      border-color: @ig-field-border-color;
     }
 
-    &.down {
-        position: absolute;
-        bottom: 4px;
-        height: 12px;
-        border-radius: 0px 0px 4px 4px;
+    &:required:valid {
+      background: @ig-white;
+      border-color: none;
+      box-shadow: none;
     }
+  }
+
+  &.ng-valid[required], .ng-valid.required {
+    .ig-number-field {
+      outline: 0 none;
+      outline-offset: 0;
+      box-shadow: none;
+    }
+  }
+
+  &.ng-invalid[required], .ng-invalid.required {
+    .ig-number-field {
+      background: @ig-lightblue-t4;
+      border-color: @ig-field-border-color;
+    }
+  }
+}
+
+.ig-button-container {
+  float: right;
+  right: 4px;
+  position: absolute;
+  bottom: 0px;
+  height: 32px;
+}
+
+.ig-number-field-button {
+  position: relative;
+  cursor: pointer;
+  width: 24px;
+  text-align: center;
+  background: rgba(0,0,0,0.07);
+  font-size: 8px;
+  line-height: 12px;
+  color: @ig-grey;
+  -webkit-transform: translateX(-100%);
+  transform: translateX(-100%);
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+
+  &:hover {
+    background: rgba(0,0,0,0.14);
+  }
+
+  &:active {
+    background: rgba(0,0,0,0.21);
+  }
+
+  &.disabled {
+    opacity: 0.33;
+    cursor: default;
+    background: rgba(0,0,0,0.07) !important;
+  }
+
+  &.up {
+    position: absolute;
+    top: 4px;
+    height: 12px;
+    border-radius: 4px 4px 0px 0px;
+  }
+
+  &.down {
+    position: absolute;
+    bottom: 4px;
+    height: 12px;
+    border-radius: 0px 0px 4px 4px;
+  }
 }
 
 ::placeholder {
-    color: @ig-grey;
-    opacity: 1;
+  color: @ig-grey;
+  opacity: 1;
 }
 
 :-ms-input-placeholder {
-    color: @ig-grey;
+  color: @ig-grey;
 }
 
 ::-webkit-input-placeholder {
-    color: @ig-grey;
+  color: @ig-grey;
 }
 
 ::-ms-input-placeholder {
-    color: @ig-grey;
+  color: @ig-grey;
 }
 
 
 .ig-text-required {
-    background: @ig-red-s1;
-    padding: 3px 8px;
-    font-size: 14px;
-    color: white;
-    border-radius: 4px;
-    width: fit-content;
-    display: block;
-    margin-top: 2px;
-    line-height:18px;
+  background: @ig-red-s1;
+  padding: 3px 8px;
+  font-size: 14px;
+  color: white;
+  border-radius: 4px;
+  width: fit-content;
+  display: block;
+  margin-top: 2px;
+  line-height: 18px;
 }

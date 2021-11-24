@@ -1,4 +1,4 @@
-import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricFieldTypeViewModel, MetricAssetDefinitionViewModel, MetricRuleResultOperation, MetricMatchType, MetricPathOptionViewModel, MetricAssetDefinitionDataQualityViewModel, MetricAssetDefinitionDataQualityFilterViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -18,29 +18,8 @@ import { AppSettingsEnum } from '../../../models/settings.model';
     templateUrl: './measure-editor-dataquality.component.html',
     providers: [MetricsService, FieldsObservableService],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [`
-    .row-label{
-        margin: 0px 0px -16px 0px;
-    }
-    .conditions-row{
-        display: flex;
-    }   
-    .condition{
-        margin-left: 8px;
-        flex-shrink: 0;
-        flex-grow: 0;
-        width: 100%;
-        max-width: 150px;
-    }
-    .condition-med{
-        max-width: 308px;
-        flex-grow: 1;
-    }
-    .field-row{
-        margin-bottom: 8px;
-    }
-    `]
-
+    encapsulation: ViewEncapsulation.None,
+    styleUrls: ['measure-editor.less']
 })
 export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponent implements OnInit, OnChanges {
 
@@ -164,7 +143,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         });
 
         if (this.model.Definition && this.model.Definition.DataQuality && this.model.Definition.DataQuality.ResultPathUid) {
-            
+
             this.metricsService
                 .getRuleResultPathOptionFields(this.model.Definition.DataQuality.ResultPathUid)
                 .subscribe(fields => {

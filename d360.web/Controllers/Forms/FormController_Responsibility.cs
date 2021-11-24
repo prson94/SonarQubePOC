@@ -114,7 +114,7 @@ namespace d360.web.Controllers
 
             if (HideData3SixtyUsers())
             {
-                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com')";
+                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
             }
 
             if (resTypeId == 0 && resTypeUid != null)
@@ -210,7 +210,8 @@ namespace d360.web.Controllers
                     default:
                         break;
                 }
-                overrideID = Company.ResponsibilityTypeRelationOverrideItems.FirstOrDefault(ro => ro.ResponsibilityTypeID == responsibilityID && ro.AssetID == assetID && ro.SecurityAssetID == Resource.ObjectID && ro.SecurityAsset == resourceType).ID;
+                var responsibilityTypeRelationOverrideItem = Company.ResponsibilityTypeRelationOverrideItems.FirstOrDefault(ro => ro.ResponsibilityTypeID == responsibilityID && ro.AssetID == assetID && ro.SecurityAssetID == Resource.ObjectID && ro.SecurityAsset == resourceType);
+                overrideID = responsibilityTypeRelationOverrideItem?.ID;
             }
 
             List<SelectListItem> resources;
@@ -599,7 +600,7 @@ for json path, WITHOUT_ARRAY_WRAPPER
 
             if (HideData3SixtyUsers())
             {
-                hideUsersSql = " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com')";
+                hideUsersSql = " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com')";
             }
 
             if (type == SystemObjects.ResourceType)

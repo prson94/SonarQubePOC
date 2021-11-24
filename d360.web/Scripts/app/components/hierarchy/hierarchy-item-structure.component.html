@@ -131,7 +131,7 @@
                               [selection]="selected?.data"
                               [objectTypeUid]="assetTypeUid"
                               [parentID]="selectedParentId"
-                              [assetTypePath]="selected ? selected?.data?.Path : assetType?.Path"
+                              [assetTypePath]="getAssetPath()"
                               (saveClick)="save($event)"
                               [showAsModal]="true"
                               [isV2API]="true"
@@ -152,7 +152,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selected?.data != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selected?.data?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selected?.data?.AssetUid"
@@ -165,6 +165,7 @@
                                          [paddingLeft]="'11px'"
                                          [tooltipAlign]="'left'"
                                          [isSidePanel]="true"
+                                         [hasEditLink]="true"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
                                          [hasDeleteRelationshipsPermissions]="false"

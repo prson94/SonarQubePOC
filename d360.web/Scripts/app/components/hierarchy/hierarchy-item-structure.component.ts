@@ -102,6 +102,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     hasProfiling: boolean = false;
     dataProfile: any;
+    private dataProfileList: any[];
 
     readonly menuKey: string = '~menu';
     baseMenuItems: any[] = [
@@ -204,9 +205,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
         if (this.selected && this.selected.data && this.selected.data.HasProfiling) {
             this.sidePanelLoading = true;
-            this.dataProfileService.getDataProfiles(this.selected.data.AssetUid).subscribe(
+            let startDate = new Date();
+            startDate.setDate(-367);
+            this.dataProfileService.getDataProfiles(this.selected.data.AssetUid, startDate).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
+                        this.dataProfileList = r.items;
                         this.dataProfile = r.items[0];
 
                         forkJoin(
@@ -735,5 +739,15 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     get getNodesStateKey() {
         return "nodeState_" + this.assetTypeUid;
+    }
+
+    getAssetPath() {
+        if (this.selected && this.selected?.data?.Path) {
+            let path = this.selected.data.Path as string;
+            path = path.substring(1, path.length - 1);
+            path = path.split("].[").join(` > `);
+            return this.assetType?.Path + ' > ' + path;
+        }
+        return this.assetType?.Path;
     }
 }

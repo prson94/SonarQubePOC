@@ -16,7 +16,7 @@
             <d3s-admin-home [(companySettings)]="companySettings" [(homePageImage)]="homePageImage"></d3s-admin-home>
         </div>
         <div class="tile tile-detail">
-            <d3s-helpmenu-list [(items)]="items" [(deletedRecords)]="deletedRecords"></d3s-helpmenu-list>
+            <d3s-helpmenu-list [(addedRecords)]="addedRecords" [(items)]="items" [(deletedRecords)]="deletedRecords"></d3s-helpmenu-list>
         </div>
     </div>
     <div class="col s12 m12 l3">
@@ -40,11 +40,11 @@
             </div>
             <p-checkbox igCheckbox
                         [(ngModel)]="companySettings.HideData3SixtyUsers"
-                        label="Hide Infogix Users"
+                        label="Hide Precisely Users"
                         binary="true">
             </p-checkbox>
             <div class="directions">
-                Hide the infogix users throughout the UI.
+                Hide the precisely users throughout the UI.
             </div>
             <p-checkbox igCheckbox
                         [(ngModel)]="companySettings.ShowAllUsersAPIKey"
