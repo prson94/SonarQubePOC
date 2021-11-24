@@ -621,7 +621,12 @@ namespace d360.web.Controllers.V2
         else 
             L.DateCompleted 
         end as DateCompleted,
-        coalesce(C_D.[Name], 'Default') as AssetTypeName,
+        case 
+			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
+			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
+            when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[Deleted]')  
+			else coalesce(C_D.[Name], 'Default') 
+		end as AssetTypeName,
         C_D.[uid] as AssetTypeUid,
         L.DateStarted as DateStarted,
         coalesce(EA.ErrorMessage, '' ) + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
@@ -1091,13 +1096,18 @@ from	[Load] L
             when 'S' then 'Synonyms'
 			when 'W' then 'Promotion (via Propose Workflow)'
 		end as [Action],
-        coalesce(C_D.[Name], 'Default') as AssetTypeName,
+        case 
+			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
+			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
+            when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[Deleted]')  
+			else coalesce(C_D.[Name], 'Default') 
+		end as AssetTypeName,
         C_D.[uid] as AssetTypeUid,
         S.C as Success,
         E.C as Error,
         I.C as Incomplete,
 		T.C as Total,
-        case coalesce(M.Success,LI.[Status]) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
+        case coalesce(M.Success,LI.[Status],ER.Success,EDR.Success,EAA.Success) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status],
         R.FirstName + ' ' + R.LastName as RequestedByName,
         R.uid as RequestedByUid
 from	[Load] L
@@ -1111,7 +1121,11 @@ from	[Load] L
 		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy 
         left join (select top(1) Success, ExecutionID from api.ExecutionAsset) M on M.ExecutionID in (L.PostExecutionID, L.PutExecutionID) 
-        cross apply (select top 1 Status from LoadItem where LoadID = L.ID) LI "
+        left join(select top(1) Success,ExecutionID from api.ExecutionAsset) EAA on  EAA.ExecutionID = L.PostExecutionID
+        cross apply (select top 1 Status,ExecutionItemUid from LoadItem where LoadID = L.ID) LI 
+        left join api.ExecutionRelationship ER on LI.[ExecutionItemUid] = ER.ExecutionItemUid and ER.ExecutionID = L.PostExecutionID
+        left join api.ExecutionDeletedRelationship EDR on LI.[ExecutionItemUid] = EDR.ExecutionItemUid and EDR.ExecutionID = L.PostExecutionID
+         "
         + countSql + " where L.uid = @loadUid ) X ";
 
             try
