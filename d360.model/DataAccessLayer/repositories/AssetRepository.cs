@@ -842,7 +842,7 @@ namespace d360.model.DataAccessLayer
                     List<Tuple<int, string>> originalTypeMappings = new List<Tuple<int, string>>();
 
                     //handle field types in case "Field from relationship"
-                    foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0))
+                    foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0 && x.Type == "FieldFromRelationship"))
                     {
                         var origFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == ft.LookupObjectFieldTypeID);
                         if (origFieldType != null)
