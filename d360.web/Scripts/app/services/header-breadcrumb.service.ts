@@ -1,16 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable, forkJoin, from } from 'rxjs';
+import { Subject, Observable, forkJoin, from, BehaviorSubject } from 'rxjs';
 import { Breadcrumb } from '../models/breadcrumb.model';
 import { HttpClient } from '@angular/common/http';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, filter, map } from 'rxjs/operators';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SiteMenuService } from './site-menu.service';
 import { SiteNav } from '../models/site-menu.model';
 import { Promise } from 'core-js';
-import { resolve } from 'url';
 import { AssetStyleService } from './asset-style.service';
-import { AssetTypeStyle } from '../models/asset-type-style.model';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
@@ -32,7 +30,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     }
 
     // Observable sources
-    private breadcrumbSource = new Subject<Breadcrumb>();
+    private breadcrumbSource = new BehaviorSubject<Breadcrumb>(null);
     private breadcrumbClearSource = new Subject<boolean>();
     private breadcrumbTreeSource = new Subject<number>();
     private breadcrumbPopLastSource = new Subject<boolean>();
@@ -42,7 +40,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     private updateCurrentObjectPath = new Subject<any>();
 
     // Observable streams
-    breadcrumbs$ = this.breadcrumbSource.asObservable();
+    breadcrumbs$ = this.breadcrumbSource.asObservable().pipe(filter(x => x != null));
     breadcrumbClear$ = this.breadcrumbClearSource.asObservable();
     breadcrumbTreeSource$ = this.breadcrumbTreeSource.asObservable();
     breadcrumbPopLastSource$ = this.breadcrumbPopLastSource.asObservable();
