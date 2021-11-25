@@ -70,7 +70,10 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     ngOnInit() {
-        this.load();
+        if (!this.isLoading) {
+            this.load();
+        }
+
         this.deleteCallback = this.deleteResponsibility.bind(this);
     }
 
@@ -91,10 +94,12 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     load(): void {
-        if (this.assetUid == null)
-            return;
-
         this.isLoading = true;
+        this.ref.markForCheck();
+        
+        if (this.assetUid == null) {
+            return;
+        }
         
         this.responsibilityService.getResponsibilityDetail(this.assetUid)
             .subscribe(data => {
