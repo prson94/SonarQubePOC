@@ -24,7 +24,7 @@ namespace d360.core.entities
         [DataMember]
         public bool isEditable { get; set; }
         [DataMember]
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         [DataMember]
         public int order { get; set; }
         [DataMember]
