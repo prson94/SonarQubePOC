@@ -103,8 +103,6 @@ namespace d360.web.Models
         public bool EnableSearchExactMatch { get; set; }
         public bool EnableSagacity { get; set; }
 
-        public string HeaderBackgroundColor { get; set; }
-
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
         public List<SiteNav> SiteNav { get; set; } = new List<SiteNav>();
         public string DefaultSearchTypes { get; set; }

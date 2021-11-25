@@ -267,12 +267,6 @@
   <data name="HasRegisterLink_Name" xml:space="preserve">
     <value>Has Login Register Link</value>
   </data>
-  <data name="HeaderBackgroundColor_Desc" xml:space="preserve">
-    <value>The back color for the page header where the logo and search field appears.</value>
-  </data>
-  <data name="HeaderBackgroundColor_Name" xml:space="preserve">
-    <value>Header Background Color</value>
-  </data>
   <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
     <value>This hides Data3Sixty users from an environment, so as to not make these accounts editable.</value>
   </data>

@@ -74,15 +74,7 @@
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v11.1.0/theme.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
-    <style type="text/css">
-        nav.top{border-bottom:1px solid @(settings["HeaderBackgroundColor"]);}
-        .header-search .search-child {
-            border-bottom:1px solid @(settings["HeaderBackgroundColor"]);
-            border-right:1px solid @(settings["HeaderBackgroundColor"]);
-            border-left:1px solid @(settings["HeaderBackgroundColor"]);
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />    
     @if (!string.IsNullOrEmpty(customStylesheetURL))
     {
         <link rel="stylesheet" type="text/css" href="@customStylesheetURL" />

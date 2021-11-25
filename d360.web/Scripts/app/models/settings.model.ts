@@ -98,7 +98,6 @@ export enum CompanySettingEnum {
     CompanyIcon = 3,
     IpRestriction = 4,
     HideData3SixtyUsers = 9,
-    HeaderBackgroundColor = 10,
     DefaultSearchTypes = 13,
     DisableIssueManagement = 17,
     EnableOrganizations = 19,
