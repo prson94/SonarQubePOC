@@ -1113,6 +1113,10 @@ namespace d360.web.Controllers.V2
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
                     }
+                    if(item.order < 0)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuOrderError)).ConfigureAwait(false);
+                    }
 
                     var uid = Guid.NewGuid();
                     uids.Add(uid);
@@ -1195,6 +1199,10 @@ namespace d360.web.Controllers.V2
                     if (!visibilties.Contains(item.visibilty))
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
+                    }
+                    if (item.order < 0)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuOrderError)).ConfigureAwait(false);
                     }
 
                     if (helpItem != null)

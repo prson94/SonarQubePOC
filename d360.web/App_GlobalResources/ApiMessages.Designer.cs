@@ -844,6 +844,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Order cannot be a negative number..
+        /// </summary>
+        public static string HelpMenuOrderError {
+            get {
+                return ResourceManager.GetString("HelpMenuOrderError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Help Menu items have been successfully updated..
         /// </summary>
         public static string HelpMenuSuccess {

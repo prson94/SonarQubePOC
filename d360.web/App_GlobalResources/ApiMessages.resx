@@ -741,4 +741,7 @@
   <data name="InvalidHelpUpdateUid" xml:space="preserve">
     <value>No valid uid provided to be updated.</value>
   </data>
+  <data name="HelpMenuOrderError" xml:space="preserve">
+    <value>Order cannot be a negative number.</value>
+  </data>
 </root>
