@@ -128,7 +128,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         private cascadeService: CascadeService,
         private assetService: AssetService,
         private dynEditorService: DynEditorService,
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+        private elRef: ElementRef
     ) {
         super(settingsService);
 
@@ -153,8 +154,17 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     private setFormHeight() {
         if (this.showAsModal) {
             var groupsHeight = 0;
-            var maxHeight = window.innerHeight - 260;
+            var topPos = 260;
+            if (this.elRef.nativeElement) {
+                var els = this.elRef.nativeElement.getElementsByClassName('form-wrapper');
+                if (els[0]) {
+                    var rect = els[0].getBoundingClientRect()
+                    topPos = rect.top + 120;
+                }
+            }
+            var maxHeight = window.innerHeight - topPos;
             if (this.propertyGroups) {
+                var a = this.propertyGroups.first;
                 this.propertyGroups.forEach((pg) => {
                     var height = pg.inputContainer.nativeElement.offsetHeight;
                     groupsHeight += height !== 0 ? (height + 34) : 34;
@@ -242,6 +252,27 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.loadedAssetUid = id;
         }
         this.isLoading = true;
+
+        //if we are editing an asset we should fetch its full path
+        if (id && id.toString().length === 36) {
+            this.assetTypePath = "";
+            this.assetService.getAssetPath(id).subscribe((res) => {
+                if (res && res[0] && res[0].DisplayPath) {
+                    this.assetTypePath = res[0].DisplayPath;
+                }
+            });
+        }
+
+        //if we are adding a child of model or policy we should fetch full asset path of parent
+        if (this.parentID && (this.objectType === "Taxonomy" || this.objectType === "Policy")) {
+            this.assetTypePath = "";
+            this.assetService.getAssetPath(this.parentID.toString()).subscribe((res) => {
+                if (res && res[0] && res[0].DisplayPath) {
+                    this.assetTypePath = res[0].DisplayPath;
+                }
+            });
+        }
+
         if (this.parentID && this.parentID.toString().length === 36) {
             this.editorDefinitionService.getAssetEditorDefinition(this.objectTypeUid, this.assetUid, this.parentID.toString())
                 .subscribe((result) => {
