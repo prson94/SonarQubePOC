@@ -1,20 +1,21 @@
-﻿using System.Diagnostics;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web.Http.Filters;
-using d360.web.Controllers.V2;
 using d360.web.Models;
 using d360.web.Services;
-using d360.web.Utilities;
 using Resources;
 
-namespace d360.web.Handlers
+namespace d360.web.Filters
 {
     internal class ApplicationExceptionFilterAttribute : ExceptionFilterAttribute
     {
+        private bool SuppressNotHandledErrorDetails { get; }
+
+        public ApplicationExceptionFilterAttribute(bool suppressNotHandledErrorDetails)
+        {
+            SuppressNotHandledErrorDetails = suppressNotHandledErrorDetails;
+        }
+
         public override void OnException(HttpActionExecutedContext context)
         {
             // compose error message (probably better formatting is needed)
@@ -43,6 +44,12 @@ namespace d360.web.Handlers
 
             switch (context.Exception)
             {
+                case RestApiException restApiException:
+                    context.Response = context.Request.CreateResponse(
+                        restApiException.Status,
+                        new ErrorResponse { title = restApiException.Title, message = restApiException.Message }
+                    );
+                    break;
                 case UnauthorizedBusinessLayerException unauthorized:
                     context.Response = context.Request.CreateResponse(
                         HttpStatusCode.Unauthorized,
@@ -62,10 +69,21 @@ namespace d360.web.Handlers
                     );
                     break;
                 default:
-                    context.Response = context.Request.CreateResponse(
-                        HttpStatusCode.InternalServerError,
-                        new ErrorResponse { title = ApiMessages.UnknownError, message = errorMessage }
-                    );
+                    // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                    if (SuppressNotHandledErrorDetails)
+                    {
+                        context.Response = context.Request.CreateResponse(
+                            HttpStatusCode.InternalServerError,
+                            new ErrorResponse { title = OthersMessages.CriticalException, message = OthersMessages.NeedAdministratorHelp }
+                        );
+                    }
+                    else
+                    {
+                        context.Response = context.Request.CreateResponse(
+                            HttpStatusCode.InternalServerError,
+                            new ErrorResponse { title = ApiMessages.UnknownError, message = errorMessage }
+                        );
+                    }
                     break;
             }
         }

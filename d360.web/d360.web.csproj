@@ -562,14 +562,13 @@
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Extensions\SecurityExtensions.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
-    <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
     <Compile Include="Filters\SwaggerExcludeFilter.cs" />
     <Compile Include="Filters\SwaggerOrderFilter.cs" />
     <Compile Include="Filters\SwaggerDescriptionAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
-    <Compile Include="Handlers\ApplicationExceptionFilterAttribute.cs" />
+    <Compile Include="Filters\ApplicationExceptionFilterAttribute.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
