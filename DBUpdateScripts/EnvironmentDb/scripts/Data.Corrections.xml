@@ -1372,6 +1372,18 @@ SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
 	]]>
 		</sql>
 	</changeSet>
+	
+	<changeSet author="bquinlivan" id="Data.Corrections.GOV-16061">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+		<comment>Remove Govern setting #10 HeaderBackgroundColor.</comment>
+	<![CDATA[
+	IF EXISTS (select * from [dbo].Setting where ID = 10) 
+	BEGIN
+		DELETE FROM [dbo].[Setting] where ID = 10
+	END
+	]]>
+		</sql>
+	</changeSet>
 	<changeSet author="bquinlivan" id="Data.Corrections.GOV-16066">
 		<sql dbms="mssql" splitStatements="false" stripComments="false">
 		<comment>Remove unused Govern system settings #62 and 23.</comment>

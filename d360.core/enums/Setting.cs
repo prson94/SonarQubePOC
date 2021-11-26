@@ -58,14 +58,6 @@ namespace d360.core.enums
         ]
         HideData3SixtyUsers = 9,
         
-        [
-            DefaultValue("#54a4da"), 
-            Description("HeaderBackgroundColor_Desc", typeof(Settings)),
-            Locked(false),
-            Name("HeaderBackgroundColor_Name", typeof(Settings)),
-            Type(SettingType.Text)
-        ]
-        HeaderBackgroundColor = 10,
         
         [
             DefaultValue(""), 

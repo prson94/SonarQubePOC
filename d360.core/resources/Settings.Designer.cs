@@ -511,24 +511,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The back color for the page header where the logo and search field appears..
-        /// </summary>
-        internal static string HeaderBackgroundColor_Desc {
-            get {
-                return ResourceManager.GetString("HeaderBackgroundColor_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Header Background Color.
-        /// </summary>
-        internal static string HeaderBackgroundColor_Name {
-            get {
-                return ResourceManager.GetString("HeaderBackgroundColor_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to This hides Data3Sixty users from an environment, so as to not make these accounts editable..
         /// </summary>
         internal static string HideData3SixtyUsers_Desc {
