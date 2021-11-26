@@ -111,16 +111,7 @@ namespace d360.core.enums
             Name("DefaultRoute_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
-        DefaultRoute = 22,
-        
-        [
-            DefaultValue(true), 
-            Description("SearchExactMatch_Desc", typeof(Settings)), 
-            Locked(false),
-            Name("SearchExactMatch_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        SearchExactMatch = 23,
+        DefaultRoute = 22,       
         
         [
             DefaultValue(""), 
@@ -408,16 +399,7 @@ namespace d360.core.enums
             Name("WriteActionDescription_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
-        WriteActionDescription = 61,
-        
-        [
-            DefaultValue(false), 
-            Description("UseNewMarkitLineageGeneration_Desc", typeof(Settings)), 
-            Locked(false),
-            Name("UseNewMarkitLineageGeneration_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        UseNewMarkitLineageGeneration = 62,
+        WriteActionDescription = 61,       
         
         [
             DefaultValue("DRAFT"), 

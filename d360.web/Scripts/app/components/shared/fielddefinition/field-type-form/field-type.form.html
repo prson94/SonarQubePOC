@@ -321,7 +321,7 @@
                           *ngIf="['Text','Number','Decimal'].indexOf(currentType) > -1">
             <div class="row">
                 <div *ngIf="currentType == 'Text'"
-                     class="col s3">
+                     class="col s6">
                     <div id='PatternTip'
                          class="FieldName">
                         Validation Pattern
@@ -333,12 +333,12 @@
                            #validationPattern="ngModel"
                            [(ngModel)]="model.FieldType.Type[currentType].Validation.Pattern"
                            (change)="validatePattern(); model.FieldType.Type[currentType].Validation.MinimumValue=0;"
-                           style="width: 98%; display: block;"
+                           style="width: 99%; display: block; height:30px;"
                            class="{{(isValidationPatternValid() ? '' :'ng-dirty ng-invalid')}}" />
                     <div [hidden]="isValidationPatternValid() || validationPattern.pristine">Validation pattern is not valid Regex expression!</div>
                 </div>
                 <div *ngIf="currentType == 'Text'"
-                     class="col s3">
+                     class="col s6">
                     <div class="FieldName"
                          style="display:block">
                         &nbsp;
@@ -350,6 +350,25 @@
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
+            </div>
+            <div class="row"
+                 *ngIf="model.FieldType.Type[currentType].Validation.Pattern?.length > 0">
+                <div *ngIf="currentType == 'Text'"
+                     class="col s6">
+                    <div class="FieldNameRequired">Test Pattern</div>
+                    <input name="testPattern"
+                           pInputText
+                           type="text"
+                           [(ngModel)]="testPattern"
+                           (keydown)="validatePattern()"
+                           style="width: 99%; display: block; height:30px;" />
+                </div>
+                <div class="col s6">
+                    <div for="FieldNameRequired">&nbsp;</div>
+                    <div>{{testPatternValidationText}}</div>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col s3">
                     <div id='MinimumLengthTip'
                          class="FieldName">Minimum{{currentType == 'Text' ? "Length" : "Value"}}</div>
@@ -409,23 +428,6 @@
                            min="0"
                            max="5"
                            style="width: 98%; display: block;" />
-                </div>
-            </div>
-            <div class="row"
-                 *ngIf="model.FieldType.Type[currentType].Validation.Pattern?.length > 0">
-                <div *ngIf="currentType == 'Text'"
-                     class="col s3">
-                    <div class="FieldNameRequired">Test Pattern</div>
-                    <input name="testPattern"
-                           pInputText
-                           type="text"
-                           [(ngModel)]="testPattern"
-                           (keydown)="validatePattern()"
-                           style="width: 98%; display: block;" />
-                </div>
-                <div class="col s3">
-                    <div for="FieldNameRequired">&nbsp;</div>
-                    <div>{{testPatternValidationText}}</div>
                 </div>
             </div>
             <div class="row"
@@ -623,8 +625,7 @@
                                     </select>
                                 </td>
 
-                                <td
-                                    style="vertical-align: top">
+                                <td style="vertical-align: top">
                                     <div *ngIf="x == 0">
                                         <div>
                                             <p-checkbox binary="true"

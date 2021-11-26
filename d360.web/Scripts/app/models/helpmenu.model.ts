@@ -5,7 +5,7 @@
     Url: string;
     Description: string;
     isEditable: boolean;
-    visibilty: number;
+    visibility: number;
     order: number;
     isSystem: boolean;
 }

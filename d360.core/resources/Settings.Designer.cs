@@ -745,24 +745,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search exact match setting default value..
-        /// </summary>
-        internal static string SearchExactMatch_Desc {
-            get {
-                return ResourceManager.GetString("SearchExactMatch_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search exact match default to enabled..
-        /// </summary>
-        internal static string SearchExactMatch_Name {
-            get {
-                return ResourceManager.GetString("SearchExactMatch_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Number of minutes before the users session times out..
         /// </summary>
         internal static string SessionTimeout_Desc {
@@ -1083,24 +1065,6 @@ namespace d360.core.resources {
         internal static string UseAsTransformationLimit_Name {
             get {
                 return ResourceManager.GetString("UseAsTransformationLimit_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This setting enables the new method of generating markit lineage technical relationships..
-        /// </summary>
-        internal static string UseNewMarkitLineageGeneration_Desc {
-            get {
-                return ResourceManager.GetString("UseNewMarkitLineageGeneration_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use new Markit Lineage Generation.
-        /// </summary>
-        internal static string UseNewMarkitLineageGeneration_Name {
-            get {
-                return ResourceManager.GetString("UseNewMarkitLineageGeneration_Name", resourceCulture);
             }
         }
         

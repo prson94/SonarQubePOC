@@ -100,7 +100,6 @@ namespace d360.web.Models
         public bool EnableShoppingCart { get; set; }
         public bool EnableOrganizations { get; set; }
         public string DefaultRoute { get; set; }
-        public bool EnableSearchExactMatch { get; set; }
         public bool EnableSagacity { get; set; }
 
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
@@ -715,7 +714,7 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         public int order { get; set; }
         public Guid uid { get; set; }
         public bool isEditable { get; set; }
@@ -727,7 +726,7 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         public int order { get; set; }
         public Guid uid { get; set; }
     }
@@ -737,7 +736,7 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         public int order { get; set; }
     }
 

@@ -37,8 +37,7 @@ export class HomeSearchComponent extends BaseComponent {
         super(settingsService);        
     }
 
-    ngOnInit() {
-        this.isExactMatch = this.settingsService.getSettingById(CompanySettingEnum.SearchExactMatch).BooleanSetting.Value;
+    ngOnInit() {        
         this.searchTypes = (this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).ScalarValue ?? "").split(',');
     }
 
