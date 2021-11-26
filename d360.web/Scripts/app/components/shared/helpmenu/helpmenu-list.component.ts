@@ -127,7 +127,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         newItem.Name = name;
         newItem.Url = url;
         newItem.Description = description;
-        newItem.visibilty = 1;
+        newItem.visibility = 1;
         newItem.order = this.items.length;
         newItem.isEditable = true;
         newItem.isSystem = false;
@@ -247,10 +247,10 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     visibilityItems(item: any): any[] {
-        if (item.visibilty === 1) {
+        if (item.visibility === 1) {
             return this.visibleVisibilityItems;
         }
-        else if (item.visibilty === 2) {
+        else if (item.visibility === 2) {
             return this.adminVisibilityItems;
         }
         else {
@@ -284,13 +284,13 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     changeVisibility(e: any, item: any) {
         switch (e.value.toLowerCase()) {
             case "visible":
-                item.visibilty = 1;
+                item.visibility = 1;
                 break;
             case "visible to admins only":
-                item.visibilty = 2;
+                item.visibility = 2;
                 break;
             case "hidden":
-                item.visibilty = 3;
+                item.visibility = 3;
                 break;
         }
     }

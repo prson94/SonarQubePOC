@@ -1049,7 +1049,7 @@ namespace d360.web.Controllers.V2
                         help.Url = item.Url;
                     }
                     help.order = item.order;
-                    help.visibilty = item.visibilty;
+                    help.visibility = item.visibility;
                     help.uid = (Guid)item.uid;
                     help.isEditable = item.isEditable;
                     help.isSystem = item.isSystem;
@@ -1109,7 +1109,7 @@ namespace d360.web.Controllers.V2
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
                     }
-                    if (!visibilties.Contains(item.visibilty))
+                    if (!visibilties.Contains(item.visibility))
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
                     }
@@ -1127,7 +1127,7 @@ namespace d360.web.Controllers.V2
                         Url = item.Url,
                         uid = uid,
                         isEditable = true,
-                        visibilty = item.visibilty,
+                        visibility = item.visibility,
                         order = item.order,
                         isSystem = false
                     });
@@ -1196,7 +1196,7 @@ namespace d360.web.Controllers.V2
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
                     }
-                    if (!visibilties.Contains(item.visibilty))
+                    if (!visibilties.Contains(item.visibility))
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
                     }
@@ -1211,7 +1211,7 @@ namespace d360.web.Controllers.V2
                         helpItem.Description = item.Description;
                         helpItem.Name = item.Name;
                         helpItem.order = item.order;
-                        helpItem.visibilty = item.visibilty;
+                        helpItem.visibility = item.visibility;
                         if (!helpItem.isSystem)
                         {
                             helpItem.Url = item.Url;

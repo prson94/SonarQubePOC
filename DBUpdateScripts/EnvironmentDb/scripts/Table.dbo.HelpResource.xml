@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Table.dbo.Help-v3">
+  <changeSet author="sDooley" id="Table.dbo.Help-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -69,6 +69,11 @@ begin
 	CONSTRAINT DF_HelpResource_isSystem DEFAULT 0
 	WITH VALUES
 end
+
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'HelpResource' and COLUMN_NAME = 'visibilty')
+BEGIN
+	EXEC sp_rename 'dbo.HelpResource.visibilty', 'visibility', 'COLUMN';
+END
 		]]>
     </sql>	
   </changeSet>

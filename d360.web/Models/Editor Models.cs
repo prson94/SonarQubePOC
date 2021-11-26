@@ -716,7 +716,7 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         public int order { get; set; }
         public Guid uid { get; set; }
         public bool isEditable { get; set; }
@@ -728,7 +728,7 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         public int order { get; set; }
         public Guid uid { get; set; }
     }
@@ -738,7 +738,7 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         public int order { get; set; }
     }
 
