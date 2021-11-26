@@ -339,7 +339,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     let category = new EditorCategory();
                     category.name = currentCategory;
                     category.rows = [];
-                    if (currentCategory === "") {
+                    if (currentCategory === "" || currentCategory === "General") {
                         this.categories.unshift(category);
                     }
                     else {
