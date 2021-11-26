@@ -351,12 +351,6 @@
   <data name="RequestCertificationDraft_Name" xml:space="preserve">
     <value>Status values that determine if request certification button is available</value>
   </data>
-  <data name="SearchExactMatch_Desc" xml:space="preserve">
-    <value>Search exact match setting default value.</value>
-  </data>
-  <data name="SearchExactMatch_Name" xml:space="preserve">
-    <value>Search exact match default to enabled.</value>
-  </data>
   <data name="SessionTimeout_Desc" xml:space="preserve">
     <value>Number of minutes before the users session times out.</value>
   </data>
@@ -464,12 +458,6 @@
   </data>
   <data name="UseAsTransformationLimit_Name" xml:space="preserve">
     <value>Use As Transformation Limit</value>
-  </data>
-  <data name="UseNewMarkitLineageGeneration_Desc" xml:space="preserve">
-    <value>This setting enables the new method of generating markit lineage technical relationships.</value>
-  </data>
-  <data name="UseNewMarkitLineageGeneration_Name" xml:space="preserve">
-    <value>Use new Markit Lineage Generation</value>
   </data>
   <data name="WorkflowCatchAllGroup_Desc" xml:space="preserve">
     <value>This setting controls which group of users should get emails if responsibilities in a workflow end up resulting in no user getting the workflow assigment. If 0 or undefined all administrators in a region will get the assignments.</value>

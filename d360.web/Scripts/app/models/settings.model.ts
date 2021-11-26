@@ -19,7 +19,6 @@ export class CompanySettings {
     DisableCommunityPosting: boolean;
     DisableIssueManagement: boolean;
     EnableOrganizations: boolean;
-    EnableSearchExactMatch: boolean;
     EnableShoppingCart: boolean;
     FramingDomains: string;
     HideData3SixtyUsers: boolean;
@@ -105,7 +104,6 @@ export enum CompanySettingEnum {
     EnableShoppingCart = 20,
     EnableSagacity = 21,
     DefaultRoute = 22,
-    SearchExactMatch = 23,
     CustomCSSLocation = 24,
     AzureADTenant = 25,
     AzureGraphAPIKey = 26,
@@ -138,7 +136,6 @@ export enum CompanySettingEnum {
     WorkflowCatchAllGroup = 58,
     MaxDropdownItems = 60,
     WriteActionDescription = 61,
-    UseNewMarkitLineageGeneration = 62,
     RequestCertificationDraft = 64,
     UseAsTransformationLimit = 69,
     MaxExcelExportRows = 71,

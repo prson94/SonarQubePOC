@@ -105,7 +105,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.DisableIssueManagement = this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement);
         this.companySettings.FramingDomains = this.getStringSetting(CompanySettingEnum.FramingDomains);
         this.companySettings.EnableOrganizations = this.getBooleanSetting(CompanySettingEnum.EnableOrganizations);
-        this.companySettings.EnableSearchExactMatch = this.getBooleanSetting(CompanySettingEnum.SearchExactMatch);
         this.companySettings.HideData3SixtyUsers = this.getBooleanSetting(CompanySettingEnum.HideData3SixtyUsers);
         this.companySettings.HideHeaderBarControls = this.getBooleanSetting(CompanySettingEnum.HideHeaderBarControls);
         this.companySettings.HomePageBackgroundImage = this.getStringSetting(CompanySettingEnum.HomePageBackgroundImage);
@@ -250,12 +249,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             SettingID: CompanySettingEnum.EnableOrganizations,
             BooleanSetting: { Value: this.companySettings.EnableOrganizations },
             StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
-        });
-        settings.push({
-            SettingID: CompanySettingEnum.SearchExactMatch,
-            BooleanSetting: { Value: this.companySettings.EnableSearchExactMatch },
-            StringSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
-        });
+        });        
         settings.push({
             SettingID: CompanySettingEnum.FramingDomains,
             StringSetting: { Value: this.companySettings.FramingDomains },
