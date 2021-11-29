@@ -1174,7 +1174,7 @@ from	[Load] L
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = false),
+            SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
 
         ]
 
