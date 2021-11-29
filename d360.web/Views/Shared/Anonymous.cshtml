@@ -35,7 +35,7 @@
     }
 
     @RenderSection("TopJs", false)
-<style>
+    <style>
         .loginlogo {
             background-image: url(@(companyLogo));
             background-repeat: no-repeat;
@@ -51,10 +51,28 @@
         .form-tools {
             margin-top: 20px;
         }
-</style>
+
+        footer {
+            position: absolute;
+            padding: 16px;
+            bottom: 0;
+            left: 0;
+        }
+
+        footer .copyright {
+            font-size: 14px;
+            color: #202020;
+        }
+    </style>
 
 
     @RenderSection("TopCss", false)
 </head>
-@RenderBody()
+<body>
+    <span class="loginlogo"><span class="background"></span></span>
+    @RenderBody()
+    <footer>
+        <div class="copyright">Copyright 2014, @DateTime.UtcNow.Year Precisely</div>
+    </footer>
+</body>
 </html>

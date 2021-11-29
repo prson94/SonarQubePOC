@@ -15,36 +15,33 @@
 @section TopCss {
 
 }
-<body class="loginBody">
-    <span class="loginlogo"><span class="background"></span></span>
-    <div id="loginForm">
-        <span class="loginlogo form-logo"></span>
-        @Html.ValidationSummary()
+<div id="loginForm">
+    <span class="loginlogo form-logo"></span>
+    @Html.ValidationSummary()
 
-        <div class="form-wrapper">
-            @using (Html.BeginForm())
-            {
-                @Html.AntiForgeryToken()
-                <label>Username</label>
-                <input type="text" id="UserName" name="UserName" required pattern=".{10,}" title="Username must be at least 10 characters long." style="width:100%" />
-                @Html.ValidationMessageFor(m => m.UserName)
-                <label>Password</label>
-                <input type="password" id="Password" name="Password" autocomplete="off" required pattern=".{6,}" title="Password must be at least 6 characters long." style="width:100%" />
-                @Html.ValidationMessageFor(m => m.Password)
+    <div class="form-wrapper">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            <label>Username</label>
+            <input type="text" id="UserName" name="UserName" required pattern=".{10,}" title="Username must be at least 10 characters long." style="width:100%" />
+            @Html.ValidationMessageFor(m => m.UserName)
+            <label>Password</label>
+            <input type="password" id="Password" name="Password" autocomplete="off" required pattern=".{6,}" title="Password must be at least 6 characters long." style="width:100%" />
+            @Html.ValidationMessageFor(m => m.Password)
 
-                <div class="actions">
-                    <div>
-                        <a href="reset">Forgot your Password?</a>
-                        @if (hasRegister)
-                        {
-                            @: &#124;&nbsp;<a href="register">Register</a>
-                        }
-                    </div>
-                    <div>
-                        <input id="loginButton" type="submit" value="Sign in" tabindex="3" />
-                    </div>
+            <div class="actions">
+                <div>
+                    <a href="reset">Forgot your Password?</a>
+                    @if (hasRegister)
+                    {
+                        @: &#124;&nbsp;<a href="register">Register</a>
+                    }
                 </div>
-            }
-        </div>
+                <div>
+                    <input id="loginButton" type="submit" value="Sign in" tabindex="3" />
+                </div>
+            </div>
+        }
     </div>
-</body>
+</div>
