@@ -157,7 +157,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         }
 
         for (let relation of this.relationshipItems) {
-            relation.TypeName = this.getRelName(relation).toUpperCase();
+            relation.TypeName = this.getRelName(relation);
         }
 
         this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1; });
