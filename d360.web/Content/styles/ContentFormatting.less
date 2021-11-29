@@ -322,8 +322,14 @@ button.WhiteButton {
   overflow: auto;
 }
 
-.maincontent-second .main-panel {
-  height: calc(100vh - 190px);
+.maincontent-second {
+  .main-panel {
+    height: calc(100vh - 190px);
+  }
+
+  .side-panel {
+    height: calc(100vh - 190px);
+  }
 }
 
 .modal-with-side-panel {
@@ -428,11 +434,6 @@ button.WhiteButton {
     }
   }
 }
-
-.maincontent-second .side-panel {
-  height: calc(100vh - 190px);
-}
-
 
 .tile-clickable {
   cursor: pointer;
