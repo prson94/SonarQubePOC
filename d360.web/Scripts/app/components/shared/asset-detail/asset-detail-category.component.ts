@@ -6,8 +6,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'ig-asset-detail-category',
     templateUrl: './asset-detail-category.component.html',
-    styles: [`.category-column { display:inline-grid; margin-right:40px;max-height: 300px; overflow-x: hidden;padding-bottom: 4px; }
-              .category-column .ig-label { word-break: break-word; }`]
+    styleUrls: ['./asset-detail-category.component.less']
 })
 
 export class AssetDetailCategoryComponent {

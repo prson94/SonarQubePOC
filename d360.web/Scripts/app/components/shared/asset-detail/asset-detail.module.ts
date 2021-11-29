@@ -25,6 +25,7 @@ import { SearchFieldModule } from "../controls/search-field/search-field.compone
 import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.module";
 import { PeopleResponsibilitiesModule } from "../responsibilities/people-responsibilities.tile";
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
+import { PortalsModule } from "../portals/portals.module";
 
 
 @NgModule({
@@ -48,6 +49,7 @@ import { DynamicFieldNameModule } from "../dynamic-field-name.component";
         ScoreBadgeModule,
         PeopleResponsibilitiesModule,
         DynamicFieldNameModule,
+        PortalsModule
     ],
     declarations: [
         AssetDetailFieldComponent,

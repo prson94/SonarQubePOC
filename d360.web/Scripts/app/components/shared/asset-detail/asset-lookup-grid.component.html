@@ -39,9 +39,15 @@
             </div>
         </ng-container>
     </div>
-    <div class="asset-grid-export-link" *ngIf="hideFilter">
-        <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>
-    </div>
+    <ng-container *ngIf="hideFilter">
+        <ig-portal-content-provider [name]="field.Name + 'asset-detail-category/label-right'" [template]="assetGridExportLink">
+            <ng-template #assetGridExportLink>
+                <div class="asset-grid-export-link">
+                    <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>
+                </div>
+            </ng-template>
+        </ig-portal-content-provider>
+    </ng-container>
 </div>
 <div>
     <p-table #dt
