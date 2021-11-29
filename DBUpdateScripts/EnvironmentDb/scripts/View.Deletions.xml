@@ -32,4 +32,16 @@ drop view if exists [reporting].[RuleImplementations_ResultQualifiers]
 	<rollback></rollback>
   </changeSet>
 
+<changeSet author="Puneet Gupta" id="View.Deletions.reporting.RuleImplementations_Results-v1.1">
+<comment>GOV-12938</comment>
+<sql dbms="mssql"
+		endDelimiter="\nGO"
+		splitStatements="true"
+		stripComments="false">
+	<![CDATA[
+			drop view if exists [reporting].[RuleImplementations_Results];
+	]]>
+</sql>
+<rollback></rollback> 
+</changeSet>
 </databaseChangeLog>
