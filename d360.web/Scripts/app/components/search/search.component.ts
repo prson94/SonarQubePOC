@@ -49,6 +49,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
     private dataProfileList: any[];
     public advancedFiltersLoaded: boolean = false;
 
+    showEditor: boolean = false;
+
     public extraButtons: SidePanelButton[] = [new SidePanelButton({
         label: 'Filters',
         tooltip: 'Filters',
@@ -295,5 +297,10 @@ export class SearchComponent extends BaseComponent implements OnInit {
             this.searchStateService.connector = this.parseConnector(this.advancedFilter.conditions.connector);
             this.doSearch(true);
         }
+    }
+
+    saveItem() {
+        this.showEditor = false;
+        this.doSearch(true);
     }
 }

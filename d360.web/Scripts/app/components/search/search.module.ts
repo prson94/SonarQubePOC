@@ -42,6 +42,8 @@ import { PreviewpopupModule } from '../shared/previewpopup/previewpopup.module';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { AssetDetailModule } from "../shared/asset-detail/asset-detail.module";
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
+import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
 
 @NgModule({
     imports: [
@@ -84,6 +86,8 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
         AssetDetailModule,
         DataProfileModule,
         PopupMenuModule,
+        SiteModalModule,
+        AssetEditorModule
     ],
     declarations: [
         HomeSearchComponent,
