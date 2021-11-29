@@ -48,192 +48,189 @@
         }
     </style>
 }
-<body class="loginBody">
-    <span class="loginlogo"><span class="background"></span></span>
-    <div id="loginForm">
-        <span class="loginlogo form-logo"></span>
-        @Html.Raw(System.Web.HttpUtility.HtmlDecode((Html.ValidationSummary(false) ?? (object)"").ToString()))
+<div id="loginForm">
+    <span class="loginlogo form-logo"></span>
+    @Html.Raw(System.Web.HttpUtility.HtmlDecode((Html.ValidationSummary(false) ?? (object)"").ToString()))
 
-        @*Html.ValidationSummary()*@
+    @*Html.ValidationSummary()*@
 
-        @if (Model.Step == RegisterStep.Initial)
+    @if (Model.Step == RegisterStep.Initial)
+    {
+        using (Html.BeginForm())
         {
-            using (Html.BeginForm())
-            {
-                <input type="hidden" id="Step" name="Step" value="@Model.Step" />
-                <input type="hidden" id="FirstName" name="FirstName" value="" />
-                <input type="hidden" id="LastName" name="LastName" value="" />
-                <input type="hidden" id="Password" name="Password" value="" />
-                <input type="hidden" id="ConfirmPassword" name="ConfirmPassword" value="" />
-                <input type="hidden" id="Accept" name="Accept" value="@Model.Accept" />
-                <div class="row">
-                    <div class="col s12 directions">
-                        Please provide the information below to begin your registration process to Data360.
-                    </div>
+            <input type="hidden" id="Step" name="Step" value="@Model.Step" />
+            <input type="hidden" id="FirstName" name="FirstName" value="" />
+            <input type="hidden" id="LastName" name="LastName" value="" />
+            <input type="hidden" id="Password" name="Password" value="" />
+            <input type="hidden" id="ConfirmPassword" name="ConfirmPassword" value="" />
+            <input type="hidden" id="Accept" name="Accept" value="@Model.Accept" />
+            <div class="row">
+                <div class="col s12 directions">
+                    Please provide the information below to begin your registration process to Data360.
                 </div>
-                <div class="row">
-                    <div class="col s12">
-                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.Email)</div>
-                        <input type="text" id="Email" placeholder="Value required" name="Email" value="@Model.Email" required pattern=".{10,}" title="Email must be at least 10 characters long." style="width:100%" />
-                    </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.Email)</div>
+                    <input type="text" id="Email" placeholder="Value required" name="Email" value="@Model.Email" required pattern=".{10,}" title="Email must be at least 10 characters long." style="width:100%" />
                 </div>
-                <div class="row form-tools">
-                    <div class="col s12">
-                        <input id="loginButton" type="submit" value="Register" tabindex="3" style="width:25%; min-width: 100px" />
-                        @if (!Model.IsUsingActiveDirectory)
-                        {
-                            <a href="/registration">&nbsp; Already have a registration code?</a>
-                        }
-                    </div>
-                </div>
-            }
-        }
-
-        @if (Model.Step == RegisterStep.Email)
-        {
-            <div>@Model.Message</div>
+            </div>
             <div class="row form-tools">
                 <div class="col s12">
-                    <input type="submit" value="Next" tabindex="3" style="width:25%; min-width: 100px" onclick="window.location.href='/registration'" />
+                    <input id="loginButton" type="submit" value="Register" tabindex="3" style="width:25%; min-width: 100px" />
+                    @if (!Model.IsUsingActiveDirectory)
+                    {
+                        <a href="/registration">&nbsp; Already have a registration code?</a>
+                    }
                 </div>
             </div>
         }
+    }
 
-        @if (Model.Step == RegisterStep.Registration)
+    @if (Model.Step == RegisterStep.Email)
+    {
+        <div>@Model.Message</div>
+        <div class="row form-tools">
+            <div class="col s12">
+                <input type="submit" value="Next" tabindex="3" style="width:25%; min-width: 100px" onclick="window.location.href='/registration'" />
+            </div>
+        </div>
+    }
+
+    @if (Model.Step == RegisterStep.Registration)
+    {
+        using (Html.BeginForm("Register", "Authentication", FormMethod.Post))
         {
-            using (Html.BeginForm("Register", "Authentication", FormMethod.Post))
-            {
-                <input type="hidden" id="Step" name="Step" value="@Model.Step" />
-                <input type="hidden" id="Accept" name="Accept" value="@Model.Accept" />
-                <input type="hidden" id="Email" name="Email" value="xxx@xxx.com" />
+            <input type="hidden" id="Step" name="Step" value="@Model.Step" />
+            <input type="hidden" id="Accept" name="Accept" value="@Model.Accept" />
+            <input type="hidden" id="Email" name="Email" value="xxx@xxx.com" />
 
-                <div class="row">
-                    <div class="col s12">
-                        <div class="FieldNameRequired">Registration Code</div>
-                        <input type="text" id="RegistrationID" name="RegistrationID" value="@Model.RegistrationID" required style="width: 100%" />
-                    </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="FieldNameRequired">Registration Code</div>
+                    <input type="text" id="RegistrationID" name="RegistrationID" value="@Model.RegistrationID" required style="width: 100%" />
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.FirstName)</div>
-                        <input type="text" id="FirstName" name="FirstName" value="@Model.FirstName" required pattern=".{2,}" title="First name must be at least 2 characters long." style="width:100%" />
-                    </div>
-                    <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.LastName)</div>
-                        <input type="text" id="LastName" name="LastName" value="@Model.LastName" required pattern=".{2,}" title="Last name must be at least 2 characters long." style="width:100%" />
-                    </div>
+            <div class="row">
+                <div class="col l6 m6 s12">
+                    <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.FirstName)</div>
+                    <input type="text" id="FirstName" name="FirstName" value="@Model.FirstName" required pattern=".{2,}" title="First name must be at least 2 characters long." style="width:100%" />
                 </div>
-                <div class="row">
-                    <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.Password)</div>
-                        <input type="password" id="Password" name="Password" autocomplete="off" required style="width:100%" />
-                    </div>
-                    <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.ConfirmPassword)</div>
-                        <input type="password" id="ConfirmPassword" name="ConfirmPassword" required style="width:100%" />
-                    </div>
+                <div class="col l6 m6 s12">
+                    <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.LastName)</div>
+                    <input type="text" id="LastName" name="LastName" value="@Model.LastName" required pattern=".{2,}" title="Last name must be at least 2 characters long." style="width:100%" />
                 </div>
-                <div class="row form-tools">
-                    <div class="col s12">
-                        <input id="loginButton" type="submit" value="Register" tabindex="3" style="width:25%; min-width: 100px" />
-                    </div>
+            </div>
+            <div class="row">
+                <div class="col l6 m6 s12">
+                    <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.Password)</div>
+                    <input type="password" id="Password" name="Password" autocomplete="off" required style="width:100%" />
                 </div>
-            }
+                <div class="col l6 m6 s12">
+                    <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.ConfirmPassword)</div>
+                    <input type="password" id="ConfirmPassword" name="ConfirmPassword" required style="width:100%" />
+                </div>
+            </div>
+            <div class="row form-tools">
+                <div class="col s12">
+                    <input id="loginButton" type="submit" value="Register" tabindex="3" style="width:25%; min-width: 100px" />
+                </div>
+            </div>
+        }
+    }
+
+    @if (Model.Step == RegisterStep.ADRegistration)
+    {
+        <div>Please complete the form below:</div>
+        using (Html.BeginForm("Register", "Authentication", FormMethod.Post))
+        {
+            <input type="hidden" id="Step" name="Step" value="@Model.Step" />
+            <input type="hidden" id="Accept" name="Accept" value="@Model.Accept" />
+            <input type="hidden" id="Email" name="Email" value="xxx@xxx.com" />
+            <input type="hidden" id="RegistrationID" name="RegistrationID" value="@Model.RegistrationID" />
+
+            <div class="row">
+                <div class="col l6 m6 s12">
+                    <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.FirstName)</div>
+                    <input type="text" id="FirstName" name="FirstName" value="@Model.FirstName" required pattern=".{2,}" title="First name must be at least 2 characters long." style="width:100%" />
+                </div>
+                <div class="col l6 m6 s12">
+                    <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.LastName)</div>
+                    <input type="text" id="LastName" name="LastName" value="@Model.LastName" required pattern=".{2,}" title="Last name must be at least 2 characters long." style="width:100%" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col l6 m6 s12">
+                    <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.Title)</div>
+                    <input type="text" id="Title" name="Title" value="@Model.Title" required pattern=".{2,}" title="Title name must be at least 2 characters long." style="width:100%" />
+                </div>
+            </div>
+
+            <div class="row form-tools">
+                <div class="col s12">
+                    <input id="loginButton" type="submit" value="Register" tabindex="3" style="width:25%; min-width: 100px" />
+                </div>
+            </div>
+        }
+    }
+
+    @if (Model.Step == RegisterStep.TermsOfUse)
+    {
+        <div>Please read the terms of use below, then click Accept.</div>
+
+        if (Model.Contracts == null)
+        {
+            Model.Contracts = new List<d360.web.Models.ContractRegisterModel>();
         }
 
-        @if (Model.Step == RegisterStep.ADRegistration)
+        for (int i = 0; i < Model.Contracts.Count; i++)
         {
-            <div>Please complete the form below:</div>
-            using (Html.BeginForm("Register", "Authentication", FormMethod.Post))
+            var isLastContract = (i == Model.Contracts.Count - 1);
+            if (!isLastContract)
             {
-                <input type="hidden" id="Step" name="Step" value="@Model.Step" />
-                <input type="hidden" id="Accept" name="Accept" value="@Model.Accept" />
-                <input type="hidden" id="Email" name="Email" value="xxx@xxx.com" />
-                <input type="hidden" id="RegistrationID" name="RegistrationID" value="@Model.RegistrationID" />
-
-                <div class="row">
-                    <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.FirstName)</div>
-                        <input type="text" id="FirstName" name="FirstName" value="@Model.FirstName" required pattern=".{2,}" title="First name must be at least 2 characters long." style="width:100%" />
+                <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
+                    <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
+                        @Html.Raw(Model.Contracts[i].Contract.Body)
                     </div>
-                    <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.LastName)</div>
-                        <input type="text" id="LastName" name="LastName" value="@Model.LastName" required pattern=".{2,}" title="Last name must be at least 2 characters long." style="width:100%" />
+                    <div style="margin-bottom: 10px">
+                        @Html.CheckBox("Accept", Model.Contracts[i].Accept, new { onclick = "document.getElementById('accept" + i + "').disabled = !this.checked" }) Accept?
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">@Html.DisplayNameFor(m => m.Title)</div>
-                        <input type="text" id="Title" name="Title" value="@Model.Title" required pattern=".{2,}" title="Title name must be at least 2 characters long." style="width:100%" />
-                    </div>
-                </div>
-
-                <div class="row form-tools">
-                    <div class="col s12">
-                        <input id="loginButton" type="submit" value="Register" tabindex="3" style="width:25%; min-width: 100px" />
+                    <div class="form-tools">
+                        <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="document.getElementById('contract@(i)').style.display = 'none'; document.getElementById('contract@(i + 1)').style.display = 'block';" />
                     </div>
                 </div>
             }
-        }
-
-        @if (Model.Step == RegisterStep.TermsOfUse)
-        {
-            <div>Please read the terms of use below, then click Accept.</div>
-
-            if (Model.Contracts == null)
+            else
             {
-                Model.Contracts = new List<d360.web.Models.ContractRegisterModel>();
-            }
-
-            for (int i = 0; i < Model.Contracts.Count; i++)
-            {
-                var isLastContract = (i == Model.Contracts.Count - 1);
-                if (!isLastContract)
+                using (Html.BeginForm())
                 {
+                    <input type="hidden" id="Step" name="Step" value="@Model.Step" />
+                    <input type="hidden" id="Email" name="Email" value="@Model.Email" />
+                    <input type="hidden" id="FirstName" name="FirstName" value="@Model.FirstName" />
+                    <input type="hidden" id="LastName" name="LastName" value="@Model.LastName" />
+                    <input type="hidden" id="Title" name="Title" value="@Model.Title" />
+                    <input type="hidden" id="RegistrationID" name="RegistrationID" value="@Model.RegistrationID" />
+
                     <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
                         <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
                             @Html.Raw(Model.Contracts[i].Contract.Body)
                         </div>
                         <div style="margin-bottom: 10px">
-                            @Html.CheckBox("Accept", Model.Contracts[i].Accept, new { onclick = "document.getElementById('accept" + i + "').disabled = !this.checked" }) Accept?
+                            @Html.CheckBox("Accept", Model.Accept ?? false, new { onclick = "document.getElementById('accept" + i + "').disabled = !this.checked" }) Accept?
                         </div>
                         <div class="form-tools">
-                            <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" onclick="document.getElementById('contract@(i)').style.display = 'none'; document.getElementById('contract@(i + 1)').style.display = 'block';" />
+                            <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" />
                         </div>
                     </div>
                 }
-                else
-                {
-                    using (Html.BeginForm())
-                    {
-                        <input type="hidden" id="Step" name="Step" value="@Model.Step" />
-                        <input type="hidden" id="Email" name="Email" value="@Model.Email" />
-                        <input type="hidden" id="FirstName" name="FirstName" value="@Model.FirstName" />
-                        <input type="hidden" id="LastName" name="LastName" value="@Model.LastName" />
-                        <input type="hidden" id="Title" name="Title" value="@Model.Title" />
-                        <input type="hidden" id="RegistrationID" name="RegistrationID" value="@Model.RegistrationID" />
-
-                        <div id="contract@(i)" style="display:@(i == 0 ? "block" : "none")">
-                            <div style="overflow-y: scroll; max-height: 300px; margin: 20px 0 20px 0; border: 1px solid #999; padding: 10px">
-                                @Html.Raw(Model.Contracts[i].Contract.Body)
-                            </div>
-                            <div style="margin-bottom: 10px">
-                                @Html.CheckBox("Accept", Model.Accept ?? false, new { onclick = "document.getElementById('accept" + i + "').disabled = !this.checked" }) Accept?
-                            </div>
-                            <div class="form-tools">
-                                <input id="accept@(i)" type="submit" value="Accept" style="width:25%; min-width: 100px" disabled="disabled" />
-                            </div>
-                        </div>
-                    }
-                }
             }
         }
+    }
 
-        @if (Model.Step == RegisterStep.TermsOfUseValidated || Model.Step == RegisterStep.ADTermsOfUse)
-        {
-            <div>@Html.Raw(Model.Message)</div>
-        }
-    </div>
-</body>
+    @if (Model.Step == RegisterStep.TermsOfUseValidated || Model.Step == RegisterStep.ADTermsOfUse)
+    {
+        <div>@Html.Raw(Model.Message)</div>
+    }
+</div>
