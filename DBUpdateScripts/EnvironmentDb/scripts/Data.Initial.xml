@@ -204,7 +204,7 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="sDooley" id="Data.Initial.HelpMenu-v3">
+  <changeSet author="sDooley" id="Data.Initial.HelpMenu-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
