@@ -42,11 +42,11 @@ export class CompanySettingsService extends BaseObservableService {
                     else if (s.GuidSetting) {
                         s.ScalarValue = s.GuidSetting.Value;
                     }
-                    else if (s.BooleanSetting) {
-                        s.ScalarValue = s.BooleanSetting.Value;
+                    else if (s.NumberSetting) {
+                        s.ScalarValue = s.NumberSetting.Value;
                     }
-                    else if (s.BooleanSetting) {
-                        s.ScalarValue = s.BooleanSetting.Value;
+                    else if (s.StringSetting) {
+                        s.ScalarValue = s.StringSetting.Value;
                     }
                     else {
                         s.ScalarValue = null;
