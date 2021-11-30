@@ -103,6 +103,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     linkFieldRequiredPlaceholder: string = 'Value required: you should start the URL with a protocol prefix eg. http:// or https://';
 
     showLookupSearchField: boolean = false;
+    hadInitialLazyLoad: boolean = false;
 
     @ViewChild('dropdown', { static: false }) dropdown: Dropdown;
     @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
@@ -137,6 +138,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }, 25);
     }
 
+    //we do not want key fields error to disable submit button so we are handing this error differently
     public setKeyFieldsErrorMessage(isSingle: boolean) {
         if (this.field.IsPartOfKey) {
             if (isSingle) {
@@ -737,6 +739,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };
         loadParams["isForAssetForm"] = true;
         loadParams["assetUid"] = this.assetUid;
+        this.hadInitialLazyLoad = true;
 
         if ($params.globalFilter) {
             loadParams["filter"] = $params.globalFilter;
