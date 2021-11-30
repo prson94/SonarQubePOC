@@ -216,11 +216,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
 
     private loadDataAndExecuteAction(action: Function) {
         if (this.selectedRow) {
-            this.isLoading = true;
             this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
                 .subscribe(res => {
-                    this.isLoading = false;
-
                     this.selectedRow.data.ID = res.ObjectID;
                     this.selectedRow.data.AssetTypeID = res.AssetTypeID;
                     if (action) {
