@@ -117,7 +117,7 @@ namespace d360.web.Controllers
                                     AN.DisplayPath as Text 	
                                         from Asset A 
                                         inner join graph.AssetNodeDisplayPath AN on AN.ID = A.ID 
-                                        where A.AssetTypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
+                                        where A.AssetTypeID = {parentType.ID} and A.ID = {parent.ID}").OrderBy(i => i.Text).ToList();
 
 
                     list.Add(new EditableField
