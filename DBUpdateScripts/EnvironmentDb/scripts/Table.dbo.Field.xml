@@ -105,8 +105,8 @@ END
 	</rollback>
   </changeSet> 
 
-  <changeSet author="tduric" id="Table.dbo.Field-Field_AfterUpsert-v10">
-    <comment>GOV-15877</comment>
+  <changeSet author="Pappas" id="Table.dbo.Field-Field_AfterUpsert-v11">
+    <comment>GOV-16382</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -182,106 +182,103 @@ AS
 
 
 	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	distinct @ActionName, 
-						i.ObjectType, 
-						i.ObjectID,
-						(select 	
-							@ActionName as Action,
-							i2.ObjectType as ActionObject,
-							i2.ObjectID as ActionObjectID,
-							coalesce(i2.UpdatedBy, 0) as ResourceID,
-							  (
-								select 
-								(select 
-									f.FieldTypeID,
-									ft.FriendlyName as [Name], 
-									f.FormattedValue as [Value] 
-								from field f 
-									inner join fieldtype ft on f.fieldtypeid = ft.id 
-								where f.objectid = i.objectid and f.objecttype = i.objecttype for xml path('Field'), TYPE
-								)
-								for xml path('FieldInfo'), TYPE
-								)
-						from 
-							inserted i2 
-						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
-						group by ObjectType, ObjectID, UpdatedBy
-						for xml path('fields'))
-						,
-						coalesce(i.AssetID,0) as [AssetID]
-				from inserted i where i.[ObjectType] != 'Intersect';
+		select	distinct
+				@ActionName, 
+				i.ObjectType, 
+				i.ObjectID,
+				(
+				select 	@ActionName as Action,
+						i2.ObjectType as ActionObject,
+						i2.ObjectID as ActionObjectID,
+						coalesce(i2.UpdatedBy, 0) as ResourceID,
+						(
+						select	f.FieldTypeID,
+								ft.FriendlyName as [Name], 
+								f.FormattedValue as [Value] 
+						from	field f 
+								inner join fieldtype ft on f.fieldtypeid = ft.id 
+						where	f.objectid = i.objectid 
+								and f.objecttype = i.objecttype 
+						for json path
+						) as Fields
+				from inserted i2 
+				where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+				group by ObjectType, ObjectID, UpdatedBy
+				for json path, WITHOUT_ARRAY_WRAPPER
+				) as [Custom],
+				coalesce(i.AssetID,0) as [AssetID]
+		from	inserted i 
+		where	i.[ObjectType] != 'Intersect';
+
 
 	-- handle relationships both sides need audit entries
 	if exists(select 1 from inserted where [objecttype]= 'Intersect')
 	begin
 		-- object side of relationship
 		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	distinct @ActionName, 
-						i.ObjectType, 
-						i.ObjectID,
-						(select 	
-							@ActionName as Action,
+			select	distinct
+					@ActionName, 
+					i.ObjectType, 
+					i.ObjectID,
+					(
+					select 	@ActionName as Action,
 							a.Object as ActionObject,
 							a.ObjectID as ActionObjectID,
 							coalesce(i2.UpdatedBy, 0) as ResourceID,
-							  (
-								select 
-								(select 
-									f.FieldTypeID,
+							(
+							select	f.FieldTypeID,
 									ft.FriendlyName as [Name], 
 									f.FormattedValue as [Value] 
-								from field f 
+							from	field f 
 									inner join fieldtype ft on f.fieldtypeid = ft.id 
-								where f.objectid = i.objectid and f.objecttype = i.objecttype  for xml path('Field'), TYPE
-								)
-								for xml path('FieldInfo'), TYPE
-								)
-						from 
-							inserted i2 
-						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
-						group by ObjectType, ObjectID, UpdatedBy
-						for xml path('fields'))
-						,
-						coalesce(a.ID,0) as [AssetID]
-				from inserted i 
-				inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
-				inner join asset a on(a.ObjectID = inter.ObjectID and a.[Object] = inter.[Object])
-				where i.[ObjectType] = 'Intersect';
+							where	f.objectid = i.objectid 
+									and f.objecttype = i.objecttype 
+							for json path
+							) as Fields
+					from inserted i2 
+					where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+					group by ObjectType, ObjectID, UpdatedBy
+					for json path, WITHOUT_ARRAY_WRAPPER
+					) as [Custom],
+					coalesce(a.ID,0) as [AssetID]
+			from	inserted i 
+					inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
+					inner join asset a on(a.ObjectID = inter.ObjectID and a.[Object] = inter.[Object])
+			where	i.[ObjectType] = 'Intersect';
 
 			-- subject side
-			INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	distinct @ActionName, 
-						i.ObjectType, 
-						i.ObjectID,
-						(select 	
-							@ActionName as Action,
+		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+			select	distinct
+					@ActionName, 
+					i.ObjectType, 
+					i.ObjectID,
+					(
+					select 	@ActionName as Action,
 							a.Object as ActionObject,
 							a.ObjectID as ActionObjectID,
 							coalesce(i2.UpdatedBy, 0) as ResourceID,
-							  (
-								select 
-								(select 
-									f.FieldTypeID,
+							(
+							select	f.FieldTypeID,
 									ft.FriendlyName as [Name], 
 									f.FormattedValue as [Value] 
-								from field f 
+							from	field f 
 									inner join fieldtype ft on f.fieldtypeid = ft.id 
-								where f.objectid = i.objectid and f.objecttype = i.objecttype  for xml path('Field'), TYPE
-								)
-								for xml path('FieldInfo'), TYPE
-								)
-						from 
-							inserted i2 
-						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
-						group by ObjectType, ObjectID, UpdatedBy
-						for xml path('fields'))
-						,
-						coalesce(a.ID,0) as [AssetID]
-				from inserted i 
-				inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
-				inner join asset a on(a.ObjectID = inter.SubjectID and a.[Object] = inter.[Subject])
-				where i.[ObjectType] = 'Intersect';
+							where	f.objectid = i.objectid 
+									and f.objecttype = i.objecttype 
+							for json path
+							) as Fields
+					from inserted i2 
+					where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+					group by ObjectType, ObjectID, UpdatedBy
+					for json path, WITHOUT_ARRAY_WRAPPER
+					) as [Custom],
+					coalesce(a.ID,0) as [AssetID]
+				from	inserted i 
+						inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
+						inner join asset a on(a.ObjectID = inter.SubjectID and a.[Object] = inter.[Subject])
+				where	i.[ObjectType] = 'Intersect';
 	end
+
 ]]>
     </sql>
 	<rollback>
@@ -293,7 +290,7 @@ AS
 	SET NOCOUNT ON;
 
 	-- formatted value logic only needs to run in cases where value is not null
-	if exists( select 1 from inserted where [value] is not null)
+	if exists( select 1 from inserted where [value] is not null or [formattedvalue] is not null)
 	begin
 
 		UPDATE	T

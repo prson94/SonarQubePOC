@@ -20,6 +20,7 @@ using System.Text.Json;
 using System.Data;
 using d360.core.resources;
 using System.Configuration;
+using Newtonsoft.Json;
 
 namespace igx.jobs.databasetaskprocessor
 {
@@ -58,7 +59,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 3).ToList();
+                companies = companies.Where(i => i.CompanyID == 2).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -253,33 +254,29 @@ from    [queue].[Task] T
                                                     switch (q.Action)
                                                     {
                                                         case "Add":
-                                                        #region
                                                             addAuditEntry(companyConnection, "Created", q);
                                                             resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
                                                             break;
-                                                    #endregion
-                                                    case "Delete":
-                                                        #region                                     
+                                                        case "Delete":
                                                             addAuditEntry(companyConnection, "Removed", q);
                                                             resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
                                                             break;
-                                                    #endregion
-                                                    case "EventTopicNotification":
-                                                        #region
-                                                        if (!string.IsNullOrEmpty(q.Custom))
+                                                        case "EventTopicNotification":
+                                                            #region
+                                                            if (!string.IsNullOrEmpty(q.Custom))
                                                             {
                                                                 var customXml = XElement.Parse(q.Custom);
 
                                                                 var queue = new AzureQueueSource();
 
                                                                 d360.core.enums.Workflow.ChangeType ct;
-                                                                if (Enum.TryParse<d360.core.enums.Workflow.ChangeType>(customXml.Element("ChangeType").Value, out ct))
+                                                                if (Enum.TryParse(customXml.Element("ChangeType").Value, out ct))
                                                                 {
                                                                     SystemObjects obj;
                                                                     SystemObjects objType;
-                                                                    if (Enum.TryParse<SystemObjects>(customXml.Element("ObjectType").Value, out objType))
+                                                                    if (Enum.TryParse(customXml.Element("ObjectType").Value, out objType))
                                                                     {
-                                                                        if (Enum.TryParse<SystemObjects>(q.Object, out obj))
+                                                                        if (Enum.TryParse(q.Object, out obj))
                                                                         {
                                                                             if (int.TryParse(customXml.Element("ObjectTypeID").Value, out int objectTypeID))
                                                                             {
@@ -325,111 +322,110 @@ from    [queue].[Task] T
                                                             }
 
                                                             break;
-                                                    #endregion
-                                                    case "Notify":
-                                                        #region Email Notification
-                                                        if (q.Object == "TaggedComment")
-                                                            {
-                                                                var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
-                                                                var mail = new MandrillMailProvider { ApiKey = ConfigurationManager.AppSettings["MandrillApiKey"] };
-                                                                if (comment.AssetID > 0)
+                                                            #endregion
+                                                        case "Notify":
+                                                            #region Email Notification
+                                                            if (q.Object == "TaggedComment")
                                                                 {
-                                                                    CommentNotification notification = JsonSerializer.Deserialize<CommentNotification>(q.Custom);
-                                                                    if (notification != null)
+                                                                    var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
+                                                                    var mail = new MandrillMailProvider { ApiKey = ConfigurationManager.AppSettings["MandrillApiKey"] };
+                                                                    if (comment.AssetID > 0)
                                                                     {
-                                                                        var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
+                                                                        CommentNotification notification = JsonConvert.DeserializeObject<CommentNotification>(q.Custom);
+                                                                        if (notification != null)
+                                                                        {
+                                                                            var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
 
-                                                                        var rootUrl = $"https://{c.UrlPrefix}.data3sixty.com";
+                                                                            var rootUrl = $"https://{c.UrlPrefix}.data3sixty.com";
 
-                                                                        string mailBody = $@"
-                                                                                    <html>
-                                                                                    <head>
-                                                                                        <style>
-                                                                                            body {{
-                                                                                                margin-top: 20px;
-                                                                                                margin-left: 50px;
-                                                                                                margin-right: 50px;
-                                                                                                font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-                                                                                            }}
-                                                                                            .header {{
-                                                                                                font-weight: bold;
-                                                                                                padding-bottom: 10px;
-                                                                                            }}
-                                                                                            .content {{
-                                                                                                padding-bottom: 20px;
-                                                                                                padding-top: 20px;
-                                                                                                border-top: 2px solid #d7d8dc;
-                                                                                                border-bottom: 2px solid #d7d8dc;
-                                                                                            }}
-                                                                                            .footer {{
-                                                                                                padding-top: 10px;
-                                                                                                text-align: right;
-                                                                                            }}
-                                                                                            .button {{
-                                                                                                display: inline-flex;
-                                                                                                position: relative;
-                                                                                                flex-direction: row;
-                                                                                                justify-content: center;
-                                                                                                align-items: center;
-                                                                                                flex-shrink: 0;
-                                                                                                background: #006fba;
-                                                                                                color: #ffffff;
-                                                                                                border: none;
-                                                                                                border-radius: 4px;
-                                                                                                line-height: 200%;
-                                                                                                height:32px;
-                                                                                            }}
-                                                                                            a {{
-                                                                                                text-decoration: none;
-                                                                                            }}
-                                                                                            a:link .link {{
-                                                                                                color: #006fba;
-                                                                                            }}
-                                                                                            a:hover .link {{
-                                                                                                text-decoration: underline;
-                                                                                            }}
-                                                                                            a:visited .link {{
-                                                                                                color: #006fba;
-                                                                                            }}
-                                                                                            img {{ border-style: none; }}
-                                                                                        </style>
-                                                                                    </head>
-                                                                                    <body>
-                                                                                        <div class='header'>
-                                                                                            {string.Format(Notifications.TaggedCommentMailHeader, notification.CommenterName)}
+                                                                            string mailBody = $@"
+                                                                                        <html>
+                                                                                        <head>
+                                                                                            <style>
+                                                                                                body {{
+                                                                                                    margin-top: 20px;
+                                                                                                    margin-left: 50px;
+                                                                                                    margin-right: 50px;
+                                                                                                    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+                                                                                                }}
+                                                                                                .header {{
+                                                                                                    font-weight: bold;
+                                                                                                    padding-bottom: 10px;
+                                                                                                }}
+                                                                                                .content {{
+                                                                                                    padding-bottom: 20px;
+                                                                                                    padding-top: 20px;
+                                                                                                    border-top: 2px solid #d7d8dc;
+                                                                                                    border-bottom: 2px solid #d7d8dc;
+                                                                                                }}
+                                                                                                .footer {{
+                                                                                                    padding-top: 10px;
+                                                                                                    text-align: right;
+                                                                                                }}
+                                                                                                .button {{
+                                                                                                    display: inline-flex;
+                                                                                                    position: relative;
+                                                                                                    flex-direction: row;
+                                                                                                    justify-content: center;
+                                                                                                    align-items: center;
+                                                                                                    flex-shrink: 0;
+                                                                                                    background: #006fba;
+                                                                                                    color: #ffffff;
+                                                                                                    border: none;
+                                                                                                    border-radius: 4px;
+                                                                                                    line-height: 200%;
+                                                                                                    height:32px;
+                                                                                                }}
+                                                                                                a {{
+                                                                                                    text-decoration: none;
+                                                                                                }}
+                                                                                                a:link .link {{
+                                                                                                    color: #006fba;
+                                                                                                }}
+                                                                                                a:hover .link {{
+                                                                                                    text-decoration: underline;
+                                                                                                }}
+                                                                                                a:visited .link {{
+                                                                                                    color: #006fba;
+                                                                                                }}
+                                                                                                img {{ border-style: none; }}
+                                                                                            </style>
+                                                                                        </head>
+                                                                                        <body>
+                                                                                            <div class='header'>
+                                                                                                {string.Format(Notifications.TaggedCommentMailHeader, notification.CommenterName)}
+                                                                                            </div>
+                                                                                            <div class='content'>
+                                                                                                {string.Format(Notifications.TaggedCommentMailBody, notification.CommenterName, rootUrl, notification.AssetUrl, displayValue, comment.CommentDate.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy"))}                                                                                            
+                                                                                            <br />
+                                                                                            <br />
+                                                                                            <a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;{Notifications.TaggedCommentMailCommentLink}&nbsp;&nbsp;</a>
                                                                                         </div>
-                                                                                        <div class='content'>
-                                                                                            {string.Format(Notifications.TaggedCommentMailBody, notification.CommenterName, rootUrl, notification.AssetUrl, displayValue, comment.CommentDate.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy"))}                                                                                            
-                                                                                        <br />
-                                                                                        <br />
-                                                                                        <a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;{Notifications.TaggedCommentMailCommentLink}&nbsp;&nbsp;</a>
-                                                                                    </div>
-                                                                                        <div class='footer'>
-                                                                                            <img src ='{rootUrl}/Content/images/logo.mail.small.png' alt='D360 Govern' style='border-style:none;'> 
-                                                                                        </div>
-                                                                                    </body>
-                                                                                    </html>                                                                                        
-                                                                                    ";
-                                                                        mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
+                                                                                            <div class='footer'>
+                                                                                                <img src ='{rootUrl}/Content/images/logo.mail.small.png' alt='D360 Govern' style='border-style:none;'> 
+                                                                                            </div>
+                                                                                        </body>
+                                                                                        </html>                                                                                        
+                                                                                        ";
+                                                                            mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
+                                                                        }
                                                                     }
                                                                 }
-                                                            }
+                                                                break;
+                                                        #endregion
+                                                        case "ObjectIndex":
+                                                            resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
                                                             break;
-                                                    #endregion
-                                                    case "ObjectIndex":
-                                                        #region
-                                                        resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
-                                                            break;
-                                                    #endregion
-                                                    case "Update":
-                                                        #region
+                                                        case "Update":
+                                                            #region
                                                             addAuditEntry(companyConnection, "Updated", q);
 
                                                             if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
                                                                 resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
+                                                        
                                                             break;
-                                                    #endregion
-                                                    case "TagConsolidated":
+                                                            #endregion
+                                                        case "TagConsolidated":
                                                             addAuditEntry(companyConnection, "Tag Consolidate", q);
                                                             break;
                                                         case "CompanySettingsUpdate":
@@ -566,38 +562,72 @@ from    [queue].[Task] T
                 CoreFunction.AITrackException(functionName, ex);
             }
         }
-                private static void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
+        
+        private static void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
         {
             if (!string.IsNullOrEmpty(queueRecord.Custom))
             {
-                var customXml = XElement.Parse(queueRecord.Custom);
+                AuditCustomDataModel model = null;
 
-                var parameters = new DynamicParameters();
-
-                parameters.Add("@MainObject", queueRecord.Object, DbType.AnsiString, size: 50);
-                parameters.Add("@MainObjectID", queueRecord.ObjectID);
-                parameters.Add("@DependentObject", customXml.Element("ActionObject").Value, System.Data.DbType.AnsiString, size: 50);
-                parameters.Add("@DependentObjectID", int.Parse(customXml.Element("ActionObjectID").Value));
-                parameters.Add("@Date", queueRecord.Date);
-                parameters.Add("@ResourceID", int.Parse(customXml.Element("ResourceID").Value));
-                parameters.Add("@Action", oper, DbType.AnsiString, size: 15);
-                parameters.Add("@NewValue", (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value), System.Data.DbType.AnsiString, size: 50);
-
-                if (customXml.Element("FieldInfo") != null)
+                if (queueRecord.Custom.Contains("<ActionObjectID>"))
                 {
-                    parameters.Add("@AuditFieldTable", getFieldsTable(customXml.Element("FieldInfo")).AsTableValuedParameter("[dbo].[AuditFieldTable]"));
+                    // Treat as XML.
+                    var customXml = XElement.Parse(queueRecord.Custom);
+                    model = new AuditCustomDataModel {
+                        ActionObject = customXml.Element("ActionObject").Value,
+                        ActionObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
+                        ActionObjectValue = (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value),
+                        ResourceID = int.Parse(customXml.Element("ResourceID").Value),
+                        Fields = new List<AuditCustomDataFieldModel>()
+                    };
+                    if (customXml.Element("FieldInfo") != null)
+                    {
+                        foreach (var f in customXml.Element("FieldInfo").Elements())
+                        {
+                            model.Fields.Add(new AuditCustomDataFieldModel
+                            {
+                                FieldTypeID = int.Parse(f.Element("FieldTypeID") != null ? f.Element("FieldTypeID").Value : "0"),
+                                Name = (string)f.Element("Name") ?? "",
+                                Value = (string)f.Element("Value") ?? ""
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    // Treat as JSON.
+                    model = JsonConvert.DeserializeObject<AuditCustomDataModel>(queueRecord.Custom);
                 }
 
-                companyConnection.Query(
-                    "[utility].[AddAuditEntry]",
-                    parameters,
-                    commandType: System.Data.CommandType.StoredProcedure,
-                    commandTimeout: 600
-                    );
+                if (model != null)
+                { 
+                    var parameters = new DynamicParameters();
+
+                    parameters.Add("@MainObject", queueRecord.Object, DbType.AnsiString, size: 50);
+                    parameters.Add("@MainObjectID", queueRecord.ObjectID);
+                    parameters.Add("@DependentObject", model.ActionObjectValue, DbType.AnsiString, size: 50);
+                    parameters.Add("@DependentObjectID", model.ActionObjectID);
+                    parameters.Add("@Date", queueRecord.Date);
+                    parameters.Add("@ResourceID", model.ResourceID);
+                    parameters.Add("@Action", oper, DbType.AnsiString, size: 15);
+                    parameters.Add("@NewValue", model.ActionObjectValue, DbType.AnsiString, size: 50);
+
+                    if (model.Fields != null && model.Fields.Count > 0)
+                    {
+                        parameters.Add("@AuditFieldTable", getFieldsTable(model).AsTableValuedParameter("[dbo].[AuditFieldTable]"));
+                    }
+
+                    companyConnection.Query(
+                        "[utility].[AddAuditEntry]",
+                        parameters,
+                        commandType: CommandType.StoredProcedure,
+                        commandTimeout: 600
+                        );                
+                }
             }
         }
 
-        private static DataTable getFieldsTable(XElement xElement)
+        private static DataTable getFieldsTable(AuditCustomDataModel model)
         {
             var tb = new DataTable();
 
@@ -605,12 +635,13 @@ from    [queue].[Task] T
             tb.Columns.Add("FieldName", typeof(string));
             tb.Columns.Add("Value", typeof(string));            
 
-            foreach (var child in xElement.Elements())
+            foreach (var f in model.Fields)
             {
                 var fieldRow = tb.NewRow();
-                fieldRow["FieldName"] = (string)child.Element("Name") ?? "";
-                fieldRow["FieldTypeID"] = int.Parse(child.Element("FieldTypeID") == null ? "" : child.Element("FieldTypeID").Value);
-                fieldRow["Value"] = (string)child.Element("Value") ?? "";
+
+                fieldRow["FieldName"] = f.Name;
+                fieldRow["FieldTypeID"] = f.FieldTypeID;
+                fieldRow["Value"] = f.Value;
                 
                 tb.Rows.Add(fieldRow);
             }

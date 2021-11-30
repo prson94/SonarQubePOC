@@ -76,4 +76,20 @@ namespace igx.jobs.databasetaskprocessor
         public short Priority { get; set; }
         public long AssetID { get; set; }
     }
+
+    public class AuditCustomDataFieldModel
+    {
+        public int FieldTypeID { get; set; }
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class AuditCustomDataModel
+    {
+        public string ActionObject { get; set; }
+        public int ActionObjectID { get; set; }
+        public string ActionObjectValue { get; set; }
+        public int ResourceID { get; set; }
+        public List<AuditCustomDataFieldModel> Fields { get; set; }
+    }
 }
