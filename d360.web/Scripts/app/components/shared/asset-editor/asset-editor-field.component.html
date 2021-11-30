@@ -1,4 +1,4 @@
-﻿<div class="field-wrapper field-wrapper-type-{{field.FieldType}} {{(!isValid ? 'invalid' : '')}} {{(isRequired() ? 'required-field' : '')}} {{(!field.Value || field.Value.length == 0) ? 'empty-field' : '' }}">
+﻿<div class="field-wrapper field-wrapper-type-{{field.FieldType}} {{(!isValid ? 'invalid' : '')}} {{(isRequired() ? 'required-field' : '')}} {{(!field.Value || field.Value.length == 0) ? 'empty-field' : '' }} {{keyFieldError ? 'has-key-field-error' : ''}}">
     <div [formGroup]="form">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <div [ngSwitch]="getFieldTypeForSwitch(field.FieldType)" class="col s12" *ngIf="field.FieldType!='Hidden'">
@@ -116,6 +116,13 @@
                                          (onLazyLoad)="loadListLazy($event)"
                                          [loading]="isLookupValuesLoading"
                                          [loadingIcon]="'fa fa-spinner fa-spin'">
+                                    <ng-template pTemplate="emptymessage" let-columns>
+                                        <tr>
+                                            <td [attr.colspan]="2">
+                                                <span *ngIf="hadInitialLazyLoad">&nbsp;&nbsp;No matches found</span>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
                                     <ng-template pTemplate="header">
                                         <tr *ngIf="showLookupSearchField">
                                             <th colspan="2">

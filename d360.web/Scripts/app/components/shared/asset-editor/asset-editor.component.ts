@@ -731,14 +731,17 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     this.saveClick.emit(event);
                 }
                 else {
-                    this.showMessageForApiResult(this.messagesService, res);
                     this.savingInProgress = false;
                     this.savingInProgressWithAddNew = false;
 
                     this.ref.markForCheck();
 
+                    //same keys error will be handled on asset editor, so we wont throw a popup message
                     if (res && res.Message && res.Message.indexOf('Key values match another') !== -1) {
                         this.dyFieldRef.forEach((fld) => fld.setKeyFieldsErrorMessage(this.fields.filter((x) => x.IsPartOfKey).length < 2));
+                    }
+                    else {
+                        this.showMessageForApiResult(this.messagesService, res);
                     }
                 }
 

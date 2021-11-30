@@ -2,122 +2,113 @@
 @import './IgUiVariables.less';
 
 .ig-input {
-    font-family: @ig-field-font-family;
-    font-size: 14px;
-    color: @ig-black;
-    background: @ig-white;
-    padding: 0 8px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    height: @ig-field-height;
-    line-height: 30px;
-    border-radius: @ig-field-border-radius;
-    max-width: 100%;
+  font-family: @ig-field-font-family;
+  font-size: 14px;
+  color: @ig-black;
+  background: @ig-white;
+  padding: 0 8px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  height: @ig-field-height;
+  line-height: 30px;
+  border-radius: @ig-field-border-radius;
+  max-width: 100%;
 
-    &.text-area {
-        height: 64px;
-        max-width: 720px;
-        width: 720px;
-        resize: none;
-    }
+  &.text-area {
+    height: 64px;
+    max-width: 720px;
+    width: 720px;
+    resize: none;
+  }
 
-    &.no-margin-btm {
-        margin-bottom: 0px;
-    }
+  &.no-margin-btm {
+    margin-bottom: 0px;
+  }
 
-    &.ig-input-small {
-        width: @ig-field-width-small !important;
-    }
+  &.ig-input-small {
+    width: @ig-field-width-small !important;
+  }
 
-    &.ig-input-medium {
-        width: @ig-field-width-medium !important;
-    }
+  &.ig-input-medium {
+    width: @ig-field-width-medium !important;
+  }
 
-    &.ig-input-large {
-        width: @ig-field-width-large !important;
-    }
+  &.ig-input-large {
+    width: @ig-field-width-large !important;
+  }
 
 
-    &.ig-input-full {
-        width: @ig-field-width-full !important;
+  &.ig-input-full {
+    width: @ig-field-width-full !important;
+  }
+
+  &:enabled:focus {
+    outline: 0 none;
+    outline-offset: 0;
+    box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+    border-color: @ig-field-border-color;
+  }
+
+  &.ng-dirty.ng-invalid,
+  &.ng-touched.ng-invalid {
+    background: @ig-red-t5;
+    border-color: none;
+
+    &:required:invalid {
+      background: @ig-lightblue-t4;
+      border-color: @ig-field-border-color;
     }
 
     &:enabled:focus {
-        outline: 0 none;
-        outline-offset: 0;
-        box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
-        border-color: @ig-field-border-color;
+      outline: 0 none;
+      outline-offset: 0;
+      box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+      border-color: @ig-field-border-color;
     }
-
-    &.ng-dirty.ng-invalid,
-    &.ng-touched.ng-invalid {
-        background: @ig-red-t5;
-        border-color: none;
-
-        &:required:invalid {
-            background: @ig-lightblue-t4;
-            border-color: @ig-field-border-color;
-        }
-
-        &:required:valid {
-            background: @ig-white;
-            border-color: none;
-            box-shadow: none;
-        }
-
-        &:enabled:focus {
-            outline: 0 none;
-            outline-offset: 0;
-            box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
-            border-color: @ig-field-border-color;
-        }
-    }
+  }
 
 
-    &:required:invalid {
-        background: @ig-lightblue-t4;
-        border-color: @ig-field-border-color;
-    }
+  &:required:invalid {
+    background: @ig-lightblue-t4;
+    border-color: @ig-field-border-color;
+  }
 
-    &:required:valid {
-        background: @ig-white;
-    }
 
-    &.invalid {
-        background: @ig-red-t5 !important;
-        border-color: none !important;
-    }
+  &.invalid {
+    background: @ig-red-t5 !important;
+    border-color: none !important;
+  }
 
-    &[disabled] {
-        opacity: 0.33;
-    }
+  &[disabled] {
+    opacity: 0.33;
+  }
 }
 
 ::placeholder {
-    color: @ig-grey;
-    opacity: 1;
+  color: @ig-grey;
+  opacity: 1;
 }
 
 :-ms-input-placeholder {
-    color: @ig-grey;
+  color: @ig-grey;
 }
 
 ::-webkit-input-placeholder {
-    color: @ig-grey;
+  color: @ig-grey;
 }
 
 ::-ms-input-placeholder {
-    color: @ig-grey;
+  color: @ig-grey;
 }
 
 
 .ig-text-required {
-    background: @ig-red-s1;
-    padding: 3px 8px;
-    font-size: 14px;
-    color: white;
-    border-radius: 4px;
-    width: fit-content;
-    display: block;
-    margin-top: 2px;
-    line-height: 18px;
+  background: @ig-red-s1;
+  padding: 3px 8px;
+  font-size: 14px;
+  color: white;
+  border-radius: 4px;
+  width: fit-content;
+  display: block;
+  margin-top: 2px;
+  line-height: 18px;
 }
