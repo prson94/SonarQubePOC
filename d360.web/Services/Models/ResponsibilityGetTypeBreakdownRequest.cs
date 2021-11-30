@@ -14,6 +14,6 @@ namespace d360.web.Services
         /// <summary>
         /// Resource Type UID
         /// </summary>
-        public Guid? ResourceTypeUid { get; set; }
+        public Guid? ResponsibilityTypeUid { get; set; }
     }
 }

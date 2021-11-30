@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="ohochachko" id="Procedure.dbo.GetResponsibilityBreakdownByResource">
+  <changeSet author="ohochachko" id="Procedure.dbo.GetResponsibilityBreakdownByResource-v2">
   <comment>GOV-14810</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -13,7 +13,7 @@
             stripComments="false">
 		<![CDATA[
 CREATE OR ALTER PROCEDURE [dbo].[GetResponsibilityBreakdownByResource]
-    @resourceTypeUid UNIQUEIDENTIFIER = NULL,
+    @responsibilityTypeUid UNIQUEIDENTIFIER = NULL,
     @resourceUid UNIQUEIDENTIFIER = NULL
 AS
 BEGIN
@@ -60,7 +60,7 @@ SELECT DISTINCT
                AND responsibilityDetail.[AssetID] = 0
                AND responsibilityDetail.[ApplyToType] = 1
                AND responsibilityDetail.[IsVisible] = 1
-               AND (@resourceTypeUid IS NULL OR responsibilityType.[uid] = @resourceTypeUid)
+               AND (@responsibilityTypeUid IS NULL OR responsibilityType.[uid] = @responsibilityTypeUid)
             --
             UNION ALL
             --
@@ -76,12 +76,12 @@ SELECT DISTINCT
                    AND (@resourceUid IS NULL OR responsibilityDetail.ResourceUid = @resourceUid)
              WHERE responsibilityDetail.ApplyToType = 0
                AND responsibilityDetail.IsVisible = 1
-               AND (@resourceTypeUid IS NULL OR responsibilityType.[uid] = @resourceTypeUid)
+               AND (@responsibilityTypeUid IS NULL OR responsibilityType.[uid] = @responsibilityTypeUid)
         ) A
     ) AC(Count)
      WHERE C.IsVisible = 1
        AND (@resourceUid IS NULL OR ResourceUid = @resourceUid)
-       AND (@resourceTypeUid IS NULL OR responsibilityType.[uid] = @resourceTypeUid)
+       AND (@responsibilityTypeUid IS NULL OR responsibilityType.[uid] = @responsibilityTypeUid)
      ) R
     ON R.[Type] = AssetType.[Object]
        AND R.TypeID = AssetType.[ObjectID]

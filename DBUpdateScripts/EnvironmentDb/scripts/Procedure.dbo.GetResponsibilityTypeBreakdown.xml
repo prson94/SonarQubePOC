@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="ohochachko" id="Procedure.dbo.GetResponsibilityTypeBreakdown-v4">
+  <changeSet author="ohochachko" id="Procedure.dbo.GetResponsibilityTypeBreakdown-v5">
   <comment>GOV-14810</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -13,7 +13,7 @@
             stripComments="false">
 		<![CDATA[
 create or alter procedure [dbo].[GetResponsibilityTypeBreakdown] (
-  @typeUID UNIQUEIDENTIFIER = NULL
+  @responsibilityTypeUid UNIQUEIDENTIFIER = NULL
 ) as
 begin
 	select
@@ -158,7 +158,7 @@ begin
 				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
 			group by rr.ResponsibilityTypeID, RT.[uid], RT.[Name]
 	) X
-    WHERE (@typeUID IS NULL OR [ResponsibilityTypeUID] = @typeUID)
+    WHERE (@responsibilityTypeUid IS NULL OR [ResponsibilityTypeUID] = @responsibilityTypeUid)
 	group by
 		ResponsibilityTypeID,
 		ResponsibilityTypeUID,

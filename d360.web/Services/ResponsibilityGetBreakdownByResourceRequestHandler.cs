@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using d360.model.DataAccessLayer;
@@ -9,19 +10,25 @@ namespace d360.web.Services
 {
     internal sealed class ResponsibilityGetBreakdownByResourceRequestHandler : IRequestHandler<ResponsibilityGetBreakdownByResourceRequest, ResponsibilityGetBreakdownByResourceResponse>
     {
+        private IMediator Mediator { get; }
+
         private IResponsibilityDapperRepository ResponsibilityRepository { get; }
 
         private IAssetService AssetService { get; }
 
-        public ResponsibilityGetBreakdownByResourceRequestHandler(IResponsibilityDapperRepository responsibilityRepository, IAssetService assetService)
+        public ResponsibilityGetBreakdownByResourceRequestHandler(IMediator mediator, IResponsibilityDapperRepository responsibilityRepository, IAssetService assetService)
         {
+            Mediator = mediator;
             ResponsibilityRepository = responsibilityRepository;
             AssetService = assetService;
         }
 
         public async Task<ResponsibilityGetBreakdownByResourceResponse> Handle(ResponsibilityGetBreakdownByResourceRequest request, CancellationToken cancellationToken)
         {
-            var aggregateCollection = await ResponsibilityRepository.GetResponsibilityBreakdownByResourceAsync(request.ResourceUid, request.ResourceTypeUid);
+            await Mediator.EntityValidators().ResourceIsExists(request.ResourceUid, cancellationToken);
+            await Mediator.EntityValidators().ResponsibilityTypeIsExists(request.ResponsibilityTypeUid, cancellationToken);
+
+            var aggregateCollection = await ResponsibilityRepository.GetResponsibilityBreakdownByResourceAsync(request.ResourceUid, request.ResponsibilityTypeUid);
 
             var response = new ResponsibilityGetBreakdownByResourceResponse();
             response.ItemCollection = aggregateCollection.Select(Convert).ToArray();

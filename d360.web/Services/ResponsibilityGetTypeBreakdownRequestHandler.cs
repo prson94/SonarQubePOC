@@ -7,17 +7,24 @@ namespace d360.web.Services
 {
     internal sealed class ResponsibilityGetTypeBreakdownRequestHandler : IRequestHandler<ResponsibilityGetTypeBreakdownRequest, ResponsibilityGetTypeBreakdownResponse>
     {
+        private IMediator Mediator { get; }
+
         private IResponsibilityDapperRepository ResponsibilityRepository { get; }
 
-        public ResponsibilityGetTypeBreakdownRequestHandler(IResponsibilityDapperRepository responsibilityRepository)
+        public ResponsibilityGetTypeBreakdownRequestHandler(IMediator mediator, IResponsibilityDapperRepository responsibilityRepository)
         {
+            Mediator = mediator;
             ResponsibilityRepository = responsibilityRepository;
         }
 
         public async Task<ResponsibilityGetTypeBreakdownResponse> Handle(ResponsibilityGetTypeBreakdownRequest request, CancellationToken cancellationToken)
         {
+            // assert parameters
+            await Mediator.EntityValidators().ResponsibilityTypeIsExists(request.ResponsibilityTypeUid, cancellationToken);
+
+            // act
             var result = new ResponsibilityGetTypeBreakdownResponse();
-            result.Data = await ResponsibilityRepository.GetResponsibilityTypeBreakdownAsync(request.ResourceTypeUid);
+            result.Data = await ResponsibilityRepository.GetResponsibilityTypeBreakdownAsync(request.ResponsibilityTypeUid);
             return result;
         }
     }

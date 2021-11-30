@@ -24,7 +24,7 @@ namespace igx.UnitTests.V2ControllerTests
                 // assign
                 var businessLayerResponse = AutoFixtureHelpers.CreateClassWithRecursiveData<ResponsibilityGetTypeBreakdownResponse>();
 
-                MockMediator.Setup(x => x.Send(It.Is<ResponsibilityGetTypeBreakdownRequest>(r => r.ResourceTypeUid == typeUid), default)).ReturnsAsync(businessLayerResponse);
+                MockMediator.Setup(x => x.Send(It.Is<ResponsibilityGetTypeBreakdownRequest>(r => r.ResponsibilityTypeUid == typeUid), default)).ReturnsAsync(businessLayerResponse);
 
                 // act
                 var actualResponse = await Controller.GetResponsibilityTypeBreakdown(typeUid);

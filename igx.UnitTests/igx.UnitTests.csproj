@@ -101,9 +101,11 @@
     <Compile Include="ServicesTests\Exceptions\RecoverableBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnauthorizedBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnrecoverableBusinessLayerExceptionTests.cs" />
+    <Compile Include="ServicesTests\ResourceIsExistsRequestHandlerTests.cs" />
     <Compile Include="ServicesTests\ResponsibilityDeleteRulesRequestHandlerTests.cs" />
     <Compile Include="ServicesTests\ResponsibilityGetBreakdownByResourceRequestHandlerTests.cs" />
     <Compile Include="ServicesTests\ResponsibilityGetTypeBreakdownRequestHandlerTests.cs" />
+    <Compile Include="ServicesTests\ResponsibilityTypeIsExistsRequestHandlerTests.cs" />
     <Compile Include="SettingsTests\SettingsTests-Get.cs" />
     <Compile Include="V2ControllerTests\EnvironmentControllerTest.cs" />
     <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.cs" />
