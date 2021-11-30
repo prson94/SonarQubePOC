@@ -308,7 +308,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (this.field.FieldType === 'Relationship') {
             //dropdown with showClear attribute shows clear button even if value is empty string
-            console.log(this.field.Value);
             var hasNoValue = false;
             if (!this.field.Value) {
                 hasNoValue = true;
@@ -317,7 +316,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 hasNoValue = true;
 
             }
-            console.log(hasNoValue);
 
             if (hasNoValue) {
                 this.form.controls[this.field.FieldName].setValue(null);
