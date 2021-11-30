@@ -15,19 +15,19 @@ namespace d360.model.DataAccessLayer.repositories
             
         }
 
-        public async Task<IReadOnlyList<ResponsibilityBreakdownResponse>> GetResponsibilityTypeBreakdownAsync(Guid? typeUid)
+        public async Task<IReadOnlyList<ResponsibilityBreakdownResponse>> GetResponsibilityTypeBreakdownAsync(Guid? responsibilityTypeUid)
         {
             var parameters = new DynamicParameters();
-            parameters.Add("@typeUID", typeUid, DbType.Guid);
+            parameters.Add("@responsibilityTypeUid", responsibilityTypeUid, DbType.Guid);
 
             return await QueryComposer.StoredProcedureMultipleAsync<ResponsibilityBreakdownResponse>("[dbo].[GetResponsibilityTypeBreakdown]", parameters);
         }
 
-        public async Task<IReadOnlyList<ResponsibilityBreakdownByResourceAggregate>> GetResponsibilityBreakdownByResourceAsync(Guid resourceUid, Guid? resourceTypeUid)
+        public async Task<IReadOnlyList<ResponsibilityBreakdownByResourceAggregate>> GetResponsibilityBreakdownByResourceAsync(Guid resourceUid, Guid? responsibilityTypeUid)
         {
             var parameters = new DynamicParameters();
             parameters.Add("@resourceUid", resourceUid, DbType.Guid);
-            parameters.Add("@resourceTypeUid", resourceTypeUid, DbType.Guid);
+            parameters.Add("@responsibilityTypeUid", responsibilityTypeUid, DbType.Guid);
 
             var grid = await QueryComposer.StoredProcedureMultipleResultsAsync("[dbo].[GetResponsibilityBreakdownByResource]", parameters).ConfigureAwait(false);
 

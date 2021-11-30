@@ -74,7 +74,7 @@ namespace igx.UnitTests.ServicesTests
             try
             {
                 var actualResult = await testedClass.Handle(request, CancellationToken.None);
-                Assert.True(false, "Exception is not thrown");
+                Assert.True(false, "Exception was not thrown");
             }
             catch (Exception actualException)
             {
@@ -109,7 +109,7 @@ namespace igx.UnitTests.ServicesTests
             try
             {
                 var actualResult = await testedClass.Handle(request, CancellationToken.None);
-                Assert.True(false, "Exception is not thrown");
+                Assert.True(false, "Exception was not thrown");
             }
             catch (Exception actualException)
             {

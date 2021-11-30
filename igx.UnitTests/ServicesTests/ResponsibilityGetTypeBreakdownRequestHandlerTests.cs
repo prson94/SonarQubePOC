@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture.Xunit2;
 using d360.core.entities;
-using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Services;
 using FluentAssertions;
+using MediatR;
 using Moq;
 using Xunit;
 
@@ -17,17 +15,29 @@ namespace igx.UnitTests.ServicesTests
 {
     public class ResponsibilityGetTypeBreakdownRequestHandlerTests
     {
+        private ResponsibilityGetTypeBreakdownRequestHandler TestedObject { get; }
+        
+        private Mock<IResponsibilityDapperRepository> MockResponsibilityDapperRepository { get; }
+
+        private Mock<IMediator> MockMediator { get; }
+
+        public ResponsibilityGetTypeBreakdownRequestHandlerTests()
+        {
+            MockMediator = new Mock<IMediator>();
+            MockResponsibilityDapperRepository = new Mock<IResponsibilityDapperRepository>();
+            TestedObject = new ResponsibilityGetTypeBreakdownRequestHandler(MockMediator.Object, MockResponsibilityDapperRepository.Object);
+        }
+
         [Theory, AutoData]
-        public async Task ReturnsProperResultAsync(Mock<IResponsibilityDapperRepository> mockResponsibilityDapperRepository, Guid? typeUid, IReadOnlyList<ResponsibilityBreakdownResponse> repositoryResult)
+        public async Task ReturnsProperResultAsync(Guid? typeUid, IReadOnlyList<ResponsibilityBreakdownResponse> repositoryResult)
         {
             // assign
-            mockResponsibilityDapperRepository.Setup(x => x.GetResponsibilityTypeBreakdownAsync(typeUid)).ReturnsAsync(repositoryResult);
+            MockResponsibilityDapperRepository.Setup(x => x.GetResponsibilityTypeBreakdownAsync(typeUid)).ReturnsAsync(repositoryResult);
             var request = new ResponsibilityGetTypeBreakdownRequest();
-            request.ResourceTypeUid = typeUid;
-            var testedClass = new ResponsibilityGetTypeBreakdownRequestHandler(mockResponsibilityDapperRepository.Object);
+            request.ResponsibilityTypeUid = typeUid;
 
             // act
-            var actualResult = await testedClass.Handle(request, CancellationToken.None);
+            var actualResult = await TestedObject.Handle(request, CancellationToken.None);
 
             // assert
             actualResult.Should().NotBeNull();
@@ -35,19 +45,18 @@ namespace igx.UnitTests.ServicesTests
         }
 
         [Theory, AutoData]
-        public async Task RethrowsExceptionAsync(Mock<IResponsibilityDapperRepository> mockResponsibilityDapperRepository, Guid? typeUid, Exception exception)
+        public async Task RethrowsExceptionAsync(Guid? typeUid, Exception exception)
         {
             // assign
-            mockResponsibilityDapperRepository.Setup(x => x.GetResponsibilityTypeBreakdownAsync(typeUid)).ThrowsAsync(exception);
+            MockResponsibilityDapperRepository.Setup(x => x.GetResponsibilityTypeBreakdownAsync(typeUid)).ThrowsAsync(exception);
             var request = new ResponsibilityGetTypeBreakdownRequest();
-            request.ResourceTypeUid = typeUid;
-            var testedClass = new ResponsibilityGetTypeBreakdownRequestHandler(mockResponsibilityDapperRepository.Object);
+            request.ResponsibilityTypeUid = typeUid;
 
             // act
             try
             {
-                var actualResult = await testedClass.Handle(request, CancellationToken.None);
-                Assert.True(false, "Exception is not thrown");
+                await TestedObject.Handle(request, CancellationToken.None);
+                Assert.True(false, "Exception was not thrown");
             }
             catch (Exception actualException)
             {

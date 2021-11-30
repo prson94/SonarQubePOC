@@ -19,7 +19,7 @@ namespace igx.UnitTests.ServicesTests
             try
             {
                 await ((IRequestExceptionHandler<object, object, Exception>)testObject).Handle(request, exception, state, cancellationToken);
-                Assert.True(false, "Exception is not thrown");
+                Assert.True(false, "Exception was not thrown");
             }
             catch (Exception actualException)
             {
@@ -38,7 +38,7 @@ namespace igx.UnitTests.ServicesTests
             try
             {
                 await ((IRequestExceptionHandler<object, object, Exception>)testObject).Handle(request, exception, state, cancellationToken);
-                Assert.True(false, "Exception is not thrown");
+                Assert.True(false, "Exception was not thrown");
             }
             catch (Exception actualException)
             {

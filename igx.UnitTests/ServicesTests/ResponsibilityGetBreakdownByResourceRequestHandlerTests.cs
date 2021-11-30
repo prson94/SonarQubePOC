@@ -8,6 +8,8 @@ using d360.model.DataAccessLayer;
 using d360.model.DataAccessLayer.repositories;
 using d360.web.Services;
 using FluentAssertions;
+using igx.UnitTests.V2ControllerTests;
+using MediatR;
 using Moq;
 using Xunit;
 
@@ -21,11 +23,14 @@ namespace igx.UnitTests.ServicesTests
 
         private Mock<IResponsibilityDapperRepository> MockResponsibilityDapperRepository { get; }
 
+        private Mock<IMediator> MockMediator { get; }
+
         public ResponsibilityGetBreakdownByResourceRequestHandlerTests()
         {
             MockResponsibilityDapperRepository = new Mock<IResponsibilityDapperRepository>();
             MockAssetService = new Mock<IAssetService>();
-            TestedObject = new ResponsibilityGetBreakdownByResourceRequestHandler(MockResponsibilityDapperRepository.Object, MockAssetService.Object);
+            MockMediator = new Mock<IMediator>();
+            TestedObject = new ResponsibilityGetBreakdownByResourceRequestHandler(MockMediator.Object, MockResponsibilityDapperRepository.Object, MockAssetService.Object);
         }
 
         [Theory, AutoData]
@@ -33,11 +38,11 @@ namespace igx.UnitTests.ServicesTests
         {
             var actual = new ResponsibilityGetBreakdownByResourceRequest();
             actual.ResourceUid = resourceUid;
-            actual.ResourceTypeUid = resourceTypeUid;
+            actual.ResponsibilityTypeUid = resourceTypeUid;
 
             // assert
             actual.ResourceUid.Should().Be(resourceUid);
-            actual.ResourceTypeUid.Should().Be(resourceTypeUid);
+            actual.ResponsibilityTypeUid.Should().Be(resourceTypeUid);
         }
 
         [Theory, AutoData]
@@ -46,14 +51,25 @@ namespace igx.UnitTests.ServicesTests
             var repositoryResult = AutoFixtureHelpers.CreateClassWithRecursiveDataEnumerable<ResponsibilityBreakdownByResourceAggregate>().ToArray();
 
             // assign
-            MockResponsibilityDapperRepository.Setup(x => x.GetResponsibilityBreakdownByResourceAsync(request.ResourceUid, request.ResourceTypeUid)).ReturnsAsync(repositoryResult);
+            MockResponsibilityDapperRepository.Setup(x => x.GetResponsibilityBreakdownByResourceAsync(request.ResourceUid, request.ResponsibilityTypeUid)).ReturnsAsync(repositoryResult);
             MockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).Returns<AssetType>(entity => $"{entity.uid} asset name");
+            MockMediator.SetupMediator<ResourceIsExistsRequest, IsEntityExistsResponse>(x =>
+            {
+                x.Uid.Should().Be(request.ResourceUid);
+            }, It.IsAny<IsEntityExistsResponse>(), cancellationToken);
+            MockMediator.SetupMediator<ResponsibilityTypeIsExistsRequest, IsEntityExistsResponse>(x =>
+            {
+                x.Uid.Should().Be(request.ResponsibilityTypeUid);
+            }, It.IsAny<IsEntityExistsResponse>(), cancellationToken);
 
             // act
             var actualResult = await TestedObject.Handle(request, cancellationToken);
 
             // assert
-            MockResponsibilityDapperRepository.Verify(x => x.GetResponsibilityBreakdownByResourceAsync(request.ResourceUid, request.ResourceTypeUid), Times.Once);
+            MockResponsibilityDapperRepository.Verify(x => x.GetResponsibilityBreakdownByResourceAsync(request.ResourceUid, request.ResponsibilityTypeUid), Times.Once);
+            MockMediator.VerifyRequest<ResourceIsExistsRequest, IsEntityExistsResponse>(cancellationToken, Times.Once);
+            MockMediator.VerifyRequest<ResponsibilityTypeIsExistsRequest, IsEntityExistsResponse>(cancellationToken, Times.Once);
+
             actualResult.Should().NotBeNull();
             
             var expectedItems = repositoryResult.Select(x => new ResponsibilityGetBreakdownByResourceModel()

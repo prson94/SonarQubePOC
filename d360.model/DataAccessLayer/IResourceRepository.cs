@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
-   public interface IResourceRepository 
+    public interface IResourceRepository
     {
+        [Obsolete]
         GlobalReportingResource GetResouceByUID(Guid uid);
+
+        Task<GlobalReportingResource> GetByUidAsync(Guid uid);
     }
 }

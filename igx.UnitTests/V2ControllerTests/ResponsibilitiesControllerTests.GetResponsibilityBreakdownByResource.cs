@@ -25,7 +25,7 @@ namespace igx.UnitTests.V2ControllerTests
                 MockMediator.SetupMediator<ResponsibilityGetBreakdownByResourceRequest, ResponsibilityGetBreakdownByResourceResponse>(businessLayerRequest =>
                 {
                     businessLayerRequest.ResourceUid.Should().Be(resourceUid);
-                    businessLayerRequest.ResourceTypeUid.Should().Be(resourceTypeUid);
+                    businessLayerRequest.ResponsibilityTypeUid.Should().Be(resourceTypeUid);
                 }, businessLayerResponse);
 
                 // act

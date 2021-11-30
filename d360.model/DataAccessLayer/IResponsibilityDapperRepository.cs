@@ -8,8 +8,8 @@ namespace d360.model.DataAccessLayer
 {
     public interface IResponsibilityDapperRepository
     {
-        Task<IReadOnlyList<ResponsibilityBreakdownResponse>> GetResponsibilityTypeBreakdownAsync(Guid? typeUid);
+        Task<IReadOnlyList<ResponsibilityBreakdownResponse>> GetResponsibilityTypeBreakdownAsync(Guid? responsibilityTypeUid);
 
-        Task<IReadOnlyList<ResponsibilityBreakdownByResourceAggregate>> GetResponsibilityBreakdownByResourceAsync(Guid resourceUid, Guid? resourceTypeUid);
+        Task<IReadOnlyList<ResponsibilityBreakdownByResourceAggregate>> GetResponsibilityBreakdownByResourceAsync(Guid resourceUid, Guid? responsibilityTypeUid);
     }
 }
