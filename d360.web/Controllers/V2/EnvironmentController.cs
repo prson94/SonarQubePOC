@@ -1101,6 +1101,10 @@ namespace d360.web.Controllers.V2
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
                     }
+                    if (item.Url == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+                    }
                     if (item.Url.Trim() == "")
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
@@ -1187,6 +1191,10 @@ namespace d360.web.Controllers.V2
                     if (item.Name.Length > 500)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
+                    }
+                    if (item.Url == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
                     }
                     if (item.Url.Trim() == "")
                     {
