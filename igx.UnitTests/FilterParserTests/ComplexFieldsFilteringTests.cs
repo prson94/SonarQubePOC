@@ -58,6 +58,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("H1_00005 eq 'text'", "H1_00005.FormattedValue = @filter_1")]
         [InlineData("H1_00005 ne 'text'", "(H1_00005.FormattedValue <> @filter_1 or H1_00005.FormattedValue is null)")]
         [InlineData("H1_00005 ct 'text'", "H1_00005.FormattedValue like @filter_1")]
+        [InlineData("H1_00005 ct 'text*'", "H1_00005.FormattedValue like @filter_1")]
         [InlineData("H1_00005 nct 'text'", "(H1_00005.FormattedValue not like @filter_1 or H1_00005.FormattedValue is null)")]
         [InlineData("H1_00005 eq null", "H1_00005.FormattedValue is null", 0)]
         [InlineData("H1_00005 ne null", "H1_00005.FormattedValue is not null", 0)]
@@ -194,6 +195,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("h1_00006 nct 'France'")]
         [InlineData("h1_00006 gt France")]
         [InlineData("h1_00006 eq France")]
+        [InlineData("h1_00006 gt null")]
         public void InvalidTests(string input)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -209,10 +211,10 @@ namespace igx.UnitTests.FilterExpressionTests
         }
 
         [Theory]
-        [InlineData("H1__assetPath ct '*true'", "H1p.Segments.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"@filter_1\")]') = 1")] //starts with
-        [InlineData("H1__assetPath ct 'true*'", "H1p.Segments.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"@filter_1\")]') = 1")] //ends with
-        [InlineData("H1__assetPath ct 'true'", "H1p.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\")]') = 1")] // contains
-        [InlineData("H1__assetPath nct 'true'", "H1p.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\")]') = 0")] // not contains
+        [InlineData("H1__assetPath ct '*true'", "H1p.Segments.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1")] //starts with
+        [InlineData("H1__assetPath ct 'true*'", "H1p.Segments.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1")] //ends with
+        [InlineData("H1__assetPath ct 'true'", "H1p.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1")] // contains
+        [InlineData("H1__assetPath nct 'true'", "H1p.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 0")] // not contains
         [InlineData("H1__assetPath gt 'true'", "H1p.Segments.exist('/path/segment[. > sql:variable(\"@filter_1\")]') = 1")] // not contains
         [InlineData("H1__assetPath ge 'true'", "H1p.Segments.exist('/path/segment[. >= sql:variable(\"@filter_1\")]') = 1")] // not contains
         [InlineData("H1__assetPath lt 'true'", "H1p.Segments.exist('/path/segment[. < sql:variable(\"@filter_1\")]') = 1")] // not contains
@@ -223,7 +225,7 @@ namespace igx.UnitTests.FilterExpressionTests
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
-            Assert.Equal(input, expectedResult);
+            Assert.Equal(result, expectedResult);
         }
     }
 
