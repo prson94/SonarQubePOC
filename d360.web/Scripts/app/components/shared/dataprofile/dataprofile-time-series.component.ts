@@ -105,7 +105,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 }
             } else {                
                 d.setMonth(d.getMonth() - g.value);
-                if (lastDate > d || d > currentDate) {
+                if (d > currentDate) {
                     g.disabled = true;
                 }                
             }
