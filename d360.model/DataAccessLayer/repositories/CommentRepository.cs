@@ -522,15 +522,16 @@ order by u.CommentTypeName";
 
             if (assetUidPresent)
             {
-                var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
-                if (asset == null || !CompanyContext.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
+                var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid, a => a.AssetType).FirstOrDefault();
+                if (asset == null)
                 {
                     throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
                 }
-                var assetType = CompanyContext.Filter<AssetType>(o => o.ID == asset.AssetTypeID).FirstOrDefault();
 
-                if (!CompanyContext.CurrentResourceIsAdmin
-                    && !CompanyContext.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
+                if(
+                    !CompanyContext.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset) &&
+                    !CompanyContext.HasAssetTypePermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ReadAsset)
+                    )
                 {
                     throw new GenericException(System.Net.HttpStatusCode.Forbidden, AssetTypeErrors.InvalidRequestHttpErrorTitle, CommentErrors.RestrictReadAssettype);
                 }
@@ -546,8 +547,7 @@ order by u.CommentTypeName";
                     throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
                 }
 
-                if (!CompanyContext.CurrentResourceIsAdmin
-                    && !CompanyContext.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
+                if (!CompanyContext.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
                 {
                     throw new GenericException(System.Net.HttpStatusCode.Forbidden, AssetTypeErrors.InvalidRequestHttpErrorTitle, CommentErrors.RestrictReadAssettype);
                 }
@@ -601,7 +601,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
             }
 
             dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
-            whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
+            whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where (PermissionsBitMask & {(int)Permission.ReadAsset}) = 0 and AssetID is not null)");
             whereStatements.Add(@"T.ID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
 
             var cteSql = $@"
