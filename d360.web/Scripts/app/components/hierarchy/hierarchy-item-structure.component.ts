@@ -206,7 +206,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         if (this.selected && this.selected.data && this.selected.data.HasProfiling) {
             this.sidePanelLoading = true;
             let startDate = new Date();
-            startDate.setDate(-367);
+            startDate.setFullYear(startDate.getUTCFullYear() - 100);
             this.dataProfileService.getDataProfiles(this.selected.data.AssetUid, startDate).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
