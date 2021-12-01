@@ -33,7 +33,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     isReferenceListFromRelationship = false;
     showDescription = false;
     lookupField: LookupGridField;
-    minwidth: number = 0;
     isComplex = false;
     showSimpleFilter = true;
     isColumnsLoaded = false;
@@ -64,12 +63,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     ngOnInit() {
         this.showAdvancedFilterField = !this.router.url.startsWith("/sidebar/visualization/") && !this.isSidePanel;
-        if (this.isSidePanel) {
-            this.minwidth = 310;
-        }
-        else {
-            this.minwidth = 0;
-        }
         this.areFiltersLoaded = true;
     }
 
