@@ -2462,6 +2462,12 @@ from    (
                     model.HasResponsibilityReadAccess = false;
                 }
 
+                model.CanEdit = true;
+                if (!Company.CurrentResourceIsAdmin && !perms.Any(x => x.ID == Permission.EditAsset))
+                {
+                    model.CanEdit = false;
+                }
+
                 model.AssetUid = metadata.AssetUid;
                 model.AssetID = metadata.AssetID;
 
