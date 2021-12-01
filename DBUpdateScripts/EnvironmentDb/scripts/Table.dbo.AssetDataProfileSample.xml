@@ -70,4 +70,28 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+   <changeSet author="Puneet Gupta" id="Table.dbo.AssetDataProfileSample-v4-AddAssetDataProfileIDIndex">
+   <comment>GOV-14869</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfileSample_AssetDataProfileID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetDataProfileSample_AssetDataProfileID] ON [dbo].[AssetDataProfileSample] ( [AssetDataProfileID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfileSample_AssetDataProfileID')
+BEGIN
+	DROP INDEX [IX_AssetDataProfileSample_AssetDataProfileID] ON [dbo].[AssetDataProfileSample]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
