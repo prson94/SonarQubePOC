@@ -606,5 +606,4 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
         return "Maximum possible score for measure = measure weight = " + this.getAsPrecentage(item.DisplayMaxWeight);
     }
-
 }
