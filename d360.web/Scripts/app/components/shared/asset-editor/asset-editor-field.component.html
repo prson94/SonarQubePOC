@@ -131,11 +131,11 @@
                                         </tr>
                                     </ng-template>
                                     <ng-template pTemplate="body" let-item>
-                                        <tr [pSelectableRow]="item">
+                                        <tr (click)="selectSingleItem($event,item);">
                                             <td class="first-col" *ngIf="field?.MultiSelect">
                                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                             </td>
-                                            <td (click)="selectSingleItem($event,item);">
+                                            <td>
                                                 <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
                                                     <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
                                                     <span class="ig-colorfield-item-label">{{item.label}}</span>
