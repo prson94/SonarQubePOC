@@ -3,7 +3,6 @@
     Route: string;
     Name: string;
     Type: string;
-    Uid: string;
 }
 
 export class Favorite {

@@ -36,8 +36,5 @@ namespace d360.core.entities.Membership
 
         [DataMember]
         public FavoriteType Type { get; set; }
-
-        [DataMember]
-        public Guid? Uid { get; set; }
     }
 }
