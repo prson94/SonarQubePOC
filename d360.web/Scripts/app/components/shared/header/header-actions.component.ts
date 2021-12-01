@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, AfterViewInit } from '@angular/core';
+﻿import { Component, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -9,7 +9,6 @@ import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 
-declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-header-actions',
@@ -19,8 +18,8 @@ declare var CurrentResourceID;
                         <li class="header-action-li spacer" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
                         <li class="header-action-li spacer" *ngIf="hasRaiseIssueButton && headerActionsService.showRaiseIssue"><d3s-raise-issue-button></d3s-raise-issue-button></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="showShoppingCart && headerActionsService.showShoppingCart" ><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
-                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [Uid]="Uid" [homePageItem]="homePageItem"></d3s-header-favorites></li>
-                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [Uid]="Uid" [homePageItem]="homePageItem"></d3s-header-homepage></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [homePageItem]="homePageItem"></d3s-header-favorites></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [homePageItem]="homePageItem"></d3s-header-homepage></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFollow  && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-follow></d3s-header-follow></li>                    
                         <li class="header-action-li" *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
@@ -220,7 +219,7 @@ export class HeaderActionsComponent {
         this.controlWidthChange.emit(this.controlWidth);
 
     }
-    onResize(event) {
+    onResize() {
         clearTimeout(this.resizeTimer);
         this.resizeTimer = window.setTimeout(() => this.calculateControlWidth(), 250)
     }

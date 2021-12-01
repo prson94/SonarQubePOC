@@ -1267,7 +1267,7 @@ namespace d360.model.DataAccessLayer
 
             string sql = $@"select q.[Id], q.[Name], q.[Route], q.[Type], q.[Uid] from (
 select	coalesce(AName.DisplayValue, TA.[Name]) as [Name],
-		lower(f.[Type] +'/' + convert(nvarchar(50),f.[Uid])) as [Route],
+		f.Route as [Route],
 		f.[Type],
 		f.SortOrder,
         f.[Uid],
@@ -1303,7 +1303,7 @@ order by	q.SortOrder";
 
             string sql = $@"select q.[Name], q.[Route], q.[Type], q.[Uid] from (
 select	coalesce(AName.DisplayValue, TA.[Name]) as [Name],
-		lower(f.[Type] +'/' + convert(nvarchar(50),f.[Uid])) as [Route],
+		f.Route as [Route],
 		f.[Type],
 		f.SortOrder,
         f.[Uid]

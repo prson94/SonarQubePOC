@@ -1,7 +1,6 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+﻿import { Component, Input, OnInit, OnDestroy, OnChanges, ChangeDetectionStrategy, ChangeDetectorRef, SimpleChanges } from '@angular/core';
 import { FavoritesService } from '../../../services/favorites.service';
-import { FavoriteApiModel, Favorite } from '../../../models/favorite.model';
+import { FavoriteApiModel } from '../../../models/favorite.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -31,21 +30,16 @@ import * as _ from 'lodash';
 
 export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
     @Input() uri: string;
-    @Input() isFavoriteItem: boolean = false;
     @Input() homePageItem: FavoriteApiModel = null;
-    @Input() favItems: FavoriteApiModel[] = [];
-    @Input() currentObject: string;
-    @Input() currentObjectId: number;
-    @Input() Uid: string;
+    @Input() currentObject: string; // TODO: get rid of mixed clientside-serverside work here. 
+    @Input() currentObjectId: number; // TODO: get rid of mixed clientside-serverside work here. 
 
     private subBreadcrumb: any;
     public isLoading = false;
-    private isHomePageItem: boolean = false;
 
     private name: string;
-    public visible: boolean = true;
 
-    constructor(private router: Router,
+    constructor(
         private favoritesService: FavoritesService,
         private breadcrumbService: HeaderBreadcrumbService,
         protected headerActionsService: HeaderActionsService,
@@ -59,11 +53,8 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         });
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.uri && changes["uri"]) {
-            this.visible = this.checkVisible();
-        }
-        this.checkIsHomePage();
+    ngOnChanges(changes: SimpleChanges) {
+        this.ref.markForCheck();
     }
 
     ngOnDestroy() {
@@ -90,6 +81,8 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
 
         this.isLoading = true;
         let f = new FavoriteApiModel();
+        // TODO: get rid of mixed clientside-serverside work here. 
+        // TODO: Either Type&Name is determined by server, or Route isn't passed to server
         //check these to determine fav type
         if (this.IsPageType()) {
             f.Type = "Page";
@@ -99,8 +92,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
             f.Type = "Asset";
         }
         f.Name = this.name;
-        f.Route = this.uri ? this.uri : 'home';//null route is home        
-        this.isHomePageItem = !this.homePageItem;
+        f.Route = this.currentUri;   
         this.favoritesService.toggleHomePageV2(f).subscribe(
             fav => {
                 this.headerActionsService.emitFavoritesChange();
@@ -121,32 +113,15 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         return res;
     }
 
-    checkIsFavorite() {
-        if (this.favItems == null) return;
-
-        this.isFavoriteItem = false;
-        if (!this.uri) this.uri = 'home';
-        let index = this.favItems.findIndex(x => x.Route == this.uri && x.Route != 'home');
-
-        this.isFavoriteItem = index >= 0;
-    }
-         
-    checkIsHomePage() {
-        if (this.favItems == null) return;
-
-        this.isHomePageItem = false;
-        if (!this.uri) this.uri = 'home';
-        let index = this.favItems.findIndex(x => _.isEqual(x, this.homePageItem));
-        if (index >= 0)
-            if (this.favItems[index].Type.toLowerCase() != "page")
-                this.isHomePageItem = (this.favItems[index].Uid == this.Uid);
-            else
-                this.isHomePageItem = this.favItems[index].Route == this.uri;
-        else 
-            this.isHomePageItem = false;
+    get isHomePageItem() {
+        return this.homePageItem?.Route === this.currentUri;
     }
 
-    checkVisible() {
+    get currentUri() {
+        return this.uri ?? 'home';
+    }
+
+    get visible() {
         return !this.isAdminUri() && !this.isIssueUri();
     }
 
