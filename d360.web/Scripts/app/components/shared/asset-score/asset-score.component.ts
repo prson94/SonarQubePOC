@@ -187,6 +187,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     }
                     else {
                         this.scoreType = <any>ScoreType[this.scoreTypes[0]];
+                        this.selectedScoreType = this.scoreTypes[0];
                     }
                 }
                 this.allocationData.forEach(alloc => {
@@ -251,43 +252,45 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         if (a.EffectiveDate < b.EffectiveDate) return 1;
                     });
 
-                    this.scoreDate = this.scoresPoints[0].EffectiveDate;
+                    if (this.scoresPoints && this.scoresPoints.length > 0) {
+                        this.scoreDate = this.scoresPoints[0].EffectiveDate;
 
-                    for (var i = 0; i < this.scoresPoints.length - 1; i++) {
-                        if (this.scoresPoints[i].Score > this.scoresPoints[i + 1].Score)
-                            this.scoresPoints[i].ScoreProgression = 1;
+                        for (var i = 0; i < this.scoresPoints.length - 1; i++) {
+                            if (this.scoresPoints[i].Score > this.scoresPoints[i + 1].Score)
+                                this.scoresPoints[i].ScoreProgression = 1;
 
-                        if (this.scoresPoints[i].Score < this.scoresPoints[i + 1].Score)
-                            this.scoresPoints[i].ScoreProgression = -1;
+                            if (this.scoresPoints[i].Score < this.scoresPoints[i + 1].Score)
+                                this.scoresPoints[i].ScoreProgression = -1;
 
-                        if (this.scoresPoints[i].Score == this.scoresPoints[i + 1].Score)
-                            this.scoresPoints[i].ScoreProgression = 0;
+                            if (this.scoresPoints[i].Score == this.scoresPoints[i + 1].Score)
+                                this.scoresPoints[i].ScoreProgression = 0;
 
-                    }
+                        }
 
-                    this.scoresPoints[this.scoresPoints.length - 1].ScoreProgression = 2;
+                        this.scoresPoints[this.scoresPoints.length - 1].ScoreProgression = 2;
 
-                    //Set data for UI
-                    this.scoresPointsDDL = [];
-                    if (this.scoresPoints.length > 0) {
-                        this.scoresPoints.forEach(p => {
-                            this.scoresPointsDDL.push({ value: p, label: 'Default' });
-                        });
+                        //Set data for UI
+                        this.scoresPointsDDL = [];
+                        if (this.scoresPoints.length > 0) {
+                            this.scoresPoints.forEach(p => {
+                                this.scoresPointsDDL.push({ value: p, label: 'Default' });
+                            });
 
-                        this.scoresPointsDDL[0].value['isFirst'] = true;
-                        this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
-                        this.scoresPointSelected = this.scoresPointsDDL[0].value;
-                    }
+                            this.scoresPointsDDL[0].value['isFirst'] = true;
+                            this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
+                            this.scoresPointSelected = this.scoresPointsDDL[0].value;
+                        }
 
-                    subject.next(true);
+                        subject.next(true);
 
-                    if (this.allocationData) {
-                        let stype = ScoreType[this.selectedScoreType];
-                        let selected = this.allocationData.filter(x => x.scoreType.toString() == stype.toString());
-                        if (selected.length > 0) {
-                            this.isExternallyCalculated = selected[0]['isExternallyCalculated'];
-                            this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
-                            this.upperThreshold = +selected[0]['upperThreshold'] / 100;
+                        if (this.allocationData) {
+                            let stype = ScoreType[this.selectedScoreType];
+                            let selected = this.allocationData.filter(x => x.scoreType.toString() == stype.toString());
+                            if (selected.length > 0) {
+                                this.isExternallyCalculated = selected[0]['isExternallyCalculated'];
+                                this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
+                                this.upperThreshold = +selected[0]['upperThreshold'] / 100;
+                            }
                         }
                     }
                 });
