@@ -5,126 +5,126 @@
 @searchfield-iconpadding: 4px;
 
 ig-search-field {
+  display: inline-block;
+  min-width: 200px;
+  flex-grow: 1;
+
+  .ig-search-field {
+    position: relative;
     display: inline-block;
     min-width: 200px;
+    width: 100%;
     flex-grow: 1;
 
-    .ig-search-field {
-        position: relative;
-        display: inline-block;
-        min-width: 200px;
-        width: 100%;
-        flex-grow: 1;
-
-        .ig-input {
-            width: 100%;
-            padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding;
-        }
-
-        .ig-search-field-button {
-            border: none;
-            color: @ig-black;
-            background: @ig-color-field-button;
-            border-radius: 2px;
-            position: absolute;
-            right: @searchfield-iconpadding;
-            top: @searchfield-iconpadding;
-            height: @searchfield-iconsize;
-            width: @searchfield-iconsize;
-
-            &.clear {
-                right: @searchfield-iconsize + 2 * @searchfield-iconpadding;
-            }
-
-            &:hover {
-                background: @ig-color-field-button-hover;
-            }
-
-            &:active {
-                background: @ig-color-field-button-active;
-            }
-
-            &:disabled, &[disabled] {
-                color: @ig-black;
-                background: @ig-color-field-button;
-                opacity: 0.33;
-            }
-        }
-
-        .ig-search-field-keypress {
-            color: @ig-grey;
-            text-align: center;
-            position: absolute;
-            right: @searchfield-iconpadding;
-            top: @searchfield-iconpadding;
-            height: @searchfield-iconsize;
-            width: @searchfield-iconsize;
-            padding-top: 2px;
-        }
-
-        &.has-tooltip {
-            width: -webkit-calc(100% - 26px);
-            width: -moz-calc(100% - 26px);
-            width: calc(100% - 26px);
-
-            .ig-search-field-tooltip {
-                display: block;
-                position: absolute;
-                width: 32px;
-                height: 32px;
-                color: @ig-purple;
-                top: 0;
-                right: 28px;
-                text-align: center;
-                line-height: 32px;
-                cursor: pointer;
-            }
-
-            .ig-search-field-button {
-                &.clear {
-                    right: @searchfield-iconsize + 2 * @searchfield-iconpadding + 26;
-                }
-            }
-
-            .ig-input {
-                padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding + 26;
-            }
-        }
+    .ig-input {
+      width: 100%;
+      padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding;
     }
 
-    .dark-mode {
-        color: white;
+    .ig-search-field-button {
+      border: none;
+      color: @ig-black;
+      background: @ig-color-field-button;
+      border-radius: 2px;
+      position: absolute;
+      right: @searchfield-iconpadding;
+      top: @searchfield-iconpadding;
+      height: @searchfield-iconsize;
+      width: @searchfield-iconsize;
 
-        .ig-input:enabled:focus {
-            outline: none;
-            box-shadow: none;
-            border-color: #646a7a;
-        }
+      &.clear {
+        right: @searchfield-iconsize + 2 * @searchfield-iconpadding;
+      }
 
-        input {
-            background: @ig-grey-t5;
-            color: @ig-black;
-            border: none;
+      &:hover {
+        background: @ig-color-field-button-hover;
+      }
 
-            &::placeholder {
-                color: @ig-grey-t1;
-            }
-        }
+      &:active {
+        background: @ig-color-field-button-active;
+      }
 
-        .ig-search-field-keypress {
-            color: @ig-grey-t1;
-        }
-
-        .ig-search-field-button.clear {
-            background-color: @ig-grey-t5;
-            color: @ig-black;
-        }
+      &:disabled, &[disabled] {
+        color: @ig-black;
+        background: @ig-color-field-button;
+        opacity: 0.33;
+      }
     }
+
+    .ig-search-field-keypress {
+      color: @ig-grey;
+      text-align: center;
+      position: absolute;
+      right: @searchfield-iconpadding;
+      top: @searchfield-iconpadding;
+      height: @searchfield-iconsize;
+      width: @searchfield-iconsize;
+      padding-top: 2px;
+    }
+
+    &.has-tooltip {
+      width: -webkit-calc(100% - 26px);
+      width: -moz-calc(100% - 26px);
+      width: calc(100% - 26px);
+
+      .ig-search-field-tooltip {
+        display: block;
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        color: @ig-purple;
+        top: 0;
+        right: 28px;
+        text-align: center;
+        line-height: 32px;
+        cursor: pointer;
+      }
+
+      .ig-search-field-button {
+        &.clear {
+          right: @searchfield-iconsize + 2 * @searchfield-iconpadding + 26;
+        }
+      }
+
+      .ig-input {
+        padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding + 26;
+      }
+    }
+  }
 
   .flexsimple-search {
     .ig-search-field,
     &.has-tooltip {
       width: 100%;
+    }
+  }
+
+  .dark-mode {
+    color: white;
+
+    .ig-input:enabled:focus {
+      outline: none;
+      box-shadow: none;
+      border-color: #646a7a;
+    }
+
+    input {
+      background: @ig-grey-t5;
+      color: @ig-black;
+      border: none;
+
+      &::placeholder {
+        color: @ig-grey-t1;
+      }
+    }
+
+    .ig-search-field-keypress {
+      color: @ig-grey-t1;
+    }
+
+    .ig-search-field-button.clear {
+      background-color: @ig-grey-t5;
+      color: @ig-black;
     }
   }
 }
