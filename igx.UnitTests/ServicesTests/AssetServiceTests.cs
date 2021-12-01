@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using AutoFixture;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
@@ -34,21 +35,60 @@ namespace igx.UnitTests.ServicesTests
 
         public static IEnumerable<object[]> GetAssetNameTestData()
         {
-            return new List<object[]>
-            {
-                new object[] { new AssetType() { Object = "ArtifactType", Class = AssetTypeClass.BusinessAsset}, CommonNames.AssetTypeClass_Business },
-                new object[] { new AssetType() { Object = "ArtifactType", Class = AssetTypeClass.TechnicalAsset}, CommonNames.AssetTypeClass_Technical},
-                new object[] { new AssetType() { Object = "ArtifactType", Class = It.IsAny<AssetTypeClass>() }, string.Empty },
-                new object[] { new AssetType() { Object = "PolicyType", Class = It.IsAny<AssetTypeClass>()}, CommonNames.AssetTypeClass_Policy },
-                new object[] { new AssetType() { Object = "ReferenceItemType", Class = It.IsAny<AssetTypeClass>() }, "Reference: " },
-                new object[] { new AssetType() { Object = "RuleType", Class = It.IsAny<AssetTypeClass>() }, CommonNames.AssetTypeClass_Rule },
-                new object[] { new AssetType() { Object = "TaxonomyType", Class = It.IsAny<AssetTypeClass>() }, CommonNames.AssetTypeClass_Model },
-                new object[] { new AssetType() { Object = "AttributeType", Class = It.IsAny<AssetTypeClass>() }, "Attribute: " },
-                new object[] { new AssetType() { Object = "GroupType", Class = It.IsAny<AssetTypeClass>() }, "Group: " },
-                new object[] { new AssetType() { Object = "OrganizationType", Class = It.IsAny<AssetTypeClass>() }, "Organization: " },
-                new object[] { new AssetType() { Object = "ResourceType", Class = It.IsAny<AssetTypeClass>() }, "Resource: " },
-                new object[] { new AssetType() { Object = It.IsAny<string>(), Class = It.IsAny<AssetTypeClass>() }, string.Empty },
-            };
+            var f = new Fixture();
+
+
+            // ReSharper disable JoinDeclarationAndInitializer 
+            AssetType assetType;
+            string expectedResult;
+
+            assetType = new AssetType() { Object = "ArtifactType", Class = AssetTypeClass.BusinessAsset, Name = f.Create<string>() };
+            expectedResult = $"{CommonNames.AssetTypeClass_Business}: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "ArtifactType", Class = AssetTypeClass.TechnicalAsset, Name = f.Create<string>() };
+            expectedResult = $"{CommonNames.AssetTypeClass_Technical}: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "ArtifactType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"{assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "PolicyType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"{CommonNames.AssetTypeClass_Policy}: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "ReferenceItemType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"Reference: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "RuleType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"{CommonNames.AssetTypeClass_Rule}: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "TaxonomyType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"{CommonNames.AssetTypeClass_Model}: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "AttributeType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"Attribute: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "GroupType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"Group: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "OrganizationType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"Organization: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = "ResourceType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"Resource: {assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
+
+            assetType = new AssetType() { Object = It.IsAny<string>(), Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
+            expectedResult = $"{assetType.Name}";
+            yield return new object[] { assetType, expectedResult };
         }
     }
 }
