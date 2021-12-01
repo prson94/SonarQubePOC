@@ -128,6 +128,9 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         if (this.uri.toLowerCase().indexOf("sidebar") !== -1) {
             res = true;
         }
+        if (this.uri.toLowerCase().indexOf("dashboard/ArtifactType".toLowerCase()) !== -1) {
+            res = true;
+        }
         return res;
     }
 
