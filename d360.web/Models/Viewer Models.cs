@@ -37,7 +37,7 @@ namespace d360.web.Models
         public Guid AssetUid { get; set; }
         public long AssetID { get; set; }
         public bool HasResponsibilityReadAccess { get; set; }
-
+        public bool CanEdit { get; set; }
         public List<dynamic> Scores { get; set; }
         public int columns { get; set; }
         public List<DetailReadOnlyRowModel> rows { get; set; }

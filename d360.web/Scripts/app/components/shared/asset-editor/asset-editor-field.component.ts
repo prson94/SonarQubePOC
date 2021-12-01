@@ -751,7 +751,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.lookupValues = Array.from({ length: res.count });
             }
 
-            if (this.lookupValues.length > 10) {
+            if (this.lookupValues.length > 10 || loadParams["filter"]) {
                 this.showLookupSearchField = true;
             }
             else {

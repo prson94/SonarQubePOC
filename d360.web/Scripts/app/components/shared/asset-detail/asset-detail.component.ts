@@ -342,7 +342,6 @@ export class AssetDetailComponent implements OnChanges {
         if (this.objectType) {
             isAllowedObject = allowedObjects.indexOf(this.objectType) !== -1;
         }
-
-        return this.hasEditLink && isAllowedObject;
+        return this.hasEditLink && isAllowedObject && this.model?.CanEdit;
     }
 }
