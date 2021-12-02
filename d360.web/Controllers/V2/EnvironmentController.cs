@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -13,6 +14,7 @@ using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,6 +23,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
 using static d360.model.CommunityContext;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -36,11 +39,13 @@ namespace d360.web.Controllers.V2
     {
         IStorageProvider _storage;
         IAssetRepository _assetRepository;
+        readonly ICompanyContext _company;
 
         public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             _storage = storage;
             _assetRepository = assetRepository;
+            _company = company;
 
         }
 
@@ -100,7 +105,7 @@ namespace d360.web.Controllers.V2
                             break;
                     }
 
-                    return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "Rebuild request received and accepted.", id = "" });
+                    return Request.CreateResponse(HttpStatusCode.Created, new { type = ApiMessages.confirm, title = ApiMessages.Success, action =ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" });
                 }
                 else
                 {
@@ -170,6 +175,34 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
+        /// Retrieves a list of epplication settings.
+        /// </summary>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("appsettings"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetAppSettings()
+        {
+            try
+            {
+                var settings = new List<ApplicationSetting>();
+
+                settings.Add(new ApplicationSetting { Name = "HelpBaseUri", Value = Config.GetValue<string>("HelpBaseUri") });
+                settings.Add(new ApplicationSetting { Name = "AppInsightsInstrumentationKey", Value = Config.GetValue<string>("AppInsightsInstrumentationKey") });
+
+                return Request.CreateResponse(HttpStatusCode.OK, settings);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+        }
+
+
+        /// <summary>
         /// Retrieves a list of company settings.
         /// </summary>
         /// <returns>An HTTP status code and message.</returns>
@@ -181,11 +214,6 @@ namespace d360.web.Controllers.V2
         ]
         public HttpResponseMessage Settings()
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-            }
-
             var queryParams = Request.GetQueryNameValuePairs();
             var _settingId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_settingid").Value;
             int? settingId = null;
@@ -221,13 +249,258 @@ namespace d360.web.Controllers.V2
 
         }
 
+        private static readonly Dictionary<string, byte[]> ValidImagefileHeaders = new Dictionary<string, byte[]>
+        {
+            { "image/jpeg", new byte[]{ 0xFF, 0xD8 }},
+            { "image/gif", new byte[]{ 0x47, 0x49, 0x46 }},
+            { "image/png", new byte[]{ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }},
+            { "image/x-icon", new byte[]{ 0x00, 0x00, 0x01, 0x00 }},
+            { "image/vnd.microsoft.icon", new byte[]{ 0x00, 0x00, 0x01, 0x00 }},
+        };
+
+        private bool IsValidImageData(string data)
+        {
+            if(string.IsNullOrEmpty(data))
+            {
+                return true;
+            }
+            var match = MimeTypeExtensionsMap.RegEx.Match(data);
+            var imgMime = match.Groups["mime"].Value;
+
+            if (ValidImagefileHeaders.ContainsKey(imgMime))
+            {
+                var imgByteArray = Convert.FromBase64String(match.Groups["data"].Value);
+
+                if (imgByteArray.Length >= ValidImagefileHeaders[imgMime].Length)
+                {
+                    var slice = imgByteArray.Take(ValidImagefileHeaders[imgMime].Length);
+                    if (slice.SequenceEqual(ValidImagefileHeaders[imgMime]))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private async Task<string> updateSingleSettingImageFile(string folder, string url, string data)
+        {
+            if (string.IsNullOrEmpty(data))
+            {
+                var filesToDelete = _storage.ListFilenamesByPrefix(folder, $"{Company.CurrentCompanyID}.");
+                filesToDelete.ForEach(f =>
+                {
+                    _storage.DeleteFile(folder, f).Wait();
+                });
+            }
+            else
+            {
+                var match = MimeTypeExtensionsMap.RegEx.Match(data);
+                var imgMime = match.Groups["mime"].Value;
+                var imgData = match.Groups["data"].Value;
+                var imgExtension = MimeTypeExtensionsMap.GetExtension(imgMime);
+                var imgByteArray = Convert.FromBase64String(imgData);
+                using (var imgStream = new MemoryStream(imgByteArray))
+                {
+                    var imgFileName = string.Format("{0}{1}", Company.CurrentCompanyID, imgExtension);
+                    await _storage.CreateFile(folder, imgFileName, imgStream).ConfigureAwait(false);
+                    data = $"{url}{imgFileName}";
+                }
+            }
+
+            return data;
+        }
+
+        private void updateSingleSetting(SettingInfo setting, CompanySettingApiUpdateModel model)
+        {
+            if (setting == null)
+            {
+                throw new GenericException(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
+            }
+            if (setting.Locked)
+            {
+                throw new GenericException(HttpStatusCode.Forbidden, ApiMessages.SettingLocked);
+            }
+            if (!model.HasExactlyOneValue)
+            {
+                throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.SettingValueProvided);
+            }
+
+            bool clearSetting = false;
+            string value = "";
+
+            string valueErrorMessage = ApiMessages.DataTypeValueNotMatched;
+            switch (setting.Type)
+            {
+                case SettingType.Number:
+                    if (model.NumberSetting == null)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
+                    }
+
+                    if (model.NumberSetting.Value == null)
+                    {
+                        clearSetting = true;
+                    }
+                    else
+                    {
+                        if (int.TryParse(model.NumberSetting.Value, out int val))
+                        {
+                            value = val.ToString();
+                        }
+                        else
+                        {
+                            throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.InvalidNumber);
+                        }
+                    }
+                    break;
+                case SettingType.Boolean:
+                    if (model.BooleanSetting == null)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
+                    }
+
+                    if (model.BooleanSetting.Value == null)
+                    {
+                        clearSetting = true;
+                    }
+                    else
+                    {
+                        if (bool.TryParse(model.BooleanSetting.Value, out bool val))
+                        {
+                            value = (val.ToString() ?? "").ToLower();
+                        }
+                        else
+                        {
+                            throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.InvalidBoolean);
+                        }
+                    }
+
+                    break;
+                case SettingType.IPAddress:
+                    if (model.IpAddressSetting == null)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
+                    }
+
+                    if (model.IpAddressSetting.Value == null || model.IpAddressSetting.Value.Count == 0)
+                    {
+                        clearSetting = true;
+                    }
+
+                    if (model.IpAddressSetting.Value?.Any() ?? false)
+                    {
+                        value = "<ips />";
+                        var xml = new XElement("ips");
+                        foreach (var ip in model.IpAddressSetting.Value)
+                        {
+                            if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
+                            {
+                                throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.MissingIPAddressValue);
+                            }
+                            if (!IPAddress.TryParse(ip.Start, out IPAddress _))
+                            {
+                                throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.StartIPAddressNotValid, ip.Start));
+                            }
+                            if (!IPAddress.TryParse(ip.End, out IPAddress _))
+                            {
+                                throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.EndIPAddressNotValid, ip.End));
+                            }
+
+                            xml.Add(new XElement("ip",
+                                new XElement("name", ip.Name),
+                                new XElement("start", ip.Start),
+                                new XElement("end", ip.End)
+                            ));
+
+                        }
+
+                        value = xml.ToString();
+                    }
+                    break;
+
+                case SettingType.Guid:
+                    if (model.GuidSetting == null)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
+                    }
+
+                    if (model.GuidSetting.Value == null)
+                    {
+                        clearSetting = true;
+                    }
+
+                    value = model.GuidSetting.Value.ToString();
+
+                    break;
+                default:
+                    if (model.StringSetting == null)
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
+                    }
+
+                    if (model.StringSetting.Value == null)
+                    {
+                        clearSetting = true;
+                    }
+
+                    value = model.StringSetting.Value;
+
+                    break;
+            }
+
+            if(setting.ID == Setting.CompanyLogo || setting.ID == Setting.CompanyIcon || setting.ID == Setting.HomePageBackgroundImage)
+            {
+                if (!IsValidImageData(value))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
+                }
+            }
+
+            // Sanitize allowed CORS origins
+            if (setting.ID == Setting.AllowedOrigins && !string.IsNullOrEmpty(value))
+            {
+                value = string.Join(",", value
+                    .Split(',')
+                    .Select(o => o.Trim())
+                    .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
+                    .ToList());
+            }
+
+            if (setting.ID == Setting.CompanyLogo)
+            {
+                value = updateSingleSettingImageFile(constants.COMPANY_LOGO_FOLDER, constants.COMPANY_LOGO_URL, value).Result;
+            }
+
+            if (setting.ID == Setting.CompanyIcon)
+            {
+                value = updateSingleSettingImageFile(constants.COMPANY_ICON_FOLDER, constants.COMPANY_ICON_URL, value).Result;
+            }
+
+            if (setting.ID == Setting.HomePageBackgroundImage)
+            {
+                value = updateSingleSettingImageFile(constants.COMPANY_RESOURCES_FOLDER, constants.COMPANY_RESOURCES_URL, value).Result;
+            }
+
+            if (clearSetting)
+            {
+                SettingsRepository.DeleteSetting(setting.ID);
+            }
+            else
+            {
+                SettingsRepository.UpsertSetting(setting.ID, value);
+            }
+        }
+
         /// <summary>
         /// Update a setting. If the setting value is null, it will be set to the default value.
         /// </summary>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
-            Route("settings"), ApiExplorerSettings(IgnoreApi = true)
+            Route("settings"), 
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage UpdateSetting(CompanySettingApiUpdateModel model)
         {
@@ -237,164 +510,65 @@ namespace d360.web.Controllers.V2
             }
 
             if (model == null)
+            {
                 return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+            }
 
             try
             {
                 var setting = Setting.ActionMessage.GetAsList().SingleOrDefault(s => (int)s.ID == model.SettingID);
-
-                if (setting == null)
-                    return ReturnApiError(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
-
-                if (setting.Locked)
-                    return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.SettingLocked);
-
-                if (!model.HasExactlyOneValue)
-                    return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.SettingValueProvided);
-
-                bool clearSetting = false;
-                string value = "";
-
-                string valueErrorMessage = ApiMessages.DataTypeValueNotMatched;
-                switch (setting.Type)
-                {
-                    case SettingType.Number:
-                        if (model.NumberSetting == null)
-                        {
-                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
-                        }
-
-                        if (model.NumberSetting.Value == null)
-                        {
-                            clearSetting = true;
-                        }
-                        else
-                        {
-                            if (int.TryParse(model.NumberSetting.Value, out int val))
-                            {
-                                value = val.ToString();
-                            }
-                            else
-                            {
-                                return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.InvalidNumber);
-                            }
-                        }
-                        break;
-                    case SettingType.Boolean:
-                        if (model.BooleanSetting == null)
-                        {
-                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
-                        }
-
-                        if (model.BooleanSetting.Value == null)
-                        {
-                            clearSetting = true;
-                        }
-                        else
-                        {
-                            if (bool.TryParse(model.BooleanSetting.Value, out bool val))
-                            {
-                                value = (val.ToString() ?? "").ToLower();
-                            }
-                            else
-                            {
-                                return ReturnApiError(HttpStatusCode.BadRequest,ApiMessages.InvalidBoolean);
-                            }
-                        }
-
-                        break;
-                    case SettingType.IPAddress:
-                        if (model.IpAddressSetting == null)
-                        {
-                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
-                        }
-
-                        if (model.IpAddressSetting.Value == null || model.IpAddressSetting.Value.Count == 0)
-                        {
-                            clearSetting = true;
-                        }
-
-                        if (model.IpAddressSetting.Value?.Any() ?? false)
-                        {
-                            value = "<ips />";
-                            var xml = new XElement("ips");
-                            foreach (var ip in model.IpAddressSetting.Value)
-                            {
-                                if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
-                                    return ReturnApiError(HttpStatusCode.BadRequest,ApiMessages.MissingIPAddressValue);
-                                if (!IPAddress.TryParse(ip.Start, out IPAddress _))
-                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(ApiMessages.StartIPAddressNotValid, ip.Start));
-                                if (!IPAddress.TryParse(ip.End, out IPAddress _))
-                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(ApiMessages.EndIPAddressNotValid, ip.End));
-
-                                xml.Add(new XElement("ip",
-                                    new XElement("name", ip.Name),
-                                    new XElement("start", ip.Start),
-                                    new XElement("end", ip.End)
-                                ));
-
-                            }
-
-                            value = xml.ToString();
-                        }
-                        break;
-
-                    case SettingType.Guid:
-                        if (model.GuidSetting == null)
-                        {
-                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
-                        }
-
-                        if (model.GuidSetting.Value == null)
-                        {
-                            clearSetting = true;
-                        }
-
-                        value = model.GuidSetting.Value.ToString();
-
-                        break;
-                    default:
-                        if (model.StringSetting == null)
-                        {
-                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
-                        }
-
-                        if (model.StringSetting.Value == null)
-                        {
-                            clearSetting = true;
-                        }
-
-                        value = model.StringSetting.Value;
-
-                        break;
-                }
-
-                // Sanitize allowed CORS origins
-                if (setting.ID == Setting.AllowedOrigins && !string.IsNullOrEmpty(value))
-                {
-                    value = string.Join(",", value
-                        .Split(',')
-                        .Select(o => o.Trim())
-                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
-                        .ToList());
-                }
-
-                if (clearSetting)
-                {
-                    SettingsRepository.DeleteSetting(setting.ID);
-                }
-                else
-                {
-                    SettingsRepository.UpsertSetting(setting.ID, value);
-                }
-
+                updateSingleSetting(setting, model);
                 return Request.CreateResponse(HttpStatusCode.OK);
+            }
+            catch (GenericException ex)
+            {
+                return ReturnApiError(ex.StatusCode, ex.StatusMessage);
             }
             catch (Exception ex)
             {
                 return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
             }
+        }
 
+        /// <summary>
+        /// Update a setting. If the setting value is null, it will be set to the default value.
+        /// </summary>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPut,
+            Route("settings/batch"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage UpdateSettings(List<CompanySettingApiUpdateModel> models)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+            }
+
+            if (models == null || models.Count == 0)
+            { 
+                return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+            }
+
+            try
+            {
+                var list = Setting.ActionMessage.GetAsList();
+                models.ForEach(model =>
+                {
+                    var setting = list.SingleOrDefault(s => (int)s.ID == model.SettingID);
+                    updateSingleSetting(setting, model);
+                });
+                return Request.CreateResponse(HttpStatusCode.OK);
+            }
+            catch (GenericException ex)
+            {
+                return ReturnApiError(ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+            }
         }
 
         /// <summary>
@@ -737,7 +911,7 @@ namespace d360.web.Controllers.V2
 
         /// <summary>
         /// Retrieves environment licensing info. 
-        /// Infogix users are excluded from user counts.
+        /// Precisely users are excluded from user counts.
         /// </summary>
         /// <returns></returns>
         [
@@ -773,6 +947,7 @@ namespace d360.web.Controllers.V2
                 var allusers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
                                                                             WHERE gr.Email not like '%@infogix.com'
                                                                             and gr.Email not like '%@data3sixty.com'
+                                                                            and gr.Email not like '%@precisely.com'
                                                                             and gr.State = 1").ConfigureAwait(false);
             
 
@@ -780,6 +955,7 @@ namespace d360.web.Controllers.V2
                 var allAdminUsers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
                                                                             WHERE gr.Email not like '%@infogix.com'
                                                                             and gr.Email not like '%@data3sixty.com'
+                                                                            and gr.Email not like '%@precisely.com'
                                                                             and gr.State = 1 
                                                                             and gr.IsAdministrator = 1").ConfigureAwait(false);
               
@@ -806,14 +982,14 @@ namespace d360.web.Controllers.V2
                             1
 		                    from #AssetTypesWithResponsibilities AT
 			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
-			                    where 1 = Case 
-		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm > 0 then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END
+			                    where ((permission.PermissionsBitMask is null and gr.IsAdministrator = 1)
+		                               or (permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm > 0)
+		                               or (permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd))
 
                     )   
                     and gr.Email not like '%@infogix.com' 
                     and gr.Email not like '%@data3sixty.com'  
+                    and gr.Email not like '%@precisely.com'
                     and gr.State = 1
                     and gr.IsAdministrator = 0
                 ";
@@ -832,6 +1008,321 @@ namespace d360.web.Controllers.V2
                 SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetLicensingDetails => " } });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Gets help menu items.
+        /// </summary>
+        /// <returns></returns>
+        [
+           HttpGet,
+           MapToApiVersion("2.0"),
+           Route("help"),
+           SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.OK, "Gets help menu items.", typeof(List<HelpMenuItem>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetHelpMenuItems()
+        {
+            const string supportUrl = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
+            const string aboutUrl = "about";
+            var baseUrl = System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString();
+
+            try
+            {
+                var items = Company.HelpResources.ToList();
+                List<HelpMenuItem> helpItems = new List<HelpMenuItem>();
+
+                foreach (var item in items)
+                {
+                    HelpMenuItem help = new HelpMenuItem();
+                    help.ID = item.ID;
+                    help.Description = item.Description;
+                    help.Name = item.Name;
+                    if (item.isSystem && (item.Url != aboutUrl && item.Url != supportUrl))
+                    {
+                        help.Url = baseUrl + item.Url;
+                    }
+                    else
+                    {
+                        help.Url = item.Url;
+                    }
+                    help.order = item.order;
+                    help.visibility = item.visibility;
+                    help.uid = (Guid)item.uid;
+                    help.isEditable = item.isEditable;
+                    help.isSystem = item.isSystem;
+
+                    helpItems.Add(help);
+                }
+
+                var response = Request.CreateResponse(HttpStatusCode.OK, helpItems);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
+
+
+        /// <summary>
+        /// Add new help menu items.
+        /// </summary>
+        /// <returns></returns>
+        [
+           HttpPost,
+           MapToApiVersion("2.0"),
+           Route("help"),
+           SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.OK, "Adds new help menu items.", typeof(List<HelpMenuItemMessage>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> AddHelpMenuItems(List<AddHelpMenuItem> items)
+        {
+            List<int> visibilties = new List<int> { 1, 2, 3 };
+            List<Guid> uids = new List<Guid>();
+            List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
+
+            try
+            {
+                foreach (var item in items)
+                {
+                    if (item.Name == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+                    }
+                    if (item.Name.Trim() == "")
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+                    }
+                    if (item.Name.Length > 500)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
+                    }
+                    if (item.Url == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+                    }
+                    if (item.Url.Trim() == "")
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+                    }
+                    if (item.Url.Length > 2000)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
+                    }
+                    if (!visibilties.Contains(item.visibility))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
+                    }
+                    if(item.order < 0)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuOrderError)).ConfigureAwait(false);
+                    }
+
+                    var uid = Guid.NewGuid();
+                    uids.Add(uid);
+                    _company.HelpResources.Add(new HelpResource
+                    {
+                        Name = item.Name,
+                        Description = item.Description,
+                        Url = item.Url,
+                        uid = uid,
+                        isEditable = true,
+                        visibility = item.visibility,
+                        order = item.order,
+                        isSystem = false
+                    });
+                }
+
+                _company.SaveChanges();
+                foreach(var i in uids)
+                {
+                    result.Add(new HelpMenuItemMessage{ uid = i, title = ApiMessages.HelpMenuItemsCreated, message = ApiMessages.HelpItemsAdded });
+                }
+                return await Task.FromResult<IHttpActionResult>(
+                            ResponseMessage(
+                                Request.CreateResponse(
+                                    HttpStatusCode.OK, result
+                                )
+                            )
+                        ).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Updates a list of help menu items.
+        /// </summary>
+        /// <returns></returns>
+        [
+           HttpPut,
+           MapToApiVersion("2.0"),
+           Route("help"),
+           SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.OK, "Updates already exisiting help menu items.", typeof(List<HelpMenuItemMessage>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> UpdateHelpMenuItems(List<UpdateHelpMenuItem> items)
+        {
+            List<int> visibilties = new List<int> { 1, 2, 3 };
+            List<Guid> uids = new List<Guid>();
+            List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
+
+            try
+            {
+                foreach (var item in items)
+                {
+                    HelpResource helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
+
+                    if (item.Name == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+                    }
+                    if (item.Name.Trim() == "")
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+                    }
+                    if (item.Name.Length > 500)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
+                    }
+                    if (item.Url == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+                    }
+                    if (item.Url.Trim() == "")
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+                    }
+                    if (item.Url.Length > 2000)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
+                    }
+                    if (!visibilties.Contains(item.visibility))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
+                    }
+                    if (item.order < 0)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuOrderError)).ConfigureAwait(false);
+                    }
+
+                    if (helpItem != null)
+                    {
+                        uids.Add((Guid)helpItem.uid);
+                        helpItem.Description = item.Description;
+                        helpItem.Name = item.Name;
+                        helpItem.order = item.order;
+                        helpItem.visibility = item.visibility;
+                        if (!helpItem.isSystem)
+                        {
+                            helpItem.Url = item.Url;
+                        }
+                    }
+                }
+
+                _company.SaveChanges();
+                if (uids.Count > 0)
+                {
+                    foreach (var i in uids)
+                    {
+                        result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsUpdated, message = ApiMessages.HelpMenuSuccess });
+                    }
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
+                else
+                {
+                    result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.BadRequest, message = ApiMessages.InvalidHelpUpdateUid });
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a list of help menu items.
+        /// </summary>
+        /// <returns></returns>
+        [
+           HttpDelete,
+           MapToApiVersion("2.0"),
+           Route("help"),
+           SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.OK, "Deletes currently created help menu items.", typeof(List<HelpMenuItemMessage>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> DeleteHelpMenuItems(List<DeleteMenuItem> items)
+        {
+            List<Guid> uids = new List<Guid>();
+            List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
+
+            try
+            {
+                foreach (var item in items)
+                {
+                    var helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
+                    if (helpItem != null && helpItem.isSystem)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorDeletingDefaultHelpItem)).ConfigureAwait(false);
+                    }
+                    if (helpItem != null && !helpItem.isSystem)
+                    {
+                        uids.Add(item.uid);
+                        _company.HelpResources.Remove(helpItem);
+                    }
+                }
+
+                _company.SaveChanges();
+                if (uids.Count > 0)
+                {
+                    foreach (var i in uids)
+                    {
+                        result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsDeleted, message = ApiMessages.HelpItemsDeleted });
+                    }
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
+                else
+                {
+                    result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.BadRequest, message = ApiMessages.InvalidHelpDeleteUid });
+                    return await Task.FromResult<IHttpActionResult>(
+                                ResponseMessage(
+                                    Request.CreateResponse(
+                                        HttpStatusCode.OK, result
+                                    )
+                                )
+                            ).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
             }
         }
     }

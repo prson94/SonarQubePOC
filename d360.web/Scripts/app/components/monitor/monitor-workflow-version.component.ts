@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, EventEmitter, Output, Input } from "@angular/core";
+import { CompanySettingsService } from "../../services/settings.service";
 import { BaseComponent } from "../shared/base.component";
 
 
@@ -29,7 +30,7 @@ import { BaseComponent } from "../shared/base.component";
 
 `
 })
-export class MonitorWorkflowVersionComponent extends BaseComponent implements OnInit {
+export class MonitorWorkflowVersionComponent extends BaseComponent {
 
     @Output() onFilterChanged = new EventEmitter();
     @Output() onMonitorListChanged = new EventEmitter();
@@ -50,9 +51,8 @@ export class MonitorWorkflowVersionComponent extends BaseComponent implements On
     filteredTypes: any[];
     expandRow: boolean = false;
 
-    ngOnInit(): void {
-        
-
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     filterChange($event) {

@@ -13,7 +13,7 @@ using d360.core.entities;
 
 namespace d360.web
 {
-    public class CompanyIDCheckMiddleware
+    public class CompanyIDCheckMiddleware: BaseMiddleware
     {
         public class cd
         {
@@ -31,17 +31,19 @@ namespace d360.web
         async Task<List<cd>> loadCache()
         {
             var key = "CompanyPrefixes";
-            var cache = new MemoryCachingProvider();//RedisCachingProvider();
-            var dict = cache.GetItem<List<cd>>(key);
+            var dict = Cache.GetItem<List<cd>>(key);
 
             if (dict == null)
             {
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
                     cnn.Open();
-                    dict = (await cnn.QueryAsync<cd>("select CompanyID, DomainSettingID, UrlPrefix from CompanyDomainSetting")).ToList();                                        
+                    dict = (await cnn.QueryAsync<cd>(@"
+select	S.CompanyID, S.DomainSettingID, S.UrlPrefix 
+from	CompanyDomainSetting S 
+		inner join Company E on E.ID = S.CompanyID and E.Status = 'Active'")).ToList();                                        
                 }
-                cache.SetItem(key, dict, true, 5);
+                Cache.SetItem(key, dict, true, 5);
             }
             return dict;
         }

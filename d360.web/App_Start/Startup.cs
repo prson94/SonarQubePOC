@@ -9,6 +9,8 @@ using System;
 using Autofac;
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
+using d360.web.Handlers;
+using MediatR.Extensions.Autofac.DependencyInjection;
 
 [assembly: OwinStartup(typeof(d360.web.Startup))]
 
@@ -24,6 +26,7 @@ namespace d360.web
             
             GlobalFilters.Filters.Add(new AiHandleErrorAttribute());
             GlobalFilters.Filters.Add(new NoCacheAttribute());
+
             if (!System.Web.HttpContext.Current.IsDebuggingEnabled)
             {
                 GlobalFilters.Filters.Add(new RequireHttpsAttribute());
@@ -63,16 +66,15 @@ namespace d360.web
 
             try
             {
-                var builder = new ContainerBuilder();
                 var di = new DiModel();
-                builder.RegisterControllers(typeof(MvcApplication).Assembly);
+
                 var container = di.GetContainer();                
                 
                 DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
 
                 app.UseAutofacMiddleware(container);
                 app.UseAutofacMvc();
-                                
+
                 // For WebAPI:
                 var config = GlobalConfiguration.Configuration; 
                 config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
@@ -86,7 +88,7 @@ namespace d360.web
 
             #endregion
 
-            app.Use<CompanyIDCheckMiddleware>();
+            app.Use<CompanyIDCheckMiddleware>(); // This must be first, as it checks for active environments and clients.
             app.Use<UserIDCheckMiddleware>();
             app.Use<IpRestrictionMiddleware>();
             app.Use<ContractValidationMiddleware>();

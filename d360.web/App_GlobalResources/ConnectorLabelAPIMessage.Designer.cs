@@ -70,15 +70,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not valid uid!.
-        /// </summary>
-        internal static string CustomUidNotValid {
-            get {
-                return ResourceManager.GetString("CustomUidNotValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Error while consolidating connector labels.
         /// </summary>
         internal static string ErrorConsolidateLabel {

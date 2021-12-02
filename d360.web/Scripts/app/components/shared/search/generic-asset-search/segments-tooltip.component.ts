@@ -38,15 +38,6 @@ export class SegmentsTooltipComponent implements OnInit {
                     case AssetTypeClass.BusinessAsset:
                         this.assetTypeText = "Business Asset";
                         break;
-                    case AssetTypeClass.Fusion:
-                        this.assetTypeText = "Fusion";
-                        break;
-                    case AssetTypeClass.FusionAttribute:
-                        this.assetTypeText = "Fusion Attribute";
-                        break;
-                    case AssetTypeClass.FusionQuery:
-                        this.assetTypeText = "Fusion Query";
-                        break;
                     case AssetTypeClass.Model:
                         this.assetTypeText = "Model";
                         break;

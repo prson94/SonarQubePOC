@@ -138,13 +138,10 @@ export class FieldTypeItemDisplayFieldEditorModel {
 
 export class FieldTypeRelationItemEditorModel {
     ID: number;
-    ReferenceType: ComplexLookupRelationType;
-    ChildIntersectType: number;
     DisplayFields: FieldTypeItemDisplayFieldEditorModel[] = [];
 
     SortOrderList: any[] = [];
     selectedRelationItemID: string;
-    selectedChildIntersectType: string;
     relationItems: any[];
     relationsLoading = false;
     displayValue: string;
@@ -184,7 +181,6 @@ export class Lookups {
     DataTypes: SelectItem[];
     Patterns: SelectItem[];
     IntersectTypes: LookupItem[];
-    FusionAttributeTypes: SelectItem[];
     Lookups: SelectItem[];
     Field_JsonFields: SelectItem[];
     Field_JsonDataTypes: SelectItem[];
@@ -205,12 +201,6 @@ export class LookupItem {
     label: string;
 }
 
-export enum ComplexLookupRelationType {
-    StandardRelationship = 1,
-    ChildRelationship = 2,
-    ChildItem = 3,
-    ParentItem = 4
-}
 export enum Direction {
     Back = 1,
     Forward = 2,

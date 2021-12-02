@@ -1,0 +1,53 @@
+﻿<span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
+    <div class="header-button"><i class="fa fa-question-circle"></i></div>
+    <div class="header-help search-child header-profile-panel">
+        <ul class="header-help-dropdown">
+            <ng-container *ngFor="let i of items">
+                <li *ngIf="i.visibility == 1 && i.Url != 'about'" class="header-item" pTooltip="{{i.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
+                <li *ngIf="i.visibility == 2 && isAdmin && i.Url != 'about'" class="header-item" pTooltip="{{i.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
+                <li *ngIf="i.visibility == 1 && (i.Url == 'about' && i.isSystem == 1)" class="header-item" pTooltip="{{i.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">{{i.Name}}</a></div></div></li>
+                <li *ngIf="i.visibility == 2 && (i.Url == 'about' && i.isSystem == 1) && isAdmin" class="header-item" pTooltip="{{i.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">{{i.Name}}</a></div></div></li>
+            </ng-container>
+        </ul>
+    </div>
+    <d3s-modal #popupBox
+               [showTitle]="false"
+               additionalClasses="about medium-dialog"
+               (onClose)="closeAbout()"
+               [isVisible]="isModalVisible"
+               (keydown)="checkKey($event)"
+               [includePreciselyLogo]="true"
+               tabindex=-1>
+        <div class="content">
+            <div class="flex row about-content">
+                <div class="about-logo">
+                    <img class="about-image" src="../../../../../Content/images/About-P.png" />
+                </div>
+                <div class="about-info">
+                    <img class="precisely-image" src="../../../../../Content/images/About-Govern.png" />
+
+                    <ul>
+                        <li><b>Build Version:</b> {{this.versionNumber}}</li>
+                        <li><b>Build Date:</b> {{this.buildDate | date:'short'}}</li>
+                        <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
+                        <li><a class="thirdPartyLicence" href="/Content/thirdpartylicenses.html" target="_blank">Third Party Licenses</a></li>
+                        <li><b>Usage information:</b> <br /></li>
+                        <ul class="licence-info" *ngIf="licenceData">
+                            <li><strong>Asset count:</strong> {{numberWithCommas(licenceData.assets.count)}}</li>
+                            <li><strong>User count:</strong> {{numberWithCommas(licenceData.users.total)}}</li>
+                            <li><strong>Contributor count:</strong> {{numberWithCommas(licenceData.users.contributors)}}</li>
+                            <li><strong>Administrator count:</strong> {{numberWithCommas(licenceData.users.administrators)}}</li>
+                        </ul>
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                    </ul>
+                    <br />
+                    <p>Copyright 2014, {{this.buildDate | date:'yyyy'}} Precisely.</p>
+                </div>
+            </div>
+        </div>
+        <div class="action-bar">
+            <span class="grow"></span>
+            <button igButton class="ig-button-primary" focus-me="focusInput" (click)="closeAbout()" label="Close"></button>
+        </div>
+    </d3s-modal>
+</span>

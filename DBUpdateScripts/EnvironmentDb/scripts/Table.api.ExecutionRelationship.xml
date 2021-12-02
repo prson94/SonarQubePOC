@@ -64,4 +64,25 @@ END
 	</rollback>
   </changeSet>
 
+  
+<changeSet author="Puneet Gupta" id="Table.api.ExecutionRelationship-CreateIndexUid-v1">
+  <comment>GOV-15476</comment>
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionRelationship_Uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ApiExecutionRelationship_Uid] ON [api].[ExecutionRelationship] ( [ExecutionID] DESC, [Uid] ASC ) INCLUDE([ItemNumber])
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionRelationship_Uid')
+BEGIN
+	DROP INDEX [IX_ApiExecutionRelationship_Uid] ON [api].[ExecutionRelationship]
+END
+]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

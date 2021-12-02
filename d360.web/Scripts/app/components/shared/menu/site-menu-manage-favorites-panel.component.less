@@ -1,0 +1,37 @@
+@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.manageFavoritesHeader {
+    display: flex;
+    flex-direction: row;
+}
+
+.manageFavoritesHeaderText {
+    color: black;
+    align-self: center;
+    margin-left: 10px;
+}
+
+.removeButton {
+    margin-left: auto;
+}
+
+d3s-loading {
+    color: black;
+}
+
+.menu-item.on {
+    background: @ig-purple-t4;
+}
+
+.favorite-container {
+    display: flex;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+// This magic fixes GOV-16402 - issue with having two scrollbars
+// For some reason, browser incorrectly propagates height of inner content to one of parent containters
+// position:relative causes this element to be independent of parent containers
+.favorites-scroll-fix {
+    position: relative;
+}

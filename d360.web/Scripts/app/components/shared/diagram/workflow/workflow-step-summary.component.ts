@@ -13,6 +13,7 @@ import { GroupService } from '../../../../services/group.service';
 
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 
 @Component({
@@ -46,8 +47,13 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     private groups: SelectItem[] = [];
     private intersectTypes = [];
 
-    constructor(private responsibilityService: ResponsibilityTypeService, private ref: ChangeDetectorRef, private workflowService: WorkflowService, private groupService: GroupService) {
-        super();
+    constructor(
+        private groupService: GroupService,
+        private responsibilityService: ResponsibilityTypeService,
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        private ref: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnInit() {

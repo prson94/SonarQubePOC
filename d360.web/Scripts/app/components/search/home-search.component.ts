@@ -3,11 +3,10 @@ import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
-import { CurrentCompanySettings } from '../../static/company-settings'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Router } from '@angular/router';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
     selector: 'd3s-home-search',
@@ -25,17 +24,21 @@ export class HomeSearchComponent extends BaseComponent {
     private selectedCategory: SearchCategories;
     private searchText: string;
     isExactMatch: boolean = true;
-    searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
+    searchTypes: string[] = [];
 
     private resultsPerPage: number = 5;
     private pageNumber: number = 0;
        
-    constructor(private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService, private router: Router) {
-        super();        
+    constructor(
+        private searchService: SearchService,
+        protected settingsService: CompanySettingsService,
+        private typeaheadSearchService: TypeaheadSearchService,
+        private router: Router) {
+        super(settingsService);        
     }
 
-    ngOnInit() {
-        this.isExactMatch = (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
+    ngOnInit() {        
+        this.searchTypes = (this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).ScalarValue ?? "").split(',');
     }
 
     private navigateSearch() {

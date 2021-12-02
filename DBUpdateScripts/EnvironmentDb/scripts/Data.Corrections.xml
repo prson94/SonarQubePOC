@@ -1363,4 +1363,33 @@ END;
 	]]>
 		</sql>
 	</changeSet>
+	<changeSet author="TKlok" id="Data.Corrections.GOV-15483">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+		<comment>Queue Elasticsearch rebuild after adding AssetPath to index.</comment>
+	<![CDATA[
+INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
+	]]>
+		</sql>
+	</changeSet>
+	
+	<changeSet author="bquinlivan" id="Data.Corrections.GOV-16061">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+		<comment>Remove Govern setting #10 HeaderBackgroundColor.</comment>
+	<![CDATA[
+	IF EXISTS (select * from [dbo].Setting where ID = 10) 
+	BEGIN
+		DELETE FROM [dbo].[Setting] where ID = 10
+	END
+	]]>
+		</sql>
+	</changeSet>
+	<changeSet author="bquinlivan" id="Data.Corrections.GOV-16066">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+		<comment>Remove unused Govern system settings #62 and 23.</comment>
+	<![CDATA[
+		DELETE FROM [dbo].[Setting] where ID = 62 or ID = 23
+	]]>
+		</sql>
+	</changeSet>
 </databaseChangeLog>

@@ -4,6 +4,7 @@ import { BaseComponent } from "../base.component";
 import { DetailField } from "../../../models/object-detail.model";
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 
 class OwnershipResource {
@@ -33,9 +34,10 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
     resources: OwnershipResource[];
 
     constructor(private assetService: AssetService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnDestroy() {

@@ -17,14 +17,14 @@ namespace d360.core.entities
         public string Url { get; set; }
 
         [DataMember]
-        public Guid uid { get; set; }
+        public Guid? uid { get; set; }
 
         [DataMember]
         public int SortIndex { get; set; }
         [DataMember]
         public bool isEditable { get; set; }
         [DataMember]
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         [DataMember]
         public int order { get; set; }
         [DataMember]

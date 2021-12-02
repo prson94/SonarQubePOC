@@ -2,6 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { State } from '../../models/asset.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 
 @Component({
@@ -19,7 +20,7 @@ import { State } from '../../models/asset.model';
                                     <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)" selectedItemsLabel="{0} items selected"></p-multiSelect>
                                 </td>
                                 <td *ngIf="showFilter" style="width:32px">
-                                    <a style="font-size:1.1em" [style.color]="filterMode ? null : '#f00'" (click)="filterModeChange.emit(!filterMode)"><i class="fa fa-filter"></i></a>
+                                    <a style="font-size:1.1em" [style.color]="filterMode ? '#000' : '#f00'" (click)="filterModeChange.emit(!filterMode)"><i class="fa fa-filter"></i></a>
                                 </td>
                             </tr>
                         </tbody>
@@ -41,8 +42,10 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
     @Output() filterClick = new EventEmitter();
     items: any[];
 
-    constructor(protected workflowService: WorkflowService) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        protected workflowService: WorkflowService) {
+        super(settingsService);
     }
 
     ngOnInit() {

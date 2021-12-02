@@ -19,7 +19,10 @@ import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/adva
 import { SidePanelModule } from "../sidepanel/side-panel.module";
 import { CoreModule } from "../core.module";
 import { AssetDetailModule } from "../asset-detail/asset-detail.module";
-
+import { ModalDrawerModule } from '../modal-drawer/gov-modal-drawer.module';
+import { TagPickerModule } from '../controls/tag-picker/tag-picker';
+import { DropdownModule } from 'primeng/dropdown';
+import { DataProfileTimeSeriesComponent } from "./dataprofile-time-series.component";
 
 @NgModule({
     imports: [        
@@ -39,11 +42,15 @@ import { AssetDetailModule } from "../asset-detail/asset-detail.module";
         AdvancedFiltersModule,
         SidePanelModule,
         CoreModule,
-        AssetDetailModule
+        AssetDetailModule,
+        ModalDrawerModule,
+        TagPickerModule,
+        DropdownModule
     ],
     declarations: [
         DataProfileComponent,
-        MatchDetectionComponent
+        MatchDetectionComponent,
+        DataProfileTimeSeriesComponent
     ],
     exports: [
         DataProfileComponent,

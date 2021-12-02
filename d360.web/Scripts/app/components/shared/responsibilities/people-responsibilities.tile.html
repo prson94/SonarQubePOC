@@ -1,18 +1,21 @@
 ﻿<div *ngIf="assetID">
-    <div *ngIf="showTitle === true">
+    <div *ngIf="showTitle === true && !isLoading">
         <header>
             {{title}}
             <d3s-tile-actions [hasAdd]="hasAddResponsibilitiesPermissions()" (addClick)="add();" *ngIf="!isEditing && !isAdding && !isDeleting" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
     </div>
-    <div *ngIf="isLoading" style="width:100%; text-align:center;">
-        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-    </div>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <div *ngIf="!isEditing && !isDeleting && !isAdding">
 
-
-            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <ig-search-field [hidden]="!showSimpleFilter"
+                             mode="Keypress"
+                             placeholder="Search..." 
+                             class="grid-simple-filter"
+                             [debounce]="600"
+                             (onSearch)="dt.filterGlobal($event, 'contains')" >
+            </ig-search-field>
             <p-table #dt
                      [value]="responsibilities"
                      selectionMode="single"
@@ -78,8 +81,8 @@
                         </td>
                         <td>
                             <div [hidden]="true">{{item.ResponsibilityUid}}</div>
-                            <div *ngIf="item.AssignedBy.toLowerCase()=='user' && hasModifyResponsibilitiesPermissions() && showRowTools" class="RowTools">
-                                <a (click)="selectedRow = item; edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <div *ngIf="showEdit(item)" class="RowTools">
+                                <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                             </div>
                         </td>
                         <td>

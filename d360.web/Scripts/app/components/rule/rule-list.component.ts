@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -20,6 +20,8 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
+import { CompanySettingsService } from '../../services/settings.service';
+import { AssetGridComponent } from '../assets-grid/asset-grid.component';
 
 declare var CurrentResourceID;
 
@@ -48,6 +50,11 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     definitionLoaded: boolean = false;
     dataProfile: any;
 
+    @ViewChild('grid', { static: false }) assetGrid: AssetGridComponent;
+
+
+    private dataProfileList: any[];
+
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -60,9 +67,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         webAnalyticsService: WebAnalyticsService,
     ) {
-        super();
+        super(settingsService);
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
     }
@@ -120,9 +128,12 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getUTCFullYear() - 100);
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid, startDate).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
+                        this.dataProfileList = r.items;
                         this.dataProfile = r.items[0];
 
                         forkJoin(

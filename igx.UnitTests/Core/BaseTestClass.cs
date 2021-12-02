@@ -27,6 +27,7 @@ using System.Dynamic;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using d360.model.helpers.filters;
+using MediatR;
 
 namespace igx.UnitTests
 {
@@ -207,7 +208,7 @@ namespace igx.UnitTests
             var mockRepo = new Mock<IAssetRepository>();
             var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity());
 
-            mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
+            mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
                 Task.FromResult<IEnumerable<AssetTypeApiViewModel>>(new List<AssetTypeApiViewModel>() { new AssetTypeApiViewModel() })
             );
@@ -456,7 +457,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.AnyPredicateExists(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? true : false);
 
-            mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<Func<int, object, int, int, ApiExecution>>(), It.IsAny<bool>()))
+            mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                 .Returns(Task.FromResult(new ApiExecutionInfo() { Action = ApiExecutionAction.PostRelationships, CompanyDomainPrefix = "", CompanyID = -1, ExecutionID = Guid.NewGuid(), ResourceID = 56 }));
 
             mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
@@ -513,7 +514,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Intersect() : null);
 
-            mock.Setup(x => x.GetRelationships(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
+            mock.Setup(x => x.GetRelationships(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>(), false))
                 .Returns(Task.FromResult(JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(new GetRelationshipsApiModel() { items = new List<GetRelationshipApiModel>() { new GetRelationshipApiModel(), new GetRelationshipApiModel() } }))));
 
             mock.Setup(x => x.GetRelationshipTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
@@ -643,6 +644,12 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
+        public IMediator GetMediator()
+        {
+            var mock = new Mock<IMediator>();
+            return mock.Object;
+        }
+
         public IScoringRepository GetScoringRepository()
         {
             var mock = new Mock<IScoringRepository>();
@@ -689,6 +696,28 @@ namespace igx.UnitTests
 
             return mock.Object;
         }
+
+        public IResourceRepository GetResourceRepository()
+        {
+            var mock = new Mock<IResourceRepository>();
+
+            mock.Setup(x => x.GetResouceByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) =>
+                uid == Guid.Parse(DataConstants.ValidGUID) ? new GlobalReportingResource() : null);
+
+            return mock.Object;
+        }
+
+        public ISurveyRepository GetSurveyRepository()
+        {
+            var mock = new Mock<ISurveyRepository>();
+            mock.Setup(x => x.GetSurveyTypeByUid(It.IsAny<Guid>()))
+                .Returns((Guid uid) =>
+                uid == Guid.Parse(DataConstants.ValidGUID) ? new SurveyType() : null);
+
+            return mock.Object;
+        }
+
         #endregion
     }
 

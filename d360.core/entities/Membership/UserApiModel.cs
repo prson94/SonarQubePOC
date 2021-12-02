@@ -15,6 +15,13 @@ namespace d360.core.entities.Membership
         public GlobalReportingResource Resource { get; set; }
     }
 
+    public class UserUpsertModel
+    {
+        public IEnumerable<UserApiUpdateModel> Users { get; set; }
+        public bool LookupFieldsPassedByValue { get; set; }
+        public bool IsInsert { get; set; }
+    }
+
     public interface IUserApiUpsertModel : IExecutionItem
     {
         Guid? uid { get; set; }

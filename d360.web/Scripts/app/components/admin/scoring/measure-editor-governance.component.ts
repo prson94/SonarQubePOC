@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel, MetricAssetDefinitionGovernanceRelationViewModel, MetricAssetDefinitionGovernancePredicateViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -8,49 +8,15 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'governance-measure-editor',
     templateUrl: './measure-editor-governance.component.html',
-    providers: [MetricsService, FieldsObservableService ],
+    providers: [MetricsService, FieldsObservableService],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [`
-    .row-label{
-        margin: 0px 0px -16px 0px;
-    }
-    .conditions-row{
-        display: flex;
-    }   
-    .condition{
-        margin-left: 8px;
-        flex-shrink: 0;
-        flex-grow: 0;
-        width: 100%;
-        max-width: 150px;
-    }
-    .condition-med{
-        max-width: 308px;
-        flex-grow: 1;
-    }
-    .field-row{
-        margin-bottom: 8px;
-    }
-    .top-margin{
-        margin-top: 8px;
-    }
-    .weight-container{
-        dislpay:flex;
-    }
-    .weight-row{
-        display: inline-flex;
-        margin-right: auto;
-        width: 100%;
-    }
-    .right{
-        margin-left:auto
-    }
-    `]
-
+    encapsulation: ViewEncapsulation.None,
+    styleUrls: ['measure-editor.less']
 })
 export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent implements OnInit, OnChanges {
 
@@ -78,15 +44,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         "DiagramUse",
         "DiagramReference",
         "InterTypeHierarchy",
-        "IntraTypeHierarchy",
-        "FusionMapping"
+        "IntraTypeHierarchy"
     ];
-    restrictedTypes = [
-        "FusionAttribute",
-        "FusionAttributeType",
-        "FusionType",
-        "FusionExecution"
-    ];
+    restrictedTypes = [];
     updateFrequencyOptions: MetricUpdateFrequency[] = [];
 
     //#endregion
@@ -98,11 +58,12 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
     constructor(protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
         protected fb: FormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
-        super(fieldsService, metricsService, messagesService, cdRef);
+        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -202,11 +163,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         }
 
         if (this.screenReferences.relationships && this.screenReferences.relationships.length) {
-            let fusionFiltered = this.screenReferences.relationships
-                .filter(x => this.restrictedTypes.indexOf(x.Subject.Class) == -1)
-                .filter(x => this.restrictedTypes.indexOf(x.Object.Class) == -1);
-
-            this.relationshipTypes = fusionFiltered
+            this.relationshipTypes = this.screenReferences.relationships
                 .filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1)
                 .map(x => {
                     let isSubject = (x.Subject.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
@@ -386,6 +343,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 this.conditionGroups = [];
             } else {
                 this.metricForm.addControl("check", new FormControl(''));
+                this.loadConditions();
             }
         }
         this.cdRef.markForCheck();
@@ -549,9 +507,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                     (updated.Governance.Relation.IntersectTypeUid != original.Governance.Relation.IntersectTypeUid)
                     || !(updated.Governance.Relation.Operator == original.Governance.Relation.Operator || Operator[updated.Governance.Relation.Operator] == <any>original.Governance.Relation.Operator)
                     || (
-                        updated.Governance.Relation.Values && 
+                        updated.Governance.Relation.Values &&
                         !updated.Governance.Relation.Values.every(v => original.Governance.Relation.Values.indexOf(v) > -1)
-                        )
+                    )
                 )
             ) {
                 return true;

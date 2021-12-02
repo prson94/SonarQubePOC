@@ -6,9 +6,10 @@ import { FavoritesService } from '../../../services/favorites.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { FavoriteApiModel } from '../../../models/favorite.model';
 import * as _ from 'lodash';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 declare var CurrentResourceID;
-declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-actions',
@@ -66,17 +67,22 @@ export class HeaderActionsComponent {
     constructor(
         public headerActionsService: HeaderActionsService,
         private secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         private favoritesService: FavoritesService,
         private router: Router) { }
 
     ngOnInit() {
-        if (CompanySettings && CompanySettings.HideHeaderBarControls.toString().toLowerCase() === 'true') {
+        let hideHeader = this.settingsService.getSettingById(CompanySettingEnum.HideHeaderBarControls).BooleanSetting.Value;
+        if (hideHeader) {
             this.enabled = false;
         }
 
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.headerActionsService.setActionsToDefaultValues();
+                let showFavorite = this.settingsService.getSettingById(CompanySettingEnum.ShowFavorites).BooleanSetting.Value;
+                let showFollow = this.settingsService.getSettingById(CompanySettingEnum.ShowImpactSidebar).BooleanSetting.Value;
+
+                this.headerActionsService.setActionsToDefaultValues(showFavorite, showFollow);
                 this.previousUrl = this.currentUrl;
                 this.currentUrl = e.url;
                 this.isAdminSidebarUrl = false;
@@ -142,9 +148,21 @@ export class HeaderActionsComponent {
                     this.isAdminSidebarUrl = (this.uri || '').toUpperCase().startsWith('sidebar'.toUpperCase()) && (this.previousUrl || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 }
 
-                this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !isHomeUrl && !isSearchUrl &&
-                    !this.isAdminUrl && !isReferenceUrl && !isCommunityUrl && !isMonitorUrl && !isDashboardUrl && !isResourceUrl && !this.isAdminSidebarUrl &&
-                    (CompanySettings.DisableIssueManagement === "false")) === true);                
+                let disableIssueManagement = this.settingsService.getSettingById(CompanySettingEnum.DisableIssueManagement).BooleanSetting.Value;
+
+                this.hasRaiseIssueButton = (
+                    !e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue')
+                    && !isHomeUrl
+                    && !isSearchUrl
+                    && !this.isAdminUrl
+                    && !isReferenceUrl
+                    && !isCommunityUrl
+                    && !isMonitorUrl
+                    && !isDashboardUrl
+                    && !isResourceUrl
+                    && !this.isAdminSidebarUrl
+                    && !disableIssueManagement
+                );
 
                 setTimeout(() => { this.calculateControlWidth(); }, 250);
             }
@@ -182,10 +200,7 @@ export class HeaderActionsComponent {
             );
         });
 
-
-        if (CompanySettings != null && CompanySettings.EnableShoppingCart.toString() === 'true') {
-            this.showShoppingCart = true;
-        }
+        this.showShoppingCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
 
         this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe(x => {
             this.headerActionsService.showFollow = x.showFollow;

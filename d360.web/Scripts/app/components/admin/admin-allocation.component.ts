@@ -1,4 +1,5 @@
 ﻿import { Component, Input } from '@angular/core';
+import { CompanySettingsService } from '../../services/settings.service';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
@@ -6,7 +7,7 @@ import { BaseComponent } from '../shared/base.component';
     providers: [],
     template: `
                 <header>Allocations</header>                
-                    <p-table #dt [value]="allocations" selectionMode="single" [metaKeySelection]="true" [dataKey]="'Name'">
+                    <p-table #dt [value]="allocations" class="nym-table" selectionMode="single" [metaKeySelection]="true" [dataKey]="'Name'">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width: 25px; padding-left: 2px; padding-right: 2px; text-align: center"></th>
@@ -22,10 +23,8 @@ import { BaseComponent } from '../shared/base.component';
                         </ng-template>
                         <ng-template pTemplate="body" let-item let-expanded="expanded">
                             <tr [pSelectableRow]="item">
-                                <td>
-                                    <a style="cursor: pointer" [pRowToggler]="item">
-                                        <i [ngClass]="expanded ? 'fa fa-chevron-circle-down' : 'fa fa-chevron-circle-right'"></i>
-                                    </a>
+                                <td [pRowToggler]="item">
+                                    <i [ngClass]="expanded ? 'fa fa-chevron-circle-down' : 'fa fa-chevron-circle-right'" style="pointer:cursor;"></i>
                                 </td>
                                 <td>{{item.Name}}</td>
                             </tr>
@@ -44,6 +43,10 @@ import { BaseComponent } from '../shared/base.component';
 export class AdminAllocationComponent extends BaseComponent {
     @Input() objectID: number;
     @Input() objectType: string;
+
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
+    }
 
     public rows = [0];
 

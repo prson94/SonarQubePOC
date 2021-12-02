@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DirectionAllowedForRelation" xml:space="preserve">
+    <value>_direction parameter is allowed only when RelationshipTypeUid is passed</value>
+  </data>
+  <data name="InvalidIntersectTypeUid" xml:space="preserve">
+    <value>Invalid Intersect Type Uid provided {0}.</value>
+  </data>
+  <data name="InvalidInverseLength" xml:space="preserve">
+    <value>Inverse must be less then 250 characters.</value>
+  </data>
+  <data name="InvalidNameLength" xml:space="preserve">
+    <value>Name must be less then 100 characters.</value>
+  </data>
+  <data name="InvalidObjectUid" xml:space="preserve">
+    <value>Invalid Object Uid passed in the request</value>
+  </data>
+  <data name="InvalidOrderValue" xml:space="preserve">
+    <value>Invalid _order value in the request</value>
+  </data>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>The type parameter is invalid.</value>
+  </data>
+  <data name="InvalidPredicateUid" xml:space="preserve">
+    <value>Invalid Predicate Uid passed in the request</value>
+  </data>
+  <data name="InvalidRelatioshipTypeUid" xml:space="preserve">
+    <value>Invalid Relationship Type Uid passed in the request</value>
+  </data>
+  <data name="InvalidSubjectUid" xml:space="preserve">
+    <value>Invalid Subject Uid passed in the request</value>
+  </data>
+  <data name="Invalid_includeTotal" xml:space="preserve">
+    <value>Invalid _includeTotal parameter passed in the request, value must be true false or not specified</value>
+  </data>
+  <data name="Invalid_owner" xml:space="preserve">
+    <value>Invalid _owner parameter passed in the request, maximum length is 100 characters.</value>
+  </data>
+  <data name="MaxRelationShipLimit" xml:space="preserve">
+    <value>You may only provide a maximum of {0} relationships in this request. Please call the BATCH API to submit more than {1} items.</value>
+  </data>
+  <data name="ObjectUidNotFound" xml:space="preserve">
+    <value>Object with Uid [{0}] could not be found.</value>
+  </data>
+  <data name="OrderForRelation" xml:space="preserve">
+    <value>_order parameter is allowed only when RelationshipTypeUid is passed</value>
+  </data>
+  <data name="PassedValidForExistingRelationType" xml:space="preserve">
+    <value>Invalid relationship type uid specified.  Please specify a valid uid for an existing relationship type.</value>
+  </data>
+  <data name="PassedValidRelationTypeUid" xml:space="preserve">
+    <value>Invalid relationship type uid specified.  Please specify a valid uid.</value>
+  </data>
+  <data name="PredicateLimit" xml:space="preserve">
+    <value>You may only provide a maximum of {0} predicates in this request.</value>
+  </data>
+  <data name="PredicateRequired" xml:space="preserve">
+    <value>You have not provided any predicates to process in this request.</value>
+  </data>
+  <data name="PredicateUidNotFound" xml:space="preserve">
+    <value>Predicate with Uid [{0}] could not be found.</value>
+  </data>
+  <data name="RelationNotProvided" xml:space="preserve">
+    <value>You have not provided any relationships to process in this request.</value>
+  </data>
+  <data name="RelationshipSucessfullyRemoved" xml:space="preserve">
+    <value>Relationship successfully removed</value>
+  </data>
+  <data name="RelationshipTypeLimit" xml:space="preserve">
+    <value>You may only provide a maximum of {0} relationship types in this request.</value>
+  </data>
+  <data name="RelationShipUidNotFound" xml:space="preserve">
+    <value>Specified relationship with uid [{0}] could not be found.</value>
+  </data>
+  <data name="SubjectUidNotFound" xml:space="preserve">
+    <value>Subject with Uid [{0}] could not be found.</value>
+  </data>
+  <data name="ViewthisRelationNotAllowed" xml:space="preserve">
+    <value>You are not allowed to view this relationship.</value>
+  </data>
+</root>

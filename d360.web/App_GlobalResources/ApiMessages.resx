@@ -567,4 +567,184 @@
   <data name="FilterExpressionParseError" xml:space="preserve">
     <value>Filter expression parse error</value>
   </data>
+  <data name="Invalid_PageNum" xml:space="preserve">
+    <value>Invalid _pageNum parameter passed in the request</value>
+  </data>
+  <data name="Invalid_PageSize" xml:space="preserve">
+    <value>Invalid _pageSize parameter passed in the request</value>
+  </data>
+  <data name="_PageSizeLimit" xml:space="preserve">
+    <value>Invalid _pageSize parameter passed in the request value is greater than the maximum supported value of 100,000.</value>
+  </data>
+  <data name="_PageSizePassedZeroLess" xml:space="preserve">
+    <value>Invalid _pageSize parameter passed in the request value is less than or equal to zero.</value>
+  </data>
+  <data name="EndpointMethod" xml:space="preserve">
+    <value>Endpoint Method</value>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>Invalid</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} is not valid uid!</value>
+  </data>
+  <data name="UidConstant" xml:space="preserve">
+    <value>Uid</value>
+  </data>
+  <data name="InvalidOrderRequese" xml:space="preserve">
+    <value>Invalid order passed in the request</value>
+  </data>
+  <data name="InvalidType" xml:space="preserve">
+    <value>Invalid Type</value>
+  </data>
+  <data name="FailedAuthentication" xml:space="preserve">
+    <value>Failed to authenticate. Oidc State not found in .</value>
+  </data>
+  <data name="FailedAuthenticationNonces" xml:space="preserve">
+    <value>Failed to authenticate. Nonces do not match.</value>
+  </data>
+  <data name="InvalidSortField" xml:space="preserve">
+    <value>Invalid sort field specified</value>
+  </data>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>Invalid sort order specified</value>
+  </data>
+  <data name="MissingConfigInfo" xml:space="preserve">
+    <value>Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority.</value>
+  </data>
+  <data name="LookupFieldTypeInUse" xml:space="preserve">
+    <value>There are existing assets in your environment with values on field '{0}'. You may not change 'Type of List' property until those field values are removed.</value>
+  </data>
+  <data name="InvalidIntersecttypeid" xml:space="preserve">
+    <value>Invalid intersect type id</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>Invalid model</value>
+  </data>
+  <data name="TargetAssetType" xml:space="preserve">
+    <value>target asset type</value>
+  </data>
+  <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
+    <value>Asset cross reference already exists.</value>
+  </data>
+  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
+    <value>Asset cross reference model does not contain required fields.</value>
+  </data>
+  <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
+    <value>Invalid _includeChildAssets provided</value>
+  </data>
+  <data name="ModelNotContainFields" xml:space="preserve">
+    <value>Model does not contain required fields</value>
+  </data>
+  <data name="RequestMissingDatasource" xml:space="preserve">
+    <value>Request does not contain required parameter dataSource.</value>
+  </data>
+  <data name="RequestMissingDatasourceType" xml:space="preserve">
+    <value>Request does not contain required parameters datasource and type.</value>
+  </data>
+  <data name="RequestMissingType" xml:space="preserve">
+    <value>Request does not contain required parameter type</value>
+  </data>
+  <data name="add" xml:space="preserve">
+    <value>add</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>confirm</value>
+  </data>
+  <data name="RebuildRequest" xml:space="preserve">
+    <value>Rebuild request received and accepted.</value>
+  </data>
+  <data name="CompanyInactive" xml:space="preserve">
+    <value>Company Inactive</value>
+  </data>
+  <data name="InvalidEnumValueInJson" xml:space="preserve">
+    <value>Invalid Enumeration Value in JSON</value>
+  </data>
+  <data name="InvalidJson" xml:space="preserve">
+    <value>Invalid JSON Message</value>
+  </data>
+  <data name="FavoritesEmptyRoute" xml:space="preserve">
+    <value>Favorites of type Page cannot have an empty route.</value>
+  </data>
+  <data name="Invalid_Direction" xml:space="preserve">
+    <value>Invalid _direction provided</value>
+  </data>
+  <data name="NameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="UidInvalid" xml:space="preserve">
+    <value>Uid Invalid for {0}</value>
+  </data>
+  <data name="SucessfullyCreated" xml:space="preserve">
+    <value>{0} successfully created.</value>
+  </data>
+  <data name="SucessfullyRemoved" xml:space="preserve">
+    <value>{0} successfully removed.</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="OwnershipType" xml:space="preserve">
+    <value>ownership type</value>
+  </data>
+  <data name="Predicate" xml:space="preserve">
+    <value>Predicate</value>
+  </data>
+  <data name="SucessfullyDeleted" xml:space="preserve">
+    <value>{0} successfully deleted.</value>
+  </data>
+  <data name="SucessfullyEdited" xml:space="preserve">
+    <value>{0} successfully edited.</value>
+  </data>
+  <data name="HelpMenuSuccess" xml:space="preserve">
+    <value>Help Menu items have been successfully updated.</value>
+  </data>
+  <data name="HelpMenuItemsUpdated" xml:space="preserve">
+    <value>Help Menu Items Updated.</value>
+  </data>
+  <data name="HelpMenuVisibilityError" xml:space="preserve">
+    <value>Item visibility must be set to 1, 2 or 3.</value>
+  </data>
+  <data name="ExecutionStatusInvalid" xml:space="preserve">
+    <value>Invalid value for status. Valid values are Pending, Running and Completed.</value>
+  </data>
+  <data name="HelpItemsAdded" xml:space="preserve">
+    <value>Help menu items have been successfully created.</value>
+  </data>
+  <data name="HelpItemsDeleted" xml:space="preserve">
+    <value>Help menu items have been successfully removed.</value>
+  </data>
+  <data name="HelpMenuItemsCreated" xml:space="preserve">
+    <value>Help Menu Items Created.</value>
+  </data>
+  <data name="HelpMenuItemsDeleted" xml:space="preserve">
+    <value>Help Menu Items Deleted.</value>
+  </data>
+  <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
+    <value>ApplicationId length cannot exceed 200 characters</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>No match found for AssetTypeUid provided.</value>
+  </data>
+  <data name="EmptyType" xml:space="preserve">
+    <value>Type cannot be empty. Please select a type from the dropdown.</value>
+  </data>
+  <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>Successfully deleted specified favorites</value>
+  </data>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>Favorites List Cleared.</value>
+  </data>
+  <data name="InvalidHelpDeleteUid" xml:space="preserve">
+    <value>No valid uid provided to be deleted.</value>
+  </data>
+  <data name="InvalidHelpUpdateUid" xml:space="preserve">
+    <value>No valid uid provided to be updated.</value>
+  </data>
+  <data name="HelpMenuOrderError" xml:space="preserve">
+    <value>Order cannot be a negative number.</value>
+  </data>
+  <data name="InvalidLoadUid" xml:space="preserve">
+    <value>Invalid LoadUid provided.</value>
+  </data>
 </root>

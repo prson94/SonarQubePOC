@@ -262,6 +262,7 @@ export class AssetBrowserDiagramAsset {
     Scores: AssetBrowserDiagramAssetScore[] = [];
     Fields: any[] = [];
     Loaded: boolean = false;
+    AssetTypeUid: string;
 }
 
 export class AssetBrowserDiagramAssetField {

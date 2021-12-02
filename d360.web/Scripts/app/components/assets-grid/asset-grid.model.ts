@@ -8,4 +8,5 @@
     Description: string;
     Object: string;
     ObjectType: string;
+    AssetTypePath: string;
 }

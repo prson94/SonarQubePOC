@@ -100,10 +100,7 @@ namespace d360.web.Models
         public bool EnableShoppingCart { get; set; }
         public bool EnableOrganizations { get; set; }
         public string DefaultRoute { get; set; }
-        public bool EnableSearchExactMatch { get; set; }
         public bool EnableSagacity { get; set; }
-
-        public string HeaderBackgroundColor { get; set; }
 
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
         public List<SiteNav> SiteNav { get; set; } = new List<SiteNav>();
@@ -134,6 +131,7 @@ namespace d360.web.Models
 
         public int AssetDefinitionColumnWidth { get; set; }
 
+        public int DiagramMaxAvoidNodesLinkCount { get; set; }
     }
 
     public class DataQualityResult
@@ -315,63 +313,6 @@ namespace d360.web.Models
         public string Message { get; set; }
     }
 
-    public class FieldTypeFusionItemEditorModel
-    {
-        public int ID { get; set; }
-        public int SourceFusionAttributeType { get; set; }
-        public int ReferenceType { get; set; }
-        public int? TargetFusionAttributeType { get; set; }
-        public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
-        public bool HideHeader { get; set; }
-        public bool HideFooter { get; set; }
-
-        public FieldValidity Validation()
-        {
-            var prefix = "You are missing a";
-            var valid = new FieldValidity();
-            if (SourceFusionAttributeType <= 0)
-            {
-                valid.Valid = false;
-                valid.Message = $"{prefix} target item.";
-            }
-            else
-            {
-                if (ReferenceType <= 0)
-                {
-                    valid.Valid = false;
-                    valid.Message = $"{prefix} reference type.";
-                }
-                else
-                {
-                    if (ReferenceType > 1 && !TargetFusionAttributeType.HasValue)
-                    {
-                        valid.Valid = false;
-                        valid.Message = $"{prefix} reference item.";
-                    }
-                }
-            }
-
-            if (valid.Valid)
-            {
-                if (DisplayFields == null)
-                {
-                    valid.Valid = false;
-                    valid.Message = $"{prefix} reference column.";
-                }
-                else
-                {
-                    if (DisplayFields.Count == 0)
-                    {
-                        valid.Valid = false;
-                        valid.Message = $"{prefix} reference column.";
-                    }
-                }
-            }
-
-            return valid;
-        }
-    }
-
     public class FieldTypeRelationItemEditorModel
     {
         public int ID { get; set; }
@@ -473,8 +414,6 @@ namespace d360.web.Models
         public bool FieldIsUsed { get; set; }
 
         public FieldType FieldType { get; set; }
-
-        public ICollection<FieldTypeFusionItemEditorModel> FusionItems { get; set; }
 
         public FieldTypeRelationItemEditorModel RelationItem { get; set; }
 
@@ -775,16 +714,47 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
-        public bool isEditable { get; set; }
-        public int visibilty { get; set; }
+        public int visibility { get; set; }
         public int order { get; set; }
-        public Guid Uid { get; set; }
+        public Guid uid { get; set; }
+        public bool isEditable { get; set; }
+        public bool isSystem { get; set; }
     }
 
+    public class UpdateHelpMenuItem
+    {
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public string Description { get; set; }
+        public int visibility { get; set; }
+        public int order { get; set; }
+        public Guid uid { get; set; }
+    }
+
+    public class AddHelpMenuItem
+    {
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public string Description { get; set; }
+        public int visibility { get; set; }
+        public int order { get; set; }
+    }
+
+    public class DeleteMenuItem
+    {
+        public Guid uid { get; set; }
+    }
+
+    public class HelpMenuItemMessage
+    {
+        public Guid uid { get; set; }
+        public string title { get; set; }
+        public string message { get; set; }
+    }
 
     public class HelpMenuModel
     {
-        public List<HelpResource> Adds { get; set; }
-        public List<HelpResource> Deletes { get; set; }
+        public List<HelpMenuItem> Adds { get; set; }
+        public List<DeleteMenuItem> Deletes { get; set; }
     }
 }

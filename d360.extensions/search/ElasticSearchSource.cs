@@ -139,139 +139,6 @@ namespace d360.extensions.search
         private const string D3S_FIELD = "d3s";
         public static readonly string D3S_FIELD_PREFIX = D3S_FIELD + ".";
 
-        private static readonly string MAPPING_VERSION_5 = "{" +
-            "\"settings\": {" +
-            "  \"index\": {" +
-            "    \"number_of_shards\": 2," +
-            "    \"number_of_replicas\": 1" +
-            "  }" +
-            "},\"mappings\": {" +
-            "  \"_doc\": {" +
-            "    \"date_detection\": false," +
-            "    \"properties\": {" +
-            "      \"" + DYNAMIC_FIELD + "\": {" +
-            "        \"type\": \"object\"," +
-            "        \"dynamic\": true" +
-            "      }," +
-            "      \"" + D3S_FIELD + "\": {" +
-            "        \"properties\": {" +
-            "          \"Category\": {" +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"Tags\": {" +
-            "            \"type\": \"nested\"," +
-            "            \"properties\": {" +
-            "              \"Uid\": {" +
-            "                \"type\": \"keyword\"" +
-            "              }" +
-            "            }" +
-            "          }," +
-            "          \"AssetType\": {" +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"Uid\": {" +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"AssetTypeUid\": {" +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"Url\": {" +
-            "            \"type\": \"keyword\"," +
-            "            \"index\": false" +
-            "          }," +
-            "          \"NoReadResourceID\": { " +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"NoReadGroupID\": { " +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"NoReadOrgID\": { " +
-            "            \"type\": \"keyword\"" +
-            "          }," +
-            "          \"Data3SixtyUser\": {" +
-            "            \"type\": \"boolean\"" +
-            "          }" +
-            "        }" +
-            "      }" +
-            "    }" +
-            "  }" +
-            "}}";
-
-        //This complex intersect synonym query is used by both the indexer and databasetaskprocessor jobs so we maintain the core of the query in one place
-        public static readonly string INTERSECT_SYNONYM_QUERY = @"select 
-                I.ID,
-                'S' as 'Direction',
-                SubjectAdv.DisplayValue as 'Synonym',
-                I.Subject as 'SynonymObjectType',
-                I.SubjectID as  'SynonymObjectID',
-                SubjectAsset.ID as 'SynonymAssetID', 
-                ObjectAdv.DisplayValue as 'SynonymFor', 
-                I.Object as 'SynonymForObject', 
-                I.ObjectID as 'SynonymForObjectID',
-                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', 
-                ArtType.Name as 'SynonymForObjectType',
-                P.Name as 'PredicateName' 
-            from[intersect] I 
-                inner join IntersectType T on T.ID = I.IntersectTypeID
-                inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-                inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Subject and SubjectAsset.ObjectID = I.SubjectID 
-                inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID 
-                inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Object and ObjectAsset.ObjectID = I.ObjectID 
-                inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID 
-                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID 
-            Union 
-            SELECT
-                I.ID, 
-                'O' as 'Direction', 
-                SubjectAdv.DisplayValue as 'Synonym', 
-                I.Object as 'SynonymObjectType', 
-                I.ObjectID as  'SynonymObjectID', 
-                SubjectAsset.ID as 'SynonymAssetID', 
-                ObjectAdv.DisplayValue as 'SynonymFor', 
-                I.Subject as 'SynonymForObject', 
-                I.SubjectID as 'SynonymForObjectID', 
-                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', 
-                ArtType.Name as 'SynonymForObjectType', 
-                P.Name as 'PredicateName'
-            from [intersect] I
-                inner join IntersectType T on T.ID = I.IntersectTypeID 
-                inner join Predicate P on P.ID = T.PredicateID and P.Type = 6 
-                inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Object and SubjectAsset.ObjectID = I.ObjectID 
-                inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
-                inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Subject and ObjectAsset.ObjectID = I.SubjectID 
-                inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID 
-                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID";
-
-        //This responsibility query is used by both the indexer and databasetaskprocessor jobs so we maintain the core of the query in one place
-        public static string GetAssetResponsibilityQuery()
-        {
-            string sql = $@"SELECT a.id as AssetID, 
-                              rresource.SecurityAsset,
-                              rresource.SecurityAssetID
-                        FROM ResponsibilityTypeRelationRule r
-                        INNER JOIN ResponsibilityTypeRelation rrel ON (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID
-                                                                      AND r.[Object] = rrel.[ObjectType]
-                                                                      AND r.ObjectID = rrel.ObjectID)
-                        INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (r.ID = rasset.RuleID)
-                        INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (r.ID = rresource.RuleID)
-                        INNER JOIN Asset a ON A.AssetTypeID = rasset.AssetTypeID
-                        WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 0
-                         AND rasset.AssetID = 0
-                        UNION ALL
-                        SELECT rasset.AssetID,
-                              rresource.SecurityAsset,
-                              rresource.SecurityAssetID
-                        FROM ResponsibilityTypeRelationRule rtrr
-                        INNER JOIN ResponsibilityTypeRelation rrel ON (rtrr.ResponsibilityTypeID = rrel.ResponsibilityTypeID
-                                                                      AND rtrr.[Object] = rrel.[ObjectType]
-                                                                      AND rtrr.ObjectID = rrel.ObjectID)
-                        INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (rtrr.ID = rasset.RuleID)
-                        INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (rtrr.ID = rresource.RuleID)
-                        WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 0
-                         AND rasset.AssetTypeID = 0";
-                return sql;
-        }
-
         private readonly string CommunityConnectionString;
 
         public ElasticSearchSource()
@@ -303,14 +170,12 @@ namespace d360.extensions.search
             StringBuilder sb = new StringBuilder();
             Dictionary<string, string> d3sFields = new Dictionary<string, string>();
             Dictionary<string, string> d3sNoRead = new Dictionary<string, string>();
-            Dictionary<string, string> dynamicFields = item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value);
-            string[] tags = new string[] { };
-            if (item.Tags != null && item.Tags.Any())
-            {
-                tags = item.Tags.Select(t => "{ \"Uid\": \"" + t.Key + "\", \"Value\": \"" + EscapeValueForDoc(t.Value) + "\"}").ToArray();
-            }
+            Dictionary<string, string> dynamicFields = item.Fields != null ? item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value) : new Dictionary<string, string>();
 
-            d3sFields.Add("Url", item.RelativeUrl);
+            if (!string.IsNullOrEmpty(item.RelativeUrl))
+            {
+                d3sFields.Add("Url", item.RelativeUrl);
+            }
             d3sFields.Add("AssetType", item.AssetType);
             d3sFields.Add("Category", item.Category);
             if (item.Uid.HasValue && item.Uid != Guid.Empty)
@@ -322,39 +187,58 @@ namespace d360.extensions.search
                 d3sFields.Add("AssetTypeUid", item.AssetTypeUid.ToString());
             }
 
-            foreach (KeyValuePair<string, string> entry in NoReadMapping)
-            {
-                string val = "[";
-                if (item.NoRead != null && item.NoRead.ContainsKey(entry.Key) && item.NoRead[entry.Key].Count > 0)
-                {
-                    val += string.Join(",", item.NoRead[entry.Key].ToArray());
-                }
-                val += "]";
-                d3sNoRead.Add(entry.Value, val);
-            }
-
             //For users move Data3SixtyUser from Fields to d3sFields
-            if (item.Category == "Resource" && item.AssetType == "User" && dynamicFields.ContainsKey("Data3SixtyUser"))
+            if (item.Category == AssetTypeClass.User.ToString() && item.AssetType == "User" && dynamicFields.ContainsKey("Data3SixtyUser"))
             {
                 d3sFields.Add("Data3SixtyUser", dynamicFields["Data3SixtyUser"] == "1" ? "true" : "false");
                 dynamicFields.Remove("Data3SixtyUser");
             }
 
+            //Start d3s section
             sb.Append("{\"" + D3S_FIELD + "\": {");
             sb.Append(string.Join(",", d3sFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value) + "\"").ToArray()));
-            if (d3sNoRead.Count > 0)
+
+            if (item.AssetPath?.Length > 0)
             {
-                sb.Append("," + string.Join(",", d3sNoRead.Select(i => "\"" + i.Key + "\": " + EscapeValueForDoc(i.Value)).ToArray()));
+                sb.Append($", \"Path\" : [{string.Join(",", item.AssetPath.Select(p => $"\"{EscapeValueForDoc(p)}\""))}]");
             }
 
-            //In case of update, so if there are no tags, we need to be explicit, so they will be removed (if any) on the document
-            if (forUpdate || tags.Count() > 0)
+            if(item.IndexFlags.HasFlag(IndexMode.WithResponsibility))
             {
-                sb.Append(", \"Tags\":[");
-                sb.Append(string.Join(",", tags));
-                sb.Append("]");
+                foreach (KeyValuePair<string, string> entry in NoReadMapping)
+                {
+                    string val = "[";
+                    if (item.NoRead != null && item.NoRead.ContainsKey(entry.Key) && item.NoRead[entry.Key].Count > 0)
+                    {
+                        val += string.Join(",", item.NoRead[entry.Key].ToArray());
+                    }
+                    val += "]";
+                    d3sNoRead.Add(entry.Value, val);
+                }
+                if (d3sNoRead.Count > 0)
+                {
+                    sb.Append("," + string.Join(",", d3sNoRead.Select(i => "\"" + i.Key + "\": " + EscapeValueForDoc(i.Value)).ToArray()));
+                }
             }
-            sb.Append("  },");
+
+            if (item.IndexFlags.HasFlag(IndexMode.WithTags))
+            {
+                string[] tags = new string[] { };
+                if (item.Tags != null && item.Tags.Any())
+                {
+                    tags = item.Tags.Select(t => "{ \"Uid\": \"" + t.Key + "\", \"Value\": \"" + EscapeValueForDoc(t.Value) + "\"}").ToArray();
+                }
+
+                //In case of update, so if there are no tags, we need to be explicit, so they will be removed (if any) on the document
+                if (forUpdate || tags.Count() > 0)
+                {
+                    sb.Append(", \"Tags\":[");
+                    sb.Append(string.Join(",", tags));
+                    sb.Append("]");
+                }
+            }
+            sb.Append("  },"); //End d3s section
+
             sb.Append("  \"" + DYNAMIC_FIELD + "\": {");
             sb.Append(string.Join(",", dynamicFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value, i.Key.ToLower() != "name") + "\"").ToArray()));
             sb.Append("  }");
@@ -396,7 +280,7 @@ namespace d360.extensions.search
 
             if (string.IsNullOrEmpty(SearchServerUrl))
             {
-                throw new ArgumentException("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
+                throw new ArgumentException(OthersError.NoSearchUrlError);
             }
 
             var uri = new Uri("http://" + SearchServerUrl);
@@ -411,23 +295,63 @@ namespace d360.extensions.search
         private void CreateIndexIfNotExists(int companyID)
         {
             var indexName = GetCompanyIndexName(companyID);
-            //NEST client
             var client = GetElasticClient(companyID);
+
             if (!client.IndexExists(indexName).Exists)
             {
-                string esSettings = MAPPING_VERSION_5;
-                if (IndexFieldLimit.HasValue)
+                CreateIndexDescriptor indexDescriptor = new CreateIndexDescriptor(indexName)
+                    .Settings(s => s
+                        .NumberOfReplicas(1)
+                        .NumberOfShards(2)
+                        .Setting("index.mapping.total_fields.limit", IndexFieldLimit)
+                    ).Mappings(ms => ms
+                        .Map("_doc", m => m
+                            .DateDetection(false)
+                            .Properties(ps => ps
+                                .Object<dynamic>(o => o
+                                    .Dynamic(true)
+                                    .Name(DYNAMIC_FIELD)
+                                )
+                                .Object<dynamic>(o => o
+                                    .Name(D3S_FIELD)
+                                    .Properties(p => p
+                                        .Keyword(s => s.Name("Category"))
+                                        .Nested<dynamic>(n => n
+                                            .Name("Tags")
+                                            .Properties(np => np
+                                                .Keyword(s => s.Name("Uid"))
+                                                .Text(s => s
+                                                    .Name("Value")
+                                                    .Fields(f => f
+                                                        .Keyword(k => k
+                                                            .Name("keyword")
+                                                            .IgnoreAbove(256)
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                        .Keyword(s => s.Name("AssetType"))
+                                        .Keyword(s => s.Name("Uid"))
+                                        .Keyword(s => s.Name("AssetTypeUid"))
+                                        .Keyword(s => s.Name("Url").Index(false))
+                                        .Keyword(s => s.Name("NoReadResourceID"))
+                                        .Keyword(s => s.Name("NoReadGroupID"))
+                                        .Keyword(s => s.Name("NoReadOrgID"))
+                                        .Boolean(b => b.Name("Data3SixtyUser"))
+                                        .Text(s => s.Name("Path"))
+                                    )
+                                )
+                            )
+                        )
+                    );
+
+                var response = client.CreateIndex(indexDescriptor);
+
+                //If Resource already exist, no reason to complain
+                if (!response.IsValid && response.ServerError.Error.Type != "resource_already_exists_exception")
                 {
-                    esSettings = esSettings.Replace("\"number_of_replicas\": 1", "\"number_of_replicas\": 1, \"mapping.total_fields.limit\" : " + IndexFieldLimit);
-                }
-                var response = client.LowLevel.IndicesCreate<CreateResponse>(indexName, esSettings);
-                if (!response.IsValid)
-                {
-                    //If Resource already exist, no reason to complain
-                    if (response.ServerError.Error.Type != "resource_already_exists_exception")
-                    {
-                        throw new ArgumentException(response.OriginalException.Message);
-                    }
+                    throw new ArgumentException(response.OriginalException.Message);
                 }
             }
 
@@ -448,7 +372,7 @@ namespace d360.extensions.search
                 JObject result = JObject.Parse(response.Body);
                 if (!Version.TryParse((string)result.SelectToken("version.number"), out ver))
                 {
-                    throw new ArgumentException("Could not determine server version");
+                    throw new ArgumentException(OthersError.NotDetermineServerVersion);
                 }
             }
             return ver;
@@ -565,7 +489,7 @@ namespace d360.extensions.search
 
                 if (result == null)
                 {
-                    throw new ArgumentException("Invalid response no data");
+                    throw new ArgumentException(OthersError.InvalidResponseData);
                 }
 
                 var hasErrors = result.GetValue("errors");
@@ -587,7 +511,7 @@ namespace d360.extensions.search
             }
             if (postingErrors.Count > 0)
             {
-                throw new ArgumentException("Add to index individual errors: " + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                throw new ArgumentException(OthersError.AddIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
             }
         }
 
@@ -753,6 +677,7 @@ namespace d360.extensions.search
         private const char STRATEGY_FullUID = 'U';
         private const char STRATEGY_PartialUID = 'W';
         private const char STRATEGY_Experimental = 'X';
+        private const char STRATEGY_MatchAll = '*';
 
         private TextQueryType MapStrategyToType(char strategy)
         {
@@ -824,6 +749,10 @@ namespace d360.extensions.search
                 {
                     strategy = STRATEGY_FullUID;
                 }
+                else if (queryRequest.Term == "*")
+                {
+                    strategy = STRATEGY_MatchAll;
+                }
                 else if (queryRequest.Term.StartsWith("'") && queryRequest.Term.EndsWith("'")) //Use term and not escaped phrase, need to remove encapsulation '`s
                 {
                     strategy = STRATEGY_MatchPhrase;
@@ -848,7 +777,7 @@ namespace d360.extensions.search
             switch (strategy)
             {
                 case STRATEGY_NONE:
-                    throw new ArgumentException("Cannot use a search strategy of none");
+                    throw new ArgumentException(OthersError.CannotUseSearch);
                 case STRATEGY_PartialUID:
                     mainQueries.Add(new PrefixQuery
                     {
@@ -860,6 +789,9 @@ namespace d360.extensions.search
                         Field = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid"),
                         Value = queryRequest.Term.ToLower()
                     });
+                    break;
+                case STRATEGY_MatchAll:
+                    mainQueries.Add(new MatchAllQuery());
                     break;
                 case STRATEGY_FullUID:
                     mainQueries.Add(new TermQuery
@@ -976,7 +908,7 @@ namespace d360.extensions.search
                     });
                     break;
                 default:
-                    throw new ArgumentException("Unknown search strategy: " + strategy);
+                    throw new ArgumentException(OthersError.UnknownSearchStrategy + strategy);
             }
 
             double? tagBoost = null;
@@ -1062,7 +994,78 @@ namespace d360.extensions.search
                             }
                         };
                     }
-                } else
+                }
+                else if (fieldFilter.Field == "TagUids")
+                {
+                    string path = D3S_FIELD_PREFIX + "Tags";
+                    Nest.Field fldTagUid = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+                    if (fieldFilter.Connector == SearchConnector.And)
+                    {
+                        qry = new BoolQuery
+                        {
+                            Must = fieldFilter.Values.Select(v => {
+                                QueryContainer q = new NestedQuery
+                                {
+                                    Path = path,
+                                    Query = new TermQuery
+                                    {
+                                        Field = fldTagUid,
+                                        Value = v
+                                    }
+                                };
+                                return q;
+                            })
+                        };
+                    }
+                    else
+                    {
+                        qry = new NestedQuery
+                        {
+                            Path = path,
+                            Query = new BoolQuery
+                            {
+                                Should = fieldFilter.Values.Select(v => {
+                                    QueryContainer q = new TermQuery
+                                    {
+                                        Field = fldTagUid,
+                                        Value = v
+                                    };
+                                    return q;
+                                }),
+                                MinimumShouldMatch = 1
+                            }
+                        };
+                    }
+                }
+                else if (fieldFilter.Field == "Path")
+                {
+                    Nest.Field fldPath = new Nest.Field(D3S_FIELD_PREFIX + "Path");
+                    var segmentQueries = values.Select(v => {
+                        QueryContainer q = new MatchQuery
+                        {
+                            Field = fldPath,
+                            Query = v
+                        };
+                        return q;
+                    });
+
+                    if (fieldFilter.Connector == SearchConnector.And)
+                    {
+                        qry = new BoolQuery
+                        {
+                            Must = segmentQueries
+                        };
+                    }
+                    else
+                    {
+                        qry = new BoolQuery
+                        {
+                            Should = segmentQueries,
+                            MinimumShouldMatch = 1
+                        };
+                    }
+                }
+                else
                 {
                     Nest.Field fld = new Nest.Field(DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
                     if(fieldFilter.MatchWords)
@@ -1104,10 +1107,12 @@ namespace d360.extensions.search
                 if (fieldFilter.Operator == SearchOperator.NotContains)
                 {
                     mustNotQueries.Add(qry);
-                } else if (queryRequest.SearchConnector == SearchConnector.Or)
+                }
+                else if (queryRequest.SearchConnector == SearchConnector.Or)
                 {
                     shouldQueries.Add(qry);
-                } else
+                }
+                else
                 {
                     mustQueries.Add(qry);
                 }
@@ -1438,7 +1443,7 @@ namespace d360.extensions.search
                     Must = new QueryContainer[] {
                             new TermQuery {
                                 Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
-                                Value = "Resource"
+                                Value = AssetTypeClass.User.ToString()
                             },
                             new TermQuery
                             {
@@ -1485,8 +1490,6 @@ namespace d360.extensions.search
 
             switch (temp)
             {
-                case "FUSIONATTRIBUTES":
-                    return "Fusion";
                 case "BUSINESSASSET":
                     return CommonNames.AssetTypeClass_Business;
                 case "TECHNICALASSET":
@@ -1882,7 +1885,7 @@ namespace d360.extensions.search
             List<IndexTag> tags = new List<IndexTag>();
             List<IndexTag> highlights = new List<IndexTag>();
 
-            if (h._source == null || (onlyHits && h.inner_hits == null))
+            if (h._source == null || h.inner_hits == null)
             {
                 return tags;
             }
@@ -1996,31 +1999,25 @@ namespace d360.extensions.search
 
             if (result == null)
             {
-                throw new Exception("Invalid response no data");
+                throw new ArgumentNullException(OthersError.InvalidResponseData);
             }
 
             var hasErrors = result.GetValue("errors");
 
             if (hasErrors.Value<bool>())
             {
-                throw new Exception(bulkResponse.Body);
+                throw new ArgumentNullException(bulkResponse.Body);
             }
         }
 
-        public void UpdateInIndex(IndexObjectModel item)
+        public void UpdateInIndex(IndexObjectModel item, bool withUpsert = false)
         {
             if (item == null) return;
 
-            CreateIndexIfNotExists(item.CompanyID);
-
-            var client = GetElasticClient(item.CompanyID).LowLevel;
-            var response = client.Update<StringResponse>(GetCompanyIndexName(item.CompanyID), "_doc", item.getObjectID(), CreateDocument(item, true));
-
-            if (!response.Success)
-                throw new ArgumentException(response.OriginalException.Message);
+            UpdateInIndex(new List<IndexObjectModel> { item }, withUpsert);
         }
 
-        public void UpdateInIndex(IEnumerable<IndexObjectModel> items)
+        public void UpdateInIndex(IEnumerable<IndexObjectModel> items, bool withUpsert = false)
         {
             var firstItem = items.FirstOrDefault();
 
@@ -2037,7 +2034,7 @@ namespace d360.extensions.search
             foreach (var item in items)
             {
                 sb.AppendLine("{ \"update\" : { \"_type\" : \"_doc\", \"_id\" : \"" + item.getObjectID() + "\"}}");
-                sb.AppendLine("{ \"doc\": " + CreateDocument(item, true) + "}");
+                sb.AppendLine("{ \"doc\": " + CreateDocument(item, true) + (withUpsert ? ", \"doc_as_upsert\" : true" : "" ) + "}");
             }
 
             var client = GetElasticClient(companyId).LowLevel;
@@ -2055,7 +2052,9 @@ namespace d360.extensions.search
 
             var result = JObject.Parse(bulkResponse.Body);
 
-            if (result == null) throw new Exception("Invalid response no data");
+            if (result == null) {
+                throw new ArgumentNullException(OthersError.InvalidResponseData);
+            }
 
             var hasErrors = result.GetValue("errors");
 
@@ -2073,7 +2072,7 @@ namespace d360.extensions.search
                 }
                 if (postingErrors.Count > 0)
                 {
-                    throw new Exception("Update index individual errors: " + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                    throw new ArgumentNullException(OthersError.UpdateIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
                 }
             }
         }

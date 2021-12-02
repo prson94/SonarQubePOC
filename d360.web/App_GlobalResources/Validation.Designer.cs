@@ -70,6 +70,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid pageNum value provided..
+        /// </summary>
+        public static string InvalidPageNum {
+            get {
+                return ResourceManager.GetString("InvalidPageNum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid pageSize value provided..
+        /// </summary>
+        public static string InvalidPageSize {
+            get {
+                return ResourceManager.GetString("InvalidPageSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} must be between {1} and {2} characters in length..
         /// </summary>
         public static string Length_Tokenized {

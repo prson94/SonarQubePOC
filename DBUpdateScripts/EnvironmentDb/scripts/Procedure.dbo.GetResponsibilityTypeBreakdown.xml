@@ -5,159 +5,161 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetResponsibilityTypeBreakdown-v3">
-  <comment>GOV-8728</comment>
+  <changeSet author="ohochachko" id="Procedure.dbo.GetResponsibilityTypeBreakdown-v5">
+  <comment>GOV-14810</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter procedure [dbo].[GetResponsibilityTypeBreakdown]
-as
+create or alter procedure [dbo].[GetResponsibilityTypeBreakdown] (
+  @responsibilityTypeUid UNIQUEIDENTIFIER = NULL
+) as
 begin
 	select
 		ResponsibilityTypeID,
 		ResponsibilityTypeUID,
-		ResponsibilityTypeName as ResponsibilityType, 
-		ResponsibilityTypeName as ResponsibilityName, 
-		sum(AssetCount) as [Count] 
+		ResponsibilityTypeName as ResponsibilityType,
+		ResponsibilityTypeName as ResponsibilityName,
+		sum(AssetCount) as [Count]
 	from
 	(
-	
-	select 
-		r.ResponsibilityTypeID, 
+
+	select
+		r.ResponsibilityTypeID,
 		rt.[uid] as ResponsibilityTypeUID,
-		rt.[Name] as ResponsibilityTypeName,  
+		rt.[Name] as ResponsibilityTypeName,
 		count(1) as AssetCount
 	from [responsibilitytyperelationrule] r
 		inner join ResponsibilityType rt on (rt.ID = r.ResponsibilityTypeID and r.ApplyToType = 1)
-		inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	  
+		inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 		inner join AssetType att on (att.[Object] = r.[Object] and att.ObjectID = r.ObjectID)
 		inner join Asset a on (a.AssetTypeID = att.id)
-		inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R' 
-	where RES.State=1 and r.IsVisible = 1	
-	group by 
+		inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R'
+	where RES.State=1 and r.IsVisible = 1
+	group by
 		r.ResponsibilityTypeID, rt.[uid], rt.[Name]
 	UNION ALL
-	select 
-		r.ResponsibilityTypeID, 
+	select
+		r.ResponsibilityTypeID,
 		rt.[uid] as ResponsibilityTypeUID,
-		rt.[Name] as ResponsibilityTypeName,  
+		rt.[Name] as ResponsibilityTypeName,
 		count(1) as AssetCount
 	from [responsibilitytyperelationrule] r
 		inner join ResponsibilityType rt on (rt.ID = r.ResponsibilityTypeID and r.ApplyToType = 1)
-		inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	  
+		inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 		inner join AssetType att on (att.[Object] = r.[Object] and att.ObjectID = r.ObjectID)
 		inner join Asset a on (a.AssetTypeID = att.id)
-		inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID  
-		inner join ResourceGroup RG on RG.GroupID = G.ID           
+		inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
+		inner join ResourceGroup RG on RG.GroupID = G.ID
 		inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
-	where RES.State=1 and r.IsVisible = 1	
-	group by 
+	where RES.State=1 and r.IsVisible = 1
+	group by
 		r.ResponsibilityTypeID, rt.[uid], rt.[Name]
 	UNION ALL
-	select 
-		r.ResponsibilityTypeID, 
+	select
+		r.ResponsibilityTypeID,
 		rt.[uid] as ResponsibilityTypeUID,
-		rt.[Name] as ResponsibilityTypeName,  
+		rt.[Name] as ResponsibilityTypeName,
 		count(1) as AssetCount
 	from [responsibilitytyperelationrule] r
 		inner join ResponsibilityType rt on (rt.ID = r.ResponsibilityTypeID and r.ApplyToType = 1)
-		inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	  
+		inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 		inner join AssetType att on (att.[Object] = r.[Object] and att.ObjectID = r.ObjectID)
 		inner join Asset a on (a.AssetTypeID = att.id)
-		inner join [Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID  
+		inner join [Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
 	    inner join OrganizationResource RD on RD.OrganizationID = D.ID
 		inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
-	where RES.State=1 and r.IsVisible = 1	
-	group by 
+	where RES.State=1 and r.IsVisible = 1
+	group by
 		r.ResponsibilityTypeID, rt.[uid], rt.[Name]
-	UNION ALL 
-	select 	      
-			  r.ResponsibilityTypeID as ResponsibilityTypeID,  
+	UNION ALL
+	select
+			  r.ResponsibilityTypeID as ResponsibilityTypeID,
 			  RT.[uid] as ResponsibilityTypeUID,
-			  RT.[Name] as ResponsibilityTypeName,  
+			  RT.[Name] as ResponsibilityTypeName,
 			  count(1) as AssetCount
-		   from 
+		   from
 			  responsibilitytyperelationrule r
 			  inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 			  inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-			  inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
-			 inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
-			 inner join Asset A on ( (A.ID = rasset.AssetID) )           
-			 inner join AssetType T on T.ID = A.AssetTypeID  
-			 inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R' 
+			  inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+			 inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			 inner join Asset A on ( (A.ID = rasset.AssetID) )
+			 inner join AssetType T on T.ID = A.AssetTypeID
+			 inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R'
 		   where RES.State=1 and r.IsVisible = 1 and r.ApplyToType = 0
 		   group by r.ResponsibilityTypeID, RT.[uid], RT.[Name]
-		   UNION ALL	   
-		   select 	      
-			  r.ResponsibilityTypeID as ResponsibilityTypeID,  
+		   UNION ALL
+		   select
+			  r.ResponsibilityTypeID as ResponsibilityTypeID,
 			  RT.[uid] as ResponsibilityTypeUID,
-			  RT.[Name] as ResponsibilityTypeName,  
+			  RT.[Name] as ResponsibilityTypeName,
 			  count(1) as AssetCount
-		   from 
+		   from
 			  responsibilitytyperelationrule r
 			  inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 			  inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-			  inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
-			 inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
-			 inner join Asset A on ( (A.ID = rasset.AssetID) )           
-			 inner join AssetType T on T.ID = A.AssetTypeID  
-			 inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID  
-			 inner join ResourceGroup RG on RG.GroupID = G.ID           
+			  inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+			 inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			 inner join Asset A on ( (A.ID = rasset.AssetID) )
+			 inner join AssetType T on T.ID = A.AssetTypeID
+			 inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
+			 inner join ResourceGroup RG on RG.GroupID = G.ID
 			 inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
 		   where RES.State=1 and r.IsVisible = 1 and r.ApplyToType = 0
 		   group by r.ResponsibilityTypeID, RT.[uid], RT.[Name]
-		   UNION ALL	   
-		   select 	      
-			  r.ResponsibilityTypeID as ResponsibilityTypeID,  
+		   UNION ALL
+		   select
+			  r.ResponsibilityTypeID as ResponsibilityTypeID,
 			  RT.[uid] as ResponsibilityTypeUID,
-			  RT.[Name] as ResponsibilityTypeName,  
+			  RT.[Name] as ResponsibilityTypeName,
 			  count(1) as AssetCount
-		   from 
+		   from
 			  responsibilitytyperelationrule r
 			  inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 			  inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-			  inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
-			 inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
-			 inner join Asset A on ( (A.ID = rasset.AssetID))           		 
-			 inner join [Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID  
+			  inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+			 inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			 inner join Asset A on ( (A.ID = rasset.AssetID))
+			 inner join [Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
 			 inner join OrganizationResource RD on RD.OrganizationID = D.ID
 			 inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
 		   where RES.State=1 and r.IsVisible = 1 and r.ApplyToType = 0
 		   group by r.ResponsibilityTypeID, RT.[uid], RT.[Name]
-		   UNION ALL	   
-		   select		 
-			 rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+		   UNION ALL
+		   select
+			 rr.ResponsibilityTypeID as ResponsibilityTypeID,
 			 RT.[uid] as ResponsibilityTypeUID,
-			 RT.[Name] as ResponsibilityTypeName,  
+			 RT.[Name] as ResponsibilityTypeName,
 			 count(1) as AssetCount
-			from 
+			from
 				[dbo].[ResponsibilityTypeRelationOverrideItem] oride
-				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
 				inner join [dbo].asset a on (a.id = oride.assetID)
 				inner join [dbo].assettype att on (att.id = a.assettypeid)
-				inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)			
+				inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
 				inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1
 			group by rr.ResponsibilityTypeID, RT.[uid], RT.[Name]
-	       UNION ALL	   
-		   select		 
-			 rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+	       UNION ALL
+		   select
+			 rr.ResponsibilityTypeID as ResponsibilityTypeID,
 			 RT.[uid] as ResponsibilityTypeUID,
-			 RT.[Name] as ResponsibilityTypeName,  
+			 RT.[Name] as ResponsibilityTypeName,
 			 count(1) as AssetCount
-			from 
+			from
 				[dbo].[ResponsibilityTypeRelationOverrideItem] oride
-				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
 				inner join [dbo].asset a on (a.id = oride.assetID)
 				inner join [dbo].assettype att on (att.id = a.assettypeid)
-				inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)							
-				inner join [Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID  
-				inner join ResourceGroup RG on RG.GroupID = G.ID           
+				inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
+				inner join [Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID
+				inner join ResourceGroup RG on RG.GroupID = G.ID
 				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
 			group by rr.ResponsibilityTypeID, RT.[uid], RT.[Name]
 	) X
-	group by 
+    WHERE (@responsibilityTypeUid IS NULL OR [ResponsibilityTypeUID] = @responsibilityTypeUid)
+	group by
 		ResponsibilityTypeID,
 		ResponsibilityTypeUID,
 		ResponsibilityTypeName

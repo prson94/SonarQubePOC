@@ -5,6 +5,7 @@ import { CompanyImage } from '../../../models/settings.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-shortcut-item',
@@ -125,8 +126,11 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
     private showTitleColor: boolean = false;
     private showBackgroundColor: boolean = false;
 
-    constructor(private shortcutService: ShortcutService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private shortcutService: ShortcutService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

@@ -321,7 +321,7 @@
                           *ngIf="['Text','Number','Decimal'].indexOf(currentType) > -1">
             <div class="row">
                 <div *ngIf="currentType == 'Text'"
-                     class="col s3">
+                     class="col s6">
                     <div id='PatternTip'
                          class="FieldName">
                         Validation Pattern
@@ -333,12 +333,12 @@
                            #validationPattern="ngModel"
                            [(ngModel)]="model.FieldType.Type[currentType].Validation.Pattern"
                            (change)="validatePattern(); model.FieldType.Type[currentType].Validation.MinimumValue=0;"
-                           style="width: 98%; display: block;"
+                           style="width: 99%; display: block; height:30px;"
                            class="{{(isValidationPatternValid() ? '' :'ng-dirty ng-invalid')}}" />
                     <div [hidden]="isValidationPatternValid() || validationPattern.pristine">Validation pattern is not valid Regex expression!</div>
                 </div>
                 <div *ngIf="currentType == 'Text'"
-                     class="col s3">
+                     class="col s6">
                     <div class="FieldName"
                          style="display:block">
                         &nbsp;
@@ -350,6 +350,25 @@
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
+            </div>
+            <div class="row"
+                 *ngIf="model.FieldType.Type[currentType].Validation.Pattern?.length > 0">
+                <div *ngIf="currentType == 'Text'"
+                     class="col s6">
+                    <div class="FieldNameRequired">Test Pattern</div>
+                    <input name="testPattern"
+                           pInputText
+                           type="text"
+                           [(ngModel)]="testPattern"
+                           (keydown)="validatePattern()"
+                           style="width: 99%; display: block; height:30px;" />
+                </div>
+                <div class="col s6">
+                    <div for="FieldNameRequired">&nbsp;</div>
+                    <div>{{testPatternValidationText}}</div>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col s3">
                     <div id='MinimumLengthTip'
                          class="FieldName">Minimum{{currentType == 'Text' ? "Length" : "Value"}}</div>
@@ -409,23 +428,6 @@
                            min="0"
                            max="5"
                            style="width: 98%; display: block;" />
-                </div>
-            </div>
-            <div class="row"
-                 *ngIf="model.FieldType.Type[currentType].Validation.Pattern?.length > 0">
-                <div *ngIf="currentType == 'Text'"
-                     class="col s3">
-                    <div class="FieldNameRequired">Test Pattern</div>
-                    <input name="testPattern"
-                           pInputText
-                           type="text"
-                           [(ngModel)]="testPattern"
-                           (keydown)="validatePattern()"
-                           style="width: 98%; display: block;" />
-                </div>
-                <div class="col s3">
-                    <div for="FieldNameRequired">&nbsp;</div>
-                    <div>{{testPatternValidationText}}</div>
                 </div>
             </div>
             <div class="row"
@@ -579,17 +581,16 @@
                             <tr>
                                 <th>&nbsp;</th>
                                 <th>Relation</th>
-                                <th>Lookup Type</th>
                                 <th>Relationship Type</th>
                                 <th>Table Settings</th>
                             </tr>
                         </thead>
                         <tbody *ngFor="let i of model.RelationItems; let x=index;">
                             <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
-                                <td colspan="5">&nbsp;</td>
+                                <td colspan="4">&nbsp;</td>
                             </tr>
                             <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
-                                <td colspan="5">&nbsp;</td>
+                                <td colspan="4">&nbsp;</td>
                             </tr>
                             <tr [style.background-color]="x%2 == 1 ? '#f2f2f2' : '#f2f2f2'">
                                 <td rowspan="3"
@@ -606,24 +607,12 @@
                                     {{i.displayValue}}
                                 </td>
 
-                                <td style="vertical-align: top; width:29%">
-                                    <select [ngModelOptions]="{standalone: true}"
-                                            [(ngModel)]="i.ReferenceType"
-                                            style="width:95%"
-                                            (ngModelChange)="changeRefType(x).subscribe()"
-                                            [disabled]="x < relationItemCount-1">
-                                        <option *ngFor="let j of lookups.ComplexLookupRelations" [value]="j.ID" [disabled]="x==0 && j.ID == 2">
-                                            {{j.DisplayName}}
-                                        </option>
-                                    </select>
-                                </td>
-
                                 <td *ngIf="i.relationsLoading"
-                                    style="vertical-align: top; width:29%">
+                                    style="vertical-align: top; width:58%">
                                     <span><i class="fa fa-spinner fa-spin"></i></span>
                                 </td>
                                 <td *ngIf="!i.relationsLoading"
-                                    style="vertical-align: top; width:29%">
+                                    style="vertical-align: top; width:58%">
                                     <select [ngModelOptions]="{standalone: true}"
                                             [(ngModel)]="i.selectedRelationItemID"
                                             style="width:95%"
@@ -636,23 +625,25 @@
                                     </select>
                                 </td>
 
-                                <td rowspan="3"
-                                    style="vertical-align: top">
+                                <td style="vertical-align: top">
                                     <div *ngIf="x == 0">
                                         <div>
-                                            <input [ngModelOptions]="{standalone: true}"
-                                                   type="checkbox"
-                                                   [(ngModel)]="model.FieldType.Type[currentType].HideFooter" /> Hide Footer?
+                                            <p-checkbox binary="true"
+                                                        [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
+                                                        label="Hide Footer?"
+                                                        [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                         <div>
-                                            <input [ngModelOptions]="{standalone: true}"
-                                                   type="checkbox"
-                                                   [(ngModel)]="model.FieldType.Type[currentType].HideHeader" /> Hide Header?
+                                            <p-checkbox binary="true"
+                                                        [(ngModel)]="model.FieldType.Type[currentType].HideHeader"
+                                                        label="Hide Header?"
+                                                        [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                         <div>
-                                            <input [ngModelOptions]="{standalone: true}"
-                                                   type="checkbox"
-                                                   [(ngModel)]="model.FieldType.Type[currentType].HideFilter" /> Hide Search?
+                                            <p-checkbox binary="true"
+                                                        [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
+                                                        label="Hide Search?"
+                                                        [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                     </div>
                                     <div class="RowTools">
@@ -695,11 +686,11 @@
                                                            style="width:95%" />
                                                 </td>
                                                 <td style="width: 10%; max-width: 64px">
-                                                    <input [ngModelOptions]="{standalone: true}"
-                                                           type="checkbox"
-                                                           [ngModel]="d.Show"
-                                                           (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);"
-                                                           style="width:95%" />
+                                                    <p-checkbox binary="true"
+                                                                [(ngModel)]="d.Show"
+                                                                label=""
+                                                                (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);"
+                                                                [ngModelOptions]="{standalone: true}"></p-checkbox>
                                                 </td>
                                                 <td style="width: 10%; max-width: 64px">
                                                     <input [ngModelOptions]="{standalone: true}"

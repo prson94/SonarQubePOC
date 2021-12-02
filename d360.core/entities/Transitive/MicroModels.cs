@@ -142,6 +142,33 @@ namespace d360.core.entities
         public string Requestor { get; set; }
     }
 
+    [DataContract(Namespace = NAMESPACE)]
+    public class LoadDetailV2 : BaseObject
+    {
+        [DataMember]
+        public string Action { get; set; }
+        [DataMember]
+        public DateTime? DateCompleted { get; set; }
+        [DataMember]       
+        public DateTime? DateStarted { get; set; }
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+        [DataMember]
+        public string AssetTypeName { get; set; }
+        [DataMember]
+        public string RequestedByName { get; set; }
+        [DataMember]
+        public Guid RequestedByUid { get; set; }
+        [DataMember]
+        public int Total { get; set; }
+        [DataMember]
+        public string ErrorMessage { get; set; }
+        [DataMember]
+        public Guid LoadUid { get; set; }
+    }
+
+    
+
     public class TopNavigationItem
     {
         public string MenuID { get; set; }
@@ -332,6 +359,87 @@ namespace d360.core.entities
         public bool HasGovernanceRoleUidSet { get; set; }
         public bool HasProcessDiagram { get; set; }
         public bool HasRequestCertificationWorkflow { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class LoadItemDetail : BaseObject
+    {
+        [DataMember]
+        public int RowIndex { get; set; }
+        [DataMember]
+        public string Column1 { get; set; }
+        [DataMember]
+        public string Column2 { get; set; }
+        [DataMember]
+        public string Column3 { get; set; }
+        [DataMember]
+        public string Column4 { get; set; }
+        [DataMember]
+        public string Column5 { get; set; }
+        [DataMember]
+        public string Column6 { get; set; }
+        [DataMember]
+        public string Status { get; set; }
+        [DataMember]
+        public string StatusMessage { get; set; }
+
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class SingleLoadDetail : BaseObject
+    {
+        [DataMember]
+        public int Total { get; set; }
+        [DataMember]
+        public int Success { get; set; }
+        [DataMember]
+        public int Error { get; set; }
+        [DataMember]
+        public int Incomplete { get; set; }
+        [DataMember]
+        public string Action { get; set; }
+        [DataMember]
+        public string AssetTypeName { get; set; }
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+        [DataMember]
+        public string ElapsedTime { get; set; }
+        [DataMember]
+        public string Status { get; set; }
+        [DataMember]
+        public string RequestedByName { get; set; }
+        [DataMember]
+        public Guid RequestedByUid { get; set; }
+    }
+
+    public class LevelField
+    {
+        public int Level { get; set; }
+        public string Name { get; set; }
+        public bool PartOfKey { get; set; }
+        public bool Required { get; set; }
+        public int ColumnIndex { get; set; }
+        public bool DataLoaded { get; set; }
+    }
+
+    public class LoadLevelStatus
+    {
+        public int Level { get; set; }
+        public bool Required { get; set; }
+        public bool DataLoaded { get; set; }
+    }
+
+    public class LoadLevelStatusComparer : IEqualityComparer<LoadLevelStatus>
+    {
+        public bool Equals(LoadLevelStatus x, LoadLevelStatus y)
+        {
+            return (x.Level == y.Level);
+        }
+
+        public int GetHashCode(LoadLevelStatus obj)
+        {
+            return obj.Level.GetHashCode();
+        }
     }
 
 }

@@ -9,8 +9,6 @@ namespace d360.model
         public static readonly string HighLevelTypeCaseStatement = $@"case 
 				when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' 
                 when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' 
-				when T.Object = 'FusionAttributeType' then 'Fusion Attribute: ' 
-				when T.Object = 'FusionType' then 'Fusion: ' 
 				when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()}: ' 
 				when T.Object = 'ReferenceItemType' then 'Reference: ' 
 				when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()}: ' 
@@ -90,14 +88,20 @@ from    [Group] G
 select	0 as ID, 
 		null as AssetID,
         null as ParentID,
-		Name
+		Name,
+		null as ObjectID,
+		null as Object,
+		null as uid
 from	AssetType
 where	ObjectID = @ID and Object ='TaxonomyType'
 union
 select	A.ObjectID as ID, 
         A.ID as AssetID,
         coalesce(P.SubjectID, 0) as ParentID, 
-        A.DisplayValue as Name
+        A.DisplayValue as Name,
+		A.ObjectID,
+		A.Object,	
+		A.uid
 from	AssetDetail A
 		outer apply (
 					select	I.SubjectID
@@ -622,7 +626,7 @@ where	T.ObjectID = @id and T.Object='TaxonomyType'";
                     ,t.UpdatedOn
 					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
                     ,e.ChangeType
-                    ,coalesce(d.Name, ITN.Name, it_t.Name, st.Name,f.DisplayValue) as TypeName,
+                    ,coalesce(d.Name, ITN.Name, it_t.Name, st.Name) as TypeName,
 					case when t.PublishedVersionID is not null then
 						'Version ' + cast(v.Version as varchar) + ' Published'
 					else
@@ -646,8 +650,6 @@ where	T.ObjectID = @id and T.Object='TaxonomyType'";
                         'Shopping Cart'
 					when e.[Object] = 'ReferenceItemType' then
 					'Reference List'
-					when e.[Object] = 'Fusion' then
-						'Fusion'
 					else
 						''
 					end as [Type],
@@ -659,7 +661,6 @@ where	T.ObjectID = @id and T.Object='TaxonomyType'";
 				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
 				outer apply dbo.GetIntersectTypeNames(IT.ID) ITN
                 left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
-                left join AssetDetail f on f.objectid = e.objectid and f.object = 'Fusion'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy

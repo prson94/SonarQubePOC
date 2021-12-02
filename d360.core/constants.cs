@@ -27,12 +27,16 @@ namespace d360.core
 
         public static readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
 
-        public const string TITLE_PREFIX = "Data360";
-        public const string COMPANY = "Infogix, Inc.";
-        public const string PRODUCT = "Data360 Govern";
-        public const string COPYRIGHT = "Copyright © Infogix, Inc. 2021";
-        public const string PRODUCT_VERSION = "2021.11.05.*";
-        public const string PRODUCT_VERSION_NOREVISION = "2021.11.05";
+        public static readonly string MAIL_API_KEY = "MandrillApiKey";
+        public static readonly string MAIL_SUB_ACCOUNT = "MandrillSubAccount";
+        public static readonly string BUS_TOPIC_NAME = "EventBusTopicName";
+        public static readonly string BUS_CONNECTION = "EventServiceBus";
+        public static readonly string QUEUE_CONNECTION = "AzureWebJobsQueueStorageAccount";
+        public static readonly string STORAGE_CONNECTION = "AzureStorageConnectionString";
+        public static readonly string REDIS_CONNECTION = "RedisCacheConnectionString";
 
+        public const string TITLE_PREFIX = "Data360";
+        public const string COMPANY = "Precisely.";
+        public const string PRODUCT = "Data360 Govern";
     }
 }

@@ -37,8 +37,14 @@ namespace d360.core.validators
             if (!SupportedClasses.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.UnsupportedAssetClass);
 
-            if (string.IsNullOrEmpty(model.Name) || model.Name.Trim() == string.Empty)
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidName} {AssetTypeErrors.CheckRequest}");
+            if (string.IsNullOrWhiteSpace(model.Name))
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsEmpty} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));
+
+            var invalidChars = new[] { '\0' };
+            if (model.Name.Any(invalidChars.Contains))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsInvalid} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));
+            }
 
             if ((isInsert && (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty)) || (!isInsert && model.DisplayFormat != null && model.DisplayFormat.Trim() == string.Empty))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidDisplayFormat} {AssetTypeErrors.CheckRequest}");
@@ -259,7 +265,7 @@ namespace d360.core.validators
                     int orderID = 0;
                     order = order.Split(new[] { "Field" }, StringSplitOptions.None)[1];
                     orderID = int.Parse(order);
-                    var orderName = CompanyContext.FieldTypes.Where(f => f.ID == orderID).FirstOrDefault();
+                    var orderName = CompanyContext.FieldTypes.FirstOrDefault(f => f.ID == orderID);
                     if (orderName != null)
                         return true;
                 }
@@ -272,12 +278,6 @@ namespace d360.core.validators
             var fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
 
             string[] validFields = { "name", "sourceid", "textpath", "code" };
-
-            if (assetType.Object == "FusionAttributeType")
-            {
-                var valid = validFields.Contains(fieldName.Trim().ToLower());
-                if (valid) return true;
-            }
 
             var doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower());
             List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
@@ -364,22 +364,27 @@ namespace d360.core.validators
             return true;
         }
 
+        // source is nullable
+        // result is not nullable
+        private IEnumerable<Guid> FindAssets(IEnumerable<KeyValuePair<string, string>> source, string assetKey)
+        {
+            string value = null;
+            foreach (var pair in source.Safe())
+            {
+                if (string.Equals(pair.Key, assetKey, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    value = pair.Value;
+                    break;
+                }
+            }
+            return (value?.Split(',') ?? Enumerable.Empty<string>()).Select(g => Guid.TryParse(g, out Guid x) ? x : Guid.Empty);
+        }
+
+        // queryparams is nullable
         public bool IsValidGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            if (queryParams.Any(x => x.Key.Trim().ToLower() == "_assetuid"))
-            {
-                List<Guid> assetUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid")
-                    .Value.Split(',').Select(x =>
-                    {
-                        var guid = Guid.Empty;
-                        Guid.TryParse(x, out guid);
-                        return guid;
-                    }).ToList();
-
-                if (assetUids.Any(x => x == Guid.Empty))
-                    return false;
-            }
-            return true;
+            var assets = FindAssets(queryParams, "_assetuid").ToArray();
+            return assets.Length == 0 || assets.All(x => x != Guid.Empty);
         }
     }
 }

@@ -7,6 +7,7 @@ import { ScoreType } from '../../../../models/metrics.model';
 import { BaseComponent } from '../../base.component';
 import { PointBreakdown, ScorePoint } from '../../../../models/score.model';
 import { DatePipe } from '@angular/common';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 
 @Component({
@@ -48,13 +49,15 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     showMeasurePoints: boolean = false;
     isHistoryLoaded: boolean = false;
 
-    constructor(protected scoreService: ScoreService,
+    constructor(
         protected objectStatisticsService: ObjectStatisticsService,
+        protected scoreService: ScoreService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         private datePipe: DatePipe,
         @Inject(LOCALE_ID) private locale: string
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -202,7 +205,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             chart: {
                 zoomType: 'xy',
                 style: {
-                    fontFamily: 'Source Sans Pro'
+                    fontFamily: 'Precisely'
                 },
                 height: '250px'
             },

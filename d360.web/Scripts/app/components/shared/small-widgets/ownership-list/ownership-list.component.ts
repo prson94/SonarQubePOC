@@ -36,9 +36,6 @@ class OwnershipResource {
         .single-entry span {
             margin-left: -4px;
         }
-        a {
-            color: #51a6dc;
-        }
     `],
 })
 

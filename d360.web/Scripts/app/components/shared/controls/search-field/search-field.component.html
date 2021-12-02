@@ -1,4 +1,4 @@
-﻿<span class="ig-search-field {{infoTooltip ? 'has-tooltip' : ''}} {{darkMode ? 'dark-mode' : ''}}">
+﻿<span class="ig-search-field {{infoTooltip ? 'has-tooltip' : ''}} {{darkMode ? 'dark-mode' : ''}}" [ngClass]="IsFlexApply ? 'flexsimple-search' : ''">
     <input igInput #iginput
            [tabindex]="tabindex"
            type="text" autocomplete="off" placeholder="{{placeholder}}" maxlength="{{maxLength}}"

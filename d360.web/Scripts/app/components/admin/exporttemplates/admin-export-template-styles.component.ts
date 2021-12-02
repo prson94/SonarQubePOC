@@ -3,6 +3,7 @@ import { BaseComponent } from "../../shared/base.component";
 import { ExportTemplateService } from "../../../services/export-template.service";
 import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: 'd3s-admin-export-template-styles',
@@ -73,8 +74,6 @@ import { MessagesObservableService } from "../../../services/messages-observable
 `
 })
 export class AdminExportTemplateStylesComponent extends BaseComponent implements OnInit, OnChanges{
-
-    
     styleRules: ExportTemplateStyle[]=[];
     selectedStyle: any;
     showEditor: boolean = false;
@@ -86,14 +85,16 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     mode: string;
     theDeleteCallback: Function;
 
-    constructor(private exportTemplateService: ExportTemplateService,
-        protected messagesService: MessagesObservableService, ) {
-        super();
+    constructor(
+        private exportTemplateService: ExportTemplateService,
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
+        ) {
+        super(settingsService);
         this.theDeleteCallback = this.deleteTemplateStyle.bind(this);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
- 
         this.showEditor = false;
         this.showDelete = false;
         this.load();
@@ -102,6 +103,7 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     isPivot(): boolean {
         return (this.exportViewType && this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot]);        
     }
+
     ngOnInit(): void {
         this.load();
     }
@@ -117,6 +119,7 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
         }
         return retval
     }
+
     private getRowStyles(item:ExportTemplateStyle): any {
         let styles = {
             'background-color': item.BgColor,
@@ -130,7 +133,6 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
 
         };
 
-   
         return styles;
     }
 

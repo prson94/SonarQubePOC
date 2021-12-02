@@ -23,6 +23,9 @@ import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-l
 import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
 import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.module";
+import { PeopleResponsibilitiesModule } from "../responsibilities/people-responsibilities.tile";
+import { DynamicFieldNameModule } from "../dynamic-field-name.component";
+import { PortalsModule } from "../portals/portals.module";
 
 
 @NgModule({
@@ -43,7 +46,10 @@ import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.modul
         OwnershipListModule,
         AdvancedFiltersModule,
         SearchFieldModule,
-        ScoreBadgeModule
+        ScoreBadgeModule,
+        PeopleResponsibilitiesModule,
+        DynamicFieldNameModule,
+        PortalsModule
     ],
     declarations: [
         AssetDetailFieldComponent,

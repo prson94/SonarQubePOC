@@ -10,6 +10,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AssetTypeClass } from '../../../models/asset.model';
 import { forEach } from 'core-js/fn/array';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-models-component',
@@ -36,10 +37,11 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         secondaryNavService: SecondaryNavService,
         private messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
         titleService: Title
     ) {
 
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 
         this.activatedRoute.parent.url.subscribe((urlPath) => {
             const url = urlPath[urlPath.length - 1].path;

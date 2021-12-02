@@ -93,8 +93,7 @@ namespace d360.model.DataAccessLayer
 				case when e.[Object] = 'IssueType' then is_t.uid
 					ELSE NULL END as ActionTypeUid ,
 				case when e.[Object] = 'ArtifactType' or e.[Object] = 'RuleType' or e.[Object] = 'PolicyType'
-					or e.[Object] = 'TaxonomyType' or e.[Object] = 'ShoppingCartType' or  e.[Object] = 'ReferenceItemType'
-					or e.[Object] = 'Fusion' then d.uid
+					or e.[Object] = 'TaxonomyType' or e.[Object] = 'ShoppingCartType' or  e.[Object] = 'ReferenceItemType' then d.uid
 				ELSE NULL END as AssetTypeUid,
 				case when e.[Object] = 'IntersectType' then IT.uid
 					ELSE NULL END as RelationshipTypeUid,
@@ -130,8 +129,6 @@ namespace d360.model.DataAccessLayer
                         'Shopping Cart'
 					when e.[Object] = 'ReferenceItemType' then
 					'Reference List'
-					when e.[Object] = 'Fusion' then
-						'Fusion'
 					else
 						''
 					end as [Type]
@@ -181,8 +178,7 @@ namespace d360.model.DataAccessLayer
 				case when e.[Object] = 'IssueType' then is_t.uid
 					ELSE NULL END as ActionTypeUid ,
 				case when e.[Object] = 'ArtifactType' or e.[Object] = 'RuleType' or e.[Object] = 'PolicyType'
-					or e.[Object] = 'TaxonomyType' or e.[Object] = 'ShoppingCartType' or  e.[Object] = 'ReferenceItemType'
-					or e.[Object] = 'Fusion' then d.uid
+					or e.[Object] = 'TaxonomyType' or e.[Object] = 'ShoppingCartType' or  e.[Object] = 'ReferenceItemType' then d.uid
 				ELSE NULL END as AssetTypeUid,
 				case when e.[Object] = 'IntersectType' then IT.uid
 					ELSE NULL END as RelationshipTypeUid,
@@ -842,8 +838,7 @@ namespace d360.model.DataAccessLayer
 		        case when item.[Object] = 'Issue' then iss.uid
 		        ELSE NULL END as ActionUid ,
 		        case when item.[Object] = 'Artifact' or item.[Object] = 'Rule' or item.[Object] = 'Policy'
-		        or item.[Object] = 'Taxonomy' or item.[Object] = 'ShoppingCart' or  item.[Object] = 'ReferenceItem'
-		        or item.[Object] = 'Fusion' then D.uid
+		        or item.[Object] = 'Taxonomy' or item.[Object] = 'ShoppingCart' or  item.[Object] = 'ReferenceItem' then D.uid
 		        ELSE NULL END as AssetUid,
 		        case when item.[Object] = 'Intersect' then inter.uid
 		        ELSE NULL END as RelationshipUid,

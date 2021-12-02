@@ -7,8 +7,8 @@ import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { DatePipe } from '@angular/common';
 import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
     selector: 'd3s-search-result-item',
@@ -36,18 +36,20 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 
     @ViewChild('cardmenu', { static: false }) cardmenu: PopupMenu;
     @ViewChild('fieldScroller', { static: false }) fieldScroller: ElementRef;
-    
+
     constructor(private router: Router,
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         private ref: ChangeDetectorRef,
         private elementRef: ElementRef,
         private datePipe: DatePipe) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {
-        if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() === "true") {
+        let showCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
+        if (showCart) {
             this.menuitems.push({ title: "Add to Cart" });
         }
 
@@ -71,8 +73,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     get type() {
         if (this.result) {
             switch (this.result.Group) {
-                case 'FusionAttributes':
-                    return 'FusionAttribute';
                 case 'Reference':
                     return 'ReferenceItemType';
                 default:
@@ -121,7 +121,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 
     formatPathAsString(): string {
         if (this.result.Group && this.result.AssetPath) {
-            return this.result.Group +' > ' + this.result.AssetPath.map(p => p.Key.join(' / ') + ' (' + p.AssetType + ')').join(' > ');
+            return this.result.Group + ' > ' + this.result.AssetPath.map(p => p.Key.join(' / ') + ' (' + p.AssetType + ')').join(' > ');
         }
         return '';
     }
@@ -137,7 +137,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
      * @param field
      * @param forTitle Return is used in title, so booleans are shown as value and links shown as displayvalue
      */
-    getFieldDisplayValue(field: SearchResultFieldDisplay, forTitle: boolean = false):string {
+    getFieldDisplayValue(field: SearchResultFieldDisplay, forTitle: boolean = false): string {
         let val: string = (field.Empty) ? '---' : field.Value;
         if (val === null || val === undefined)
             return '';
@@ -192,14 +192,14 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 
     checkScrollPos() {
         if (this.fieldScroller) {
-                let currentPosition = this.fieldScroller.nativeElement.scrollLeft;
-                this.disableScrollLeft = currentPosition == 0;
-    
-                let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
-                let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastChild);
-                this.disableScrollRight = lastTab <= maxWidth;
-    
-                this.ref.markForCheck();
+            let currentPosition = this.fieldScroller.nativeElement.scrollLeft;
+            this.disableScrollLeft = currentPosition == 0;
+
+            let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
+            let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastChild);
+            this.disableScrollRight = lastTab <= maxWidth;
+
+            this.ref.markForCheck();
         }
     }
 
@@ -220,7 +220,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     scroll(direction: string) {
         let el = this.fieldScroller.nativeElement;
         let scrollAmount = 0;
-        let scrollDistance = Math.floor(this.getElementWidth(el)*0.95);
+        let scrollDistance = Math.floor(this.getElementWidth(el) * 0.95);
         let move = () => {
             if (direction == 'L') {
                 el.scrollLeft -= 10;
@@ -253,7 +253,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                 ID: this.result.ID,
                 AssetUid: this.result.Uid,
                 ObjectType: this.result.Object,
-                HasProfiling: this.result.HasProfiling
+                HasProfiling: this.result.HasProfiling,
+                Data: this.result
             });
         }
     }

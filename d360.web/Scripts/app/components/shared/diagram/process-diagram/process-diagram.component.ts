@@ -17,6 +17,7 @@ import { HeaderActions } from '../../../../models/header.model';
 import { Location } from '@angular/common';
 import { ProcessDiagramListViewComponent } from './process-diagram-list-view.component';
 import { AssetBrowserOverviewComponent } from '../assetbrowser/tools/overview.component';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -127,13 +128,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         breadcrumbService: HeaderBreadcrumbService,
         private headerActionService: HeaderActionsService,
         private processService: ProcessService,
+        protected settingsService: CompanySettingsService,
         public cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
         private renderer: Renderer2,
         public dynEditorService: DynEditorService,
         private location: Location
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

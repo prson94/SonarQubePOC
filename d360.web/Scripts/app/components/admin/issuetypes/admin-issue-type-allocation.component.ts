@@ -5,6 +5,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-issue-type-allocation',
@@ -102,8 +103,12 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
     deleteCallback: Function;
     showResponsibilities: boolean;
 
-    constructor(private workflowService: WorkflowService, protected messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService
+    ) {
+        super(settingsService);
         this.deleteCallback = this.delete.bind(this);
     }
 
@@ -157,12 +162,6 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
                 break;
             case "TechnicalAsset":
                 name = "Technical Asset";
-                break;
-            case "FusionAttribute":
-                name = "Fusion Attribute";
-                break;
-            case "FusionQuery":
-                name = "Fusion Query";
                 break;
             case "DiagramAsset":
                 name = "Diagram Asset";

@@ -9,6 +9,7 @@ import {BaseComponent} from '../../shared/base.component';
 
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-organization-resources',
@@ -147,9 +148,10 @@ export class AdminOrganizationResourcesComponent extends BaseComponent implement
         private route: ActivatedRoute,
         private router: Router,
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

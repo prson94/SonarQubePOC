@@ -399,7 +399,7 @@ END");
 			                                    ,[UpdatedBy]
 			                                    ,[Notes]
 			                                    ,[uid]
-			                                    ,[CanOwnFusion]
+			                                    ,0 as [CanOwnFusion]
 			                                    ,[AutoDisplayDescription]
 			                                    ,[UseAsTransformation]
 			                                    ,F.FieldXML as FieldXml

@@ -313,6 +313,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Maximum number of links on Lineage diagram that will use &apos;AvoidNodes&apos; render setting. If higher, links will render without corners and as a straight line between 2 nodes. This improves render performance on diagrams with more data..
+        /// </summary>
+        internal static string DiagramMaxAvoidNodesLinkCount_Desc {
+            get {
+                return ResourceManager.GetString("DiagramMaxAvoidNodesLinkCount_Desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum count of Diagram links to use &apos;AvoidNodes&apos; render template.
+        /// </summary>
+        internal static string DiagramMaxAvoidNodesLinkCount_Name {
+            get {
+                return ResourceManager.GetString("DiagramMaxAvoidNodesLinkCount_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This allows for the disabling of posting comments and replies on all Community Boards throughout the system.  Users will still be able to see Community Boards and all system-level comments..
         /// </summary>
         internal static string DisableCommunityPosting_Desc {
@@ -457,24 +475,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This setting indicates whether the Govern UI should display Fusion options..
-        /// </summary>
-        internal static string FusionEnabled_Desc {
-            get {
-                return ResourceManager.GetString("FusionEnabled_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable Fusion.
-        /// </summary>
-        internal static string FusionEnabled_Name {
-            get {
-                return ResourceManager.GetString("FusionEnabled_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The Uid of the reference list that contains the Governance Roles that the Diagram Designer depends on..
         /// </summary>
         internal static string GovernanceRoleReferenceListUid_Desc {
@@ -507,24 +507,6 @@ namespace d360.core.resources {
         internal static string HasRegisterLink_Name {
             get {
                 return ResourceManager.GetString("HasRegisterLink_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The back color for the page header where the logo and search field appears..
-        /// </summary>
-        internal static string HeaderBackgroundColor_Desc {
-            get {
-                return ResourceManager.GetString("HeaderBackgroundColor_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Header Background Color.
-        /// </summary>
-        internal static string HeaderBackgroundColor_Name {
-            get {
-                return ResourceManager.GetString("HeaderBackgroundColor_Name", resourceCulture);
             }
         }
         
@@ -759,24 +741,6 @@ namespace d360.core.resources {
         internal static string RequestCertificationDraft_Name {
             get {
                 return ResourceManager.GetString("RequestCertificationDraft_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search exact match setting default value..
-        /// </summary>
-        internal static string SearchExactMatch_Desc {
-            get {
-                return ResourceManager.GetString("SearchExactMatch_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search exact match default to enabled..
-        /// </summary>
-        internal static string SearchExactMatch_Name {
-            get {
-                return ResourceManager.GetString("SearchExactMatch_Name", resourceCulture);
             }
         }
         
@@ -1101,24 +1065,6 @@ namespace d360.core.resources {
         internal static string UseAsTransformationLimit_Name {
             get {
                 return ResourceManager.GetString("UseAsTransformationLimit_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This setting enables the new method of generating markit lineage technical relationships..
-        /// </summary>
-        internal static string UseNewMarkitLineageGeneration_Desc {
-            get {
-                return ResourceManager.GetString("UseNewMarkitLineageGeneration_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use new Markit Lineage Generation.
-        /// </summary>
-        internal static string UseNewMarkitLineageGeneration_Name {
-            get {
-                return ResourceManager.GetString("UseNewMarkitLineageGeneration_Name", resourceCulture);
             }
         }
         

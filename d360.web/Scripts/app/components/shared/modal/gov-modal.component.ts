@@ -12,6 +12,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     @Input() isVisible: false;
     @Input() showConfirm: false;
     @Input() showTitle: boolean = true;
+    @Input() includePreciselyLogo: boolean = false;
     @Input() subtitle: string;
 
     @Input() appendToBody: boolean = false;
@@ -31,7 +32,6 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
             });
         }
     }
-
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.isVisible !== undefined && (changes.isVisible.previousValue != changes.isVisible.currentValue)) {
@@ -85,7 +85,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
         }
     }
 
-    closePopUp() {
+    public closePopUp() {
         if (this.modalDiv) {
             this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " begin-hide";
             window.setTimeout(function () {

@@ -1,0 +1,112 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="ohochachko" id="Procedure.dbo.GetResponsibilityBreakdownByResource-v2">
+  <comment>GOV-14810</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER PROCEDURE [dbo].[GetResponsibilityBreakdownByResource]
+    @responsibilityTypeUid UNIQUEIDENTIFIER = NULL,
+    @resourceUid UNIQUEIDENTIFIER = NULL
+AS
+BEGIN
+
+-- better to use memory optimized table (https://docs.microsoft.com/en-us/sql/relational-databases/in-memory-oltp/faster-temp-table-and-table-variable-by-using-memory-optimization?view=azuresqldb-current)
+-- in this case however it now supported by our SQL Database...
+-- 'MEMORY_OPTIMIZED tables' is not supported in this service tier of the database. See Books Online for more details on feature support in different service tiers of Windows Azure SQL Database.
+DECLARE @temp TABLE
+(
+    AssetTypeUid UNIQUEIDENTIFIER,
+    ResponsibilityTypeUid UNIQUEIDENTIFIER,
+    AssetCount INT
+)
+
+INSERT INTO @temp
+SELECT DISTINCT
+       AssetType.[uid] AssetTypeUid
+     , R.[uid] ResponsibilityTypeUid
+     , R.AssetCount AssetCount
+  FROM AssetType
+ INNER JOIN (
+    SELECT C.[Type]
+         , C.[TypeID]
+         , responsibilityType.[uid]
+         , AC.Count as AssetCount
+      FROM ResponsibilityDetail C
+     INNER JOIN [dbo].[ResponsibilityType] responsibilityType
+        ON responsibilityType.[ID] = C.[ResponsibilityTypeID]
+    CROSS APPLY (
+        SELECT COUNT(*) as 'Count'
+          FROM (
+            SELECT responsibilityDetail.AssetID
+              FROM [dbo].[ResponsibilityDetail] responsibilityDetail
+             INNER JOIN [dbo].[ResponsibilityType] responsibilityType
+                ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
+             INNER JOIN [dbo].[AssetType] assetType
+                ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
+                   AND assetType.Object = responsibilityDetail.[Type]
+                   AND assetType.[ObjectID] = C.[TypeID]
+                   AND assetType.Object = C.[Type]
+             INNER JOIN Asset asset
+                ON asset.[AssetTypeID] = assetType.[ID]
+             WHERE (@resourceUid IS NULL OR responsibilityDetail.[ResourceUid] = @resourceUid)
+               AND responsibilityDetail.[AssetID] = 0
+               AND responsibilityDetail.[ApplyToType] = 1
+               AND responsibilityDetail.[IsVisible] = 1
+               AND (@responsibilityTypeUid IS NULL OR responsibilityType.[uid] = @responsibilityTypeUid)
+            --
+            UNION ALL
+            --
+            SELECT responsibilityDetail.AssetID
+              FROM ResponsibilityDetail responsibilityDetail
+             INNER JOIN [dbo].[ResponsibilityType] responsibilityType
+                ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
+             INNER JOIN AssetType assetType
+                ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
+                   AND assetType.Object = responsibilityDetail.[Type]
+                   AND assetType.[ObjectID] = C.[TypeID]
+                   AND assetType.Object = C.[Type]
+                   AND (@resourceUid IS NULL OR responsibilityDetail.ResourceUid = @resourceUid)
+             WHERE responsibilityDetail.ApplyToType = 0
+               AND responsibilityDetail.IsVisible = 1
+               AND (@responsibilityTypeUid IS NULL OR responsibilityType.[uid] = @responsibilityTypeUid)
+        ) A
+    ) AC(Count)
+     WHERE C.IsVisible = 1
+       AND (@resourceUid IS NULL OR ResourceUid = @resourceUid)
+       AND (@responsibilityTypeUid IS NULL OR responsibilityType.[uid] = @responsibilityTypeUid)
+     ) R
+    ON R.[Type] = AssetType.[Object]
+       AND R.TypeID = AssetType.[ObjectID]
+
+
+    SELECT *
+      FROM @temp;
+
+    SELECT DISTINCT AssetType.*
+      FROM AssetType
+     INNER JOIN @temp temp
+        ON temp.AssetTypeUid = AssetType.[uid]
+
+    SELECT DISTINCT ResponsibilityType.*
+      FROM ResponsibilityType
+     INNER JOIN @temp temp
+        ON temp.ResponsibilityTypeUid = ResponsibilityType.[uid]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

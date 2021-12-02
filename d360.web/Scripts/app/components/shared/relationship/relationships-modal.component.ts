@@ -6,6 +6,7 @@ import {ObjectDetailService} from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { ObjectRelationshipsComponent } from './object-relationships.component';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -36,9 +37,10 @@ export class RelationshipsModalComponent extends BaseComponent implements OnInit
         private permissionsService: PermissionsService,
         private objectDetailService: ObjectDetailService,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         breadcrumbService: HeaderBreadcrumbService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

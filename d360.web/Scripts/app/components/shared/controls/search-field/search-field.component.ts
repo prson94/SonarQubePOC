@@ -35,7 +35,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     @Input() style: any;
     @Input() infoTooltip: string = "";
     @Input() darkMode: boolean = false;
-
+    @Input() IsFlexApply: boolean = false;
     @Output() onSearch = new EventEmitter();
 
     hasValue: boolean = false;

@@ -2,11 +2,13 @@
 import { DetailField, DetailFieldType } from '../../../models/object-detail.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'ig-asset-detail-field',
     templateUrl: './asset-detail-field.component.html',
-    changeDetection: ChangeDetectionStrategy.Default
+    changeDetection: ChangeDetectionStrategy.Default,
+    providers: [AssetService]
 })
 
 export class AssetDetailFieldComponent {
@@ -24,8 +26,8 @@ export class AssetDetailFieldComponent {
 
 
     constructor(private router: Router,
-        private ref: ChangeDetectorRef)
-    { }
+        private assetService: AssetService,
+        private ref: ChangeDetectorRef) { }
 
     ngOnInit() {
         if ((this.field.DataType === 'date' || this.field.DataType === 'datetime') && isNaN(Date.parse(this.field.Value))) {
@@ -38,7 +40,7 @@ export class AssetDetailFieldComponent {
         if (e) {
             e.preventDefault();
         }
-    }    
+    }
 
     get shouldShowEmptyValue(): boolean {
         if (this.field == null) {
@@ -134,7 +136,5 @@ export class AssetDetailFieldComponent {
             return "Error";
         }
     }
-
-    //#endregion
 }
 

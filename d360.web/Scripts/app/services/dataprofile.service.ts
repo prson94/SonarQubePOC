@@ -24,13 +24,30 @@ export class DataProfileService extends BaseObservableService {
 
     public getDataProfiles(assetUid: string, startDate: Date = null, endDate: Date = null, includeChildAssets: boolean = false, includeTotal: boolean = false): Observable<any> {
         const httpOptions = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-            body: [{ _startDate: startDate, _endDate: endDate, _includeChildAssets: includeChildAssets, _includeTotal: includeTotal }]
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),            
         };
+
+        let url = `/api/v2/dataprofiles/${assetUid}?_pageSize=10000&_pageNum=1`;
+
+        if (startDate) {
+            url += `&_startDate=${startDate?.toISOString()}`;
+        }
+
+        if (endDate) {
+            url += `&_endDate=${endDate?.toISOString()}`;
+        }
+
+        if (includeChildAssets) {
+            url += `&_includeChildAssets=${includeChildAssets}`;
+        }
+
+        if (includeTotal) {
+            url += `&_includeTotal=${includeTotal}`;
+        }
 
         return this
             .http
-            .get(`/api/v2/dataprofiles/${assetUid}`, httpOptions)
+            .get(url, httpOptions)
             .pipe(
                 map((response) => <any>response),
                 catchError((err) => this.handleError(err, true))
@@ -56,7 +73,7 @@ export class DataProfileService extends BaseObservableService {
             );
     }
 
-    public exportMatches(assetUid: string, matchType: string, simpleFilter: string = '', advancedFilter: string = "", assetName: string, callback: Function = null) {
+    public exportMatches(assetUid: string, matchType: string, simpleFilter: string = '', advancedFilter: string = "", assetName: string, sortField: string = "", sortOrder: number = SortOrder.Ascending, callback: Function = null) {
 
         let pageNum: number = 1;
         let pageSize: number = 200000;
@@ -73,6 +90,13 @@ export class DataProfileService extends BaseObservableService {
 
         if (advancedFilter) {
             url += `&_filter=${advancedFilter}`;
+        }
+
+        if (sortField) {
+            url += `&_order=${sortField}`;
+            if (sortOrder && sortOrder !== SortOrder.None) {
+                url += `&_direction=${sortOrder === SortOrder.Ascending ? "asc" : "desc"}`;
+            }
         }
 
         this.

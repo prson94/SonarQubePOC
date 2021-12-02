@@ -23,13 +23,13 @@ declare var CurrentResourceID;
                     <d3s-right-sidebar #sidebar [menuOpen]="menuOpen" (changed)="setMaxHeight()"></d3s-right-sidebar>
                     <div class="row d3s-content-pane" [ngStyle]="{'height.px': maxContentPaneHeight}">
                         <div class="row">
-                            <div [class.maincontent]="!menuOpen" [class.maincontent-open]="menuOpen" [style.margin-left]="hideNav ? '0' : null">
+                            <div [ngClass]="{maincontent: !menuOpen, 'maincontent-open': menuOpen, 'maincontent-second': secondNavOpen}" [style.margin-left]="hideNav ? '0' : null">
                                 <router-outlet></router-outlet>
                             </div>
                         </div>
                     </div>
                 </main>
-                <p-toast [baseZIndex]="20000"></p-toast>
+                <p-toast [baseZIndex]="200001"></p-toast>
               `,
     providers: [MessageService]
 })
@@ -45,6 +45,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     @ViewChild('sidebar', {static: false, read: ElementRef }) sidebar: ElementRef;
     private timer: any;
     hideNav: boolean = false;
+    secondNavOpen: boolean = false;
 
     constructor(                
         private messagesService: MessagesObservableService,        
@@ -102,6 +103,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
                 headerHeight = this.header.nativeElement.getBoundingClientRect().height;
 
             this.maxContentPaneHeight = (window.innerHeight > 100) ? ((window.innerHeight - (headerHeight + sidebarHeight))) : 100;
+            this.secondNavOpen = sidebarHeight > 61;
         }, 200);
     }
 

@@ -196,7 +196,7 @@
     vertical-align: bottom;
 
     i.fa-info-circle {
-      color: @ig-midblue;
+      color: @ig-purple;
     }
   }
 
@@ -240,7 +240,15 @@
   .p-selectable-row {
     .p-checkbox {
       pointer-events: auto;
+      background: inherit;
     }
+  }
+
+  .p-datatable-thead > tr > th {
+    font-weight: bold;
+    text-transform: capitalize;
+    border-radius: 0;
+    background-color: white;
   }
 
   tr {
@@ -251,7 +259,6 @@
 
     td,
     th {
-      background: white !important;
       padding: 0 !important;
       height: 32px;
       line-height: 32px;
@@ -286,25 +293,6 @@
     th.first-col {
       width: 16px;
       padding: 0 8px !important;
-    }
-
-    &:hover {
-      td,
-      .p-checkbox {
-        background-color: @ig-orange-t4 !important;
-      }
-    }
-
-    &.p-highlight {
-      td,
-      .p-checkbox {
-        background-color: @ig-orange-t3 !important;
-      }
-    }
-
-    .p-highlight {
-      color: black;
-      background: white;
     }
   }
 }

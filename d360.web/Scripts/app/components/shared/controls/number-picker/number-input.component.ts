@@ -69,7 +69,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
                     value = this.min;
                     this.el.nativeElement.value = value;
                 }
-                obj = value;
+                obj = +value;
             }
         }
         else {

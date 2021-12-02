@@ -1,0 +1,27 @@
+.category-column { 
+    display:inline-grid; 
+    margin-right:40px;
+    max-height: 300px;
+    overflow-x: hidden;
+    padding-bottom: 4px; 
+}
+
+
+.category-column .ig-label { 
+    word-break: break-word; 
+}
+
+.row .row-header {
+    @gap: 8px;
+    display: flex;
+    margin-right: -@gap;
+
+    > * {
+        margin-right: @gap;
+    }
+
+    > ig-portal-renderer {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+}

@@ -5,6 +5,7 @@ import { ShortcutService } from '../../../services/shortcuts.service';
 import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-shortcut-list',
@@ -18,8 +19,11 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
     formMode = FormMode.Default;
     FormMode = FormMode;
     
-    constructor(private shortcutService: ShortcutService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private shortcutService: ShortcutService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {

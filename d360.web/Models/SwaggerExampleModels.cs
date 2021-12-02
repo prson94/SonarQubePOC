@@ -41,7 +41,6 @@ namespace d360.web.Models
                 ParentUid = Guid.Empty,
                 Notes = "Notes about usage or any other topic.",
                 UseAsTransformation = false,
-                CanOwnFusion = false,
                 AutoDisplayParent = true,
                 CanEditParent = true
             };
@@ -65,7 +64,6 @@ namespace d360.web.Models
                 ParentUid = Guid.Empty,
                 Notes = "Notes about usage or any other topic.",
                 UseAsTransformation = false,
-                CanOwnFusion = false,
                 AutoDisplayParent = true
             };
         }

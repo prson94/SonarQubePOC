@@ -29,6 +29,7 @@ using d360.core.entities.Metric;
 using d360.model.helpers;
 using System.Text;
 using d360.model.helpers.filters;
+using Microsoft.ApplicationInsights;
 
 namespace d360.model
 {
@@ -37,7 +38,7 @@ namespace d360.model
     {
         internal IQueueSource QueueSource;
         internal IStorageProvider Storage;
-
+        internal IMailProvider Mail;
         readonly CommunityContext Community;
 
         bool IsEventingEnabled;
@@ -52,13 +53,20 @@ namespace d360.model
 
         #region Ctors
 
-        public CompanyContext(ICommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, IStorageProvider storage, bool skipCacheCheck = false)
+        public CompanyContext(
+            ICommunityContext community, 
+            ICachingProvider caching, 
+            IQueueSource queueSource, IMailProvider mail, 
+            ISecurityContextProvider context, 
+            IStorageProvider storage, 
+            bool skipCacheCheck = false)
             : base(community.GetCompanyConnectionString(skipCacheCheck))
         {
             Database.SetInitializer<CompanyContext>(null); //dont create any tables if they dont exist.
 
             Community = (CommunityContext)community;
             Caching = caching;
+            Mail = mail;
             QueueSource = queueSource;
             Storage = storage;
 
@@ -158,8 +166,6 @@ namespace d360.model
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
-        public DbSet<d360.core.entities.Rule> Rules { get; set; }
-
         public DbSet<SiteNav> SiteNav { get; set; }
 
         public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
@@ -209,20 +215,11 @@ namespace d360.model
                     {
                         Set<Field>().Attach(item);
                         Entry(item).State = (string.IsNullOrEmpty(item.Value)) ? EntityState.Deleted : EntityState.Modified;
-                        if (item.ObjectType == "FusionAttribute")
-                        {
-                            item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
-                        }
-
                     }
                     else //ADD
                     {
                         if (!string.IsNullOrEmpty(item.Value))
                         {
-                            if (item.ObjectType == "FusionAttribute")
-                            {
-                                item.FormattedValue = GetFormattedFieldLookupValue(item.FieldTypeID, item.Value);
-                            }
                             Set<Field>().Add(item);
                         }
                     }
@@ -280,7 +277,7 @@ namespace d360.model
                     result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
                     break;
                 default:
-                    throw new ArgumentNullException("Invalid TypeIdentifierInfoModel.");
+                    throw new ArgumentNullException(CompanyContextErrors.InvalidTypeIdentifierInfoModel);
             }
             return result;
         }
@@ -439,7 +436,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
             if (!ft.LookupObjectID.HasValue)
             {
-                throw new ArgumentNullException("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+                throw new ArgumentNullException(CompanyContextErrors.InvalidRelationShipField);
             }
 
             var sql = @"select
@@ -456,7 +453,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             if (intersectType == null)
             {
                 var error = new Dictionary<string, object>();
-                error.Add("RelationshipError", "Invalid or deleted relationship type encountered on Relationship field " + ft.FriendlyName + ".");
+                error.Add("RelationshipError", ft.FriendlyName);
                 return error;
             }
 
@@ -619,7 +616,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
                 default:
-                    throw new InvalidOperationException("Unexpected object type = " + obj);
+                    throw new InvalidOperationException(string.Format(CompanyContextErrors.UnexpectedObjectType, obj));
             }
 
             if (offset == 0 || query != null)
@@ -939,12 +936,12 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             if (subjectDetail == null)
             {
-                throw new NotFoundException("Subject");
+                throw new NotFoundException(CompanyContextErrors.Subject);
             }
 
             if (objectDetail == null)
             {
-                throw new NotFoundException("Object");
+                throw new NotFoundException(CompanyContextErrors.Object);
             }
 
             if (subject == "ReferenceItemType")
@@ -961,7 +958,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             if (intersectType == null)
             {
-                throw new NotFoundException("Intersect Type");
+                throw new NotFoundException(CompanyContextErrors.IntersectType);
             }
 
             if (
@@ -1007,7 +1004,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             }
             else
             {
-                throw new NotFoundException("Intersect Type");
+                throw new NotFoundException(CompanyContextErrors.IntersectType);
             }
         }
 
@@ -1024,19 +1021,19 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             if (subjectDetail == null)
             {
-                throw new NotFoundException("Subject");
+                throw new NotFoundException(CompanyContextErrors.Subject);
             }
 
             if (objectDetail == null)
             {
-                throw new NotFoundException("Object");
+                throw new NotFoundException(CompanyContextErrors.Object);
             }
 
             var intersectType = GetById<IntersectType>(intersectTypeID);
 
             if (intersectType == null)
             {
-                throw new NotFoundException("Intersect Type");
+                throw new NotFoundException(CompanyContextErrors.IntersectType);
             }
 
             if (
@@ -1082,7 +1079,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             }
             else
             {
-                throw new NotFoundException("Intersect Type");
+                throw new NotFoundException(CompanyContextErrors.IntersectType);
             }
         }
 
@@ -1091,7 +1088,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             var item = GetById<Intersect>(id);
             if (item == null)
             {
-                throw new NotFoundException("Relationship");
+                throw new NotFoundException(CompanyContextErrors.Relationship);
             }
             var res = Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
 
@@ -1227,7 +1224,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                 var subjectAssetType = Filter<AssetType>(i => i.Object == sSubject && i.ObjectID == subjectID).FirstOrDefault();
                 if (subjectAssetType == null)
                 {
-                    throw new ArgumentNullException("Subject asset type does not exist.");
+                    throw new ArgumentNullException(CompanyContextErrors.SubjectAssetTypeNotExists);
                 }
                 allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
             }
@@ -1264,15 +1261,15 @@ where	I.ID is null";
 
             if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
             {
-                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.AddRelationshipValidation_Predicate);
             }
             if (($"{model.Subject}{model.SubjectID}" != $"{model.Object}{model.ObjectID}") && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
             {
-                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectSameThisPredicate);
             }
             if (($"{model.Subject}{model.SubjectID}" == $"{model.Object}{model.ObjectID}") && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
             {
-                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectNotSameThisPredicate);
             }
 
             AssetType subjectAssetType = null;
@@ -1287,11 +1284,11 @@ where	I.ID is null";
 
             if (!predicateInfo.SubjectAssetClassesSupported.Contains(subjectAssetType.Class))
             {
-                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : {predicateInfo.SubjectAssetClassesSupported}.");
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, string.Format(CompanyContextErrors.WhenPredicateSubjectOfClass, predicateInfo.SubjectAssetClassesSupported));
             }
             if (!predicateInfo.ObjectAssetClassesSupported.Contains(objectAssetType.Class))
             {
-                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be one of the following classes : {predicateInfo.ObjectAssetClassesSupported}.");
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, string.Format(CompanyContextErrors.WhenPredicateObjectOfClass, predicateInfo.ObjectAssetClassesSupported));
             }
 
             if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
@@ -1300,11 +1297,11 @@ where	I.ID is null";
                 {
                     if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
                     {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate either your subject or object must support being used as a transformation.");
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.ThisPrediateUseTransormationSubjOrObj);
                     }
                     if (subjectAssetType.UseAsTransformation && objectAssetType.UseAsTransformation)
                     {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate either your subject or object must support being used as a transformation, but not both.");
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.ThisPrediateUseTransormationNotBoth);
                     }
                 }
             }
@@ -1377,6 +1374,7 @@ where	I.ID is null";
         /// <summary>
         /// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
         /// </summary>
+        [Obsolete("Please, use DeleteAsync. Delete is non-async & not transactional")]
         public override bool Delete<T>(Expression<Func<T, bool>> predicate)
         {
             var items = Filter(predicate).ToList();
@@ -1402,6 +1400,23 @@ where	I.ID is null";
             {
                 Set<T>().Remove(entity);
                 return (SaveChanges() > 0);
+            }
+            catch (Exception ex)
+            {
+                throw resolveToRealException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
+        /// </summary>
+        public async Task DeleteAsync<T>(Expression<Func<T, bool>> predicate) where T: BaseObject
+        {
+            try
+            {
+                var items = await Filter(predicate).ToListAsync();
+                items.ForEach(i => Set<T>().Remove(i));
+                await SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -1538,7 +1553,7 @@ where	I.ID is null";
 
             if (exists)
             {
-                throw new ArgumentException($"{attr.Object} already exists.");
+                throw new ArgumentException(string.Format(CompanyContextErrors.ObjectAlreadyExists, attr.Object.ToString()));
             }
 
 
@@ -1773,12 +1788,12 @@ where	I.ID is null";
                         var any = Any<Field>(f => f.FieldType.LookupObjectType == "Intersect" && f.FieldType.LookupObjectID == intersectTypeID && f.Value == id);
                         if (any)
                         {
-                            throw new ConflictException("Relationship Could not be Removed", "One or more fields reference this relationship.");
+                            throw new ConflictException(CompanyContextErrors.TitleRelationNotRemoved, CompanyContextErrors.MutliReferenceRelationNotAllowed);
                         }
                         any = Any<Intersect>(i => (i.Subject == "Intersect" && i.SubjectID == o.ID) || (i.Object == "Intersect" && i.ObjectID == o.ID));
                         if (any)
                         {
-                            throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
+                            throw new ConflictException(CompanyContextErrors.TitleRelationNotRemoved, CompanyContextErrors.MultiRelationshipsReferRelationship);
                         }
                     }
 
@@ -1831,7 +1846,7 @@ select @err";
                         var addCheck = Query<string>(sql).SingleOrDefault();
                         if (!string.IsNullOrEmpty(addCheck))
                         {
-                            throw new ConflictException("Relationship Type Cannot Be Created", addCheck);
+                            throw new ConflictException(CompanyContextErrors.RelationShipTypeNotCreated, addCheck);
                         }
                     }
                     else if (entry.State == EntityState.Modified)
@@ -1839,7 +1854,7 @@ select @err";
                         var updateCheck = Query<string>(sql).SingleOrDefault();
                         if (!string.IsNullOrEmpty(updateCheck))
                         {
-                            throw new ConflictException("Relationship Type Cannot Be Updated", updateCheck);
+                            throw new ConflictException(CompanyContextErrors.RelationShipTypeNotUpdated, updateCheck);
                         }
                     }
                 }
@@ -1926,29 +1941,6 @@ select @err";
 
                     }
                 }
-                #endregion
-
-                #region Business logic : RuleType
-
-                if (entry.Entity is RuleType)
-                {
-                    var o = entry.Entity as RuleType;
-                    if (entry.State == EntityState.Added)
-                    {
-                        if (Any<RuleType>(i => i.Name == o.Name))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                    if (entry.State == EntityState.Modified)
-                    {
-                        if (Any<RuleType>(i => i.Name == o.Name && i.ID != o.ID))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                }
-
                 #endregion
 
                 #region Business logic : SurveyType
@@ -2053,7 +2045,20 @@ select @err";
             }
             catch (OptimisticConcurrencyException e)
             {
-                Console.WriteLine(e.Message);
+                // We really should Resolve the concurrency conflict by refreshing the
+                // object context before re-saving changes.
+                // see https://stackoverflow.com/questions/12402826/entity-framework-optimisticconcurrencyexception-rethrown-after-refresh 
+                // and https://docs.microsoft.com/en-us/ef/ef6/saving/concurrency
+                // for now we are gonna log when this happens.  It means the db and ef are out of sync
+                try
+                {
+                    TelemetryClient client = new TelemetryClient();
+                    client.TrackException(e);
+                }
+                catch
+                {
+                    //surpress error in error handling
+                }
             }
 
             // create events for the objects this needs to be done after save changes so we have new objects id's
@@ -2572,7 +2577,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                 if (field == null)
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid order by passed in the request.");
+                    throw new GenericException(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidOrderPassed);
                 }
 
                 column = field.SqlExpression;
@@ -2595,7 +2600,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid direction by passed in the request.");
+                    throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidDirection);
                 }
             }
             return direction;
@@ -2686,7 +2691,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
                     if (objectId <= 0)
                     {
-                        throw new ArgumentNullException($"Asset not found based on uid '{objectUid}'");
+                        throw new ArgumentNullException(string.Format(CompanyContextErrors.AssetUidNotFound, objectUid.ToString()));
                     }
                     break;
             }
@@ -2701,7 +2706,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
             catch
             {
-                throw new ArgumentNullException($"Object not part of assets table!");
+                throw new ArgumentNullException(CompanyContextErrors.ObjectNotPartAssetTable);
             }
         }
 

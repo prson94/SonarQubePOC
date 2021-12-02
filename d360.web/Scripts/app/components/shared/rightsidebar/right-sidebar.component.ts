@@ -16,15 +16,13 @@ import { SearchDetail } from '../../../models/search-result.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 
-
-declare var CompanySettings
 declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-right-sidebar',
     templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService, CompanySettingsService],
+    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
     host: { '(window:resize)': 'checkSize()' }
 })
 
@@ -63,7 +61,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private menuWarningType: string = '';
     private showOnlyMainTab: boolean = false;
 
-    status: string;    
+    status: string;
     showStatus = false;
     showCertify = false;
     showHeader: boolean = false;
@@ -89,7 +87,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
-        private settingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private router: Router,
         private route: ActivatedRoute
     ) {
@@ -183,7 +181,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         }
     }
 
-    private getElementRightPosition(element) {
+    getElementRightPosition(element) {
         if (element && element.getBoundingClientRect) {
             return element.getBoundingClientRect().right
         }
@@ -238,21 +236,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
 
                 if (item.tag === 'GovernanceRoles') {
-                    this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).subscribe(res => {
-                        if (res) {
-                            if (res[0]) {
-                                if (res[0].StringSetting && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
-                                    item.warningMessage = `GovRoleWarning`;
-                                    this.ref.markForCheck();
-                                }
-                                else if (res[0].GuidSetting && res[0].GuidSetting.Value === '00000000-0000-0000-0000-000000000000') {
-                                    item.warningMessage = `GovRoleWarning`;
-                                    this.ref.markForCheck();
-                                }
-                            }
-                        }
-                    });
-
+                    let setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
+                    if (!setting.ScalarValue || setting.ScalarValue === "00000000-0000-0000-0000-000000000000") {
+                        item.warningMessage = `GovRoleWarning`;
+                        this.ref.markForCheck();
+                    }
                 }
             });
 
@@ -351,8 +339,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             if (res) {
                 if (res.key == 'firstTabTitle') {
                     this.items[0].title = res.value;
-                    this.ref.markForCheck();
                 }
+                if (res.key === 'areaTitle') {
+                    this.area.title = res.value;
+                    this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
+                }
+                this.ref.markForCheck();
             }
         })
 
@@ -360,12 +352,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.emitChanges();
     }
 
-    private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, HasRequestCertificationWorkflow: boolean) {
+    loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, HasRequestCertificationWorkflow: boolean) {
         this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "status").subscribe(
             result => {
                 this.status = result;
                 if (this.status != undefined && this.status != null && this.status.length > 0) {
-                    var draftValues = <string>CompanySettings.RequestCertificationDraft;
+                    var draftValues = this.settingsService.getSettingById(CompanySettingEnum.RequestCertificationDraft).StringSetting.Value;
 
                     if (!draftValues) {
                         draftValues = "DRAFT";
@@ -401,14 +393,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "dataClassification", false).subscribe(
             result => {
                 this.dataClassification = result;
-                try {                 
-                    let dataClassificationAttributes  = JSON.parse(this.dataClassification);
-                    if (this.dataClassification != undefined && this.dataClassification != null && dataClassificationAttributes.length > 0) {                    
+                try {
+                    let dataClassificationAttributes = JSON.parse(this.dataClassification);
+                    if (this.dataClassification != undefined && this.dataClassification != null && dataClassificationAttributes.length > 0) {
                         this.showDataClassification = true;
                     }
-                    else {             
-                        this.showDataClassification = false;                    
-                    }                 
+                    else {
+                        this.showDataClassification = false;
+                    }
                 } catch (e) {
                     this.showDataClassification = false;
                 }
@@ -544,14 +536,16 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return icon.replace(/^URL-+/i, '');
     }
 
-    private requestCertification() {
+    requestCertification() {
         this.showCertifyModal = true;
         this.showCertify = false;
     }
+
     closeCertifyModal() {
         this.showCertifyModal = false;
         this.showCertify = true;
     }
+
     certify() {
         this.showCertifyModal = false;
         if (this.currentObject && this.currentObject.Uid)
@@ -570,20 +564,22 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.showSurveyPopup = true;
         }
     }
+
     closeSurveyPopup() {
         this.showSurveyPopup = false;
         this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
     }
+
     handleComplete(event) {
         this.closeSurveyPopup();
         this.showSurvey = false;
     }
 
-    OpenScoring() {
+    OpenScoring(scoreType: string) {
         if (this.currentObject.Uid) {
             let scoreItems = this.items.filter(x => x.title === 'Scoring');
             if (scoreItems.length == 1) {
-                this.itemClicked(scoreItems[0]);
+                this.router.navigateByUrl(`/sidebar/score/${this.currentObject.Uid}/${scoreType}`);
             }
         }
     }

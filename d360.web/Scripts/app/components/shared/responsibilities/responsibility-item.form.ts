@@ -1,16 +1,33 @@
-﻿import { Input, Output, Component, OnInit, OnChanges, EventEmitter } from '@angular/core';
-import { ResponsibilityItem, ResponsibilityItemDetail, ResponsibilityEditorModel, ResponsibilityItemDetailV2, ResponsibilityItemV2, ResponsibilityOverrideDeleteModel, ResponsibilityOverridePostModel } from '../../../models/responsibility.model';
+﻿import { Input, Output, Component, OnInit, OnChanges, EventEmitter, NgModule } from '@angular/core';
+import { ResponsibilityEditorModel, ResponsibilityItemDetailV2, ResponsibilityItemV2, ResponsibilityOverridePostModel } from '../../../models/responsibility.model';
 import { FormMessage, FormHelper } from '../../../models/form.model';
-import { SelectItem } from 'primeng/api';
+import { SelectItem, SharedModule } from 'primeng/api';
 import { ResponsibilityService } from '../../../services/responsibility.service';
 import { BaseComponent } from '../../shared/base.component';
 import { isNumber } from 'lodash';
-import { JsonResult } from '../../../models/jsonresult.model';
 import { EditorField } from '../../../models/editor-field.model';
 import { StringHelpers } from '../../../static/string-helpers';
 import { ResourcesService } from '../../../services/resources.service';
-import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CoreModule } from '../core.module';
+import { TilesModule } from '../tiles/tiles.module';
+import { SharedDeleteFormModule } from '../delete.form';
+import { SharedFormMessageModule } from '../form-message.part';
+import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+import { PipesModule } from '../../../pipes/pipes.module';
+import { ResourceMultiSelectGridModule } from '../resource-multiselect-grid.component';
+import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputTextModule } from 'primeng/inputtext';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-responsibility-item-form',
@@ -37,8 +54,11 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private IsResponsibilityDisabled: boolean = false;
     private resouceAssigned: string;
 
-    constructor(private responsibilityService: ResponsibilityService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private responsibilityService: ResponsibilityService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {
@@ -73,9 +93,6 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                 this.onLoadComplete.emit({ item: this.item });
                 this.isLoading = false;
             });
-        //if (StringHelpers.isNullOrEmpty(this.resouceAssigned)) {
-        //  //  this.showResourceGrid();
-        //}
     }
 
     private setResouceAssigned() {
@@ -274,3 +291,39 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
 }
+
+@NgModule({
+    imports: [
+        CommonModule,
+        FormsModule,
+        HttpClientModule,
+
+        //d3s
+        CoreModule,
+        TilesModule,
+        SharedDeleteFormModule,
+        SharedFormMessageModule,
+        SharedGridPagingInfoModule,
+        PipesModule,
+        ResourceMultiSelectGridModule,
+
+        //prime
+        ButtonModule,
+        CheckboxModule,
+        DropdownModule,
+        InputTextModule,
+        EditorModule,
+        MultiSelectModule,
+        SharedModule,
+        TableModule,
+        TooltipModule,
+    ],
+    declarations: [
+        ResponsibilityItemForm
+    ],
+    exports: [
+        ResponsibilityItemForm
+    ],
+    providers: []
+})
+export class ResponsibilityItemFormModule { }

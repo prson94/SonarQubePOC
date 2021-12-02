@@ -37,6 +37,7 @@ export class GalleryModalDrawerComponent implements OnInit {
     properties: Array<any>;
     isVisible: boolean = false;
     isModalVisible: boolean = false;
+    isModalDrawer2Visible: boolean = false;
 
     sampleUsage = `
 <ng-container header>

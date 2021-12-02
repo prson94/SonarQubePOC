@@ -22,6 +22,7 @@ import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 import { WorkflowBulkReassignComponent } from './workflow-bulk-reassign.component';
+import { WorkflowFormFieldsComponent } from './workflow-form-fields.component';
 
 
 import { WorkflowRoutingModule } from './workflow.routes';
@@ -40,6 +41,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { EditorModule } from 'primeng/editor';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.module';
+import { ResourceMultiSelectGridModule } from '../shared/resource-multiselect-grid.component';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @NgModule({
     imports: [
@@ -63,6 +66,7 @@ import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.
         AutoCompleteModule,
         SharedModule,
         TableModule,
+        RadioButtonModule,
 
 
         SharedWorkflowMonitorModule,
@@ -72,6 +76,7 @@ import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.
         PipesModule,
         TilesModule,
         D3SSharedModule,
+        ResourceMultiSelectGridModule,
         SharedGridPagingInfoModule,
         SharedGridSelectionInfoModule,
         SharedDynamicGridEditorModule,
@@ -85,6 +90,7 @@ import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.
         WorkflowNewDetailComponent,
         WorkflowBulkFormComponent,
         WorkflowBulkReassignComponent,
+        WorkflowFormFieldsComponent,
     ],
     exports: [                        
         WorkflowRaiseIssueComponent,           

@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Array } from 'core-js';
 import { StringConstants } from '../../../static/string-constants';
-declare var CompanySettings;
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -19,7 +19,7 @@ declare var CompanySettings;
 })
 
 export class AdminTagsComponent extends AdminBaseComponent {
-    tags: TagType[] = [];
+    tags: ReadonlyArray<TagType> = []; // This is readonly array, because PrimeNGTable expects immutable data
     selected: TagType[] = [];
 
     error: any;
@@ -41,13 +41,19 @@ export class AdminTagsComponent extends AdminBaseComponent {
     @ViewChild('dt', { static: false }) tableEl: any;
     private lastSelectedElement: TagType;
 
-    constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, secondaryNavService: SecondaryNavService,) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+    constructor(
+        private router: Router,
+        private tagsService: TagService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private messagesService: MessagesObservableService,
+        titleService: Title,
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Tags;
         this.setCommonItems();
         this.tabTitle = StringConstants.Section_Tags;
         this.secondaryNavService.setCurrentArea(this.areaName, 'fa-tag', this.tabTitle);
-
     }
 
     ngOnInit() {
@@ -235,12 +241,13 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
-                    this.tags.push(result);
+                    this.mutateTags(tags => tags.push(result));
                 }
                 else {
                     this.tags[this.findTagIndex(event.item.uid)].Value = event.item.Value;
                 }
-                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+
+                this.mutateTags(tags => tags.sort((a, b) => a.Value.localeCompare(b.Value)));
 
                 this.selected = [];
                 event.item.UseCount = 0;
@@ -258,7 +265,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
                     this.selected.forEach(t => {
-                        this.tags.splice(this.findTagIndex(t.uid), 1);
+                        this.mutateTags(tags => tags.splice(this.findTagIndex(t.uid), 1));
                     })
                     this.selected = [];
                 }
@@ -321,4 +328,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tagsService.exportTags(this.filters, this.sort);
     }
 
+    private mutateTags(mutator: (tags: TagType[]) => void) {
+        const draft = this.tags.slice();
+        mutator(draft);
+        this.tags = draft;
+    }
 };

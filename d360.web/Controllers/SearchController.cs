@@ -46,6 +46,20 @@ namespace d360.web.Controllers
 
                 if (!string.IsNullOrEmpty(queryRequest.Term))
                 {
+                    //Convert Tag filters to Tag UID filters
+                    queryRequest.FieldFilters.Where(f => f.Field == "Tags").ToList().ForEach(f => {
+                        FieldFilter taguids = new FieldFilter
+                        {
+                            Field = "TagUids",
+                            Connector = f.Connector,
+                            Operator = f.Operator,
+                            MatchWords = f.MatchWords,
+                            Values = f.Values.Select(v => Company.Tags.FirstOrDefault(t => t.Value == v).uid.ToString()).ToArray()
+                        };
+                        queryRequest.FieldFilters.Add(taguids);
+                    });
+                    queryRequest.FieldFilters.RemoveAll(f => f.Field == "Tags");
+
                     queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
                     o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
                     await AugmentResults(o.Result.Results);
@@ -482,7 +496,7 @@ namespace d360.web.Controllers
                     new AggregationFilter
                     {
                         Field = "d3sCategory",
-                        Values = new string[] { "Resource", "Group" }
+                        Values = new string[] { AssetTypeClass.User.ToString(), AssetTypeClass.Group.ToString() }
                     }
                 );
             }

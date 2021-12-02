@@ -46,23 +46,23 @@ namespace d360.model.DataAccessLayer
         {
             return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
         }
-        
+
         public Asset GetAssetByUID(Guid assetUid)
         {
             return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
         }
-        
+
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? fusionTypeUid, Guid? assetTypeUid)
+
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? assetTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
-            string optionalJoin = string.Empty;
-            string permissionsJoin = string.Empty;
+            string extraJoins = string.Empty;
+            var extraColumns = string.Empty;
 
             if (Class.HasValue)
             {
@@ -70,7 +70,7 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("@Id", Id.ToString());
                 condition = " and A.[Class]=@Id";
             }
-            var levelsSql = "";
+
             List<string> whereStatements = new List<string>();
             if (queryParams != null)
             {
@@ -86,7 +86,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid value for parameter [useastransformation]", useAsTransformationString);
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueForuseastransformation, useAsTransformationString);
                     }
                 }
 
@@ -102,7 +102,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid value for parameter [hierarchical]", hierarchicalString);
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueHierachical, hierarchicalString);
                     }
                 }
 
@@ -118,23 +118,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid value for parameter [autoDisplayDescription]", autoDisplayDescriptionString);
-                    }
-                }
-
-                if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
-                {
-                    bool canOwnFusion;
-                    var canOwnFusionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "canownfusion").Value;
-                    if (bool.TryParse(canOwnFusionString, out canOwnFusion))
-                    {
-
-                        condition += " and A.CanOwnFusion=@canownfusion ";
-                        dbArgs.Add("canownfusion", canOwnFusion);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Invalid value for parameter [canOwnFusion]", canOwnFusionString);
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueautoDisplayDescription, autoDisplayDescriptionString);
                     }
                 }
 
@@ -150,7 +134,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid value for parameter [autoDisplayParent]", autoDisplayParentString);
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueAutoDisplayParent, autoDisplayParentString);
                     }
                 }
 
@@ -166,7 +150,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid value for parameter [obj]", obj);
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueObj, obj);
                     }
                     int otid;
                     if (int.TryParse(objId, out otid))
@@ -176,10 +160,24 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid value for parameter [objId]", objId);
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueObjID, objId);
                     }
                 }
 
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "includedashboardflag"))
+                {
+                    bool include;
+                    var includeString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
+                    if (bool.TryParse(includeString, out include))
+                    {
+                        extraJoins += @" cross apply (select count(1) as [Count] from Report where ObjectType = A.Object and ObjectID = A.ObjectID) D ";
+                        extraColumns += @", cast(iif(D.[Count] = 1, 1, 0) as bit) as HasDashboards";
+                    }
+                    else
+                    {
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+                    }
+                }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "includelevels"))
                 {
@@ -187,11 +185,11 @@ namespace d360.model.DataAccessLayer
                     var includeLevelsString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;
                     if (bool.TryParse(includeLevelsString, out includeLevels))
                     {
-                        levelsSql = @",(select Level, Name, Description from AssetTypeLevel where AssetTypeID = A.ID order by Level for json path) as LevelsJson";
+                        extraColumns += @", (select Level, Name, Description from AssetTypeLevel where AssetTypeID = A.ID order by Level for json path) as LevelsJson";
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid value for parameter [includeLevels]", includeLevelsString);
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueincludeLevels, includeLevelsString);
                     }
                 }
 
@@ -199,7 +197,7 @@ namespace d360.model.DataAccessLayer
 
             if (!CompanyContext.CurrentResourceIsAdmin)
             {
-                permissionsJoin = $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
+                extraJoins += $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
                 condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
                 dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             }
@@ -221,20 +219,19 @@ namespace d360.model.DataAccessLayer
 									,A.DisplayFormat
 									,A.AutoDisplayDescription
 									,A.UseAsTransformation
-                                    ,A.CanOwnFusion
+                                    ,0 as 'CanOwnFusion'
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
                                     ,A.CanEditParent
-                                    {levelsSql} 
+                                    {extraColumns} 
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
                                     ,AT.IconForeColor as ForeColor
                         FROM        AssetType A
-                                    {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
                                     left join [dbo].[AssetTypeStyle] AT on (A.ID = AT.ID)
-                                    {permissionsJoin}
+                                    {extraJoins}
                         where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
@@ -286,11 +283,13 @@ namespace d360.model.DataAccessLayer
             Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
             if (assetType == null)
-                throw new Exception("Invalid assetType specified");
+            {
+                throw new Exception(AssetTypeErrors.InvalidAssetType);
+            }
 
             if (useAsAdmin && !queryParams.ToList().Any(k => k.Key.ToLower() == "_assetuid"))
             {
-                throw new ArgumentException("UseAsAdmin parameter can be used only with _assetUid specified!");
+                throw new ArgumentException(AssetTypeErrors.UseAsAdminUseWithAssetUid);
             }
 
             assetTypeID = assetType.ID;
@@ -327,7 +326,7 @@ namespace d360.model.DataAccessLayer
                 }
                 catch
                 {
-                    throw new ArgumentException("Could not parse value of _includeFields");
+                    throw new ArgumentException(AssetTypeErrors.UnableParse_IncludeFields);
                 }
 
 
@@ -336,7 +335,7 @@ namespace d360.model.DataAccessLayer
                 {
                     if (!allFieldTypes.Any(x => x.Name.ToLower() == f))
                     {
-                        throw new ArgumentException($"Invalid value {f} in _includeFields parameter, field with this name not found.");
+                        throw new ArgumentException(string.Format(AssetTypeErrors.InvalueValue_includeFields, f));
                     }
                 });
 
@@ -646,8 +645,9 @@ namespace d360.model.DataAccessLayer
                               ,[SecurityAssetId]
                               ,[SecurityAssetUid]
                         FROM [dbo].[ResponsibilityDetail] rd
-                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id
-                        union all
+                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id;
+
+					insert into #OwnershipLookupAssets
                         select a.[ID] as AssetID
                              ,rd.[ResponsibilityTypeID]
                              ,rd.[ResponsibilityTypeName]
@@ -661,8 +661,9 @@ namespace d360.model.DataAccessLayer
                              ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assettypeid = a.assettypeid
-                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id
-                        union all
+                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id;
+
+					insert into #OwnershipLookupAssets
                         select a.[ID] as AssetID
                              ,rd.[ResponsibilityTypeID]
                              ,rd.[ResponsibilityTypeName]
@@ -772,7 +773,7 @@ namespace d360.model.DataAccessLayer
                     }).ToList();
 
                 if (assetUids.Any(x => x == Guid.Empty))
-                    throw new ArgumentException("Invalid asset Uid in parameters!");
+                    throw new ArgumentException(AssetTypeErrors.InvalidAssetUid);
 
                 if (assetUids.Count > 0)
                 {
@@ -841,7 +842,7 @@ namespace d360.model.DataAccessLayer
                     List<Tuple<int, string>> originalTypeMappings = new List<Tuple<int, string>>();
 
                     //handle field types in case "Field from relationship"
-                    foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0))
+                    foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0 && x.Type == "FieldFromRelationship"))
                     {
                         var origFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == ft.LookupObjectFieldTypeID);
                         if (origFieldType != null)
@@ -1058,7 +1059,7 @@ namespace d360.model.DataAccessLayer
                     }).ToList();
 
                 if (ownerUids.Any(x => x == Guid.Empty))
-                    throw new Exception("Invalid Owner Uid in parameters!");
+                    throw new Exception(AssetTypeErrors.InvalidOwnerUid);
 
                 if (ownerUids.Count > 0)
                 {
@@ -1103,7 +1104,7 @@ namespace d360.model.DataAccessLayer
                     }).ToList();
 
                 if (notOwnerUids.Any(x => x == Guid.Empty))
-                    throw new Exception("Invalid Owner Uid in parameters!");
+                    throw new Exception(AssetTypeErrors.InvalidOwnerUid);
 
                 if (notOwnerUids.Count > 0)
                 {
@@ -1149,12 +1150,12 @@ namespace d360.model.DataAccessLayer
                         parentUid = pUid;
                         if (!CompanyContext.Any<Asset>(i => i.uid == pUid))
                         {
-                            throw new ArgumentException($"_parentUid with value {pUid} does not correspond to a valid asset!");
+                            throw new ArgumentException(string.Format(AssetTypeErrors._parentuidNotValidAsset, pUid.ToString()));
                         }
                     }
                     else
                     {
-                        throw new ArgumentException("_parentUid parameter must be a valid Guid, be set to null, or not be present!");
+                        throw new ArgumentException(AssetTypeErrors._parentUidNotValidUid);
                     }
                 }
             }
@@ -1211,12 +1212,15 @@ namespace d360.model.DataAccessLayer
             if (fieldColumns.Any())
                 fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 
+            bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("kp.keypath");
+
             var countSql = $@"
                 select  count(*)
                 from    Asset A 
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
                 {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {string.Join("\n", countJoins)}
+                {(hasKeyPathCountFiltering ? "left join graph.AssetNodeKeyPath KP on KP.ID = a.ID" : "")} 
                 {hierarchyParentUidSelect}
                 {(includeParentInCount ? parentApplySQL : "")}
                 {whereSql}";
@@ -1420,7 +1424,7 @@ namespace d360.model.DataAccessLayer
                         {
                             results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
                         }
-                        catch(ArgumentException ex)
+                        catch (ArgumentException ex)
                         {
                             //If dynamic object for property orderBy does not implement IComparable (i.e. JObject,JArray), use string comparison
                             results.Sort((x, y) =>
@@ -2238,7 +2242,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 i.Name
             }).ToList();
         }
-        
+
         public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
         {
             CompanyContext.Add(execution);
@@ -2257,6 +2261,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 // Quick sync of graph.
                 try
                 {
+                    // Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
+                    if (results.Count == 1)
+                    {
+                        CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
+                    }
+
                     CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
                 }
                 catch
@@ -2274,7 +2284,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return results;
         }
-        
+
         public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey)
         {
             var parentType = SystemObjects.ArtifactType;
@@ -2295,36 +2305,40 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 model.CanEditParent = true;
             }
 
+            AssetType at = null;
+
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.TechnicalAsset:
+                case AssetTypeClass.Rule:
                     #region
-                    var a = new AssetType
+                    parentType = (model.Class == AssetTypeClass.Rule) ? SystemObjects.RuleType : SystemObjects.ArtifactType;
+
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        Object = SystemObjects.ArtifactType.ToString(),
+                        Object = parentType.ToString(),
                         State = State.Active,
                         UpdatedBy = resourceId,
                         UpdatedOn = DateTime.UtcNow,
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
-                        Hierarchical = true,
+                        Hierarchical = false,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false,
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         CanEditParent = model.CanEditParent
                     };
-                    CompanyContext.Add(a);
-                    parentType = SystemObjects.ArtifactType;
-                    model.ObjectID = a.ObjectID;
-                    model.Object = SystemObjects.ArtifactType.ToString();
+                    CompanyContext.Add(at);
+
+                    model.ObjectID = at.ObjectID;
+                    model.Object = at.Object;
 
                     #endregion
                     break;
@@ -2339,18 +2353,18 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     var existing = CompanyContext.Filter<OrganizationType>(o => o.Name == org.Name && o.State == State.Active).FirstOrDefault();
                     if (existing != null)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Wrong Name", AssetTypeErrors.ExistingOrganizationType);
+                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.WrongNameHttpErrorTitle, AssetTypeErrors.ExistingOrganizationType);
                     CompanyContext.Add(org);
                     parentType = SystemObjects.OrganizationType;
                     model.ObjectID = org.ID;
                     model.Object = SystemObjects.OrganizationType.ToString();
-                    var orgAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    if (orgAssetType != null)
+                    at = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
+                    if (at != null)
                     {
-                        orgAssetType.AutoDisplayDescription = model.AutoDisplayDescription;
-                        orgAssetType.Notes = model.Notes;
-                        orgAssetType.uid = uid;
-                        CompanyContext.Update(orgAssetType);
+                        at.AutoDisplayDescription = model.AutoDisplayDescription;
+                        at.Notes = model.Notes;
+                        at.uid = uid;
+                        CompanyContext.Update(at);
                     }
                     #endregion
                     break;
@@ -2360,7 +2374,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     var objectType = model.Class == AssetTypeClass.Model ? SystemObjects.TaxonomyType : SystemObjects.PolicyType;
                     var errorMessage = model.Class == AssetTypeClass.Model ? AssetTypeErrors.InvalidModelDepth : AssetTypeErrors.InvalidPolicyDepth;
-                    var t = new AssetType
+
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2379,25 +2394,25 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CanEditParent = model.CanEditParent
                     };
 
-                    if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", errorMessage);
+                    if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
+                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidMaximumDepthTitle, errorMessage);
 
-                    CompanyContext.Add(t);
+                    CompanyContext.Add(at);
 
-                    for (int i = 1; i <= t.HierarchyMaximumDepth; i++)
+                    for (int i = 1; i <= at.HierarchyMaximumDepth; i++)
                     {
-                        CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = t.ID });
+                        CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = at.ID });
                     }
                     CompanyContext.SaveChanges();
 
                     parentType = objectType;
-                    model.ObjectID = t.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = objectType.ToString();
                     #endregion
                     break;
                 case AssetTypeClass.Reference:
                     #region
-                    var rt = new AssetType
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2416,37 +2431,15 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     };
                     isNamePartOfKey = false;
                     nameFriendlyName = "Long Description";
-                    CompanyContext.Add(rt);
+                    CompanyContext.Add(at);
                     parentType = SystemObjects.ReferenceItemType;
-                    model.ObjectID = rt.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.ReferenceItemType.ToString();
-                    #endregion
-                    break;
-                case AssetTypeClass.Rule:
-                    #region
-                    var r = new RuleType
-                    {
-                        Name = model.Name,
-                        DisplayFormat = model.DisplayFormat,
-                        Description = model.Description
-                    };
-                    CompanyContext.Add(r);
-                    parentType = SystemObjects.Rule;
-                    model.ObjectID = r.ID;
-                    model.Object = SystemObjects.RuleType.ToString();
-
-                    var ruleAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    if (ruleAssetType != null)
-                    {
-                        ruleAssetType.uid = uid;
-                        CompanyContext.Update(ruleAssetType);
-                    }
-
                     #endregion
                     break;
                 case AssetTypeClass.Diagram:
                     #region
-                    var diagram = new AssetType
+                    at = new AssetType
                     {
                         uid = uid,
                         Name = model.Name,
@@ -2462,15 +2455,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false,
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
                         FlowObjectType = model.FlowObjectType,
                         CanEditParent = model.CanEditParent
                     };
-                    CompanyContext.Add(diagram);
+                    CompanyContext.Add(at);
                     parentType = SystemObjects.TaskType;
-                    model.ObjectID = diagram.ObjectID;
+                    model.ObjectID = at.ObjectID;
                     model.Object = SystemObjects.TaskType.ToString();
 
                     #endregion
@@ -2494,7 +2486,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        
+
         public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
         {
             CompanyContext.Add(execution);
@@ -2513,6 +2505,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 // Quick sync of graph.
                 try
                 {
+                    // Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
+                    if (results.Count == 1)
+                    {
+                        CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
+                    }
+
                     CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
                 }
                 catch
@@ -2530,7 +2528,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return results;
         }
-        
+
         public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
         {
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
@@ -2548,19 +2546,20 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
+                case AssetTypeClass.Diagram:
+                case AssetTypeClass.Model:
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Reference:
-                case AssetTypeClass.Model:
+                case AssetTypeClass.Rule:
                 case AssetTypeClass.TechnicalAsset:
-                case AssetTypeClass.Diagram:
                     #region
 
                     if (assetType == null)
                     {
                         return new Tuple<HttpStatusCode, string, string>(
                             HttpStatusCode.BadRequest,
-                            $"Wrong {model.Class.ToString()}",
-                            $"Invalid {model.Class.ToString()} provided. {AssetTypeErrors.CheckRequest}"
+                            string.Format(AssetTypeErrors.WrongClass, model.Class.ToString()),
+                            $"{string.Format(AssetTypeErrors.InvalidClass, model.Class.ToString())} {AssetTypeErrors.CheckRequest}"
                         );
                     }
 
@@ -2573,12 +2572,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
-                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
                     }
                     else
                     {
                         assetType.UseAsTransformation = false;
-                        assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
                     assetType.Notes = model.Notes;
@@ -2586,7 +2583,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
                     {
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
-                            return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidModelDepth);
+                            return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidMaximumDepthTitle, AssetTypeErrors.InvalidModelDepth);
 
                         for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
                         {
@@ -2612,7 +2609,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     #region
 
                     var org = CompanyContext.GetById<OrganizationType>(model.ObjectID);
-                    if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Invalid {AssetTypeClass.Organization.ToString()} provided. {AssetTypeErrors.CheckRequest}");
+                    if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.TitleWrongOrganization, $"{AssetTypeErrors.InvalidOrganization} {AssetTypeErrors.CheckRequest}");
                     org.Name = model.Name;
                     org.Description = model.Description;
                     org.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
@@ -2624,23 +2621,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
                     assetType.Notes = model.Notes ?? assetType.Notes;
-                    assetType.CanEditParent = model.CanEditParent;
-
-                    #endregion
-                    break;
-                case AssetTypeClass.Rule:
-                    #region
-
-                    var r = CompanyContext.GetById<RuleType>(model.ObjectID);
-                    if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
-                    r.Name = model.Name;
-                    r.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-                    r.Description = model.Description;
-                    CompanyContext.Update(r);
-
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-                    assetType.Description = model.Description;
                     assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
@@ -2685,8 +2665,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         {
                             return new Tuple<HttpStatusCode, string, string>(
                                 HttpStatusCode.Conflict,
-                                $"Invalid Parent Selected",
-                                $"There are existing parent/child relationships for assets of this type. You may not alter the parent type until these relationships are removed. {AssetTypeErrors.CheckRequest}"
+                                AssetTypeErrors.InvalidParentSelected,
+                                $"{AssetTypeErrors.ParentChildRelationExists} {AssetTypeErrors.CheckRequest}"
                             );
                         }
 
@@ -2863,7 +2843,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();
         }
-        
+
         public AssetType GetArtifactTypeByID(int artifactTypeId)
         {
             return CompanyContext.Filter<AssetType>(i => i.Object.Equals("ArtifactType") && i.ObjectID == artifactTypeId).SingleOrDefault();
@@ -2881,26 +2861,24 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
         public async Task<APIExecutionAPIModelResult> GetExecutionItems(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            int pageNum = 1;
-            int pageSize = 200;
             string orderDirection = "asc";
-            string orderBySql = "";
-            string offsetSql = "";
+            string filterSql = "";
             if (queryParams.Any(x => x.Key == "_direction"))
             {
-                string[] allowedDirections = new string[] { "asc", "desc" };
-                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
-                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                var allowedDirections = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim();
+                if (!allowedDirections.Contains(order))
                 {
                     return new APIExecutionAPIModelResult
                     {
-                        Message = "Invalid order direction passed in the request",
+                        Message = AssetTypeErrors.InvalidDirection,
                         StatusCode = HttpStatusCode.BadRequest
                     };
                 }
-                orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+                orderDirection = order;
             }
 
+            string orderBySql = "";
             if (!queryParams.Any(p => p.Key == "_order"))
             {
                 orderBySql = $" order by [CompletedOn] {orderDirection} ";
@@ -2909,25 +2887,30 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
 
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                string[] validOrderByFields = { "executionid", "resourceuid", "resource", "total",
-                                                "processed", "error", "errormessage", "processingstartedon",
-                                                "startedon", "completedon", "method", "route", "fields" };
-                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                var validOrderByFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                    "executionid", "resourceuid", "resource", "total",
+                    "processed", "error", "errormessage", "processingstartedon",
+                    "startedon", "completedon", "method", "route", "fields", "applicationid" };
+                if (!validOrderByFields.Contains(orderByCol))
                     return new APIExecutionAPIModelResult
                     {
-                        Message = "Invalid order passed in the request",
+                        Message = AssetTypeErrors.InvalidOrderPassed,
                         StatusCode = HttpStatusCode.BadRequest
                     };
-                orderBySql = $" order by {orderByCol} {orderDirection} ";
+                orderBySql = $" order by [{orderByCol}] {orderDirection} ";
             }
 
+            int pageNum = 1;
             if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
-                    if (pageNum < 1) pageNum = 1;
+                {
+                }
 
+            int pageSize = 200;
             if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
-                    if (pageSize < 1) pageSize = 1;
+                {
+                }
 
             if (pageSize > 0 || pageNum > 0)
             {
@@ -2935,11 +2918,27 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 if (pageNum < 1) pageNum = 1;
                 if (pageSize > 25000) pageSize = 25000;
                 if (pageNum > 10000) pageNum = 10000;
-
-
-                offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
             }
 
+            if (queryParams.Any(p => p.Key == "_status"))
+            {
+                if (Enum.TryParse(queryParams.FirstOrDefault(p => p.Key == "_status").Value, out ExecutionInternalStatus status))
+                {
+                    switch (status)
+                    {
+                        case ExecutionInternalStatus.Pending:
+                            filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NULL";
+                            break;
+                        case ExecutionInternalStatus.Running:
+                            filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NOT NULL";
+                            break;
+                        case ExecutionInternalStatus.Completed:
+                            filterSql = "WHERE Ex.CompletedOn IS NOT NULL";
+                            break;
+
+                    }
+                }
+            }
 
             var sql = $@"
                         SELECT Ex.[ExecutionID]
@@ -2955,11 +2954,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                               ,[Method]
                               ,[Route]
                               ,[Fields]
+                              ,[ApplicationId]
                           FROM [api].[Execution] Ex
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID  
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID] 
+                          {filterSql}
                           {orderBySql}
-                          {offsetSql}
+                          offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only
                         ";
 
             var countSQL = $@"
@@ -2967,40 +2968,48 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           FROM [api].[Execution] Ex
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID 
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID]
+                          {filterSql}
                         ";
-            var executions = await CompanyContext.QueryAsync<dynamic>(sql, ApiTimeout);
-            var count = await CompanyContext.QueryAsync<int>(countSQL, ApiTimeout);
 
-            var items = executions.Select(x =>
+            var multiSQL = $"{sql}; {countSQL}";
+            using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, null, ApiTimeout))
             {
-                var f = string.IsNullOrEmpty(x.Fields) ? "{}" : x.Fields;
-                return new APIExecutionAPIModel
+                var executions = multi.Read<dynamic>().ToList();
+                var count = multi.Read<int>().First();
+
+                var items = executions.Select(x =>
                 {
-                    CompletedOn = x.CompletedOn,
-                    Error = x.Error,
-                    ErrorMessage = x.ErrorMessage,
-                    ExecutionID = x.ExecutionID,
-                    Fields = JsonConvert.DeserializeObject<dynamic>(f),
-                    Method = x.Method,
-                    Processed = x.Processed,
-                    ProcessingStartedOn = x.ProcessingStartedOn,
-                    Resource = x.Resource,
-                    ResourceUid = x.ResourceUid,
-                    Route = x.Route,
-                    StartedOn = x.StartedOn,
-                    Total = x.Total
-                };
-            });
-            var resultsModel = new APIExecutionAPIModelResult
-            {
-                items = items,
-                total = count.FirstOrDefault(),
-                pageNum = pageNum,
-                pageSize = pageSize,
-                StatusCode = HttpStatusCode.OK
-            };
+                    var f = string.IsNullOrEmpty(x.Fields) ? "{}" : x.Fields;
+                    return new APIExecutionAPIModel
+                    {
+                        CompletedOn = x.CompletedOn,
+                        Error = x.Error,
+                        ErrorMessage = x.ErrorMessage,
+                        ExecutionID = x.ExecutionID,
+                        Fields = JsonConvert.DeserializeObject<dynamic>(f),
+                        Method = x.Method,
+                        Processed = x.Processed,
+                        ProcessingStartedOn = x.ProcessingStartedOn,
+                        Resource = x.Resource,
+                        ResourceUid = x.ResourceUid,
+                        Route = x.Route,
+                        StartedOn = x.StartedOn,
+                        Total = x.Total,
+                        ApplicationId = x.ApplicationId
+                    };
+                });
 
-            return resultsModel;
+                var resultsModel = new APIExecutionAPIModelResult
+                {
+                    items = items,
+                    total = count,
+                    pageNum = pageNum,
+                    pageSize = pageSize,
+                    StatusCode = HttpStatusCode.OK
+                };
+
+                return resultsModel;
+            }
         }
 
         public async Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string component, string status)
@@ -3060,7 +3069,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 {
                     return new APIExecutionExternalAPIModelResult
                     {
-                        Message = "Invalid order direction passed in the request",
+                        Message = AssetTypeErrors.InvalidDirection,
                         StatusCode = HttpStatusCode.BadRequest
                     };
                 }
@@ -3079,7 +3088,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                     return new APIExecutionExternalAPIModelResult
                     {
-                        Message = "Invalid order passed in the request",
+                        Message = AssetTypeErrors.InvalidDirection,
                         StatusCode = HttpStatusCode.BadRequest
                     };
                 orderBySql = $" order by {orderByCol} {orderDirection} ";
@@ -3404,9 +3413,59 @@ where	O.RowNum = 1";
             return results;
         }
 
-        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, Guid? assetTypeUid = null)
+        public async Task<AssetCountsModel> GetAssetCountOfAssetTypeUid(Guid assetTypeUid)
+        {
+            string assetPermissionWhere = @" and not exists (select 1 
+                        from #TempAssetpremission u where u.AssetId = a.id)";
+
+            string assetTypePermissionWhere = @" and not exists (select 1
+                    from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = @AssetTypeID)";
+
+            if (CompanyContext.CurrentResourceIsAdmin)
+            {
+                assetTypePermissionWhere = "";
+            }
+
+            var countsSQL = $@"
+                                declare @AssetTypeID int = (select id from assettype where uid = @assetTypeUid)
+                                drop table if exists #TempAssetpremission;
+
+                                select distinct up.assetid
+                                into #TempAssetpremission
+                                from dbo.userassetpermissions(@resourceId, @AssetTypeID) up
+                                where ((up.permissionsbitmask & @p)) = 0
+                                {assetTypePermissionWhere}
+                                
+                                IF EXISTS(SELECT 1 FROM #TempAssetpremission)
+                                    begin
+                                        create index idx_TempAssetpremission on #TempAssetpremission(assetid)
+
+                                        select count(1) [Count]
+                                        from Asset a
+                                        where a.AssetTypeID = @AssetTypeID
+                                        {assetPermissionWhere}
+                                        {assetTypePermissionWhere}
+                                    end
+                                else
+                                    begin
+                                        select count(1) [Count]
+                                        from Asset a
+                                        where a.AssetTypeID = @AssetTypeID
+                                        {assetTypePermissionWhere}
+                                    end";
+            int count = 0;
+
+            count = (await CompanyContext.QueryAsync<int>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, p = (int)Permission.ReadAsset, assetTypeUid }, ApiTimeout)).FirstOrDefault();
+
+            return new AssetCountsModel { count = count };
+        }
+
+
+        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, IEnumerable<KeyValuePair<string, string>> queryParams, Guid? assetTypeUid = null)
         {
             bool isATUidPassed = false;
+            bool isReturnCount = true;
+            string strCountstmt = " ";
 
             string assetTypePermissionWhere = @" and not exists (select 1
                     from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = att.ID)";
@@ -3422,45 +3481,70 @@ where	O.RowNum = 1";
                 isATUidPassed = true;
             }
 
-            var countsSQL = $@"
-                            {(isATUidPassed ? "declare @assetTypeUid uniqueidentifier = (select @assetTypeUidPassed);" : "")}
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "returncount"))
+                {
+                    bool returncount;
+                    var returncountString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "returncount").Value;
+                    if (bool.TryParse(returncountString, out returncount))
+                    {
+                        isReturnCount = returncount;
+                    }
+                    else
+                    {
+                        throw new ArgumentException(AssetTypeErrors.InvalidValueReturnCount, returncountString);
+                    }
+                }
+            }
 
+            if (isReturnCount)
+            {
+                strCountstmt = $@"
                             drop table if exists #TempAssetpremission;
                             drop table if exists #TempAssetCount;
 
                             CREATE TABLE #TempAssetCount(ASSETTYPEID BIGINT,RecordCount BIGINT);
                             CREATE index idx_TempAssetCount on #TempAssetCount(ASSETTYPEID);
 
-                            select distinct att.id assettypeid,up.assetid
-                            into #TempAssetpremission
+                            select distinct att.id assettypeid, up.assetid
+                             into #TempAssetpremission
                             from assettype att
-                            cross apply dbo.userassetpermissions(@resourceId,att.id) up
-                            where att.class in @filterClasses and ((up.permissionsbitmask & @p)) = 0
-                            {assetTypePermissionWhere};
+                            cross apply dbo.userassetpermissions(@resourceId, att.id) up
+                             where att.class in @filterClasses and((up.permissionsbitmask & @p)) = 0
+                            {assetTypePermissionWhere
+                                };
 
-                            IF EXISTS(SELECT 1 FROM #TempAssetpremission)
-                            BEGIN
-                                INSERT INTO #TempAssetCount
-                                select Att.ID,count(1) RecordCount
-                                from AssetType Att
-                                inner join Asset A on Att.ID = A.AssetTypeID
-                                where att.class in @filterClasses
-                                {assetTypePermissionWhere}
-                                and NOT EXISTS (select 1 from #TempAssetpremission U
-                                where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
-                                GROUP BY Att.ID
-                            END
-                            ELSE
-                            BEGIN
-                                INSERT INTO #TempAssetCount
-                                select Att.ID ,count(1) RecordCount
-                                from AssetType Att
-                                inner join Asset A on Att.ID = A.AssetTypeID
-                                where att.class in @filterClasses
-                                {assetTypePermissionWhere}
-                                group by Att.ID
-                            END
+                                IF EXISTS(SELECT 1 FROM #TempAssetpremission)
+                                                        BEGIN
 
+                                    INSERT INTO #TempAssetCount
+                                                            select Att.ID, count(1) RecordCount
+                                                             from AssetType Att
+                                                            inner join Asset A on Att.ID = A.AssetTypeID
+                                                            where att.class in @filterClasses
+                                                            {assetTypePermissionWhere
+                            }
+                            and NOT EXISTS (select 1 from #TempAssetpremission U
+                                                            where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
+                                                            GROUP BY Att.ID
+                                                        END
+                                                        ELSE
+                                                        BEGIN
+                                                            INSERT INTO #TempAssetCount
+                                                            select Att.ID , count(1) RecordCount
+                                                            from AssetType Att
+                                                            inner join Asset A on Att.ID = A.AssetTypeID
+                                                            where att.class in @filterClasses
+                            { assetTypePermissionWhere}
+                            group by Att.ID
+                            END ";
+
+            }
+
+            var countsSQL = $@"
+                            {(isATUidPassed ? "declare @assetTypeUid uniqueidentifier = (select @assetTypeUidPassed);" : "")}
+                            {strCountstmt}                        
                             select att.uid, 
 	                        ATParent.uid as parentUid,
 	                        case att.class
@@ -3472,19 +3556,19 @@ where	O.RowNum = 1";
                              when 15 then 'Diagram'
 	                        end as class,
 	                        att.name,
-	                        att.description,
-	                        isnull(Assets.Recordcount,0) as count
+	                        att.description
+	                        {(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")}
                          from AssetType att
 						 outer apply (select ATParent.uid from IntersectType IT
 							inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
 							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
 						 where it.ObjectID = att.ObjectID and it.Object = att.Object
 						 )ATParent
-                         left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID
-                        where
-                         att.Class in @filterClasses
+                         {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
+                        where att.Class in @filterClasses
                          {assetTypePermissionWhere}
                     order by att.name";
+
             return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
         }
 
@@ -3499,7 +3583,7 @@ where	O.RowNum = 1";
 
             if (dbExecutionItem == null)
             {
-                throw new ArgumentException("Execution unique identifier not found.");
+                throw new ArgumentException(AssetTypeErrors.ExecutionUIDNotFound);
             }
 
             var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
@@ -3535,7 +3619,7 @@ where	O.RowNum = 1";
         public List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution)
         {
             if (assetTypes.Count > 1)
-                throw new ArgumentException("Maximum number of asset types for this method is 1.");
+                throw new ArgumentException(AssetTypeErrors.MaxNumberAllowedAssetType);
 
             CompanyContext.Add(execution);
             List<DatabaseBulkAssetTypeResult> results = null;
@@ -3652,7 +3736,6 @@ from    Asset A
         inner join AssetType T on T.ID = A.AssetTypeID
         left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
         left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
-        {(assetType.Class == AssetTypeClass.Rule ? "inner join [Rule] R on R.ID = A.ObjectID" : "")}
         cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
         outer apply (
             select  T.[uid]

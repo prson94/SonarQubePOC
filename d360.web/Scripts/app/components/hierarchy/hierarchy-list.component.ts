@@ -11,6 +11,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import * as _ from 'lodash';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { CompanySettingsService } from '../../services/settings.service';
 
 
 
@@ -31,13 +32,14 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
 
     constructor(
         private assetTypeService: AssetTypeService,
-        private route: ActivatedRoute,
-        private router: Router,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
         protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService) {
+        private route: ActivatedRoute,
+        private router: Router) {
 
-        super();
+        super(settingsService);
 
         this.secondaryNavService = secondaryNavService;
     }

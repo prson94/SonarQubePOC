@@ -49,14 +49,14 @@ namespace d360.model.DataAccessLayer
             var model = tagsToDelete.FirstOrDefault(i => i.uid == uid);
             if (model == null && model.State != State.Deleted)
             {
-                throw new Exception($"Tag with uid '{uid}' does not exists!");
+                throw new ArgumentNullException(string.Format(TagErrors.TagUidNotExists, uid.ToString()));
             }
 
             var anyAssetTagsForDeletion = companyContext.AssetTags.Any(x => x.TagID == model.ID);
 
             if (anyAssetTagsForDeletion && !cascade)
             {
-                throw new Exception($"Tag with uid '{uid}' have related assets. Use cascade='true' to delete this tag!");
+                throw new ArgumentNullException(string.Format(TagErrors.DeleteCascadeTagRelateAsset, uid.ToString()));
             }
 
             model.State = State.Deleted;
@@ -124,7 +124,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
                 if (uid == null || uid == Guid.Empty)
                 {
 
-                    throw new ArgumentException($"Invalid value [{tagUidString}] passed in the request", "uid");
+                    throw new ArgumentException(string.Format(TagErrors.InvalidTagUid, tagUidString), "uid");
                 }
             }
 
@@ -189,7 +189,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
                 }
                 else
                 {
-                    throw new ArgumentException($"Invalid value [{orderByFieldVal}] passed in the request", "_order");
+                    throw new ArgumentException(string.Format(TagErrors.InvalidOrderBy, orderByFieldVal), "_order");
                 }
             }
 
@@ -199,7 +199,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
                 string[] allowedDirections = new string[] { "asc", "desc" };
                 if (!allowedDirections.Contains(directionValue.Trim().ToLower()))
                 {
-                    throw new ArgumentException($"Invalid value [{directionValue}] passed in the request.", "_direction");
+                    throw new ArgumentException(string.Format(TagErrors.InvalidDirection, directionValue), "_direction");
                 }
                 else
                 {
@@ -213,7 +213,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
                 if (!bool.TryParse(totalValue, out includeTotal))
                 {
-                    throw new ArgumentException($"Invalid value [{totalValue}] passed in the request.", "_includetotal");
+                    throw new ArgumentException(string.Format(TagErrors.InvalueTotalValue, totalValue), "_includetotal");
                 }
             }
 
@@ -611,7 +611,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                            throw new Exception("Invalid value for page size parametar!");
+                            throw new ArgumentNullException(TagErrors.InvalidPageSize);
                         }
                         break;
                 }
@@ -836,7 +836,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                            throw new ArgumentException($"Invalid value for page size parametar!", "_pagesize");
+                            throw new ArgumentException(TagErrors.InvalidPageSize, "_pagesize");
                         }
                         break;
                     case "_pagenum":
@@ -851,7 +851,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                            throw new Exception("Invalid value for page number parametar!");
+                            throw new ArgumentNullException(TagErrors.InvalidPageNumber);
                         }
                         break;
                     case "sortby":
@@ -873,7 +873,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                            throw new ArgumentException($"Invalid sortby value provided in the request.");
+                            throw new ArgumentException(TagErrors.InvalidSortBy);
                         }
                         break;
                     case "sortorder":
@@ -896,7 +896,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             var order = param.Value;
                             if (!allowedDirections.Contains(order.Trim().ToLower()))
                             {
-                                throw new ArgumentException($"Invalid sort order value provided in the request.");
+                                throw new ArgumentException(TagErrors.InvalidSortOrder);
                             }
                             sortOrder = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
                         }
@@ -904,7 +904,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                     case "_includetotal":
                         if (!bool.TryParse(param.Value, out includeTotal))
                         {
-                            throw new ArgumentException($"Invalid value [{param.Value}] provided for _includetotal parameter in the request.");
+                            throw new ArgumentException(string.Format(TagErrors.Invalid_IncludeTotal, param.Value));
                         }
 
                         break;
@@ -913,7 +913,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
 
             if (IsGlobalSearchException)
             {
-                throw new ArgumentException($"Invalid parameters supplied. Parameter DisplayValue, AssetType, TagsasString not allowed to used when globalSearch parameter is present.", "globalSearch");
+                throw new ArgumentException(TagErrors.InvalidParaMeter, "globalSearch");
             }
 
             string sortClause = $"ORDER BY {sortField} {sortOrder}";

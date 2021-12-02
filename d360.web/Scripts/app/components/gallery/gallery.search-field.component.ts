@@ -59,6 +59,8 @@ All matches are case insensitive.
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
         this.properties.push({ Name: "infoTooltip", Type: "string", Description: "Tooltip in HTML format", Default: "" });
 
+
+        
         this.events = new Array();
         this.events.push({ Name: "onSearch", Description: "Fired when a search is invoked according to the set mode" });
 

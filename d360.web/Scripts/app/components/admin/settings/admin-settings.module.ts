@@ -12,6 +12,7 @@ import { HelpMenuModule } from '../../shared/helpmenu/helpmenu.module';
 import { IconPickerModule } from '../../shared/controls/icon-picker/icon-picker.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { DayOfWeekInputModule } from "../../shared/small-widgets/dayofweek-input/dayofweek-input.component";
+import { IgNumberFieldModule } from "../../shared/controls/number-picker/number-input.component";
 
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
@@ -29,6 +30,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { TableModule } from 'primeng/table';
+import { CheckboxModule } from 'primeng/checkbox';
+import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
+import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
 
 
 @NgModule({
@@ -46,6 +50,7 @@ import { TableModule } from 'primeng/table';
         HelpMenuModule,
         ColorPickerModule,
         TableModule,
+        CheckboxModule,
 
         //d3s        
         CoreModule,        
@@ -55,10 +60,12 @@ import { TableModule } from 'primeng/table';
         IconPickerModule,
         DayOfWeekInputModule,
         D3SSharedModule,
-        PipesModule
+        ResourceMultiSelectGridModule,
+        PipesModule,
+        IgCheckboxModule,
+        IgNumberFieldModule,
     ],
     declarations: [
-//        IconPickerComponent,
         AdminSettingsComponent,
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,

@@ -1,0 +1,606 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AnErrorOccurMorethan1OpenCart" xml:space="preserve">
+    <value>An error occurred - there are more than 1 open carts for this user</value>
+  </data>
+  <data name="ApiEndPointUriRemoved" xml:space="preserve">
+    <value>Api endpoint uri successfully removed.</value>
+  </data>
+  <data name="ApiEndPointVersionRemoved" xml:space="preserve">
+    <value>Api endpoint version successfully removed.</value>
+  </data>
+  <data name="ApiField" xml:space="preserve">
+    <value>Api field</value>
+  </data>
+  <data name="ApiFieldRemoved" xml:space="preserve">
+    <value>Api field successfully removed.</value>
+  </data>
+  <data name="ApiFieldUpdated" xml:space="preserve">
+    <value>Api Field successfully updated.</value>
+  </data>
+  <data name="APINamespaceNameNull" xml:space="preserve">
+    <value>API Namespace Name is null</value>
+  </data>
+  <data name="APINamespaceNull" xml:space="preserve">
+    <value>API Namespace is null</value>
+  </data>
+  <data name="ApiService" xml:space="preserve">
+    <value>Api service</value>
+  </data>
+  <data name="ApiServiceEndpoint" xml:space="preserve">
+    <value>Api service endpoint</value>
+  </data>
+  <data name="APIServiceEndpointNameNull" xml:space="preserve">
+    <value>API Service Endpoint Name is null</value>
+  </data>
+  <data name="APIServiceEndpointPrefixNull" xml:space="preserve">
+    <value>API Service Endpoint Prefix is null</value>
+  </data>
+  <data name="APIServiceEndpointVersionPrefixNull" xml:space="preserve">
+    <value>API Service Endpoint Version Prefix is null</value>
+  </data>
+  <data name="APIServiceNameNull" xml:space="preserve">
+    <value>API Service Name is null</value>
+  </data>
+  <data name="APIServicePrefixNull" xml:space="preserve">
+    <value>API Service Prefix is null</value>
+  </data>
+  <data name="ApiServiceRemoved" xml:space="preserve">
+    <value>Api service successfully removed.</value>
+  </data>
+  <data name="ApiServiceUriFormatIsNull" xml:space="preserve">
+    <value>API Service Endpoint Version URI format is null</value>
+  </data>
+  <data name="apiserviceversion" xml:space="preserve">
+    <value>Api service version</value>
+  </data>
+  <data name="ApiServiceVersionEntity" xml:space="preserve">
+    <value>Api service version entity</value>
+  </data>
+  <data name="ApiServiceVersionUri" xml:space="preserve">
+    <value>Api service version uri</value>
+  </data>
+  <data name="AssetType" xml:space="preserve">
+    <value>Asset type</value>
+  </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>No Asset Type found for given Guid</value>
+  </data>
+  <data name="AuthenticationFailed" xml:space="preserve">
+    <value>Authentication failed</value>
+  </data>
+  <data name="bottomConstant" xml:space="preserve">
+    <value>Bottom.</value>
+  </data>
+  <data name="CompanySettings" xml:space="preserve">
+    <value>Company settings</value>
+  </data>
+  <data name="Contract" xml:space="preserve">
+    <value>Contract</value>
+  </data>
+  <data name="CoultNotFindPermission" xml:space="preserve">
+    <value>Could not find existing permission</value>
+  </data>
+  <data name="CustomSynonym" xml:space="preserve">
+    <value>Custom synonym</value>
+  </data>
+  <data name="CustomSynonymNotFound" xml:space="preserve">
+    <value>Custom Synonym not found</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="DomainPartOfOrganization" xml:space="preserve">
+    <value>This domain is already part of this organization</value>
+  </data>
+  <data name="EmailAlreadyInviteThisOrganization" xml:space="preserve">
+    <value>This email has already been invited to this organization</value>
+  </data>
+  <data name="emailNotValid" xml:space="preserve">
+    <value>The email you entered is not valid</value>
+  </data>
+  <data name="endpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+  <data name="EndPointRemoved" xml:space="preserve">
+    <value>End point successfully removed.</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>Error Occurred!</value>
+  </data>
+  <data name="FailedGenerateToken" xml:space="preserve">
+    <value>Failed to generate embed token.</value>
+  </data>
+  <data name="FailedToLoadPowerBI" xml:space="preserve">
+    <value>FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!</value>
+  </data>
+  <data name="FavoriteMoved" xml:space="preserve">
+    <value>Favorite moved successfully.</value>
+  </data>
+  <data name="field" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="FieldCreated" xml:space="preserve">
+    <value>Field successfully created.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>File is required</value>
+  </data>
+  <data name="FileUploadedAndQueueProcessing" xml:space="preserve">
+    <value>File uploaded and queued for processing.</value>
+  </data>
+  <data name="FolderAdded" xml:space="preserve">
+    <value>Folder added successfully</value>
+  </data>
+  <data name="FolderAlreadySortedToBottom" xml:space="preserve">
+    <value>This folder is already sorted to the bottom.</value>
+  </data>
+  <data name="FolderAlreadySortedToTop" xml:space="preserve">
+    <value>This folder is already sorted to the top</value>
+  </data>
+  <data name="FolderIdNotFound" xml:space="preserve">
+    <value>Folder id ${id} not found</value>
+  </data>
+  <data name="FolderItemAdded" xml:space="preserve">
+    <value>Folder item added successfully.</value>
+  </data>
+  <data name="FolderItemNotFound" xml:space="preserve">
+    <value>Folder Item Id ${id} not found</value>
+  </data>
+  <data name="FolderItemRemoved" xml:space="preserve">
+    <value>Folder item removed successfully.</value>
+  </data>
+  <data name="FolderMoved" xml:space="preserve">
+    <value>Folder {0} moved successfully.</value>
+  </data>
+  <data name="FolderMovedDown" xml:space="preserve">
+    <value>Folder {0} moved down successfully.</value>
+  </data>
+  <data name="FolderMovedUp" xml:space="preserve">
+    <value>Folder {0} moved up successfully.</value>
+  </data>
+  <data name="FolderNameNotEmpty" xml:space="preserve">
+    <value>Folder name cannot be empty.</value>
+  </data>
+  <data name="FolderRemoved" xml:space="preserve">
+    <value>Folder removed successfully.</value>
+  </data>
+  <data name="FolderUpdated" xml:space="preserve">
+    <value>Folder updated successfully.</value>
+  </data>
+  <data name="GrammarAllocationModified" xml:space="preserve">
+    <value>Grammar allocation successfully modified.</value>
+  </data>
+  <data name="InvalidCreateType" xml:space="preserve">
+    <value>Invalid / unsupported create type</value>
+  </data>
+  <data name="InvalidDeleteType" xml:space="preserve">
+    <value>Invalid/unsupported delete type</value>
+  </data>
+  <data name="InvalidEditorType" xml:space="preserve">
+    <value>Invalid or non implemented editor type</value>
+  </data>
+  <data name="InvalidEditType" xml:space="preserve">
+    <value>Invalid/unsupported edit type</value>
+  </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>Invalid file type: {0} cannot be uploaded.</value>
+  </data>
+  <data name="InvalidFolder" xml:space="preserve">
+    <value>Invalid folder.</value>
+  </data>
+  <data name="InvalidIntersectTypeAndTargetUID" xml:space="preserve">
+    <value>Not valid Intersect Type Uid or Target Type Uid</value>
+  </data>
+  <data name="invalidObjectPassed" xml:space="preserve">
+    <value>Invalid object passed</value>
+  </data>
+  <data name="InvalidrelationshipCardinality" xml:space="preserve">
+    <value>Invalid relationship cardinality for multiple items.</value>
+  </data>
+  <data name="InvalidRelationshipType" xml:space="preserve">
+    <value>Invalid relationship type or source item.</value>
+  </data>
+  <data name="IPRestriction" xml:space="preserve">
+    <value>IP Restrictions</value>
+  </data>
+  <data name="IssueType" xml:space="preserve">
+    <value>Issue type</value>
+  </data>
+  <data name="IssueTypeNotFound" xml:space="preserve">
+    <value>No Issue Type found for given Guid</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="ItemAddedCart" xml:space="preserve">
+    <value>The item has been added to your cart</value>
+  </data>
+  <data name="ItemAlreadyInCart" xml:space="preserve">
+    <value>This item is already in your cart</value>
+  </data>
+  <data name="ItemCannotRelateItself" xml:space="preserve">
+    <value>The item cannot be related to itself.</value>
+  </data>
+  <data name="ItemCreatedProcessed" xml:space="preserve">
+    <value>Item successfully created and processed.</value>
+  </data>
+  <data name="ItemDate" xml:space="preserve">
+    <value>Item date</value>
+  </data>
+  <data name="ItemRemoved" xml:space="preserve">
+    <value>Item successfully removed.</value>
+  </data>
+  <data name="ItemUpdatedProcessed" xml:space="preserve">
+    <value>Item successfully updated and processed.</value>
+  </data>
+  <data name="LoadAction" xml:space="preserve">
+    <value>LoadAction</value>
+  </data>
+  <data name="ModelPassedToMethodInvalid" xml:space="preserve">
+    <value>The model passed to the method was invalid</value>
+  </data>
+  <data name="NamespaceCreated" xml:space="preserve">
+    <value>Namespace successfully created.</value>
+  </data>
+  <data name="NamespaceRemoved" xml:space="preserve">
+    <value>Api namespace successfully removed.</value>
+  </data>
+  <data name="NamespaceUpdated" xml:space="preserve">
+    <value>Namespace successfully updated.</value>
+  </data>
+  <data name="NoAssetTypeFound" xml:space="preserve">
+    <value>No asset type found for the ID {0}</value>
+  </data>
+  <data name="NoAssetTypeIDProvided" xml:space="preserve">
+    <value>No asset type ID provided (id parameter).</value>
+  </data>
+  <data name="NoFavoriteAbove" xml:space="preserve">
+    <value>No favorite above</value>
+  </data>
+  <data name="NoFavoriteBelow" xml:space="preserve">
+    <value>No favorite below</value>
+  </data>
+  <data name="NoFavoriteRoute" xml:space="preserve">
+    <value>no favorite with supplied route</value>
+  </data>
+  <data name="NoFoundSericeEndpointVersionEntityToEdit" xml:space="preserve">
+    <value>Cannot find the specified service endpoint version entity to edit</value>
+  </data>
+  <data name="NoFoundSericeEndpointVersionToEdit" xml:space="preserve">
+    <value>Cannot find the specified service endpoint version to edit</value>
+  </data>
+  <data name="NoPermissionToDoThis" xml:space="preserve">
+    <value>You do not have permission to do this</value>
+  </data>
+  <data name="NoPremissionAddItemInCart" xml:space="preserve">
+    <value>You do not have permission to add items to this cart</value>
+  </data>
+  <data name="NoPremissionClearCart" xml:space="preserve">
+    <value>You do not have permission to clear this cart.</value>
+  </data>
+  <data name="NoPremissionEditShortCuts" xml:space="preserve">
+    <value>You do not have permission to edit shortcuts.</value>
+  </data>
+  <data name="NoPremissionRemoveItem" xml:space="preserve">
+    <value>You do not have permission to remove this item</value>
+  </data>
+  <data name="NoPremissionRequestCart" xml:space="preserve">
+    <value>You do not have permission to request this shopping cart.</value>
+  </data>
+  <data name="NoSelectedItems" xml:space="preserve">
+    <value>No selected items</value>
+  </data>
+  <data name="NoSuchReport" xml:space="preserve">
+    <value>No such report</value>
+  </data>
+  <data name="NotAllowedUpdateRelationship" xml:space="preserve">
+    <value>You are not allowed to update this relationship type as there are existing field types that depend on it.</value>
+  </data>
+  <data name="NotDeleteOrganizationType" xml:space="preserve">
+    <value>Could not delete Organization Type</value>
+  </data>
+  <data name="NotFoundServiceEdit" xml:space="preserve">
+    <value>Cannot find the specified service to edit</value>
+  </data>
+  <data name="NotFoundShoppingCart" xml:space="preserve">
+    <value>Could not find the shopping cart specified.</value>
+  </data>
+  <data name="Organization" xml:space="preserve">
+    <value>Organization</value>
+  </data>
+  <data name="OrganizationDomain" xml:space="preserve">
+    <value>Organization domain</value>
+  </data>
+  <data name="OrganizationInvitation" xml:space="preserve">
+    <value>Organization invitation</value>
+  </data>
+  <data name="organizationType" xml:space="preserve">
+    <value>OrganizationType</value>
+  </data>
+  <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
+    <value>Please specify a valid username and password.</value>
+  </data>
+  <data name="PolicyType" xml:space="preserve">
+    <value>Policy type</value>
+  </data>
+  <data name="PolicyTypeLevel" xml:space="preserve">
+    <value>Policy type level</value>
+  </data>
+  <data name="PowerBICredentials" xml:space="preserve">
+    <value>Power BI Credentials</value>
+  </data>
+  <data name="PowerBINotSetupOnGovernEnvironment" xml:space="preserve">
+    <value>PowerBI has not been setup on this Govern environment.  You are possibly seeing reports because the environment was copied from another region.  Please re-upload your PowerBI files to resolve this issue.</value>
+  </data>
+  <data name="Question" xml:space="preserve">
+    <value>Question</value>
+  </data>
+  <data name="Relationship" xml:space="preserve">
+    <value>Relationship</value>
+  </data>
+  <data name="RelationshipNotFound" xml:space="preserve">
+    <value>Relationship not found.</value>
+  </data>
+  <data name="RelationshipType" xml:space="preserve">
+    <value>Relationship type</value>
+  </data>
+  <data name="Report" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="RequestSubmitted" xml:space="preserve">
+    <value>Your request has been submitted</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Users password has been successfully updated!</value>
+  </data>
+  <data name="Resource" xml:space="preserve">
+    <value>Resource</value>
+  </data>
+  <data name="ResponseType" xml:space="preserve">
+    <value>Response type</value>
+  </data>
+  <data name="Responsibility" xml:space="preserve">
+    <value>Responsibility</value>
+  </data>
+  <data name="ResponsibilityNameMax250" xml:space="preserve">
+    <value>Name provided must be less then 250 characters in length.</value>
+  </data>
+  <data name="ResponsibilityType" xml:space="preserve">
+    <value>ResponsibilityType</value>
+  </data>
+  <data name="ResponsibilityTypeRule" xml:space="preserve">
+    <value>Responsibility type rule</value>
+  </data>
+  <data name="SelectPredicate" xml:space="preserve">
+    <value>Please select a predicate for this relationship.</value>
+  </data>
+  <data name="serviceConstant" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="ServiceCreated" xml:space="preserve">
+    <value>Service successfully created.</value>
+  </data>
+  <data name="ServiceEndpointCreated" xml:space="preserve">
+    <value>Service endpoint successfully created.</value>
+  </data>
+  <data name="SettingSucessfullyUpdated" xml:space="preserve">
+    <value>Settings successfully updated.</value>
+  </data>
+  <data name="ShoppingCartCleared" xml:space="preserve">
+    <value>Shopping cart cleared successfully</value>
+  </data>
+  <data name="ShoppingCartNotFound" xml:space="preserve">
+    <value>Shopping cart item could not be found</value>
+  </data>
+  <data name="ShoppingCartRemoved" xml:space="preserve">
+    <value>Shopping cart item removed successfully</value>
+  </data>
+  <data name="ShortcutAdded" xml:space="preserve">
+    <value>Shortcut added successfully</value>
+  </data>
+  <data name="ShortcutAlreadySorted" xml:space="preserve">
+    <value>Shortcut is already sorted to the {0}</value>
+  </data>
+  <data name="ShortcutDeleted" xml:space="preserve">
+    <value>Shortcut deleted successfully.</value>
+  </data>
+  <data name="ShortcutIDNotFound" xml:space="preserve">
+    <value>Shortcut Id {0} not found</value>
+  </data>
+  <data name="ShortcutMissingAnIcon" xml:space="preserve">
+    <value>This shortcut is missing an icon</value>
+  </data>
+  <data name="ShortcutModified" xml:space="preserve">
+    <value>Shortcut modified successfully</value>
+  </data>
+  <data name="ShortcutMoved" xml:space="preserve">
+    <value>Shortcut {0} moved {1} successfully.</value>
+  </data>
+  <data name="ShortCutNotFound" xml:space="preserve">
+    <value>The shortcut with id {0} could not be found.</value>
+  </data>
+  <data name="ShortCutRequireName" xml:space="preserve">
+    <value>This shortcut requires a name</value>
+  </data>
+  <data name="SiteNavNotFound" xml:space="preserve">
+    <value>The site nav specified was not found</value>
+  </data>
+  <data name="SpecificCartNotFound" xml:space="preserve">
+    <value>The specified cart could not be found</value>
+  </data>
+  <data name="SurveyQuestion" xml:space="preserve">
+    <value>Survey question</value>
+  </data>
+  <data name="SurveyType" xml:space="preserve">
+    <value>Survey type</value>
+  </data>
+  <data name="Synonym" xml:space="preserve">
+    <value>Synonym</value>
+  </data>
+  <data name="SynonymCreated" xml:space="preserve">
+    <value>Synonym {0} successfully created.</value>
+  </data>
+  <data name="SynRemoved" xml:space="preserve">
+    <value>Synonym successfully removed</value>
+  </data>
+  <data name="TaxonomyType" xml:space="preserve">
+    <value>Taxonomy type</value>
+  </data>
+  <data name="TaxonomyTypeLevel" xml:space="preserve">
+    <value>Taxonomy type level</value>
+  </data>
+  <data name="TopConstant" xml:space="preserve">
+    <value>Top.</value>
+  </data>
+  <data name="TypeConstant" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="UnableToFindPowerBISettings" xml:space="preserve">
+    <value>ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.</value>
+  </data>
+  <data name="UnsupportedHierarchyAssetTypeAddField" xml:space="preserve">
+    <value>Unsupported hierarchy asset type specified to Hierarchy_AddFields.  Supported types are taxonomytype and policytype.</value>
+  </data>
+  <data name="UnsupportedHierarchyTypeEditField" xml:space="preserve">
+    <value>Unsupported hierarchy type specified to Hierarchy_EditFields.  Supported types are taxonomy and policy.</value>
+  </data>
+  <data name="uriConstant" xml:space="preserve">
+    <value>Uri</value>
+  </data>
+  <data name="UriCreated" xml:space="preserve">
+    <value>Uri successfully created.</value>
+  </data>
+  <data name="UserAlreadyRegisteredThisOrganization" xml:space="preserve">
+    <value>A user with this email address is already registered to this organization</value>
+  </data>
+  <data name="UserDoesnotAdmin" xml:space="preserve">
+    <value>User does not have admin privileges.</value>
+  </data>
+  <data name="version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="VersionCreated" xml:space="preserve">
+    <value>Version successfully created.</value>
+  </data>
+  <data name="VersionUpdated" xml:space="preserve">
+    <value>Version successfully updated.</value>
+  </data>
+</root>

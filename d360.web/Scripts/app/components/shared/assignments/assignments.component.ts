@@ -4,16 +4,14 @@ import { WorkflowService } from '../../../services/workflow.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { Count } from '../../../models/counts.model';
 import { WorkflowType } from '../../../models/workflow.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-assignments',
     providers: [WorkflowService, ResourcesService],
     template: `
                 <div class="tile tile-detail">
-                   <header *ngIf="resourceId >= 0">{{resource?.FirstName}}'s Assignments
-                    <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
-                   </header>
-                   <header *ngIf="resourceId == null || resourceId < 0">Your Assignments
+                   <header>Assignments
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -68,8 +66,11 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
     private resource: any = null;
 
 
-    constructor(private workflowService: WorkflowService, private resourcesService: ResourcesService) {
-        super();
+    constructor(
+        private resourcesService: ResourcesService,
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService) {
+        super(settingsService);
     }
 
     ngOnInit() {

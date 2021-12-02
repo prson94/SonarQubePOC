@@ -1,0 +1,32 @@
+﻿<div #seriesTile class="time-series-tile">
+    <div class="time-series-graph">
+        <div class="time-series-header" style="display:flex;">
+            <div style="flex:1;">
+                <div class="title">
+                    {{graphTitle}}
+                </div>
+            </div>
+            <div style="flex:0;">
+                <p-dropdown style="min-width:180px" igDropdown
+                            igSize="full"
+                            placeholder="Custom"
+                            [options]="graphRangeOptions"
+                            [(ngModel)]="selectedGraphRangeOption"
+                            (onChange)="graphOptionChanged()"></p-dropdown>
+            </div>
+            <div style="flex:0;margin-left:10px;">
+                <button igButton
+                        (click)="displayChart=false; close.emit()"
+                        pTooltip="Close Chart"
+                        style="font-size:0.75em"
+                        tooltipPosition="top"
+                        tooltipStyleClass="ig-tooltip">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="body">
+            <div style="width:100%;height:100%" id="timeSeries"></div>
+        </div>
+    </div>
+</div>

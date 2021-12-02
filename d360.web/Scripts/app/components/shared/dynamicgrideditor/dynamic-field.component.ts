@@ -26,6 +26,7 @@ import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
 import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -53,7 +54,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Output() relationItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
-    private fieldTooltip: string;
     private cascadeSub: any;
     private relationSource$ = new Subject<any>();
     private relationSub: any;
@@ -95,9 +95,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         private fieldsService: FieldsObservableService,
         private assetService: AssetService,
         private ref: ChangeDetectorRef,
+        protected settingsService: CompanySettingsService,
         private tagService: TagService
     ) {
-        super();
+        super(settingsService);
         this.component_uid = Math.random().toString(36).substring(2);
     }
 
@@ -360,11 +361,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 }
             }
         }
-
-        if (this.field && this.field.FieldDescription) {
-            this.fieldTooltip = this.field.FieldDescription ? String(this.field.FieldDescription).replace(/<[^>]+>/gm, '') : '';
-        }
-
 
         if (this.field.FieldType == 'Color') {
             this.assetService.getAllColors().subscribe(x => {

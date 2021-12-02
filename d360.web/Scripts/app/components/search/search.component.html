@@ -9,7 +9,6 @@
                                                  [autocompletePlaceholder]="'What are you looking for?'"
                                                  [searchOptions]="searchTypes"
                                                  [defaultValue]="searchText"
-                                                 [isExactMatch]="isExactMatch"
                                                  [keepFilter]="true">
                     </d3s-header-typeahead-search>
                 </div>
@@ -76,7 +75,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection?.AssetUid != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selection.AssetUid"
@@ -89,12 +88,32 @@
                                          [paddingLeft]="'11px'"
                                          [tooltipAlign]="'left'"
                                          [isSidePanel]="true"
+                                         [hasEditLink]="true"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
-                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                         [hasDeleteRelationshipsPermissions]="false"
+                                         (onEditClick)="showEditor=true"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
             </side-panel>
         </div>
     </div>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <asset-editor #dynamicEditor
+                  *ngIf="showEditor"
+                  [objectID]="selection?.AssetUid"
+                  [objectType]="selection?.ObjectType"
+                  [title]="selection ? 'Edit Asset' : 'Create New Asset'"
+                  [selection]="selection"
+                  [objectTypeUid]="selection?.Data?.AssetTypeUid"
+                  [assetTypePath]="''"
+                  (saveClick)="saveItem($event)"
+                  [showAsModal]="true"
+                  [isV2API]="true"
+                  (closeClick)="showEditor=false"></asset-editor>
+</d3s-modal>

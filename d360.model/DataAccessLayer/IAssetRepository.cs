@@ -16,7 +16,7 @@ namespace d360.model.DataAccessLayer
     {
         Asset GetAssetByObjectId(string obj, int objId);
         Asset GetAssetByUID(Guid assetUid);
-        Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? fusionTypeUid, Guid? assetTypeUid);
+        Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? assetTypeUid);
         List<AssetTypeClassInfo> GetAssetTypeList();
         Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null);
         Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams);
@@ -51,7 +51,8 @@ namespace d360.model.DataAccessLayer
         Task<Dictionary<Guid, List<extensions.PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids);
         Task<dynamic> GetAssetTypeDetails(AssetType type);
         Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false);
-        Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, Guid? assetTypeUid = null);
+        Task<AssetCountsModel> GetAssetCountOfAssetTypeUid(Guid assetTypeUid);
+        Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, IEnumerable<KeyValuePair<string, string>> queryParams, Guid? assetTypeUid = null);
         Task<AssetsCountModel> GetAssetsCounts();
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
         Task<dynamic> GetExecutionStatusModel(Guid executionUid, bool includeResults = true);

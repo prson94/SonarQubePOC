@@ -53,6 +53,9 @@ namespace d360.core.entities
 
         [DataMember]
         public State State { get; set; } = State.Active;
+
+        [DataMember]
+        public string ApplicationId { get; set; }
     }
 
     public class ApiExecutionFields_PostAssets
@@ -75,6 +78,11 @@ namespace d360.core.entities
         public Guid IntersectTypeUid { get; set; }
     }
 
+    public class ApiExecutionFields_PutRelationships
+    {
+        public Guid IntersectTypeUid { get; set; }
+    }
+
     public class ApiExecutionFields_DeleteRelationships
     {
         public Guid IntersectTypeUid { get; set; }
@@ -88,6 +96,12 @@ namespace d360.core.entities
     public class ApiExecutionFields_DeletePredicates
     {
         public Guid PredicateUid { get; set; }
+    }
+
+    public class ApiExecutionFields_DeleteFieldtypes
+    {
+        public TypeIdentifierInfoModel TypeIdentifierInfo { get; set; }
+        public List<string> FieldNamesToDelete { get; set; }
     }
 
 
@@ -117,5 +131,6 @@ namespace d360.core.entities
         public string Method { get; set; }
         public string Route { get; set; }
         public dynamic Fields { get; set; }
+        public string ApplicationId { get; set; }
     }
 }

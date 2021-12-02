@@ -258,12 +258,6 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean) {
-        criticalOnly = (criticalOnly == undefined ? false : criticalOnly);
-
-        window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls?${queryString}`);
-    }
-
     deleteRelationshipItem(id: number): Observable<any> {
         let url = `/api/relationships/${id}`;
 
@@ -307,7 +301,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<any> {
-        var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid;
+        var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid + '&_includepath=true';
 
         if (params) {
             url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
@@ -331,7 +325,7 @@ export class RelationshipsService extends BaseObservableService {
         }
         else {
             this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-                .subscribe((data) => this.downloadFile(data, 'relationship type items'));
+                .subscribe((data) => this.downloadFile(data, 'Relationships'));
         }
     }
 

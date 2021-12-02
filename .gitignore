@@ -1,3 +1,6 @@
+# ignore versioning file that is built with every solution build in VS
+\d360.core\versioning.cs
+
 # ignore compiled js files
 \d360.web\Scripts\app\app.js
 \d360.web\Scripts\all.js

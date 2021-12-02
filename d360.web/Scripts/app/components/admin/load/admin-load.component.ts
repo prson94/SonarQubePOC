@@ -7,6 +7,7 @@ import {LoadService} from '../../../services/load.service';
 import {Title} from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-load',
@@ -25,9 +26,10 @@ export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
         headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
         private loadService: LoadService,
+        protected settingsService: CompanySettingsService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 
         this.areaName = StringConstants.Section_Bulk;
         this.adminHeading = 'Integration';

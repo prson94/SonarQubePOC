@@ -48,7 +48,7 @@ namespace igx.functions.databasetaskprocessor
 
                 companies.Shuffle(); //Randomize
 
-                companies.AsParallel().ForAll(c =>
+                companies.ForEach(c =>
                 {
                     try
                     {
@@ -70,7 +70,11 @@ namespace igx.functions.databasetaskprocessor
                             {
                                 if (!SearchIndexer.IsIndexable(o)) return string.Empty;
 
-                                if (a == "D") //Delete - asset is no longer present, so we can only use given parameters
+                                if (a == "Path")
+                                {
+                                    indexCollectionModel.UpsertPathByAssetId.Add(givenAssetId);
+                                }
+                                else if (a == "D") //Delete - asset is no longer present, so we can only use given parameters
                                 {
                                     IndexObjectModel indexObject = new IndexObjectModel
                                     {
@@ -155,7 +159,21 @@ namespace igx.functions.databasetaskprocessor
                                                    select 0;
                                                 END";
 
-                            bool hasWork = outerCompanyConnection.QuerySingle<Boolean>(existsSql);
+                            bool hasWork = false;
+                            try
+                            {
+                                hasWork = outerCompanyConnection.QuerySingle<bool>(existsSql);
+                            }
+                            catch (SqlException ex)
+                            {
+                                //When doing a clean DB install, the queue.task table will not exist
+                                //for some time. If the table is not present, there is no work to be done
+                                //by this processor, so the error is muted.
+                                if (ex.Message != "Invalid object name 'queue.task'.")
+                                {
+                                    throw;
+                                }
+                            }
 
                             if (hasWork)
                             {
@@ -384,7 +402,7 @@ from    [queue].[Task] T
                             {
                                 search.UpdateInIndex(indexCollectionModel.Updates);
                             }
-                            if (indexCollectionModel.UpsertByObject.Any() || indexCollectionModel.UpsertByUid.Any())
+                            if (indexCollectionModel.ContainsIndexerCollections())
                             {
                                 try
                                 {
@@ -394,10 +412,19 @@ from    [queue].[Task] T
                                         SearchIndexer indexer = new SearchIndexer(companyConnection, c.CompanyID, search);
 
                                         if (indexCollectionModel.UpsertByUid.Any())
+                                        {
                                             indexer.IndexAssets(indexCollectionModel.UpsertByUid);
+                                        }
 
                                         if (indexCollectionModel.UpsertByObject.Any())
+                                        {
                                             indexer.IndexAssets(indexCollectionModel.UpsertByObject);
+                                        }
+
+                                        if(indexCollectionModel.UpsertPathByAssetId.Any())
+                                        {
+                                            indexer.IndexUpdateAssetPaths(indexCollectionModel.UpsertPathByAssetId);
+                                        }
 
                                         indexer = null;
                                     }
@@ -518,6 +545,7 @@ from    [queue].[Task] T
             Updates = new ConcurrentBag<IndexObjectModel>();
             UpsertByUid = new ConcurrentBag<Guid>();
             UpsertByObject = new ConcurrentBag<Tuple<string, long>>();
+            UpsertPathByAssetId = new ConcurrentBag<long>();
         }
 
         public ConcurrentBag<IndexObjectModel> Adds { get; set; }
@@ -525,6 +553,12 @@ from    [queue].[Task] T
         public ConcurrentBag<IndexObjectModel> Updates { get; set; }
         public ConcurrentBag<Guid> UpsertByUid { get; set; }
         public ConcurrentBag<Tuple<string, long>> UpsertByObject { get; set; }
+        public ConcurrentBag<long> UpsertPathByAssetId { get; set; }
+
+        public bool ContainsIndexerCollections()
+        {
+            return UpsertByObject.Any() || UpsertByUid.Any() || UpsertPathByAssetId.Any();
+        }
     }
 
     public class QueueTask

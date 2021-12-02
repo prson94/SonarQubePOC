@@ -1,13 +1,14 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
+﻿import { Input, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipCount, RelationshipType, RelationshipTypeUIModel } from '../../../models/relationship.model';
+import { RelationshipCount, RelationshipTypeUIModel } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AssetService } from '../../../services/asset.service';
 import { forkJoin, Subscription } from 'rxjs';
 import * as _ from 'lodash';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-object-relationships',
@@ -46,11 +47,13 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     @ViewChild(DynamicRelationshipGridComponent, { static: false }) private relGrid: DynamicRelationshipGridComponent;
 
-    constructor(protected relationshipsService: RelationshipsService,
-        private objectDetailService: ObjectDetailService,
+    constructor(
         private assetService: AssetService,
+        private objectDetailService: ObjectDetailService,
+        protected relationshipsService: RelationshipsService,
+        protected settingsService: CompanySettingsService,
         private changeDetectorRef: ChangeDetectorRef) {
-        super();
+        super(settingsService);
     }
 
     ngOnDestroy(): void {
@@ -63,6 +66,13 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        const hasApiParameterChanges = ('objectId' in changes || 'objectType' in changes);
+        if (!hasApiParameterChanges) {
+            return;
+        }
+
+        this.isLoading = true;
+        this.changeDetectorRef.markForCheck();
         this.objectDetailService.getObject(this.objectID, this.objectType).subscribe((res) => {
             let uid: string = '';
             if (res["Uid"]) {
@@ -89,6 +99,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     load(): void {
         this.isLoading = true;
+        this.changeDetectorRef.markForCheck();
 
         if (!this.assetTypeUid || !this.assetUid) {
             return;
@@ -106,6 +117,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         var countsSub = this.relationshipsService.getRelationshipsCountsForAsset(this.assetUid);
 
         this.loadDataSubs = forkJoin([relationshipSub, countsSub]).subscribe((res) => {
+            this.isLoading = false;
+            this.changeDetectorRef.markForCheck();
             var allItems = res[0] as RelationshipTypeUIModel[];
             var counts = res[1] as RelationshipCount[];
 
@@ -144,7 +157,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         }
 
         for (let relation of this.relationshipItems) {
-            relation.TypeName = this.getRelName(relation).toUpperCase();
+            relation.TypeName = this.getRelName(relation);
         }
 
         this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1; });
@@ -160,7 +173,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
         this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
 
-        this.isLoading = false;
         this.updateCardinality();
         this.changeDetectorRef.detectChanges();
     }
@@ -278,9 +290,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             case "Policy":
                 cs += "fa-university";
                 break;
-            case "FusionAttribute":
-                cs += "fa-database";
-                break;
             case "Resource":
                 cs += "fa-user";
                 break;
@@ -315,9 +324,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                     break;
                 case "Policy":
                     tooltip = "Policy";
-                    break;
-                case "FusionAttribute":
-                    tooltip = "Fusion Attribute";
                     break;
                 case "Resource":
                     tooltip = "Resource";

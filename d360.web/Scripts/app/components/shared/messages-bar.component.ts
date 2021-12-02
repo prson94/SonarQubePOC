@@ -1,6 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { MessageBarItem } from '../../models/message-bar-item.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-messages-bar',
@@ -22,8 +23,8 @@ export class MessagesBarComponent extends BaseComponent {
     @Output() messageClick = new EventEmitter();
     @Output() messageClose = new EventEmitter();
 
-    constructor() {
-        super();
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
         
     private handleMessageClick(message) {

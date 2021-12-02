@@ -1,8 +1,10 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter } from '@angular/core';
-
+﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter} from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
+import { AssetTypeService } from '../../../services/asset-type.service';
+import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'data-profile',
@@ -10,10 +12,23 @@ import * as Highcharts from 'highcharts';
     styleUrls: ['dataprofile.less']
 })
 
-export class DataProfileComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class DataProfileComponent extends BaseComponent implements OnInit {
     @Input() dataProfile: any;
-    @Input() isModal: boolean = false;
+    @Input() dataProfileList: any[] = [];
+    @Input() isModal: boolean = false;  
+    @Input() assetData: any;
     @Output() linkClicked = new EventEmitter();
+    @Output() showTimeSeries = new EventEmitter();
+    showMaxValueGraphIcon: boolean;
+    showMinValueGraphIcon: boolean;
+
+    constructor(
+        private assetService: AssetService,
+        private assetTypeService: AssetTypeService,
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
+    }
 
     private sampleCountPercentage: number;
     private nullBlankCountTotal: number;
@@ -28,7 +43,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
     private bottomSamplesToShow: number = 5;
     private topSamples: any;
     private bottomSamples: any;
-
+    
     private sampleBarChart: any;
 
     private ShowBoolean: boolean = false;
@@ -46,11 +61,22 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
     private hasValidCounts: boolean = true;
     private maxValue: any;
     private minValue: any;
+    private maxValueStr: any;
+    private minValueStr: any;
+    private lastMaxValue: any;
+    private lastMinValue: any;
     private validCount: number;
     private distinctCount: number;
     private invalidCount: number;
     private showDuplicates: boolean = true;
     private showSimilar: boolean = true;
+    private assetName: string;
+    private assetTypeName: string;
+    private hideInfoMessage: boolean = false;
+    public displayChart: boolean = false;
+    private hideDataProfileInstructionMessageKey = "hideDataProfileInstructionMessage";
+    public chartType: string;
+    public timeSeriesProfileList: any[] = [];
 
     isMatchDetectionPopupVisible: boolean = false;
     matchType: string = "";
@@ -62,15 +88,41 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
 
     ngOnInit() { 
         this.initialize();
+        if (this.assetData) {
+            this.assetName = this.assetData.AssetName;
+            this.assetTypeName = this.assetData.AssetTypeName;
+        } else {
+            let uriParams: any = {};
+            this.isLoading = true;
+            this.assetService.getAsset(this.dataProfile.assetUid)
+                .subscribe((res) => {
+                    this.assetName = res.Name;
+                    uriParams.assetTypeUid = res.AssetTypeUid;
+                    this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+                        this.assetTypeName = result[0].Name;
+                        this.isLoading = false;
+                    });
+                });
+        }
+        let maxProfileDate = new Date();
+        maxProfileDate.setFullYear(maxProfileDate.getFullYear() - 1);
+        this.timeSeriesProfileList = this.dataProfileList.filter((p) => new Date(p.profileSetDate) >= maxProfileDate);
     }    
-
+    
     ngAfterViewInit() {
-    if (!this.sampleDistributionChart) {
-        setTimeout(() => this.renderSampleDistributionChart(), 10);
+        if (!this.sampleDistributionChart) {
+            setTimeout(() => this.renderSampleDistributionChart(), 10);
         }            
     }
 
     initialize() {
+        if (localStorage.getItem(this.hideDataProfileInstructionMessageKey)) {
+            this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === "true";            
+        }
+        if (!this.dataProfile) {
+            this.dataProfile = this.dataProfileList[0];
+        }
+        
         this.validPercentage = ((this.dataProfile.matchCount / this.dataProfile.totalCount) * 100);
 
         this.nullBlankCountTotal = ((this.dataProfile.nullCount ?? 0) + (this.dataProfile.blankCount ?? 0));
@@ -89,7 +141,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
 
         this.checkVisibility();
 
-        this.setMinAndMaxText();        
+        this.setMinAndMaxText();             
     }
 
     private showSidePanel() {
@@ -120,7 +172,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
 
         if (this.dataProfile.shapesDetail) {
             this.dataProfile.shapesDetail = this.dataProfile.shapesDetail.sort((a, b) => (b.count - a.count));
-        }
+        }      
     }
 
     private getBackgroundSize(size: number, total: number) {
@@ -216,19 +268,25 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
     private setMinAndMaxText() {
         if (this.dataProfile.type && (this.dataProfile.type.toLowerCase() === 'double' || this.dataProfile.type.toLowerCase() === 'long')) {
             if (isNaN(Number(this.dataProfile?.max))) {
-                this.maxValue = this.dataProfile?.max;
+                this.maxValueStr = this.dataProfile?.max;
             } else {
-                this.maxValue = Number(this.dataProfile?.max).toLocaleString();
+                this.maxValue = Number(this.dataProfile?.max);
+                this.maxValueStr = Number(this.dataProfile?.max).toLocaleString();
+                this.lastMaxValue = Number(this.timeSeriesProfileList[1]?.max);
+                this.showMaxValueGraphIcon = true;
             }
 
             if (isNaN(Number(this.dataProfile?.min))) {
-                this.minValue = this.dataProfile?.min;
+                this.minValueStr = this.dataProfile?.min;
             } else {
-                this.minValue = Number(this.dataProfile?.min).toLocaleString();
+                this.minValue = Number(this.dataProfile?.min);
+                this.minValueStr = Number(this.dataProfile?.min).toLocaleString();
+                this.lastMinValue = Number(this.timeSeriesProfileList[1]?.min);
+                this.showMinValueGraphIcon = true;
             }
         } else {
-            this.maxValue = this.dataProfile?.max;
-            this.minValue = this.dataProfile?.min;
+            this.maxValueStr = this.dataProfile?.max;
+            this.minValueStr = this.dataProfile?.min;
         }
     }
 
@@ -239,7 +297,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
     getMatchTooltip(type: string, count: number): string {
         let assetCountStr: string = count > 1 ? `${count} assets` : '1 asset';
         let descStr: string = type === 'duplicates' ? 'same type and matching data' : 'same type but different data';
-        return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate.`;
+        return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate and add tags.`;
     }
 
     matchDetectionLinkClicked(type: string) {        
@@ -261,8 +319,6 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
         if (this.showSampleDistribution === false) {
             return;
         }
-
-
         //use of var here is to allow access to the dataProfile object inside Highcharts specific functions
         var dataProfile: any = this.dataProfile;
 
@@ -411,7 +467,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
                     .filter((c) => new Date(c.key) >= lower && new Date(c.key) < upper)
                     .reduce((count, r) => count += r.count, 0);
 
-                let opts = { month: 'short', year: '2-digit' };
+                let opts: Intl.DateTimeFormatOptions = { month: 'short', year: '2-digit' };
                 let dateString = new Intl.DateTimeFormat(navigator.language, opts).format(lower);
 
                 categories.push(dateString);
@@ -649,4 +705,14 @@ export class DataProfileComponent extends BaseComponent implements OnInit, After
         this.isMatchDetectionPopupVisible = false;
         this.matchAssetUid = this.dataProfile.assetUid;
     }
+
+    private hideChartInfoMessage() {
+        localStorage.setItem("hideDataProfileInstructionMessage", "true");
+        this.hideInfoMessage = true;
+    }
+
+    private openChart(chartType: string) {
+        this.displayChart = true;
+        this.chartType = chartType;       
+    }  
 }

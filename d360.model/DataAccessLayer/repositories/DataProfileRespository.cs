@@ -48,7 +48,7 @@ namespace d360.model.DataAccessLayer
             var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
             if (asset == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
             }
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
@@ -106,12 +106,13 @@ namespace d360.model.DataAccessLayer
             var dataProfileIdsSql = $@"
                                     drop table if exists #assetdataprofileids
                                     create table #assetdataprofileids (
-	                                    id bigint
+	                                    id bigint, 
+                                        ProfileSetDate Date
                                     );
                                     {descendantsSQL}
                                     insert into #assetdataprofileids
 		                            select 
-			                            ADP.id 
+			                            ADP.id, ADP.ProfileSetDate
 		                            from 
 			                            descendants A
 			                            inner join 
@@ -217,7 +218,8 @@ namespace d360.model.DataAccessLayer
                                                             lower(SampleType) = 'topk'
                                                         for json path
                                                         ) as [value]
-                                                ) topK ";
+                                                ) topK 
+                                order by ids.[ProfileSetDate] desc";
 
             dbArgs.Add("@startDate", startDate.Date);
             dbArgs.Add("@endDate", endDate.Date);
@@ -225,7 +227,7 @@ namespace d360.model.DataAccessLayer
 
             string sql = $@"
                         {dataProfileIdsSql}
-                        order by ADP.[ID]
+                        order by ADP.[ProfileSetDate] desc
 			            {offset}
                         {dataProfileSQL}
                         for Json Path";
@@ -559,7 +561,6 @@ namespace d360.model.DataAccessLayer
 
             bool includeTotal = true;
             string orderDirection = "asc";
-            string orderByField = "td.[path]";
             string filterSQL = "";
             string structureCondition = "";
             string filterJoinSQL = "";
@@ -577,18 +578,18 @@ namespace d360.model.DataAccessLayer
             
             if (asset == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", CommentErrors.AssetUidNotFound);
             }
 
             AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
             if (dataprofile == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Profile record does not exist for provided Uid.");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.ProfileRecordNotExists );
             }
 
             if (similarType == null)
             {
-                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Signature Type is required.");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.SignatureTypeRequired);
             }
             else
             {
@@ -609,7 +610,7 @@ namespace d360.model.DataAccessLayer
                 }
                 else
                 {
-                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Signature Type is invalid.");
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.SignatureTypeInvalid);
                 }
             }
 
@@ -645,17 +646,7 @@ namespace d360.model.DataAccessLayer
 								Select tagString = STRING_AGG( value ,'|')
 								 From  OpenJSON(tagsJson)
 							 ) T";
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
-            {
-                var orderBy = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
-
-                if (orderBy == "tags")
-                {
-                    orderByField = $@"JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]')";
-                }
-            }
+            }            
 
             if (queryParams.Any(q => q.Key == "_direction"))
             {
@@ -666,6 +657,18 @@ namespace d360.model.DataAccessLayer
                 {
                     orderDirection = directionFilter;
                 }
+            }
+
+            string orderBySQL = $"td.[path] {orderDirection}";
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
+            {
+                var orderBy = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
+
+                if (orderBy == "tags")
+                {
+                    orderBySQL = $@"hasTagField {(orderDirection == "asc" ?  "desc" : "asc")}, JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]') {orderDirection}, td.[path] {orderDirection}";
+                }               
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
@@ -757,9 +760,8 @@ namespace d360.model.DataAccessLayer
 								        ,t.tagString as MatchedAssetTags
 								        ,td.path MatchedAssetPath
 								        ,td.Uid as MatchedAssetUid					
-								        ,P.Path as MatchedAssetTypePath";                
-
-                
+								        ,P.Path as MatchedAssetTypePath
+                                        ,td.hasTagField";                                
             }
 
             string tempTablesSQL = $@"drop table if exists #tempadpid;
@@ -814,7 +816,7 @@ namespace d360.model.DataAccessLayer
                             from #tempdata2 td
                             {filterJoinSQL}
                             {filterSQL}
-                            order by {orderByField} {orderDirection}
+                            order by {orderBySQL}
                              {offset}
 
                             {countQuery}

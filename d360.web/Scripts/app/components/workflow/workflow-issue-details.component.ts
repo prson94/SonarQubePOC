@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-issue-details',
@@ -113,8 +114,11 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
         
     @Output() countsChanged = new EventEmitter();
 
-    constructor(private workflowService: WorkflowService, protected router: Router) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        protected router: Router) {
+        super(settingsService);
     }
 
     ngOnInit() {

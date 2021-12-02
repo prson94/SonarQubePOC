@@ -72,7 +72,7 @@ ig-search-field {
         position: absolute;
         width: 32px;
         height: 32px;
-        color: #006fc0;
+        color: @ig-purple;
         top: 0;
         right: 28px;
         text-align: center;
@@ -92,6 +92,13 @@ ig-search-field {
     }
   }
 
+  .flexsimple-search {
+    .ig-search-field,
+    &.has-tooltip {
+      width: 100%;
+    }
+  }
+
   .dark-mode {
     color: white;
 
@@ -102,21 +109,22 @@ ig-search-field {
     }
 
     input {
-      background-color: #646a7a;
-      color: white;
+      background: @ig-grey-t5;
+      color: @ig-black;
+      border: none;
 
       &::placeholder {
-        color: white;
+        color: @ig-grey-t1;
       }
     }
 
     .ig-search-field-keypress {
-      color: white;
+      color: @ig-grey-t1;
     }
 
     .ig-search-field-button.clear {
-      color: white;
-      background-color: #646a7a;
+      background-color: @ig-grey-t5;
+      color: @ig-black;
     }
   }
 }

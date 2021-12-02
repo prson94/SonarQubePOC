@@ -18,6 +18,8 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
     @Input() showHeaderLine: boolean = true;
+    @Input() hideIfNoTitle: boolean = false;
+
     @Output() isValid = new EventEmitter();
     invalidCount: number = 0;
     requiredCount: number = 0;
@@ -65,6 +67,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
             Object.keys(this.igformGroup.controls).forEach(x => {
                 let control = <FormControl>this.igformGroup.get(x);
                 let elem = this.getFormControlDomElement(x);
+
                 if (elem && control && control.errors && control.errors["required"] == true) {
                     reqCount++;
                 }

@@ -25,7 +25,6 @@ namespace d360.model.helpers.filters
 
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
-            var intersectTypeUid = this.Field.ToLower().Replace("$related:", "");
             var intersectUid = this.EscapedValueAsString;
             var ftRelationship = fieldTypes.Where(x => x.Name.ToLower() == this.Field.ToLower()).FirstOrDefault();
             var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
@@ -33,7 +32,11 @@ namespace d360.model.helpers.filters
             if (ftRelationship != null)
             {
                 string sqlOperator = "=";
-                string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
+                string relField = ftQueryName.Replace("_IntersectTypeUid", "");
+
+                string typeQuery = relField.Replace("_", "_R") + ".IntersectTypeUid";
+                string relationQuery = relField.Replace("_", "_A") + ".Uid";
+
                 if (IsNullValue)
                 {
                     sqlOperator = " is null ";
@@ -42,7 +45,7 @@ namespace d360.model.helpers.filters
                         sqlOperator = " is not null";
                     }
 
-                    relationshipFilterSQL = $"( {ftQueryName} {sqlOperator})";
+                    relationshipFilterSQL = $"({typeQuery} {sqlOperator})";
                 }
                 else
                 {
@@ -51,7 +54,7 @@ namespace d360.model.helpers.filters
                         sqlOperator = "<>";
                     }
 
-                    relationshipFilterSQL = $"( {ftQueryName} = '{intersectTypeUid}' and {relField} {sqlOperator} '{intersectUid.Replace("'", "")}')";
+                    relationshipFilterSQL = $"({relationQuery} {sqlOperator} '{intersectUid.Replace("'", "")}')";
                 }
 
             }

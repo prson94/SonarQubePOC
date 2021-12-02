@@ -219,7 +219,7 @@ namespace d360.model
 
                     var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family: Trebuchet MS, Arial, Helvetica, sans-serif;\">{sb.ToString()}</body></html>";
                     //send email
-                    await extensions.mail.SimpleMessage.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);
+                    await Mail.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);
                 }
             }
         }
@@ -1839,7 +1839,7 @@ namespace d360.model
                 else
                     currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).ToList();
 
-                if (currentAssignments.Any())
+                if (currentAssignments.Any() && clearAssignments)
                 {
                     WorkflowItemAssignments.RemoveRange(currentAssignments);
                 }
@@ -2048,7 +2048,7 @@ namespace d360.model
 
                     try
                     {
-                        await extensions.mail.SimpleMessage.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true, fromEmail, fromName);
+                        await Mail.SendMessage(emailSubject, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, emailBase, true, fromEmail, fromName);
                     }
                     catch (Exception e)
                     {
@@ -2090,7 +2090,7 @@ namespace d360.model
 
                     Console.WriteLine($"DEBUG : WORKFLOW AGGREGATE EMAIL IS EMAILING [{email}].");
 
-                    await extensions.mail.SimpleMessage.SendMessage(settings.EmailHeader, email, "", settings.EmailMessageTemplate, true, fromEmail, fromName);
+                    await Mail.SendMessage(settings.EmailHeader, email, "", settings.EmailMessageTemplate, true, fromEmail, fromName);
                 }
             }
         }
@@ -2148,7 +2148,7 @@ namespace d360.model
 
                 try
                 {
-                    await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                    await Mail.SendMessage(settings.SubjectTemplate, (string)res.Email, (string)res.FirstName + " " + (string)res.LastName, settings.BodyTemplate, true, fromEmail, fromName);
                 }
                 catch (Exception e)
                 {
@@ -2174,7 +2174,7 @@ namespace d360.model
 
                     try
                     {
-                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                        await Mail.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
                     }
                     catch (Exception e)
                     {
@@ -2196,7 +2196,7 @@ namespace d360.model
 
                     try
                     {
-                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                        await Mail.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
                     }
                     catch (Exception e)
                     {
@@ -2223,7 +2223,7 @@ namespace d360.model
 
                     try
                     {
-                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true, fromEmail, fromName);
+                        await Mail.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true, fromEmail, fromName);
                     }
                     catch (Exception e)
                     {
@@ -2259,7 +2259,7 @@ namespace d360.model
 
                     try
                     {
-                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                        await Mail.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
                     }
                     catch (Exception e)
                     {

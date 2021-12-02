@@ -60,7 +60,7 @@ namespace d360.model
         DbSet<FieldType> FieldTypes { get; set; }
         DbSet<FieldWithRelation> FieldWithRelations { get; set; }
         DbSet<FollowDetail> FollowDetails { get; set; }
-        DbSet<Follow> Follows { get; set; }                        
+        DbSet<Follow> Follows { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
         DbSet<GraphFilter> GraphFilters { get; set; }
         DbSet<Group> Groups { get; set; }
@@ -105,7 +105,6 @@ namespace d360.model
         DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
         DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
         DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
-        DbSet<d360.core.entities.Rule> Rules { get; set; }
         DbSet<Score> Scores { get; set; }
 
         DbSet<ScoreExecution> ScoreExecutions { get; set; }
@@ -156,8 +155,11 @@ namespace d360.model
         void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType);
         Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false);
         bool Delete(SystemObjects type, int id);
+
+        [Obsolete("Please, use DeleteAsync. Delete is non-async & not transactional")]
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
+        Task DeleteAsync<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         bool DeleteRelationship(int id);
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
@@ -224,6 +226,7 @@ namespace d360.model
         List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600);
         List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true, bool useTempTablesForField = false);
         List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true);
+        List<DatabaseBulkRelationshipUpdateResult> PutRelationships(ApiExecution execution, IntersectType rt, RelationshipUpdates import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true);
         List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true);
         List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
@@ -251,6 +254,7 @@ namespace d360.model
         void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);
         void SynchronizeExecutionAssetsWithGraph(Guid executionUid);
         void SynchronizeExecutionRelationshipWithGraph(Guid executionUid);
+        void UpdateAssetNode(Guid assetUid);
         bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy);
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
@@ -275,7 +279,7 @@ namespace d360.model
 
         List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
         List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
-        List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);        
+        List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
         string GetEscapedFilterString(string filter, bool isContains = false);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
@@ -291,7 +295,7 @@ namespace d360.model
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200, int maxRetryCount = 10);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
-        bool LookupFieldHasColorItem(FieldType f);        
+        bool LookupFieldHasColorItem(FieldType f);
         string GetDiagramUrlForDiagramAsset(Guid assetUid);
         bool HasRelationshipInProcessDiagram(Guid intersectTypeUid);
         void CreateEventsForAddedActions(List<Issue> actions);

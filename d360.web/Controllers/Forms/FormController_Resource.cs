@@ -121,17 +121,21 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
 
-                if (!form.HasKeys()) throw new NoFormDataException("resource");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.Resource);
+                }
                 var id = parseIntField(form, "ID");
                 var model = Community.GetById<Resource>(id);
 
-                if (model == null) throw new NotFoundException("resource");
-
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.Resource);
+                }
                 //valid user at this point generate a password
                 ResetResourcePassword(model.ID, model.FirstName, model.Email, model.FormatDisplayName());
 
-                return jsonSuccess("Users password has been successfully updated!", id.ToString(), "reset", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.ResetPassword, id.ToString(), "reset", HttpStatusCode.OK);
 
             }
             catch (BaseException ex)
@@ -168,7 +172,7 @@ namespace d360.web.Controllers
 
             if (HideData3SixtyUsers())
             {
-                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com')";
+                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
             }
 
             querySql = @"

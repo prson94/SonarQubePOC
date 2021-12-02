@@ -1,13 +1,12 @@
 ﻿import { Input, Component } from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
-
-declare var CompanySettings;
+import { CompanySettingEnum } from '../../../models/settings.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'ig-asset-detail-category',
     templateUrl: './asset-detail-category.component.html',
-    styles: [`.category-column { display:inline-grid; margin-right:40px;max-height: 300px; overflow-x: hidden;padding-bottom: 4px; }
-              .category-column .ig-label { word-break: break-word; }`]
+    styleUrls: ['./asset-detail-category.component.less']
 })
 
 export class AssetDetailCategoryComponent {
@@ -16,6 +15,10 @@ export class AssetDetailCategoryComponent {
     @Input() tooltipAlign: string;
     @Input() spacerHeight: string = '32px';
     @Input() isSidePanel: boolean = false;
+
+    constructor(
+        protected settingsService: CompanySettingsService
+    ) {}
 
     getRowClass(data: any[]): string {
         if (this.showInColumn(data)) {
@@ -26,7 +29,8 @@ export class AssetDetailCategoryComponent {
 
     getColumnWidth(data: any[]): string {
         if (this.showInColumn(data)) {
-            return (CompanySettings?.AssetDefinitionColumnWidth ?? 200).toString();
+            let columnWidth = this.settingsService.getSettingById(CompanySettingEnum.AssetDefinitionColumnWidth).NumberSetting.Value;
+            return (columnWidth).toString();
         }
         return 'unset';
     }

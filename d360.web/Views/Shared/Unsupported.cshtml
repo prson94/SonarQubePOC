@@ -1,99 +1,103 @@
 ﻿@{
     Layout = null;
-
     var VersionNumber = ViewData["VersionNumber"].ToString();
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
 
-}
+    var companyLogo = "/Content/images/PreciselyLogo@2x.png";
+    var companyIcon = "/favicon.ico";
+    var customStylesheet = "";
 
+
+    if (ViewData["Settings"] != null)
+    {
+        var settings = (Dictionary<string, string>)ViewData["Settings"];
+
+        companyLogo = settings["CompanyLogo"];
+        companyIcon = settings["CompanyIcon"];
+        customStylesheet = (settings["CustomCSSLocation"] ?? "");
+    }
+
+}
 <!DOCTYPE html>
-<html>
+<html class="no-js">
 <head>
     <meta charset="utf-8" />
     <title>Browser Unsupported</title>
-
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <link rel="icon" type="image/x-icon" href="@(companyIcon)" />
+    <link rel="Shortcut Icon" href="@(companyIcon)" />
+    <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
+    <link href="/Content/styles/materialize.css" rel="stylesheet" />
+    @if (!string.IsNullOrEmpty(customStylesheet))
+    {
+        <link rel="stylesheet" type="text/css" href="@(customStylesheet)" />
+    }
     <style>
+        .loginlogo {
+            background-image: url(@(companyLogo));
+            background-repeat: no-repeat;
+            background-position: left top;
+            background-size: auto 40px;
+        }
 
-        .browser-warning {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            font-size: 14px;
+        .directions {
+            font-size: 85%;
+            margin: 10px 0 10px 0;
+        }
+
+        .form-tools {
+            margin-top: 20px;
+        }
+
+        #loginForm{
+            width: 440px;
+        }
+
+        #loginForm .form-logo {
+            left: 8px;
+            margin-bottom: 20px;
+        }
+
+        #loginForm .form-logo a {
+            color: #9ddae6 !important;
         }
 
         .footer {
-            position: absolute;
-            bottom: 16px;
+            position: fixed;
             left: 16px;
-            font-size: 14px;
+            bottom: 16px;
             color: #898d99;
         }
-
-        .browser-warning .content {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            width: 50vw;
-            margin: 0 auto;
-            position: relative;
-            top: -20px;
-        }
-
-            .browser-warning .content div {
-                color: #6985A1;
-            }
-
-            .browser-warning .content .spacer {
-                display: block;
-                height: 20px;
-            }
-
-            .browser-warning .content .spacer-large {
-                display: block;
-                height: 32px;
-            }
-
-            .browser-warning .content .button {
-                color: #000;
-            }
     </style>
-    <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
 </head>
-<body>
-    <div class="browser-warning">
-        <div class="content">
-            <div>
-                <img src="/content/images/govern-small.svg" style="width: 400px; height: 80px" />
-            </div>
-            <div>
-                Sorry, Internet Explorer is no longer a supported browser.
-            </div>
-            <div class="spacer"></div>
-            <div>
-                Please contact your system administrator or switch to one of the supported browsers:
-            </div>
-            <div>
-                <a href="https://www.google.com/chrome/" target="_blank">Chrome (latest stable version)</a>
-            </div>
-            <div>
-                <a href="https://www.microsoft.com/en-us/edge" target="_blank">Microsoft Edge (latest Chromium based version)</a>
+
+<body class="loginBody">
+    <span class="loginlogo"><span class="background"></span></span>
+    <div id="loginForm">
+        <span class="loginlogo form-logo"></span>
+        <div class="form-wrapper">
+            <div class="content">
+                <div>
+                    Sorry, Internet Explorer is no longer a supported browser.
+                </div>
+                <div class="spacer"></div>
+                <div>
+                    Please contact your system administrator or switch to one of the supported browsers:
+                </div>
+                <br />
+                <div>
+                    <a href="https://www.google.com/chrome/" target="_blank">Chrome (latest stable version)</a>
+                </div>
+                <div>
+                    <a href="https://www.microsoft.com/en-us/edge" target="_blank">Microsoft Edge (latest Chromium based version)</a>
+                </div>
             </div>
         </div>
     </div>
     <div class="footer">
-        &copy; 2005-<span id="year">2020</span> Infogix, Inc. All rights reserved.
+        Copyright 2014, @DateTime.Now.Year Precisely
     </div>
-
-    <script>
-        (function () {
-            document.getElementById('year').innerText = (new Date().getFullYear()).toString();
-        })();
-    </script>
 </body>
+
 </html>

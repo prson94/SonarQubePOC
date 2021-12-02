@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using System.Data;
 using d360.core.resources;
+using System.Configuration;
 
 namespace igx.jobs.databasetaskprocessor
 {
@@ -84,7 +85,11 @@ namespace igx.jobs.databasetaskprocessor
                             {
                                 if (!SearchIndexer.IsIndexable(o)) return string.Empty;
 
-                                if (a == "D") //Delete - asset is no longer present, so we can only use given parameters
+                                if(a == "Path")
+                                {
+                                    indexCollectionModel.UpsertPathByAssetId.Add(givenAssetId);
+                                }
+                                else if (a == "D") //Delete - asset is no longer present, so we can only use given parameters
                                 {
                                     IndexObjectModel indexObject = new IndexObjectModel
                                     {
@@ -169,7 +174,20 @@ namespace igx.jobs.databasetaskprocessor
                                                    select 0;
                                                 END";
 
-                            bool hasWork = outerCompanyConnection.QuerySingle<Boolean>(existsSql);
+                            bool hasWork = false;
+                            try
+                            {
+                                hasWork = outerCompanyConnection.QuerySingle<bool>(existsSql);
+                            } catch (SqlException ex)
+                            {
+                                //When doing a clean DB install, the queue.task table will not exist
+                                //for some time. If the table is not present, there is no work to be done
+                                //by this processor, so the error is muted.
+                                if(ex.Message != "Invalid object name 'queue.task'.")
+                                {
+                                    throw;
+                                }
+                            }
 
                             if (hasWork)
                             {
@@ -313,7 +331,7 @@ from    [queue].[Task] T
                                                         if (q.Object == "TaggedComment")
                                                             {
                                                                 var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
-
+                                                                var mail = new MandrillMailProvider { ApiKey = ConfigurationManager.AppSettings["MandrillApiKey"] };
                                                                 if (comment.AssetID > 0)
                                                                 {
                                                                     CommentNotification notification = JsonSerializer.Deserialize<CommentNotification>(q.Custom);
@@ -392,7 +410,7 @@ from    [queue].[Task] T
                                                                                     </body>
                                                                                     </html>                                                                                        
                                                                                     ";
-                                                                        SimpleMessage.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml);
+                                                                        mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
                                                                     }
                                                                 }
                                                             }
@@ -495,7 +513,7 @@ from    [queue].[Task] T
                             {
                                 search.UpdateInIndex(indexCollectionModel.Updates);
                             }
-                            if(indexCollectionModel.UpsertByObject.Any() || indexCollectionModel.UpsertByUid.Any())
+                            if(indexCollectionModel.ContainsIndexerCollections())
                             {
                                 try
                                 {
@@ -505,10 +523,19 @@ from    [queue].[Task] T
                                         SearchIndexer indexer = new SearchIndexer(companyConnection, c.CompanyID, search);
 
                                         if (indexCollectionModel.UpsertByUid.Any())
+                                        {
                                             indexer.IndexAssets(indexCollectionModel.UpsertByUid);
+                                        }
 
-                                        if(indexCollectionModel.UpsertByObject.Any())
+                                        if (indexCollectionModel.UpsertByObject.Any())
+                                        {
                                             indexer.IndexAssets(indexCollectionModel.UpsertByObject);
+                                        }
+
+                                        if(indexCollectionModel.UpsertPathByAssetId.Any())
+                                        {
+                                            indexer.IndexUpdateAssetPaths(indexCollectionModel.UpsertPathByAssetId);
+                                        }
 
                                         indexer = null;
                                     }

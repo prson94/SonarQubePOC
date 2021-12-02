@@ -50,21 +50,33 @@ namespace igx.jobs.workflowsubscriber
 
         public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]Message brokeredMessage, TextWriter log)
         {
+            string messageString;
+            EventInfo info;
+            CompanyContext company;
             var companyId = 0;
+
+            CoreFunction.AITrackJobStart(functionName);
+            log.WriteLine($"WorkflowSubscriber trigger function processed:  {brokeredMessage.MessageId}");
+            CoreFunction.AITrackEvent(functionName, "WorkflowSubscriber triggered", new Dictionary<string, string> { { "MessageID", brokeredMessage.MessageId } });
+
             try
             {
-                CoreFunction.AITrackJobStart(functionName);
-                log.WriteLine($"WorkflowSubscriber trigger function processed:  {brokeredMessage.MessageId}");
-                CoreFunction.AITrackEvent(functionName,"WorkflowSubscriber triggered", new Dictionary<string, string> { { "MessageID", brokeredMessage.MessageId } });
+                messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
+                info = JsonConvert.DeserializeObject<EventInfo>(messageString);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, companyId);
+                log.WriteLine("Exception: " + ex.GetFullExceptionData());
+                return;
+            }
 
-                var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
-                var info = JsonConvert.DeserializeObject<EventInfo>(messageString);
+            // Create EF connection
+            companyId = info.CompanyID;
+            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true);
 
-                // Create EF connection
-                companyId = info.CompanyID;
-                var company = JobDbContextCreator.CreateWebjobCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true);
-
-
+            try
+            {
                 //check if this event already has a open workflow instance
                 if (info.WorkflowItemID <= 0)
                 {

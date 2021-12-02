@@ -57,6 +57,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -83,15 +84,23 @@
     <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\IResourceRepository.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
+    <Compile Include="DataAccessLayer\IResponsibilityTypeRepository.cs" />
     <Compile Include="DataAccessLayer\ISettingsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\CompanyDbConnectionProvider.cs" />
+    <Compile Include="DataAccessLayer\repositories\DapperQueryComposer.cs" />
+    <Compile Include="DataAccessLayer\repositories\DapperRepositoryBase.cs" />
     <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\GraphFilterRepository.cs" />
     <Compile Include="DataAccessLayer\IProcessRepository.cs" />
     <Compile Include="DataAccessLayer\IConnectorLabelRepository.cs" />
+    <Compile Include="DataAccessLayer\ICompanyDbConnectionProvider.cs" />
+    <Compile Include="DataAccessLayer\IDapperQueryComposer.cs" />
+    <Compile Include="DataAccessLayer\IDbConnectionProvider.cs" />
+    <Compile Include="DataAccessLayer\IResponsibilityDapperRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
@@ -105,6 +114,7 @@
     <Compile Include="DataAccessLayer\repositories\ProcessRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\ResponsibilityDapperRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\SettingsRepository.cs" />
@@ -114,7 +124,9 @@
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\WorkflowRepository.cs" />
+    <Compile Include="DependencyInjectionExtensions.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="helpers\complexFields\ComplexFieldsHelper.cs" />
     <Compile Include="helpers\CustomJSONContract.cs" />
     <Compile Include="helpers\filters\IFilterDataProvider.cs" />
     <Compile Include="helpers\filters\program\FieldValueValidator.cs" />
@@ -171,6 +183,10 @@
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.utils.excel\d360.utils.excel.csproj">
+      <Project>{82faa62e-0a4f-4d1a-ba72-6689705a59a0}</Project>
+      <Name>d360.utils.excel</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -198,11 +214,20 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Autofac">
+      <Version>6.2.0</Version>
+    </PackageReference>
     <PackageReference Include="Dapper">
       <Version>2.0.90</Version>
     </PackageReference>
+    <PackageReference Include="Dapper.ParameterExtensions">
+      <Version>2018.12.7.1</Version>
+    </PackageReference>
+    <PackageReference Include="DapperExtensionsReloaded">
+      <Version>5.0.0</Version>
+    </PackageReference>
     <PackageReference Include="DocumentFormat.OpenXml">
-      <Version>2.5.0</Version>
+      <Version>2.14.0</Version>
     </PackageReference>
     <PackageReference Include="EntityFramework">
       <Version>6.4.4</Version>
@@ -220,7 +245,7 @@
       <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="SpreadsheetLight">
-      <Version>3.4.11</Version>
+      <Version>3.5.0</Version>
     </PackageReference>
     <PackageReference Include="System.ComponentModel.EventBasedAsync">
       <Version>4.3.0</Version>

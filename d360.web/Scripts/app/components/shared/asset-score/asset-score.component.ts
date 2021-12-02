@@ -1,4 +1,5 @@
 ﻿import { Component, Input, OnChanges, SimpleChange, ChangeDetectorRef, AfterViewChecked, ViewEncapsulation, ViewChildren } from '@angular/core';
+import { Location } from '@angular/common';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
@@ -7,6 +8,8 @@ import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
 import { MetricsService } from '../../../services/metrics.service';
 import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'd3s-asset-score',
@@ -17,7 +20,7 @@ import { AssetService } from '../../../services/asset.service';
 })
 export class AssetScoreComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
-    @Input() objectName: string;    
+    @Input() scoreType: string;
     assetTypeUid: string;
 
     assetTypeName: string = "";
@@ -76,24 +79,33 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     ]
 
-    constructor(protected scoreService: ScoreService,
+    constructor(
         protected assetService: AssetService,
         protected metricService: MetricsService,
-        private cdRef: ChangeDetectorRef
+        protected scoreService: ScoreService,
+        protected settingsService: CompanySettingsService,
+        private cdRef: ChangeDetectorRef,
+        private location: Location,
+        private router: Router
     ) {
-        super();
+        super(settingsService);
         this.scoreDate = new Date().toDateString();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        let requiresLoad: boolean = false;
+        let uidChanged: boolean = false;
+        this.selectedScoreType = <any>ScoreType[this.scoreType];
+
         for (let p in changes) {
             if (p == 'uid') {
-                requiresLoad = (changes['uid'].currentValue != changes['uid'].previousValue) && changes['uid'] != undefined;
+                uidChanged = (changes['uid'].currentValue != changes['uid'].previousValue) && changes['uid'] != undefined;
+                if (uidChanged) {
+                    this.loadInitialDataForAsset();
+                }
             }
-        }
-        if (requiresLoad) {
-            this.loadTypesAndLatestScore();
+            if (p == 'scoreType' && !uidChanged) {
+                this.loadScoreTypeDataAndSettings();
+            }
         }
     }
 
@@ -149,7 +161,11 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         })
     }
 
-    private loadTypesAndLatestScore() {
+    /**
+    * Loads the information when the specific asset changes. When the asset changes, the specified score also should be refreshed.
+    * @returns Nothing.
+    */
+    private loadInitialDataForAsset() {
         if (this.uid) {
 
             this.assetService.getUIDetailsForAssetUID(this.uid).subscribe(res => {
@@ -165,7 +181,14 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.scoreTypes = x.map(x => <any>ScoreType[x.scoreType]);
                 this.allocationData = x;
                 if (x.length > 0) {
-                    this.setSelectedButton(this.scoreTypes[0])
+                    let selectedScoreTypeIndex = this.scoreTypes.findIndex(a => { return a == this.selectedScoreType });
+                    if (selectedScoreTypeIndex > -1) {
+                        this.scoreType = <any>ScoreType[this.scoreTypes[selectedScoreTypeIndex]];
+                    }
+                    else {
+                        this.scoreType = <any>ScoreType[this.scoreTypes[0]];
+                        this.selectedScoreType = this.scoreTypes[0];
+                    }
                 }
                 this.allocationData.forEach(alloc => {
                     this.metricService.getMetricsByAllocation(alloc.uid, true)
@@ -175,8 +198,44 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         });
 
                 });
+
+                this.loadScoreTypeDataAndSettings();
             });
 
+        }
+    }
+
+    /**
+    * Refreshes score data and settings only when the score type changes, or this is a different asset.
+    * @returns Nothing.
+    */
+    private loadScoreTypeDataAndSettings() {
+        switch (this.selectedScoreType) {
+            case ScoreType.Governance:
+                this.showGovernanceScores = true;
+                this.showDQScores = false;
+                this.activeTab = 'History';
+
+                this.scoreDate = new Date().toDateString();
+                this.loadSeriesData().subscribe(b => {
+                    this.loadPoints(true);
+                    this.isDQAndNoItems();
+                });
+
+                break;
+            case ScoreType.DataQuality:
+                this.showGovernanceScores = false;
+                this.showDQScores = true;
+                this.activeTab = 'History';
+
+                this.scoreDate = new Date().toDateString();
+                this.loadSeriesData().subscribe(b => {
+                    this.loadPoints(true);
+                    this.isDQAndNoItems();
+                });
+                break;
+            default:
+                break;
         }
     }
 
@@ -193,43 +252,45 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         if (a.EffectiveDate < b.EffectiveDate) return 1;
                     });
 
-                    this.scoreDate = this.scoresPoints[0].EffectiveDate;
+                    if (this.scoresPoints && this.scoresPoints.length > 0) {
+                        this.scoreDate = this.scoresPoints[0].EffectiveDate;
 
-                    for (var i = 0; i < this.scoresPoints.length - 1; i++) {
-                        if (this.scoresPoints[i].Score > this.scoresPoints[i + 1].Score)
-                            this.scoresPoints[i].ScoreProgression = 1;
+                        for (var i = 0; i < this.scoresPoints.length - 1; i++) {
+                            if (this.scoresPoints[i].Score > this.scoresPoints[i + 1].Score)
+                                this.scoresPoints[i].ScoreProgression = 1;
 
-                        if (this.scoresPoints[i].Score < this.scoresPoints[i + 1].Score)
-                            this.scoresPoints[i].ScoreProgression = -1;
+                            if (this.scoresPoints[i].Score < this.scoresPoints[i + 1].Score)
+                                this.scoresPoints[i].ScoreProgression = -1;
 
-                        if (this.scoresPoints[i].Score == this.scoresPoints[i + 1].Score)
-                            this.scoresPoints[i].ScoreProgression = 0;
+                            if (this.scoresPoints[i].Score == this.scoresPoints[i + 1].Score)
+                                this.scoresPoints[i].ScoreProgression = 0;
 
-                    }
+                        }
 
-                    this.scoresPoints[this.scoresPoints.length - 1].ScoreProgression = 2;
+                        this.scoresPoints[this.scoresPoints.length - 1].ScoreProgression = 2;
 
-                    //Set data for UI
-                    this.scoresPointsDDL = [];
-                    if (this.scoresPoints.length > 0) {
-                        this.scoresPoints.forEach(p => {
-                            this.scoresPointsDDL.push({ value: p, label: 'Default' });
-                        });
+                        //Set data for UI
+                        this.scoresPointsDDL = [];
+                        if (this.scoresPoints.length > 0) {
+                            this.scoresPoints.forEach(p => {
+                                this.scoresPointsDDL.push({ value: p, label: 'Default' });
+                            });
 
-                        this.scoresPointsDDL[0].value['isFirst'] = true;
-                        this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
-                        this.scoresPointSelected = this.scoresPointsDDL[0].value;
-                    }
+                            this.scoresPointsDDL[0].value['isFirst'] = true;
+                            this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
+                            this.scoresPointSelected = this.scoresPointsDDL[0].value;
+                        }
 
-                    subject.next(true);
+                        subject.next(true);
 
-                    if (this.allocationData) {
-                        let stype = ScoreType[this.selectedScoreType];
-                        let selected = this.allocationData.filter(x => x.scoreType.toString() == stype.toString());
-                        if (selected.length > 0) {
-                            this.isExternallyCalculated = selected[0]['isExternallyCalculated'];
-                            this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
-                            this.upperThreshold = +selected[0]['upperThreshold'] / 100;
+                        if (this.allocationData) {
+                            let stype = ScoreType[this.selectedScoreType];
+                            let selected = this.allocationData.filter(x => x.scoreType.toString() == stype.toString());
+                            if (selected.length > 0) {
+                                this.isExternallyCalculated = selected[0]['isExternallyCalculated'];
+                                this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
+                                this.upperThreshold = +selected[0]['upperThreshold'] / 100;
+                            }
                         }
                     }
                 });
@@ -429,33 +490,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     }
 
     private setSelectedButton(scoreType: ScoreType) {
-        switch (scoreType) {
-            case ScoreType.Governance:
-                this.showGovernanceScores = true;
-                this.showDQScores = false;
-                this.activeTab = 'History';
-
-                this.scoreDate = new Date().toDateString();
-                this.selectedScoreType = ScoreType.Governance;
-                this.loadSeriesData().subscribe(b => {
-                    this.loadPoints(true);
-                    this.isDQAndNoItems();
-                });
-
-                break;
-            case ScoreType.DataQuality:
-                this.showGovernanceScores = false;
-                this.showDQScores = true;
-                this.activeTab = 'History';
-
-                this.scoreDate = new Date().toDateString();
-                this.selectedScoreType = ScoreType.DataQuality;
-                this.loadSeriesData().subscribe(b => {
-                    this.loadPoints(true);
-                    this.isDQAndNoItems();
-                });
-                break;
-            default:
+        scoreType = <any>ScoreType[scoreType];
+        if (this.selectedScoreType !== scoreType) {
+            this.router.navigateByUrl(`/sidebar/score/${this.uid}/${scoreType}`);
         }
     }
 
@@ -569,5 +606,4 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
         return "Maximum possible score for measure = measure weight = " + this.getAsPrecentage(item.DisplayMaxWeight);
     }
-
 }

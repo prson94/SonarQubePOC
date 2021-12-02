@@ -7,6 +7,9 @@ import { ComplexLookupType, DetailField } from "../../../models/object-detail.mo
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
 import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
+import { AssetTypeClass, State } from "../../../models/asset.model";
+import { CompanySettingsService } from "../../../services/settings.service";
 
 declare var CurrentResourceID;
 
@@ -30,17 +33,16 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     isReferenceListFromRelationship = false;
     showDescription = false;
     lookupField: LookupGridField;
-
     isComplex = false;
     showSimpleFilter = true;
     isColumnsLoaded = false;
 
     visibleColumns: GridFilterColumn[] = [];
+    externalAllocations: ScoreTypeAllocation[] = [];
     loadSubscription: Subscription;
     currentFilters: any;
 
     showAdvancedFilterField: boolean = true;
-
     simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
 *account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
 
@@ -52,9 +54,10 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     constructor(private router: Router,
         private assetService: AssetService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
 
     }
 
@@ -114,6 +117,27 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
             });
 
         this.visibleColumns = this.data.Columns.filter((c) => c.type !== 'hidden');
+
+        if (this.data && this.data.ScoringInfo) {
+            this.data.ScoringInfo.forEach((si) => {
+                this.externalAllocations.push(
+                    {
+                        scoreType: si.ScoreType === 1 ? ScoreType.Governance : ScoreType.DataQuality,
+                        lowerThreshold: si.LowerThreshold,
+                        upperThreshold: si.UpperThreshold,
+                        assetClassName: AssetTypeClass.BusinessAsset,
+                        assetTypePath: '',
+                        assetTypeUid: '',
+                        hasDisabledMeasure: false,
+                        hasField: false,
+                        hasMeasure: false,
+                        icon: '',
+                        isExternallyCalculated: false,
+                        state: State.Active,
+                        uid:''
+                    });
+            });
+        }
 
         this.isColumnsLoaded = true;
     }

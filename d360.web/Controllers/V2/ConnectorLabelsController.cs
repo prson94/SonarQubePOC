@@ -475,7 +475,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
             }
 
             try
@@ -483,14 +483,14 @@ namespace d360.web.Controllers.V2
 
                 if (Guid.Parse(parentUid) == Guid.Empty)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ConnectorLabelAPIMessage.CustomUidNotValid, parentUid));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ApiMessages.CustomUidNotValid, parentUid));
                 }
 
                 foreach (var item in childrenUids)
                 {
                     if (Guid.Parse(item) == Guid.Empty)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest,ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ConnectorLabelAPIMessage.CustomUidNotValid, item));
+                        return errorMessageResponse(HttpStatusCode.BadRequest,ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ApiMessages.CustomUidNotValid, item));
                     }
                 }
 

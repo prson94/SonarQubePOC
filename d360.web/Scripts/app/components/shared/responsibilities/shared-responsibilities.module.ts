@@ -20,12 +20,12 @@ import { SharedDeleteFormModule } from '../delete.form';
 import { SharedFormMessageModule } from '../form-message.part';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
-import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
-import { ResponsibilityItemForm } from './responsibility-item.form';
+import { PeopleResponsibilitiesModule } from './people-responsibilities.tile';
 import { D3SSharedModule } from '../shared.module';
 import { ResponsibilityRelationsComponent } from './responsibility-relations.component';
 import { ResponsibilityRelationForm } from './responsibility-relation.form';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { ResourceMultiSelectGridModule } from '../resource-multiselect-grid.component';
 
 @NgModule({
     imports: [
@@ -41,6 +41,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
         SharedGridPagingInfoModule,
         D3SSharedModule,
         PipesModule,
+        ResourceMultiSelectGridModule,
+        PeopleResponsibilitiesModule,
 
         //prime
         ButtonModule,
@@ -54,13 +56,10 @@ import { PipesModule } from '../../../pipes/pipes.module';
         TooltipModule,
     ],
     declarations: [
-        ResponsibilityItemForm,
-        PeopleResponsibilitiesTile,
         ResponsibilityRelationsComponent,
         ResponsibilityRelationForm
     ],
     exports: [
-        PeopleResponsibilitiesTile,
         ResponsibilityRelationsComponent,
         ResponsibilityRelationForm
     ],

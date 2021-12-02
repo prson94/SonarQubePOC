@@ -56,7 +56,7 @@
                             <p-tableCheckbox [value]="item"></p-tableCheckbox>
                         </td>
                         <td (click)="selectSingleItem($event,item, el);">
-                            <a class="mid-blue" (click)="openDetailsPage(item);">
+                            <a (click)="openDetailsPage(item);">
                                 {{item.Value}}
                             </a>
                         </td>

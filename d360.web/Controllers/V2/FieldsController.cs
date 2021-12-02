@@ -290,10 +290,33 @@ namespace d360.web.Controllers.V2
                         {
                             if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
                             {
-                                throw new RestApiException(HttpStatusCode.BadRequest,ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
+                                throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
                             }
                         }
                     });
+                }
+
+                if (model.Fields.Any(x => x.Type.Lookup != null))
+                {
+                    foreach (var ft in model.Fields.Where(x => x.Type.Lookup != null))
+                    {
+                        var exFt = existingFields.FirstOrDefault(x => x.Name == ft.Name);
+                        if (exFt == null)
+                        {
+                            continue;
+                        }
+                        var hasFields = Company.Query<int>("select count(1) from field where fieldtypeid = @ftid", new { ftid = exFt.ID }).FirstOrDefault() > 0;
+                        if (hasFields)
+                        {
+                            var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
+                                .Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+                            if (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID)
+                            {
+                                throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+                            }
+                        }
+
+                    }
                 }
 
                 if (model.Action == FieldTypesApiEditAction.Replace)
@@ -368,42 +391,13 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                #region GetData
-                TypeIdentifierInfoModel typeIdentifierInfoModel = null;
-
-                IEnumerable<TypeIdentifierInfoModel> actionTypeIdentifierInfoModels = null;
-                TypeIdentifierInfoModel actionTypeIdentifierInfoModel = null;
-
-                IEnumerable<TypeIdentifierInfoModel> assetTypeIdentifierInfoModels = null;
-                TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null;
-
-                IEnumerable<TypeIdentifierInfoModel> relationshipTypeIdentifierInfoModels = null;
-                TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel = null;
-
-                if (model.ActionTypeUid.HasValue)
-                {
-                    actionTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
-                    typeIdentifierInfoModel = actionTypeIdentifierInfoModel = actionTypeIdentifierInfoModels.SingleOrDefault();
-                }
-
-                if (model.AssetTypeUid.HasValue)
-                {
-                    assetTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
-                    typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
-                }
-
-                if (model.RelationshipTypeUid.HasValue)
-                {
-                    relationshipTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
-                    typeIdentifierInfoModel = relationshipTypeIdentifierInfoModel = relationshipTypeIdentifierInfoModels.SingleOrDefault();
-                }
-                #endregion
+                (TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model).ConfigureAwait(false);
 
                 if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
                     if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
                     {
-                        throw new RestApiException(HttpStatusCode.BadRequest,ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
+                        throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
                     }
                 }
 
@@ -433,7 +427,6 @@ namespace d360.web.Controllers.V2
 
                 #region Validation
 
-                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                 {
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
@@ -480,6 +473,140 @@ namespace d360.web.Controllers.V2
             }
 
         }
+
+        /// <summary>
+        /// Removes field types contained within your environment in batch.
+        /// </summary>
+        /// <remarks>
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid. Additionally, please keep in mind that the **Name** property for each item in the Fields collection refers to the **API Name** of the field.
+        /// </remarks>
+        /// <returns>The execution id of the batch process.</returns>
+        [
+            HttpDelete,
+            Route("batch"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "User is not an administrator.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteFieldTypesBacthAsync(FieldTypesApiDeleteModel model)
+        {
+            var prefix = "Fields.DeleteFieldTypesBacthAsync => ";
+            var errorMessage = "";
+
+            #region Security check
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
+            }
+
+            #endregion
+
+            try
+            {
+                (TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model).ConfigureAwait(false);
+
+                if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+                {
+                    if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
+                    }
+                }
+
+                if (validationStatus.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+                }
+
+                bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
+
+                List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f => f.Name == x.Name)));
+
+                if (anyResponsibilitiesUsingField)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.UsedinResponsibilityRules, ApiMessages.FieldUseInResponsibilityRule);
+                }
+
+                (var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
+                if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
+                }
+
+                var execution = getApiExecution(fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete });
+
+                var executionInfo = await FieldsRepository.BatchDeleteFields(execution);
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = ApiMessages.ExecutionIDStatus,
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
+                            }
+                        )
+                    )
+                ).ConfigureAwait(false);
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage))).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+        private async Task<(TypeIdentifierInfoModel, WorkHttpStatus)> GetTypeIdentifierInfoModelAndValidate(FieldTypesApiDeleteModel model)
+        {
+            TypeIdentifierInfoModel typeIdentifierInfoModel = null;
+
+            IEnumerable<TypeIdentifierInfoModel> actionTypeIdentifierInfoModels = null;
+            TypeIdentifierInfoModel actionTypeIdentifierInfoModel = null;
+
+            IEnumerable<TypeIdentifierInfoModel> assetTypeIdentifierInfoModels = null;
+            TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null;
+
+            IEnumerable<TypeIdentifierInfoModel> relationshipTypeIdentifierInfoModels = null;
+            TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel = null;
+
+            if (model.ActionTypeUid.HasValue)
+            {
+                actionTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
+                typeIdentifierInfoModel = actionTypeIdentifierInfoModel = actionTypeIdentifierInfoModels.SingleOrDefault();
+            }
+
+            if (model.AssetTypeUid.HasValue)
+            {
+                assetTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
+                typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
+            }
+
+            if (model.RelationshipTypeUid.HasValue)
+            {
+                relationshipTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
+                typeIdentifierInfoModel = relationshipTypeIdentifierInfoModel = relationshipTypeIdentifierInfoModels.SingleOrDefault();
+            }
+
+            var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
+
+            return (typeIdentifierInfoModel, validationStatus);
+        }
+
 
         #region FormHelpers NOT TO BE EXPOSED IN SWAGGER DOC
 
@@ -535,7 +662,6 @@ namespace d360.web.Controllers.V2
                 var lists = await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList");
                 var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var attributes = lists.Where(i => i.type == "A").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
-                var fusionAttributeTypes = lists.Where(i => i.type == "F").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var lookups = lists.Where(i => i.type == "L").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var filteredLookups = lists.Where(i => i.type == "FL").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
 
@@ -721,7 +847,6 @@ namespace d360.web.Controllers.V2
                     FilteredLookups = filteredLookups,
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
                     IntersectTypes = intersectTypes,
-                    FusionAttributeTypes = fusionAttributeTypes,
                     Lookups = lookups,
                     ComplexLookupRelations = complexLookupRelations.Select(x => new { ID = (int)x.ID, x.Name, x.DisplayName })
                 });
@@ -785,7 +910,6 @@ namespace d360.web.Controllers.V2
                 }
 
                 List<dynamic> filteredLookupItems = null;
-                List<dynamic> fusionItems = null;
                 List<dynamic> relationItems = null;
                 dynamic ownershipLookupSettings = null;
                 dynamic JsonElementSettings = null;
@@ -873,7 +997,6 @@ namespace d360.web.Controllers.V2
                 {
                     FieldType = ft,
                     FilteredLookupItems = filteredLookupItems,
-                    FusionItems = fusionItems,
                     JsonElementSettings,
                     OwnershipLookupSettings = ownershipLookupSettings,
                     RefListFromRelSettings = refListFromRelSettings,
@@ -1109,7 +1232,7 @@ namespace d360.web.Controllers.V2
                 usersOnly = Company.Filter<AssetType>(x => x.uid == assetUid && x.Class == AssetTypeClass.User).Count() > 0;
                 if (usersOnly)
                 {
-                    string HideD3SUsers = HideData3SixtyUsers() ? "" : " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' ";
+                    string HideD3SUsers = HideData3SixtyUsers() ? "" : " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com' ";
                     sql = $@"
                         select 
                             R.Uid as value,
@@ -2044,7 +2167,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
             ]
-        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null)
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, bool isForAssetForm = false, Guid? assetUid = null)
         {
             var prefix = "Fields.GetFilterVales => ";
             try
@@ -2067,6 +2190,13 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     return Request.CreateResponse(HttpStatusCode.OK, new { items = classInfos.Select(x => x.Name).ToList() });
                 }
 
+                int fieldTypeId = -1;
+
+                var assetType = Company.AssetTypes
+                    .FirstOrDefault(x => x.uid == assetTypeUid);
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
+
+
                 string pagingQuery = "";
                 string whereQuery = "";
                 if (skip != null && take != null)
@@ -2074,17 +2204,97 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
                 }
 
-                if (!string.IsNullOrEmpty(filter))
+
+
+                //list items for parent field
+                if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
                 {
-                    filter = "%" + filter + "%";
-                    whereQuery += " and text like @filter ";
+                    string sql = "";
+                    bool isHierarchyGrid = assetType.Object == "TaxonomyType" || assetType.Object == "PolicyType";
+
+                    if (!isHierarchyGrid)
+                    {
+                        if (!string.IsNullOrEmpty(filter))
+                        {
+                            filter = "%" + filter + "%";
+                            whereQuery += " and node.displaypath like @filter ";
+                        }
+                        sql = $@"declare @target nvarchar(255) 
+                                declare @targetid int
+                                
+                                select @target = ito.Subject, @targetid = ito.SubjectId from AssetType at
+                                inner join [IntersectType] ito on ito.Object = at.Object and ito.ObjectId = at.objectid
+                                inner join [Predicate] po on ito.PredicateID = po.ID and po.Type in (3,4)
+                                where at.id = @id
+                                
+                                declare @parentAssetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
+                                
+                                select 
+                                cast(a.uid as nvarchar(36)) as value,
+                                coalesce(node.DisplayPath,'Path Missing') as text 
+                                from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @parentAssetTypeId {whereQuery}
+                                order by node.displaypath 
+                                {pagingQuery};
+
+                                select count(*) from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @parentAssetTypeId {whereQuery};";
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(filter))
+                        {
+                            filter = "%" + filter + "%";
+                            whereQuery += " and P.TextPath like @filter ";
+                        }
+
+                        var hierarchyItem = Company.Query<dynamic>($@"
+                                                    select L.Level
+                                                    from	Asset A
+		                                                    inner join AssetType T on T.ID = A.AssetTypeID
+		                                                    cross apply dbo.GetAssetLevelById(A.ID) L
+                                                    where	A.uid = @assetUid
+                                                    ", new { assetUid }).SingleOrDefault();
+
+                        sql = $@"select	
+		                                P.TextPath as text,
+                                        cast(a.uid as nvarchar(36)) as value
+                                from	Asset A
+                                        inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
+		                                cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
+                                        cross apply dbo.GetAssetLevelById(A.ID) LV
+                                where coalesce(LV.[Level], 1) <= '{ hierarchyItem?.Level ?? 1}' {whereQuery}
+                                order by P.TextPath 
+                                {pagingQuery}
+                                option (maxrecursion 100)
+
+                                select	count(*)
+                                from	Asset A
+                                        inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
+		                                cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
+                                        cross apply dbo.GetAssetLevelById(A.ID) LV
+                                where coalesce(LV.[Level], 1) <= '{ hierarchyItem?.Level ?? 1}' {whereQuery}
+                                option (maxrecursion 100)";
+                    }
+
+
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { assetType.ID, skip, take, filter });
+
+                    var items = resultsAssets.Read<DDLSelectItem>().ToList();
+                    if (isHierarchyGrid)
+                    {
+                        items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
+                    }
+                    var data = new
+                    {
+                        items,
+                        count = resultsAssets.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
                 }
-
-                int fieldTypeId = -1;
-
-                var assetTypeId = Company.AssetTypes
-                    .FirstOrDefault(x => x.uid == assetTypeUid).ID;
-                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
 
                 //case when fieldname coming from complex relation grid with coded names from procedure
                 if (fieldType == null && fieldName.Contains("_"))
@@ -2102,24 +2312,154 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     fieldTypeId = fieldType.ID;
                 }
 
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    filter = "%" + filter + "%";
+                    if (fieldType.Type == "Relationship")
+                    {
+                        whereQuery += " and node.displaypath like @filter ";
+                    }
+                    else
+                    {
+                        whereQuery += " and text like @filter ";
+                    }
+                }
+
+                if (fieldType.Type == "Relationship")
+                {
+                    var sql = $@"
+                                declare @target nvarchar(255) 
+                                declare @targetid int
+
+                                select  
+                                @targetid = 
+                                case when ft.object = it.subject and ft.objectid = it.subjectid then it.ObjectID
+                                else it.SubjectID
+                                end, 
+                                @target = case when ft.object = it.subject and ft.objectid = it.subjectid then it.Object
+                                else it.Subject
+                                end
+                                 from fieldtype ft
+                                inner join [IntersectType] IT on IT.ID = ft.LookupObjectID
+                                where ft.id = @fieldtypeid
+
+                                declare @assetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
+
+                                select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @assetTypeId {whereQuery}
+                                order by node.displaypath
+                                {pagingQuery};
+
+                                select count(*) from Asset A
+                                 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+                                where a.AssetTypeID = @assetTypeId {whereQuery};";
+
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { fieldTypeId, skip, take, filter });
+
+                    var data = new
+                    {
+                        items = resultsAssets.Read<DDLSelectItem>().ToList(),
+                        count = resultsAssets.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+
+
+                bool hasColor = false;
+
+                var colorjoin = $@"
+                                        outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
+                                                    from Asset A 
+                                                    outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
+													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
+                                        )colorJSON 
+                                        ";
+
+                string selectStatement = "v.text";
+                string resourceJoin = "";
+
+                if (fieldType.LookupObjectType == "Resource")
+                {
+                    bool hideData3SixtyUsers = HideData3SixtyUsers();
+                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
+                    resourceJoin = $@"
+                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+                                        ";
+                }
+
+
+                if (isForAssetForm)
+                {
+                    hasColor = Company.Connection.Query<int>(@"select count(1) from fieldtype ft
+                    inner join assettype at on at.Object = ft.LookupObjectType + 'Type' and at.ObjectID = ft.LookupObjectID
+                    inner join asset a on a.AssetTypeID = at.ID
+                    where ft.id = @fieldTypeId and a.color is not null", new { fieldTypeId }).FirstOrDefault() > 0;
+                    if (hasColor)
+                    {
+                        selectStatement = "JSON_VALUE(colorJson.FV,'$.name') AS text,JSON_VALUE(colorJson.FV,'$.color') AS color, v.value";
+                    }
+                    else
+                    {
+                        selectStatement = "v.text, v.value";
+                        colorjoin = "";
+                    }
+                }
+
+
+
                 var query = $@"
-                    select text from FieldLookupValue where @fieldTypeId = FieldTypeID
+                    select {selectStatement} 
+                    from FieldLookupValue V
+                    {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
+                    {colorjoin}
+                    where @fieldTypeId = v.FieldTypeID
                     {whereQuery}
                     order by text asc
 					{pagingQuery};
 
-                    select count(1) from FieldLookupValue where @fieldTypeId = FieldTypeID {whereQuery};
+                    select count(1) from FieldLookupValue V
+                        {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
+                        where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
 
-                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter });
+                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel });
 
-                var data = new
+                if (!isForAssetForm)
                 {
-                    items = results.Read<string>().ToList(),
-                    count = results.Read<int>().FirstOrDefault()
-                };
+                    var data = new
+                    {
+                        items = results.Read<string>().ToList(),
+                        count = results.Read<int>().FirstOrDefault()
+                    };
 
-                return Request.CreateResponse(HttpStatusCode.OK, data);
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+                else
+                {
+                    var items = new List<DDLSelectItem>();
+                    if (fieldType.AllowAllValue)
+                    {
+                        items.Add(new DDLSelectItem { text = fieldType.AllowAllLabel, value = "0" });
+                    }
+
+                    items.AddRange(results.Read<DDLSelectItem>().ToList());
+                    var count = results.Read<int>().FirstOrDefault();
+                    if (items.Any(x => x.value == "0"))
+                    {
+                        count++;
+                    }
+
+                    var data = new
+                    {
+                        items,
+                        count
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+
 
             }
             catch (Exception ex)
@@ -2131,6 +2471,13 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
+        }
+
+        public class DDLSelectItem
+        {
+            public string text { get; set; }
+            public string value { get; set; }
+            public string color { get; set; }
         }
 
         /// <summary>
@@ -2443,7 +2790,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                         var assettypeid = fields.Where(x => x.AssetTypeID != null).FirstOrDefault()?.AssetTypeID;
                         if (assettypeid.HasValue)
-                        {                            
+                        {
                             assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid)?.uid;
                         }
                     }
@@ -2508,7 +2855,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         }
                         if (f.Type == DataType.JsonElement.ToString())
                         {
-                            c.Type.JsonElement = new FieldTypeDataTypeJsonElementApiViewModel();
+                            c.Type.Text = new FieldTypeDataTypeTextApiViewModel();
                         }
                         if (f.Type == DataType.Link.ToString())
                         {
@@ -2521,6 +2868,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         if (f.Type == DataType.Score.ToString())
                         {
                             c.Type.Score = new FieldTypeDataTypeComputedScoreApiViewModel();
+                            c.Type.Score.ScoreType = (f.ScoreType.HasValue && f.ScoreType == 1) ? ScoreType.Governance : ScoreType.DataQuality;
                         }
                         if (f.Type == DataType.Tag.ToString())
                         {

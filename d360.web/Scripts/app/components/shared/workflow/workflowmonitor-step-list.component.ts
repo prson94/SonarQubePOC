@@ -2,6 +2,7 @@
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowItemStep } from '../../../models/workflow.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-list',
@@ -44,8 +45,11 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
     object: string = null;
     objectId: number = 0;
 
-    constructor(private workflowService: WorkflowService, private ref: ChangeDetectorRef) {
-        super();
+    constructor(
+        protected settingsService: CompanySettingsService,
+        private workflowService: WorkflowService,
+        private ref: ChangeDetectorRef) {
+        super(settingsService);
     }
 
     ngOnChanges(changes: SimpleChanges) {

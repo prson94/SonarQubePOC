@@ -41,6 +41,8 @@ import { IgDateModule } from '../controls/date/date';
 import { IgNumberFieldModule } from '../controls/number-picker/number-input.component';
 import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-list.component";
 import { AssetEditorComponent } from './asset-editor.component';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 
 @NgModule({
     imports: [
@@ -65,6 +67,8 @@ import { AssetEditorComponent } from './asset-editor.component';
         IgDateModule,
         IgNumberFieldModule,
         OwnershipListModule,
+        DynamicFieldNameModule,
+
         //prime        
         CalendarModule,
         DropdownModule,
@@ -78,6 +82,7 @@ import { AssetEditorComponent } from './asset-editor.component';
         DirectivesModule,
         SiteModalModule,
         OverlayPanelModule,
+        RadioButtonModule,
 
         NgxJsonViewModule
     ],

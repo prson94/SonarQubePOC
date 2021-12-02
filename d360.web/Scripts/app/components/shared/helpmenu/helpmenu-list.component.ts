@@ -5,6 +5,7 @@ import { HelpMenu } from '../../../models/helpmenu.model';
 import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-helpmenu-list',
@@ -17,6 +18,8 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     @Input() items: HelpMenu[] = [];
     @Output() deletedRecordsChange = new EventEmitter();
     @Input() deletedRecords: HelpMenu[] = [];
+    @Output() addedRecordsChange = new EventEmitter();
+    @Input() addedRecords: HelpMenu[] = [];
     private selectedItem: HelpMenu = null;
     formMode = FormMode.Default;
     FormMode = FormMode;
@@ -60,8 +63,11 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         { title: "Move to Bottom" }
     ];
 
-    constructor(private helpMenuService: HelpMenuService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private helpMenuService: HelpMenuService,
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnInit() {
@@ -75,6 +81,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
                 this.itemsChange.emit(this.items);
                 this.deletedRecordsChange.emit(this.deletedRecords);
+                this.addedRecordsChange.emit(this.addedRecords);
             });
     }
 
@@ -101,6 +108,10 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
             return;
         }
 
+        const index = this.addedRecords.indexOf(this.selectedItem);
+        if (index > -1) {
+            this.addedRecords.splice(index, 1);
+        }
         this.deletedRecords.push(this.selectedItem);
         this.items.forEach((element, index) => {
             if (element.ID === this.selectedItem.ID) {
@@ -116,7 +127,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         newItem.Name = name;
         newItem.Url = url;
         newItem.Description = description;
-        newItem.visibilty = 1;
+        newItem.visibility = 1;
         newItem.order = this.items.length;
         newItem.isEditable = true;
         newItem.isSystem = false;
@@ -125,6 +136,8 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
         this.items.push(newItem);
         this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
+        this.addedRecords.push(newItem);
+        this.addedRecords.sort((a, b) => (a.order < b.order ? -1 : 1));
         this.formMode = FormMode.Default;
     }
 
@@ -234,10 +247,10 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     visibilityItems(item: any): any[] {
-        if (item.visibilty === 1) {
+        if (item.visibility === 1) {
             return this.visibleVisibilityItems;
         }
-        else if (item.visibilty === 2) {
+        else if (item.visibility === 2) {
             return this.adminVisibilityItems;
         }
         else {
@@ -271,13 +284,13 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     changeVisibility(e: any, item: any) {
         switch (e.value.toLowerCase()) {
             case "visible":
-                item.visibilty = 1;
+                item.visibility = 1;
                 break;
             case "visible to admins only":
-                item.visibilty = 2;
+                item.visibility = 2;
                 break;
             case "hidden":
-                item.visibilty = 3;
+                item.visibility = 3;
                 break;
         }
     }

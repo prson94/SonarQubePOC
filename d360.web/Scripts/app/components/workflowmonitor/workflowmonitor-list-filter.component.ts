@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 import { StringHelpers } from '../../static/string-helpers';
 import { State } from '../../models/asset.model';
 import { map } from 'rxjs/operators';
+import { CompanySettingsService } from '../../services/settings.service';
 
 
 
@@ -74,9 +75,10 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     @Input() exportDisabledMessage: string = 'Export Disabled';
 
     constructor(protected workflowService: WorkflowService,
-        protected ref:ChangeDetectorRef,
+        protected ref: ChangeDetectorRef,
+        protected settingsService: CompanySettingsService,
         protected wfMonitorService: WorkflowMonitorService) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

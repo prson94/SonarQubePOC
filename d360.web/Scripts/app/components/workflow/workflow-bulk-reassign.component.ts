@@ -8,6 +8,7 @@ import { BulkWorkflowReassignModel } from '../../models/workflow.model';
 import { ResourcesService } from '../../services/resources.service';
 import { EditorField } from '../../models/editor-field.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-bulk-reassign',
@@ -30,13 +31,14 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
 
 
     constructor(
-        protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected workflowService: WorkflowService,
+        protected messagesService: MessagesObservableService,
         protected resourcesService: ResourcesService,
-        protected messagesService: MessagesObservableService
+        protected settingsService: CompanySettingsService,
+        protected titleService: Title,
+        protected workflowService: WorkflowService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

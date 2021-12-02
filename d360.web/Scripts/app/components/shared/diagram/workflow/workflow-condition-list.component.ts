@@ -1,4 +1,5 @@
 ﻿import { Component, Output, EventEmitter, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { CompanySettingsService } from '../../../../services/settings.service';
 import { BaseComponent } from '../../../shared/base.component';
 
 @Component({
@@ -89,8 +90,8 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
         return !this.hideAllAnyOption && this.conditions.filter(x => x["@FieldTypeID"]).length > 1;
     }
 
-    constructor() {
-        super();
+    constructor(protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     operatorLabel(item: any): string {

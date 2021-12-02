@@ -2,9 +2,13 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
+using d360.core.Models;
+using d360.core.resources;
 using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
+using d360.model.helpers.filters;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -12,8 +16,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace d360.model.DataAccessLayer
 {
@@ -65,7 +69,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Action Type not found based on Uid provided [{actionTypeUid.ToString()}].");
+                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.ActionTypeUidNotFound, actionTypeUid.ToString()));
                     }
                 }
             }
@@ -73,7 +77,7 @@ namespace d360.model.DataAccessLayer
             {
                 if (actionTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.");
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.AssetTypeUidNotRequiredIfActionTypeUidProvided);
                 }
                 else
                 {
@@ -90,12 +94,12 @@ namespace d360.model.DataAccessLayer
                         }
                         else
                         {
-                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Asset Type not found based on Uid provided [{assetTypeUid.ToString()}].");
+                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.AssetTypeUidNotFound, assetTypeUid.ToString()));
                         }
                     }
                     else
                     {
-                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Invalid Asset Type Uid provided [{assetTypeUidString}].");
+                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.InvalidAssetTypeUid, assetTypeUidString));
                     }
                 }
             }
@@ -103,11 +107,11 @@ namespace d360.model.DataAccessLayer
             {
                 if (actionTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.");
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfActionTypeUidProvided);
                 }
                 else if (assetTypeUid.HasValue)
                 {
-                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.");
+                    workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
                 }
                 else
                 {
@@ -124,7 +128,7 @@ namespace d360.model.DataAccessLayer
                         }
                         else
                         {
-                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Relationship Type not found based on Uid provided [{relationshipTypeUid.ToString()}].");
+                            workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, relationshipTypeUid.ToString()));
                         }
                     }
                 }
@@ -634,7 +638,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             {
                 if (reservedWords.Contains(f.Name.ToLower()))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use {f.Name} as the Name of your field because it is a reserved word.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
                 }
 
                 var newFieldType = new FieldType
@@ -689,7 +693,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Score type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseScoreTypeOnActionAndRelationshipType, f.Name));
                     }
 
                     var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
@@ -702,7 +706,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                     if (disallowedClasses.Contains(assetType.Class))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Score type on an asset of type {assetType.Class.ToString()} for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseSCoreTypeAssetForField, assetType.Class.ToString(), f.Name));
                     }
 
                     var types = Company.Query<int>(
@@ -711,7 +715,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                     if (!types.Contains((int)f.Type.Score.ScoreType))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Score type {f.Type.Score.ScoreType.ToString()} cannot be allocated to this asset type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.ScoreTypeCannotAllocateAssetType, f.Type.Score.ScoreType.ToString(), f.Name));
                     }
 
                     newFieldType.Type = DataType.Score.ToString();
@@ -738,7 +742,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Ownership Lookup type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUserOwnershipLookup, f.Name));
                     }
 
                     newFieldType.Type = DataType.OwnershipLookup.ToString();
@@ -808,7 +812,7 @@ from	IntersectType I
                     }).FirstOrDefault();
                     if (relationshipsFieldType == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Relationship Type/Field not found", $"Relationship Type or Field Type not found based on Uid provided [{f.Type.ComputedRelationshipField.IntersectTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeFieldNotFound, string.Format(FieldErrors.RelationshipTypeOrFieldTypeNotFound, f.Type.ComputedRelationshipField.IntersectTypeUid));
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipsFieldType.IntersectTypeID;
@@ -835,21 +839,21 @@ from	IntersectType I
 
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Relationship Lookup type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseRelationshipLookupField, f.Name));
                     }
 
                     var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
                     if (assetType.Class == AssetTypeClass.User)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a ComputedRelationshipLookup type on an asset of type {assetType.Class.ToString()} for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
                     }
 
                     if (f.Type.ComputedRelationshipLookup.Definition == null
                         || !f.Type.ComputedRelationshipLookup.Definition.Fields.Any()
                         || !f.Type.ComputedRelationshipLookup.Definition.Relations.Any())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You must provide a definition for the computed relationship lookup field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.ProvideComputedRealtionshipLookupField, f.Name));
                     }
 
                     newFieldType.Type = DataType.ComplexRelationLookup.ToString();
@@ -878,7 +882,7 @@ from	IntersectType I
                             new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }
                         ).SingleOrDefault();
 
-                        if (relationInfo == null || i.RelationType == null)
+                        if (relationInfo == null)
                         {
                             hasDefinitionError = true;
                             return;
@@ -1037,7 +1041,7 @@ from	IntersectType I
 
                     if (hasDefinitionError)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", definitionErrorMessage);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, definitionErrorMessage);
                     }
 
                     #endregion
@@ -1059,7 +1063,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Reference Item List from Relationship type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseReferenceListItemList, f.Name));
                     }
 
                     newFieldType.Type = DataType.RefListRelationship.ToString();
@@ -1073,7 +1077,7 @@ from	IntersectType I
                     var relationshipsFieldType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.ComputedRelationshipReferenceList.IntersectTypeUid }).FirstOrDefault();
                     if (relationshipsFieldType <= 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Relationship Type not found", $"Relationship Type or Field Type not found based on Uid provided [{f.Type.ComputedRelationshipReferenceList.IntersectTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeNotFound, string.Format(FieldErrors.RelationshipTypeNotFoundBasedOnUid, f.Type.ComputedRelationshipReferenceList.IntersectTypeUid));
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipsFieldType;
@@ -1223,7 +1227,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a JSON type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
                     }
                     newFieldType.Type = DataType.JSON.ToString();
                     newFieldType.ColumnOrder = f.Type.Json.ColumnOrder.HasValue ? f.Type.Json.ColumnOrder.Value : ++maxColumnIndex;
@@ -1242,7 +1246,7 @@ from	IntersectType I
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a JSON Element type on an action type or relationship type for field {f.Name}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
                     }
                     newFieldType.Type = DataType.JsonElement.ToString();
                     newFieldType.ColumnOrder = f.Type.JsonElement.ColumnOrder.HasValue ? f.Type.JsonElement.ColumnOrder.Value : ++maxColumnIndex;
@@ -1269,11 +1273,11 @@ from	IntersectType I
                     {
                         if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Text) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Text))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You must provide a link Text value if setting a default value for {f.Name}.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkTextValue, f.Name));
                         }
                         if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Url) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Url))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You must provide a link Url value if setting a default value for {f.Name}.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkUrlValue, f.Name));
                         }
                         newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
                     }
@@ -1313,7 +1317,7 @@ from	IntersectType I
                         var parentField = Company.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
                         if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
                         {
-                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid parent Field", $"Parent field [{f.Type.Lookup.ParentFieldTypeName}] of type ReferenceItem not found on this asset.");
+                            return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.InvalidparentField, string.Format(FieldErrors.ParentFieldRefernceItemNotfound, f.Type.Lookup.ParentFieldTypeName));
                         }
                         newFieldType.ParentFieldTypeID = parentField.ID;
                     }
@@ -1343,7 +1347,7 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound, "List Asset Type not found", $"Asset Type not found for field [{f.Name}].");
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.ListAssetTypeNotFound, string.Format(FieldErrors.AssetTypeNotFoundField, f.Name));
                             }
                         }
                         else if (f.Type.Lookup.List.Class.HasValue && !f.Type.Lookup.List.Uid.HasValue)
@@ -1360,7 +1364,7 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a valid class specified.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupFieldTypeIsIncomplete);
                             }
                         }
                         else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
@@ -1379,17 +1383,17 @@ from	IntersectType I
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound, "List Asset Type not found", $"Asset Type not found for field [{f.Name}].");
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.ListAssetTypeNotFound, string.Format(FieldErrors.AssetTypeNotFoundField, f.Name));
                             }
                         }
                         else
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
                         }
                     }
                     else
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
                     }
                     if (f.Type.Lookup.Filter != null)
                     {
@@ -1401,7 +1405,7 @@ from	IntersectType I
                             filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
                             if (filterFieldType <= 0)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.FieldTypeNotFound, string.Format(FieldErrors.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
                             }
                         }
                         else if (string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName) && typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString())
@@ -1414,7 +1418,7 @@ from	IntersectType I
                             filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
                             if (filterPredicate <= 0)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.FieldTypeNotFound, string.Format(FieldErrors.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
                             }
                             filterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
                         }
@@ -1429,7 +1433,7 @@ from	IntersectType I
                     }
                     else
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Lookup display Format", $"List Display Format is required for Lookup Field Type.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidLookupDisplayFormat, FieldErrors.MissingListDisplayFormat);
                     }
                     newFieldType.IsDisplayable = f.Type.Lookup.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Lookup.IsEditable;
@@ -1523,7 +1527,7 @@ from	IntersectType I
                     var relationshipType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.Relationship.IntersectTypeUid }).FirstOrDefault();
                     if (relationshipType <= 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Relationship Type not found", $"Relationship Type not found based on Uid provided [{f.Type.Relationship.IntersectTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, f.Type.Relationship.IntersectTypeUid));
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipType;
@@ -1630,7 +1634,7 @@ from	IntersectType I
                 }
                 else
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "No valid type defined", $"You have not included a valid type for the field type [{f.Name}].");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoValidTypeDefined, string.Format(FieldErrors.NotIncludedValidTypeFieldType, f.Name));
                 }
 
                 var currentFieldType = currentFieldTypes.SingleOrDefault(c => c.Name == f.Name);
@@ -1642,7 +1646,7 @@ from	IntersectType I
                 {
                     if (!allowedConversions.Any(i => i.FromType == currentFieldType.Type && i.ToType == newFieldType.Type) && (currentFieldType.Type != newFieldType.Type))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field conversion error", $"You may not convert field {newFieldType.Name} from a {currentFieldType.Type} to a {newFieldType.Type} or a field with the same name and different type may already exist.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldConversionError, string.Format(FieldErrors.FieldTypeConversionError, newFieldType.Name, currentFieldType.Type, newFieldType.Type));
                     }
 
                     currentFieldType.AllowAllLabel = newFieldType.AllowAllLabel;
@@ -1823,7 +1827,7 @@ from	IntersectType I
 
 
 
-        public void DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
+        public int DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
         {
             var fieldsRemoved = false;
             bool shouldRefreshPath = false;
@@ -1850,7 +1854,6 @@ from	IntersectType I
                         var impacted = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Field, c.ID);
                         impactedMeasureVersions.AddRange(impacted);
                     }
-                    Company.FieldTypes.Remove(c);
                     deletedFieldTypes.Add(c);
                     fieldsRemoved = true;
                 }
@@ -1858,12 +1861,22 @@ from	IntersectType I
 
             if (fieldsRemoved)
             {
-                Company.SaveChanges();
-
-                foreach (var counterFieldType in deletedFieldTypes.Where(x => x.Type == DataType.Counter.ToString()))
+                foreach (var ft in deletedFieldTypes)
                 {
-                    Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = counterFieldType.ID });
+                    if (ft.Type == DataType.Counter.ToString())
+                    {
+                        Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID });
+                    }
+                    else
+                    {
+                        Company.Connection.Execute("update field set updatedby = @CurrentResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, Company.CurrentResourceID });
+                    }
+
+                    Company.FieldTypes.Remove(ft);
+                    Company.SaveChanges();
                 }
+
+
             }
             if (shouldRefreshPath)
             {
@@ -1882,6 +1895,21 @@ from	IntersectType I
             {
                 Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
             }
+            return deletedFieldTypes.Count();
+        }
+
+        public async Task<ApiExecutionInfo> BatchDeleteFields(ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = Company.CurrentCompanyID,
+                CompanyDomainPrefix = Company.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.DeleteFieldTypes
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, null, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel)
@@ -1977,7 +2005,10 @@ from	IntersectType I
 					                inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
 		                end
 
-                   select * from fieldtype where assettypeid = @referenceid
+                   select * from fieldtype
+                        where assettypeid = @referenceid and IsListable = 1
+				        order by ColumnOrder asc, FriendlyName asc;
+
                         ", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
                 return fields;
@@ -1989,7 +2020,7 @@ from	IntersectType I
                 var definition = ftl.ParseComplexLookupDefinition();
 
                 var mappings = definition.GetFieldMapings();
-                var fieldTypeIds = definition.Fields.Where(x=> !x.FieldTypeName.StartsWith("Related Item.")).Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
+                var fieldTypeIds = definition.Fields.Where(x => !x.FieldTypeName.StartsWith("Related Item.")).Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
                 List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
                 foreach (var f in mappings)
                 {
@@ -2039,7 +2070,7 @@ from	IntersectType I
                     {
                         var it = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
 
-                        if (!forUiFiltering)
+                        if (!forUiFiltering && it != null)
                         {
                             var ft = new FieldType();
 
@@ -2049,15 +2080,16 @@ from	IntersectType I
                             ft.LookupObjectType = "IntersectType";
                             ft.LookupObjectID = it.ID;
                             fields.Add(ft);
-                        }
-                        var ft2 = new FieldType();
 
-                        ft2.Name = "$Related:" + it.uid;
-                        ft2.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
-                        ft2.Type = DataType.Relationship.ToString();
-                        ft2.LookupObjectType = "IntersectType";
-                        ft2.LookupObjectID = it.ID;
-                        fields.Add(ft2);
+                            var ft2 = new FieldType();
+
+                            ft2.Name = "$Related:" + it.uid;
+                            ft2.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
+                            ft2.Type = DataType.Relationship.ToString();
+                            ft2.LookupObjectType = "IntersectType";
+                            ft2.LookupObjectID = it.ID;
+                            fields.Add(ft2);
+                        }
                     }
                     else
                     {
@@ -2072,5 +2104,468 @@ from	IntersectType I
                 return fields;
             }
         }
+
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int, List<dynamic>)> GetComplexRelationLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
+        {
+            string orderByClause = "order by 1";
+            var Columns = new List<GridColumn>();
+            var Fields = new List<GridField>();
+            var Values = new List<dynamic>();
+            var scoringInfo = new List<dynamic>();
+            int count = 0;
+
+            var definition = ftl.ParseComplexLookupDefinition();
+            var maps = definition.GetFieldMapings();
+            List<string> selects = new List<string>();
+            List<string> wheres = new List<string>();
+            List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping
+                = new List<Tuple<int, FieldTypeComplexLookupRelationDirection>>();
+
+            if (definition.Relations.Any(x => x.IntersectTypeUid is null))
+            {
+                return (Columns, Fields, Values, count, scoringInfo);
+            }
+
+            foreach (var relFt in definition.Fields.Where(x => x.FieldTypeName.StartsWith("Related Item.")))
+            {
+                bool isSubject = Company.Query<bool>(@"declare @object nvarchar(255)
+                    declare @objectid int
+                    select @object = object, @objectid = objectid from AssetType where uid = @AssetTypeUid
+
+                    select count(1) from intersecttype
+                    where id = @FieldTypeID and Subject = @object and SubjectID = @objectid",
+                    new { relFt.FieldTypeID, relFt.AssetTypeUid })
+                    .FirstOrDefault();
+
+                fieldRelationDirectionMapping.Add(
+                    new Tuple<int, FieldTypeComplexLookupRelationDirection>(
+                        relFt.FieldTypeID,
+                    isSubject ? FieldTypeComplexLookupRelationDirection.Forward : FieldTypeComplexLookupRelationDirection.Back));
+            }
+
+            string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects, fieldRelationDirectionMapping);
+
+            (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
+
+            List<string> defaultFilters = new List<string>();
+            List<string> simpleFilters = new List<string>();
+
+            foreach (var field in Fields.Where(x => !string.IsNullOrEmpty(x.defaultFilter)))
+            {
+                var value = HttpUtility.UrlEncode(field.defaultFilter);
+                if (field.type == "bool")
+                {
+                    bool parsedResult;
+                    if (bool.TryParse(field.defaultFilter, out parsedResult))
+                    {
+                        value = parsedResult ? "1" : "0";
+                    }
+                }
+
+                defaultFilters.Add($"({field.apiName} ct '{value}')");
+            }
+
+            if (defaultFilters.Count > 0)
+            {
+                var defFilters = $"({string.Join(" and ", defaultFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? defFilters : advancedFilter + " and " + defFilters;
+            }
+
+            if (!string.IsNullOrEmpty(simpleFilter))
+            {
+                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+                {
+                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                }
+            }
+
+            if (simpleFilters.Count > 0)
+            {
+                var sFilter = $"({string.Join(" or ", simpleFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? sFilter : advancedFilter + " and " + sFilter;
+            }
+
+            if (!string.IsNullOrEmpty(advancedFilter))
+            {
+                var filterDataProvider = new FilterDataProvider(this.Company);
+                var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
+
+                foreach (var p in sqlParams)
+                {
+                    dbArgs.Add(p.Key, p.Value);
+                }
+            }
+
+            var sortFields = Fields.Where(x => x.sortOrder > 0).OrderBy(x => x.sortOrder).ToList();
+            if (string.IsNullOrEmpty(orderBy) && sortFields.Count > 0)
+            {
+                List<int> idxs = new List<int>();
+
+                foreach (var item in sortFields)
+                {
+                    idxs.Add(selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())) + 1);
+                }
+
+                orderByClause = "order by " + string.Join(",", idxs);
+            }
+            else
+            {
+                var el = selects.Where(x => x != null && x.ToLowerInvariant().Contains(orderBy.ToLowerInvariant())).FirstOrDefault();
+                var index = selects.IndexOf(el);
+                if (index > 0)
+                {
+                    orderByClause = "order by " + (index + 1);
+                }
+            }
+
+            var permissionSQL = "";
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                permissionSQL = $@"	
+                                    declare @hasPermission bit = 1
+
+                                    declare @relations table (
+		                            RowNumber int identity, RN varchar(3), 
+		                            IntersectTypeUid uniqueidentifier, AssetTypeUid uniqueidentifier, RelationType int, Direction int, 
+		                            IntersectTypeID int, Object varchar(50), ObjectID int,
+		                            FieldCount int null,
+		                            AssetTypeId int)
+
+        		                    insert into @relations (IntersectTypeUid, AssetTypeUid, RelationType, Direction, FieldCount)
+			                        select	R.*,
+					                        0
+			                        from	FieldTypeLookup O
+					                        cross apply OPENJSON(O.[Definition], N'lax $.Relations') with (
+						                        IntersectTypeUid uniqueidentifier, 
+						                        AssetTypeUid uniqueidentifier,
+						                        RelationType int, 
+						                        Direction int
+					                        ) R
+			                        where	O.FieldTypeID = @fieldTypeId;
+
+                                    update	R 
+		                            set		R.RN = cast(R.RowNumber as varchar(5)),
+				                            R.IntersectTypeID = I.ID,
+				                            R.Object = A.Object,
+				                            R.ObjectID = A.ObjectID,
+				                            R.AssetTypeId = A.ID
+		                            from	@relations R
+		                            left join IntersectType I on I.Uid = R.IntersectTypeUid
+		                            left join AssetType A on A.Uid = R.AssetTypeUid
+
+		                            drop table if exists #AssetPermission;
+		                            Create table #AssetPermission (AssetID bigint);
+		                            Create nonclustered index Ix_PermissAsset_temp on #AssetPermission(AssetID);
+
+		                            insert into #AssetPermission
+		                            select P.AssetID
+		                            from @relations r
+		                            cross apply  dbo.UserAssetPermissions(@resourceId, r.AssetTypeID) P
+		                            where (PermissionsBitMask & 1) = 0;
+
+		                        -- If resource can't read asset type of one or more hops, there should be no result. Add impossible condition.
+		                        if exists (select 1 from dbo.AssetTypesUserCantRead(@resourceId) u where u.AssetTypeID in (select AssetTypeID from @relations))
+		                        begin
+			                        set @hasPermission = 0;
+		                        end";
+
+
+                wheres.Add("not exists (select 1 from #AssetPermission p where H1.ID = p.AssetID)");
+                wheres.Add("@hasPermission = 1");
+            }
+
+            var itemsSQL = $@"{permissionSQL}
+                            {sql}  
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                            {orderByClause} {direction}
+                            offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+            var countSQL = $@"{sql}
+                              {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+            if (countOnly)
+            {
+                itemsSQL = permissionSQL;
+            }
+
+            var reader = await Company.QueryMultipleAsync(
+                $"{itemsSQL}; select count(1) from ({countSQL})a", dbArgs);
+
+            if (!countOnly)
+            {
+                Values = reader.Read<dynamic>().ToList();
+            }
+            count = reader.Read<int>().FirstOrDefault();
+
+            var scoreFields = fields.Where(x => x.Type == "Score").Select(x => x.ID).ToList();
+            if (scoreFields.Any())
+            {
+                scoringInfo = (await Company.QueryAsync($@"select ft.id AS FieldTypeId, ma.ScoreType, ma.LowerThreshold, ma.UpperThreshold from 
+			                 FieldType ft 
+			                inner join AssetType at on ft.object = at.object and ft.objectid = at.objectid
+			                inner join metrics.Allocation ma on ma.AssetTypeUid = at.uid  and ma.ScoreType = ft.ScoreType
+		                where ft.Type = 'Score' and ft.id in @scoreFields", new { scoreFields })).ToList();
+            }
+
+            return (Columns, Fields, Values, count, scoringInfo);
+        }
+
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
+        {
+            string orderByClause = "order by A.Code";
+            var Columns = new List<GridColumn>();
+            var Fields = new List<GridField>();
+
+            List<string> selects = new List<string>();
+            List<string> joins = new List<string>();
+            List<string> wheres = new List<string>();
+
+            int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs);
+
+            wheres.Add("A.AssetTypeID = @assetTypeId");
+            wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");
+            dbArgs.Add("assetTypeId", assetTypeId);
+
+            string itemsSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, false);
+            string countSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, true);
+            (Columns, Fields) = ComplexFieldsHelper.GetComplexRefListFromRelFieldsAndColumns(fields);
+
+            List<string> simpleFilters = new List<string>();
+            if (!string.IsNullOrEmpty(simpleFilter))
+            {
+                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+                {
+                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                }
+            }
+
+            if (simpleFilters.Count > 0)
+            {
+                var sFilter = $"({string.Join(" or ", simpleFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? sFilter : advancedFilter + " and " + sFilter;
+            }
+
+            if (!string.IsNullOrEmpty(advancedFilter))
+            {
+                var filterDataProvider = new FilterDataProvider(this.Company);
+                var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
+
+                foreach (var p in sqlParams)
+                {
+                    dbArgs.Add(p.Key, p.Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                var el = selects.FirstOrDefault(x => x.ToLowerInvariant().Contains($"[{orderBy.ToLowerInvariant()}]"));
+                var idx = selects.IndexOf(el);
+                if (idx > 0)
+                {
+                    orderByClause = "order by " + (idx + 1);
+                }
+            }
+
+            itemsSQL = $@"{itemsSQL}
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                            {orderByClause} {direction}
+                            offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+
+            countSQL = $@"{countSQL}
+                            {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+            if (countOnly)
+            {
+                itemsSQL = "";
+            }
+
+            var reader = await Company.QueryMultipleAsync(
+                $"{itemsSQL}; {countSQL}", dbArgs);
+
+            var Values = new List<dynamic>();
+            if (!countOnly)
+            {
+                Values = reader.Read<dynamic>().ToList();
+            }
+
+            var count = reader.Read<int>().FirstOrDefault();
+
+            return (Columns, Fields, Values, count);
+        }
+
+        public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetOwnershipLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
+        {
+            var definition = ftl.ParseOwnershipLookupDefinition();
+
+            List<GridColumn> Columns = new List<GridColumn>();
+            List<GridField> Fields = new List<GridField>();
+
+            Columns.Add(new GridColumn { text = "Responsibility", datafield = "ResponsibilityTypeName", columntype = "textbox" });
+            Columns.Add(new GridColumn { text = "Assigned User/Group", datafield = "ResourceName", columntype = "preview", uidfield = "SecurityAssetUid", urlfield = "ResourceItemUrl" });
+            if (definition.DisplayAssignmentSource)
+            {
+                Columns.Add(new GridColumn { text = "Via", datafield = "SecurityAssetName", columntype = "preview", uidfield = "SecurityAssetUid" });
+                Fields.Add(new GridField { apiName = "SecurityAssetName", name = "SecurityAssetName", type = "preview" });
+
+            }
+            Columns.Add(new GridColumn { text = "Context", datafield = "Context", columntype = "textbox" });
+
+
+            Fields.Add(new GridField { apiName = "ResponsibilityTypeName", name = "ResponsibilityTypeName", type = "string" });
+            Fields.Add(new GridField { apiName = "ResourceName", name = "ResourceName", type = "preview" });
+            Fields.Add(new GridField { name = "ResourceItemUrl", type = "string" });
+            Fields.Add(new GridField { name = "SecurityAssetUid", type = "string" });
+            Fields.Add(new GridField { apiName = "Context", name = "Context", type = "html" });
+
+
+            List<string> selects = new List<string>();
+            List<string> wheres = new List<string>();
+            string orderByClause = "ORDER BY r.responsibilitytypename ASC,resourcename";
+
+            selects.Add("r.context AS [Context]");
+            selects.Add("r.responsibilitytypename AS [ResponsibilityTypeName]");
+            selects.Add("SecurityAssetUid AS [SecurityAssetUid]");
+
+            if (definition.ExpandGroupMembership != false)
+            {
+                selects.Add("'/resource/' + Cast(r.resourceid AS VARCHAR) AS [ResourceItemUrl]");
+                selects.Add("r.resourceuid AS [ResourceUid]");
+                selects.Add("resourcename as [ResourceName]");
+            }
+            else
+            {
+                selects.Add(@"CASE securityassetname
+                                                      WHEN resourcename THEN '/resource/' + Cast(r.resourceid AS    VARCHAR)
+                                                       ELSE '/group/' + Cast(securityassetid AS VARCHAR)
+                                       END AS [ResourceItemUrl]");
+
+                selects.Add(@" CASE securityassetname
+                                          WHEN resourcename THEN 'Resource'
+                                          ELSE 'Group'
+                                       END AS [ResourceObject]");
+                selects.Add("securityassetname as [ResourceName]");
+
+                orderByClause = "ORDER BY r.responsibilitytypename ASC,securityassetname";
+            }
+
+            if (definition.DisplayAssignmentSource)
+            {
+                selects.Add("r.SecurityAssetName AS [SecurityAssetName]");
+            }
+
+            wheres.Add("r.isvisible = 1");
+            wheres.Add("((r.assetid = A.Id) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
+
+            if (definition.ResponsibilityType != null)
+            {
+                wheres.Add("(r.responsibilitytypeid = @responsibilityTypeId)");
+                dbArgs.Add("responsibilityTypeId", definition.ResponsibilityType);
+            }
+
+            List<string> simpleFilters = new List<string>();
+            if (!string.IsNullOrEmpty(simpleFilter))
+            {
+                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+                {
+                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                }
+            }
+
+            if (simpleFilters.Count > 0)
+            {
+                var sFilter = $"({string.Join(" or ", simpleFilters)})";
+                advancedFilter = string.IsNullOrEmpty(advancedFilter) ? sFilter : advancedFilter + " and " + sFilter;
+            }
+
+            if (!string.IsNullOrEmpty(advancedFilter))
+            {
+                var filterDataProvider = new FilterDataProvider(this.Company);
+                var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                filterExpressionParser.LoadFieldTypes(fields, selects);
+
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                wheres.Add(filterExpressionParser.Parse(advancedFilter, out sqlParams, out _));
+
+                foreach (var p in sqlParams)
+                {
+                    dbArgs.Add(p.Key, p.Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                var el = selects.FirstOrDefault(x => x.ToLowerInvariant().Contains($"[{orderBy.ToLowerInvariant()}]"));
+                var idx = selects.IndexOf(el);
+                if (idx > 0)
+                {
+                    orderByClause = "order by " + (idx + 1);
+                }
+            }
+
+            var itemsSQL = $@"select distinct 
+                            {(string.Join(", ", selects))}
+                        FROM[dbo].[ResponsibilityDetail] R
+                        inner join asset a on a.uid = @assetuid
+                        {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+                        {orderByClause} {direction}
+                        offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
+
+
+            var countSQL = $@"select distinct 
+                            count(*)
+                        FROM [dbo].[ResponsibilityDetail] R
+                        inner join asset a on a.uid = @assetuid
+                        {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+
+            if (countOnly)
+            {
+                itemsSQL = "";
+            }
+
+            var reader = await Company.QueryMultipleAsync(
+                $"{itemsSQL}; {countSQL}", dbArgs);
+
+            var Values = new List<dynamic>();
+            if (!countOnly)
+            {
+                Values = reader.Read<dynamic>().ToList();
+            }
+            var count = reader.Read<int>().FirstOrDefault();
+            return (Columns, Fields, Values, count);
+        }
+
+        private async Task<int?> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
+        {
+            return (await Company.QueryAsync<int?>($@"declare @isSubject bit,
+				                        @referenceItemTypeID int
+		                        select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
+		                        from	IntersectType I 
+				                        inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
+		
+		                        if @isSubject = 1
+		                        begin
+			                        select	top 1
+					                        @referenceItemTypeID = A.ID
+			                        from	[Intersect] I
+					                        inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
+		                        end
+		                        else
+		                        begin 
+			                        select	top 1
+					                        @referenceItemTypeID = A.ID
+			                        from	[Intersect] I
+					                        inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
+		                        end
+		                        select @referenceItemTypeID", dbArgs)).FirstOrDefault();
+        }
+
     }
 }

@@ -1,21 +1,43 @@
 ﻿
     <div #container class="tag-list-container">
         <span *ngFor="let tag of tags;">
-            <a (click)="openTagPage($event,tag)" (mouseenter)="enter(tag, $event.target)" [attr.target]="'_blank'" class="link-button tagging">
-                <div class="tooltip-wrapper">
-                    <div class="tag-tooltip">
-                        <i *ngIf="!isTooltipLoaded" class="fa fa-spinner fa-spin fa-2x"></i>
-                        <ng-container *ngIf="isTooltipLoaded">
-                            <span class="span-break">{{tagTooltip.Value}}</span>
-                            <span>Tag added by {{tagTooltip.CreatedBy}} on {{(tagTooltip.CreatedOn | date:'short')}}</span>
-                        </ng-container>
-                    </div>
-                </div>
+            <a 
+               pTooltip="{{tooltipValue}}"
+               [escape]="false"
+               tooltipPosition="top" 
+               tooltipStyleClass="ig-tooltip"
+               (click)="openTagPage($event,tag)" 
+               (mouseenter)="enter(tag, $event.target)" 
+               [attr.target]="'_blank'" 
+               class="link-button tagging">
                 <div #el class="tag-item-wrapper">
                     {{tag.Value}}
                 </div>
-                <div *ngIf="isEditable" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
-                    <i style="padding-left:10px" class="fa fa-times-circle"></i>
+                <div>
+                    <div *ngIf="isEditable && !deletingTag" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
+                        <span>
+                            <i style="padding-left:10px" class="fa fa-times-circle"></i>
+                        </span>                        
+                    </div>
+                    <div *ngIf="deletingTag" class="link-button">
+                        <span [pTooltip]="'Removing Tag'" style="padding-left:10px;padding-right:7px;">
+                            <i class="pi pi-spin pi-spinner"></i>
+                        </span>
+                    </div>
+                </div>                
+            </a>
+        </span>
+        <span *ngIf="savingTag">
+            <a pTooltip="Saving Tag"
+               [escape]="false"
+               tooltipPosition="top"
+               tooltipStyleClass="ig-tooltip"
+               class="link-button tagging">
+                <div #el class="tag-item-wrapper savingTag">
+                    {{tagNameBeingAdded}}
+                </div>
+                <div class="link-button" style="padding-left:10px;padding-right:7px;">
+                    <i class="pi pi-spin pi-spinner"></i>
                 </div>
             </a>
         </span>
@@ -27,7 +49,7 @@
                             value="inputValue"
                             inputStyleClass="inputBox"
                             [style]="{'margin-bottom':'12px'}"
-                            placeholder="Click to add..."
+                            placeholder="{{placeHolder}}"
                             [suggestions]="searchResults"
                             (onKeyUp)="checkKey($event,inputValue)"
                             (onSelect)="saveTag($event)"

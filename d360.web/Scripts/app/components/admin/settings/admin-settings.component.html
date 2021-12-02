@@ -16,33 +16,57 @@
             <d3s-admin-home [(companySettings)]="companySettings" [(homePageImage)]="homePageImage"></d3s-admin-home>
         </div>
         <div class="tile tile-detail">
-            <d3s-helpmenu-list [(items)]="items" [(deletedRecords)]="deletedRecords"></d3s-helpmenu-list>
+            <d3s-helpmenu-list [(addedRecords)]="addedRecords" [(items)]="items" [(deletedRecords)]="deletedRecords"></d3s-helpmenu-list>
         </div>
     </div>
     <div class="col s12 m12 l3">
         <div class="tile tile-detail">
             <header>Features</header>
-            <input type="checkbox" [(ngModel)]="companySettings.DisableCommunityPosting" /> Disable Discussion Posts<br />
+            <p-checkbox igCheckbox
+                        [(ngModel)]="companySettings.DisableCommunityPosting"
+                        label="Disable Discussion Posts"
+                        binary="true">
+            </p-checkbox>
             <div class="directions">
                 Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
             </div>
-            <input type="checkbox" [(ngModel)]="companySettings.DisableIssueManagement" /> Disable Take Action<br />
+            <p-checkbox igCheckbox
+                        [(ngModel)]="companySettings.DisableIssueManagement"
+                        label="Disable Take Action"
+                        binary="true">
+            </p-checkbox>
             <div class="directions">
                 Hide the Take Action button and Monitor page from the interface.
             </div>
-            <input type="checkbox" [(ngModel)]="companySettings.HideData3SixtyUsers" /> Hide Infogix Users<br />
+            <p-checkbox igCheckbox
+                        [(ngModel)]="companySettings.HideData3SixtyUsers"
+                        label="Hide Precisely Users"
+                        binary="true">
+            </p-checkbox>
             <div class="directions">
-                Hide the infogix users throughout the UI.
+                Hide the precisely users throughout the UI.
             </div>
-            <input type="checkbox" [(ngModel)]="companySettings.ShowAllUsersAPIKey" /> Display API Key <br />
+            <p-checkbox igCheckbox
+                        [(ngModel)]="companySettings.ShowAllUsersAPIKey"
+                        label="Display API Key"
+                        binary="true">
+            </p-checkbox>
             <div class="directions">
                 Displays the API Key for all users in their Profile Screen. Uncheck to display for administrators only.
             </div>
-            <input type="checkbox" [(ngModel)]="companySettings.WriteActionDescription" /> Write Action Description to Comments?<br />
+            <p-checkbox igCheckbox
+                        [(ngModel)]="companySettings.WriteActionDescription"
+                        label="Write Action Description to Comments?"
+                        binary="true">
+            </p-checkbox>
             <div class="directions">
                 When a user takes an action, create a comment based on the description.
             </div>
-            <input type="checkbox" [(ngModel)]="companySettings.HideHeaderBarControls" /> Hide Header Bar Controls<br />
+            <p-checkbox igCheckbox
+                        [(ngModel)]="companySettings.HideHeaderBarControls"
+                        label="Hide Header Bar Controls"
+                        binary="true">
+            </p-checkbox>
             <div class="directions">
                 Hide the global search and menu controls in the header bar.
             </div>
@@ -55,12 +79,24 @@
             <div class="directions">
                 The maximum number of items able to be exported in an excel spreadsheet.
             </div>
-            <input type="number" min="0" [(ngModel)]="companySettings.MaxExcelExportRows" style="width: 95%" /> <br />
+            <ng-container>
+                <ig-number-input igSize="full" min="1" max="100000" [(ngModel)]="companySettings.MaxExcelExportRows" (ngModelChange)="validateExcelSize();" #excelval="ngModel"></ig-number-input>            
+                 <div *ngIf="excelval.invalid && (excelval.dirty || excelval.touched)">
+                    <div *ngIf="excelval.errors.underMin" class="ig-text-required">Please enter a positive value of 100,000 or less</div>
+                    <div *ngIf="excelval.errors.overMax" class="ig-text-required">Please enter a value of 100,000 or less</div>
+                </div>
+            </ng-container>
             <div class="FieldName">Asset Definition Panel Column Width</div>
             <div class="directions">
                 Width of columns (in pixels) used to lay out fields on the asset Definition panel.
             </div>
             <input type="number" min="100" max="1000" [(ngModel)]="companySettings.AssetDefinitionColumnWidth" style="width: 95%" /> <br />
+
+            <div class="FieldName">Maximum count of Diagram links to use 'AvoidNodes' render template</div>
+            <div class="directions">
+                Maximum number of links on Lineage diagram that will use 'AvoidNodes' render setting. If higher, links will render without corners and as a straight line between 2 nodes. This improves render performance on diagrams with more data.
+            </div>
+            <input type="number" min="0" max="100000" [(ngModel)]="companySettings.DiagramMaxAvoidNodesLinkCount" style="width: 95%" /> <br />
 
         </div>
         <div class="tile tile-detail">
@@ -82,7 +118,12 @@
             </div>
             <ul>
                 <li *ngFor="let searchType of searchTypes;let i=index">
-                    <input type="checkbox" [(ngModel)]="searchTypes[i].selected" /> {{searchType.title}} <span *ngIf="!searchType.visible" class="hiddencategory">(hidden)</span>
+                    <p-checkbox igCheckbox
+                                [(ngModel)]="searchTypes[i].selected"
+                                label="{{searchType.title}}"
+                                binary="true">
+                    </p-checkbox>
+                    <span *ngIf="!searchType.visible" class="hiddencategory">(hidden)</span>
                 </li>
             </ul>
         </div>

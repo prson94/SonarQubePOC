@@ -26,6 +26,9 @@ using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
 using d360.web.Extensions;
+using Resources;
+using d360.core.Models;
+using SmartFormat;
 
 namespace d360.web.Controllers
 {
@@ -38,7 +41,9 @@ namespace d360.web.Controllers
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
         IConnectorLabelRepository connectorLabelRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
+        IFieldsRepository fieldsRepository;
+
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider, IFieldsRepository fieldsRepository)
             : base(community, company, settingsRepository)
         {
 #if DEBUG
@@ -47,6 +52,7 @@ namespace d360.web.Controllers
             SecProvider = secProvider;
             commentsRepository = comments;
             this.tagRepository = tagRepository;
+            this.fieldsRepository = fieldsRepository;
             this.connectorLabelRepository = connectorLabelRepository;
         }
 
@@ -99,7 +105,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -118,7 +125,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
@@ -187,7 +195,8 @@ namespace d360.web.Controllers
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -226,7 +235,8 @@ from	metrics.Score S
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
-                    DataType = ft.Type
+                    DataType = ft.Type,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -292,7 +302,8 @@ from	metrics.Score S
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = jsonElementDataType,
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -357,7 +368,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = "Html",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -377,7 +389,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                    ShowIfEmpty = ft.ShowIfEmpty
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    IsPartOfKey = ft.IsPartOfKey
                 };
 
                 list.Add(new DetailReadOnlyRowModel
@@ -541,7 +554,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                             filterItems = Company.Query<string>(@"
                                 select V.Text
                                 from FieldLookupValue V
-                                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com and R.Email not like '%@precisely.com'
                                 where V.LookupObjectType = @lookupObjectType and V.LookupObjectID = @lookupObjectId
                                 order by V.Text", new { lookupObjectId = item.LookupObjectID, lookupObjectType = item.LookupObjectType })
                                 .ToList();
@@ -755,7 +768,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
                 where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
 
-            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new {type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault();
+            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault();
 
             switch (type)
             {
@@ -1078,7 +1091,24 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         [Route("artifact/{id:int}")]
         public HttpResponseMessage GetArtifact(int id)
         {
+
             var json = Company.GetPageInformation(SystemObjects.Artifact, id);
+
+            bool addModifySynonym = true;
+            bool deleteSynonym = true;
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                string objectType = SystemObjects.Artifact.ToString();
+                addModifySynonym = Company.HasAssetPermission(objectType, id, Permission.AddRelationships) || Company.HasAssetPermission(objectType, id, Permission.EditRelationships);
+                deleteSynonym = Company.HasAssetPermission(objectType, id, Permission.DeleteRelationships);
+            }
+
+            var permission = new JObject();
+            permission["addModifySynonym"] = addModifySynonym;
+            permission["deleteSynonym"] = deleteSynonym;
+
+            json.Add("SynonymPermission", permission);
 
             if (json == null)
             {
@@ -1103,7 +1133,6 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 model.Add("Name", assetType.Name);
                 model.Add("Description", assetType.Description);
                 model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
-                model.Add("CanOwnFusion", assetType.CanOwnFusion);
                 model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
                 model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
                 model.Add("Class", assetType.Class);
@@ -1119,6 +1148,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 model.Add("AssetTypeUID", assetType.uid);
                 model.Add("AssetTypeID", assetType.ID);
 
+                var assetTypePath = Company.Query<string>(@"select p.path from assettype at cross apply dbo.GetAssetTypeTextPathById(at.id, ' > ') p where at.id = @atid", new { atid = assetType.ID }).FirstOrDefault();
+                model.Add("AssetTypePath", assetTypePath);
             }
             catch (Exception ex)
             {
@@ -1271,8 +1302,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         FieldName = ft.Name,
                         ShowIfEmpty = true,
                         DataType = "tag",
-                        Values = GetTagsValues(type, id)
-
+                        Values = GetTagsValues(type, id),
+                        IsPartOfKey = ft.IsPartOfKey
                     }
                 },
                 Category = ft.Category
@@ -1322,7 +1353,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                                         LookupFieldTypeID = ft.ID,
                                         LookupType = (int)((DataType)Enum.Parse(typeof(DataType), ft.Type)),
                                         ShowIfEmpty = ft.ShowIfEmpty,
-                                        DataType = ft.Type
+                                        DataType = ft.Type,
+                                        IsPartOfKey = ft.IsPartOfKey
                                     }
                                 },
                         Category = ft.Category
@@ -1339,7 +1371,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         FieldName = ft.Name,
                         Values = null,
                         DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                        ShowIfEmpty = ft.ShowIfEmpty
+                        ShowIfEmpty = ft.ShowIfEmpty,
+                        IsPartOfKey = ft.IsPartOfKey
                     };
 
                     list.Add(new DetailReadOnlyRowModel
@@ -1360,15 +1393,55 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
             try
             {
-                any = await Company.QueryFirstOrDefaultAsync<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly, @checkExists",
-                    new { @object = new DbString { Value = type, IsAnsi = true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true, checkExists = true }
-                );
+                var qparams = Request.GetQueryNameValuePairs();
+                var result = new Dictionary<string, object>();
+                var asset = Company.Assets.FirstOrDefault(x => x.Object == type && x.ObjectID == id);
+
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == fieldTypeId);
+
+                List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, asset.uid);
+                FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+
+                List<dynamic> Values = new List<dynamic>();
+                List<GridColumn> Columns = new List<GridColumn>();
+                List<GridField> Fields = new List<GridField>();
+                List<dynamic> scoringInfo = new List<dynamic>();
+
+                int count = 0;
+                var dbArgs = new DynamicParameters();
+
+                dbArgs.Add("resourceId", Company.CurrentResourceID);
+                dbArgs.Add("assetUid", asset.uid);
+                dbArgs.Add("object", asset.Object);
+                dbArgs.Add("objectId", asset.ObjectID);
+                dbArgs.Add("fieldTypeId", fieldType.ID);
+
+                if (fieldType.Type == "ComplexRelationLookup")
+                {
+                    (Columns, Fields, Values, count, scoringInfo) =
+                       await fieldsRepository.GetComplexRelationLookupGrid(ftl, fields, dbArgs, "", "", "", "", countOnly: true);
+
+                }
+
+                if (fieldType.Type == "RefListRelationship")
+                {
+                    (Columns, Fields, Values, count) =
+                       await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, "", "", "", "", countOnly: true);
+                }
+
+                if (fieldType.Type == "OwnershipLookup")
+                {
+                    (Columns, Fields, Values, count) =
+                       await fieldsRepository.GetOwnershipLookupGrid(ftl, fields, dbArgs, "", "", "", "", countOnly: true);
+                }
+
+                return count > 0;
             }
             catch (Exception ex)
             {
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", "ApiController.AnyComplexLookupGridValues" },
-                    { "SQL Satetment", $"exec GetComplexLookupByAsset '{type}', {id}, {fieldTypeId}, {Company.CurrentResourceID}, 1, 1" }
+                    { "SQL Satetment", $"ComplexLookupByAsset '{type}', {id}, {fieldTypeId}, {Company.CurrentResourceID}, 1, 1" }
                 });
             }
 
@@ -1447,7 +1520,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 FieldName = ft.Name,
                 Values = values,
                 ShowIfEmpty = ft.ShowIfEmpty,
-                DataType = ft.Type
+                DataType = ft.Type,
+                IsPartOfKey = ft.IsPartOfKey
             };
 
             list.Add(new DetailReadOnlyRowModel
@@ -1531,15 +1605,13 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     break;
                 case SystemObjects.RuleType:
                 case SystemObjects.Rule:
-                    sql = @"select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] , D.Uid
-                            from [Rule] A 
-                            inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
-                            inner join [Intersect] I on A.RuleTypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID) and I.IntersectTypeID = @intersectTypeId
+                    sql = @"select distinct D.DisplayValue as Name, D.ObjectID as ID, D.Object as [Type], D.Uid
+                            from AssetDetail D
+                            inner join [Intersect] I on D.Object = 'Rule' and D.TypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID) and I.IntersectTypeID = @intersectTypeId
                             union
-                            select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] , D.Uid
-                            from [Rule] A 
-                            inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
-                            inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID) and I.IntersectTypeID = @intersectTypeId
+                            select distinct D.DisplayValue as Name, D.ObjectID as ID, D.Object as [Type], D.Uid
+                            from AssetDetail D
+                            inner join [Intersect] I on D.Object = 'Rule' and D.TypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID) and I.IntersectTypeID = @intersectTypeId
                             order by D.DisplayValue";
                     break;
                 case SystemObjects.TaskType:
@@ -1581,7 +1653,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             {
                 Company.DeleteRelationship(id);
                 msg.StatusCode = HttpStatusCode.OK;
-                msg.ReasonPhrase = "Relationship successfully removed.";
+                msg.ReasonPhrase = RelationshipsApiMessages.RelationshipSucessfullyRemoved;
             }
             catch (SqlException ex)
             {
@@ -1602,7 +1674,12 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
             if (selected.ContainsKey("RelationshipError"))
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, (string)selected["RelationshipError"]);
+                var errorMessage = Smart.Format(AssetTypeErrors.InvalidRelationshipFieldType, new
+                {
+                    FriendlyName = (string)selected["RelationshipError"]
+                });
+
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, errorMessage);
             }
 
             List<System.Web.Mvc.SelectListItem> selection = new List<System.Web.Mvc.SelectListItem>();
@@ -2078,7 +2155,7 @@ from    (
 
             if (HideData3SixtyUsers())
             {
-                querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
+                querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com' and A.Email not like '%@precisely.com')";
             }
 
             if (!string.IsNullOrEmpty(filter))
@@ -2183,10 +2260,6 @@ from    (
 
             Dapper.DynamicParameters dbParams = new DynamicParameters();
 
-            List<string> objectsToExclude = new List<string> { "FusionAttribute" };
-
-            if (!string.IsNullOrEmpty(excludeObjects)) objectsToExclude.AddRange(excludeObjects.Split(','));
-
             var sql = @"select 
 										c.[Object], 
 										c.ObjectID, 
@@ -2203,12 +2276,11 @@ from    (
 										inner join  AssetDisplayValue as AD   on
 										AD.AssetID = C.ID
 										cross apply [dbo].getAssetUrlById(c.ID) cU                              
-										where c.[Object] not in @exclude and (AD.DisplayValue like @beginsWith or (len(@val) > 2 and AD.DisplayValue like @contains))";
+										where (AD.DisplayValue like @beginsWith or (len(@val) > 2 and AD.DisplayValue like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
             dbParams.Add("val", $"{phrase}%");
             dbParams.Add("contains", $"%{phrase}%");
-            dbParams.Add("exclude", objectsToExclude);
 
             var tags = Company.Query<TagSuggestionModel>(sql, dbParams);
 
@@ -2363,41 +2435,76 @@ from    (
             model.Object = type.ToString();
             model.ObjectID = id;
 
+            var metadata = Company.Query<dynamic>(@"
+                    select  V.DisplayValue as AssetName, 
+                            T.Name as AssetTypeName, 
+                            T.Object as ObjectType, 
+                            T.ObjectID as ObjectTypeID,
+                            A.Uid as AssetUid,
+                            A.ID as AssetID,
+                            T.ID as AssetTypeID
+                    from    Asset A 
+                            inner join AssetDisplayValue V on V.AssetID = A.ID 
+                            inner join AssetType T on T.ID = A.AssetTypeID 
+                            outer apply dbo.UserAssetPermissions(@resourceId, T.ID) P 
+                    where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID }).FirstOrDefault();
+
+            if (metadata != null)
+            {
+                var perms = Company.GetPermissions((long)metadata.AssetID, (int)metadata.AssetTypeID);
+
+                if (perms.Any(x => x.ID == Permission.ReadResponsibilities) || perms.Count == 0 || Company.CurrentResourceIsAdmin)
+                {
+                    model.HasResponsibilityReadAccess = true;
+                }
+                else
+                {
+                    model.HasResponsibilityReadAccess = false;
+                }
+
+                model.CanEdit = true;
+                if (!Company.CurrentResourceIsAdmin && !perms.Any(x => x.ID == Permission.EditAsset))
+                {
+                    model.CanEdit = false;
+                }
+
+                model.AssetUid = metadata.AssetUid;
+                model.AssetID = metadata.AssetID;
+
+                model.AssetName = metadata.AssetName;
+                model.AssetTypeName = metadata.AssetTypeName;
+
+                model.ObjectType = metadata.ObjectType;
+                model.ObjectTypeID = metadata.ObjectTypeID;
+            }
+
             if (includeHeader)
             {
-                var metadata = Company.Query<dynamic>("select V.DisplayValue as AssetName, T.Name as AssetTypeName, T.Object as ObjectType, T.ObjectID as ObjectTypeID  from Asset A inner join AssetDisplayValue V on V.AssetID = A.ID inner join AssetType T on T.ID = A.AssetTypeID where A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id }).FirstOrDefault();
-                model.Scores = Company.Query<dynamic>(@"select	*
-from	(
-		select  S.EffectiveDate,
-				S.EndDate,
-				S.RunDate,
-				case 
-					when AL.ScoreType = 1 then 'GV'
-					when AL.ScoreType = 2 then 'DQ'
-				end as ShortName,
-				case 
-					when AL.ScoreType = 1 then 'Governance'
-					when AL.ScoreType = 2 then 'Data Quality'
-				end as ScoreType,
-				ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
-				S.Value, 
-				AL.LowerThreshold, 
-				AL.UpperThreshold 
-		from    metrics.Score S
-				inner join Asset A on A.Uid = S.AssetUid and A.Object = @Object and A.ObjectID = @ObjectID and S.EffectiveDate <= @date 
-				inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
-		) O
-where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow }).ToList();
-
-                if (metadata != null)
-                {
-                    model.AssetName = metadata.AssetName;
-                    model.AssetTypeName = metadata.AssetTypeName;
-
-                    model.ObjectType = metadata.ObjectType;
-                    model.ObjectTypeID = metadata.ObjectTypeID;
-                }
+                model.Scores = Company.Query<dynamic>(@"
+                    select	*
+                    from	(
+		                    select  S.EffectiveDate,
+				                    S.EndDate,
+				                    S.RunDate,
+				                    case 
+					                    when AL.ScoreType = 1 then 'GV'
+					                    when AL.ScoreType = 2 then 'DQ'
+				                    end as ShortName,
+				                    case 
+					                    when AL.ScoreType = 1 then 'Governance'
+					                    when AL.ScoreType = 2 then 'Data Quality'
+				                    end as ScoreType,
+				                    ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
+				                    S.Value, 
+				                    AL.LowerThreshold, 
+				                    AL.UpperThreshold 
+		                    from    metrics.Score S
+				                    inner join Asset A on A.Uid = S.AssetUid and A.Object = @Object and A.ObjectID = @ObjectID and S.EffectiveDate <= @date 
+				                    inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
+		                    ) O
+                    where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow }).ToList();
             }
+
             FieldColumnMapper fcMapper = null;
 
             if (useAssetDetailColumnDefinition)
@@ -2416,12 +2523,28 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
             switch (type)
             {
                 case SystemObjects.Artifact:
+                case SystemObjects.Rule:
                     #region Fields
                     {
-                        var asset = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString());
+                        var sType = type.ToString();
+                        var asset = Company.Filter<Asset>(
+                            x => x.ObjectID == id && x.Object == sType,
+                            x => x.AssetType).FirstOrDefault();
 
                         if (asset != null)
                         {
+                            if (type == SystemObjects.Rule)
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                        new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "AssetTypeName", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = asset.AssetType.Name }
+                                    },
+                                    Category = Resources.FieldInfo.SystemFieldCategory
+                                });
+                            }
+
                             var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
                             if (useAssetDetailColumnDefinition && fcMapper != null)
@@ -2433,22 +2556,24 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                                 model.rows.AddRange(dynamicRows);
                             }
 
-
-                            var parent = Company.GetParentObject(id, SystemObjects.Artifact);
-
-                            if (parent != null)
+                            if (type == SystemObjects.Artifact)
                             {
-                                var parentAsset = Company.GetAssetDetail("Artifact", parent.ObjectID);
-                                var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
+                                var parent = Company.GetParentObject(id, type);
 
-                                model.rows.Insert(1, new DetailReadOnlyRowModel
+                                if (parent != null)
                                 {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ObjectID}
-                                },
-                                    Category = Resources.FieldInfo.SystemNoCategory
-                                });
+                                    var parentAsset = Company.GetAssetDetail("Artifact", parent.ObjectID);
+                                    var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
+
+                                    model.rows.Insert(1, new DetailReadOnlyRowModel
+                                    {
+                                        columns = 1,
+                                        FirstColumnFields = new List<ReadOnlyField> {
+                                        new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ObjectID}
+                                    },
+                                        Category = Resources.FieldInfo.SystemNoCategory
+                                    });
+                                }
                             }
 
                             model.rows.Add(new DetailReadOnlyRowModel
@@ -2456,9 +2581,9 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
                             },
-                                Category = Resources.FieldInfo.SystemFieldCategory
+                                Category = FieldInfo.SystemFieldCategory
                             });
 
                             model.rows.Add(new DetailReadOnlyRowModel
@@ -2481,10 +2606,10 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                                 {
                                     columns = 2,
                                     FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
                                 },
                                     SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
                                 },
                                     Category = Resources.FieldInfo.SystemFieldCategory
                                 });
@@ -2495,7 +2620,19 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                                 {
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                                    Category = Resources.FieldInfo.SystemFieldCategory
+                                });
+                            }
+
+                            if (type == SystemObjects.Rule)
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 2,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.RuleID_Name, FieldName = "RuleID", Value = $"{asset.ObjectID}" }
                                 },
                                     Category = Resources.FieldInfo.SystemFieldCategory
                                 });
@@ -3074,104 +3211,10 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                     policy = null;
                     break;
                 #endregion
-                case SystemObjects.Rule:
-                    #region Fields
 
-                    var rule = Company.GetById<Rule>(id, i => i.RuleType);
-                    if (rule != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.Name }
-                            },
-                            Category = Resources.FieldInfo.SystemFieldCategory
-                        });
-
-                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
-
-                        if (useAssetDetailColumnDefinition && fcMapper != null)
-                        {
-                            fcMapper.ArrangeRowsAndCols(dynamicRows);
-                        }
-                        else
-                        {
-                            model.rows.AddRange(dynamicRows);
-                        }
-
-                        var asset = Company.Assets.Where(x => x.Object == "Rule" && x.ObjectID == id).FirstOrDefault();
-
-                        if (asset != null)
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
-                            },
-                                Category = Resources.FieldInfo.SystemFieldCategory
-                            });
-
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 2,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
-                            },
-                                SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
-                            },
-                                Category = Resources.FieldInfo.SystemFieldCategory
-                            });
-                        }
-
-                        if (rule.UpdatedOn.HasValue)
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 2,
-                                FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = rule.CreatedOn.Value.ToString("o"), DataType = "date" }
-                                },
-                                SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "RuleUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = rule.UpdatedOn.GetValueOrDefault().ToString("o"), DataType = "date" }
-                                },
-                                Category = Resources.FieldInfo.SystemFieldCategory
-                            });
-                        }
-                        else
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = rule.CreatedOn.Value.ToString("o"), DataType = "date" }
-                                },
-                                Category = Resources.FieldInfo.SystemFieldCategory
-                            });
-                        }
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = rule.GetName(i => i.ID), FieldName = "RuleID", FieldDescription = rule.GetDescription(i => i.ID), Value = $"{rule.ID}" }
-                                },
-                            Category = Resources.FieldInfo.SystemFieldCategory
-                        });
-                    }
-                    rule = null;
-                    break;
-                #endregion                
                 case SystemObjects.RuleType:
                     #region Fields
                     var ruleType = Company.Filter<AssetType>(i => i.ObjectID == id && i.Object == "RuleType").SingleOrDefault();
-                    var ruleDetail = Company.GetObjectDetail("RuleType", id);
                     if (ruleType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -3191,7 +3234,7 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = ruleDetail.UID.ToString()  }
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = ruleType.uid.ToString()  }
                             }
                         });
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -3947,7 +3990,10 @@ where v.id = {0}", id)).FirstOrDefault();
             if (!isAdmin)
             {
                 asset = Company.GetAssetDetail(id);
-                if (asset == null) throw new NotFoundException("Asset Not found");
+                if (asset == null)
+                {
+                    throw new ArgumentNullException(ApiMessages.AssetNotfound);
+                }
             }
 
             return GetPermissionsByObject(asset, isAdmin);
@@ -3998,7 +4044,10 @@ where v.id = {0}", id)).FirstOrDefault();
                 else
                 {
                     asset = Company.Filter<AssetDetail>(i => i.Object == sType && i.ObjectID == id).FirstOrDefault();
-                    if (asset == null) throw new NotFoundException("Asset Not found");
+                    if (asset == null)
+                    {
+                        throw new ArgumentNullException(ApiMessages.AssetNotfound);
+                    }
                     return GetPermissionsByObject(asset, isAdmin);
                 }
             }
@@ -4131,11 +4180,17 @@ where v.id = {0}", id)).FirstOrDefault();
 
             var intersectType = Company.GetById<IntersectType>(intersectTypeID);
 
-            if (intersectType == null) throw new NotFoundException("intersect type id");
+            if (intersectType == null)
+            {
+                throw new ArgumentNullException(ApiMessages.InvalidIntersecttypeid);
+            }
 
             var sTargetType = targetType.ToString();
             var targetAssetType = Company.Filter<AssetType>(i => i.Object == sTargetType && i.ObjectID == targetID).SingleOrDefault();
-            if (targetAssetType == null) throw new NotFoundException("target asset type");
+            if (targetAssetType == null)
+            {
+                throw new ArgumentNullException(ApiMessages.TargetAssetType);
+            }
 
 
             var isTargetObject = intersectType.Object == sTargetType && intersectType.ObjectID == targetID;
@@ -4330,79 +4385,6 @@ where   (
                 });
         }
 
-        [Route("export/{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/excel.xls"), HttpGet]
-        public HttpResponseMessage RelationshipsForObjectByTargetTypeExportExcel(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID)
-        {
-            var results = this.RelationshipsForObjectByTargetType(type, id, targetType, targetID, intersectTypeID);
-
-            //get the fields for the spreadsheet
-            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && i.ObjectID == intersectTypeID && i.IsListable).ToList().OrderBy(x => x.SortOrder);
-
-            var document = new SLDocument();
-            document.AddWorksheet("Items");
-
-            #region Create the list sheet
-
-            #region Header
-
-            var colIndex = 0;
-
-            document.SetCellValue(1, ++colIndex, "Name");
-
-            //add fields for this relation
-            foreach (var field in fields)
-            {
-                document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
-            }
-
-            document.SetCellValue(1, ++colIndex, "Relationship UID");
-
-            #endregion
-
-            int rowIndex = 1;
-            foreach (var row in results)
-            {
-                var dataColIndex = 0;
-                rowIndex++;
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
-
-                var rowDict = ((IDictionary<string, object>)row);
-                foreach (var field in fields)
-                {
-                    var fieldKey = $"Field{field.ID}";
-
-                    if (rowDict.ContainsKey(fieldKey))
-                    {
-                        if (rowDict[fieldKey] != null)
-                            document.SetCellValue(rowIndex, ++dataColIndex, rowDict[fieldKey].ToString());
-                    }
-                }
-
-                document.SetCellValue(rowIndex, ++dataColIndex, (row.Uid ?? "").ToString());
-
-            }
-
-            #endregion
-
-            var detail = Company.GetObjectDetail(type.ToString(), id);
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            stream.Position = 0;
-            HttpResponseMessage result = null;
-            // serve the file to the client      
-            result = Request.CreateResponse(HttpStatusCode.OK);
-            result.Content = new StreamContent(stream);
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"{detail.Name.GetSafeFilename()} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
-            };
-            return result;
-        }
-
         [Route("{type}/{id:int}/{predicateId:int}/synonyms")]
         public async Task<HttpResponseMessage> GetSynonymsByObject(SystemObjects type, int id, int predicateId)
         {
@@ -4575,7 +4557,7 @@ SELECT (
             {
                 if (!question.Values.Any(x => x.IsChecked == true))
                 {
-                    throw new Exception("Invalid model");
+                    throw new Exception(ApiMessages.InvalidModel);
                 }
             }
 

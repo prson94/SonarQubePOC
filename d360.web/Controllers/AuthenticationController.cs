@@ -1,4 +1,4 @@
-﻿using ComponentSpace.SAML2.Assertions;
+using ComponentSpace.SAML2.Assertions;
 using ComponentSpace.SAML2.Profiles.SingleLogout;
 using ComponentSpace.SAML2.Profiles.SSOBrowser;
 using ComponentSpace.SAML2.Protocols;
@@ -33,6 +33,8 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using System.Xml;
+using Resources;
+using d360.extensions;
 
 namespace d360.web.Controllers
 {
@@ -46,9 +48,10 @@ namespace d360.web.Controllers
 
         TelemetryClient Telemetry;
 
-        public AuthenticationController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+        public AuthenticationController(ICommunityContext community, ICompanyContext company, IMailProvider mail, ISettingsRepository settingsRepository)
             : base(community, company, settingsRepository)
         {
+            Mail = mail;
             Telemetry = new TelemetryClient();
             Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
             Telemetry.Context.GlobalProperties["CompanyID"] = company.CurrentCompanyID.ToString();
@@ -93,7 +96,7 @@ namespace d360.web.Controllers
                         }
                         else
                         {
-                            throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where an IDP-supplied CER file was stored");
+                            throw new ArgumentNullException(OthersMessages.FailedToVerifySignature);
                         }
                     }
                     else
@@ -104,7 +107,7 @@ namespace d360.web.Controllers
                         }
                         else
                         {
-                            throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where no IDP-supplied CER file was stored");
+                            throw new ArgumentNullException(OthersMessages.FailedToVerifySignatureNoIDP);
                         }
                     }
                 }
@@ -575,7 +578,7 @@ namespace d360.web.Controllers
 
                     if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId))
                     {
-                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority.");
+                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
                     }
                     var state = Community.GenerateOpenIdRequestValue();
                     var nonce = Community.GenerateOpenIdRequestValue();
@@ -584,6 +587,14 @@ namespace d360.web.Controllers
                     Community.SetOpenIdRequest(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state });
 
                     var ru = new RequestUrl($"{authenticationSettings.baseUri}/authorize");
+                    var extras = new Parameters();
+                    if (authenticationSettings.extraParameters.Properties().Count() > 0)
+                    {
+                        foreach (var p in authenticationSettings.extraParameters.Properties())
+                        {
+                            extras.Add(p.Name, p.Value.ToString());
+                        }
+                    }
                     var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId, 
                         responseType: "code", 
@@ -592,7 +603,8 @@ namespace d360.web.Controllers
                         state, 
                         nonce, 
                         responseMode: "form_post",
-                        extra: authenticationSettings.GetStructuredExtraParameters());
+                        extra: extras
+                        );
                     return new RedirectResult(url);
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
@@ -656,7 +668,7 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    throw new ArgumentException("No assertions in response");
+                    throw new ArgumentException(OthersMessages.NoAssertionsInResponse);
                 }
 
                 var attributes = samlAssertion.GetAttributeStatements()[0].Attributes;
@@ -748,14 +760,14 @@ namespace d360.web.Controllers
 
             if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId) || string.IsNullOrEmpty(authenticationSettings.clientSecret) || string.IsNullOrEmpty(authenticationSettings.audience))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Govern is missing configuration information related to the OpenID IdP, such as ClientID and/or Authority.");
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
             }
 
             var baseUri = authenticationSettings.baseUri;
             var openIdRequest = Community.GetOpenIdRequest(state);
             if (openIdRequest == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Failed to authenticate. Oidc State not found in .");
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthentication);
             }
 
             var client = new HttpClient();
@@ -784,7 +796,7 @@ namespace d360.web.Controllers
             var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
             if (openIdRequest.Nonce != incomingNonce)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Failed to authenticate. Nonces do not match.");
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthenticationNonces);
             }
 
             #region Claims processing
@@ -950,13 +962,13 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("Unauthorized", "The user name or password provided is incorrect.");
-                    return View(model);
+                    ModelState.AddModelError(OthersMessages.Unauthorized, OthersMessages.IncorrectPassword);
+                    return View("Login", model);
                 }
             }
 
-            ModelState.AddModelError("UnknownError", UNKNOWN_ERROR_MESSAGE);
-            return View(model);
+            ModelState.AddModelError(ApiMessages.UnknownError, UNKNOWN_ERROR_MESSAGE);
+            return View("Login", model);
         }
 
         [AllowAnonymous, Route("slo-callback")]
@@ -985,9 +997,17 @@ namespace d360.web.Controllers
                     {
                         var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/slo-callback";
                         var ru = new RequestUrl($"{authenticationSettings.baseUri}/logout");
+                        var extras = new Parameters();
+                        if (authenticationSettings.extraParameters.Properties().Count() > 0)
+                        {
+                            foreach (var p in authenticationSettings.extraParameters.Properties())
+                            {
+                                extras.Add(p.Name, p.Value<string>(p.Name));
+                            }
+                        }
                         var url = ru.CreateEndSessionUrl(idToken, 
                             callbackUri,
-                            extra: authenticationSettings.GetStructuredExtraParameters());
+                            extra: extras);
 
                         return Redirect(url);
                     }
@@ -1042,7 +1062,7 @@ namespace d360.web.Controllers
 
             if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
             {
-                ModelState.AddModelError("Invalid", "No terms of use agreement found.");
+                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoTermOfAgreementFound);
                 success = false;
             }
 
@@ -1067,7 +1087,7 @@ namespace d360.web.Controllers
 
             if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
             {
-                ModelState.AddModelError("Invalid", "No terms of use agreement found.");
+                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoTermOfAgreementFound);
                 success = false;
             }
 
@@ -1186,7 +1206,7 @@ namespace d360.web.Controllers
 
                             if (string.IsNullOrEmpty(emailDomain))
                             {
-                                ModelState.AddModelError("Invalid", "No email domain could be resolved.");
+                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoEmailDomainResolved);
                                 return View(model);
                             }
 
@@ -1218,7 +1238,7 @@ namespace d360.web.Controllers
                                 {
 
                                     var content = $@"Please complete registration to {orgs.First().Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                    await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                    await Mail.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                     model.Step = RegisterStep.Email;
                                     model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -1251,7 +1271,7 @@ namespace d360.web.Controllers
                                 {
 
                                     var content = $@"Please complete registration to {org.Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                    await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                    await Mail.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                     model.Step = RegisterStep.Email;
                                     model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -1286,17 +1306,17 @@ namespace d360.web.Controllers
                                     else
                                     {
                                         var content = $@"Please complete registration to {invite.OrganizationName} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                        await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                        await Mail.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                         model.Step = RegisterStep.Email;
-                                        model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
+                                        model.Message = OthersMessages.OwnershipConfirmationMail;
                                     }
 
                                     return View(model);
                                 }
                                 else
                                 {
-                                    ModelState.AddModelError("Unauthorized", "Your organisation is not yet registered with the Market Business Glossary or your details are invalid. Please contact <a href='mailto:datasupport@londonmarketgroup.co.uk'>datasupport@londonmarketgroup.co.uk</a> for assistance.");
+                                    ModelState.AddModelError( OthersMessages.Unauthorized, OthersMessages.OrganisationNotYetRegistered);
                                     return View(model);
                                 }
 
@@ -1304,7 +1324,7 @@ namespace d360.web.Controllers
                         }
                         catch (Exception)
                         {
-                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
                             return View(model);
                         }
 
@@ -1313,7 +1333,7 @@ namespace d360.web.Controllers
 
                         if (!model.RegistrationID.HasValue)
                         {
-                            ModelState.AddModelError("Invalid", "No registration found.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                             return View(model);
                         }
 
@@ -1363,7 +1383,7 @@ namespace d360.web.Controllers
 
                                 if (resource == null)
                                 {
-                                    ModelState.AddModelError("Invalid", "Resource not available for this user.");
+                                    ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResourceNotThisUser);
                                     return View(model);
                                 }
 
@@ -1389,7 +1409,7 @@ namespace d360.web.Controllers
 
                                     if (orgResource == null)
                                     {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                        ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResourceNotSetOrgResource);
                                         return View(model);
                                     }
 
@@ -1437,7 +1457,7 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
                         }
@@ -1450,19 +1470,19 @@ namespace d360.web.Controllers
 
                             if (!model.RegistrationID.HasValue)
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
 
                             if (!model.Password.Equals(model.ConfirmPassword))
                             {
-                                ModelState.AddModelError("Invalid", "Passwords do not match.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.PasswordNotMatch);
                                 return View(model);
                             }
 
                             if (!Regex.Match(model.Password, Resources.Validation.Password_Regex).Success)
                             {
-                                ModelState.AddModelError("Invalid", $"Your password does not meet the following complexity requirements: {Resources.Validation.Password_Requirements}.");
+                                ModelState.AddModelError(ApiMessages.Invalid,string.Format(OthersMessages.NotMeetPasswordRule,Resources.Validation.Password_Requirements));
                                 return View(model);
                             }
 
@@ -1525,13 +1545,13 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
-                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
                             return View(model);
                         }
 
@@ -1543,7 +1563,7 @@ namespace d360.web.Controllers
 
                             if (!model.RegistrationID.HasValue)
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
 
@@ -1591,7 +1611,7 @@ namespace d360.web.Controllers
 
                                 if (resource == null)
                                 {
-                                    ModelState.AddModelError("Invalid", "Resource not available for this user.");
+                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotThisUser );
                                     return View(model);
                                 }
 
@@ -1617,7 +1637,7 @@ namespace d360.web.Controllers
 
                                     if (orgResource == null)
                                     {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                        ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotSetOrgResource);
                                         return View(model);
                                     }
 
@@ -1665,13 +1685,13 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
-                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
                             return View(model);
                         }
                     case RegisterStep.TermsOfUse:
@@ -1682,7 +1702,7 @@ namespace d360.web.Controllers
 
                             if (!model.RegistrationID.HasValue)
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
 
@@ -1695,21 +1715,21 @@ namespace d360.web.Controllers
 
                                 if (!model.Accept ?? false)
                                 {
-                                    ModelState.AddModelError("Invalid", "You must accept the terms of use.");
+                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.MustAcceptTermsOfUse);
                                     return View(model);
                                 }
 
                                 var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
                                 if (resource == null)
                                 {
-                                    ModelState.AddModelError("Invalid", "No resource account could be located for you.");
+                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoResourceAccount);
                                     return View(model);
                                 }
                                 else
                                 {
                                     if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
                                     {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet allocated to this company.");
+                                        ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResoourceAccountNotAllocatedToCompany);
                                         return View(model);
                                     }
                                 }
@@ -1737,7 +1757,7 @@ namespace d360.web.Controllers
 
                                     if (orgResource == null)
                                     {
-                                        ModelState.AddModelError("Invalid", "Resource account not yet set as an organizational resource.");
+                                        ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotSetOrgResource);
                                         return View(model);
                                     }
 
@@ -1780,13 +1800,13 @@ namespace d360.web.Controllers
                             }
                             else
                             {
-                                ModelState.AddModelError("Invalid", "No registration found.");
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
-                            ModelState.AddModelError("Invalid", "This email does not look valid.");
+                            ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
                             return View(model);
                         }
 
@@ -1799,7 +1819,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            ModelState.AddModelError("UnknownError", UNKNOWN_ERROR_MESSAGE);
+            ModelState.AddModelError(ApiMessages.UnknownError, UNKNOWN_ERROR_MESSAGE);
             return View(model);
         }
 
@@ -1842,38 +1862,59 @@ namespace d360.web.Controllers
 
             if (resource != null)
             {
-                // delete any pending requests for this resource id
+                ResourcePasswordReset latest, resetModel;
+                bool hasExistingRecord = false;
 
+                //find any pending requests for this resource
                 var pending = Company.ResourcePasswordResets.Where(x => x.ResourceID == resource.ResourceID);
 
                 if (pending.Any())
                 {
-                    Company.ResourcePasswordResets.RemoveRange(pending);
-                    Company.SaveChanges();
+                    latest = pending.OrderByDescending(x => x.CreateDate).First();
+                    hasExistingRecord = latest.CreateDate >= DateTime.UtcNow.AddMinutes(-5);
+
+                    //if the most recent record is less than 5 minutes old, leave it and remove the others
+                    if (hasExistingRecord)
+                    {
+                        pending = pending.Where(x => x.ID != latest.ID);
+                    }
+
+                    //remove any other pending requests
+                    if (pending.Any())
+                    {
+                        Company.ResourcePasswordResets.RemoveRange(pending);
+                        Company.SaveChanges();
+                    }                   
+
                 }
 
-                // add record for password reset request
-                var resetModel = new ResourcePasswordReset
+                //if there are no records add one and send the reset email
+                if (!hasExistingRecord)
                 {
-                    CreateDate = DateTime.UtcNow,
-                    ResourceID = resource.ResourceID
-                };
+                    var templateValues = new Dictionary<string, string>();
+                    string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
 
-                Company.ResourcePasswordResets.Add(resetModel);
-                Company.SaveChanges();
+                    //add record for password reset request
+                    resetModel = new ResourcePasswordReset
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        ResourceID = resource.ResourceID
+                    };
 
-                //send email with link
-                var templateValues = new Dictionary<string, string>();
+                    Company.ResourcePasswordResets.Add(resetModel);
+                    Company.SaveChanges();
 
-                string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
-                strUrl += $"doreset?id={resetModel.ID}";
+                    strUrl += $"doreset?id={resetModel.ID}";
 
-                templateValues["firstname"] = resource.FirstName;
-                templateValues["request_url"] = strUrl;
+                    //send email with link                   
+                    templateValues["firstname"] = resource.FirstName;
+                    templateValues["request_url"] = strUrl;
 
-                //email user 
-                extensions.mail.SimpleMessage.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
+                    //email user 
+                    Mail.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
+                }
             }
+
             //redirect to login page
             FormsAuthentication.RedirectToLoginPage();
             return new EmptyResult();

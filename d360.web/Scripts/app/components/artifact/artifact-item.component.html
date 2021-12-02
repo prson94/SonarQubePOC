@@ -4,12 +4,12 @@
         <div>
             <div class="col s12" style="display:flex;">
                 <div class="tile tile-detail main-panel">
-                    <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [useV2Api]="true" [objectType]="'Artifact'" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
+                    <d3s-object-definition-tile [synonymPermission]="synonymPermission" [objectPermissions]="permissions" [objectID]="artifact?.ID" [useV2Api]="true" [objectType]="'Artifact'" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
                 </div>
                 <div *ngIf="showDataProfile" class="tile tile-detail side-panel">
                         <side-panel (expandedChange)="sidePanelOpen=$event" [hasProfiling]="true" [storageKey]="sidePanelStorageKey">
                             <ng-container *ngIf="sidePanelOpen">
-                                <data-profile [dataProfile]="dataProfile"></data-profile>
+                                <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList" (showTimeSeries)="showTimeSeriesPanel($event)"></data-profile>
                             </ng-container>
                         </side-panel>
                 </div>                

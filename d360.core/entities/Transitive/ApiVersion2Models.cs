@@ -47,12 +47,10 @@ namespace d360.core.entities
         [DataMember]
         public Guid Uid { get; set; }
 
-        [DataMember]
-        [MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+        [DataMember, MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
         public string Name { get; set; }
 
-        [DataMember]
-        [JsonConverter(typeof(EnumConverter))]
+        [DataMember, JsonConverter(typeof(EnumConverter))]
         public AssetTypeClass Class { get; set; }
 
         [DataMember]
@@ -61,8 +59,7 @@ namespace d360.core.entities
         [DataMember]
         public bool AutoDisplayDescription { get; set; }
 
-        [DataMember]
-        [MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+        [DataMember, MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
         public string DisplayFormat { get; set; }
 
         public HierarchyInsert Hierarchy { get; set; }
@@ -85,13 +82,11 @@ namespace d360.core.entities
         public bool UseAsTransformation { get; set; }
 
         [DataMember]
-        public bool? CanOwnFusion { get; set; }
-        [DataMember]
-        public int? FusionID { get; set; }
-        [DataMember]
         public bool? AutoDisplayParent { get; set; }
+
         [DataMember]
         public FlowObjectType? FlowObjectType { get; set; }
+
         [DataMember]
         public bool? CanEditParent { get; set; }
     }
@@ -344,6 +339,27 @@ namespace d360.core.entities
 
     [JsonArray]
     [DataContract(Name = "relationships")]
+    public class RelationshipUpdates : List<RelationshipUpdate>
+    {
+
+    }
+
+    public class RelationshipUpdate
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+        [DataMember]
+        public string Owner { get; set; }
+    }
+
+    [JsonArray]
+    [DataContract(Name = "relationships")]
     public class RelationshipDeletes : List<RelationshipDelete>
     {
     }
@@ -389,7 +405,7 @@ namespace d360.core.entities
         public string Owner { get; set; }
     }
 
-    public class RelationshipUidResult
+    public class RelationshipUidResult: PagedApiBaseRequestModel
     {
         [DataMember]
         public IEnumerable<RelationshipUidResultItem> Results { get; set; }
@@ -483,6 +499,36 @@ namespace d360.core.entities
         [DataMember]
         public bool Success { get; set; }
         [DataMember]
+        public bool IsNew { get; set; }
+
+        public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }
+
+        public string Object { get { return "Intersect"; } set { } }
+
+        public int ObjectID { get { return IntersectID; } set { } }
+
+        [DataMember]
+        public Guid uid { get; set; }
+    }
+
+    [DataContract]
+    public class DatabaseBulkRelationshipUpdateResult : IWorkflowEnabledAsset, IGraphAsset
+    {
+        public Guid ExecutionID { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public int ItemNumber { get; set; }
+
+        public int IntersectID { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+
         public bool IsNew { get; set; }
 
         public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }

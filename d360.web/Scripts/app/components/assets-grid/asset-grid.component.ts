@@ -38,6 +38,8 @@ import { V2ApiFilters } from "../../models/asset-search.model";
 import { SortOrder } from "../../models/enums.model";
 import { AssetGridObject } from "./asset-grid.model";
 import { Filters } from "./advanced-filtering/advanced-filtering.models";
+import { CompanySettingsService } from "../../services/settings.service";
+import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -60,6 +62,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
     @ViewChild('dt', { static: false }) dt: Table;
+    @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
@@ -128,13 +131,14 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private headerActionsService: HeaderActionsService,
         public stateService: StateService,
         private permissionsService: PermissionsService,
+        protected settingsService: CompanySettingsService,
         private router: Router,
         private gridDefinitionService: GridDefinitionService,
         private changeDetectorRef: ChangeDetectorRef,
         private assetService: AssetService,
         private route: ActivatedRoute
     ) {
-        super();
+        super(settingsService);
 
         var me = this;
         this.route.queryParams.subscribe((params) => {
@@ -379,7 +383,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return params;
     }
 
-    getData() {
+    getData(autoSelect: boolean = true) {
         this.isLoading = true;
         this.isLoadingChange.emit(true);
         if (this.assetSearchSub) {
@@ -390,8 +394,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             .pipe(debounceTime(200))
             .subscribe(res => {
                 this.items = res.items;
-
-                let selectedItemStillExists = false;
                 let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 
                 this.items.forEach((i) => {
@@ -415,16 +417,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                         });
                     }
 
-                    if (this.selected != null && !selectedItemStillExists) {
+                    if (this.selected != null && autoSelect) {
                         if (i.AssetId === this.selected.AssetId) {
                             this.selectRow(i);
-                            selectedItemStillExists = true;
                         }
                     }
 
                 });
 
-                if (!selectedItemStillExists) {
+                if (autoSelect) {
                     if (this.items && this.items.length > 0) {
                         this.selectRow(this.items[0]);
                     } else {
@@ -452,7 +453,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 if (this.initialTotalRecords == null) {
                     this.initialTotalRecords = res.total;
                 }
-                if (this.items && this.items.length > 0) this.selected = this.items[0];
+                if (this.items && this.items.length > 0 && autoSelect) {
+                    this.selected = this.items[0];
+                }
                 this.isLoading = false;
                 this.isLoadingChange.emit(false);
                 this.changeDetectorRef.markForCheck();
@@ -518,9 +521,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     add() {
         this.selected = null;
         this.showEditor = true;
-        this.showEditorChange.emit(true);
         this.selectedChange.emit(null);
 
+        //reload dynamic editor if it already exists to trigger change detection
+        if (this.dynamicEditor) {
+            this.dynamicEditor.load();
+        }
     }
 
     export(listableOnly) {
@@ -554,11 +560,23 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     saveItem($event) {
         this.isEditing = false;
         if ($event.item.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
-        this.getData();
-        this.isLoading = false;
-        this.isLoadingChange.emit(false);
-        this.showEditor = false;
-        this.showEditorChange.emit(false);
+        if ($event && $event.addAnother) {
+            this.add();
+            this.getData(false);
+        }
+        else if ($event && $event.action === 'new') {
+            var newUrl = '/asset/' + $event.assetUid;
+            this.router.navigateByUrl(newUrl);
+        }
+        else {
+            this.getData();
+            this.isLoading = false;
+            this.isLoadingChange.emit(false);
+            this.showEditor = false;
+            this.showEditorChange.emit(false);
+            this.changeDetectorRef.markForCheck();
+        }
+
         this.changeDetectorRef.markForCheck();
     }
 
@@ -676,5 +694,22 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     public onSimpleSearch($event) {
         this.getData();
+    }
+
+    public triggerEdit() {
+        this.onEdit(this.selected);
+    }
+
+    getAssetPath() {
+        var assetTypePath = this.gridObject?.Object === "Rule" ? this.gridObject?.Name : this.gridObject?.AssetTypePath;
+
+        if (this.selected && this.selected.Path) {
+            let path = this.selected.Path as string;
+            path = path.substring(1, path.length - 1);
+            path = path.split("].[").join(` > `);
+            return assetTypePath + ' > ' + path;
+        }
+
+        return assetTypePath;
     }
 }

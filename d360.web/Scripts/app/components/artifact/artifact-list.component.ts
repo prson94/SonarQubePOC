@@ -17,6 +17,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
+import { CompanySettingsService } from '../../services/settings.service';
 
 declare var CurrentResourceID;
 
@@ -46,6 +47,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     gridLoading: boolean = true;
     definitionLoaded: boolean = false;
     dataProfile: any;
+    private dataProfileList: any[];
     
 
     constructor(private route: ActivatedRoute,
@@ -55,15 +57,16 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
-        secondaryNavService: SecondaryNavService) {
-        super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService) {
+        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
     }
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
 
-            
+
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
@@ -163,11 +166,14 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+            let startDate = new Date();            
+            startDate.setFullYear(startDate.getUTCFullYear() - 100);
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid, startDate).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
+                        this.dataProfileList = r.items;
                         this.dataProfile = r.items[0];
-
+                        
                         forkJoin(
                             this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
                             this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
@@ -179,7 +185,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         });
                     }
                     this.sidePanelLoading = false;
-                }); 
+                });
         }
     }
 

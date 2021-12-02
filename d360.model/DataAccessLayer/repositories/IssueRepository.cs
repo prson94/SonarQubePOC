@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using System.Data.Entity.Infrastructure;
 using Dapper;
 using d360.model.DataAccessLayer.repositories;
+using d360.core.resources;
 
 namespace d360.model.DataAccessLayer
 {
@@ -89,7 +90,7 @@ namespace d360.model.DataAccessLayer
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid Action type uid value provided");
+                    throw new ArgumentException(IssueErrors.InvalidActionUid);
                 }
             }
 
@@ -126,7 +127,7 @@ namespace d360.model.DataAccessLayer
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid Limit To Active Workflows value provided");
+                    throw new ArgumentException(IssueErrors.InvalidLimitProvided);
                 }
             }
             #endregion
@@ -178,7 +179,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid Action type uid value provided");
+                        throw new ArgumentException(IssueErrors.InvalidActionUid);
                     }
                 }                
 
@@ -194,7 +195,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid Action type uid value provided");
+                        throw new ArgumentException(IssueErrors.InvalidActionUid);
                     }
                 }
 
@@ -210,7 +211,7 @@ namespace d360.model.DataAccessLayer
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid resource uid value provided");
+                        throw new ArgumentException(IssueErrors.InvalidResourceUid);
                     }
                 }
                

@@ -2,6 +2,7 @@
 import { LoadService } from '../../../services/load.service';
 import { GridColumn } from '../../../models/grid-definition.model';
 import { BaseComponent } from '../../shared/base.component'
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-bulk-load-item',
@@ -26,8 +27,10 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
         return f;
     }
 
-    constructor(private loadService: LoadService) {
-        super();
+    constructor(
+        private loadService: LoadService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

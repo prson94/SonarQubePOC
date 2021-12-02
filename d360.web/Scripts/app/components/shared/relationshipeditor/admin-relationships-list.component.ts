@@ -4,6 +4,7 @@ import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { PredicateFriendlyType } from '../../../models/predicate.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-relationships-list',
@@ -119,11 +120,14 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     showDelete: boolean = false;
     theDeleteCallback: Function;
     private gridStorageKey: string = "admin-relationships-grid";
-    constructor(private messagesService: MessagesObservableService,
+
+    constructor(
+        private messagesService: MessagesObservableService,
         private relationshipsService: RelationshipsService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef
     ) {
-        super();
+        super(settingsService);
         this.theDeleteCallback = this.deleteRelationship.bind(this);
     }
 

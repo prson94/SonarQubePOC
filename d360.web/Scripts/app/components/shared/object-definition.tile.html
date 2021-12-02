@@ -1,7 +1,7 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="formMode == FormMode.Default && !isLoading" style="padding: 16px 11px 6px 11px">
+<div *ngIf="!isLoading" style="padding: 16px 11px 6px 11px">
     <div style="height: 0">
-        &nbsp;<button igButton *ngIf="hasModifyAssetPermissions()" icon="fa-pencil" label="Edit" (click)="formMode = FormMode.Editing; formModeChange.emit(formMode)" style="float:right;z-index:1000"></button>
+        &nbsp;<button class="ig-button-primary" igButton *ngIf="hasModifyAssetPermissions()" icon="fa-pencil" label="Edit" (click)="editClick()" style="float:right;z-index:1000"></button>
     </div>
     <ig-asset-detail [useAccordion]="true"
                      [objectID]="objectID"
@@ -11,7 +11,8 @@
                      [hasAddRelationshipsPermissions]="hasAddRelationshipsPermissions"
                      [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
                      [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions"
-                     [useAssetDetailColumnDefinition]="true">
+                     [useAssetDetailColumnDefinition]="true"
+                     [synonymPermission]="synonymPermission">
     </ig-asset-detail>
 </div>
 <d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && !useV2Api"
@@ -24,14 +25,25 @@
                     (saveClick)="save($event)"
                     (closeClick)="formMode = FormMode.Default; formModeChange.emit(formMode)">
 </d3s-dynamic-editor>
-<d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && useV2Api"
-                    [objectID]="objectID"
-                    [parentID]="object?.ParentID"
-                    [objectType]="objectType"
-                    [objectTypeUid]="object?.AssetTypeUid"
-                    [selection]="object"
-                    [isV2API]="true"
-                    [title]="object?.Name"
-                    (saveClick)="saveV2($event)"
-                    (closeClick)="formMode = FormMode.Default; formModeChange.emit(formMode)">
-</d3s-dynamic-editor>
+
+<ng-container *ngIf="useV2Api">
+    <d3s-modal #modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+               (onClose)="closeEditor()"
+               [showTitle]="false"
+               [isVisible]="modalEditorVisible">
+        <asset-editor #dynamicEditor
+                      *ngIf="formMode == FormMode.Editing"
+                      [objectID]="objectID"
+                      [parentID]="object?.ParentID"
+                      [objectType]="objectType"
+                      [objectTypeUid]="object?.AssetTypeUid"
+                      [selection]="object"
+                      [isV2API]="true"
+                      (saveClick)="saveV2($event)"
+                      (closeClick)="closeEditor()"
+                      [title]="'Edit Asset'"
+                      [rowID]="rowID"
+                      [assetTypePath]="getAssetTypePath()"
+                      [showAsModal]="true"></asset-editor>
+    </d3s-modal>
+</ng-container>

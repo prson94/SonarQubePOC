@@ -45,9 +45,11 @@ import { FieldsObservableService } from '../../../../services/fieldsObservable.s
 import { AssetService } from '../../../../services/asset.service';
 import { ResponsibilityService } from '../../../../services/responsibility.service';
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { CompanySettingEnum } from '../../../../models/settings.model';
+import { AssetDetailComponent } from '../../asset-detail/asset-detail.component';
 
 declare var window: any;
-
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
@@ -82,6 +84,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('relationshipBadges', { static: false }) relationshipBadgesRef: ElementRef;
     @ViewChild('relationshipBadgesTooltip', { static: false }) relationshipBadgesTooltipRef: ElementRef;
 
+    @ViewChild('assetDetailComponent', { static: false }) assetDetailComponent: AssetDetailComponent;
+
     private diagramData: AssetBrowserResponseModel;
 
     private originalAssetUid: string;
@@ -90,6 +94,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     assetsWithAlerts: string[] = [];
     selectedAssetsWithAlerts: string[] = [];
     totalAlertCount = 0;
+    showEditor: boolean = false;
 
     diagramTypeSpecifiedInPath = DiagramType.Lineage;
     isDiagramTypeSpecifiedInPath = false;
@@ -109,7 +114,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     panel_Loading = false;
     panel_InformationDisabled = false;
     panel_InformationHasReadAccess = false;
-    panel_OwnershipHasReadAccess = false;
     panel_TabIndex = 0;
     linkMenuItems: any[] = [
         { title: "Open" },
@@ -130,6 +134,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
 
     autoCollapseRelationshipCount: number = 3;
+    performanceLinkMode: boolean = false;
+    maxLinkCountToAvoidNodesTemplate: number = 2;
 
     popupMenuItems = [
         {
@@ -145,8 +151,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Constants
 
     private readonly emptyUid: string = '00000000-0000-0000-0000-000000000000';
-    private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
-    private readonly fontContextMenuhelper_ShowDetails: string = "bold 12px 'Source Sans Pro'";
+    private readonly fontContextMenu: string = "12px 'Precisely'";
+    private readonly fontContextMenuhelper_ShowDetails: string = "bold 12px 'Precisely'";
 
     private readonly fontOwnerBackColor: string = "#FEF6F2";
     private readonly fontOwnerBadgeLabelBorderColor: string = "#DE4B00";
@@ -154,9 +160,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private readonly fontLabelIcon: string = "12px FontAwesome";
     private readonly fontLabelAlertColor: string = "#FF0000";
-    private readonly fontLabel: string = "14px 'Source Sans Pro'";
+    private readonly fontLabel: string = "14px 'Precisely'";
     private readonly fontLabelColor: string = "#404040";
-    private readonly fontLink: string = "9pt 'Source Sans Pro'";
+    private readonly fontLink: string = "9pt 'Precisely'";
     private readonly fontLinkColor: string = "#fff";
     private readonly linkBackColor: string = "#808080";
     private readonly lightenBoxColor: string = "#fff";
@@ -175,9 +181,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly selectionPathHighlightColor: string = '#F5C2FF';
     private readonly leafBackColor: string = 'transparent';
 
-    private readonly badgeFont: string = "14px 'Source Sans Pro'";
+    private readonly badgeFont: string = "14px 'Precisely'";
     private readonly badgeStrokeColor = "#d6d5d5";
-    private readonly badgeTextColor = "#006fc0";
+    private readonly badgeTextColor = "#6d18dd";
     private readonly ignoredPanelFieldTypes = [
         "Tag",
         "Relationship",
@@ -210,11 +216,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         private fieldsService: FieldsObservableService,
         private assetService: AssetService,
         private responsibilityService: ResponsibilityService,
-        private objectStatisticsService: ObjectStatisticsService
+        private objectStatisticsService: ObjectStatisticsService,
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
+
+        this.maxLinkCountToAvoidNodesTemplate = settingsService.getSettingById(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount).NumberSetting.Value;
     }
 
     public ngOnInit() {
@@ -337,16 +346,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.panelModel.InformationVisible ||
             this.panelModel.SettingsVisible
         );
-    }
-
-    private ownershipTabEnabled() {
-        let enabled = false;
-
-        if (this.selectedDiagramAsset && this.selectedDiagramAsset.Object !== 'Resource') {
-            enabled = true;
-        }
-
-        return enabled;
     }
 
     //#region Session storage
@@ -888,7 +887,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (uid !== '' && uid != this.emptyUid) {
                         this.panel_InformationDisabled = false;
                         this.panel_InformationHasReadAccess = data.hasAssetReadAccess;
-                        this.panel_OwnershipHasReadAccess = data.hasResponsibilityReadAccess;
 
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.panelModel.AlertVisible) {
@@ -936,16 +934,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         }
-    }
-
-    private event_Information_DetailTabClick() {
-        this.panel_TabIndex = 0;
-        this.cdRef.markForCheck();
-    }
-
-    private event_Information_OwnerTabClick() {
-        this.panel_TabIndex = 1;
-        this.cdRef.markForCheck();
     }
 
     private event_ViewportBoundsChanged(e: go.DiagramEvent) {
@@ -1332,6 +1320,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.diagram.linkTemplateMap.add("", this.template_ImpactLink());
         }
 
+        this.diagram.linkTemplateMap.add("NoAvoid", this.template_LineageLinkNoAvoid());
+
         this.diagram.addDiagramListener('ChangedSelection', e => this.event_DiagramSelectionChanged(e));
         this.diagram.addDiagramListener('ViewportBoundsChanged', e => this.event_ViewportBoundsChanged(e));
 
@@ -1378,6 +1368,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         trans.nodes.forEach(n => {
             n.showIcon = this.displayConfiguration.DisplayIcons;
         });
+
+        if (this.performanceLinkMode) {
+            trans.links.forEach((l) => l['category'] = 'NoAvoid');
+        }
 
         if (append) {
             trans.nodes.forEach(n => {
@@ -1471,21 +1465,33 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (data) {
                     this.diagramData = data;
                     this.loadingText = "Determining links and meaning...";
-
+                    if (this.diagramData && this.diagramData.links && this.diagramData.links.length > this.maxLinkCountToAvoidNodesTemplate) {
+                        this.performanceLinkMode = true;
+                    }
+                    this.cdRef.detectChanges();
                     if (isLineage && this.diagramData.dataLimitReached === true) {
                         this.errorText = `Sorry, we cannot display an asset with more than 500 descendants.`;
                         this.isError = true;
                         this.isLoading = false;
                     }
                     else {
-                        this.helper_ParseTranslatedData(data);
+                        //if there are a lot of descendants helper_ParseTranslatedData will take too much cpu
+                        //and loadingText wont change, adding a slight delay of 10ms to allow angular detecting text change
+                        setTimeout(() => {
+                            this.helper_ParseTranslatedData(data);
 
-                        this.helper_ResizeDiagram();
-                        this.helper_ScaleDiagram(1);
-                        this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-                        this.loadingText = "";
-                        this.isLoading = false;
-                        this.loadOwnerCounts();
+                            this.helper_ResizeDiagram();
+                            this.helper_ScaleDiagram(1);
+                            this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                            this.loadingText = "";
+                            this.isLoading = false;
+                            this.loadOwnerCounts();
+
+                            this.cdRef.markForCheck();
+
+                            obs.next(true);
+                            obs.complete();
+                        }, 10);
                     }
                 }
                 else {
@@ -1494,9 +1500,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.isLoading = false;
                 }
                 this.cdRef.markForCheck();
-
-                obs.next(true);
-                obs.complete();
             };
 
             if (isLineage) {
@@ -2863,6 +2866,55 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
+    private template_LineageLinkNoAvoid(): go.Link {
+        return this.g(
+            go.Link, {
+            routing: go.Link.Default,
+            corner: 5,
+            relinkableFrom: false,
+            relinkableTo: false,
+            click: (e, obj) => this.helper_HighlightPath(e, obj as any),
+            zOrder: 1000
+        },
+            // the whole link panel
+            this.g(go.Shape,
+                { stroke: this.linkBackColor, strokeWidth: 1 },
+                new go.Binding("strokeWidth", "hasProperties", function (h) {
+                    return h ? 3 : 2;
+                }),
+                new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
+            ), // the link shape
+            this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
+            this.g(go.Panel, "Auto",
+                this.g(
+                    go.Shape,
+                    {
+                        visible: false,
+                        fill: this.linkDefaultBackColor,
+                        stroke: this.linkDefaultBorderColor
+                    },
+                    new go.Binding("background", "back"),
+                    //only visible if there's a label
+                    new go.Binding("visible", "text", function (a) {
+                        return !!a
+                    })
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center",
+                    font: this.fontLink,
+                    stroke: this.fontLinkColor,
+                    margin: 4,
+                    overflow: go.TextBlock.OverflowEllipsis,
+                    wrap: go.TextBlock.WrapFit,
+                    maxSize: new go.Size(100, 70)
+                },
+                    // the label
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        );
+    }
+
     private template_OwnersRootNode(): go.Group {
         return this.g(
             go.Group,
@@ -3290,7 +3342,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             $(go.TextBlock,
                 {
                     editable: false,
-                    margin: new go.Margin(4, 0, 0, 6),
+                    margin: new go.Margin(0, 0, 0, 6),
                     font: this.fontLabel,
                     maxLines: this.textMaxLines,
                     overflow: this.textOverflowStyle,
@@ -4032,6 +4084,55 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             else {
                 return `The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
             }
+        }
+    }
+
+    onEditClick($event) {
+        this.selectedDiagramAsset.AssetTypeUid = $event.assetTypeUid;
+        this.showEditor = true;
+    }
+
+    saveClicked($event) {
+        this.showEditor = false;
+        var uid = $event.assetUid as string;
+        var keys: string[] = [];
+        this.diagram.nodes.each((node) => {
+            var assetUid = (node.data.assetUid as string).toLowerCase()
+            if (assetUid === uid.toLowerCase()) {
+                keys.push(node.data.key);
+            }
+        });
+
+        if (uid) {
+            this.assetService.getAssetPath(uid).subscribe((res) => {
+                var assetPath = res[0].DisplayPath;
+                var currentPath = "";
+                if (assetPath) {
+                    var startIdx = assetPath.lastIndexOf('>') + 1;
+                    var newPath = assetPath.substring(startIdx, assetPath.length);
+                    try {
+                        var model = this.diagram.model;
+
+                        keys.forEach((key) => {
+                            var data = model.findNodeDataForKey(key);
+                            currentPath = data.text;
+
+                            model.startTransaction("modified property");
+                            model.set(data, "text", newPath);
+                            model.commitTransaction("modified property");
+                        });
+                    } catch (e) {
+                    }
+
+                    this.diagram.redraw();
+
+                    if (this.assetUid.toLowerCase() === uid.toLowerCase()) {
+                        this.secondaryNavService.updateObject('areaTitle', newPath);
+                    }
+                    this.breadcrumbsService.updateCurrentPath(currentPath, newPath);
+                    this.assetDetailComponent.load();
+                }
+            });
         }
     }
 }

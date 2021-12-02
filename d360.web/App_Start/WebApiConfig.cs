@@ -7,6 +7,8 @@ using Microsoft.Web.Http.Routing;
 using Microsoft.Web.Http.Versioning;
 using Swashbuckle.Application;
 using System;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Web.Http;
@@ -24,13 +26,8 @@ namespace d360.web
             // Web API configuration and services
             config.Services.Add(typeof(IExceptionLogger), new AiExceptionLogger());
 
-            
-            var hideErrorDetails = System.Configuration.ConfigurationManager.AppSettings["security:surpressApiErrorDetails"];
-
-            if ((hideErrorDetails ?? "").ToLower() == "true")
-            {
-                config.Filters.Add(new ExceptionHandlingAttribute());
-            }
+            var hideErrorDetailsString = ConfigurationManager.AppSettings["security:surpressApiErrorDetails"];
+            var hideErrorDetails = string.Equals((hideErrorDetailsString ?? string.Empty), "true", StringComparison.InvariantCultureIgnoreCase);
 
             // Web API routes
             var constraintResolver = new DefaultInlineConstraintResolver() { ConstraintMap = { ["apiVersion"] = typeof(ApiVersionRouteConstraint) } };
@@ -88,7 +85,8 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
                     c.OperationFilter<Consumes>();
                     c.OperationFilter<Produces>();
                     c.OperationFilter<ExamplesOperationFilter>();
-                    c.OperationFilter<SwaggerParameterAttributeFilter>();                    
+                    c.OperationFilter<SwaggerParameterAttributeFilter>();
+                    c.OperationFilter<SwaggerDescriptionAttributeFilter>();
                     c.SchemaFilter<SwaggerExcludeFilter>();
                     c.DocumentFilter<SwaggerOrderFilter>();
                     c.PrettyPrint();
@@ -126,6 +124,7 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
             config.MessageHandlers.Add(new HeadHandler());
             config.MessageHandlers.Add(new ErrorMessageHandler());
             config.MessageHandlers.Add(new MethodOverrideHandler());
+            config.Filters.Add(new ApplicationExceptionFilterAttribute(hideErrorDetails));
 
             config.EnsureInitialized();
         }

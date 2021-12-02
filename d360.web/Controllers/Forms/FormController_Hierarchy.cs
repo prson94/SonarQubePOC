@@ -26,7 +26,9 @@ namespace d360.web.Controllers
         public JsonResult Hierarchy_AddFields(SystemObjects hierarchyType, int t, int p)
         {
             if (hierarchyType != SystemObjects.PolicyType && hierarchyType != SystemObjects.TaxonomyType)
-                throw new Exception("Unsupported hierarchy asset type specified to Hierarchy_AddFields.  Supported types are taxonomytype and policytype.");
+            {
+                throw new ArgumentNullException(FormControllerApiMessage.UnsupportedHierarchyAssetTypeAddField);
+            }
 
             if (!Company.HasAssetTypePermission(hierarchyType, t, Permission.AddAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -36,7 +38,7 @@ namespace d360.web.Controllers
             var parentUid = p > 0 ? Company.GetAssetUid(p, hierarchyType == SystemObjects.TaxonomyType ? SystemObjects.Taxonomy : SystemObjects.Policy).ToString() : "";
             list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid.ToString() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(hierarchyType, t).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(hierarchyType, t).ToList(), 1, loadLookupValues: false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -46,7 +48,10 @@ namespace d360.web.Controllers
         public JsonResult Hierarchy_EditFields(SystemObjects hierarchy, int id)
         {
             if (hierarchy != SystemObjects.Policy && hierarchy != SystemObjects.Taxonomy)
-                throw new Exception("Unsupported hierarchy type specified to Hierarchy_EditFields.  Supported types are taxonomy and policy.");
+            {
+                throw new ArgumentNullException(FormControllerApiMessage.UnsupportedHierarchyTypeEditField);
+            }
+
 
             if (!Company.HasAssetPermission(hierarchy, id, Permission.EditAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
@@ -70,10 +75,11 @@ namespace d360.web.Controllers
                                                     ", new { id }).SingleOrDefault();
             if (model != null)
             {
-
+                var parentItems = new List<SelectListItem>();
                 var parent = Company.GetParentObject(model.ObjectID, hierarchy);
-
-                var parents = Company.Query<dynamic>($@"
+                if (parent != null)
+                {
+                    var ddlSelectedItem = Company.Query<dynamic>($@"
                                 select	A.ObjectID as ID,
 		                                P.TextPath as Name,
                                         A.uid as Uid,
@@ -82,26 +88,25 @@ namespace d360.web.Controllers
                                         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{hierarchy}Type' and T.ObjectID = @t
 		                                cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
                                         cross apply dbo.GetAssetLevelById(A.ID) LV
-                                where coalesce(LV.[Level], 1) <= @currentLevel 
+                                where coalesce(LV.[Level], 1) <= @currentLevel and A.Uid = @uid
                                 order by P.TextPath 
                                 option (maxrecursion 100)",
-    new { t = model.HierarchyTypeID, currentLevel = model.Level ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
+        new { t = model.HierarchyTypeID, currentLevel = model.Level ?? 1, uid = parent.uid }).Select(i => new { i.Uid, i.Name }).ToList();
 
-                var thisEntry = parents.FirstOrDefault(i => i.Uid == model.Uid);
-
-                if (thisEntry != null)
-                    parents.RemoveAll(i => i.Name.StartsWith(thisEntry.Name));
-
-                var parentItems = parents.Select(i => new SelectListItem
+                    parentItems = ddlSelectedItem.Select(i => new SelectListItem
+                    {
+                        Text = i.Name,
+                        Value = $"{i.Uid}",
+                        Selected = true
+                    }).ToList();
+                }
+                else
                 {
-                    Text = i.Name,
-                    Value = $"{i.Uid}",
-                    Selected = (parent != null ? (i.Uid == parent.uid) : false)
-                }).ToList();
-                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = Guid.Empty.ToString(), Selected = (parent == null) });
+                    parentItems.Add(new SelectListItem { Text = "- Root -", Value = Guid.Empty.ToString() });
+                }
 
                 list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = model.Uid.ToString() });
-                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, VirtualScroll = parents.Count > 9, ItemSize = 20, Value = ((parent != null) ? parent.uid.ToString() : Guid.Empty.ToString()) });
+                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, ItemSize = 20, Value = ((parent != null) ? parent.uid.ToString() : Guid.Empty.ToString()) });
                 list = (
                      loadDynamicFields(
                          SystemObjects.Taxonomy.ToString(),
@@ -109,7 +114,8 @@ namespace d360.web.Controllers
                          list,
                          Company.GetFieldTypesByObject((hierarchy == SystemObjects.Taxonomy ? SystemObjects.TaxonomyType : SystemObjects.PolicyType), (int)model.HierarchyTypeID).ToList(),
                          Company.GetFieldRelationsByObject(hierarchy, id).ToList(),
-                         3
+                         3,
+                         loadOnlySelectedLookupValue: true
                      )
                  );
             }
@@ -132,12 +138,17 @@ namespace d360.web.Controllers
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
                 var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
-                if (assetType == null) throw new NotFoundException("asset type");
+                if (assetType == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.AssetType);
+                }
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.AddAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy type level");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.TaxonomyTypeLevel);
+                }
                 var a = new AssetTypeLevel
                 {
                     AssetTypeID = assetType.ID,
@@ -148,7 +159,7 @@ namespace d360.web.Controllers
 
                 Company.Add<AssetTypeLevel>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, a.Name), a.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -175,7 +186,10 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy type");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.TaxonomyType);
+                }
 
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
@@ -184,9 +198,12 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
-                if (assetType == null) throw new NotFoundException("asset type");
+                if (assetType == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.AssetType);
+                }
                 Company.Delete<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level);
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.ItemRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -204,13 +221,18 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy type");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.TaxonomyType);
+                }
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
                 var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
                 var model = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level).SingleOrDefault();
-                if (model == null) throw new NotFoundException("taxonomy type level");
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.TaxonomyTypeLevel);
+                }
 
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.EditAsset))
                 {
@@ -222,7 +244,7 @@ namespace d360.web.Controllers
 
                 Company.Update<AssetTypeLevel>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, model.Name), id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -256,12 +278,17 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
                 }
 
-                if (!form.HasKeys()) throw new NoFormDataException("policy type level");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.PolicyTypeLevel);
+                }
 
                 var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
 
-                if (assetType == null) throw new NotFoundException("asset type");
-
+                if (assetType == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.AssetType);
+                }
                 var a = new AssetTypeLevel
                 {
                     AssetTypeID = assetType.ID,
@@ -272,7 +299,7 @@ namespace d360.web.Controllers
 
                 Company.Add<AssetTypeLevel>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, a.Name), a.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -299,8 +326,10 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("policy type");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.PolicyType);
+                }
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
 
@@ -312,11 +341,13 @@ namespace d360.web.Controllers
 
                 var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
 
-                if (assetType == null) throw new NotFoundException("asset type");
-
+                if (assetType == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.AssetType);
+                }
                 Company.Delete<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.ItemRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -334,18 +365,24 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("policy type");
-
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.PolicyType);
+                }
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
 
                 var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
 
-                if (assetType == null) throw new NotFoundException("asset type");
-
+                if (assetType == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.AssetType);
+                }
                 var model = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level).SingleOrDefault();
-                if (model == null) throw new NotFoundException("policy type level");
-
+                if (model == null)
+                {
+                    throw new NotFoundException(FormControllerApiMessage.PolicyTypeLevel);
+                }
 
                 if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.EditAsset))
                 {
@@ -357,7 +394,7 @@ namespace d360.web.Controllers
 
                 Company.Update<AssetTypeLevel>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, model.Name), id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

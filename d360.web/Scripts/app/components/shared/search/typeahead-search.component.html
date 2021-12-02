@@ -53,9 +53,8 @@
                 </div>
             </ng-template>
         </p-autoComplete>
-        <span class="search-button {{showBigButton ? 'big' : ''}}">
-            <i *ngIf="isSearchInProgress" class="fa fa-spinner fa-spin"></i>
-            <i *ngIf="!isSearchInProgress" class="fa fa-search" (click)="openSearch()"></i>
+        <span class="search-button {{showBigButton ? 'big' : ''}}" (click)="openSearch()">
+            <i class="fa" [ngClass]="{ 'fa-search': !isSearchInProgress, 'fa-spinner fa-spin':isSearchInProgress }"></i>
         </span>
     </div>
 </div>

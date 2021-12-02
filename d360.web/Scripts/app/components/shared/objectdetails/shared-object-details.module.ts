@@ -26,6 +26,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SharedDeleteFormModule } from '../delete.form';
 import { ObjectDetailCategoryComponent } from './object-detail-category.component';
 import { PropertyGroupModule } from '../controls/property-group/property-group.component';
+import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 
 
 @NgModule({
@@ -51,6 +52,7 @@ import { PropertyGroupModule } from '../controls/property-group/property-group.c
         AutoCompleteModule,
         SharedDeleteFormModule,
         PropertyGroupModule,
+        DynamicFieldNameModule
     ],
     declarations: [
         DynamicLookupGridComponent,

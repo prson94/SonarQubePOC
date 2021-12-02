@@ -1,11 +1,13 @@
 ﻿using System.Net;
+using d360.core.resources;
+
 
 namespace d360.core.exceptions
 {
     public class NotFoundException : BaseException
     {
         public NotFoundException(string objectName)
-            :base(HttpStatusCode.NotFound, "Item Not Found", string.Format("{0} could not be found.", objectName))
+            :base(HttpStatusCode.NotFound, Messages.ItemNotFound,  string.Format(AssetTypeErrors.ItemNotFound, objectName))
         {
         }
     }

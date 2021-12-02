@@ -55,7 +55,7 @@
                     <p-dropdown [options]="issueObjectTypes"
                                 [ngModel]="model.Event.IssueObject"
                                 (ngModelChange)="selectIssueObjectType($event)"
-                                [style]="{'width': '95%'}"                                
+                                [style]="{'width': '95%'}"
                                 filterPlaceholder="Choose a value"
                                 [filter]="true">
                     </p-dropdown>
@@ -107,10 +107,9 @@
                     Run Days
                 </div>
                 <div style="width: 95%">
-                    <d3s-dayofweek-input 
-                        [ngModel]="model.Event.SettingsObject.Settings.ScheduleDays"
-                        (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleDays = $event; validate();"
-                        label="Every"></d3s-dayofweek-input>
+                    <d3s-dayofweek-input [ngModel]="model.Event.SettingsObject.Settings.ScheduleDays"
+                                         (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleDays = $event; validate();"
+                                         label="Every"></d3s-dayofweek-input>
                 </div>
             </div>
         </div>
@@ -124,8 +123,7 @@
                                                  (addClick)="showCondition()"
                                                  (connectorChange)="applyConnectorToConditions($event)"
                                                  [conditions]="conditions"
-                                                 [satisfyAll]="satisfyAllConditions"
-                                                 ></d3s-workflow-condition-list>
+                                                 [satisfyAll]="satisfyAllConditions"></d3s-workflow-condition-list>
 
                     <div *ngIf="showAddCondition">
                         <d3s-workflow-condition-editor [objectId]="objectID"
@@ -159,12 +157,7 @@
          *ngIf="!isLoading">
         <div class="col s12">
             <div class="FieldName">
-                <input type="checkbox"
-                       [disabled]="!(model.Type.State==1 || model.Type.State==4)"
-                       [ngModel]="model.Type.State==1? true : false"
-                       (ngModelChange)="onStateChange($event)" />
-
-                &nbsp;Active
+                <p-checkbox igCheckbox (ngModelChange)="onStateChange($event)" [disabled]="!(model.Type.State==1 || model.Type.State==4)" [ngModel]="model.Type.State==1? true : false" label="Active" [binary]="true"></p-checkbox>
             </div>
         </div>
     </div>
@@ -173,10 +166,7 @@
          style="padding-top: 8px;">
         <div class="col s12">
             <div>
-                <input type="checkbox"
-                       [ngModel]="model.Event.SettingsObject.Settings.SendAggregateEmail"
-                       (ngModelChange)="model.Event.SettingsObject.Settings.SendAggregateEmail = $event; validate();" />
-                Send aggregated email?
+                <p-checkbox igCheckbox (ngModelChange)="model.Event.SettingsObject.Settings.SendAggregateEmail = $event; validate();" [ngModel]="model.Event.SettingsObject.Settings.SendAggregateEmail" label="Send aggregated email?" [binary]="true"></p-checkbox>
             </div>
         </div>
     </div>

@@ -8,6 +8,7 @@ import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AssetTypeClass } from '../../models/asset.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-reference-item-type-list',
@@ -67,8 +68,9 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         private referenceService: ReferenceService,
         private permissionsService: PermissionsService,
         private assetTypeService: AssetTypeService,
-        private messagesService: MessagesObservableService) {
-        super();
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService) {
+        super(settingsService);
         this.showDelete = false;
         this.showEditor = false;
         this.theDeleteCallback = this.deleteReferenceItemType.bind(this);

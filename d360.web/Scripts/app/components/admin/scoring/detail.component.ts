@@ -12,22 +12,18 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel, ScoreType, MetricPathOptionViewModel } from '../../../models/metrics.model';
+import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricMatchType, MetricGovernanceCheckType, ScoreType, MetricPathOptionViewModel } from '../../../models/metrics.model';
 import { MeasureListComponent } from './measure-list.component';
-import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipType } from '../../../models/relationship.model';
-import { ResponsibilityType } from '../../../models/responsibility-type.model';
-import { Predicate } from '../../../models/predicate.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-allocation-detail',
     templateUrl: 'detail.component.html',
-    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService, ResponsibilityTypeService, RelationshipsService]
+    providers: [MetricsService, AssetTypeService, AllocationService, ResponsibilityTypeService, RelationshipsService]
 })
 
 export class ScoringDetailComponent extends AdminBaseComponent implements OnInit, OnDestroy {
@@ -72,12 +68,12 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         private metricsService: MetricsService,
         private allocationService: AllocationService,
         private assetTypeService: AssetTypeService,
-        private settingsService: CompanySettingsService,
+        protected settingsService: CompanySettingsService,
         private responsibilityService: ResponsibilityTypeService,
         private relationshipService: RelationshipsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Scoring;
     }
 

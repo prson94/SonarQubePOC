@@ -1,0 +1,52 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="GOV-15436-Rename-Setting">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Setting')
+begin 
+	exec sp_rename 'dbo.Setting', 'Setting_backup';
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+if exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Setting_backup')
+begin 
+	exec sp_rename 'dbo.Setting_backup', 'Setting'
+end
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="Puneet Gupta" id="GOV-15436-Rename-CompanySetting">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'CompanySetting')
+begin 
+	exec sp_rename 'dbo.CompanySetting', 'CompanySetting_backup';
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+if exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'CompanySetting_backup')
+begin 
+	exec sp_rename 'dbo.CompanySetting_backup', 'CompanySetting'
+end
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

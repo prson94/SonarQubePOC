@@ -3,6 +3,7 @@ import { SurveyQuestionType, SurveyType } from '../../../models/survey.model';
 import { SurveysService } from '../../../services/surveys.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-survey-questions',
@@ -80,8 +81,11 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     selected: SurveyQuestionType = null;
     theDeleteCallback: Function;
 
-    constructor(private surveysService: SurveysService, private messagesService: MessagesObservableService) {
-        super();
+    constructor(
+        private messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private surveysService: SurveysService) {
+        super(settingsService);
         this.theDeleteCallback = this.deleteQuestion.bind(this);
     }
 

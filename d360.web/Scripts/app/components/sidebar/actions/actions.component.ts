@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-actions',
@@ -27,10 +28,13 @@ export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy
 
     private sub: any;    
     
-    constructor(private route: ActivatedRoute,
+    constructor(
+        private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
-        breadcrumbService: HeaderBreadcrumbService) {
-        super();
+        breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService
+    ) {
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
     }

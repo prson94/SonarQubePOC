@@ -1,0 +1,30 @@
+<d3s-site-menu-category 
+	*ngIf="menu"
+	[expanded]="expanded"
+	[title]="title"
+	[menu]="menu"
+	[isActive]="menu.isActiveItem"
+	[customPanelContent]="(state$|async)?.isManageFavoritesModeEnabled ? customPanelContent : null"
+	[emptyHint]="emptyHint"
+	(clearClick)="clearFavorites()"
+	(activeItemChanged)="handleActiveItem($event);"
+	rootIconName="fa-star">
+	<ng-template #customPanelContent>
+		<d3s-site-menu-manage-favorites-panel></d3s-site-menu-manage-favorites-panel>
+	</ng-template>
+
+	<ng-template #emptyHint>
+		No Favorites found. <br/>
+		<span [style.whiteSpace]="'nowrap'">Click the Add to Favorites<i class="fa fa-star" [style.width.px]="32"></i>button</span> to add a favorite.
+	</ng-template>
+	
+	<ng-container additionalButtons>
+		<button (click)="store.toggleManageFavoritesOnAction()"
+			igButton
+			icon="fa-edit"
+			pTooltip="Manage Favorites"
+			tooltipPosition="top"
+			tooltipStyleClass="ig-tooltip">
+		</button>
+	</ng-container>
+</d3s-site-menu-category>

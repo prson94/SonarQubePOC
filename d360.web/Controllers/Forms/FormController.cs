@@ -25,6 +25,7 @@ using d360.core.resources;
 using Newtonsoft.Json;
 using d360.model.DataAccessLayer;
 using d360.core.helpers;
+using d360.utils.excel;
 
 namespace d360.web.Controllers
 {
@@ -259,7 +260,7 @@ namespace d360.web.Controllers
             var o = assetType.Object;
             return this.DynamicEditorEditFields(o, assetUid);
 
-            throw new Exception("Invalid or non implemented editor type");
+            throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
         }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
@@ -294,7 +295,7 @@ namespace d360.web.Controllers
                     }
                     return DynamicEditorEditFields(o, objectId);
             }
-            throw new Exception("Invalid or non implemented editor type");
+            throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
         }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
@@ -307,7 +308,10 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionField_EditFields(oid);
                     break;
                 case "ARTIFACT":
-                    res = Artifact_EditFields(oid);
+                    res = Asset_EditFields(SystemObjects.ArtifactType, SystemObjects.Artifact, oid);
+                    break;
+                case "RULE":
+                    res = Asset_EditFields(SystemObjects.RuleType, SystemObjects.Rule, oid);
                     break;
                 case "CONTRACT":
                     res = Contract_EditFields(oid);
@@ -351,12 +355,6 @@ namespace d360.web.Controllers
                 case "RESOURCETYPE":
                     res = Resource_EditFields(oid);
                     break;
-                case "RULE":
-                    res = Rule_EditFields(oid);
-                    break;
-                case "RULETYPE":
-                    res = RuleType_EditFields(oid);
-                    break;
                 case "SERVICE":
                     res = CustomAPIService_EditFields(oid);
                     break;
@@ -380,7 +378,7 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionUri_EditFields(oid);
                     break;
                 default:
-                    throw new Exception("Invalid or non implemented editor type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
             }
 
 
@@ -409,7 +407,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Issue Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.IssueTypeNotFound);
                     }
                 }
                 else if (objectType == SystemObjects.IssueTypeRelation.ToString())
@@ -421,7 +419,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Issue Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.IssueTypeNotFound);
                     }
                 }
                 else if (objectType == SystemObjects.IntersectType.ToString())
@@ -442,7 +440,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("Not valid Intersect Type Uid or Target Type Uid");
+                        throw new ArgumentException(FormControllerApiMessage.InvalidIntersectTypeAndTargetUID);
                     }
 
                 }
@@ -455,11 +453,11 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new ArgumentException("No Asset Type found for given Guid");
+                        throw new ArgumentException(FormControllerApiMessage.AssetTypeNotFound);
                     }
                 }
             }
-            throw new ArgumentException("Invalid Guid");
+            throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, ""));
 
         }
 
@@ -473,7 +471,10 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionField_AddFields(parentID.GetValueOrDefault());
                     break;
                 case "ARTIFACT":
-                    res = Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    res = Asset_AddFields(SystemObjects.ArtifactType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
+                case "RULE":
+                    res = Asset_AddFields(SystemObjects.RuleType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
                 case "CONTRACT":
                     res = Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
@@ -520,12 +521,6 @@ namespace d360.web.Controllers
                 case "RESOURCETYPE":
                     res = Resource_AddFields(objectID.GetValueOrDefault());
                     break;
-                case "RULE":
-                    res = Rule_AddFields(objectID.GetValueOrDefault());
-                    break;
-                case "RULETYPE":
-                    res = RuleType_AddFields();
-                    break;
                 case "SERVICE":
                     res = CustomAPIService_AddFields();
                     break;
@@ -551,7 +546,7 @@ namespace d360.web.Controllers
                     res = CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
                     break;
                 default:
-                    throw new Exception("Invalid or non implemented editor type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
 
             }
             res.MaxJsonLength = int.MaxValue;
@@ -591,8 +586,6 @@ namespace d360.web.Controllers
                     return EditPolicyTypeLevel(form);
                 case "REPORT":
                     return await EditReport(form);
-                case "RULETYPE":
-                    return EditRuleType(form);
                 case "SERVICE":
                     return EditService(form);
                 case "SURVEYTYPE":
@@ -604,7 +597,7 @@ namespace d360.web.Controllers
                 case "URI":
                     return EditServiceEndpointVersionUri(form);
                 default:
-                    throw new Exception("Invalid / unsupported edit type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidEditType);
             }
         }
 
@@ -638,8 +631,6 @@ namespace d360.web.Controllers
                     return DeleteOrganizationInvitation(objectID);
                 case "REPORT":
                     return await DeleteReport(form);
-                case "RULETYPE":
-                    return DeleteRuleType(form);
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
                 case "SERVICE":
@@ -655,7 +646,7 @@ namespace d360.web.Controllers
                 case "VERSION":
                     return DeleteCustomAPIVersion(form);
                 default:
-                    throw new Exception("Invalid / unsupported delete type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidDeleteType);
             }
         }
 
@@ -694,8 +685,6 @@ namespace d360.web.Controllers
                     return AddPolicyTypeLevel(form);
                 case "REPORT":
                     return await AddReport(form);
-                case "RULETYPE":
-                    return AddRuleType(form);
                 case "SERVICE":
                     return AddService(form);
                 case "SURVEYTYPE":
@@ -707,7 +696,7 @@ namespace d360.web.Controllers
                 case "URI":
                     return AddServiceEndpointVersionUri(form);
                 default:
-                    throw new Exception("Invalid / unsupported create type");
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidCreateType);
             }
         }
 
@@ -728,349 +717,6 @@ namespace d360.web.Controllers
                 Data = list,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
-        }
-
-        [Route("CompanySettings")]
-        public JsonNetResult CompanySettings()
-        {
-            var settings = SettingsRepository.GetSettings();
-            var model = new CompanySettingsEditorModel
-            {
-                DisableCommunityPosting = settings.GetValue<bool>(Setting.DisableCommunityPosting),
-                DisableIssueManagement = settings.GetValue<bool>(Setting.DisableIssueManagement),
-                EnableOrganizations = settings.GetValue<bool>(Setting.EnableOrganizations),
-                EnableShoppingCart = settings.GetValue<bool>(Setting.EnableShoppingCart),
-                DefaultRoute = settings.GetValue(Setting.DefaultRoute),
-                EnableSagacity = settings.GetValue<bool>(Setting.EnableSagacity),
-                EnableSearchExactMatch = settings.GetValue<bool>(Setting.SearchExactMatch),
-                HideData3SixtyUsers = settings.GetValue<bool>(Setting.HideData3SixtyUsers),
-                ShowAllUsersAPIKey = settings.GetValue<bool>(Setting.ShowAllUsersAPIKey),
-                WorkflowCatchAllGroup = settings.GetValue<int>(Setting.WorkflowCatchAllGroup),
-                WorkflowDigestEmailDays = settings.GetValue<int>(Setting.WorkflowDigestEmailDays),
-                MaxDropdownItems = settings.GetValue<int>(Setting.MaxDropdownItems),
-                WriteActionDescription = settings.GetValue<bool>(Setting.WriteActionDescription),
-                MaxExcelExportRows = settings.GetValue<int>(Setting.MaxExcelExportRows),
-                CurrentCompanyIconPath = settings.GetValue(Setting.CompanyIcon),
-                CurrentCompanyLogoPath = settings.GetValue(Setting.CompanyLogo),
-                DefaultSearchTypes = settings.GetValue(Setting.DefaultSearchTypes),
-                HeaderBackgroundColor = settings.GetValue(Setting.HeaderBackgroundColor),
-                ShowHomeAssignmentTile = settings.GetValue<bool>(Setting.ShowHomeAssignmentTile),
-                ShowHomeBoardTile = settings.GetValue<bool>(Setting.ShowHomeBoardTile),
-                ShowHomeActivityTile = settings.GetValue<bool>(Setting.ShowHomeActivityTile),
-                ShowHomePageTitle = settings.GetValue<bool>(Setting.ShowHomePageTitle),
-                HomePageTitleSize = settings.GetValue(Setting.HomePageTitleSize),
-                HomePageTitleColor = settings.GetValue(Setting.HomePageTitleColor),
-                HomePageBackgroundImage = settings.GetValue(Setting.HomePageBackgroundImage),
-                BrowserTitlePrefix = settings.GetValue(Setting.BrowserTitlePrefix),
-                AllowedOrigins = settings.GetValue(Setting.AllowedOrigins),
-                FramingDomains = settings.GetValue(Setting.FramingDomains),
-                AssetDefinitionColumnWidth = settings.GetValue<int>(Setting.AssetDefinitionColumnWidth),
-                HideHeaderBarControls = settings.GetValue<bool>(Setting.HideHeaderBarControls)
-            };
-            var ipRaw = settings.GetValue(Setting.IpRestriction);
-            if (!string.IsNullOrEmpty(ipRaw))
-            {
-                var ipXml = XElement.Parse(ipRaw);
-                var ips = ipXml.Elements("ip").Select(i => new CompanySettingsIpRestrictionEditorModel { Name = i.Element("name").Value, Start = i.Element("start").Value, End = i.Element("end").Value });
-                model.IpRestrictions.AddRange(ips);
-            }
-
-            IQueryable<SiteNav> siteNavs = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder);
-            model.SiteNav = siteNavs.ToList();
-
-            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [HttpPut, ValidateInput(false), Route("UpdateCompanySettings")]
-        public async Task<JsonResult> UpdateCompanySettings(CompanySettingsEditorModel formModel)
-        {
-            try
-            {
-                if (formModel == null) throw new NoFormDataException("company settings");
-
-                // Permissions validation.
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var settings = SettingsRepository.GetSettings();
-                SettingInfo currentSettingInfo = null;
-                Setting currentSetting;
-
-                Action<Setting, SettingInfo, bool> settingAction = (s, i, delete) =>
-                {
-                    if (delete)
-                    {
-                        SettingsRepository.DeleteSetting(s);
-                        settings.Remove(i);
-                    }
-                    else
-                    {
-                        SettingsRepository.UpsertSetting(s, i.Value);
-                    }
-                };
-
-                Action<Setting, string> settingActionValue = (s, newValue) =>
-                {
-                    currentSettingInfo = settings.Single(o => o.ID == s);
-                    currentSettingInfo.Value = newValue;
-                    settingAction(s, currentSettingInfo, !currentSettingInfo.IsOverridden);
-                };
-
-
-                #region Icon
-
-                currentSetting = Setting.CompanyIcon;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (formModel.SetIconToDefault)
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(formModel.CompanyIcon))
-                    {
-                        var iconMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyIcon);
-
-                        var iconMime = iconMatch.Groups["mime"].Value;
-                        var iconData = iconMatch.Groups["data"].Value;
-                        var iconExtension = MimeTypeExtensionsMap.GetExtension(iconMime);
-                        var iconByteArray = Convert.FromBase64String(iconData);
-                        using (var iconStream = new MemoryStream(iconByteArray))
-                        {
-                            var iconFileName = string.Format("{0}{1}", Company.CurrentCompanyID, iconExtension);
-                            await Storage.CreateFile(constants.COMPANY_ICON_FOLDER, iconFileName, iconStream);
-                            settingActionValue(currentSetting, $"{constants.COMPANY_ICON_URL}{iconFileName}");
-                        }
-                    }
-                }
-
-                #endregion
-
-                #region Logo
-
-                currentSetting = Setting.CompanyLogo;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (formModel.SetLogoToDefault)
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(formModel.CompanyLogo))
-                    {
-                        var logoMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyLogo);
-
-                        var logoMime = logoMatch.Groups["mime"].Value;
-                        var logoData = logoMatch.Groups["data"].Value;
-                        var logoExtension = MimeTypeExtensionsMap.GetExtension(logoMime);
-                        var logoByteArray = Convert.FromBase64String(logoData);
-                        using (var logoStream = new MemoryStream(logoByteArray))
-                        {
-                            var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_LOGO_FOLDER, $"{Company.CurrentCompanyID}.");
-                            filesToDelete.ForEach(f =>
-                            {
-                                Storage.DeleteFile(constants.COMPANY_LOGO_FOLDER, f).Wait();
-                            });
-
-                            var logoFileName = string.Format("{0}{1}", Company.CurrentCompanyID, logoExtension);
-                            await Storage.CreateFile(constants.COMPANY_LOGO_FOLDER, logoFileName, logoStream);
-                            settingActionValue(currentSetting, $"{constants.COMPANY_LOGO_URL}{logoFileName}");
-                        }
-                    }
-                }
-
-                #endregion
-
-                // Social
-                settingActionValue(Setting.DisableCommunityPosting, formModel.DisableCommunityPosting.ToString().ToLower());
-
-                #region Global Fields
-
-                settingActionValue(Setting.DisableIssueManagement, formModel.DisableIssueManagement.ToString().ToLower());
-                settingActionValue(Setting.DefaultRoute, (formModel.DefaultRoute ?? "").Trim());
-                settingActionValue(Setting.SearchExactMatch, formModel.EnableSearchExactMatch.ToString().ToLower());
-                settingActionValue(Setting.HideData3SixtyUsers, formModel.HideData3SixtyUsers.ToString().ToLower());
-                settingActionValue(Setting.ShowAllUsersAPIKey, formModel.ShowAllUsersAPIKey.ToString().ToLower());
-                settingActionValue(Setting.WorkflowCatchAllGroup, formModel.WorkflowCatchAllGroup.ToString());
-                settingActionValue(Setting.WorkflowDigestEmailDays, formModel.WorkflowDigestEmailDays.ToString());
-                settingActionValue(Setting.MaxDropdownItems, Math.Abs(formModel.MaxDropdownItems).ToString());
-                settingActionValue(Setting.WriteActionDescription, formModel.WriteActionDescription.ToString().ToLower());
-                settingActionValue(Setting.MaxExcelExportRows, Math.Abs(formModel.MaxExcelExportRows).ToString());
-
-                if (formModel.AssetDefinitionColumnWidth < 100)
-                {
-                    formModel.AssetDefinitionColumnWidth = 100;
-                }
-                if (formModel.AssetDefinitionColumnWidth > 1000)
-                {
-                    formModel.AssetDefinitionColumnWidth = 1000;
-                }
-
-                settingActionValue(Setting.AssetDefinitionColumnWidth, Math.Abs(formModel.AssetDefinitionColumnWidth).ToString());
-
-                #endregion
-
-                #region IP
-
-                currentSetting = Setting.IpRestriction;
-
-                var ipValidationCheckPassed = true;
-                if (formModel.IpRestrictions != null)
-                {
-                    var xml = new XElement("ips");
-                    foreach (var ip in formModel.IpRestrictions)
-                    {
-                        if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
-                        {
-                            ipValidationCheckPassed = false;
-                            break;
-                        }
-                        else
-                        {
-                            xml.Add(new XElement("ip",
-                                new XElement("name", ip.Name),
-                                new XElement("start", ip.Start),
-                                new XElement("end", ip.End)
-                            ));
-                        }
-                    }
-                    if (ipValidationCheckPassed)
-                    {
-                        settingActionValue(currentSetting, xml.ToString());
-                    }
-                    else
-                    {
-                        throw new MissingPropertiesException("IP Restrictions");
-                    }
-                }
-                else
-                {
-                    SettingsRepository.DeleteSetting(currentSetting);
-                }
-
-                #endregion
-
-                // Search
-                settingActionValue(Setting.DefaultSearchTypes, (formModel.DefaultSearchTypes ?? "").ToString());
-
-                // Header
-                settingActionValue(Setting.HeaderBackgroundColor, formModel.HeaderBackgroundColor);
-                settingActionValue(Setting.HideHeaderBarControls, formModel.HideHeaderBarControls.ToString().ToLower());
-
-                #region Home Page Customization
-
-                settingActionValue(Setting.ShowHomeAssignmentTile, formModel.ShowHomeAssignmentTile.ToString().ToLower());
-                settingActionValue(Setting.ShowHomeBoardTile, formModel.ShowHomeBoardTile.ToString().ToLower());
-                settingActionValue(Setting.ShowHomeActivityTile, formModel.ShowHomeActivityTile.ToString().ToLower());
-                settingActionValue(Setting.ShowHomePageTitle, formModel.ShowHomePageTitle.ToString().ToLower());
-                settingActionValue(Setting.BrowserTitlePrefix, formModel.BrowserTitlePrefix);
-
-                //prevent the user from entering special characters
-                var alphaNumericChars = "abcdefghijklmnopqrstuvwxyz0123456789";
-                var sizeAllowedChars = alphaNumericChars + ".";
-                var colorAllowedChars = alphaNumericChars + "#";
-
-                var safeSize = System.Text.RegularExpressions.Regex.Replace(formModel.HomePageTitleSize?.Trim() ?? "", $"[^{sizeAllowedChars}]", string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                var safeColor = System.Text.RegularExpressions.Regex.Replace(formModel.HomePageTitleColor?.Trim() ?? "", $"[^{colorAllowedChars}]", string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-                settingActionValue(Setting.HomePageTitleSize, safeSize);
-                settingActionValue(Setting.HomePageTitleColor, safeColor);
-
-                #region Home Page Background Image
-
-                currentSetting = Setting.HomePageBackgroundImage;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (formModel.ClearHomePageBackgroundImage)
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(formModel.HomePageBackgroundImage))
-                    {
-                        var imageMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.HomePageBackgroundImage);
-
-                        var imageMime = imageMatch.Groups["mime"].Value;
-                        var imageData = imageMatch.Groups["data"].Value;
-                        var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
-                        if (imageExtension == null)
-                        {
-                            return jsonException(string.Format("Invalid file type: {0} cannot be uploaded.", imageMime), HttpStatusCode.BadRequest);
-                        }
-                        var imageByteArray = Convert.FromBase64String(imageData);
-                        var imageGuid = Guid.NewGuid();
-
-                        using (var imageStream = new MemoryStream(imageByteArray))
-                        {
-                            var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_RESOURCES_FOLDER, $"{Company.CurrentCompanyID}.home.");
-                            filesToDelete.ForEach(f =>
-                            {
-                                Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, f).Wait();
-                            });
-
-                            var imageFileName = string.Format("{0}.home.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-                            await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
-
-                            settingActionValue(currentSetting, $"{constants.COMPANY_RESOURCES_URL}{imageFileName}");
-                        }
-                    }
-                }
-
-                #endregion
-
-                #endregion
-
-                #region Security
-
-                currentSetting = Setting.AllowedOrigins;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (string.IsNullOrWhiteSpace(formModel.AllowedOrigins))
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    var origins = formModel.AllowedOrigins
-                        .Split(',')
-                        .Select(o => o.Trim())
-                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
-                        .ToList();
-
-                    currentSettingInfo.Value = string.Join(",", origins);
-                    settingAction(currentSetting, currentSettingInfo, false);
-                }
-
-                currentSetting = Setting.FramingDomains;
-                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
-                if (string.IsNullOrWhiteSpace(formModel.FramingDomains))
-                {
-                    settingAction(currentSetting, currentSettingInfo, true);
-                }
-                else
-                {
-                    var domains = formModel.FramingDomains
-                        .Split(',')
-                        .Select(o => o.Trim())
-                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
-                        .ToList();
-
-                    currentSettingInfo.Value = string.Join(",", domains);
-                    settingAction(currentSetting, currentSettingInfo, false);
-                }
-
-                #endregion
-
-                return jsonSuccess("Settings successfully updated.", "0", "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.GetFullExceptionData(), HttpStatusCode.InternalServerError);
-            }
         }
 
         [HttpGet, Route("GetSiteNavFolderItems"), NonNullableParameters]
@@ -1205,7 +851,15 @@ order by Sort, title";
                 case "R":   // Relation
                 case "U":   // Unrelation
                     #region
-                    sql = $@"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, IName.Name as title from intersecttypedetail itd cross apply dbo.GetIntersectTypeNames(itd.ID) IName where (itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType')) and itd.predicatetype not in (3,4,{(int)PredicateType.Diagram},{(int)PredicateType.DiagramUse},{(int)PredicateType.DiagramReference}) order by IName.Name";
+                    sql = $@"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, 
+                             CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path) as title
+                             from intersecttypedetail itd 
+                                cross apply dbo.GetAssetTypeTextPathById (itd.SubjectAssetTypeId,' > ') SName 
+                                cross apply dbo.GetAssetTypeTextPathById (itd.ObjectAssetTypeId,' > ') OName 
+                                inner join [Predicate] P on P.ID = itd.PredicateID
+                             where (itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType')) 
+                             and itd.predicatetype not in (3,4,{(int)PredicateType.Diagram},{(int)PredicateType.DiagramUse},{(int)PredicateType.DiagramReference}) 
+                             order by CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path)";
                     break;
                 #endregion
                 case "M":   // Users/Groups
@@ -1362,12 +1016,12 @@ order by Sort, title";
                 // Perform checks to make sure fields are populated.
                 if (string.IsNullOrEmpty(model.Type))
                 {
-                    throw new NoFormDataException("Type");
+                    throw new NoFormDataException(FormControllerApiMessage.TypeConstant);
                 }
 
                 if (string.IsNullOrEmpty(model.LoadAction))
                 {
-                    throw new NoFormDataException("LoadAction");
+                    throw new NoFormDataException(FormControllerApiMessage.LoadAction);
                 }
 
                 var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
@@ -1604,7 +1258,7 @@ order by Sort, title";
                     await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
-                    json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), "A", HttpStatusCode.Created);
+                    json = jsonSuccess(FormControllerApiMessage.FileUploadedAndQueueProcessing, load.ID.ToString(), "A", HttpStatusCode.Created);
                 }
                 else
                 {
@@ -1641,7 +1295,11 @@ order by Sort, title";
 
             if (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue)
             {
-                itemSql = @"select L.RowIndex, EA.[Message] as StatusMessage from LoadItem L
+                switch (load.Action)
+                {
+                    case "P":
+                        {
+                            itemSql = @"select L.RowIndex, EA.[Message] as StatusMessage from LoadItem L
 inner join (
 		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where success = 0
 		union all
@@ -1649,7 +1307,7 @@ inner join (
 	 )  EA on EA.ExecutionItemUid = L.ExecutionItemUid
 where L.LoadID = @id order by RowIndex asc";
 
-                itemColumnSql = @"
+                            itemColumnSql = @"
 select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
 from LoadItem I 
 inner join (
@@ -1661,52 +1319,102 @@ left join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex an
 left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
 left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
 order by I.RowIndex asc, C.ColumnIndex asc";
+                            break;
+                        }
+                    case "R":
+                        {
+                            itemSql = @"
+select
+	I.RowIndex as RowIndex,
+	coalesce(EA.Message, ER.Message) as StatusMessage
+from LoadItem I
+	left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid
+	left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid
+where I.LoadID = @id 
+and EA.Success = 0
+order by RowIndex asc
+";
+
+                            itemColumnSql = @"
+select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
+from LoadItem I 
+join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex 
+	left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+	left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid
+	left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid
+	left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
+where I.LoadID = @id  and EA.Success = 0
+order by I.RowIndex asc, C.ColumnIndex asc";
+                            break;
+                        }
+                    case "U":
+                        {
+                            itemSql = @"
+select
+	I.RowIndex as RowIndex,
+	coalesce(EA.Message, I.StatusMessage) as StatusMessage
+from LoadItem I
+	left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid
+where I.LoadID = @id 
+and coalesce(EA.Success,I.Status) = 0
+order by RowIndex asc
+";
+
+                            itemColumnSql = @"
+select C.LoadID, C.RowIndex, C.ColumnIndex,
+coalesce(EF.FieldValue, C.[Value]) as [Value] 
+from LoadItem I 
+join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex 
+	left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+	left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid
+	left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
+where I.LoadID = @id 
+	and coalesce(EA.Success,I.Status) = 0
+order by I.RowIndex asc, C.ColumnIndex asc";
+                            break;
+                        }
+                    default: throw new NotImplementedException($"Load of type {load.Action} is not supported");
+                }
             }
 
 
             var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
             var loadItems = Company.Query<dynamic>(itemSql, new { id }).ToList();
             var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { id }).ToList();
+            var columnCount = loadColumns.Count();
 
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
-
-            #region Create the list sheet
-
-            var r = 1;
-            var columnCount = loadColumns.Count;
-
-            #region Header
-
-            foreach (var lc in loadColumns)
+            var document = new ExcelDocument($"Errors-{id}.xlsx")
             {
-                document.SetCellValue(r, lc.ColumnIndex, lc.Name);
-            }
-            document.SetCellValue(r, columnCount + 1, "Error");
-            document.SetRowStyle(r, new SLStyle { Font = new SLFont { Bold = true } });
-            document.FreezePanes(1, columnCount);
-
-            #endregion
-
-
-            foreach (var i in loadItems)
-            {
-                r++;
-                foreach (var lic in loadItemColumns.Where(c => c.RowIndex == (int)i.RowIndex).OrderBy(c => c.ColumnIndex))
+                new ExcelSheet("Items")
                 {
-                    document.SetCellValue(r, lic.ColumnIndex, (string)lic.Value);
+                    HeaderRows = new List<ExcelRow>
+                    {
+                        new ExcelRow(loadColumns.Select(lc => lc.Name).Concat(new []{ "Error" }))
+                    },
+
+                    ValueRows = loadItems
+                        .Select(row => new ExcelRow(
+                            loadItemColumns
+                            .Where(c => c.RowIndex == (int)row.RowIndex)
+                            .OrderBy(c => c.ColumnIndex)
+                            .Select(lic => lic.Value)
+                            .Concat(new []{ row.StatusMessage })
+                        )).ToList(),
+
+                    FreezeColumns = columnCount,
+
+                    ColumnSettings = {
+                        {
+                            columnCount +1,
+                            new ExcelColumnSettings {
+                                Style = new SLStyle { Font = new SLFont { FontColor = System.Drawing.Color.Red } }
+                            }
+                        }
+                    }
                 }
-                document.SetCellValue(r, columnCount + 1, i.StatusMessage);
-            }
+            };
 
-            document.SetColumnStyle(columnCount + 1, new SLStyle { Font = new SLFont { FontColor = System.Drawing.Color.Red } });
-
-            #endregion
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"Errors-{id}.xlsx");
+            return ExcelDocumentAsFile(document);
         }
 
         [Route("loads/{id:int}/all.xlsx"), FileDownload, HttpGet]
@@ -1846,17 +1554,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
             else if (carts.Count > 1)
             {
-                return jsonException("An error occurred - there are more than 1 open carts for this user", HttpStatusCode.InternalServerError);
+                return jsonException(FormControllerApiMessage.AnErrorOccurMorethan1OpenCart, HttpStatusCode.InternalServerError);
             }
 
             if (myCart == null)
             {
-                return jsonException("The specified cart could not be found", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.SpecificCartNotFound, HttpStatusCode.NotFound);
             }
 
             if (myCart.ResourceID != Company.CurrentResourceID)
             {
-                return jsonException("You do not have permission to add items to this cart", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionAddItemInCart, HttpStatusCode.Forbidden);
             }
 
             var existingItem = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == myCart.ID && i.Object == type && i.ObjectID == id).FirstOrDefault();
@@ -1882,10 +1590,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
             else
             {
-                return jsonException("This item is already in your cart", HttpStatusCode.OK);
+                return jsonException(FormControllerApiMessage.ItemAlreadyInCart, HttpStatusCode.OK);
             }
 
-            return jsonSuccess("The item has been added to your cart", id.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ItemAddedCart, id.ToString(), "add", HttpStatusCode.OK);
 
         }
 
@@ -1897,16 +1605,16 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if (cart == null)
             {
-                return jsonException("Could not find the shopping cart specified.", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NotFoundShoppingCart, HttpStatusCode.NotFound);
             }
 
             if (cart.ResourceID != Company.CurrentResourceID)
-                return jsonException("You do not have permission to remove this item", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionRemoveItem, HttpStatusCode.Forbidden);
 
             var item = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == shoppingCartID && i.Object == type && i.ObjectID == id).FirstOrDefault();
             if (item == null)
             {
-                return jsonException("Shopping cart item could not be found", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.ShoppingCartNotFound, HttpStatusCode.NotFound);
             }
 
             try
@@ -1918,7 +1626,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-            return jsonSuccess("Shopping cart item removed successfully", id.ToString(), "delete", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShoppingCartRemoved, id.ToString(), "delete", HttpStatusCode.OK);
         }
 
         [HttpGet, Route("shoppingcart/list/{typeID:int}")]
@@ -1989,12 +1697,12 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var myCart = Company.GetById<ShoppingCart>(cart.ID);
             if (myCart == null)
             {
-                return jsonException("Could not find shopping cart", HttpStatusCode.NotFound);
+                return jsonException(FormControllerApiMessage.NotFoundShoppingCart, HttpStatusCode.NotFound);
             }
 
             if (myCart.ResourceID != Company.CurrentResourceID)
             {
-                return jsonException("You do not have permission to request this shopping cart.", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionRequestCart, HttpStatusCode.Forbidden);
             }
 
             try
@@ -2009,7 +1717,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Your request has been submitted", cart.ID.ToString(), "update", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.RequestSubmitted, cart.ID.ToString(), "update", HttpStatusCode.OK);
 
         }
 
@@ -2021,12 +1729,12 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var cart = Company.GetById<ShoppingCart>(cartID);
                 if (cart == null)
                 {
-                    return jsonException("Could not find the specified cart.", HttpStatusCode.NotFound);
+                    return jsonException(FormControllerApiMessage.NotFoundShoppingCart, HttpStatusCode.NotFound);
                 }
 
                 if (cart.ResourceID != Company.CurrentResourceID)
                 {
-                    return jsonException("You do not have permission to clear this cart.", HttpStatusCode.Forbidden);
+                    return jsonException(FormControllerApiMessage.NoPremissionClearCart, HttpStatusCode.Forbidden);
                 }
 
                 var items = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == cartID).ToList();
@@ -2038,7 +1746,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Shopping cart cleared successfully", cartID.ToString(), "update", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShoppingCartCleared, cartID.ToString(), "update", HttpStatusCode.OK);
 
         }
 
@@ -2051,17 +1759,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
             }
 
             if (string.IsNullOrEmpty(shortcut.Name))
             {
-                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
+                return jsonException(FormControllerApiMessage.ShortCutRequireName, HttpStatusCode.BadRequest);
             }
 
             if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconPayload))
             {
-                return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
+                return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
             }
 
             try
@@ -2097,7 +1805,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Shortcut added successfully", shortcut.ID.ToString(), "add", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShortcutAdded, shortcut.ID.ToString(), "add", HttpStatusCode.OK);
 
         }
 
@@ -2107,24 +1815,24 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if (!Company.CurrentResourceIsAdmin)
             {
-                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
             }
 
             var existing = Company.GetById<Shortcut>(shortcut.ID);
 
             if (existing == null)
             {
-                return jsonException($"The shortcut with id {shortcut.ID} could not be found.", HttpStatusCode.BadRequest);
+                return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound, shortcut.ID.ToString()), HttpStatusCode.BadRequest);
             }
 
             if (string.IsNullOrEmpty(shortcut.Name))
             {
-                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
+                return jsonException(FormControllerApiMessage.ShortCutRequireName, HttpStatusCode.BadRequest);
             }
 
             if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconUrl) && string.IsNullOrEmpty(shortcut.IconPayload))
             {
-                return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
+                return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
             }
 
             try
@@ -2187,7 +1895,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Shortcut modified successfully", shortcut.ID.ToString(), "edit", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShortcutModified, shortcut.ID.ToString(), "edit", HttpStatusCode.OK);
         }
 
         [HttpDelete, Route("shortcut/delete/{id:int}")]
@@ -2195,14 +1903,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+                return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
             }
 
             var existing = Company.GetById<Shortcut>(id);
 
             if (existing == null)
             {
-                return jsonException($"The shortcut with the id {id} could not be found.", HttpStatusCode.BadRequest);
+                return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound, id.ToString()), HttpStatusCode.BadRequest);
             }
 
             try
@@ -2228,7 +1936,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
 
-            return jsonSuccess("Shortcut deleted successfully.", id.ToString(), "delete", HttpStatusCode.OK);
+            return jsonSuccess(FormControllerApiMessage.ShortcutDeleted, id.ToString(), "delete", HttpStatusCode.OK);
         }
 
         [HttpPut, Route("shortcut/Move")]
@@ -2242,7 +1950,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var shortcut = Company.GetById<Shortcut>(id);
                 if (shortcut == null)
                 {
-                    throw new Exception($"Shortcut Id ${id} not found");
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutIDNotFound, id.ToString()));
                 }
 
                 direction = moveUp ? "up" : "down";
@@ -2257,7 +1965,9 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 }
 
                 if (adjacentShortcut == null)
-                    throw new Exception($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutAlreadySorted, (moveUp ? FormControllerApiMessage.TopConstant : FormControllerApiMessage.bottomConstant)));
+                }
 
 
                 int newOrder = adjacentShortcut.DisplayOrder;
@@ -2266,7 +1976,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
 
                 Company.SaveChanges();
-                message = $"Shortcut {shortcut.Name} moved {direction} successfully.";
+                message = string.Format(FormControllerApiMessage.ShortcutMoved, shortcut.Name, direction);
             }
             catch (Exception ex)
             {
@@ -2385,7 +2095,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     }
                 }
 
-                return jsonSuccess("Grammar allocation successfully modified.", "", "add", HttpStatusCode.Created);
+                return jsonSuccess(FormControllerApiMessage.GrammarAllocationModified, "", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -2403,7 +2113,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("custom synonym");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.CustomSynonym);
+                }
 
                 var name = parseTextField(form, "Name");
                 var predicateId = parseIntField(form, "PredicateID");
@@ -2421,12 +2134,12 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Add(model);
 
-                return jsonSuccess("Synonym " + model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(FormControllerApiMessage.SynonymCreated, model.Name), model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -2444,23 +2157,28 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("synonym");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormControllerApiMessage.Synonym);
+                }
                 var id = parseIntField(form, "ID");
 
                 var detail = Company.GetById<Nym>(id);
 
                 if (detail == null)
-                    throw new NullReferenceException("Custom Synonym not found");
-
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.CustomSynonymNotFound);
+                }
                 if (!Company.HasAssetPermission(detail.Object, detail.ObjectID, Permission.DeleteRelationships))
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
+                }
                 if (detail != null)
                 {
                     Company.Delete(detail);
                 }
 
-                return jsonSuccess("Synonym successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(FormControllerApiMessage.SynRemoved, id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

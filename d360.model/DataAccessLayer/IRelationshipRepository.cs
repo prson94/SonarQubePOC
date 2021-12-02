@@ -17,18 +17,17 @@ namespace d360.model.DataAccessLayer
         IntersectType GetRelationshipTypeByUID(Guid relationshipTypUid);
         Intersect GetRelationshipByUID(Guid relationshipUid);
         Task<IEnumerable<PredicateApiViewModel>> GetPredicates(Guid? PredicateUid, PredicateType? Type, string Name, string Inverse ,bool? IsUsed);
-        Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
+        Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false);
         IQueryable<IntersectType> GetIntersectTypeById(int id);
         IntersectType GetIntersectTypeByUid(Guid intersectTypeUid);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
-        Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool sendWorkflow = false);
         Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, ApiExecution execution, bool sendWorkflow = false);
+        Task<ApiExecutionInfo> BulkPutRelationships(Guid intersectTypeUid, RelationshipUpdates relationships, ApiExecution execution, bool triggerWorkflow = false);
         IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns);
         IEnumerable<dynamic> GetExportModel(int id);
         Task<List<DatabaseBulkAssetResult>> GetBulkResults(ApiExecutionInfo info);
         List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600, bool triggerWorkflow = false);
-        Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool sendWorkflow = false);
         Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, ApiExecution execution, bool sendWorkflow = false);
 
         bool AnyExists(Guid uid);
@@ -40,7 +39,7 @@ namespace d360.model.DataAccessLayer
         List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution);
         List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution);
         Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
-        Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal, string owner);
+        Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, int pageSize, int pageNum, bool includeTotal, string owner);
         Task<JObject> GetRelationship(Guid uid);
     }
 }

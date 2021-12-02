@@ -7,13 +7,11 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SearchStateService } from './search-state.service';
 import { SearchResultsObject, SearchCategories, SearchSelecton, SearchFieldFilter, SearchConnector, SearchOperator } from '../../models/search-result.model';
-import { CurrentCompanySettings } from '../../static/company-settings'
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { SidePanelButton } from "../../models/side-panel.model";
 import { AdvancedFilterFieldConditionCollection, AdvancedFilterFieldCondition, AdvancedFilterFieldType } from "../assets-grid/advanced-filtering/advanced-filtering.models";
 import { DatePipe } from "@angular/common";
-
 import { CheckTree } from "../shared/small-widgets/check-tree/check-tree.component";
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 import { PopupMenuItem } from '../shared/controls/popup-menu/popup-menu.component';
@@ -21,8 +19,8 @@ import { FieldType } from '../../models/fieldtype-api.model';
 import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/advanced-filtering.component';
 import { Operator } from '../../models/operator.model';
 import { SelectItem } from '../../models/form.model';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
     selector: 'd3s-search',
@@ -35,7 +33,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public searchResults: SearchResultsObject;
     public categories: SearchCategories[] = [];
     public searchText: string;
-    public searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
+    public searchTypes: string[] = [];
 
     public resultsPerPage: number = 25;
     public fromNumber: number = 0;
@@ -48,7 +46,10 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public sidePanelStorageKey: string = "searchresults";
     public hasProfiling: boolean = false;
     public dataProfile: any;
+    private dataProfileList: any[];
     public advancedFiltersLoaded: boolean = false;
+
+    showEditor: boolean = false;
 
     public extraButtons: SidePanelButton[] = [new SidePanelButton({
         label: 'Filters',
@@ -87,8 +88,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
         protected secondaryNavService: SecondaryNavService,
         public searchStateService: SearchStateService,
         private dataProfileService: DataProfileService,
+        protected settingsService: CompanySettingsService,
         private datePipe: DatePipe) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.filterFields$ = this.filterFieldsSubject.asObservable();
     }
@@ -109,6 +111,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.secondaryNavService.showHeader(false);
         this.searchStateService.advancedFilters = [];
 
+        this.searchTypes = this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).StringSetting.Value.split(',');
+
         this.sub = this.route.queryParams.subscribe((params) => {
             this.searchText = params['query'] ? params['query'] : '';
             if (params['types'] != undefined) {
@@ -126,9 +130,12 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.selection = $event;
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getUTCFullYear() - 100);
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid, startDate).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
+                        this.dataProfileList = r.items;
                         this.dataProfile = r.items[0];
 
                         forkJoin(
@@ -199,6 +206,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
             Name: "Description", FriendlyName: "Description", Type: new FieldType("Text"), Category: "", RemovePopulatedOperator: true
         });
         fields.push({
+            Name: "Path", FriendlyName: "Asset Path", Type: new FieldType("Path"), Category: "", RemovePopulatedOperator: true
+        });
+        fields.push({
             Name: "Tags", FriendlyName: "Tags", Type: new FieldType("Tag"), Category: "", RemovePopulatedOperator: true
         });
         this.filterFieldsSubject.next(fields);
@@ -216,6 +226,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
             if (af.Field === "Tags") {
                 condition.value = af.Values.map((v) => { return { title: v, value: v }; });
                 condition.fieldType = "Tag";
+            } else if (af.Field === "Path") {
+                condition.value = af.Values;
+                condition.fieldType = "Path";
             } else {
                 condition.value = af.Values[0];
                 condition.fieldType = "Text";
@@ -274,7 +287,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
                 .map((f) => {
                     return {
                         Field: f.field,
-                        Values: Array.isArray(f.value) ? (f.value as SelectItem[]).map((i) => i.value) : [f.value],
+                        Values: Array.isArray(f.value) ? (f.value).map((i) => { return i.value ?? i; }) : [f.value],
                         MatchWords: f.exact,
                         Operator: this.parseOperator(f.operator + ""),
                         Connector: this.parseConnector(f.connectingOperator)
@@ -284,5 +297,10 @@ export class SearchComponent extends BaseComponent implements OnInit {
             this.searchStateService.connector = this.parseConnector(this.advancedFilter.conditions.connector);
             this.doSearch(true);
         }
+    }
+
+    saveItem() {
+        this.showEditor = false;
+        this.doSearch(true);
     }
 }

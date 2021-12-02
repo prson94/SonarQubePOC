@@ -99,6 +99,8 @@ namespace d360.core.entities
         public int IntersectTypeID { get; set; }
         public string TargetObject { get; set; }
         public int TargetObjectID { get; set; }
+        public Guid? IntersectTypeUID { get; set; }
+        public Guid? AssetUID { get; set; }
     }
 
     [JsonConverter(typeof(StringEnumConverter), true)]

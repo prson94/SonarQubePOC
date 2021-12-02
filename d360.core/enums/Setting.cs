@@ -23,7 +23,7 @@ namespace d360.core.enums
         DisableCommunityPosting = 1,
         
         [
-            DefaultValue("/Content/images/govern-small-white.svg"),
+            DefaultValue("/Content/images/PreciselyLogo@2x.png"),
             Description("CompanyLogo_Desc", typeof(Settings)),
             Locked(false),
             Name("CompanyLogo_Name", typeof(Settings)),
@@ -58,14 +58,6 @@ namespace d360.core.enums
         ]
         HideData3SixtyUsers = 9,
         
-        [
-            DefaultValue("#54a4da"), 
-            Description("HeaderBackgroundColor_Desc", typeof(Settings)),
-            Locked(false),
-            Name("HeaderBackgroundColor_Name", typeof(Settings)),
-            Type(SettingType.Text)
-        ]
-        HeaderBackgroundColor = 10,
         
         [
             DefaultValue(""), 
@@ -119,16 +111,7 @@ namespace d360.core.enums
             Name("DefaultRoute_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
-        DefaultRoute = 22,
-        
-        [
-            DefaultValue(true), 
-            Description("SearchExactMatch_Desc", typeof(Settings)), 
-            Locked(false),
-            Name("SearchExactMatch_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        SearchExactMatch = 23,
+        DefaultRoute = 22,       
         
         [
             DefaultValue(""), 
@@ -212,7 +195,7 @@ namespace d360.core.enums
         ShowLineageSidebar = 32,
         
         [
-            DefaultValue("D3S"), 
+            DefaultValue("Data360"), 
             Description("BrowserTitlePrefix_Desc", typeof(Settings)), 
             Locked(false),
             Name("BrowserTitlePrefix_Name", typeof(Settings)),
@@ -416,16 +399,7 @@ namespace d360.core.enums
             Name("WriteActionDescription_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
-        WriteActionDescription = 61,
-        
-        [
-            DefaultValue(false), 
-            Description("UseNewMarkitLineageGeneration_Desc", typeof(Settings)), 
-            Locked(false),
-            Name("UseNewMarkitLineageGeneration_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        UseNewMarkitLineageGeneration = 62,
+        WriteActionDescription = 61,       
         
         [
             DefaultValue("DRAFT"), 
@@ -559,7 +533,15 @@ namespace d360.core.enums
             Name("HideHeaderBarControls_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
-        HideHeaderBarControls = 83
+        HideHeaderBarControls = 83,
+        [
+            DefaultValue(250),
+            Description("DiagramMaxAvoidNodesLinkCount_Desc", typeof(Settings)),
+            Locked(false),
+            Name("DiagramMaxAvoidNodesLinkCount_Name", typeof(Settings)),
+            Type(SettingType.Number)
+        ]
+        DiagramMaxAvoidNodesLinkCount = 84
     }
 
     public class SettingInfo

@@ -16,7 +16,7 @@ export interface LookupValuesAPIParameters {
 
 export class LookupValuesAPIModel {
     count: number;
-    items: string[];
+    items: any[];
 }
 
 export class AdvancedFilterFieldType extends FieldTypeAPIModelField {
@@ -347,7 +347,7 @@ export class AdvancedFilterFieldCondition {
                     if (leftover === 1) {
                         valueAsString += ", 1 other item";
                     }
-                    else if(leftover > 1) {
+                    else if (leftover > 1) {
                         valueAsString += `, ${leftover} other items`;
                     }
                     valueAsString += " " + match;
@@ -603,7 +603,19 @@ export class AdvancedFilterFieldConditionCollection {
         if (cond.value) {
             let minValue: number = null;
             let maxValue: number = 100;
-            let alloc = this.allocations.filter((x) => x.scoreType === cond.type.Type.Score.ScoreType)[0];
+
+            var scoreType = cond.type.Type.Score.ScoreType;
+            var scoreTypeString = cond.type.Type.Score.ScoreType.toString();
+            if (scoreType.toString() === "Governance") {
+                scoreType = 1;
+            }
+
+            if (scoreType.toString() === "DataQuality") {
+                scoreType = 2;
+            }
+
+            let alloc = this.allocations.filter((x) => x.scoreType === scoreType || x.scoreType.toString() === scoreTypeString)[0];
+
             switch (cond.value) {
                 case "poor":
                     minValue = null;

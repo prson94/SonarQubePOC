@@ -14,6 +14,7 @@ import {FieldsObservableService} from '../../../services/fieldsObservable.servic
 import {FieldDefinition} from '../../../models/fields.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-export-template-fields-component',
@@ -102,18 +103,16 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     @Input() exportTemplate: ExportTemplate;
     @Output() saveFieldsClick = new EventEmitter();
 
-
     public availableFields: FieldDefinition[] = new Array<FieldDefinition>();
-
     public selectedFields: FieldDefinition[] = new Array<FieldDefinition>();
-
 
     constructor(
         private exportTemplateService: ExportTemplateService,
+        protected fieldsService: FieldsObservableService,
         protected messagesService: MessagesObservableService,
-        protected fieldsService: FieldsObservableService
+        protected settingsService: CompanySettingsService
     ) {
-        super();
+        super(settingsService);
     }
 
     ngOnInit() {

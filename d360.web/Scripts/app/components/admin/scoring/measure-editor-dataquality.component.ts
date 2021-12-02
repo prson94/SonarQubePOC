@@ -1,52 +1,31 @@
-import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricFieldTypeViewModel, MetricAssetDefinitionViewModel, MetricRuleResultOperation, MetricMatchType, MetricPathOptionViewModel, MetricAssetDefinitionDataQualityViewModel, MetricAssetDefinitionDataQualityFilterViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
-import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldType, FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
-import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { AppSettingsEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'dataquality-measure-editor',
     templateUrl: './measure-editor-dataquality.component.html',
-    providers: [MetricsService, CompanySettingsService, FieldsObservableService],
+    providers: [MetricsService, FieldsObservableService],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [`
-    .row-label{
-        margin: 0px 0px -16px 0px;
-    }
-    .conditions-row{
-        display: flex;
-    }   
-    .condition{
-        margin-left: 8px;
-        flex-shrink: 0;
-        flex-grow: 0;
-        width: 100%;
-        max-width: 150px;
-    }
-    .condition-med{
-        max-width: 308px;
-        flex-grow: 1;
-    }
-    .field-row{
-        margin-bottom: 8px;
-    }
-    `]
-
+    encapsulation: ViewEncapsulation.None,
+    styleUrls: ['measure-editor.less']
 })
 export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponent implements OnInit, OnChanges {
 
     //#region Tooltip data
 
-    helpUri = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
+    helpUri: string = "";
 
     ruleResultsTooltip: string = 'In order to collect scoring results from rules, you need '
         + 'to define at least one relationship type to associate the asset type you are scoring '
@@ -80,13 +59,17 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.loadFieldData();
     }, 200);
 
-    constructor(protected metricsService: MetricsService,
+    constructor(
+        protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
         protected fb: FormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
-        super(fieldsService, metricsService, messagesService, cdRef);
+        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
+        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -160,7 +143,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         });
 
         if (this.model.Definition && this.model.Definition.DataQuality && this.model.Definition.DataQuality.ResultPathUid) {
-            
+
             this.metricsService
                 .getRuleResultPathOptionFields(this.model.Definition.DataQuality.ResultPathUid)
                 .subscribe(fields => {
@@ -232,6 +215,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                 this.metricForm.addControl("ruleResultOperation", new FormControl('', [Validators.required]));
                 this.metricForm.addControl("ruleResultMatchType", new FormControl(''));
                 this.metricForm.addControl("matchType", new FormControl(''));
+                this.loadConditions();
             }
         }
         this.metricForm.updateValueAndValidity();

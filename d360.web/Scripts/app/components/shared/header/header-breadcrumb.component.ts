@@ -3,8 +3,6 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { Subscription } from 'rxjs';
 import * as _ from 'lodash';
-import { windowWhen } from 'rxjs/operators';
-import { clearLine } from 'readline';
 
 @Component({
     selector: 'd3s-header-breadcrumb',
@@ -28,11 +26,13 @@ import { clearLine } from 'readline';
 
 export class HeaderBreadcrumbComponent {
     @Input() controlWidth: number;
+    @Input() showBackButton: boolean = false;
     subscriptionPop: Subscription;
     subscriptionClear: Subscription;
     subscriptionBuildFromStorage: Subscription;
     subscriptionAdd: Subscription;
     subscriptionChangeState: Subscription;
+    updateCurrentObjectPathSub: Subscription;
     breadcrumbs: Breadcrumb[];
     showLastOnly: boolean = false;
     showThisManyCrumbs: number = 0;
@@ -80,6 +80,21 @@ export class HeaderBreadcrumbComponent {
             this.objectState = res;
             this.ref.markForCheck();
         });
+
+        this.updateCurrentObjectPathSub = headerBreadcrumbService.updateCurrentObjectPath$.subscribe((res) => {
+            var hasUpdate = false;
+            this.breadcrumbs.forEach((b) => {
+                if (b.text === res.oldValue) {
+                    b.text = res.value;
+                    hasUpdate = true;
+                }
+            });
+
+            if (hasUpdate) {
+                this.breadcrumbs = _.cloneDeep(this.breadcrumbs);
+            }
+            this.ref.markForCheck();
+        });
     }
 
 
@@ -122,7 +137,7 @@ export class HeaderBreadcrumbComponent {
 
         let element = this.breadcrumbUIElement.nativeElement;
         var controlsWidth = this.controlWidth ? this.controlWidth : 0; // only visible medium and up
-        let logo = element.parentElement.previousSibling;
+        let logo = this.showBackButton ? element.parentElement.previousElementSibling.previousElementSibling : element.parentElement.previousElementSibling;
         var logoWidth = logo.offsetWidth;
         var breadcrumbWidth = element.offsetWidth;
 

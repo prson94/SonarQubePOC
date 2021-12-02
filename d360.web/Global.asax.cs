@@ -10,13 +10,15 @@ using System;
 using System.Security.Cryptography;
 using System.Deployment.Internal.CodeSigning;
 using d360.core;
-using d360.web.Filters;
-using d360.web.Models;
-using System.Collections.Generic;
 using System.Linq;
-using d360.model.DataAccessLayer;
-using d360.model.validators;
+using d360.core.types;
+using Autofac.Integration.Mvc;
+
 using d360.web.Utilities;
+using d360.extensions.caching;
+using d360.web.Controllers.V2;
+using d360.web.Services;
+using MediatR.Extensions.Autofac.DependencyInjection;
 
 namespace d360.web
 {
@@ -26,41 +28,38 @@ namespace d360.web
         {
             var builder = new ContainerBuilder();
 
+            builder.RegisterType<DateTimeService>().As<IDateTimeService>().SingleInstance();
+            builder.RegisterType<DecimalService>().As<IDecimalService>().SingleInstance();
+            builder.RegisterType<Int64Service>().As<IInt64Service>().SingleInstance();
+            builder.RegisterType<DependencyInjectionTypeServiceProvider>().As<ITypeServiceProvider>().SingleInstance();
+            builder.RegisterType<AssetService>().As<IAssetService>().SingleInstance();
+            
+            builder.RegisterType<ApplicationUriProvider>().As<IApplicationUriProvider>().SingleInstance();
+
+            builder.RegisterControllers(typeof(MvcApplication).Assembly);
+            builder.RegisterMediatR(typeof(MvcApplication).Assembly);
 
             #region Extension DI
 
             #region Config Setting Reader            
             builder.RegisterType<d360.extensions.search.ElasticSearchSource>().As<ISearchSource>().InstancePerRequest();
-            builder.RegisterType<d360.web.caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
+            builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>().InstancePerRequest().OnActivating(i => {
+                i.Instance.ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY);
+                i.Instance.SubAccount = Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT);
+            });
+            if (Config.GetValue<bool>("RedisEnabled"))
+            {
+                builder.RegisterType<RedisCachingProvider>().As<ICachingProvider>().InstancePerRequest();
+            }
+            else
+            {
+                builder.RegisterType<caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
+            }
             builder.RegisterType<d360.extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
             builder.RegisterType<d360.extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
             #endregion
 
-            builder.RegisterType<CommunityContext>().As<ICommunityContext>().InstancePerRequest();
-            builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
-
-            builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
-            builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
-            builder.RegisterType<CrossReferencesRepository>().As<ICrossReferencesRepository>().InstancePerRequest();
-            builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
-            builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();
-            builder.RegisterType<WorkflowRepository>().As<IWorkflowRepository>().InstancePerRequest();
-            builder.RegisterType<ResourceRepository>().As<IResourceRepository>().InstancePerRequest();
-            builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
-            builder.RegisterType<SurveyApiModelValidator>().As<ISurveyApiModelValidator>().InstancePerRequest();
-            builder.RegisterType<IssueRepository>().As<IIssueRepository>().InstancePerRequest();
-            builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
-            builder.RegisterType<MetricsRepository>().As<IMetricsRepository>().InstancePerRequest();
-            builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
-            builder.RegisterType<SettingsRepository>().As<ISettingsRepository>().InstancePerRequest();
-            builder.RegisterType<SurveyRepository>().As<ISurveyRepository>().InstancePerRequest();
-            builder.RegisterType<MembershipRepository>().As<IMembershipRepository>().InstancePerRequest();
-            builder.RegisterType<ScoringRepository>().As<IScoringRepository>().InstancePerRequest();
-            builder.RegisterType<GraphFilterRepository>().As<IGraphFilterRepository>().InstancePerRequest();
-            builder.RegisterType<ProcessRepository>().As<IProcessRepository>().InstancePerRequest();
-            builder.RegisterType<ConnectorLabelRepository>().As<IConnectorLabelRepository>().InstancePerRequest();
-            builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
-
+            builder.RegisterModelModule();
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()

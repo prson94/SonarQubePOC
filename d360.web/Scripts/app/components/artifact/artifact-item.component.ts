@@ -7,7 +7,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { Artifact } from '../../models/artifacts.model';
+import { Artifact, SynonymPermission } from '../../models/artifacts.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
@@ -17,8 +17,9 @@ import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component
 import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
+import { CompanySettingsService } from '../../services/settings.service';
+import { CompanySettingEnum } from '../../models/settings.model';
 
-declare var CompanySettings;
 declare var CurrentResourceID;
 
 @Component({
@@ -38,9 +39,11 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private showSocialScoreBar: boolean = true;
     private showDataProfile: boolean = false;
     private dataProfile: any;
+    private dataProfileList: any[];
     private sidePanelOpen: boolean = false;
     private sidePanelStorageKey;
-
+    private synonymPermission: SynonymPermission;    
+   
     constructor(
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
@@ -50,9 +53,10 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
-        private dataProfileService: DataProfileService
+        private dataProfileService: DataProfileService,
+        protected settingsService: CompanySettingsService
     ) {
-        super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
+        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
     }
 
     ngOnInit() {
@@ -63,15 +67,12 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
             this.messages = [];
-            this
-                .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
                     this.load(artifactId, this.artifactTypeId);
-                }
-                )
-                ;
+                });
 
-            this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
+            this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
         });
     }
 
@@ -94,16 +95,19 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
             .subscribe(
                 artifact => {
                     this.artifact = artifact;
-
+                    this.synonymPermission = artifact.SynonymPermission;
+                     
                     this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
-
 
                     this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-                    this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
+                    let startDate = new Date();
+                    startDate.setFullYear(startDate.getUTCFullYear() - 100);
+                    this.dataProfileService.getDataProfiles(this.artifact.Uid, startDate).subscribe(
                         (r) => {
                             if (r && r.items && r.items.length > 0) {
+                                this.dataProfileList = r.items;
                                 this.dataProfile = r.items[0];
 
                                 forkJoin(

@@ -192,4 +192,7 @@
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
     <value>Parameter '{0}' has invalid GUID value</value>
   </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>Item Not Found</value>
+  </data>
 </root>

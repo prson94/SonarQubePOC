@@ -1,10 +1,11 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { DetailRow, DetailField, DetailFieldType, NymType, Category, ComplexLookupType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
+import { SynonymPermission } from '../../../models/artifacts.model';
 
 declare var CurrentResourceID;
 
@@ -33,6 +34,12 @@ export class AssetDetailComponent implements OnChanges {
     @Input() paddingLeft: string;
     @Input() isSidePanel: boolean = false;
     @Input() useAssetDetailColumnDefinition: boolean = false;
+    @Input() synonymPermission: SynonymPermission;
+    @Input() hasEditLink: boolean = false;
+
+    @Input() assetDetail: any;
+
+    @Output() onEditClick = new EventEmitter();
 
     assetUID: string;
     assetTypeUID: string;
@@ -74,13 +81,16 @@ export class AssetDetailComponent implements OnChanges {
 
     public load(): void {
         let detailSub = null;
+        if (this.assetDetail) {
+            detailSub = this.assetDetail;
+        } else {
+            if (this.objectType && this.objectID) {
+                detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+            }
 
-        if (this.objectType && this.objectID) {
-            detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
-        }
-
-        if (this.objectType && this.objectUID) {
-            detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+            if (this.objectType && this.objectUID) {
+                detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+            }
         }
 
         if (detailSub) {
@@ -320,5 +330,18 @@ export class AssetDetailComponent implements OnChanges {
                 score.Class = 'good';
             }
         }
+    }
+
+    clickTab(key: string) {
+        this.tab = key;
+    }
+
+    isEditLinkVisible() {
+        var allowedObjects: string[] = ['Artifact', 'Taxonomy', 'Policy', 'Rule'];
+        var isAllowedObject = false;
+        if (this.objectType) {
+            isAllowedObject = allowedObjects.indexOf(this.objectType) !== -1;
+        }
+        return this.hasEditLink && isAllowedObject && this.model?.CanEdit;
     }
 }

@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { TreeNode } from 'primeng/api';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -13,6 +13,7 @@ import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -49,9 +50,11 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         private assetTypeService: AssetTypeService,
         private assetsService: AssetService,
         titleService: Title,
-        protected messagesService: MessagesObservableService
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService,
+        private cdRef: ChangeDetectorRef
     ) {
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
     }
 
@@ -93,8 +96,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     load(uid: string = '') {
-        this.assetsService.getAssetCountsByAssetType(this.assetTypeClass)
-            .subscribe(data => {
+        this.isLoading = true;
+        this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false)
+            .subscribe(data => {                
+                this.isLoading = false;
                 let temp: TreeNode[] = [];
                 data.forEach(n => {
                     temp.push(AssetCount.ConvertToTreeNode(n));
@@ -127,11 +132,25 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     delete(uid: string) {
         this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
 
-        this.loadDataAndExecuteAction(() => {
-            this.isAdding = false;
-            this.isEditing = false;
-            this.isDeleting = true;
-        });
+        if (this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset) {
+            this.assetsService.getAssetCountOfArtifactTypeUid(uid)
+                .subscribe(data => {
+                    this.selectedRow.data.count = data.count;
+                    this.loadDataAndExecuteAction(() => {
+                        this.isAdding = false;
+                        this.isEditing = false;
+                        this.isDeleting = true;
+                    });
+                });
+
+        }
+        else {
+            this.loadDataAndExecuteAction(() => {
+                this.isAdding = false;
+                this.isEditing = false;
+                this.isDeleting = true;
+            });
+        }
 
     }
 
@@ -196,7 +215,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     private loadDataAndExecuteAction(action: Function) {
-        this.isLoading = true;
         if (this.selectedRow) {
             this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
                 .subscribe(res => {
@@ -204,7 +222,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                     this.selectedRow.data.AssetTypeID = res.AssetTypeID;
                     if (action) {
                         action();
-
                     }
                 });
         }

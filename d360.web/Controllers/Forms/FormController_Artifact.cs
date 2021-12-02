@@ -57,10 +57,11 @@ namespace d360.web.Controllers
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
-        [Route("Artifact_AddFields"), NonNullableParameters]
-        public JsonResult Artifact_AddFields(int at, int p)
+        [Route("Asset_AddFields"), NonNullableParameters]
+        public JsonResult Asset_AddFields(SystemObjects type, int at, int p)
         {
-            if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, at, Permission.AddAsset))
+            var sType = type.ToString();
+            if (!Company.HasAssetTypePermission(type, at, Permission.AddAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
             }
@@ -68,53 +69,46 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
 
             var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                i.Object == "ArtifactType" &&
+                i.Object == sType &&
                 i.ObjectID == at &&
                 i.PredicateType.Value == PredicateType.InterTypeHierarchy
             ).SingleOrDefault();
 
-            var parentType = Company.GetParentType(at, SystemObjects.ArtifactType);
+            var parentType = Company.GetParentType(at, type);
             if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                var parents = Company.Query<SelectListItem>(
-           $@"select 
-                                    lower(convert(nvarchar(36), A.uid)) as Value, 
-                                    AN.DisplayPath as Text 	
-                                        from Asset A 
-                                        inner join graph.AssetNodeDisplayPath AN on AN.ID = A.ID 
-                                        where A.AssetTypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
-                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
+                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), ItemSize = 20 });
             }
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(type, at).ToList(), 2, loadLookupValues: false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
         /// <param name="id">ArtifactID</param>
-        [Route("Artifact_EditFields"), NonNullableParameters]
-        public JsonResult Artifact_EditFields(int id)
+        [Route("Asset_EditFields"), NonNullableParameters]
+        public JsonResult Asset_EditFields(SystemObjects type, SystemObjects obj, int id)
         {
-            if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.EditAsset))
+            if (!Company.HasAssetPermission(obj, id, Permission.EditAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }
 
             var list = new List<EditableField>();
-            var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
+            var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == obj.ToString()).Include(x => x.AssetType).FirstOrDefault();
 
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
-            var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ArtifactType);
+            var parentType = Company.GetParentType(a.AssetType.ObjectID, type);
 
 
             if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 if (parentType != null)
                 {
-                    var parent = Company.GetParentObject(a.ObjectID, SystemObjects.Artifact);
+                    var parent = Company.GetParentObject(a.ObjectID, obj);
 
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                     var parents = Company.Query<SelectListItem>(
@@ -123,7 +117,7 @@ namespace d360.web.Controllers
                                     AN.DisplayPath as Text 	
                                         from Asset A 
                                         inner join graph.AssetNodeDisplayPath AN on AN.ID = A.ID 
-                                        where A.AssetTypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
+                                        where A.AssetTypeID = {parentType.ID} and A.ID = {parent.ID}").OrderBy(i => i.Text).ToList();
 
 
                     list.Add(new EditableField
@@ -146,12 +140,13 @@ namespace d360.web.Controllers
 
             list = (
                 loadDynamicFields(
-                    SystemObjects.Artifact.ToString(),
+                    obj.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.AssetType.ObjectID).ToList(),
-                    Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(),
-                    2
+                    Company.GetFieldTypesByObject(type, a.AssetType.ObjectID).ToList(),
+                    Company.GetFieldRelationsByObject(obj, id).ToList(),
+                    2,
+                    loadOnlySelectedLookupValue: true
                 )
             );
 
@@ -221,14 +216,14 @@ namespace d360.web.Controllers
                 {
                     if (!id.HasValue)
                     {
-                        return jsonNetException($"No asset type ID provided (id parameter).", HttpStatusCode.BadRequest);
+                        return jsonNetException(FormControllerApiMessage.NoAssetTypeIDProvided, HttpStatusCode.BadRequest);
                     }
 
                     var assetType = Company.GetById<AssetType>(id.Value);
 
                     if (assetType == null)
                     {
-                        return jsonNetException($"No asset type found for the ID {id.Value}", HttpStatusCode.NotFound);
+                        return jsonNetException(string.Format (FormControllerApiMessage.NoAssetTypeFound,id.Value.ToString()), HttpStatusCode.NotFound);
                     }
 
                     var style = assetType.AssetTypeStyle;
@@ -267,7 +262,6 @@ namespace d360.web.Controllers
                     {
                         case AssetTypeClass.BusinessAsset:
                         case AssetTypeClass.TechnicalAsset:
-                            model.AssetType.CanOwnFusion = (@class == AssetTypeClass.BusinessAsset) ? assetType.CanOwnFusion : false;
                             model.AssetType.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;

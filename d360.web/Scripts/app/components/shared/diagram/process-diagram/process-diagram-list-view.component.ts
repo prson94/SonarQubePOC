@@ -3,6 +3,7 @@ import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { SortEvent } from 'primeng/api';
+import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
     selector: 'd3s-process-diagram-list-view',
@@ -27,10 +28,11 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
     constructor(
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
+        protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         private elRef: ElementRef
     ) {
-        super();
+        super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
 

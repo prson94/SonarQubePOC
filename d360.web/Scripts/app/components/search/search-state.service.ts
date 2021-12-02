@@ -14,9 +14,10 @@ import { SearchSession } from './search-session';
 @Injectable()
 export class SearchStateService extends BaseObservableService {
 
-    private readonly sessionKey:string = 'd360SearchState';
+    private readonly sessionKey:string = "d360SearchState";
     private readonly sessionAgeMinutes: number = 10;
     private readonly debounceValue: number = 400;
+    private readonly subCategoryKeySeparator: string = "___";
 
     private AggSub$: Subscription;
     private MainSub$: Subscription;
@@ -183,24 +184,32 @@ export class SearchStateService extends BaseObservableService {
         let categories = [];
 
         if (this._initial) {
-            if (this._checkTreeKeys == null) {
+            if (this._checkTreeKeys === null) {
                 this._checkTreeKeys = this._searchTypes.map(k => new SearchCheckTreeVal(k, "category"));
             }
             this._initial = false;
-            types = this._checkTreeKeys.filter((x) => x.type == "subCategory").map((x) => x.key);
-            categories = this._checkTreeKeys.filter((x) => x.type == "category").map((x) => x.key);
+            types = this._checkTreeKeys
+                .filter((x) => x.type === "subCategory")
+                .map((x) => x.key.split(this.subCategoryKeySeparator)[1]);
+            categories = this._checkTreeKeys
+                .filter((x) => x.type === "category").map((x) => x.key)
+                .concat(this._checkTreeKeys
+                    .filter((x) => x.type === "subCategory")
+                    .map((x) => x.key.split(this.subCategoryKeySeparator)[0])
+                );
         } else {
             //Get selected Classes and AssetTypes from checkbox tree
-            types = this.selectedFilters.filter((x) => x.type == "subCategory").map((x) => x.data);
-            categories = this.selectedFilters.filter((x) => x.type == "category").map((x) => x.data);
-
+            types = this.selectedFilters.filter((x) => x.type === "subCategory").map((x) => x.data);
+            categories = this.selectedFilters.filter((x) => x.type === "category").map((x) => x.data);
             if (types.length > 0) {
                 //Semi-marked classes are not "selected", so they must be added separately
-                categories = categories.concat(this.currentCategories.filter((x) => x.type == "category" && x.partialSelected == true).map((x) => x.data));
-                aggFilters.push(new SearchAggregationFilter({
-                    Field: "d3sAssetType",
-                    Values: types.sort().filter((x, i, a) => !i || x != a[i - 1])
-                }));
+                categories = categories.concat(
+                    this.currentCategories
+                        .find((x) => x.type === "root")
+                        .children
+                        .filter((x) => x.type === "category" && x.partialSelected === true)
+                        .map((x) => x.data)
+                );
             }
         }
 
@@ -208,6 +217,12 @@ export class SearchStateService extends BaseObservableService {
             aggFilters.push(new SearchAggregationFilter({
                 Field: "d3sCategory",
                 Values: categories.sort().filter((x, i, a) => !i || x != a[i - 1])
+            }));
+        }
+        if (types.length > 0) {
+            aggFilters.push(new SearchAggregationFilter({
+                Field: "d3sAssetType",
+                Values: types.sort().filter((x, i, a) => !i || x != a[i - 1])
             }));
         }
 
@@ -262,7 +277,7 @@ export class SearchStateService extends BaseObservableService {
                     "count": val.ResultCount,
                     "children": val.Categories.map((cat) => {
                         return {
-                            "key": val.Name + '___' + cat.Name,
+                            "key": val.Name + this.subCategoryKeySeparator + cat.Name,
                             "label": cat.Name,
                             "type": "subCategory",
                             "data": cat.Name,
@@ -293,8 +308,9 @@ export class SearchStateService extends BaseObservableService {
             tap(val => { this._loading.next(true); }),
             switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery))
         ).subscribe((res) => {
+            const pageNumber = this._query.From ?? 0 / this._query.Size ?? 25;
             this._resultCount.next(res.Result.Matches);
-            this._pageNumber.next(this._query.From / this._query.Size);
+            this._pageNumber.next(pageNumber);
             this._results.next(res.Result.Results);
             this._loading.next(false);
         });
@@ -338,7 +354,11 @@ export class SearchStateService extends BaseObservableService {
      * Will be merged with the aggregate result from search
      **/
     private getBaseCategoryTree() {
-        if (typeof this._baseCategoryTree === "undefined" && this.searchTypes.length > 0) {
+        if (typeof this._baseCategoryTree === "undefined") {
+            if (this.searchTypes.length === 0) {
+                return []; //this.searchTypes not yet populated
+            }
+
             this._baseCategoryTree = this.searchTypes.map((val) => {
                 return {
                     "label": val.title,

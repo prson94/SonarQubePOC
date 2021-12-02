@@ -7,6 +7,7 @@ import 'codemirror/mode/css/css.js';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-customizations-component',
@@ -18,7 +19,7 @@ import { StringConstants } from '../../../static/string-constants';
                                 <header>Style Customizations</header>  
                                 <ig-message-box [messagetype] = "'warning'">
                                 <span>
-                                    You can write CSS overrides to customize the branding of Data360 Govern. You should write the minimal number of rules and CSS properties necessary to achieve your desired results. Software updates are released every month, which could potentially break your CSS overrides. In some cases, CSS overrides could break updates or new features added to Govern. If you use a lot of CSS overrides, you will need to perform UI regression testing every time an update is released to your environments. Because of this, we strongly recommend that you reach out to Infogix to raise enhancement requests, instead of using CSS to remove or alter features and screen layouts.
+                                    You can write CSS overrides to customize the branding of Data360 Govern. You should write the minimal number of rules and CSS properties necessary to achieve your desired results. Software updates are released every month, which could potentially break your CSS overrides. In some cases, CSS overrides could break updates or new features added to Govern. If you use a lot of CSS overrides, you will need to perform UI regression testing every time an update is released to your environments. Because of this, we strongly recommend that you reach out to Precisely to raise enhancement requests, instead of using CSS to remove or alter features and screen layouts.
                                 </span>
                                 </ig-message-box>
                                  <div class="col s12">&nbsp;</div>
@@ -51,13 +52,12 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
         titleService: Title,
         secondaryNavService: SecondaryNavService,
         protected siteCustomizationsService: SiteCustomizationsService,
-        protected messagesService: MessagesObservableService
+        protected messagesService: MessagesObservableService,
+        protected settingsService: CompanySettingsService
     ) {
-
-        super(headerBreadcrumbService, titleService, secondaryNavService);
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Branding;
         this.setCommonItems();
-        
     }
 
     ngOnInit() {

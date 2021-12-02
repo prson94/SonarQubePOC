@@ -24,7 +24,7 @@ import { ToolTipService } from '../../../services/tooltip.service';
             </div>
             <ng-container *ngFor="let field of data?.FieldValues">
                 <div *ngIf="field.Value">
-                    <span class="FieldName">
+                    <span pTooltip="{{field.Description}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip" class="FieldName">
                         {{field.Name}}:&nbsp;
                     </span>
                     <ng-template [ngIf]="field.Values && field.Values.length > 0" [ngIfElse]="singlevalue">

@@ -4,7 +4,7 @@
     Layout = "../Shared/Anonymous.cshtml";
 }
 @section TopJs {
-<script type="text/javascript">
+    <script type="text/javascript">
         $(document).ready(function () {
             $("#UserName").focus();
             $('input').keypress(function (e) {
@@ -13,26 +13,23 @@
                 }
             });
         });
-</script>
+    </script>
 }
 @section TopCss {
 
 }
-<body class="loginBody">
-    <span class="loginlogo"></span>
-    <div id="loginForm">
-        <h4>Reset Password</h4>
-        @Html.ValidationSummary()
+<div id="loginForm">
+    <h4>Reset Password</h4>
+    @Html.ValidationSummary()
 
-        @using (Html.BeginForm())
-        {
-            <input placeholder="Username" type="text" id="UserName" name="UserName" required pattern=".{10,}" title="Username must be at least 10 characters long." style="width:100%" />
-            @Html.ValidationMessageFor(m => m.UserName)
-            <br /><br />
-            <div><input id="loginButton" type="submit" value="Send" tabindex="3" style="width:100%" /></div>
-            <br />
-            <p>Enter the registered email address and click Send. An email containing a link to reset your password will be sent to the email account.</p>
-            @Html.AntiForgeryToken()
-        }
-    </div>
-</body>
+    @using (Html.BeginForm())
+    {
+        <input placeholder="Username" type="text" id="UserName" name="UserName" required pattern=".{10,}" title="Username must be at least 10 characters long." style="width:100%" />
+        @Html.ValidationMessageFor(m => m.UserName)
+        <br /><br />
+        <div><input id="loginButton" type="submit" value="Send" tabindex="3" style="width:100%" /></div>
+        <br />
+        <p>Enter the registered email address and click Send. An email containing a link to reset your password will be sent to the email account.</p>
+        @Html.AntiForgeryToken()
+    }
+</div>
