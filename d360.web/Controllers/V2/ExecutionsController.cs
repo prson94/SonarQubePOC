@@ -685,7 +685,7 @@ from	[Load] L
         [
             HttpGet,
             MapToApiVersion("2.0"),
-            Route("bulkload/items/{uid:Guid}"),
+            Route("bulkload/{loadUid:Guid}/items"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Gets bulk load items details.", typeof(APIExecutionBulkLoadItemDetailsModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
@@ -698,7 +698,7 @@ from	[Load] L
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the fields.", DataType = "string", ParameterType = "query", Required = false),
         ]
 
-        public async Task<IHttpActionResult> GetLoadItemDetails(Guid uid)
+        public async Task<IHttpActionResult> GetLoadItemDetails(Guid loadUid)
         {
             ResourceApiViewModel model = new ResourceApiViewModel();
             var queryParams = Request.GetQueryNameValuePairs();
@@ -727,11 +727,11 @@ from	[Load] L
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
             }
 
-            var load = Company.Filter<Load>(i => i.uid == uid).FirstOrDefault();
+            var load = Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
 
             if (load == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidLoadUid, ApiMessages.InvalidLoadUid)).ConfigureAwait(false);
             }
             var useExecutionTable = false;
 

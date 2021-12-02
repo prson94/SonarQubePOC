@@ -1141,6 +1141,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid LoadUid provided..
+        /// </summary>
+        public static string InvalidLoadUid {
+            get {
+                return ResourceManager.GetString("InvalidLoadUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid model.
         /// </summary>
         public static string InvalidModel {

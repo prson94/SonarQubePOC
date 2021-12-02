@@ -744,4 +744,7 @@
   <data name="HelpMenuOrderError" xml:space="preserve">
     <value>Order cannot be a negative number.</value>
   </data>
+  <data name="InvalidLoadUid" xml:space="preserve">
+    <value>Invalid LoadUid provided.</value>
+  </data>
 </root>
