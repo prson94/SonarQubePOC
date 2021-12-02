@@ -67,4 +67,27 @@ end
 ]]>
 	</rollback>
   </changeSet>
+  
+    <changeSet author="Puneet Gupta" id="Index.dbo.Issue-v1">
+   <comment>GOV-16460</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Issue_ObjectID_Object_CompletedOn')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Issue_ObjectID_Object_CompletedOn] ON [dbo].[Issue] ( [ObjectID], [Object], [CompletedOn])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Issue_ObjectID_Object_CompletedOn')
+BEGIN
+	DROP INDEX [IX_Issue_ObjectID_Object_CompletedOn] ON [dbo].[Issue]
+END
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>
