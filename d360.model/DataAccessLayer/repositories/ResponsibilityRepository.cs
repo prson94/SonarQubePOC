@@ -1108,10 +1108,9 @@ where   Success is null", transaction: trans);
 
         public async Task<ResponsibilityRuleTestResponseModel> GetResponsibilityRuleTestResults(ResponsibilityRuleUpsertModel test, bool hideD3SUsers, bool includeThen, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            int pageSize = 200;
-            int pageNum = 1;
-            bool includeTotal = false;
-            string direction = "asc";
+            int pageSize, pageNum;
+            bool includeTotal;
+            string direction;
 
             string errorMessage = null;
             ResponsibilityTypeRelationRule testModel = new ResponsibilityTypeRelationRule();
@@ -1183,7 +1182,6 @@ where   Success is null", transaction: trans);
                     {
                     }
                 }
-               
             };
 
             if (!string.IsNullOrEmpty(errorMessage))
