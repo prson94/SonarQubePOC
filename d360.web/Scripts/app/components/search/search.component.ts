@@ -131,7 +131,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
             let startDate = new Date();
-            startDate.setDate(-367);
+            startDate.setFullYear(startDate.getUTCFullYear() - 100);
             this.dataProfileService.getDataProfiles(this.selection.AssetUid, startDate).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {

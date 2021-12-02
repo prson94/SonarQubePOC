@@ -40,7 +40,7 @@
                             <div readonly class="group">
                                 <div *ngIf="dataProfile.totalCount!=null" class="summaryRow">
                                     <label class="ig-label" style="margin-right:5px">Total Row Count: </label>
-                                    <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.totalCount, currentValue: dataProfile.totalCount, chartType:'totalCount'}"></ng-container>
+                                    <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.totalCount, currentValue: dataProfile.totalCount, chartType:'totalCount'}"></ng-container>
                                     <span class="ig-value">{{dataProfile.totalCount | number}}</span>
                                 </div>
                                 <div *ngIf="dataProfile.sampleCount!=null" class="summaryRow">
@@ -59,7 +59,7 @@
                                 </div>
                                 <div *ngIf="hasValidCounts && dataProfile.confidence!=null" class="summaryRow">
                                     <label class="ig-label" style="margin-right:5px;">Type Confidence: </label>
-                                    <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.confidence, currentValue: dataProfile.confidence, chartType:'confidence'}"></ng-container>
+                                    <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.confidence, currentValue: dataProfile.confidence, chartType:'confidence'}"></ng-container>
                                     <span class="ig-value">{{dataProfile.confidence | percent : '1.0-2'}}</span>
                                     <ng-container *ngTemplateOutlet="confidenceTooltip"></ng-container>
                                 </div>
@@ -119,7 +119,7 @@
                                 <span class="ig-colorfield-swatch validCircle"></span><label class="quality-label">Valid</label>
                             </span>
                             <span class="qualitySampleValue">
-                                <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.matchCount, currentValue: validCount, chartType:'matchCount'}"></ng-container>
+                                <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.matchCount, currentValue: validCount, chartType:'matchCount'}"></ng-container>
                                 <label class="qualityValue-label" style="font-weight: 600;">{{validCount | number}}</label>
                                 <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{validCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: validCount}"></ng-container>
@@ -130,7 +130,7 @@
                                 <label class="quality-label">Distinct</label>
                             </span>
                             <span class="qualitySampleValue" style="padding-right: 30px;">
-                                <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.cardinality, currentValue: distinctCount, chartType:'cardinality'}"></ng-container>
+                                <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.cardinality, currentValue: distinctCount, chartType:'cardinality'}"></ng-container>
                                 <label class="qualityValue-label">{{distinctCount | number}}</label>
                                 <span *ngIf="validCount" class="ig-value percentage">{{distinctCount/validCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="validPercentageTooltip"></ng-container>
@@ -142,7 +142,7 @@
                                 <ng-container *ngTemplateOutlet="outlierInfoTooltip"></ng-container>
                             </span>
                             <span class="qualitySampleValue">
-                                <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.outlierCount, currentValue: invalidCount, chartType:'outlierCount'}"></ng-container>
+                                <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.outlierCount, currentValue: invalidCount, chartType:'outlierCount'}"></ng-container>
                                 <label class="qualityValue-label" style="font-weight: 600;">{{invalidCount | number}}</label>
                                 <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{invalidCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: invalidCount}"></ng-container>
@@ -156,7 +156,7 @@
                                 <label *ngIf="dataProfile.nullCount && !dataProfile.blankCount" class="quality-label" style="display: inline">Null</label>
                             </span>
                             <span class="qualitySampleValue">
-                                <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: ((dataProfileList[1]?.nullCount ?? 0) + (dataProfileList[1]?.blankCount ?? 0)), currentValue: nullBlankCountTotal, chartType:'nullBlankCount'}"></ng-container>
+                                <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: ((timeSeriesProfileList[1]?.nullCount ?? 0) + (timeSeriesProfileList[1]?.blankCount ?? 0)), currentValue: nullBlankCountTotal, chartType:'nullBlankCount'}"></ng-container>
                                 <label class="qualityValue-label" style="font-weight: 600;">{{nullBlankCountTotal | number}}</label>
                                 <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{nullBlankCountTotal/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: nullBlankCountTotal}"></ng-container>
@@ -390,7 +390,7 @@
     <div *ngIf="dataProfile.blankCount!=null">
         <label class="ig-label">Blank Count</label>
         <div>
-            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.blankCount, currentValue: dataProfile.blankCount, chartType:'blankCount'}"></ng-container>
+            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.blankCount, currentValue: dataProfile.blankCount, chartType:'blankCount'}"></ng-container>
             <span class="ig-value">
                 {{dataProfile.blankCount | number}}
             </span>
@@ -402,7 +402,7 @@
     <div *ngIf="dataProfile.nullCount!=null" class="statistic">
         <label class="ig-label">Null Count</label>
         <div>
-            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.nullCount, currentValue: dataProfile.nullCount, chartType:'nullCount'}"></ng-container>
+            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.nullCount, currentValue: dataProfile.nullCount, chartType:'nullCount'}"></ng-container>
             <span class="ig-value">
                 {{dataProfile.nullCount | number}}
             </span>
@@ -442,7 +442,7 @@
     <div *ngIf="dataProfile.mean!=null" class="statistic">
         <label class="ig-label">Mean</label>        
         <div>
-            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.mean, currentValue: dataProfile.mean, chartType:'mean'}"></ng-container>
+            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.mean, currentValue: dataProfile.mean, chartType:'mean'}"></ng-container>
             <span class="ig-value">
                 {{dataProfile.mean | number}}
             </span>
@@ -454,7 +454,7 @@
     <div *ngIf="dataProfile.standardDeviation!=null" class="statistic">
         <label class="ig-label">Standard Deviation</label>
         <div>
-            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.standardDeviation, currentValue: dataProfile.standardDeviation, chartType:'standardDeviation'}"></ng-container>
+            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.standardDeviation, currentValue: dataProfile.standardDeviation, chartType:'standardDeviation'}"></ng-container>
             <span class="ig-value">
                 {{dataProfile.standardDeviation | number}}
             </span>
@@ -466,7 +466,7 @@
     <div *ngIf="dataProfile.leadingZeroCount!=null" class="statistic">
         <label class="ig-label">Leading Zero Count</label>
         <div>
-            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.leadingZeroCount, currentValue: dataProfile.leadingZeroCount, chartType:'leadingZeroCount'}"></ng-container>
+            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.leadingZeroCount, currentValue: dataProfile.leadingZeroCount, chartType:'leadingZeroCount'}"></ng-container>
             <span class="ig-value">
                 {{dataProfile.leadingZeroCount | number}}
             </span>
@@ -478,7 +478,7 @@
     <div *ngIf="dataProfile.minLength!=null" class="statistic">
         <label class="ig-label">Minimum Length</label>
         <div>
-            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.minLength, currentValue: dataProfile.minLength, chartType:'minLength'}"></ng-container>
+            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.minLength, currentValue: dataProfile.minLength, chartType:'minLength'}"></ng-container>
             <span class="ig-value">
                 {{dataProfile.minLength | number}}
             </span>
@@ -490,7 +490,7 @@
     <div *ngIf="dataProfile.maxLength!=null" class="statistic">
         <label class="ig-label">Maximum Length</label>
         <div>
-            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: dataProfileList[1]?.maxLength, currentValue: dataProfile.maxLength, chartType:'maxLength'}"></ng-container>
+            <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.maxLength, currentValue: dataProfile.maxLength, chartType:'maxLength'}"></ng-container>
             <span class="ig-value">
                 {{dataProfile.maxLength | number}}
             </span>
@@ -535,11 +535,11 @@
            pTooltip="Click to view historical values over time"           
            tooltipStyleClass="ig-tooltip"
            tooltipPosition="left">
-        <span *ngIf="dataProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue !== currentValue" class="trendIcon" style="cursor:pointer;"><i class="fa {{(previousValue>currentValue ? 'fa-caret-down' : 'fa-caret-up')}}"></i></span>
-        <span *ngIf="dataProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue === currentValue" class="trendIcon same" style="cursor:pointer;"><i class="fa fa-square turn"></i></span>
+        <span *ngIf="timeSeriesProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue !== currentValue" class="trendIcon" style="cursor:pointer;"><i class="fa {{(previousValue>currentValue ? 'fa-caret-down' : 'fa-caret-up')}}"></i></span>
+        <span *ngIf="timeSeriesProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue === currentValue" class="trendIcon same" style="cursor:pointer;"><i class="fa fa-square turn"></i></span>
     </label>
 </ng-template>
 
-<ng-container *ngIf="dataProfileList.length>1 && displayChart">
-        <data-profile-time-series [dataProfileList]="dataProfileList" [chartType]="chartType" (close)="displayChart=false"></data-profile-time-series>
+<ng-container *ngIf="timeSeriesProfileList.length>1 && displayChart">
+        <data-profile-time-series [dataProfileList]="timeSeriesProfileList" [chartType]="chartType" (close)="displayChart=false"></data-profile-time-series>
 </ng-container>
