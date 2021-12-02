@@ -21,6 +21,7 @@ using System.Data.SqlClient;
 using System.Data;
 using d360.core.entities.Membership;
 using d360.model.helpers.filters;
+using System.Threading;
 
 namespace d360.model
 {
@@ -276,6 +277,7 @@ namespace d360.model
         int GetObjectId(Guid uid, SystemObjects objectType);
 
         Guid GetAssetUid(int objectId, SystemObjects assetType);
+        Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData);
 
         List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
         List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
