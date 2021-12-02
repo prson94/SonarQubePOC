@@ -73,4 +73,26 @@ end
 	</rollback>
   </changeSet>
 
+   <changeSet author="Puneet Gupta" id="Index.Metrics.StagingScoreItem-v1">
+   <comment>GOV-16460</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Metrics_StagingScoreItem_AllocationUid_AssetUid_EffectiveDate')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Metrics_StagingScoreItem_AllocationUid_AssetUid_EffectiveDate] ON [metrics].[StagingScoreItem] ([AllocationUid], [AssetUid], [EffectiveDate])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Metrics_StagingScoreItem_AllocationUid_AssetUid_EffectiveDate')
+BEGIN
+	DROP INDEX [IX_Metrics_StagingScoreItem_AllocationUid_AssetUid_EffectiveDate] ON [metrics].[StagingScoreItem]
+END
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>

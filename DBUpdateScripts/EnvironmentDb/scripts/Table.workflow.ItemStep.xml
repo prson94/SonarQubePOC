@@ -65,4 +65,26 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.workflow.ItemStep-v1">
+   <comment>GOV-16460</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_workflow_ItemStep_CompletedOn_StepID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_workflow_ItemStep_CompletedOn_StepID] ON [workflow].[ItemStep] ([CompletedOn], [StepID]) INCLUDE([ItemID], [StartedOn])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_workflow_ItemStep_CompletedOn_StepID')
+BEGIN
+	DROP INDEX [IX_workflow_ItemStep_CompletedOn_StepID] ON [workflow].[ItemStep]
+END
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>
