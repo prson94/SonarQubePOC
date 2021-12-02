@@ -4,10 +4,15 @@ using d360.core.enums;
 using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
+using igx.UnitTests.Core;
 using Moq;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -51,6 +56,7 @@ namespace igx.UnitTests.RepositoryTests
                         }
                     }
 
+                    //if generated sql is missing some part of query, returning null will fail test
                     if (hasMissingSQL)
                     {
                         return null;
@@ -123,6 +129,21 @@ namespace igx.UnitTests.RepositoryTests
             var mockCompanyContext = new Mock<ICompanyContext>();
             mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
 
+            mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+                .Returns((string sql, object param, int timeout) =>
+                {
+                    if (sql.ToLowerInvariant().Contains("create table #family"))
+                    {
+                        var assets = param.GetType().GetProperty("assetUid").GetValue(param, null) as IEnumerable<Guid>;
+                        if (assets.FirstOrDefault() == Guid.Parse(DataConstants.ValidGUID2)) 
+                        {
+                            return new List<Guid>();
+                        }
+                        return new List<Guid> { Guid.Parse(DataConstants.ValidGUID2) };
+                    }
+                    return null;
+                });
+
             mockCompanyContext.Setup(x => x.QueryAsync<UserGetAPIRestrictionModel>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
                 .Returns((string sql, object param, int timeout) =>
                 {
@@ -131,17 +152,123 @@ namespace igx.UnitTests.RepositoryTests
                     return Task.FromResult(res as IEnumerable<UserGetAPIRestrictionModel>);
                 });
 
-            var fieldTypes = new List<FieldType> { new FieldType { ID = 1, Name = "TextField", FriendlyName = "Text Field", Type = "Text", AssetTypeID = 1 } }.AsQueryable();
-            var fieldTypeMock = CreateDbSetMock<FieldType>(fieldTypes);
+            var fieldTypes = new List<FieldType>();
+            fieldTypes.Add(new FieldType { ID = 1, Name = "TextField", FriendlyName = "Text Field", Type = "Text", AssetTypeID = 1, IsListable = true });
+            fieldTypes.Add(new FieldType { ID = 2, Name = "Path", FriendlyName = "Path Field", Type = "Path", AssetTypeID = 1, IsListable = true });
+            fieldTypes.Add(new FieldType { ID = 3, Name = "OwnershipLookup", FriendlyName = "Ownerhip ", Type = "OwnershipLookup", AssetTypeID = 1, IsListable = true });
+
+            var fieldTypeLookups = new List<FieldTypeLookup>();
+            fieldTypeLookups.Add(new FieldTypeLookup { Definition = "{\"DisplayAsList\":true,\"DisplayAssignmentSource\":false,\"ExpandGroupMembership\":true}", FieldTypeID = 3 });
+
+            var fieldTypeMock = CreateDbSetMock<FieldType>(fieldTypes.AsQueryable());
             mockCompanyContext.Setup(x => x.FieldTypes).Returns(fieldTypeMock.Object);
 
+            var fieldTypeLookupMock = CreateDbSetMock<FieldTypeLookup>(fieldTypeLookups.AsQueryable());
+            mockCompanyContext.Setup(x => x.FieldTypeLookups).Returns(fieldTypeLookupMock.Object);
+
+            mockCompanyContext.Setup(x => x.TypeHasParent(It.IsAny<SystemObjects>(), It.IsAny<int>(), It.IsAny<PredicateType>()))
+                .Returns(true);
+
+            mockCompanyContext.Setup(x => x.Any<Asset>(It.IsAny<Expression<Func<Asset, bool>>>())).Returns(true);
+
+            List<string> mustContain = new List<string>();
+            mustContain.Add("create table #PermissiondAssets");
+            mustContain.Add("AssetID from #PermissiondAssets");
+            mustContain.Add("Profiling.HasProfiling as HasProfiling");
+            mustContain.Add("create table #OwnershipLookupAssets");
+            mustContain.Add("F3.FormattedValue as [OwnershipLookup]");
+            mustContain.Add("from #OwnershipLookupAssets ola3");
+            mustContain.Add("A.uid in @assetUids");
+            mustContain.Add("AssetDetail Parent on Parent.ID = AAP.ParentAssetID");
+
+            List<string> mustContainWithFilter = new List<string>();
+            mustContainWithFilter.Add("F1.FormattedValue like @simpleFilter");
+            mustContainWithFilter.Add("Node.DisplayPath like @simpleFilter");
+            mustContainWithFilter.Add("rd.SecurityAssetUid in @ownerUids");
+            mustContainWithFilter.Add("rd.SecurityAssetUid in @notOwnerUids");
+            mustContainWithFilter.Add("HParent.Uid = @parentUid");
+
+            mockCompanyContext
+                .Setup(x => x.ExecuteGetAssetsQuery(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<DynamicParameters>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Returns((string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData) =>
+                {
+                    bool hasMissingSQL = false;
+                    foreach (var item in mustContain)
+                    {
+                        if (!getAllQuery.ToLowerInvariant().Contains(item.ToLowerInvariant()))
+                        {
+                            hasMissingSQL = true;
+                        }
+                    }
+
+                    if (dbArgs.ParameterNames.Contains("simpleFilter"))
+                    {
+                        foreach (var item in mustContainWithFilter)
+                        {
+                            if (!getAllQuery.ToLowerInvariant().Contains(item.ToLowerInvariant()))
+                            {
+                                hasMissingSQL = true;
+                            }
+                        }
+                    }
+
+                    //if generated sql is missing some part of query, returning null will fail test
+                    if (hasMissingSQL)
+                    {
+                        return null;
+                    }
+
+                    var res = new AssetsQueryResults();
+
+                    dynamic asset = new ExpandoObject();
+                    asset._rowid = 1;
+                    asset.AssetId = 1;
+                    //tree grid is getting parents throught recursion call which removes simple filter
+                    asset.AssetUid = dbArgs.ParameterNames.Contains("simpleFilter") ? DataConstants.ValidGUID : DataConstants.ValidGUID2;
+                    asset.TextField = "Some value";
+                    asset.Permissions = "{\"ReadAsset\":true}";
+                    asset.Segments = "<path><segment level=\"1\" position=\"1\" assetTypeId=\"2\" assetId=\"3\">asdasdas</segment></path>";
+                    res.items = new List<dynamic>() { asset };
+                    asset.Remove = new Func<string, bool>((string s) => { return true; });
+
+                    res.total = res.items.Count();
+
+                    dynamic owner = new ExpandoObject();
+                    owner.Assets = "1,2,3";
+                    owner.OwnershipLookup = "[]";
+                    res.ownershipData = new List<dynamic> { owner };
+
+                    return Task.FromResult(res);
+                });
 
             var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity());
 
-            var assetType = new AssetType() { ID = 1 };
+            var assetType = new AssetType() { ID = 1, Object = SystemObjects.ArtifactType.ToString() };
 
             List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
+
+            pars.Add(new KeyValuePair<string, string>("_onlylistablefields", "true"));
+            pars.Add(new KeyValuePair<string, string>("_includefields", "TextField,Path,OwnershipLookup"));
+            pars.Add(new KeyValuePair<string, string>("_listcolorsasjson", "true"));
+            pars.Add(new KeyValuePair<string, string>("_includetotal", "true"));
+            pars.Add(new KeyValuePair<string, string>("_includecolor", "true"));
+            pars.Add(new KeyValuePair<string, string>("_includecreatedmodifiedby", "true"));
+            pars.Add(new KeyValuePair<string, string>("_includeownershiplookup", "true"));
+            pars.Add(new KeyValuePair<string, string>("_includeprofilingcheck", "true"));
+            pars.Add(new KeyValuePair<string, string>("_includeparent", "true"));
+            pars.Add(new KeyValuePair<string, string>("usegraphforparent", "true"));
+            pars.Add(new KeyValuePair<string, string>("_assetuid", "cee303f2-9c99-46b4-9ec3-116634049d17"));
+            pars.Add(new KeyValuePair<string, string>("includesegments", "true"));
+            pars.Add(new KeyValuePair<string, string>("_loadpermissiondetails", "true"));
+            pars.Add(new KeyValuePair<string, string>("_simplefilter", "test"));
+            pars.Add(new KeyValuePair<string, string>("_ownedby", "cee303f2-9c99-46b4-9ec3-116634049d17"));
+            pars.Add(new KeyValuePair<string, string>("_notownedby", "cee303f2-9c99-46b4-9ec3-116634049d17"));
+            pars.Add(new KeyValuePair<string, string>("_parentuid", "cee303f2-9c99-46b4-9ec3-116634049d17"));
+            pars.Add(new KeyValuePair<string, string>("isForTreeGrid", "true"));
+
             var result = assetRepository.GetAssets(assetType, pars);
+
+            Assert.False(result.Status == TaskStatus.Faulted, "Invalid SQL Generated. Look at mock mockCompanyContext for QueryAsync and mustContain definition");
         }
     }
 }
