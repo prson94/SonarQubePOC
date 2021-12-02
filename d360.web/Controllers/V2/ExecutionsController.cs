@@ -731,7 +731,7 @@ from	[Load] L
 
             if (load == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidLoadUid, ApiMessages.InvalidLoadUid)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidLoadUid, ApiMessages.InvalidLoadUid)).ConfigureAwait(false);
             }
             var useExecutionTable = false;
 
