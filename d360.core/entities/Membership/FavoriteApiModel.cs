@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities.Membership
@@ -36,5 +37,43 @@ namespace d360.core.entities.Membership
 
         [DataMember]
         public FavoriteType Type { get; set; }
+    }
+
+    public enum FavoriteExtendedType
+    {
+        //HomePage,
+        //User,
+        Asset,
+        //AssetType,
+        //RuleAsset,
+        //ModelAssetType,
+        //AssetClass,
+        //DashboardPage,
+        //CommunityPage,
+        //ReferenceListPage,
+        //ReferenceItem,
+        //SearchResultsPage
+    };
+
+    public class FavoriteExtendedApiViewModel
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Route { get; set; }
+
+        public FavoriteExtendedType Type { get; set; }
+
+        public List<string> Breadcrumbs { get; set; }
+
+        // TODO: remove this
+        public SystemObjects ObjectType { get; set; }
+
+        // TODO: remove this
+        public string ObjectId { get; set; }
+
+        // TODO: remove this
+        public Guid? Uid { get; set; }
     }
 }

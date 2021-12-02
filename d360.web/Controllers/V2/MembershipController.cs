@@ -30,6 +30,8 @@ using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
 using Resources;
+using MediatR;
+using d360.web.Services;
 
 namespace d360.web.Controllers.V2
 {
@@ -42,6 +44,7 @@ namespace d360.web.Controllers.V2
     public class MembershipController : BaseV2ApiController
     {
         readonly ICachingProvider Cache;
+        readonly IMediator mediator;
         readonly ICompanyContext _company;
         readonly IMembershipRepository membershipRepository;
         readonly IAssetRepository assetRepository;
@@ -51,9 +54,11 @@ namespace d360.web.Controllers.V2
             IMembershipRepository membershipRepository,
             IAssetRepository assetRepository,
             ISettingsRepository settingsRepository,
-            ICachingProvider cache) : base(community, company, settingsRepository)
+            ICachingProvider cache,
+            IMediator mediator) : base(community, company, settingsRepository)
         {
             Cache = cache;
+            this.mediator = mediator;
             _company = company;
             this.membershipRepository = membershipRepository;
             this.assetRepository = assetRepository;
@@ -1047,7 +1052,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 UserUpsertModel model = new UserUpsertModel
                 {
-                    Users = users.Select(u => new UserApiUpdateModel {
+                    Users = users.Select(u => new UserApiUpdateModel
+                    {
                         Username = u.Username,
                         FirstName = u.FirstName,
                         LastName = u.LastName,
@@ -1283,30 +1289,16 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// </summary>
         /// <returns></returns>
         [
-        HttpGet,
-        Route("users/me/favorites"),
-        SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiModel>)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            HttpGet,
+            Route("users/me/favorites"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteExtendedApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetFavorites()
         {
-            var prefix = "Membership.GetFavorites => ";
-
-            try
-            {
-                var results = await membershipRepository.GetFavorites(_company.CurrentResourceID);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
-
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-            }
+            var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = _company.CurrentResourceID });
+            return Ok(favorites);
         }
 
         /// <summary>

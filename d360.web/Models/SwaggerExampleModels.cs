@@ -128,6 +128,8 @@ namespace d360.web.Models
                 new InsertUserToGroup { Uid = Guid.Empty };
         }
     }
+
+    // TODO: update it
     public class FavoriteApiModelExample : IExamplesProvider
     {
         public object GetExamples()

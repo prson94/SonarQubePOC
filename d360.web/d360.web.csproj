@@ -598,6 +598,7 @@
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AssetService.cs" />
+    <Compile Include="Services\Favorites\GetFavoritesQuery.cs" />
     <Compile Include="Services\Models\IsEntityExistsRequest.cs" />
     <Compile Include="Services\Models\IsEntityExistsResponse.cs" />
     <Compile Include="Services\Models\ResourceIsExistsRequest.cs" />
