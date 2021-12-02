@@ -74,6 +74,7 @@
     <Compile Include="FilterParserTests\RuleResultTests.cs" />
     <Compile Include="HelperTests\ComplexFieldsHelper.cs" />
     <Compile Include="HelperTests\DecimalFieldValidatorTests.cs" />
+    <Compile Include="HelperTests\QueryConstrantsTests.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
     <Compile Include="FilterParserTests\AssetsGridFilteringTests.cs" />
