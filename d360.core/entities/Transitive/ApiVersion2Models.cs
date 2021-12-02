@@ -869,7 +869,9 @@ namespace d360.core.entities
     [DataContract]
     public class ResponsibilityRuleTestResultModel
     {
+        [DataMember]
         public Guid uid { get; set; }
+        [DataMember] 
         public string path { get; set; }
     }
 

@@ -1658,7 +1658,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is false meaning the total count is excluded.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the responsibility rule", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of assets which are applicable to the rule definition.", typeof(List<ResponsibilityRuleTestResponseModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of assets which are applicable to the rule definition.", typeof(ResponsibilityRuleTestResponseModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> TestResponsibilityRules(string testType, [FromBody] ResponsibilityRuleUpsertModel responsibilityRule)
