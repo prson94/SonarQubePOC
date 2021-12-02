@@ -83,6 +83,7 @@
     <Compile Include="HelperTests\PasswordHelperTests.cs" />
     <Compile Include="LibraryTests\JsonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RepositoryTests\AssetRepositoryTests.cs" />
     <Compile Include="ScoringTests\OperatorTests-BooleanCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-LookupCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-HtmlCompares.cs" />
