@@ -2,8 +2,9 @@
     <div class="form-header" *ngIf="hasHeader">
         {{title}}
         <div class="sub-header" *ngIf="!isLoading">
-        <span *ngIf="!assetTypePath" class="fa fa-spinner fa-spin"></span>
-        {{assetTypePath}}</div>
+            <span *ngIf="!assetTypePath" class="fa fa-spinner fa-spin"></span>
+            {{assetTypePath}}
+        </div>
     </div>
 
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -47,7 +48,7 @@
             </div>
 
             <div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
-                <button igButton type="button" label="{{hasUpdateFormChanged ? 'Discard Changes' : 'Cancel'}}" tooltip="Cancel" (click)="closeClick.emit();"></button>
+                <button igButton type="button" label="{{hasUpdateFormChanged ? 'Discard Changes' : 'Cancel'}}" tooltip="{{hasUpdateFormChanged ? 'Discard Changes' : 'Cancel'}}" title="{{hasUpdateFormChanged ? 'Discard Changes' : 'Cancel'}}" (click)="closeClick.emit();"></button>
 
                 <div class="flex-grow"></div>
                 <button *ngIf="!selection" type="button" igButton [disabled]="!form.valid || savingInProgress" label="Create and Add Another" tooltip="Create and Add Another" [loading]="savingInProgress && savingInProgressWithAddNew" (click)="onSubmit(true)"></button>
