@@ -1837,7 +1837,17 @@ namespace d360.model
                     }
                 }
                 else
-                    currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).ToList();
+                {
+                    //only remove assignments for current resource and target resource to avoid duplicates 
+                    var removeResourceIds = new List<int> { originalResourceId, resource.ResourceID };
+
+                    currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && !removeResourceIds.Contains(x.ResourceObjectID)).ToList();
+                    var resourceAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && removeResourceIds.Contains(x.ResourceObjectID)).ToList();
+                    if (resourceAssignments.Any())
+                    {
+                        WorkflowItemAssignments.RemoveRange(resourceAssignments);
+                    }
+                }
 
                 if (currentAssignments.Any() && clearAssignments)
                 {
