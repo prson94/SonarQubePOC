@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="vlova" id="Function.dbo.GetBreadcrumbs-v1.1">
+  <changeSet author="vlova" id="Function.dbo.GetBreadcrumbs-v1.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -14,8 +14,7 @@
 create or alter function [dbo].[GetBreadcrumbs]
 (		        
 	@objectType varchar(max),
-	@objectId int,
-	@resourceId int
+	@objectId int
 )
 returns table
 as

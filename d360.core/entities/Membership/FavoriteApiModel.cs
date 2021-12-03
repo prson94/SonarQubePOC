@@ -71,7 +71,10 @@ namespace d360.core.entities.Membership
         public SystemObjects ObjectType { get; set; }
 
         // TODO: remove this
-        public string ObjectId { get; set; }
+        public int? ArtifactId { get; set; }
+
+        // TODO: remove this
+        public int? ObjectId { get; set; }
 
         // TODO: remove this
         public Guid? Uid { get; set; }

@@ -94,6 +94,7 @@
     <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\FavoritesRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\GraphFilterRepository.cs" />
     <Compile Include="DataAccessLayer\IProcessRepository.cs" />
     <Compile Include="DataAccessLayer\IConnectorLabelRepository.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="DataAccessLayer\IDapperQueryComposer.cs" />
     <Compile Include="DataAccessLayer\IDbConnectionProvider.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityDapperRepository.cs" />
+    <Compile Include="DataAccessLayer\IFavoritesRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />

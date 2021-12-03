@@ -14,17 +14,46 @@ namespace d360.web.Services
     public class GetFavoritesQuery : IRequestHandler<GetFavoritesQuery.Request, IEnumerable<FavoriteExtendedApiViewModel>>
     {
         private readonly IMembershipRepository membershipRepository;
+        private readonly IFavoritesRepository favoritesRepository;
 
-        public GetFavoritesQuery(IMembershipRepository membershipRepository)
+        public GetFavoritesQuery(IMembershipRepository membershipRepository, IFavoritesRepository favoritesRepository)
         {
             this.membershipRepository = membershipRepository;
+            this.favoritesRepository = favoritesRepository;
         }
 
         public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
             // TODO: cleanup non-existing favorites & homepages
             var favorites = await membershipRepository.GetFavorites(request.ResourceId);
-            return favorites.Select(f => Map(f)).ToList();
+            var mappedFavorites = favorites.Select(f => Map(f)).ToList();
+
+            var breadcrumbs = await favoritesRepository.GetBreadcrumbs(mappedFavorites
+                .Where(f => f.ObjectId != null)
+                .Select(f => new BreadcrumbForObjectRequest { ObjectType = f.ObjectType, ObjectId = f.ObjectId.Value }));
+
+            var groupedBreadcrumbs = breadcrumbs
+                .GroupBy(i => new { ForObjectType = i.ForObjectType, ForObjectId = i.ForObjectId })
+                .ToDictionary(x => x.Key, x => x.ToList());
+
+            // TODO: omg, rewrite this in cleaner approach
+            foreach (var f in mappedFavorites)
+            {
+                if (f.ObjectId == null)
+                {
+                    continue;
+                }
+
+                var key = new { ForObjectType = f.ObjectType, ForObjectId = f.ObjectId.Value };
+                if (!groupedBreadcrumbs.ContainsKey(key))
+                {
+                    continue;
+                }
+
+                f.Breadcrumbs = groupedBreadcrumbs[key].OrderBy(p => p.Level).Select(p => p.Name).ToList();
+            }
+
+            return mappedFavorites;
         }
 
         private FavoriteExtendedApiViewModel Map(FavoriteApiViewModel f)
@@ -58,9 +87,14 @@ namespace d360.web.Services
             response.ObjectType = matcher.ObjectType;
             response.Type = FavoriteExtendedType.Asset;
 
+            if (match.ContainsKey("id"))
+            {
+                response.ArtifactId = int.Parse(match["id"]);
+            }
+
             if (match.ContainsKey("objectId"))
             {
-                response.ObjectId = match["objectId"];
+                response.ObjectId = int.Parse(match["objectId"]);
             }
 
             if (match.ContainsKey("uid"))
@@ -148,7 +182,7 @@ namespace d360.web.Services
             },
             new Matcher
             {
-                RoutePattern = "sidebar/ownership/:objectId",
+                RoutePattern = "sidebar/ownership/:id",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Responsibilities", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
