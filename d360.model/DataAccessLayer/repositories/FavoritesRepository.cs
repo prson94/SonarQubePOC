@@ -1,5 +1,4 @@
-﻿using Dapper;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +14,13 @@ namespace d360.model.DataAccessLayer.repositories
         // TODO: think if this is good place for this method
         public async Task<IReadOnlyList<BreadcrumbItemResponse>> GetBreadcrumbs(IEnumerable<BreadcrumbForObjectRequest> items)
         {
-            var distinctItems = items.Select(i => new { i.ObjectId, i.ObjectType }).Distinct();
+            var distinctItems = items
+                .Select(i => new ObjectsTableUDT
+                {
+                    ObjectId = i.ObjectId,
+                    ObjectType = i.ObjectType.ToString()
+                })
+                .Distinct();
 
             var grid = await this.QueryComposer.QueryMultipleAsync(@"
 select 
@@ -24,23 +29,9 @@ select
 	breadcrumbs.*
 from @objects as o
 outer apply dbo.GetBreadcrumbs(o.ObjectType, o.ObjectId) as breadcrumbs
-", new { objects = GetObjects() });
+", new { objects = distinctItems.AsUDTParameter() });
 
             return await grid.ReadListAsync<BreadcrumbItemResponse>();
-
-            SqlMapper.ICustomQueryParameter GetObjects()
-            {
-                // TODO: write sugar for that
-                var dataTable = new DataTable();
-                dataTable.Columns.Add("ObjectType");
-                dataTable.Columns.Add("ObjectId");
-                foreach (var item in distinctItems)
-                {
-                    dataTable.Rows.Add(item.ObjectType, item.ObjectId);
-                }
-                var objects = dataTable.AsTableValuedParameter("dbo.ObjectsTable");
-                return objects;
-            }
         }
     }
 }

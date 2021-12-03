@@ -113,6 +113,7 @@
     <Compile Include="DataAccessLayer\ISurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MembershipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MetricsRepository.cs" />
+    <Compile Include="helpers\udt\ObjectsTableUDT.cs" />
     <Compile Include="DataAccessLayer\repositories\ProcessRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
@@ -125,6 +126,9 @@
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
+    <Compile Include="helpers\udt\UDTExtensions.cs" />
+    <Compile Include="helpers\udt\UDTNameAttribute.cs" />
+    <Compile Include="helpers\udt\UDTOrderAttribute.cs" />
     <Compile Include="DataAccessLayer\repositories\WorkflowRepository.cs" />
     <Compile Include="DependencyInjectionExtensions.cs" />
     <Compile Include="Extensions.cs" />
