@@ -506,5 +506,87 @@ namespace igx.UnitTests.RepositoryTests
 
             Assert.True(result != null && result.GetCells().Count == 3, "Invalid document returned");
         }
+
+        [Fact]
+        public async void GetAssetsByPath()
+        {
+            var mockCompanyContext = new Mock<ICompanyContext>();
+            mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
+
+            mockCompanyContext.Setup(x => x.QueryAsync<int>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+                      .Returns((string sql, object param, int timeout) =>
+                      {
+                          var res = new List<int>();
+                          res.Add(2);
+                          return Task.FromResult(res as IEnumerable<int>);
+                      });
+
+            List<string> queryMustContain = new List<string>();
+
+            queryMustContain.Add("inner join IntersectType I on I.Subject"); //filter by subject
+            queryMustContain.Add("and P.[Uid] = @puid"); // filter by predicate
+            queryMustContain.Add("where T.[Class] = @class"); //class filter
+            queryMustContain.Add("T.[Uid] = @uid"); //by uid
+            queryMustContain.Add("T.[UseAsTransformation] = @uat"); //filter by is transformation
+            queryMustContain.Add("select T.ID from AssetType T"); //is from type filter
+            queryMustContain.Add("graph.AssetNode N"); //main select
+
+            mockCompanyContext.Setup(x => x.QueryAsync<AssetsByPathItemApiViewModel>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+                     .Returns((string sql, object param, int timeout) =>
+                     {
+                         bool hasMissingSQL = false;
+                         foreach (var item in queryMustContain)
+                         {
+                             if (!sql.Contains(item))
+                             {
+                                 hasMissingSQL = true;
+                             }
+                         }
+
+                         //if generated sql is missing some part of query, returning null will fail test
+                         if (hasMissingSQL)
+                         {
+                             return null;
+                         }
+
+
+                         var res = new List<AssetsByPathItemApiViewModel>();
+                         res.Add(new AssetsByPathItemApiViewModel() { });
+                         return Task.FromResult(res as IEnumerable<AssetsByPathItemApiViewModel>);
+                     });
+            var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity());
+
+
+            List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
+            pars.Add(new KeyValuePair<string, string>("_order", "Field1"));
+            pars.Add(new KeyValuePair<string, string>("_simplefilter", "value"));
+            var request = new AssetsByPathApiRequestModel();
+
+            request.filters = new List<AssetsByPathItemApiFilterRequestModel>
+            {
+                new AssetsByPathItemApiFilterRequestModel {
+                    Class = AssetTypeClass.BusinessAsset,
+                    UseAsTransformation = true,
+                    Uid = Guid.Parse(DataConstants.ValidGUID),
+                    AsSideOfRelationship = new AssetsByPathItemApiFilterSideOfRelationshipRequestModel{
+                     PredicateType = PredicateType.InterTypeHierarchy,
+                     PredicateUid = Guid.Parse(DataConstants.ValidGUID),
+                     Side = AssetsByPathItemApiFilterSideOfRelationshipRequestEnum.Subject
+                    }
+                }
+            };
+            request.pageNum = 2;
+            request.searchPhrase = "test";
+            request.pageSize = 21;
+
+            //if fail take a look on expected query elements in queryMustContain
+            var result = await assetRepository.GetAssetsByPath(request);
+
+            Assert.True(result.items.Count() == 1);
+            Assert.True(result.total == 2);
+            Assert.True(result.pageSize == 21);
+            Assert.True(result.pageNum == 2);
+
+        }
     }
 }
