@@ -508,7 +508,6 @@ namespace d360.model.helpers
                             {(string.Join("\n", joins))}";
             }
 
-
             return $@" select distinct 
                             {(string.Join(", ", selects))}
                             from Asset A
