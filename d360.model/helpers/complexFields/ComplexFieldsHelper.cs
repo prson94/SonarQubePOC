@@ -113,7 +113,7 @@ namespace d360.model.helpers
                             selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
                             break;
                         case "decimal":
-                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal) AS [{fieldAlias}]");
+                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal(38,6)) AS [{fieldAlias}]");
                             break;
                         case "date":
                             selects.Add($"try_cast({fieldSelector}.FormattedValue AS date) AS [{fieldAlias}]");
@@ -479,7 +479,7 @@ namespace d360.model.helpers
                             selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
                             break;
                         case "decimal":
-                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal) AS [{fieldAlias}]");
+                            selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal(38,6)) AS [{fieldAlias}]");
                             break;
                         case "date":
                             selects.Add($"try_cast({fieldSelector}.FormattedValue AS date) AS [{fieldAlias}]");
