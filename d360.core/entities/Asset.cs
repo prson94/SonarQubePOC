@@ -92,7 +92,6 @@ namespace d360.core.entities
         public int? total { get; set; }
         public IEnumerable<dynamic> items { get; set; }
         public IEnumerable<dynamic> ownershipData { get; set; }
-
     }
 
     public class AssetAuditApiItemModel
