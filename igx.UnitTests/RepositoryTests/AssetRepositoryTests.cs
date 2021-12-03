@@ -291,7 +291,7 @@ namespace igx.UnitTests.RepositoryTests
                     var res = new List<AssetPathResult>();
                     var expectedParams = new List<string> { "pagesize", "pagenum", "offset", "assetTypeId" };
 
-                    if (!expectedParams.All(x => param.ParameterNames.Select(y=> y.ToLowerInvariant()).Contains(x.ToLowerInvariant())))
+                    if (!expectedParams.All(x => param.ParameterNames.Select(y => y.ToLowerInvariant()).Contains(x.ToLowerInvariant())))
                     {
                         return null;
                     }
@@ -312,8 +312,199 @@ namespace igx.UnitTests.RepositoryTests
 
             var assetType = new AssetType { ID = 1, uid = Guid.Parse(DataConstants.ValidGUID) };
             var result = await assetRepository.GetAssetPaths(assetType, pars);
+        }
+
+        [Fact]
+        public void GetAssetsExcel()
+        {
+            var mockCompanyContext = new Mock<ICompanyContext>();
+            mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
+
+            mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+                .Returns((string sql, object param, int timeout) =>
+                {
+                    if (sql.ToLowerInvariant().Contains("create table #family"))
+                    {
+                        var assets = param.GetType().GetProperty("assetUid").GetValue(param, null) as IEnumerable<Guid>;
+                        if (assets.FirstOrDefault() == Guid.Parse(DataConstants.ValidGUID2))
+                        {
+                            return new List<Guid>();
+                        }
+                        return new List<Guid> { Guid.Parse(DataConstants.ValidGUID2) };
+                    }
+                    return null;
+                });
 
 
+            mockCompanyContext.Setup(x => x.QueryAsync<UserGetAPIRestrictionModel>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+                .Returns((string sql, object param, int timeout) =>
+                {
+                    var res = new List<UserGetAPIRestrictionModel>();
+                    res.Add(new UserGetAPIRestrictionModel() { HasAssetPermission = true, HasAssetRestriction = true, HasAssetTypeRestriction = true });
+                    return Task.FromResult(res as IEnumerable<UserGetAPIRestrictionModel>);
+                });
+
+            var itTypes = new List<IntersectType>();
+            var IntersectTypeMock = CreateDbSetMock<IntersectType>(itTypes.AsQueryable());
+            mockCompanyContext.Setup(x => x.IntersectTypes).Returns(IntersectTypeMock.Object);
+
+            var assetType = new AssetType() { ID = 1, Object = SystemObjects.ArtifactType.ToString(), uid = Guid.Parse(DataConstants.ValidGUID) };
+            var assetTypes = new List<AssetType>();
+            assetTypes.Add(assetType);
+            var assetTypeMock = CreateDbSetMock<AssetType>(assetTypes.AsQueryable());
+            mockCompanyContext.Setup(x => x.AssetTypes).Returns(assetTypeMock.Object);
+
+            var fieldTypes = new List<FieldType>();
+            fieldTypes.Add(new FieldType { ID = 1, Name = "TextField", FriendlyName = "Text Field", Type = "Text", AssetTypeID = 1, IsListable = true });
+            var fieldTypeMock = CreateDbSetMock<FieldType>(fieldTypes.AsQueryable());
+            mockCompanyContext.Setup(x => x.FieldTypes).Returns(fieldTypeMock.Object);
+
+            mockCompanyContext.Setup(x => x.TypeHasParent(It.IsAny<SystemObjects>(), It.IsAny<int>(), It.IsAny<PredicateType>()))
+                .Returns(true);
+
+            mockCompanyContext.Setup(x => x.Any<Asset>(It.IsAny<Expression<Func<Asset, bool>>>())).Returns(true);
+
+            mockCompanyContext
+                .Setup(x => x.ExecuteGetAssetsQuery(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<DynamicParameters>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Returns((string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData) =>
+                {
+
+                    var res = new AssetsQueryResults();
+
+                    dynamic asset = new ExpandoObject();
+                    asset._rowid = 1;
+                    asset.AssetId = 1;
+                    asset.AssetUid = DataConstants.ValidGUID;
+                    //tree grid is getting parents throught recursion call which removes simple filter
+                    asset.TextField = "Some value";
+                    res.items = new List<dynamic>() { asset };
+                    res.total = res.items.Count();
+
+                    return Task.FromResult(res);
+                });
+
+            var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity());
+
+
+            List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
+            pars.Add(new KeyValuePair<string, string>("_includeparent", "true"));
+            var result = assetRepository.GetAssetsExcel(assetType.uid, pars);
+
+            Assert.False(result.Status == TaskStatus.Faulted, "Invalid SQL Generated. Look at mock mockCompanyContext for QueryAsync and mustContain definition");
+        }
+
+        [Fact]
+        public async void GetHierarchyExcel()
+        {
+            var mockCompanyContext = new Mock<ICompanyContext>();
+            mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
+
+            mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+                .Returns((string sql, object param, int timeout) =>
+                {
+                    if (sql.ToLowerInvariant().Contains("create table #family"))
+                    {
+                        var assets = param.GetType().GetProperty("assetUid").GetValue(param, null) as IEnumerable<Guid>;
+                        if (assets == null || assets.FirstOrDefault() == Guid.Parse(DataConstants.ValidGUID2))
+                        {
+                            return new List<Guid>();
+                        }
+                        return new List<Guid> { Guid.Parse(DataConstants.ValidGUID2) };
+                    }
+                    if (sql.ToLowerInvariant().Contains("From AssetTypeLevel ATL"))
+                    {
+
+                    }
+                    return null;
+                });
+
+            mockCompanyContext.Setup(x => x.Query<dynamic>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+                .Returns((string sql, object param, int timeout) =>
+                {
+                    if (sql.Contains("From AssetTypeLevel ATL"))
+                    {
+                        //GetPolicyTypeLevels
+                        var res = new List<dynamic>();
+                        dynamic item = new ExpandoObject();
+
+                        item.PolicyTypeID = 1;
+                        item.Level = 1;
+                        item.Name = "Name";
+                        item.Description = "Description";
+
+                        res.Add(((dynamic)item));
+                        return res;
+                    }
+                    return null;
+                });
+
+
+            mockCompanyContext.Setup(x => x.QueryAsync<UserGetAPIRestrictionModel>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+                .Returns((string sql, object param, int timeout) =>
+                {
+                    var res = new List<UserGetAPIRestrictionModel>();
+                    res.Add(new UserGetAPIRestrictionModel() { HasAssetPermission = true, HasAssetRestriction = true, HasAssetTypeRestriction = true });
+                    return Task.FromResult(res as IEnumerable<UserGetAPIRestrictionModel>);
+                });
+
+            var itTypes = new List<IntersectType>();
+            var IntersectTypeMock = CreateDbSetMock<IntersectType>(itTypes.AsQueryable());
+            mockCompanyContext.Setup(x => x.IntersectTypes).Returns(IntersectTypeMock.Object);
+
+            var assetType = new AssetType() { ID = 1, Object = SystemObjects.Policy.ToString(), Class = AssetTypeClass.Policy, uid = Guid.Parse(DataConstants.ValidGUID) };
+            var assetTypes = new List<AssetType>();
+            assetTypes.Add(assetType);
+            var assetTypeMock = CreateDbSetMock<AssetType>(assetTypes.AsQueryable());
+            mockCompanyContext.Setup(x => x.AssetTypes).Returns(assetTypeMock.Object);
+
+            var fieldTypes = new List<FieldType>();
+            fieldTypes.Add(new FieldType { ID = 1, Name = "TextField", IsPartOfKey = true, FriendlyName = "Text Field", Type = "Text", AssetTypeID = 1, IsListable = true }); ;
+            var fieldTypeMock = CreateDbSetMock<FieldType>(fieldTypes.AsQueryable());
+            mockCompanyContext.Setup(x => x.FieldTypes).Returns(fieldTypeMock.Object);
+
+            mockCompanyContext.Setup(x => x.TypeHasParent(It.IsAny<SystemObjects>(), It.IsAny<int>(), It.IsAny<PredicateType>()))
+                .Returns(true);
+
+            mockCompanyContext.Setup(x => x.Any<Asset>(It.IsAny<Expression<Func<Asset, bool>>>())).Returns(true);
+
+            mockCompanyContext
+                .Setup(x => x.ExecuteGetAssetsQuery(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<DynamicParameters>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Returns((string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData) =>
+                {
+
+                    var res = new AssetsQueryResults();
+
+                    dynamic asset = new ExpandoObject();
+                    asset._rowid = 1;
+                    asset.AssetId = 1;
+                    asset.AssetUid = Guid.Parse(DataConstants.ValidGUID);
+                    asset.ParentUid = Guid.Parse(DataConstants.ValidGUID2);
+                    //tree grid is getting parents throught recursion call which removes simple filter
+                    asset.TextField = "Some value";
+
+                    dynamic asset2 = new ExpandoObject();
+                    asset2._rowid = 2;
+                    asset2.AssetId = 2;
+                    asset2.ParentUid = null;
+                    asset2.AssetUid = Guid.Parse(DataConstants.ValidGUID2);
+                    asset2.TextField = "Some value 2";
+
+                    res.items = new List<dynamic>() { asset, asset2 };
+                    res.total = res.items.Count();
+
+                    return Task.FromResult(res);
+                });
+
+            var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity());
+
+
+            List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
+            pars.Add(new KeyValuePair<string, string>("_order", "Field1"));
+            pars.Add(new KeyValuePair<string, string>("_simplefilter", "value"));
+
+            var result = await assetRepository.GetHierarchyExcel(assetType.uid, pars);
+
+            Assert.True(result != null && result.GetCells().Count == 3, "Invalid document returned");
         }
     }
 }
