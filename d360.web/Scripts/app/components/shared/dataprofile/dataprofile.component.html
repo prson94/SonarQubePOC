@@ -386,8 +386,8 @@
     </div>
 </ng-template>
 
-<ng-template #blankCountTemplate class="statistic">
-    <div *ngIf="dataProfile.blankCount!=null">
+<ng-template #blankCountTemplate>
+    <div *ngIf="dataProfile.blankCount!=null" class="statistic">
         <label class="ig-label">Blank Count</label>
         <div>
             <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.blankCount, currentValue: dataProfile.blankCount, chartType:'blankCount'}"></ng-container>
