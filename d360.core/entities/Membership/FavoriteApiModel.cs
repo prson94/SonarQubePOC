@@ -61,6 +61,8 @@ namespace d360.core.entities.Membership
 
         public string Name { get; set; }
 
+        public string TabName { get; set; }
+
         public string Route { get; set; }
 
         public FavoriteExtendedType Type { get; set; }
@@ -71,12 +73,6 @@ namespace d360.core.entities.Membership
         public SystemObjects ObjectType { get; set; }
 
         // TODO: remove this
-        public int? ArtifactId { get; set; }
-
-        // TODO: remove this
         public int? ObjectId { get; set; }
-
-        // TODO: remove this
-        public Guid? Uid { get; set; }
     }
 }

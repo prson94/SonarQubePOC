@@ -144,7 +144,7 @@ namespace d360.model.DataAccessLayer
 
                     if (model.CompanyResource == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound,AssetTypeErrors.NotFound, string.Format(MemberShipErrors.UserUidNotFound, model.Uid));
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.NotFound, string.Format(MemberShipErrors.UserUidNotFound, model.Uid));
                     }
                 }
 
@@ -193,10 +193,10 @@ namespace d360.model.DataAccessLayer
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
 
-                return new WorkHttpStatus(HttpStatusCode.InternalServerError,AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
+                return new WorkHttpStatus(HttpStatusCode.InternalServerError, AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
             }
 
-            return new WorkHttpStatus(HttpStatusCode.OK,AssetTypeErrors.Success, MemberShipErrors.UserDeletedMessage);
+            return new WorkHttpStatus(HttpStatusCode.OK, AssetTypeErrors.Success, MemberShipErrors.UserDeletedMessage);
         }
         public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
         {
@@ -206,7 +206,8 @@ namespace d360.model.DataAccessLayer
             {
                 results = await ProcessUpsertUsers(execution, users, lookupFieldsPassedByValue, isInsert, IsChangePasswordReqeust).ConfigureAwait(false);
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
                 execution.ErrorMessage = message;
@@ -503,7 +504,7 @@ namespace d360.model.DataAccessLayer
                         if (isUser == null || isUser.Object != "Resource")
                         {
                             success = false;
-                            messages.Add(string.Format(MemberShipErrors.UserUidNotFound,user.uid));
+                            messages.Add(string.Format(MemberShipErrors.UserUidNotFound, user.uid));
                         }
                     }
 
@@ -522,7 +523,7 @@ namespace d360.model.DataAccessLayer
                 if (string.IsNullOrEmpty(user.Username) || !Regex.IsMatch(user.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
                 {
                     success = false;
-                    messages.Add( MemberShipErrors.InvalidEmail);
+                    messages.Add(MemberShipErrors.InvalidEmail);
                 }
                 else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
                 {
@@ -1222,7 +1223,7 @@ namespace d360.model.DataAccessLayer
                 ExecutionID = Guid.NewGuid(),
                 ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.UpsertUsers,
-                
+
             };
 
             return await CreateApiBatchJob(executionInfo, execution, model, StorageProvider, QueueSource).ConfigureAwait(false);
@@ -1260,40 +1261,7 @@ namespace d360.model.DataAccessLayer
             return true;
         }
 
-        public async Task<List<FavoriteApiViewModel>> GetFavorites(int resourceID)
-        {
-            var dbArgs = new DynamicParameters();
-            dbArgs.Add("resourceId", resourceID);
-
-            string sql = $@"select q.[Id], q.[Name], q.[Route], q.[Type] from (
-select	coalesce(AName.DisplayValue, TA.[Name]) as [Name],
-		f.Route as [Route],
-		f.[Type],
-		f.SortOrder,
-        f.[ID] as Id
-from	Favorite f
-		left join Asset a on a.[Object] = f.[Object] and a.[ObjectID] = f.[ObjectID]
-		left join AssetType ta on ta.[Object] = f.[Object] and ta.[ObjectID] = f.[ObjectID]
-        outer apply [dbo].[GetAssetDisplayValueById](A.ID) AName
-where	f.ObjectID > 0 and f.ResourceID = @resourceId
-union
-select		coalesce(f.Name, f.Route) as Name,	
-			f.Route as [Route],
-			f.[Type],
-			f.SortOrder,
-            f.[ID] as Id
-from		Favorite f	
-where		f.ObjectID is null 
-			and f.ResourceID = @resourceId
-) q
-order by	q.SortOrder";
-
-            var results = await CompanyContext.QueryAsync<FavoriteApiViewModel>(sql, dbArgs, ApiTimeout);
-
-            return results.ToList();
-        }
-
-
+        // TODO: drop this and merge with FavoritesRepository.GetFavorites
         public async Task<FavoriteApiViewModel> GetHomePage(int resourceID)
         {
             var dbArgs = new DynamicParameters();
@@ -1340,6 +1308,8 @@ order by	q.SortOrder";
                     Type = apiFavorite.Type.ToString(),
                     Route = apiFavorite.Route
                 };
+
+                // TODO: drop this, it's not really useful
                 switch (apiFavorite.Type)
                 {
                     case FavoriteType.Page:

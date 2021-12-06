@@ -13,54 +13,67 @@ namespace d360.web.Services
 {
     public class GetFavoritesQuery : IRequestHandler<GetFavoritesQuery.Request, IEnumerable<FavoriteExtendedApiViewModel>>
     {
-        private readonly IMembershipRepository membershipRepository;
         private readonly IFavoritesRepository favoritesRepository;
 
-        public GetFavoritesQuery(IMembershipRepository membershipRepository, IFavoritesRepository favoritesRepository)
+        public GetFavoritesQuery(IFavoritesRepository favoritesRepository)
         {
-            this.membershipRepository = membershipRepository;
             this.favoritesRepository = favoritesRepository;
         }
 
         public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
             // TODO: cleanup non-existing favorites & homepages
-            var favorites = await membershipRepository.GetFavorites(request.ResourceId);
-            var mappedFavorites = favorites.Select(f => Map(f)).ToList();
+            var favorites = await favoritesRepository.GetFavorites(request.ResourceId);
+            var objectIds = favorites.Select(GetObjectId).ToList();
+            var favoritesDetails = await favoritesRepository.GetFavoriteDetails(objectIds);
+            var relatedMatchers = favorites.Select(f => new { f.Id, Matcher = GetCorrespondingMatcher(f) }).ToList();
 
-            var breadcrumbs = await favoritesRepository.GetBreadcrumbs(mappedFavorites
-                .Where(f => f.ObjectId != null)
-                .Select(f => new BreadcrumbForObjectRequest { ObjectType = f.ObjectType, ObjectId = f.ObjectId.Value }));
+            var mappedFavorites = from favorite in favorites
+                                  join objectId in objectIds on favorite.Id equals objectId.FavoriteId
+                                  join favoriteDetails in favoritesDetails on favorite.Id equals favoriteDetails.FavoriteId
+                                  join relatedMatcher in relatedMatchers on favorite.Id equals relatedMatcher.Id
+                                  select new FavoriteExtendedApiViewModel
+                                  {
+                                      Id = favorite.Id,
+                                      Route = favorite.Route,
+                                      Type = relatedMatcher.Matcher.Type,
+                                      // TODO: get rid of first item in breadcrumbs
+                                      Breadcrumbs = favoriteDetails.Breadcrumbs.OrderBy(p => p.Level).Select(p => p.Name).ToList(),
+                                      ObjectType = favoriteDetails.ObjectType,
+                                      ObjectId = favoriteDetails.ObjectId,
+                                      Name = favoriteDetails.Name,
+                                      TabName = relatedMatcher.Matcher.TabName,
+                                  };
 
-            var groupedBreadcrumbs = breadcrumbs
-                .GroupBy(i => new { ForObjectType = i.ForObjectType, ForObjectId = i.ForObjectId })
-                .ToDictionary(x => x.Key, x => x.ToList());
-
-            // TODO: omg, rewrite this in cleaner approach
-            foreach (var f in mappedFavorites)
-            {
-                if (f.ObjectId == null)
-                {
-                    continue;
-                }
-
-                var key = new { ForObjectType = f.ObjectType, ForObjectId = f.ObjectId.Value };
-                if (!groupedBreadcrumbs.ContainsKey(key))
-                {
-                    continue;
-                }
-
-                f.Breadcrumbs = groupedBreadcrumbs[key].OrderBy(p => p.Level).Select(p => p.Name).ToList();
-            }
-
-            return mappedFavorites;
+            return mappedFavorites.ToList();
         }
 
-        private FavoriteExtendedApiViewModel Map(FavoriteApiViewModel f)
+        public class Request : IRequest<IEnumerable<FavoriteExtendedApiViewModel>>
+        {
+            public int ResourceId { get; set; }
+        }
+
+        private FavoriteRouteMatcher GetCorrespondingMatcher(FavoriteShortModel f)
         {
             foreach (var matcher in matchers)
             {
-                var mapped = TryMap(f, matcher);
+                var mapped = TryMatchRoute(matcher, f.Route);
+                if (mapped == null)
+                {
+                    continue;
+                }
+
+                return matcher;
+            }
+
+            throw new InvalidOperationException($"Failed to match favorite with route {f.Route}");
+        }
+
+        private FavoritesObjectDetailsRequest GetObjectId(FavoriteShortModel f)
+        {
+            foreach (var matcher in matchers)
+            {
+                var mapped = TryGetObjectId(f, matcher);
                 if (mapped != null)
                 {
                     return mapped;
@@ -70,45 +83,37 @@ namespace d360.web.Services
             throw new InvalidOperationException($"Failed to match favorite with route {f.Route}");
         }
 
-        private FavoriteExtendedApiViewModel TryMap(FavoriteApiViewModel f, Matcher matcher)
+        private FavoritesObjectDetailsRequest TryGetObjectId(FavoriteShortModel f, FavoriteRouteMatcher matcher)
         {
-            var match = TryMatch(matcher, f.Route);
+            var match = TryMatchRoute(matcher, f.Route);
             if (match == null)
             {
                 return null;
-
             }
-            var response = new FavoriteExtendedApiViewModel()
-            {
-                Id = f.Id,
-                Route = f.Route,
-            };
 
-            response.ObjectType = matcher.ObjectType;
-            response.Type = FavoriteExtendedType.Asset;
+            var request = new FavoritesObjectDetailsRequest();
+            request.FavoriteId = f.Id;
+            request.ObjectType = matcher.ObjectType;
 
-            if (match.ContainsKey("id"))
+            if (match.ContainsKey("assetId"))
             {
-                response.ArtifactId = int.Parse(match["id"]);
+                request.AssetId = int.Parse(match["assetId"]);
             }
 
             if (match.ContainsKey("objectId"))
             {
-                response.ObjectId = int.Parse(match["objectId"]);
+                request.ObjectId = int.Parse(match["objectId"]);
             }
 
             if (match.ContainsKey("uid"))
             {
-                response.Uid = Guid.Parse(match["uid"]);
+                request.Uid = Guid.Parse(match["uid"]);
             }
 
-            // TODO: read actual name when we have correct object type & object id & uid
-            response.Name = f.Name + " - " + matcher.TabName;
-
-            return response;
+            return request;
         }
 
-        private Dictionary<string, string> TryMatch(Matcher matcher, string route)
+        private Dictionary<string, string> TryMatchRoute(FavoriteRouteMatcher matcher, string route)
         {
             route = SanitizeRoute(route);
             var routePatternRegex = RoutePatternToRegex(matcher.RoutePattern);
@@ -150,65 +155,65 @@ namespace d360.web.Services
             return new Regex(routePattern, RegexOptions.IgnoreCase);
         }
 
-        private static IEnumerable<Matcher> matchers = new[]
+        private static IEnumerable<FavoriteRouteMatcher> matchers = new[]
         {
-            new Matcher
+            new FavoriteRouteMatcher
             {
                 RoutePattern = "artifact/:any/:objectId",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Definition", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new Matcher
+            new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/visualization/browser/:uid",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Impact Diagram", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new Matcher
+            new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/visualization/browser/:uid/Lineage",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Lineage Diagram", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new Matcher
+            new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/relationships/Artifact/:objectId",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Relationships", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new Matcher
+            new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/ownership/:id",
+                RoutePattern = "sidebar/ownership/:assetId",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Responsibilities", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new Matcher
+            new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/actions/Artifact/:objectId",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Actions", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new Matcher
+            new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/comments/:uid",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Comments", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new Matcher
+            new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/followers/Artifact/:objectId",
                 Type = FavoriteExtendedType.Asset,
                 TabName = "Followers", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new Matcher
+            new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/audit/:uid",
                 Type = FavoriteExtendedType.Asset,
@@ -217,7 +222,7 @@ namespace d360.web.Services
             }
         };
 
-        class Matcher
+        class FavoriteRouteMatcher
         {
             public string RoutePattern { get; set; }
 
@@ -226,11 +231,6 @@ namespace d360.web.Services
             public string TabName { get; set; }
 
             public SystemObjects ObjectType { get; set; }
-        }
-
-        public class Request : IRequest<IEnumerable<FavoriteExtendedApiViewModel>>
-        {
-            public int ResourceId { get; set; }
         }
     }
 }
