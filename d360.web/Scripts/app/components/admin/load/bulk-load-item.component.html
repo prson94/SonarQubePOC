@@ -11,13 +11,13 @@
                           [hasExportOriginal]="true"
                           (exportOriginalClick)="exportOriginal()"></d3s-tile-actions>
     </header>
-    <input type="text"
-           [hidden]="!showSimpleFilter"
-           pInputText
-           size="100"
-           (input)="dt.filterGlobal($event.target.value, 'contains')"
-           placeholder="Search..."
-           class="grid-simple-filter">
+    <div class="flexccontainer">
+        <ig-search-field mode="Keypress"
+                         [debounce]="300"
+                         (onSearch)="onSimpleSearch($event)"
+                         [(ngModel)]="simpleTextFilter">
+        </ig-search-field>
+    </div>
     <p-table #dt
              [value]="items"
              [scrollable]="true"
@@ -25,8 +25,9 @@
              selectionMode="single"
              [metaKeySelection]="true"
              [globalFilterFields]="globalFilterFields"
+             [totalRecords]="totalRecords"
              [paginator]="true"
-             [rows]="25"
+             [rows]="rowsPerPage"
              [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="colgroup">
             <colgroup>
@@ -89,7 +90,7 @@
                         <span *ngSwitchCase="'date'"><span *ngIf="item[column.datafield]">{{item[column.datafield] | date:'shortDate'}}</span></span>
                         <span *ngSwitchCase="'datetime'"><span *ngIf="item[column.datafield]">{{item[column.datafield] | utcDate | date:'medium'}}</span></span>
                         <span *ngSwitchDefault><span *ngIf="item[column.datafield]">{{item[column.datafield]}}</span></span>
-                    </span>                
+                    </span>
                 </td>
                 <td>{{item.RowIndex}}</td>
                 <td>
