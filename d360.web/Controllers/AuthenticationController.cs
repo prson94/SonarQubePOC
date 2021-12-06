@@ -120,6 +120,24 @@ namespace d360.web.Controllers
 
         }
 
+        private Parameters loadExtraParametersFromOpenIdSettings(CompanyOpenIdAuthenticationSettings authenticationSettings)
+        {
+            Parameters extras = null;
+            if (authenticationSettings.extraParameters != null && authenticationSettings.extraParameters.Properties() != null)
+            {
+                if (authenticationSettings.extraParameters.Properties().Count() > 0)
+                {
+                    extras = new Parameters();
+
+                    foreach (var p in authenticationSettings.extraParameters.Properties())
+                    {
+                        extras.Add(p.Name, p.Value.ToString());
+                    }
+                }
+            }
+            return extras;
+        }
+
         private ActionResult parseUserInfoAndLogin(
             string userName, string firstName, string lastName, 
             List<string> groups = null, Dictionary<string, string> customClaims = null,
@@ -587,14 +605,7 @@ namespace d360.web.Controllers
                     Community.SetOpenIdRequest(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state });
 
                     var ru = new RequestUrl($"{authenticationSettings.baseUri}/authorize");
-                    var extras = new Parameters();
-                    if (authenticationSettings.extraParameters.Properties().Count() > 0)
-                    {
-                        foreach (var p in authenticationSettings.extraParameters.Properties())
-                        {
-                            extras.Add(p.Name, p.Value.ToString());
-                        }
-                    }
+
                     var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId, 
                         responseType: "code", 
@@ -603,7 +614,7 @@ namespace d360.web.Controllers
                         state, 
                         nonce, 
                         responseMode: "form_post",
-                        extra: extras
+                        extra: loadExtraParametersFromOpenIdSettings(authenticationSettings)
                         );
                     return new RedirectResult(url);
                 default:    // Login via standard forms authentication.
@@ -755,6 +766,11 @@ namespace d360.web.Controllers
             // From IdP.
             var code = Request.Form["code"];
             var state = Request.Form["state"];
+
+            if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.OpenIdCodeOrStateIsNotPresent);
+            }
 
             var authenticationSettings = Community.CurrentCompanySsoModel.StructuredAuthenticationSettings;
 
@@ -997,17 +1013,10 @@ namespace d360.web.Controllers
                     {
                         var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/slo-callback";
                         var ru = new RequestUrl($"{authenticationSettings.baseUri}/logout");
-                        var extras = new Parameters();
-                        if (authenticationSettings.extraParameters.Properties().Count() > 0)
-                        {
-                            foreach (var p in authenticationSettings.extraParameters.Properties())
-                            {
-                                extras.Add(p.Name, p.Value<string>(p.Name));
-                            }
-                        }
                         var url = ru.CreateEndSessionUrl(idToken, 
                             callbackUri,
-                            extra: extras);
+                            extra: loadExtraParametersFromOpenIdSettings(authenticationSettings)
+                        );
 
                         return Redirect(url);
                     }
