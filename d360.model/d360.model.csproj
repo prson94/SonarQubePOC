@@ -85,7 +85,9 @@
     <Compile Include="DataAccessLayer\IResourceRepository.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityTypeRepository.cs" />
+    <Compile Include="DataAccessLayer\ISemanticsRepository.cs" />
     <Compile Include="DataAccessLayer\ISettingsRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\SemanticsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CompanyDbConnectionProvider.cs" />

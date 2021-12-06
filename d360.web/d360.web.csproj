@@ -25,8 +25,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>
-    </IISExpressSSLPort>
+    <IISExpressSSLPort>443</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -522,6 +521,7 @@
     <Compile Include="Controllers\V2\HealthController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\PermissionsController.cs" />
+    <Compile Include="Controllers\V2\SemanticsController.cs" />
     <Compile Include="Controllers\V2\ScoringController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />

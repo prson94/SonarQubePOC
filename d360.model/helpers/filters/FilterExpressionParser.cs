@@ -104,6 +104,20 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("Object.[Path]", "ANDP_Object.DisplayPath", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("Subject.[Path]", "ANDP_Subject.DisplayPath", SqlFieldType.Text));
             }
+
+            if (parseType == FilterExpressionParseType.Semantics)
+            {
+                allowedDefaultFields.Clear();
+                allowedDefaultFields.Add(new DefaultFilter("name", "Name", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("description", "Description", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("qualifier", "Qualifier", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("status", "Status", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("source", "[Source]", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("threshold", "Threshold", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("priority", "Priority", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("baseType", "BaseType", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("effectiveDate", "EffectiveDate", SqlFieldType.DateTime));
+            }
         }
 
         public void OverrideAllowedDefaultFields(List<DefaultFilter> defaultFilters)

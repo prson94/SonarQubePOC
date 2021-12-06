@@ -166,6 +166,8 @@ namespace d360.model
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
+        public DbSet<Semantic> Semantics { get; set; }
+
         public DbSet<SiteNav> SiteNav { get; set; }
 
         public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
