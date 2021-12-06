@@ -40,7 +40,9 @@
         </ng-container>
     </div>
     <ng-container *ngIf="hideFilter">
-        <ig-portal-content-provider [name]="field.Name + 'asset-detail-category/label-right'" [template]="assetGridExportLink">
+        <ig-portal-content-provider 
+            [name]="'field/' + field.Name + '-' + objectIdService.getObjectId(field) + '/asset-detail-category/label-right'"
+            [template]="assetGridExportLink">
             <ng-template #assetGridExportLink>
                 <div class="asset-grid-export-link">
                     <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>
