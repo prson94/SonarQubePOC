@@ -386,8 +386,8 @@
     </div>
 </ng-template>
 
-<ng-template #blankCountTemplate class="statistic">
-    <div *ngIf="dataProfile.blankCount!=null">
+<ng-template #blankCountTemplate>
+    <div *ngIf="dataProfile.blankCount!=null" class="statistic">
         <label class="ig-label">Blank Count</label>
         <div>
             <ng-container *ngTemplateOutlet="trendIndicatorIcon;context:{previousValue: timeSeriesProfileList[1]?.blankCount, currentValue: dataProfile.blankCount, chartType:'blankCount'}"></ng-container>
@@ -530,13 +530,13 @@
 </ng-container>
 
 <ng-template #trendIndicatorIcon let-previousValue="previousValue" let-currentValue="currentValue" let-chartType="chartType">
-    <label style="cursor:pointer; margin-right: 5px"
+    <label *ngIf="timeSeriesProfileList.length>1 && previousValue!=null && currentValue!=null" style="cursor:pointer; margin-right: 5px"
            (click)="openChart(chartType)"
            pTooltip="Click to view historical values over time"           
            tooltipStyleClass="ig-tooltip"
            tooltipPosition="left">
-        <span *ngIf="timeSeriesProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue !== currentValue" class="trendIcon" style="cursor:pointer;"><i class="fa {{(previousValue>currentValue ? 'fa-caret-down' : 'fa-caret-up')}}"></i></span>
-        <span *ngIf="timeSeriesProfileList.length>1 && previousValue!=null && currentValue!=null && previousValue === currentValue" class="trendIcon same" style="cursor:pointer;"><i class="fa fa-square turn"></i></span>
+        <span *ngIf="previousValue !== currentValue" class="trendIcon" style="cursor:pointer;"><i class="fa {{(previousValue>currentValue ? 'fa-caret-down' : 'fa-caret-up')}}"></i></span>
+        <span *ngIf="previousValue === currentValue" class="trendIcon same" style="cursor:pointer;"><i class="fa fa-square turn"></i></span>
     </label>
 </ng-template>
 
