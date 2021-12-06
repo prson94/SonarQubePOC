@@ -124,6 +124,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Artifact not found..
+        /// </summary>
+        public static string ArtifactNotFound {
+            get {
+                return ResourceManager.GetString("ArtifactNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset cross reference already exists..
         /// </summary>
         public static string AssetCorssRefAlreadyExists {

@@ -747,4 +747,7 @@
   <data name="InvalidLoadUid" xml:space="preserve">
     <value>Invalid LoadUid provided.</value>
   </data>
+  <data name="ArtifactNotFound" xml:space="preserve">
+    <value>Artifact not found.</value>
+  </data>
 </root>
