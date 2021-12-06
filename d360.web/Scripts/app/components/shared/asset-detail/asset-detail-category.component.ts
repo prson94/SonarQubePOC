@@ -1,6 +1,7 @@
 ﻿import { Input, Component } from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import { ObjectIdService } from '../../../services/object-id.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -17,7 +18,8 @@ export class AssetDetailCategoryComponent {
     @Input() isSidePanel: boolean = false;
 
     constructor(
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+        public objectIdService: ObjectIdService
     ) {}
 
     getRowClass(data: any[]): string {
