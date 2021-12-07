@@ -399,6 +399,8 @@ namespace d360.model.DataAccessLayer
                 var success = true;
                 var messages = new List<string>();
 
+                user.FirstName = SanitizeValue(user.FirstName);
+                user.LastName = SanitizeValue(user.LastName);
 
                 if (user.IsNew)
                 {
@@ -556,12 +558,9 @@ namespace d360.model.DataAccessLayer
                 row["ItemNumber"] = user.ItemNumber;
                 row["Username"] = user.Username;
 
-                user.FirstName = SanitizeValue(user.FirstName);
-
                 row["FirstName"] = user.FirstName;
-
-                user.LastName = SanitizeValue(user.LastName);
                 row["LastName"] = user.LastName;
+
                 row["Password"] = user.Password;
                 if (user.State.HasValue && !IsChangePasswordReqeust)
                 {
@@ -1230,11 +1229,14 @@ namespace d360.model.DataAccessLayer
 
         private string SanitizeValue(string ParameterValue)
         {
-            var sanitizer = new Ganss.XSS.HtmlSanitizer();
-            sanitizer.AllowedSchemes.Add("data");
-            return sanitizer.Sanitize(ParameterValue);
+            var allowedTags = new[] {"data"};
+            var allowedSchemas = new[] {"data"};
 
+            var sanitizer = new Ganss.XSS.HtmlSanitizer(allowedTags: allowedTags, allowedSchemes: allowedSchemas);
+            var retstring = sanitizer.Sanitize(ParameterValue);
+            return retstring;
         }
+
         private bool validatePassword(string password)
         {
             if (string.IsNullOrEmpty(password))
