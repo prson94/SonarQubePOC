@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, Subscription } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
@@ -750,6 +750,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     lookupSelectedValue: any[] = [];
     lookupValues: any[] = [];
+    lookupSub: Subscription;
 
     lastParams: any;
     loadListLazy($params) {
@@ -763,7 +764,12 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
 
         this.isLookupValuesLoading = true;
-        this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
+
+        if (this.lookupSub) {
+            this.lookupSub.unsubscribe();
+        }
+
+        this.lookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
             if (!this.lookupValues || this.lookupValues.length === 0) {
                 this.lookupValues = Array.from({ length: res.count });
             }
