@@ -47,7 +47,6 @@ namespace igx.functions.databasetaskprocessor
 #endif
 
                 companies.Shuffle(); //Randomize
-
                 companies.ForEach(c =>
                 {
                     try
@@ -60,7 +59,7 @@ namespace igx.functions.databasetaskprocessor
 
                         var indexCollectionModel = new ObjectIndexCollectionModel();
 
-                        using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, config.GetConnectionString("CommunityContext")))
+                        using (var outerCompanyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(c.CompanyID, c.Server, c.Username, c.Password)))
                         {
                             outerCompanyConnection.Open();
 
@@ -179,21 +178,21 @@ namespace igx.functions.databasetaskprocessor
                             {
 
                                 var checkoutAndGetQueueItemSql = $@"
-declare @IDs table (ID uniqueidentifier)
+                                    declare @IDs table (ID uniqueidentifier)
 
-;WITH CTE AS 
-( 
-    SELECT TOP {numberOfQueueItems} * 
-    FROM [queue].[task]
-    where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(second, -30, getutcdate()) 
-    ORDER BY [Date] ASC
-) 
-UPDATE CTE set MachineAssigned = @m OUTPUT deleted.ID into @IDs  
+                                    ;WITH CTE AS 
+                                    ( 
+                                        SELECT TOP {numberOfQueueItems} * 
+                                        FROM [queue].[task]
+                                        where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(second, -30, getutcdate()) 
+                                        ORDER BY [Date] ASC
+                                    ) 
+                                    UPDATE CTE set MachineAssigned = @m OUTPUT deleted.ID into @IDs  
 
-select  T.* 
-from    [queue].[Task] T
-        inner join @IDs S on S.ID = T.ID
-";
+                                    select  T.* 
+                                    from    [queue].[Task] T
+                                            inner join @IDs S on S.ID = T.ID
+                                    ";
 
                                 List<QueueTask> queueItems = null;
 
@@ -230,7 +229,7 @@ from    [queue].[Task] T
                                     {
                                         try
                                         {
-                                            using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, config.GetConnectionString("CommunityContext")))
+                                            using (var companyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(c.CompanyID, c.Server, c.Username, c.Password)))
                                             {
                                                 companyConnection.Open();
 
