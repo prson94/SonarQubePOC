@@ -210,7 +210,7 @@
     <value>Counter Initial Value must be between 1 and 9999999.</value>
   </data>
   <data name="DefaultValueError" xml:space="preserve">
-    <value>Default value must be between {1} and {2}</value>
+    <value>Default value must be between {0} and {1}</value>
   </data>
   <data name="DiagramATCustomError" xml:space="preserve">
     <value>Non static fields on Diagram Asset Type cannot have '{0}' set to {1}!</value>
