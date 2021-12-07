@@ -3184,7 +3184,7 @@ select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Descri
         /// <returns>A list of descendent asset uids</returns>
         [
             HttpGet,
-            Route("asset/{assetUid:Guid}/descendents"),
+            Route("asset/{assetUid:Guid}/descendants"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDescendantsResults)),
             SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
