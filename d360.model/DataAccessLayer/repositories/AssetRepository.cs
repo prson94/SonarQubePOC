@@ -1288,7 +1288,6 @@ namespace d360.model.DataAccessLayer
             }
             var results = assetsResult.items.ToList();
 
-
             List<Tuple<List<int>, dynamic>> ownershipData = new List<Tuple<List<int>, dynamic>>();
             if (hasOwnershipData)
             {
