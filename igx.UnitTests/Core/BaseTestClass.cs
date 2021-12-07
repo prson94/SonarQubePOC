@@ -308,6 +308,10 @@ namespace igx.UnitTests
                    Results = new List<DatabaseBulkAssetResult>()
                })
                : Task.FromResult<dynamic>(null));
+
+            mockRepo.Setup(x => x.GetAssetDescendants(It.IsAny<Guid>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(Task.FromResult(new AssetDescendantsResults()));            
+
             return mockRepo.Object;
         }
 

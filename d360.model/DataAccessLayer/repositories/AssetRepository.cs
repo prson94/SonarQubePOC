@@ -4292,5 +4292,87 @@ where   A.[uid] = @assetUid";
             return results;
         }
 
+        public async Task<AssetDescendantsResults> GetAssetDescendants(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var results = new AssetDescendantsResults();
+            var dbArgs = new DynamicParameters();
+            bool includeTotal = true;
+            var whereSQL = "";
+
+            results.pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+            results.pageSize = CompanyContext.ParsePageSize(queryParams);
+
+            var asset = GetAssetByUID(assetUid);
+
+            dbArgs.Add("@assetId", asset.ID);
+            dbArgs.Add("@pageNum", results.pageNum - 1);
+            dbArgs.Add("@pageSize", results.pageSize);
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentassetuid") )
+            {
+                if(Guid.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_parentassetuid").Value, out Guid parentUid))
+                {
+                    if (parentUid != Guid.Empty)
+                    {
+                        whereSQL = "where p.uid = @parentUid";
+                        dbArgs.Add("@parentUid", parentUid);
+                    }
+                }
+            }
+
+            var descendantsSQL = $@"drop table if exists #descendants;
+                                    with descendants as (							
+	                                    select @assetID as AssetID, CAST(0 AS BIGINT) as ParentAssetID
+	                                    union all
+	                                    select 
+		                                    AAP.assetID, AAP.ParentAssetID
+	                                    from 
+		                                    descendants as d
+		                                    inner join 
+		                                    [utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
+                                    )
+
+                                    select * 
+                                    into #descendants 
+                                    from descendants";
+
+            var countSQL = "Select count(*)-1 from #descendants";         
+
+            var sql = $@"{descendantsSQL}
+                        
+                        select                                         
+                            a.uid as AssetUid, 
+                            p.uid as ParentUid 
+                        from 
+                            Asset a 
+                            inner join #descendants d on a.id = d.AssetID 
+                            inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0
+                        {whereSQL}
+                        order by p.Id asc
+                        OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
+
+                        {(includeTotal ? countSQL: "")}
+						";
+
+            var multiQuery = await CompanyContext.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
+            results.items = multiQuery.Read<AssetDescendants>();
+
+            if (includeTotal)
+            {
+                results.total = multiQuery.Read<int?>().FirstOrDefault();
+            }
+            else
+            {
+                results.total = null;
+            }
+
+            return results;
+        }
+
     }
 }

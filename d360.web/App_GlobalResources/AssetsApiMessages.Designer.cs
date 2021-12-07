@@ -394,6 +394,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ParentAssetUid {0} is invalid.
+        /// </summary>
+        public static string InvalidParentAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidParentAssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid resourceUid provided.
         /// </summary>
         public static string InvalidResourceUID {

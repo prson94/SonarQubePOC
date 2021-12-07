@@ -228,6 +228,9 @@
   <data name="InvalidParameter_pageSize" xml:space="preserve">
     <value>Invalid integer value for parameter '_pageSize'</value>
   </data>
+  <data name="InvalidParentAssetUid" xml:space="preserve">
+    <value>ParentAssetUid {0} is invalid</value>
+  </data>
   <data name="InvalidResourceUID" xml:space="preserve">
     <value>Invalid resourceUid provided</value>
   </data>
