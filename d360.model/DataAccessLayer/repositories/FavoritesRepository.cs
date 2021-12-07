@@ -32,7 +32,7 @@ where favorite.ResourceId = @resourceId";
             IEnumerable<FavoritesObjectDetailsRequest> items
         )
         {
-            var distinctItems = items.Distinct();
+            var correctItems = items.Where(f => f.ObjectType != null).Distinct();
 
             var grid = await this.QueryComposer.QueryMultipleAsync(@"
 	declare @correctFavorites table (
@@ -93,7 +93,7 @@ where favorite.ResourceId = @resourceId";
 	select favorite.FavoriteId, breadcrumbs.*
 	from @correctFavorites favorite
 	outer apply dbo.GetBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
-", new { favorites = distinctItems.AsUDTParameter() });
+", new { favorites = correctItems.AsUDTParameter() });
 
             var favorites = await grid.ReadListAsync<FavoriteItem>();
             var breadcrumbs = await grid.ReadListAsync<FavoriteBreadcrumbItem>();

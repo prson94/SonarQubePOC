@@ -52,7 +52,7 @@ namespace d360.core.entities.Membership
         //CommunityPage,
         //ReferenceListPage,
         //ReferenceItem,
-        //SearchResultsPage
+        SearchResultsPage
     };
 
     public class FavoriteExtendedApiViewModel
@@ -61,8 +61,6 @@ namespace d360.core.entities.Membership
 
         public string Name { get; set; }
 
-        public string TabName { get; set; }
-
         public string Route { get; set; }
 
         public FavoriteExtendedType Type { get; set; }
@@ -70,7 +68,7 @@ namespace d360.core.entities.Membership
         public List<string> Breadcrumbs { get; set; }
 
         // TODO: remove this
-        public SystemObjects ObjectType { get; set; }
+        public SystemObjects? ObjectType { get; set; }
 
         // TODO: remove this
         public int? ObjectId { get; set; }

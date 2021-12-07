@@ -26,11 +26,16 @@ namespace d360.web.Services
             var favorites = await favoritesRepository.GetFavorites(request.ResourceId);
             var objectIds = favorites.Select(GetObjectId).ToList();
             var favoritesDetails = await favoritesRepository.GetFavoriteDetails(objectIds);
-            var relatedMatchers = favorites.Select(f => new { f.Id, Matcher = GetCorrespondingMatcher(f) }).ToList();
+            var relatedMatchers = favorites.Select(f =>
+            {
+                var matcher = GetCorrespondingMatcher(f);
+                return new { f.Id, Matcher = matcher.Item1, Matched = matcher.Item2 };
+            }).ToList();
 
             var mappedFavorites = from favorite in favorites
                                   join objectId in objectIds on favorite.Id equals objectId.FavoriteId
-                                  join favoriteDetails in favoritesDetails on favorite.Id equals favoriteDetails.FavoriteId
+                                  join favoriteDetails in favoritesDetails on favorite.Id equals favoriteDetails.FavoriteId into joinedFavoriteDetails
+                                  from favoriteDetails in joinedFavoriteDetails.DefaultIfEmpty()
                                   join relatedMatcher in relatedMatchers on favorite.Id equals relatedMatcher.Id
                                   select new FavoriteExtendedApiViewModel
                                   {
@@ -38,11 +43,13 @@ namespace d360.web.Services
                                       Route = favorite.Route,
                                       Type = relatedMatcher.Matcher.Type,
                                       // TODO: get rid of first item in breadcrumbs
-                                      Breadcrumbs = favoriteDetails.Breadcrumbs.OrderBy(p => p.Level).Select(p => p.Name).ToList(),
-                                      ObjectType = favoriteDetails.ObjectType,
-                                      ObjectId = favoriteDetails.ObjectId,
-                                      Name = favoriteDetails.Name,
-                                      TabName = relatedMatcher.Matcher.TabName,
+                                      Breadcrumbs = (favoriteDetails?.Breadcrumbs ?? new List<BreadcrumbsInfo>())
+                                          .OrderBy(p => p.Level)
+                                          .Select(p => p.Name)
+                                          .ToList(),
+                                      ObjectType = favoriteDetails?.ObjectType,
+                                      ObjectId = favoriteDetails?.ObjectId,
+                                      Name = relatedMatcher.Matcher.GetName(favoriteDetails?.Name, relatedMatcher.Matched)
                                   };
 
             return mappedFavorites.ToList();
@@ -53,7 +60,7 @@ namespace d360.web.Services
             public int ResourceId { get; set; }
         }
 
-        private FavoriteRouteMatcher GetCorrespondingMatcher(FavoriteShortModel f)
+        private (FavoriteRouteMatcher, Dictionary<string, string>) GetCorrespondingMatcher(FavoriteShortModel f)
         {
             foreach (var matcher in matchers)
             {
@@ -63,7 +70,7 @@ namespace d360.web.Services
                     continue;
                 }
 
-                return matcher;
+                return (matcher, mapped);
             }
 
             throw new InvalidOperationException($"Failed to match favorite with route {f.Route}");
@@ -135,8 +142,20 @@ namespace d360.web.Services
 
         private static Regex RoutePatternToRegex(string routePattern)
         {
+            // please, note, that we have very limited support of query strings here
+            // we don't support matching "?a=1&b=2" by pattern "?b=:b&a=:a" (i.e. when order is changed)
+
             routePattern = routePattern.Replace(@"\", @"\\");
-            routePattern = routePattern + "$";
+            routePattern = routePattern.Replace(@"?", @"\?");
+
+            if (routePattern.Contains("?"))
+            {
+                routePattern = routePattern + @"(?:&.*|$)";
+            }
+            else
+            {
+                routePattern = routePattern + "$";
+            }
 
             var parameterNames = new Regex(@":(\w+)")
                 .Matches(routePattern)
@@ -161,64 +180,70 @@ namespace d360.web.Services
             {
                 RoutePattern = "artifact/:any/:objectId",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Definition", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Definition", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/visualization/browser/:uid",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Impact Diagram", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Impact Diagram", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/visualization/browser/:uid/Lineage",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Lineage Diagram", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Lineage Diagram", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/relationships/Artifact/:objectId",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Relationships", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Relationships", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/ownership/:assetId",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Responsibilities", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Responsibilities", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/actions/Artifact/:objectId",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Actions", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Actions", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/comments/:uid",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Comments", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Comments", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/followers/Artifact/:objectId",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Followers", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Followers", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/audit/:uid",
                 Type = FavoriteExtendedType.Asset,
-                TabName = "Change Log", // TODO: resources,
+                GetName = (name, p) => name + " - "  + "Change Log", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "search?query=:query",
+                Type = FavoriteExtendedType.SearchResultsPage,
+                GetName = (_, p) => $"\"{p["query"]}\"", // TODO: resources,
             }
         };
 
@@ -230,7 +255,9 @@ namespace d360.web.Services
 
             public string TabName { get; set; }
 
-            public SystemObjects ObjectType { get; set; }
+            public SystemObjects? ObjectType { get; set; }
+
+            public Func<string, Dictionary<string, string>, string> GetName { get; set; }
         }
     }
 }
