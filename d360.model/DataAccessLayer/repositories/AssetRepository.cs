@@ -4297,6 +4297,7 @@ where   A.[uid] = @assetUid";
             var results = new AssetDescendantsResults();
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
+            bool onlyTotal = false;
             var whereSQL = "";
 
             results.pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
@@ -4311,6 +4312,11 @@ where   A.[uid] = @assetUid";
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_onlytotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_onlytotal").Value, out onlyTotal);
             }
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentassetuid") )
@@ -4341,28 +4347,34 @@ where   A.[uid] = @assetUid";
                                     into #descendants 
                                     from descendants";
 
-            var countSQL = "Select count(*)-1 from #descendants";         
+            var countSQL = "Select count(*)-1 from #descendants";
+
+            var itemsSQL = $@"select                                         
+                                  a.uid as AssetUid, 
+                                  p.uid as ParentUid 
+                              from 
+                                  Asset a 
+                                  inner join #descendants d on a.id = d.AssetID 
+                                  inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0
+                              {whereSQL}
+                              order by p.Id asc
+                              OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY";
 
             var sql = $@"{descendantsSQL}
                         
-                        select                                         
-                            a.uid as AssetUid, 
-                            p.uid as ParentUid 
-                        from 
-                            Asset a 
-                            inner join #descendants d on a.id = d.AssetID 
-                            inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0
-                        {whereSQL}
-                        order by p.Id asc
-                        OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
+                        {(!onlyTotal ? itemsSQL: "")}
 
-                        {(includeTotal ? countSQL: "")}
+                        {(includeTotal || onlyTotal ? countSQL: "")}
 						";
 
             var multiQuery = await CompanyContext.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
-            results.items = multiQuery.Read<AssetDescendants>();
 
-            if (includeTotal)
+            if (!onlyTotal)
+            {
+                results.items = multiQuery.Read<AssetDescendants>();
+            }            
+
+            if (includeTotal || onlyTotal)
             {
                 results.total = multiQuery.Read<int?>().FirstOrDefault();
             }
