@@ -25,7 +25,6 @@ export class DeleteForm implements OnChanges {
     @Input() itemUid: string;
     @Input() assetTypeUid: string;
     @Input() useUid: boolean = false;
-    @Input() IsPromptHtml: boolean = true;
     @Input() items: any[];
     @Input() hideDeleteButton: boolean = false;
     @Input() modalCssClasses: string = 'modal-delete-form';

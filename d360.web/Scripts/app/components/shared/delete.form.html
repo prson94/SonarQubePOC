@@ -2,8 +2,7 @@
     <div>
         <div class="row">
             <div *ngIf="isLoading" style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-            <div *ngIf="IsPromptHtml" [innerHTML]="prompt">{{prompt}}</div>
-            <div *ngIf="!IsPromptHtml">{{prompt}}</div>
+            <div>{{prompt}}</div>
         </div>
         <div class="row">
             <form-message [message]="message"></form-message>

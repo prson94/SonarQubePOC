@@ -129,5 +129,4 @@
                      [itemId]="selected?.ResourceID"
                      method="callback"
                      [prompt]="'Are you sure you want to delete the user [' + selected.FirstName + ' ' + selected.LastName + ']?'"
-                     [IsPromptHtml]="false"
                      (onCancel)="showDelete=false;"></d3s-delete-form>
