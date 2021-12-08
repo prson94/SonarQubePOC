@@ -317,37 +317,6 @@ namespace d360.model
             return Database.SqlQuery<T>(commandText, parameters.ToArray()).ToList();
         }
 
-        public void ExecuteNonQueryCommand(string commandText, List<SqlParameter> parameters)
-        {
-            var connection = new SqlConnection(Database.Connection.ConnectionString);
-            try
-            {
-                var command = new SqlCommand();
-                command.CommandTimeout = 1500;
-                command.Connection = connection;
-
-                connection.Open();
-
-                command.CommandText = commandText;
-                command.Parameters.AddRange(parameters.ToArray());
-                command.ExecuteNonQuery();
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                if (connection != null)
-                {
-                    if (connection.State != ConnectionState.Closed)
-                    {
-                        connection.Close();
-                    }
-                }
-            }
-        }
-
         #endregion
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)

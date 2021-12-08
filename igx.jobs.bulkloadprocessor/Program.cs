@@ -694,18 +694,19 @@ where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
 
             #region Process in Community database.
 
-            var community = new SqlConnection(d360.core.constants.COMMUNITY_DATABASE_CONNECTION);
-            community.Open();
-            using (var trans = community.BeginTransaction())
+            using (var community = new SqlConnection(d360.core.constants.COMMUNITY_DATABASE_CONNECTION))
             {
-                try
+                community.Open();
+                using (var trans = community.BeginTransaction())
                 {
-                    community.Execute(@"
+                    try
+                    {
+                        community.Execute(@"
 DROP TABLE IF EXISTS #Users;
 DROP TABLE IF EXISTS #UsersResult;
 DROP TABLE IF EXISTS #UserMembershipsResult;", transaction: trans);
 
-                    community.Execute(@"
+                        community.Execute(@"
 create table #Users (
     LoadID int not null,
     RowIndex int not null,
@@ -727,32 +728,32 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_LoadID_Email ON #Users ( LoadID ASC, Emai
 CREATE NONCLUSTERED INDEX IX_TempUsers_LoadID_RowIndex_Email ON #Users ( LoadID ASC, RowIndex ASC, Email ASC );
 ", transaction: trans);
 
-                    var usersBulkCopy = new SqlBulkCopy(community, SqlBulkCopyOptions.Default, trans)
-                    {
-                        BatchSize = SqlBulkBatchSize,
-                        DestinationTableName = "#Users",
-                        BulkCopyTimeout = 3600
-                    };
+                        var usersBulkCopy = new SqlBulkCopy(community, SqlBulkCopyOptions.Default, trans)
+                        {
+                            BatchSize = SqlBulkBatchSize,
+                            DestinationTableName = "#Users",
+                            BulkCopyTimeout = 3600
+                        };
 
-                    usersBulkCopy.ColumnMappings.Add("LoadID", "LoadID");
-                    usersBulkCopy.ColumnMappings.Add("RowIndex", "RowIndex");
-                    usersBulkCopy.ColumnMappings.Add("UserStatus", "UserStatus");
-                    usersBulkCopy.ColumnMappings.Add("Email", "Email");
-                    usersBulkCopy.ColumnMappings.Add("FirstName", "FirstName");
-                    usersBulkCopy.ColumnMappings.Add("LastName", "LastName");
-                    usersBulkCopy.ColumnMappings.Add("EnvironmentID", "EnvironmentID");
-                    usersBulkCopy.ColumnMappings.Add("Success", "Success");
-                    usersBulkCopy.ColumnMappings.Add("Message", "Message");
+                        usersBulkCopy.ColumnMappings.Add("LoadID", "LoadID");
+                        usersBulkCopy.ColumnMappings.Add("RowIndex", "RowIndex");
+                        usersBulkCopy.ColumnMappings.Add("UserStatus", "UserStatus");
+                        usersBulkCopy.ColumnMappings.Add("Email", "Email");
+                        usersBulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+                        usersBulkCopy.ColumnMappings.Add("LastName", "LastName");
+                        usersBulkCopy.ColumnMappings.Add("EnvironmentID", "EnvironmentID");
+                        usersBulkCopy.ColumnMappings.Add("Success", "Success");
+                        usersBulkCopy.ColumnMappings.Add("Message", "Message");
 
-                    usersBulkCopy.WriteToServer(tbl);
+                        usersBulkCopy.WriteToServer(tbl);
 
-                    community.Execute(@"update	T
+                        community.Execute(@"update	T
 set		T.ClientID = S.ClientID
 from	#Users T
 		inner join Company S on S.ID = T.EnvironmentID;", transaction: trans);
 
-                    // Check for duplicate email addresses and invalidate the ones with higher row indices.
-                    community.Execute(@"update	T
+                        // Check for duplicate email addresses and invalidate the ones with higher row indices.
+                        community.Execute(@"update	T
 set		T.Success = 0,
 		T.Message = 'User email address already used in bulk load file'
 from	#Users T
@@ -760,33 +761,33 @@ from	#Users T
 					select LoadID, min(RowIndex) as MinRowIndex, Email from #Users group by LoadID, Email
 					) S on S.LoadID = T.LoadID and S.Email = T.Email and S.MinRowIndex <> T.RowIndex;", transaction: trans);
 
-                    community.Execute(@"update	#Users
+                        community.Execute(@"update	#Users
 set		Success = 0,
         Message = Message + 'User does not have a valid email address; '
 where   [Email] is null or [Email] = '';", transaction: trans);
 
-                    community.Execute(@"update	#Users
+                        community.Execute(@"update	#Users
 set		Success = 0,
         Message = Message + 'User does not have a valid first name; '
 where   [FirstName] is null or [FirstName] = '';", transaction: trans);
 
-                    community.Execute(@"update	#Users
+                        community.Execute(@"update	#Users
 set		Success = 0,
         Message = Message + 'User does not have a valid last name; '
 where   [LastName] is null or [LastName] = '';", transaction: trans);
 
-                    string inclause = String.Join(",", CompanyResourceState.Active.GetList().Select(s => "'" + s.Name + "'"));
-                    community.Execute(@"update	#Users
+                        string inclause = String.Join(",", CompanyResourceState.Active.GetList().Select(s => "'" + s.Name + "'"));
+                        community.Execute(@"update	#Users
 set		Success = 0,
         Message = Message + 'User does not have a valid status; '
 where   [UserStatus] IS NULL OR [UserStatus] NOT IN (" + inclause + ");", transaction: trans);
 
-                    community.Execute(@"update	T
+                        community.Execute(@"update	T
 set		T.ResourceID = S.ID
 from	#Users T
 		inner join [Resource] S on S.Email = T.Email;", transaction: trans);
 
-                    community.Execute(@"update	T
+                        community.Execute(@"update	T
 set		T.Success = case
 						when S.[Count] > 0 then cast(0 as bit)
 						else null
@@ -802,8 +803,8 @@ from	#Users T
 					inner join Company C on C.ID = CR.CompanyID and C.ClientID <> T.ClientID and CR.ResourceID = T.ResourceID
 		) S
 where   T.Success is null;", transaction: trans);
-                    
-                    community.Execute(@"
+
+                        community.Execute(@"
 merge into  [Resource] T
 using       (
             select  *
@@ -822,7 +823,7 @@ when not matched by target then
     values  (S.Email, 'not set', S.LastName, S.FirstName, S.Email)
 output S.LoadID, S.RowIndex, inserted.ID, inserted.[uid], $action into #UsersResult;", transaction: trans);
 
-                    community.Execute(@"
+                        community.Execute(@"
 update	T
 set		T.Success = 1,
 		T.ResourceID = S.ResourceID,
@@ -834,7 +835,7 @@ set		T.Success = 1,
 from	#Users T
 		inner join #UsersResult S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex;", transaction: trans);
 
-                    community.Execute(@"
+                        community.Execute(@"
 merge into  [CompanyResource] T
 using       (
             select  distinct
@@ -859,7 +860,7 @@ when not matched by target then
     values  (S.CompanyID, S.ResourceID, 0, S.[State])
 output inserted.ResourceID, $action into #UserMembershipsResult;", transaction: trans);
 
-                    community.Execute(@"
+                        community.Execute(@"
 update	T
 set		T.Message = T.Message + 
 					case S.[Action]
@@ -870,21 +871,22 @@ from	#Users T
 		left join #UserMembershipsResult S on S.ResourceID = T.ResourceID
 where	T.Success = 1", transaction: trans);
 
-                    userResults = community.Query<CommunityUserAddResultModel>("select * from #Users", transaction: trans).ToList();
+                        userResults = community.Query<CommunityUserAddResultModel>("select * from #Users", transaction: trans).ToList();
 
-                    trans.Commit();
-                }
-                catch
-                {
-                    try
+                        trans.Commit();
+                    }
+                    catch
                     {
-                        if (trans != null)
+                        try
                         {
-                            trans.Rollback();
+                            if (trans != null)
+                            {
+                                trans.Rollback();
+                            }
+                            throw;
                         }
-                        throw;
-                    } 
-                    catch { }
+                        catch { }
+                    }
                 }
             }
 
