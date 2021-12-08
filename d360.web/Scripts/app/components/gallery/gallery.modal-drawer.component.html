@@ -30,8 +30,8 @@
                 <ig-property-group title="Form" [expanded]="true" [showHeaderLine]="false" [shouldBePadded]="false">
                     <div inputs>
                         <label style="margin-top:0px;">2 radio buttons</label>
-                        <p-radioButton igRadioButton name="groupName" value="Of Course!" label="Yes"></p-radioButton><br />
-                        <p-radioButton igRadioButton name="groupName" value="Of Course!" label="No"></p-radioButton>
+                        <p-radioButton igRadioButton name="groupName" value="Of Course!" label="Yes" [(ngModel)]="radioSelection"></p-radioButton><br />
+                        <p-radioButton igRadioButton name="groupName" value="Hell No!" label="No" [(ngModel)]="radioSelection"></p-radioButton>
                         <br />
                         <label>Text area 1</label>
                         <textarea igTextArea></textarea>
@@ -41,7 +41,6 @@
                         <textarea igTextArea></textarea>
                         <label>Text area 4</label>
                         <textarea igTextArea></textarea>
-
                     </div>
                 </ig-property-group>
                 <ig-property-group title="Collapse / Expand for content overflow" [expanded]="true" [showHeaderLine]="false" [shouldBePadded]="false">
