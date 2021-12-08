@@ -875,7 +875,6 @@ namespace d360.core.entities
         public string path { get; set; }
     }
 
-
     public class UpsertModel
     {
         public Guid AssetTypeUid { get; set; }
