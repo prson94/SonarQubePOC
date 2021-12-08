@@ -1108,12 +1108,12 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             permission["addModifySynonym"] = addModifySynonym;
             permission["deleteSynonym"] = deleteSynonym;
 
-            json.Add("SynonymPermission", permission);
-
             if (json == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound, json);
+                return Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.ArtifactNotFound);
             }
+
+            json.Add("SynonymPermission", permission);        
 
             return Request.CreateResponse(HttpStatusCode.OK, json);
         }
