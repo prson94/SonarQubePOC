@@ -29,7 +29,6 @@ namespace d360.model
         bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         bool Delete<T>(T entity) where T : BaseObject;
         int Execute(string sql, object param = null, IDbTransaction transaction = null, int? commandTimeout = null, CommandType? commandType = null);
-        void ExecuteNonQueryCommand(string commandText, List<SqlParameter> parameters);
         List<T> ExecuteQuery<T>(string commandText, List<SqlParameter> parameters);
         bool Exists<T>(int id) where T : BaseIntObject;
         IQueryable<T> Filter<T>(Expression<Func<T, bool>> predicate, out int total, int index = 0, int size = 50, params Expression<Func<T, object>>[] includes) where T : BaseObject;
