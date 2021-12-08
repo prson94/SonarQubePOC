@@ -8,6 +8,7 @@ import { RouterModule } from '@angular/router';
 
 import { SiteMenuComponent } from './site-menu.component';
 import { SiteMenuMegaItemComponent } from './site-menu-mega-item.component';
+import { SiteMenuFavoriteItemComponent } from './site-menu-favorite-item.component';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 
@@ -45,6 +46,7 @@ import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
         SiteMenuMegaItemComponent,
         SiteMenuCategoryComponent,
         SiteMenuCategoryPanelComponent,
+        SiteMenuFavoriteItemComponent,
         SiteMenuFavoritesComponent,
         SiteMenuManageFavoritesPanelComponent,
         LinksKeyboardNavigationComponent

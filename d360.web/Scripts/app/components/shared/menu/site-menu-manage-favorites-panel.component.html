@@ -45,12 +45,14 @@
 								<div [style.paddingLeft]="'20px'"
 									class="favorite-container">
 									<p-checkbox [name]="favorite.Id"
-										[label]="favorite.Name"
+										[label]="''"
 										[ngModel]="removalStatus"
 										(ngModelChange)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: $event })"
 										igCheckbox
 										binary="true">
 									</p-checkbox>
+									<!-- TODO: clicking favorite-item should enable/disable checkbox -->
+									<d3s-site-menu-favorite-item [favorite]="favorite"></d3s-site-menu-favorite-item>
 								</div>
 							</div>
 						</ng-container>

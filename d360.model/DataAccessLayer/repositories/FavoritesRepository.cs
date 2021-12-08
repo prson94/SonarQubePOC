@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.core.enums;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -39,7 +40,8 @@ where favorite.ResourceId = @resourceId";
 		[FavoriteId] [int] not null,
 		[ObjectType] [varchar](25) not null,
 		[ObjectId] [int] not null,
-		[Name] [varchar](max) not null
+		[Name] [varchar](max) not null,
+		[AssetTypeClass] [int] not null
 	)
 	
 	insert into @correctFavorites
@@ -47,9 +49,10 @@ where favorite.ResourceId = @resourceId";
 		favorite.FavoriteId,
 		asset.Object as ObjectType,
 		asset.ObjectID as ObjectId,
-		AssetName.DisplayValue
+		AssetName.DisplayValue,
+		assetType.Class
 	from @favorites favorite
-	left join dbo.Asset asset 
+	join dbo.Asset asset 
 		on 
 		(
 			favorite.ObjectType = asset.Object
@@ -63,6 +66,8 @@ where favorite.ResourceId = @resourceId";
 			favorite.ObjectType = asset.Object
 			and favorite.Uid = asset.Uid
 		)
+	join dbo.AssetType assetType
+		on asset.AssetTypeId = assetType.Id
 	outer apply [dbo].[GetAssetDisplayValueById](asset.Id) AssetName
 
 	insert into @correctFavorites
@@ -70,7 +75,8 @@ where favorite.ResourceId = @resourceId";
 		favorite.FavoriteId,
 		assetType.Object as ObjectType,
 		assetType.ObjectID as ObjectId,
-		AssetType.Name
+		assetType.Name,
+		assetType.Class
 	from @favorites favorite
 	join dbo.AssetType assetType
 		on 
@@ -108,6 +114,7 @@ where favorite.ResourceId = @resourceId";
                                       Name = favorite.Name,
                                       ObjectType = favorite.ObjectType,
                                       ObjectId = favorite.ObjectId,
+                                      AssetTypeClass = favorite.AssetTypeClass,
                                       Breadcrumbs = breadcrumbsGroup.Select(b => new BreadcrumbsInfo
                                       {
                                           Level = b.Level,
@@ -130,6 +137,8 @@ where favorite.ResourceId = @resourceId";
             public int ObjectId { get; set; }
 
             public string Name { get; set; }
+
+            public AssetTypeClass AssetTypeClass { get; set; }
         }
 
 

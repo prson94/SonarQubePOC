@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.core.enums;
 using d360.model.DataAccessLayer.repositories;
 using System;
 using System.Collections.Generic;
@@ -92,6 +93,8 @@ namespace d360.model.DataAccessLayer
         public SystemObjects ObjectType { get; set; }
 
         public int ObjectId { get; set; }
+
+        public AssetTypeClass AssetTypeClass { get; set; }
     }
 
     public class BreadcrumbsInfo

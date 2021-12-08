@@ -4,7 +4,7 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { FavoriteApiModel } from '../../../models/favorite.model';
+import { FavoriteApiModel, FavoriteViewModel } from '../../../models/favorite.model';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
@@ -52,7 +52,7 @@ export class HeaderActionsComponent {
     private subObjectChange: any;
     private subFavorites: any;
 
-    private favItems: FavoriteApiModel[] = [];
+    private favItems: FavoriteViewModel[] = [];
     private currentObject: string;
     private currentObjectId: number;
     private headerActionsSub;

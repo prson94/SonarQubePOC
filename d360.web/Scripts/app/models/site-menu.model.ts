@@ -6,6 +6,7 @@
     IsLink: boolean;
     IsHomePage: boolean = false;
     count: number;
+    Breadcrumbs?: string[];
 }
 
 export class SiteMenu {

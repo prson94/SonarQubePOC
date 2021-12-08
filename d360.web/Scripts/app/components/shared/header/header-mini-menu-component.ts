@@ -4,7 +4,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
-import { FavoriteApiModel } from '../../../models/favorite.model';
+import { FavoriteApiModel, FavoriteViewModel } from '../../../models/favorite.model';
 import * as _ from 'lodash'; 
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -64,7 +64,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     private subFavorites: any;
 
     private homePageItem: FavoriteApiModel;
-    private favItems: FavoriteApiModel[] = [];
+    private favItems: FavoriteViewModel[] = [];
     private currentObject: string;
     private currentObjectId: number;
     private headerActionsSub;

@@ -1,0 +1,27 @@
+<div class="fav-icon">
+	<span class="d3s-icon asset-icon">
+		<i [class]="'fa fa-' + iconName"></i>
+	</span>
+</div>
+<div class="fav-description">
+	<div class="fav-title">{{favorite.Name}}</div>
+	<div class="fav-breadcrumbs">
+		<!-- Please, note, that favorite breadcrumbs have different design than page breadcrumbs -->
+		<!-- This is reason, why there are no reuse of rendering -->
+		<span class="fav-asset-area">
+			<ng-container [ngSwitch]="AssetTypeClass[favorite.AssetTypeClass]">
+				<ng-container *ngSwitchCase="AssetTypeClass.BusinessAsset">Business Assets</ng-container>
+				<ng-container *ngSwitchCase="AssetTypeClass.TechnicalAsset">Technical Assets</ng-container>
+				<!-- TODO: support all other -->
+				<ng-container *ngSwitchDefault>
+					<ng-container [ngSwitch]="favorite.PageType">
+						<ng-container *ngSwitchCase="FavoritePageType.SearchResultsPage">Search Results</ng-container>
+						<!-- TODO: support all other -->
+						<ng-container *ngSwitchDefault>Unknown</ng-container>
+					</ng-container>
+				</ng-container>
+			</ng-container>
+		</span>
+		<span *ngIf="favorite.Breadcrumbs?.length > 0">: {{favorite.Breadcrumbs.join(" > ")}}</span>
+	</div>
+</div>

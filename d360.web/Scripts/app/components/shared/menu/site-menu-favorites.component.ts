@@ -51,7 +51,7 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
             menu.NavigationItems = [];
 
             for (let favorite of homefav.Favorites) {
-                let isHomePage = _.isEqual(favorite, homefav.Homepage);
+                let isHomePage = favorite.Id === homefav.Homepage?.Id;
                 menu.NavigationItems.push({
                     Name: favorite.Name,
                     Url: favorite.Route,

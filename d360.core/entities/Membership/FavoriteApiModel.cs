@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -39,20 +40,14 @@ namespace d360.core.entities.Membership
         public FavoriteType Type { get; set; }
     }
 
-    public enum FavoriteExtendedType
+    public enum FavoritePageType
     {
+        Artifact,
+        SearchResultsPage
         //HomePage,
-        //User,
-        Asset,
-        //AssetType,
-        //RuleAsset,
-        //ModelAssetType,
-        //AssetClass,
         //DashboardPage,
         //CommunityPage,
         //ReferenceListPage,
-        //ReferenceItem,
-        SearchResultsPage
     };
 
     public class FavoriteExtendedApiViewModel
@@ -63,7 +58,9 @@ namespace d360.core.entities.Membership
 
         public string Route { get; set; }
 
-        public FavoriteExtendedType Type { get; set; }
+        public FavoritePageType PageType { get; set; }
+
+        public AssetTypeClass? AssetTypeClass { get; set; }
 
         public List<string> Breadcrumbs { get; set; }
 
