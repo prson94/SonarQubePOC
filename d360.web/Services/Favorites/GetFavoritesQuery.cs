@@ -23,6 +23,7 @@ namespace d360.web.Services
         public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
             // TODO: cleanup non-existing favorites & homepages
+            // TODO: should remove non-unique favorites
             var favorites = await favoritesRepository.GetFavorites(request.ResourceId);
             var objectIds = favorites.Select(GetObjectId).ToList();
             var favoritesDetails = await favoritesRepository.GetFavoriteDetails(objectIds);
@@ -63,6 +64,7 @@ namespace d360.web.Services
 
         private (FavoriteRouteMatcher, Dictionary<string, string>) GetCorrespondingMatcher(FavoriteShortModel f)
         {
+            // TODO: crash if not unique
             foreach (var matcher in matchers)
             {
                 var mapped = TryMatchRoute(matcher, f.Route);
@@ -79,6 +81,7 @@ namespace d360.web.Services
 
         private FavoritesObjectDetailsRequest GetObjectId(FavoriteShortModel f)
         {
+            // TODO: crash if not unique
             foreach (var matcher in matchers)
             {
                 var mapped = TryGetObjectId(f, matcher);
@@ -177,6 +180,7 @@ namespace d360.web.Services
 
         private static IEnumerable<FavoriteRouteMatcher> matchers = new[]
         {
+            // asset or asset type
             new FavoriteRouteMatcher
             {
                 RoutePattern = "artifact/:any/:objectId",
@@ -221,13 +225,6 @@ namespace d360.web.Services
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/comments/:uid",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Comments", // TODO: resources,
-                ObjectType = SystemObjects.Artifact
-            },
-            new FavoriteRouteMatcher
-            {
                 RoutePattern = "sidebar/followers/Artifact/:objectId",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Followers", // TODO: resources,
@@ -240,6 +237,69 @@ namespace d360.web.Services
                 GetName = (name, p) => name + " - "  + "Change Log", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
+
+            // users
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "resource/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Profile", // TODO: resources,                
+                ObjectType = SystemObjects.Resource
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/membergroup/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Groups", // TODO: resources,                
+                ObjectType = SystemObjects.Resource
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/relationships/resource/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Relationships", // TODO: resources,                
+                ObjectType = SystemObjects.Resource
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/itemown/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Responsibilities", // TODO: resources,                
+                ObjectType = SystemObjects.Resource
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/itemfollow/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Following", // TODO: resources,                
+                ObjectType = SystemObjects.Resource
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/itemfollow/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Following", // TODO: resources,                
+                ObjectType = SystemObjects.Resource
+            },
+
+            // shared
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/comments/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Comments", // TODO: resources,
+                ObjectType = null // TODO: objectType should be null here
+            },
+            new FavoriteRouteMatcher
+            { 
+                // TODO: should support several route patterns as part of one matcher
+                RoutePattern = "sidebar/comments/:uid/true",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Comments", // TODO: resources,
+                ObjectType = null // TODO: objectType should be null here
+            },
+
+            // search results page
             new FavoriteRouteMatcher
             {
                 RoutePattern = "search?query=:query",

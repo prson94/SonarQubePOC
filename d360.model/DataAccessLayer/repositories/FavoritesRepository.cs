@@ -33,7 +33,7 @@ where favorite.ResourceId = @resourceId";
             IEnumerable<FavoritesObjectDetailsRequest> items
         )
         {
-            var correctItems = items.Where(f => f.ObjectType != null).Distinct();
+            var correctItems = items.Distinct();
 
             var grid = await this.QueryComposer.QueryMultipleAsync(@"
 	declare @correctFavorites table (
@@ -55,15 +55,15 @@ where favorite.ResourceId = @resourceId";
 	join dbo.Asset asset 
 		on 
 		(
-			favorite.ObjectType = asset.Object
+			((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 			and favorite.ObjectId = asset.ObjectId
 		)
 		or (
-			favorite.ObjectType = asset.Object
+			((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 			and favorite.AssetId = asset.Id
 		) 
 		or (
-			favorite.ObjectType = asset.Object
+			((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 			and favorite.Uid = asset.Uid
 		)
 	join dbo.AssetType assetType
@@ -81,15 +81,15 @@ where favorite.ResourceId = @resourceId";
 	join dbo.AssetType assetType
 		on 
 		(
-			favorite.ObjectType = assetType.Object
+			((favorite.ObjectType is null) or (favorite.ObjectType = assetType.Object))
 			and favorite.ObjectId = assetType.ObjectId
 		)
 		or (
-			favorite.ObjectType = assetType.Object
+			((favorite.ObjectType is null) or (favorite.ObjectType = assetType.Object))
 			and favorite.AssetTypeId = assetType.Id
 		) 
 		or (
-			favorite.ObjectType = assetType.Object
+			((favorite.ObjectType is null) or (favorite.ObjectType = assetType.Object))
 			and favorite.Uid = assetType.Uid
 		)
 
