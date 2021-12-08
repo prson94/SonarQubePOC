@@ -1617,7 +1617,6 @@ namespace d360.web.Controllers.V2
             return Ok(result);
         }
 
-
         /// <summary>
         /// Test a responsibility rule definition to see which assets it will apply to.
         /// </summary>
