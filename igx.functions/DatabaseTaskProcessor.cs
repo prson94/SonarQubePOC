@@ -225,7 +225,7 @@ namespace igx.functions.databasetaskprocessor
 
                                 if (queueItems != null)
                                 {
-                                    queueItems.ForEach(async q =>
+                                    queueItems.ForEach(q =>
                                     {
                                         try
                                         {
