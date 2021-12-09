@@ -424,7 +424,7 @@ namespace d360.core.entities
             {
                 try
                 {
-                    var obj = JToken.Parse(model._JsonPayload);
+                    JToken.Parse(model._JsonPayload);
                 }
                 catch
                 {

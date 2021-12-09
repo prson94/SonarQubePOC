@@ -225,7 +225,7 @@ insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Ve
             try
             {
                 var qualifiers = new List<string> { qualifier };
-                var existingSemantics = findLatestExistingSemantics(qualifiers, 1);
+                findLatestExistingSemantics(qualifiers, 1);
 
                 var anyProfilesQuery = await CompanyContext.QueryAsync<int>(@"select  count(1)  
 from    AssetDataProfile P 
@@ -246,10 +246,6 @@ from    AssetDataProfile P
                         "Profiles match the semantic.",
                         "You may not remove this semantic since one or more asset data profiles match this semantic.");
                 }
-
-                var transactionId = generateTransactionId();
-                //CompanyContext.Execute("update Semantic set TransactionId = @transactionId where Qualifier = @qualifier", new { qualifier });
-                //addToChangeLog(transactionId, "D");
 
                 CompanyContext.Connection.Execute("delete Semantic where Qualifier = @qualifier", new { qualifier });
 
