@@ -23,7 +23,11 @@ export class SiteMenuFavoriteItemComponent {
 
         switch (this.favorite.PageType) {
             case FavoritePageType.Artifact:
-                throw new Error(`Expected AssetTypeClass to be non-null, but it was ${new String(this.favorite.AssetTypeClass)}`);
+                console.error(
+                    `Expected AssetTypeClass to be non-null, ` +
+                    `but it was ${new String(this.favorite.AssetTypeClass)} ` + 
+                    `for ${JSON.stringify(this.favorite)}`);
+                return 'question-circle';
             case FavoritePageType.SearchResultsPage:
                 return 'search';
         }

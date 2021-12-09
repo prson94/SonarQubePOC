@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities.Membership;
+using d360.core.enums;
 using d360.model.DataAccessLayer;
 using MediatR;
 
@@ -22,36 +23,32 @@ namespace d360.web.Services
 
         public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
-            // TODO: cleanup non-existing favorites & homepages
+            // TODO: cleanup non-existing favorites & homepages by contion
             // TODO: should remove non-unique favorites
+            // TODO: breadcrumbs are empty for Asset Types, Policy Types and so on
             var favorites = await favoritesRepository.GetFavorites(request.ResourceId);
-            var objectIds = favorites.Select(GetObjectId).ToList();
-            var favoritesDetails = await favoritesRepository.GetFavoriteDetails(objectIds);
-            // TODO: relatedMatchers can be merged with objectIds
-            var relatedMatchers = favorites.Select(f =>
-            {
-                var matcher = GetCorrespondingMatcher(f);
-                return new { f.Id, Matcher = matcher.Item1, Matched = matcher.Item2 };
-            }).ToList();
+            var routeMatchers = favorites.Select(GetRouteMatch).ToList();
+            var favoritesDetails = await favoritesRepository.GetFavoriteDetails(routeMatchers.Select(r => r.ObjectId));
 
             var mappedFavorites = from favorite in favorites
-                                  join objectId in objectIds on favorite.Id equals objectId.FavoriteId
-                                  join favoriteDetails in favoritesDetails on favorite.Id equals favoriteDetails.FavoriteId into joinedFavoriteDetails
+                                  join routeMatch in routeMatchers
+                                    on favorite.Id equals routeMatch.ObjectId.FavoriteId
+                                  join favoriteDetails in favoritesDetails
+                                    on favorite.Id equals favoriteDetails.FavoriteId into joinedFavoriteDetails
                                   from favoriteDetails in joinedFavoriteDetails.DefaultIfEmpty()
-                                  join relatedMatcher in relatedMatchers on favorite.Id equals relatedMatcher.Id
                                   select new FavoriteExtendedApiViewModel
                                   {
                                       Id = favorite.Id,
                                       Route = favorite.Route,
-                                      PageType = relatedMatcher.Matcher.PageType,
+                                      PageType = routeMatch.Matcher.PageType,
                                       Breadcrumbs = (favoriteDetails?.Breadcrumbs ?? new List<BreadcrumbsInfo>())
                                           .OrderBy(p => p.Level)
                                           .Select(p => p.Name)
                                           .ToList(),
                                       ObjectType = favoriteDetails?.ObjectType,
                                       ObjectId = favoriteDetails?.ObjectId,
-                                      AssetTypeClass = favoriteDetails?.AssetTypeClass,
-                                      Name = relatedMatcher.Matcher.GetName(favoriteDetails?.Name, relatedMatcher.Matched)
+                                      AssetTypeClass = routeMatch.Matcher.ForcedAssetClass ?? favoriteDetails?.AssetTypeClass,
+                                      Name = routeMatch.Matcher.GetName(favoriteDetails?.Name, routeMatch.RouteParams)
                                   };
 
             return mappedFavorites.ToList();
@@ -62,66 +59,87 @@ namespace d360.web.Services
             public int ResourceId { get; set; }
         }
 
-        private (FavoriteRouteMatcher, Dictionary<string, string>) GetCorrespondingMatcher(FavoriteShortModel f)
+        private RouteMatchResult GetRouteMatch(FavoriteShortModel f)
         {
-            // TODO: crash if not unique
-            foreach (var matcher in matchers)
+            var matchResults = matchers.Select(matcher => TryGetRouteMatch(f, matcher)).Where(r => r != null).ToList();
+            if (!matchResults.Any())
             {
-                var mapped = TryMatchRoute(matcher, f.Route);
-                if (mapped == null)
-                {
-                    continue;
-                }
-
-                return (matcher, mapped);
+                throw new InvalidOperationException($"Failed to match favorite with route {f.Route}");
             }
 
-            throw new InvalidOperationException($"Failed to match favorite with route {f.Route}");
-        }
-
-        private FavoritesObjectDetailsRequest GetObjectId(FavoriteShortModel f)
-        {
-            // TODO: crash if not unique
-            foreach (var matcher in matchers)
+            if (matchResults.Count > 1)
             {
-                var mapped = TryGetObjectId(f, matcher);
-                if (mapped != null)
-                {
-                    return mapped;
-                }
+                throw new InvalidOperationException(
+                    $"Route {f.Route} was matched with several matchers: \n" +
+                     string.Join("\n", matchResults.Select(m => " •" + m.Matcher.RoutePattern)));
             }
 
-            throw new InvalidOperationException($"Failed to match favorite with route {f.Route}");
+            return matchResults.Single();
         }
 
-        private FavoritesObjectDetailsRequest TryGetObjectId(FavoriteShortModel f, FavoriteRouteMatcher matcher)
+        class RouteMatchResult
         {
-            var match = TryMatchRoute(matcher, f.Route);
-            if (match == null)
+            public Dictionary<string, string> RouteParams { get; set; }
+
+            public FavoritesObjectDetailsRequest ObjectId { get; set; }
+
+            public FavoriteRouteMatcher Matcher { get; set; }
+        }
+
+        private RouteMatchResult TryGetRouteMatch(FavoriteShortModel f, FavoriteRouteMatcher matcher)
+        {
+            var routeParams = TryMatchRoute(matcher, f.Route);
+            if (routeParams == null)
             {
                 return null;
             }
 
-            var request = new FavoritesObjectDetailsRequest();
-            request.FavoriteId = f.Id;
-            request.ObjectType = matcher.ObjectType;
+            var req = new FavoritesObjectDetailsRequest();
+            req.FavoriteId = f.Id;
+            req.ObjectType = matcher.ObjectType;
 
-            if (match.ContainsKey("assetId"))
+            if (routeParams.ContainsKey("assetId"))
             {
-                request.AssetId = int.Parse(match["assetId"]);
+                if (int.TryParse(routeParams["assetId"], out var assetId))
+                {
+                    req.AssetId = assetId;
+                }
+                else
+                {
+                    return null;
+                }
             }
 
-            if (match.ContainsKey("objectId"))
+            if (routeParams.ContainsKey("objectId"))
             {
-                request.ObjectId = int.Parse(match["objectId"]);
+                if (int.TryParse(routeParams["objectId"], out var objectId))
+                {
+                    req.ObjectId = objectId;
+                }
+                else
+                {
+                    return null;
+                }
             }
 
-            if (match.ContainsKey("uid"))
+            if (routeParams.ContainsKey("uid"))
             {
-                request.Uid = Guid.Parse(match["uid"]);
+                if (Guid.TryParse(routeParams["uid"], out var uid))
+                {
+                    req.Uid = uid;
+                }
+                else
+                {
+                    return null;
+                }
             }
 
-            return request;
+            return new RouteMatchResult
+            {
+                ObjectId = req,
+                Matcher = matcher,
+                RouteParams = routeParams
+            };
         }
 
         private Dictionary<string, string> TryMatchRoute(FavoriteRouteMatcher matcher, string route)
@@ -141,7 +159,7 @@ namespace d360.web.Services
 
         private static string SanitizeRoute(string route)
         {
-            return route.TrimEnd('/');
+            return route.Trim('/');
         }
 
         private static Regex RoutePatternToRegex(string routePattern)
@@ -149,6 +167,7 @@ namespace d360.web.Services
             // please, note, that we have very limited support of query strings here
             // we don't support matching "?a=1&b=2" by pattern "?b=:b&a=:a" (i.e. when order is changed)
 
+            routePattern = "^" + routePattern;
             routePattern = routePattern.Replace(@"\", @"\\");
             routePattern = routePattern.Replace(@"?", @"\?");
 
@@ -180,26 +199,35 @@ namespace d360.web.Services
 
         private static IEnumerable<FavoriteRouteMatcher> matchers = new[]
         {
-            // asset or asset type
+            // asset type
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "artifact/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Assets", // TODO: resources,
+                ObjectType = SystemObjects.ArtifactType
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "dashboard/ArtifactType/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Dashboards", // TODO: resources,
+                ObjectType = SystemObjects.ArtifactType
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/workflowmonitor/ArtifactType/:objectId;isAdminPage=false",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Workflow", // TODO: resources,
+                ObjectType = SystemObjects.ArtifactType
+            },
+
+            // asset
             new FavoriteRouteMatcher
             {
                 RoutePattern = "artifact/:any/:objectId",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Definition", // TODO: resources,
-                ObjectType = SystemObjects.Artifact
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/visualization/browser/:uid",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Impact Diagram", // TODO: resources,
-                ObjectType = SystemObjects.Artifact
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/visualization/browser/:uid/Lineage",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Lineage Diagram", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
@@ -230,13 +258,8 @@ namespace d360.web.Services
                 GetName = (name, p) => name + " - "  + "Followers", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/audit/:uid",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Change Log", // TODO: resources,
-                ObjectType = SystemObjects.Artifact
-            },
+
+            // TODO: asset Types
 
             // users
             new FavoriteRouteMatcher
@@ -274,12 +297,31 @@ namespace d360.web.Services
                 GetName = (name, p) => name + " - "  + "Following", // TODO: resources,                
                 ObjectType = SystemObjects.Resource
             },
+
+            // policy type
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/itemfollow/:objectId",
+                RoutePattern = "policy/:objectId/structure",
                 PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Following", // TODO: resources,                
-                ObjectType = SystemObjects.Resource
+                GetName = (name, p) => name + " - "  + "Policy", // TODO: resources,                
+                ObjectType = SystemObjects.PolicyType
+            },
+
+            // policy
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "policy/:any/id/:objectid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Policy", // TODO: resources,                
+                ObjectType = SystemObjects.Policy
+            },
+            new FavoriteRouteMatcher
+            {
+                // TODO: should support several route patterns as part of one matcher
+                RoutePattern = "policy/:any;hierarchyId=:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Policy", // TODO: resources,                
+                ObjectType = SystemObjects.Policy
             },
 
             // shared
@@ -296,7 +338,44 @@ namespace d360.web.Services
                 RoutePattern = "sidebar/comments/:uid/true",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Comments", // TODO: resources,
-                ObjectType = null // TODO: objectType should be null here
+                ObjectType = null
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/audit/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Change Log", // TODO: resources,
+                ObjectType = null
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/visualization/browser/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Impact Diagram", // TODO: resources,
+                ObjectType = null
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/visualization/browser/:uid/Lineage",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Lineage Diagram", // TODO: resources
+                ObjectType = null
+            },
+
+            // special pages
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "artifact/assets/TechnicalAsset",
+                PageType = FavoritePageType.SomePage,
+                ForcedAssetClass = AssetTypeClass.TechnicalAsset,
+                GetName = (_, p) => $"Technical Assets", // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "artifact/assets/BusinessAsset",
+                PageType = FavoritePageType.SomePage,
+                ForcedAssetClass = AssetTypeClass.BusinessAsset,
+                GetName = (_, p) => $"Business Assets", // TODO: resources,
             },
 
             // search results page
@@ -319,6 +398,8 @@ namespace d360.web.Services
             public SystemObjects? ObjectType { get; set; }
 
             public Func<string, Dictionary<string, string>, string> GetName { get; set; }
+
+            public AssetTypeClass? ForcedAssetClass { get; set; }
         }
     }
 }

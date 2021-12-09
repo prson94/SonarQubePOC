@@ -1413,6 +1413,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
         {
+            // TODO: check that route can be matched
             return await ToggleFavoriteOrHomepage(favorite).ConfigureAwait(false);
         }
 
@@ -1447,15 +1448,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                if (string.IsNullOrWhiteSpace(favorite.Name))
-                {
-                    string message = ApiMessages.NameRequired;
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
-                }
-                else
-                {
-                    favorite.Name = favorite.Name.Trim();
-                }
+                favorite.Name = favorite.Name?.Trim();
+
                 if (favorite.Type == FavoriteType.Page && string.IsNullOrWhiteSpace(favorite.Route))
                 {
                     string message = ApiMessages.FavoritesEmptyRoute;
