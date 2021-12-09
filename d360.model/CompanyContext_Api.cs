@@ -3084,7 +3084,22 @@ from    api.ExecutionDeletedAssetType T
 		cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
 where	T.ExecutionID = @ExecutionID
         and T.[Cascade] = 0
-        and ARE.ResultCount > 0;";
+        and ARE.ResultCount > 0;
+
+--Check if related lookup fields exist
+update	T
+set		T.Success = 0,
+		T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(LFT.FieldCount as nvarchar) + ' Lookup fields referenced to this type.'
+from    api.ExecutionDeletedAssetType T
+        inner join AssetType AT on AT.ID = T.AssetTypeID
+		cross apply (select count(1) as FieldCount
+            from fieldtype ft 
+            where ft.type = 'Lookup' 
+                and ft.LookupObjectType = REPLACE(AT.Object,'Type','') 
+                and ft.LookupObjectID = AT.ObjectId) LFT
+where	T.ExecutionID = @ExecutionID
+        and T.[Cascade] = 0 and LFT.FieldCount > 0;
+";
 
                         #region Log cascade errors
 
@@ -3746,6 +3761,10 @@ where	T.ExecutionID = @ExecutionID
                                             delete	T
                                     		from	FieldType T
                                     				where T.Object = @Object and T.ObjectID = @ObjectId;
+
+                                            delete	T
+                                    		from	FieldType T
+                                    				where T.LookupObjectType = REPLACE(@Object,'Type','') and T.LookupObjectId = @ObjectId;
                                                
                                     		delete	T
                                     		from	IssueTypeRelation T
