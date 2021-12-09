@@ -24,7 +24,7 @@ namespace igx.functions.databasetaskprocessor
     public class DatabaseTaskProcessor
     {
         const string functionName = "DatabaseTask_ProcessScheduled";
-        const string timerSettings = "*/1 * * * * *";
+        const string timerSettings = "*/10 * * * * *";
         const int DEFAULT_QUEUE_ITEMS = 1000;
         private CoreFunction CoreFunction;
 
@@ -225,7 +225,7 @@ namespace igx.functions.databasetaskprocessor
 
                                 if (queueItems != null)
                                 {
-                                    queueItems.AsParallel().ForAll(async q =>
+                                    queueItems.ForEach(q =>
                                     {
                                         try
                                         {
