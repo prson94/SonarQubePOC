@@ -43,7 +43,7 @@ export class AssetDeleteEditorComponent extends BaseComponent {
                     let descendantsCount = result.total;
                     this.descendantsMessage = '';
                     if (descendantsCount > 0) {
-                        this.descendantsMessage = `The selected asset contains <b>${descendantsCount}</b> of descendants that will be deleted. This action cannot be undone. Please check the box to continue.`;
+                        this.descendantsMessage = `The selected asset contains <b>${descendantsCount}</b> descendants that will be deleted. This action cannot be undone. Please check the box to continue.`;
                     }
                     this.isFormLoading = false;
                     this.changeDetectorRef.markForCheck();
