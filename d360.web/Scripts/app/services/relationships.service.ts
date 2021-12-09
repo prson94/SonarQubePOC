@@ -130,22 +130,6 @@ export class RelationshipsService extends BaseObservableService {
         this.http.get('api/v2/relationships/export/types', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));
     }
 
-    downloadFile(data: Blob, name: string) {
-        var filename = `${name} ${new Date().toDateString()}.xlsx`;
-        if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename);
-        }
-        else {
-            var url = window.URL.createObjectURL(data);
-            var anchor = document.createElement("a");
-            anchor.setAttribute("style", "display:none;");
-            document.body.appendChild(anchor);
-            anchor.setAttribute("download", filename);
-            anchor.href = url;
-            anchor.click();
-        }
-    }
-
     getRelation(id: number): Observable<RelationshipDetail> {
         return this.http.get(`form/IntersectType_FormData?id=${id}`)
             .pipe(
