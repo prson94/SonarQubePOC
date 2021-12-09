@@ -294,4 +294,18 @@ export class AssetService extends BaseObservableService {
             .pipe(map(res => { return <any>res }),
                 catchError(err => this.handleError(err, true)));
     }
+
+    public getAssetDescendants(assetUid: string, params: any): Observable<any> {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+        return this.
+            http
+            .get(`/api/v2/assets/asset/${assetUid}/descendants${qString}`)
+            .pipe(map(res => { return <any>res }),
+                catchError(err => this.handleError(err, true)));
+    }
 }
