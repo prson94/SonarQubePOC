@@ -28,6 +28,7 @@ export class DeleteForm implements OnChanges {
     @Input() items: any[];
     @Input() hideDeleteButton: boolean = false;
     @Input() modalCssClasses: string = 'modal-delete-form';
+    @Input() warningMessage: string = "";
     @Output() onDeleteComplete = new EventEmitter();
     @Output() onDeleteSuccess = new EventEmitter();
     @Output() onDeleteFail = new EventEmitter();
@@ -47,6 +48,7 @@ export class DeleteForm implements OnChanges {
     @Input() isUsageLoading: boolean = false;
 
     public message: FormMessage = new FormMessage();
+    public confirmDelete: boolean = false;
     public isLoading = false;
 
     http: HttpClient;
@@ -56,8 +58,8 @@ export class DeleteForm implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.items && changes.items.previousValue != changes.items.currentValue)
-            this.deletingInProgress = false;
+        if (changes.items && changes.items.previousValue != changes.items.currentValue) 
+            this.deletingInProgress = false;        
     }
 
     public delete(): void {
