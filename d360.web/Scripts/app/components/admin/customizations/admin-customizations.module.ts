@@ -13,7 +13,7 @@ import { AdminCustomizationsComponent } from './admin-customizations.component';
 import { AdminCustomizationsRoutingModule } from './admin-customizations.routes';
 import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 
-import { CodemirrorModule } from 'ng2-codemirror';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';

@@ -16,8 +16,6 @@ import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
 
 import { AdminDashboardsRoutingModule } from './admin-dashboards.routes';
 
-import { CodemirrorModule } from 'ng2-codemirror';
-
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -42,9 +40,6 @@ import { InputTextModule } from 'primeng/inputtext';
         MultiSelectModule,
         SharedModule,
         TableModule,
-
-        //editor
-        CodemirrorModule,
 
         //d3s           
         CoreModule,
