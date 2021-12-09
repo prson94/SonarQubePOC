@@ -8,11 +8,11 @@ namespace d360.core.enums
     public enum SemanticStatus
     {
         [Name("Draft"), Icon("fa-"), Color("")]
-        Draft = 1,
+        Draft = 0,
         [Name("In Review"), Icon("fa-"), Color("")]
-        InReview = 2,
+        InReview = 1,
         [Name("Certified"), Icon("fa-"), Color("")]
-        Certified = 3
+        Certified = 2
     }
 
     public class SemanticStatusInfo
@@ -34,7 +34,7 @@ namespace d360.core.enums
             {
                 if (tm.GetCustomAttribute(typeof(ObsoleteAttribute)) == null)
                 {
-                    var enumValue = Enum.Parse<SemanticStatus>(tm.Name);
+                    var enumValue = (SemanticStatus)Enum.Parse(typeof(SemanticStatus), tm.Name);
 
                     list.Add(new SemanticStatusInfo
                     {

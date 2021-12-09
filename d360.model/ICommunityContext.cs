@@ -41,7 +41,7 @@ namespace d360.model
 
         DbSet<OpenIdRequest> OpenIdRequests { get; set; }
         OpenIdRequest GetOpenIdRequest(string state);
-        string GenerateOpenIdRequestValue();
+        string GenerateOpenIdRequestValue(int length = 5);
         void RemoveOpenIdRequest(OpenIdRequest request);
         void SetOpenIdRequest(OpenIdRequest request);
 

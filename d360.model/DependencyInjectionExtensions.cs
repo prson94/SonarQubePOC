@@ -40,6 +40,7 @@ namespace d360.model
             builder.RegisterType<ProcessRepository>().As<IProcessRepository>().InstancePerRequest();
             builder.RegisterType<ConnectorLabelRepository>().As<IConnectorLabelRepository>().InstancePerRequest();
             builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
+            builder.RegisterType<SemanticsRepository>().As<ISemanticsRepository>().InstancePerRequest();
         }
     }
 }

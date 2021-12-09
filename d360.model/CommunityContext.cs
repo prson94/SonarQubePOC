@@ -168,11 +168,10 @@ namespace d360.model
         /// Used to generate a state or nonce value.
         /// </summary>
         /// <returns></returns>
-        public string GenerateOpenIdRequestValue()
+        public string GenerateOpenIdRequestValue(int length = 5)
         {
             string val;
 
-            int length = 5;
             var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
 
             using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())

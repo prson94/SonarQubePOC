@@ -36,7 +36,7 @@ namespace d360.core.enums
             {
                 if (tm.GetCustomAttribute(typeof(ObsoleteAttribute)) == null)
                 {
-                    var enumValue = Enum.Parse<SemanticMatchType>(tm.Name);
+                    var enumValue = (SemanticMatchType)Enum.Parse(typeof(SemanticMatchType), tm.Name);
 
                     list.Add(new SemanticMatchTypeInfo
                     {

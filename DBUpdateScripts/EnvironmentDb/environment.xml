@@ -137,6 +137,7 @@
 	<include file="scripts/Table.dbo.ResponsibilityRuleResultAsset.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityRuleResultSecurityAsset.xml"/>
 	<include file="scripts/Table.dbo.SearchBoost.xml"/>
+	<include file="scripts/Table.dbo.Semantic.xml"/>
 	<include file="scripts/Table.dbo.Setting.xml"/>
 	<include file="scripts/Table.dbo.ShoppingCartType.xml"/>
 	<include file="scripts/Table.dbo.ShoppingCart.xml"/>

@@ -46,7 +46,7 @@ namespace d360.core.enums
             {
                 if (tm.GetCustomAttribute(typeof(ObsoleteAttribute)) == null)
                 {
-                    var enumValue = Enum.Parse<SemanticBaseType>(tm.Name);
+                    var enumValue = (SemanticBaseType)Enum.Parse(typeof(SemanticBaseType) ,tm.Name);
 
                     list.Add(new SemanticBaseTypeInfo
                     {
