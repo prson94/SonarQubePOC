@@ -1043,5 +1043,5 @@ namespace d360.core.entities
         public string ResponsibilityName { get; set; }
         [DataMember]
         public int Count { get; set; }
-    }
+    }   
 }

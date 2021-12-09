@@ -259,4 +259,17 @@ namespace d360.core.entities
         public string Name { get; set; }
         public string Type { get; set; }
     }
+
+    public class AssetDescendantsResults : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<AssetDescendants> items { get; set; }
+    }
+
+    public class AssetDescendants
+    {
+        public Guid? AssetUid { get; set; }
+
+        public Guid? ParentUid { get; set; }
+    }
 }
