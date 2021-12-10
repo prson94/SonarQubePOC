@@ -67,19 +67,17 @@ export class BaseObservableService {
     }
 
     protected downloadFile(data: Blob, name: string) {
-        let filename = `${name} ${new Date().toDateString()}.xlsx`;
-        if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename);
+        let filename = `${name}`;
+        if (!filename.endsWith(".xlsx")) {
+            filename += ` ${new Date().toDateString()}.xlsx`;
         }
-        else {
-            let url = window.URL.createObjectURL(data);
-            let anchor = document.createElement("a");
-            anchor.setAttribute("style", "display:none;");
-            document.body.appendChild(anchor);
-            anchor.setAttribute("download", filename);
-            anchor.href = url;
-            anchor.click();
-        }
+        let url = window.URL.createObjectURL(data);
+        let anchor = document.createElement("a");
+        anchor.setAttribute("style", "display:none;");
+        document.body.appendChild(anchor);
+        anchor.setAttribute("download", filename);
+        anchor.href = url;
+        anchor.click();
     }
 
     protected deleteDynamicWithResult(
