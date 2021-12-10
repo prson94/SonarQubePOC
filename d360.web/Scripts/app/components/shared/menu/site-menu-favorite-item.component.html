@@ -9,19 +9,26 @@
 		<!-- Please, note, that favorite breadcrumbs have different design than page breadcrumbs -->
 		<!-- This is reason, why there are no reuse of rendering -->
 		<span class="fav-asset-area">
-			<ng-container [ngSwitch]="AssetTypeClass[favorite.AssetTypeClass]">
-				<ng-container *ngSwitchCase="AssetTypeClass.BusinessAsset">Business Assets</ng-container>
-				<ng-container *ngSwitchCase="AssetTypeClass.TechnicalAsset">Technical Assets</ng-container>
-				<ng-container *ngSwitchCase="AssetTypeClass.User">Users</ng-container>
-				<ng-container *ngSwitchCase="AssetTypeClass.Policy">Policies</ng-container>
-				<!-- TODO: support all other -->
-				<ng-container *ngSwitchDefault>
-					<ng-container [ngSwitch]="favorite.PageType">
-						<ng-container *ngSwitchCase="FavoritePageType.SearchResultsPage">Search Results</ng-container>
-						<!-- TODO: support all other -->
+			<ng-container [ngSwitch]="favorite.PageType">
+				<ng-container *ngSwitchCase="FavoritePageType.SearchResultsPage">Search Results</ng-container>
+				<ng-container *ngSwitchCase="FavoritePageType.DashboardPage"></ng-container>
+				<ng-container *ngSwitchCase="FavoritePageType.HomePage"></ng-container>
+				<ng-container *ngSwitchCase="FavoritePageType.CommunityPage"></ng-container>
+				<ng-container *ngSwitchCase="FavoritePageType.WorkflowPage"></ng-container>
+				<ng-container *ngSwitchCase="FavoritePageType.ResourceListPage"></ng-container>
+				<ng-container *ngSwitchCase="FavoritePageType.Artifact">
+					<ng-container [ngSwitch]="AssetTypeClass[favorite.AssetTypeClass]">
+						<ng-container *ngSwitchCase="AssetTypeClass.BusinessAsset">Business Assets</ng-container>
+						<ng-container *ngSwitchCase="AssetTypeClass.TechnicalAsset">Technical Assets</ng-container>
+						<ng-container *ngSwitchCase="AssetTypeClass.User">Users</ng-container>
+						<ng-container *ngSwitchCase="AssetTypeClass.Policy">Policies</ng-container>
+						<ng-container *ngSwitchCase="AssetTypeClass.Model">Models</ng-container>
+						<ng-container *ngSwitchCase="AssetTypeClass.Rule">Rules</ng-container>
+						<ng-container *ngSwitchCase="AssetTypeClass.Reference">Reference Lists</ng-container>
 						<ng-container *ngSwitchDefault>Unknown</ng-container>
 					</ng-container>
 				</ng-container>
+				<ng-container *ngSwitchDefault>Unknown</ng-container>
 			</ng-container>
 		</span>
 		<span *ngIf="favorite.Breadcrumbs?.length > 0">: {{favorite.Breadcrumbs.join(" > ")}}</span>

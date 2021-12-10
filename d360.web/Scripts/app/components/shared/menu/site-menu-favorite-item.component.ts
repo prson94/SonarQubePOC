@@ -21,15 +21,35 @@ export class SiteMenuFavoriteItemComponent {
             return this.iconService.getIconIdByClass(AssetTypeClass[this.favorite.AssetTypeClass]);
         }
 
+        const iconByPageType = new Map([
+            [FavoritePageType.SearchResultsPage, 'search'],
+            [FavoritePageType.DashboardPage, 'tachometer'],
+            [FavoritePageType.HomePage, 'home'],
+            [FavoritePageType.CommunityPage, 'group'],
+            [FavoritePageType.WorkflowPage, 'usb']
+        ])
+
         switch (this.favorite.PageType) {
-            case FavoritePageType.Artifact:
+            case FavoritePageType.Artifact: {
                 console.error(
                     `Expected AssetTypeClass to be non-null, ` +
-                    `but it was ${new String(this.favorite.AssetTypeClass)} ` + 
+                    `but it was ${new String(this.favorite.AssetTypeClass)} ` +
                     `for ${JSON.stringify(this.favorite)}`);
                 return 'question-circle';
-            case FavoritePageType.SearchResultsPage:
-                return 'search';
+            }
+            default: {
+                const icon = iconByPageType.get(this.favorite.PageType);
+                if (icon != null) {
+                    return icon;
+                }
+                
+                console.error(
+                    `Expected AssetTypeClass to be non-null, ` +
+                    `but it was ${new String(this.favorite.AssetTypeClass)} ` +
+                    `for ${JSON.stringify(this.favorite)}`);
+
+                return 'question-circle';
+            }
         }
     }
 };

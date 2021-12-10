@@ -134,6 +134,22 @@ namespace d360.web.Services
                 }
             }
 
+            if (routeParams.ContainsKey("type"))
+            {
+                var systemObjectTypes = ((SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
+                    .Where(o => string.Equals(o.ToString(), routeParams["type"], StringComparison.InvariantCultureIgnoreCase))
+                    .ToList();
+
+                if (systemObjectTypes.Any())
+                {
+                    req.ObjectType = systemObjectTypes.Single();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
             return new RouteMatchResult
             {
                 ObjectId = req,
@@ -214,41 +230,13 @@ namespace d360.web.Services
                 GetName = (name, p) => name + " - "  + "Dashboards", // TODO: resources,
                 ObjectType = SystemObjects.ArtifactType
             },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/workflowmonitor/ArtifactType/:objectId;isAdminPage=false",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Workflow", // TODO: resources,
-                ObjectType = SystemObjects.ArtifactType
-            },
 
             // asset
             new FavoriteRouteMatcher
             {
-                RoutePattern = "artifact/:any/:objectId",
+                RoutePattern = "artifact/:parentId/:objectId",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Definition", // TODO: resources,
-                ObjectType = SystemObjects.Artifact
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/relationships/Artifact/:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Relationships", // TODO: resources,
-                ObjectType = SystemObjects.Artifact
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/ownership/:assetId",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Responsibilities", // TODO: resources,
-                ObjectType = SystemObjects.Artifact
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/actions/Artifact/:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Actions", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
             new FavoriteRouteMatcher
@@ -258,8 +246,6 @@ namespace d360.web.Services
                 GetName = (name, p) => name + " - "  + "Followers", // TODO: resources,
                 ObjectType = SystemObjects.Artifact
             },
-
-            // TODO: asset Types
 
             // users
             new FavoriteRouteMatcher
@@ -274,13 +260,6 @@ namespace d360.web.Services
                 RoutePattern = "sidebar/membergroup/:uid",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Groups", // TODO: resources,                
-                ObjectType = SystemObjects.Resource
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/relationships/resource/:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name + " - "  + "Relationships", // TODO: resources,                
                 ObjectType = SystemObjects.Resource
             },
             new FavoriteRouteMatcher
@@ -310,7 +289,7 @@ namespace d360.web.Services
             // policy
             new FavoriteRouteMatcher
             {
-                RoutePattern = "policy/:any/id/:objectid",
+                RoutePattern = "policy/:parentId/id/:objectid",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Policy", // TODO: resources,                
                 ObjectType = SystemObjects.Policy
@@ -318,11 +297,85 @@ namespace d360.web.Services
             new FavoriteRouteMatcher
             {
                 // TODO: should support several route patterns as part of one matcher
-                RoutePattern = "policy/:any;hierarchyId=:objectId",
+                RoutePattern = "policy/:parentId;hierarchyId=:objectId",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Policy", // TODO: resources,                
                 ObjectType = SystemObjects.Policy
             },
+
+            // rule type
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "quality/rule/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name,
+                ObjectType = SystemObjects.RuleType
+            },
+
+            // rule
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "quality/rule/:any/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Definition", // TODO: resources,                
+                ObjectType = SystemObjects.Rule
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/ruleResults/:any/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Rule Results", // TODO: resources,                
+                ObjectType = SystemObjects.Rule
+            },
+
+            // model type            
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "model/structure/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name,
+                ObjectType = SystemObjects.TaxonomyType
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/visualization/diagram/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name,
+                ObjectType = SystemObjects.TaxonomyType
+            },
+
+            // model
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "model/:any;hierarchyId=:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Definition", // TODO: resources,                
+                ObjectType = SystemObjects.Taxonomy
+            },
+
+            // reference list pages
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "reference;referenceListId=:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - Reference Types", // TODO: resources,
+                ObjectType = SystemObjects.ReferenceItemType
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/fields/ReferenceItemType/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - Field Definitions", // TODO: resources,
+                ObjectType = SystemObjects.ReferenceItemType
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/responsibilities/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - Responsibilities", // TODO: resources,
+                ObjectType = SystemObjects.ReferenceItemType
+            },
+
 
             // shared
             new FavoriteRouteMatcher
@@ -352,30 +405,124 @@ namespace d360.web.Services
                 RoutePattern = "sidebar/visualization/browser/:uid",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Impact Diagram", // TODO: resources,
-                ObjectType = null
+            },
+            new FavoriteRouteMatcher
+            {
+                // TODO: should support several route patterns as part of one matcher
+                RoutePattern = "sidebar/visualization/browser/:uid/Impact",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Impact Diagram", // TODO: resources,
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/visualization/browser/:uid/Lineage",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Lineage Diagram", // TODO: resources
-                ObjectType = null
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/visualization/browser/:uid/Proces",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Process Diagram", // TODO: resources
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/score/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Scoring", // TODO: resources
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/ownership/:assetId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Responsibilities", // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/relationships/:type/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Relationships", // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/actions/:type/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Actions", // TODO: resources
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/workflowmonitor/:type/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Workflow", // TODO: resources
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/workflowmonitor/:type/:objectId;isAdminPage=false",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Workflow", // TODO: resources
+            },
+
+            // resource list pages
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "artifact/assets/TechnicalAsset",
+                PageType = FavoritePageType.ResourceListPage,
+                ForcedAssetClass = AssetTypeClass.TechnicalAsset,
+                GetName = FixedName("Technical Assets"), // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "artifact/assets/BusinessAsset",
+                PageType = FavoritePageType.ResourceListPage,
+                ForcedAssetClass = AssetTypeClass.BusinessAsset,
+                GetName = FixedName("Business Assets"), // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "model/classification",
+                PageType = FavoritePageType.ResourceListPage,
+                ForcedAssetClass = AssetTypeClass.Model,
+                GetName = FixedName("Models"), // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "policy/classification",
+                PageType = FavoritePageType.ResourceListPage,
+                ForcedAssetClass = AssetTypeClass.Policy,
+                GetName = FixedName("Policies"), // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "reference",
+                PageType = FavoritePageType.ResourceListPage,
+                GetName = FixedName("Reference Types"), // TODO: resources,
+                ForcedAssetClass = AssetTypeClass.Reference
             },
 
             // special pages
             new FavoriteRouteMatcher
             {
-                RoutePattern = "artifact/assets/TechnicalAsset",
-                PageType = FavoritePageType.SomePage,
-                ForcedAssetClass = AssetTypeClass.TechnicalAsset,
-                GetName = (_, p) => $"Technical Assets", // TODO: resources,
+                RoutePattern = "dashboard",
+                PageType = FavoritePageType.DashboardPage,
+                GetName = FixedName("Dashboards"), // TODO: resources,
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "artifact/assets/BusinessAsset",
-                PageType = FavoritePageType.SomePage,
-                ForcedAssetClass = AssetTypeClass.BusinessAsset,
-                GetName = (_, p) => $"Business Assets", // TODO: resources,
+                RoutePattern = "community",
+                PageType = FavoritePageType.CommunityPage,
+                GetName = FixedName("Community"), // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "home",
+                PageType = FavoritePageType.HomePage,
+                GetName = FixedName("Home"), // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "monitor",
+                PageType = FavoritePageType.WorkflowPage,
+                GetName = FixedName("Workflow"), // TODO: resources,
             },
 
             // search results page
@@ -383,9 +530,14 @@ namespace d360.web.Services
             {
                 RoutePattern = "search?query=:query",
                 PageType = FavoritePageType.SearchResultsPage,
-                GetName = (_, p) => $"\"{p["query"]}\"", // TODO: resources,
+                GetName = (_, p) => $"“{p["query"]}”", // TODO: resources,
             }
         };
+
+        private static Func<string, Dictionary<string, string>, string> FixedName(string name)
+        {
+            return (_, p) => name;
+        }
 
         class FavoriteRouteMatcher
         {

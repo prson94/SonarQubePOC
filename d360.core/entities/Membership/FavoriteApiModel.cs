@@ -43,13 +43,12 @@ namespace d360.core.entities.Membership
     {
         Artifact,
         SearchResultsPage,
-        SomePage,
-        //HomePage,
-        //DashboardPage,
-        //CommunityPage,
-        //ReferenceListPage,
-    };
-
+        ResourceListPage,
+        HomePage,
+        DashboardPage,
+        CommunityPage,
+        WorkflowPage
+    }
     public class FavoriteExtendedApiViewModel
     {
         public int Id { get; set; }

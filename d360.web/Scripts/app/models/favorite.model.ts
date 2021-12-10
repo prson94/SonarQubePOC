@@ -18,7 +18,12 @@ export class FavoriteViewModel {
 
 export enum FavoritePageType {
     Artifact = 'Artifact',
-    SearchResultsPage = 'SearchResultsPage'
+    SearchResultsPage = 'SearchResultsPage',
+    DashboardPage = 'DashboardPage',
+    CommunityPage = 'CommunityPage',
+    WorkflowPage = 'WorkflowPage',
+    HomePage = 'HomePage',
+    ResourceListPage = 'ResourceListPage'
 }
 
 export class Favorite {
