@@ -36,7 +36,7 @@ where favorite.ResourceId = @resourceId";
             var correctItems = items.Distinct();
 
             var grid = await this.QueryComposer.QueryMultipleAsync(@"
-	declare @correctFavorites table (
+	declare @assets table (
 		[FavoriteId] [int] not null,
 		[ObjectType] [varchar](25) not null,
 		[ObjectId] [int] not null,
@@ -44,7 +44,17 @@ where favorite.ResourceId = @resourceId";
 		[AssetTypeClass] [int] not null
 	)
 	
-	insert into @correctFavorites
+	declare @assetTypes table (
+		[FavoriteId] [int] not null,
+		[ObjectType] [varchar](25) not null,
+		[ObjectId] [int] not null,
+		[Name] [varchar](max) not null,
+		[AssetTypeClass] [int] not null
+	)
+
+
+
+	insert into @assets
 	select 
 		favorite.FavoriteId,
 		asset.Object as ObjectType,
@@ -70,7 +80,9 @@ where favorite.ResourceId = @resourceId";
 		on asset.AssetTypeId = assetType.Id
 	outer apply [dbo].[GetAssetDisplayValueById](asset.Id) AssetName
 
-	insert into @correctFavorites
+
+
+	insert into @assetTypes
 	select 
 		favorite.FavoriteId,
 		assetType.Object as ObjectType,
@@ -93,13 +105,31 @@ where favorite.ResourceId = @resourceId";
 			and favorite.Uid = assetType.Uid
 		)
 
-	select favorite.*
-	from @correctFavorites favorite
 
-	select favorite.FavoriteId, breadcrumbs.*
-	from @correctFavorites favorite
-	outer apply dbo.GetBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
+
+	select favorite.*
+	from @assets favorite
+
+	union
+
+	select favorite.*
+	from @assetTypes favorite;
+
+
+
+	select favorite.FavoriteId, breadcrumbs.Level, breadcrumbs.Name
+	from @assets favorite
+	cross apply dbo.GetBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
+	
+	union
+	
+	select favorite.FavoriteId, 0 as Level, assetType.Name
+	from @assetTypes favorite
+	join dbo.AssetType assetType 
+		on favorite.ObjectType = assetType.Object
+		and favorite.ObjectId = assetType.ObjectId
 ", new { favorites = correctItems.AsUDTParameter() });
+			// TODO: recursive breadcrumbs for assetTypes
 
             var favorites = await grid.ReadListAsync<FavoriteItem>();
             var breadcrumbs = await grid.ReadListAsync<FavoriteBreadcrumbItem>();
@@ -118,10 +148,7 @@ where favorite.ResourceId = @resourceId";
                                       Breadcrumbs = breadcrumbsGroup.Select(b => new BreadcrumbsInfo
                                       {
                                           Level = b.Level,
-                                          Name = b.Name,
-                                          TypeName = b.TypeName,
-                                          TypeUrl = b.TypeUrl,
-                                          Url = b.Url
+                                          Name = b.Name
                                       }).ToList()
                                   };
 
@@ -148,13 +175,7 @@ where favorite.ResourceId = @resourceId";
 
             public int Level { get; set; }
 
-            public string TypeName { get; set; }
-
             public string Name { get; set; }
-
-            public string TypeUrl { get; set; }
-
-            public string Url { get; set; }
         }
     }
 }
