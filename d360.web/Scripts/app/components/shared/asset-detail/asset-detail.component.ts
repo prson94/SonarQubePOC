@@ -36,7 +36,7 @@ export class AssetDetailComponent implements OnChanges {
     @Input() useAssetDetailColumnDefinition: boolean = false;
     @Input() synonymPermission: SynonymPermission;
     @Input() hasEditLink: boolean = false;
-
+    @Input() interceptLinkClick: boolean = false;
     @Input() assetDetail: any;
 
     @Output() onEditClick = new EventEmitter();

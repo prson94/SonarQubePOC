@@ -15,10 +15,12 @@ import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { DataProfileService } from '../../services/dataprofile.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { HrefClickService } from '../../services/href-click-service';
+import { AssetService } from '../../services/asset.service';
 
 declare var CurrentResourceID;
 
@@ -42,8 +44,10 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private dataProfileList: any[];
     private sidePanelOpen: boolean = false;
     private sidePanelStorageKey;
-    private synonymPermission: SynonymPermission;    
-   
+    private synonymPermission: SynonymPermission;
+    hrefSub: Subscription;
+    selectedAsset: any;
+
     constructor(
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
@@ -54,7 +58,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         private dataProfileService: DataProfileService,
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+        private hrefClickService: HrefClickService,
+        private assetService: AssetService
     ) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
     }
@@ -72,6 +78,22 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.load(artifactId, this.artifactTypeId);
                 });
 
+            this.hrefSub = this.hrefClickService.getEvents().subscribe(ev => {
+                if (ev) {
+                    ev.event.preventDefault();
+                    ev.event.stopPropagation();
+
+                    if (ev?.data?.DataType === "Lookup") {
+                        var val = ev.data.Values[0];
+                        console.log(val);
+                        this.selectedAsset = { uid: val.uid, type: val.TooltipType };
+                    }
+
+                } else {
+                    // clear messages when empty message received
+                }
+            });
+
             this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
         });
     }
@@ -79,6 +101,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     ngOnDestroy() {
         if (this.sub) {
             this.sub.unsubscribe();
+        }
+        if (this.hrefSub) {
+            this.hrefSub.unsubscribe();
         }
     }
 
@@ -96,7 +121,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                 artifact => {
                     this.artifact = artifact;
                     this.synonymPermission = artifact.SynonymPermission;
-                     
+
                     this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
 
                     this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
@@ -136,7 +161,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         this.load(e.ID, this.artifactTypeId);
     }
 
-    private showDataProfilePanel() {
-        this.showDataProfile = !this.showDataProfile;
+
+    sidePanelTab: string = '';
+    get showSidePanel() {
+        return this.showDataProfile || true;
     }
 }

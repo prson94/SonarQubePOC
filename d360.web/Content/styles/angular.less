@@ -6844,3 +6844,38 @@ table {
     margin-left: 5px;
   }
 }
+
+.empty-overlay {
+  position: absolute;
+  width: 97%;
+  height: 91%;
+
+  .content {
+    text-align: center;
+    top: 100px;
+    position: relative;
+    max-width: 163px;
+    margin: 0 auto;
+    color: @ig-slate;
+
+    span {
+      font-size: 14px;
+      line-height: 18px;
+    }
+
+    .icon-holder {
+      background-color: @ig-grey-t5;
+      height: 128px;
+      width: 128px;
+      text-align: center;
+      margin: 0 auto;
+      border-radius: 50%;
+      margin-bottom: 16px;
+
+      .fa {
+        font-size: 56px;
+        line-height: 128px;
+      }
+    }
+  }
+}

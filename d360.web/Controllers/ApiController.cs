@@ -170,7 +170,8 @@ namespace d360.web.Controllers
                                     TooltipID = item.Value,
                                     Value = fieldValue,
                                     TooltipType = ft.LookupObjectType,
-                                    TooltipUrl = url
+                                    TooltipUrl = url,
+                                    uid = (item.uid != null ? item.uid.Value : Guid.Empty)
                                 });
                             }
                         }
@@ -414,22 +415,24 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
-                var lookupData = await Company.QueryAsync<LookupDataReadOnlyModel>($@"select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText from asset a
-                    inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
-                    left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
-                    cross apply (
-                        select * from STRING_SPLIT(f.Value,',')
-                        union 
-                        select DefaultValue from FieldType where id = ft.ID and isnull(f.value,'') = ''
-                        )Val
-                    outer apply utility.ObjectDetail(ft.LookupObjectType, trim(Val.Value))OD
-                    left join Asset refAsset on refAsset.ID = od.AssetID
-                    outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
-                    left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
+                var lookupData = await Company.QueryAsync<LookupDataReadOnlyModel>($@"
+                    select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText , refAsset.uid
+                    from asset a
+                        inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
+                        left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
+                        cross apply (
+                            select * from STRING_SPLIT(f.Value,',')
+                            union 
+                            select DefaultValue from FieldType where id = ft.ID and isnull(f.value,'') = ''
+                            )Val
+                        outer apply utility.ObjectDetail(ft.LookupObjectType, trim(Val.Value))OD
+                        left join Asset refAsset on refAsset.ID = od.AssetID
+                        outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
+                        left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
                     where a.uid = @uid 
-                    and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
-                    and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
-                    and Val.Value is not null and Val.value <> ''", new { uid = details.UID });
+                        and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
+                        and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
+                        and Val.Value is not null and Val.value <> ''", new { uid = details.UID });
 
                 foreach (var ft in fieldTypes)
                 {
