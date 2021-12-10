@@ -1349,6 +1349,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
+    <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationships-modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
