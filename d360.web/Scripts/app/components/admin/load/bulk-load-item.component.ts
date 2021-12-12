@@ -1,9 +1,11 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { LoadService } from '../../../services/load.service';
 import { GridColumn } from '../../../models/grid-definition.model';
 import { BaseComponent } from '../../shared/base.component'
 import { CompanySettingsService } from '../../../services/settings.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
+import { LazyLoadEvent } from 'primeng/api';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-bulk-load-item',
@@ -23,6 +25,8 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     totalRecords: number = 0;
     simpleTextFilter: string;
 
+    private itemsSearchSub: Subscription;
+
     get globalFilterFields(): string[] {
         let f = this.columns.map(c => c.datafield);
 
@@ -33,7 +37,8 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
 
     constructor(
         private loadService: LoadService,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+        private cdr: ChangeDetectorRef    ) {
         super(settingsService);
     }
 
@@ -45,6 +50,12 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
         }
 
         this.load();
+    }
+
+    ngOnDestroy() {
+        if (this.itemsSearchSub) {
+            this.itemsSearchSub.unsubscribe();
+        }
     }
 
     exportErrors(): void {
@@ -62,27 +73,11 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     }
 
     load(): void {
-        if (this.id == null)
-            return;
-
         this.isLoading = true;
-
         this.loadService.getLoadColumns(this.id).subscribe(
-            data => {
-                this.columns = data;
-
-                this.loadService.getLoadUid(this.id).subscribe(r => {
-                    console.log(this.simpleTextFilter);
-                    this.loadService.getLoadItemsV2(r, this.getParams()).subscribe((data) => {
-                        this.items = data.items;
-                        this.totalRecords = data.total;
-
-                        this.isLoading = false;
-                    })
-                }
-                );
-
-                
+            columnData => {
+                this.columns = columnData;
+                this.isLoading = false;
             }
         );
     }
@@ -92,8 +87,14 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
             return;
 
         this.isLoading = true;
+        if (this.itemsSearchSub) {
+            this.itemsSearchSub.unsubscribe();
+        }
+        console.log(this.id);
+        console.log("get data");
 
-        this.loadService.getLoadUid(this.id).subscribe(r => {
+        this.itemsSearchSub = this.loadService.getLoadUid(this.id).subscribe(r => {
+            console.log(this.simpleTextFilter);
             this.loadService.getLoadItemsV2(r, this.getParams()).subscribe((data) => {
                 this.items = data.items;
                 this.totalRecords = data.total;
@@ -102,6 +103,12 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
             })
         }
         );
+    }
+
+
+    loadItemsLazy(event: LazyLoadEvent) {
+        console.log(event);
+        this.getData();
     }
     
 

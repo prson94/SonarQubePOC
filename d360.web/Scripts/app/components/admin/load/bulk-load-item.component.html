@@ -25,10 +25,14 @@
              selectionMode="single"
              [metaKeySelection]="true"
              [globalFilterFields]="globalFilterFields"
+             [lazy]="true"
+             (onLazyLoad)="loadItemsLazy($event)"
              [totalRecords]="totalRecords"
              [paginator]="true"
              [rows]="rowsPerPage"
-             [rowsPerPageOptions]="defaultPagingOptions">
+             [rowsPerPageOptions]="defaultPagingOptions"
+             [loading]="isLoading"
+             [loadingIcon]="'fa fa-spinner fa-spin'">
         <ng-template pTemplate="colgroup">
             <colgroup>
                 <col style="width:125px">
