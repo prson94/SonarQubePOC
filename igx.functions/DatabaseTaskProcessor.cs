@@ -18,6 +18,7 @@ using System.Text.Json;
 using d360.extensions.mail;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace igx.functions.databasetaskprocessor
 {
@@ -43,7 +44,7 @@ namespace igx.functions.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 4).ToList();
+                companies = companies.Where(i => i.CompanyID == 2).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -460,34 +461,68 @@ namespace igx.functions.databasetaskprocessor
         {
             if (!string.IsNullOrEmpty(queueRecord.Custom))
             {
-                var customXml = XElement.Parse(queueRecord.Custom);
+                AuditCustomDataModel model = null;
 
-                var parameters = new DynamicParameters();
-
-                parameters.Add("@MainObject", queueRecord.Object, DbType.AnsiString, size: 50);
-                parameters.Add("@MainObjectID", queueRecord.ObjectID);
-                parameters.Add("@DependentObject", customXml.Element("ActionObject").Value, System.Data.DbType.AnsiString, size: 50);
-                parameters.Add("@DependentObjectID", int.Parse(customXml.Element("ActionObjectID").Value));
-                parameters.Add("@Date", queueRecord.Date);
-                parameters.Add("@ResourceID", int.Parse(customXml.Element("ResourceID").Value));
-                parameters.Add("@Action", oper, DbType.AnsiString, size: 15);
-                parameters.Add("@NewValue", (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value), System.Data.DbType.AnsiString, size: 50);
-
-                if (customXml.Element("FieldInfo") != null)
+                if (queueRecord.Custom.Contains("<ActionObjectID>"))
                 {
-                    parameters.Add("@AuditFieldTable", getFieldsTable(customXml.Element("FieldInfo")).AsTableValuedParameter("[dbo].[AuditFieldTable]"));
+                    // Treat as XML.
+                    var customXml = XElement.Parse(queueRecord.Custom);
+                    model = new AuditCustomDataModel
+                    {
+                        ActionObject = customXml.Element("ActionObject").Value,
+                        ActionObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
+                        ActionObjectValue = (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value),
+                        ResourceID = int.Parse(customXml.Element("ResourceID").Value),
+                        Fields = new List<AuditCustomDataFieldModel>()
+                    };
+                    if (customXml.Element("FieldInfo") != null)
+                    {
+                        foreach (var f in customXml.Element("FieldInfo").Elements())
+                        {
+                            model.Fields.Add(new AuditCustomDataFieldModel
+                            {
+                                FieldTypeID = int.Parse(f.Element("FieldTypeID") != null ? f.Element("FieldTypeID").Value : "0"),
+                                Name = (string)f.Element("Name") ?? "",
+                                Value = (string)f.Element("Value") ?? ""
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    // Treat as JSON.
+                    model = JsonConvert.DeserializeObject<AuditCustomDataModel>(queueRecord.Custom);
                 }
 
-                companyConnection.Query(
-                    "[utility].[AddAuditEntry]",
-                    parameters,
-                    commandType: System.Data.CommandType.StoredProcedure,
-                    commandTimeout: 600
-                    );
+                if (model != null)
+                {
+                    var parameters = new DynamicParameters();
+
+                    parameters.Add("@MainObject", queueRecord.Object, DbType.AnsiString, size: 50);
+                    parameters.Add("@MainObjectID", queueRecord.ObjectID);
+                    parameters.Add("@DependentObject", model.ActionObjectValue, DbType.AnsiString, size: 50);
+                    parameters.Add("@DependentObjectID", model.ActionObjectID);
+                    parameters.Add("@Date", queueRecord.Date);
+                    parameters.Add("@ResourceID", model.ResourceID);
+                    parameters.Add("@Action", oper, DbType.AnsiString, size: 15);
+                    parameters.Add("@NewValue", model.ActionObjectValue, DbType.AnsiString, size: 50);
+
+                    if (model.Fields != null && model.Fields.Count > 0)
+                    {
+                        parameters.Add("@AuditFieldTable", getFieldsTable(model).AsTableValuedParameter("[dbo].[AuditFieldTable]"));
+                    }
+
+                    companyConnection.Query(
+                        "[utility].[AddAuditEntry]",
+                        parameters,
+                        commandType: CommandType.StoredProcedure,
+                        commandTimeout: 600
+                        );
+                }
             }
         }
 
-        private static DataTable getFieldsTable(XElement xElement)
+        private static DataTable getFieldsTable(AuditCustomDataModel model)
         {
             var tb = new DataTable();
 
@@ -495,12 +530,13 @@ namespace igx.functions.databasetaskprocessor
             tb.Columns.Add("FieldName", typeof(string));
             tb.Columns.Add("Value", typeof(string));
 
-            foreach (var child in xElement.Elements())
+            foreach (var f in model.Fields)
             {
                 var fieldRow = tb.NewRow();
-                fieldRow["FieldName"] = (string)child.Element("Name") ?? "";
-                fieldRow["FieldTypeID"] = int.Parse(child.Element("FieldTypeID") == null ? "" : child.Element("FieldTypeID").Value);
-                fieldRow["Value"] = (string)child.Element("Value") ?? "";
+
+                fieldRow["FieldName"] = f.Name;
+                fieldRow["FieldTypeID"] = f.FieldTypeID;
+                fieldRow["Value"] = f.Value;
 
                 tb.Rows.Add(fieldRow);
             }
@@ -574,5 +610,21 @@ namespace igx.functions.databasetaskprocessor
         public int NumberOfRetries { get; set; }
         public short Priority { get; set; }
         public long AssetID { get; set; }
+    }
+
+    public class AuditCustomDataFieldModel
+    {
+        public int FieldTypeID { get; set; }
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class AuditCustomDataModel
+    {
+        public string ActionObject { get; set; }
+        public int ActionObjectID { get; set; }
+        public string ActionObjectValue { get; set; }
+        public int ResourceID { get; set; }
+        public List<AuditCustomDataFieldModel> Fields { get; set; }
     }
 }
