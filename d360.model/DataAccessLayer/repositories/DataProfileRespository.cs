@@ -63,6 +63,13 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includechildassets").Value, out includeChildAssets);
             }
 
+            bool includeSamples = true;
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includesamples"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includesamples").Value, out includeSamples);
+            }
+
             DateTime startDate = DateTime.UtcNow;
             DateTime endDate = DateTime.UtcNow;
 
@@ -84,6 +91,22 @@ namespace d360.model.DataAccessLayer
                 if (dataprofile != null)
                 {
                     startDate = endDate = dataprofile.ProfileSetDate;
+                }
+
+                if (!includeChildAssets)
+                {
+                    List<AssetDataProfileSample> dataProfileSamples = CompanyContext.AssetDataProfileSample.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList();
+                    results.items = new List<DataProfileModel>(){ new DataProfileModel(assetUid, dataprofile, dataProfileSamples) };
+
+                    if (includeTotal)
+                    {
+                        results.total = 1;
+                    }
+                    else
+                    {
+                        results.total = null;
+                    }
+                    return results;
                 }
             }
 
@@ -143,16 +166,16 @@ namespace d360.model.DataAccessLayer
                                 ,ADP.[TrailingWhiteSpace]
                                 ,ADP.[MatchCount]
                                 ,ADP.[OutlierCardinality]
-	                            ,JSON_QUERY(outlierDetail.[value]) as outlierDetail
+	                            {(includeSamples ? ",JSON_QUERY(outlierDetail.[value]) as outlierDetail" : "")}
                                 ,ADP.[KeyConfidence]
                                 ,ADP.[DataSignature]
                                 ,ADP.[StructureSignature]
                                 ,ADP.[Cardinality]
-	                            ,JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail
+	                            {(includeSamples ? ",JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail" : "")}
                                 ,ADP.[ShapeCardinality] as shapesCardinality
-	                            ,JSON_QUERY(shapesDetail.[value]) as shapesDetail
-                                ,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK
-								,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK                                
+	                            {(includeSamples ? ",JSON_QUERY(shapesDetail.[value]) as shapesDetail" : "")}
+                                {(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
+								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
                                 ,ADP.TotalCount
                                 ,ADP.OutlierCount
                                 ,ADP.DetectionLocale
@@ -163,62 +186,64 @@ namespace d360.model.DataAccessLayer
                                 inner join 
                                 AssetDataProfile ADP on ids.ID = ADP.ID	                            
 	                            Inner Join 
-	                            Asset A on A.ID = ADP.AssetID                            
-                            outer apply (            
-                            select  (
-                                    select [key], [value] as Count
-                                                        from AssetDataProfileSample
-                                                        where
-                                                            AssetDataProfileId = ADP.ID
-                                                            and
-                                                            lower(SampleType) = 'outlierdetail'
-                                                        for json path
-                                                        ) as [value]
-                                                ) outlierDetail
-                                outer apply (
-                                                select  (
-                                                        select [key], [value] as Count
-                                                        from AssetDataProfileSample
-                                                        where
-                                                            AssetDataProfileId = ADP.ID
-                                                            and
-                                                            lower(SampleType) = 'cardinalitydetail'
-                                                        for json path
-                                                        ) as [value]
-                                                ) cardinalityDetail
-                                outer apply (
-                                                select  (
-                                                        select [key], [value] as Count
-                                                        from AssetDataProfileSample
-                                                        where
-                                                            AssetDataProfileId = ADP.ID
-                                                            and
-                                                            lower(SampleType) = 'shapesdetail'
-                                                        for json path
-                                                        ) as [value]
-                                                ) shapesDetail
-                                outer apply (
-                                                select  (
-                                                        select [value]
-                                                        from AssetDataProfileSample
-                                                        where
-                                                            AssetDataProfileId = ADP.ID
-                                                            and
-                                                            lower(SampleType) = 'bottomk'
-                                                        for json path
-                                                        ) as [value]
-                                                ) bottomK
-                                outer apply (
-                                                select  (
-                                                        select [value]
-                                                        from AssetDataProfileSample
-                                                        where
-                                                            AssetDataProfileId = ADP.ID
-                                                            and
-                                                            lower(SampleType) = 'topk'
-                                                        for json path
-                                                        ) as [value]
-                                                ) topK 
+	                            Asset A on A.ID = ADP.AssetID    
+                            {(includeSamples ? $@"
+                                    outer apply (            
+                                    select  (
+                                            select [key], [value] as Count
+                                                                from AssetDataProfileSample
+                                                                where
+                                                                    AssetDataProfileId = ADP.ID
+                                                                    and
+                                                                    lower(SampleType) = 'outlierdetail'
+                                                                for json path
+                                                                ) as [value]
+                                                        ) outlierDetail
+                                    outer apply (
+                                                    select  (
+                                                            select [key], [value] as Count
+                                                            from AssetDataProfileSample
+                                                            where
+                                                                AssetDataProfileId = ADP.ID
+                                                                and
+                                                                lower(SampleType) = 'cardinalitydetail'
+                                                            for json path
+                                                            ) as [value]
+                                                    ) cardinalityDetail
+                                    outer apply (
+                                                    select  (
+                                                            select [key], [value] as Count
+                                                            from AssetDataProfileSample
+                                                            where
+                                                                AssetDataProfileId = ADP.ID
+                                                                and
+                                                                lower(SampleType) = 'shapesdetail'
+                                                            for json path
+                                                            ) as [value]
+                                                    ) shapesDetail
+                                    outer apply (
+                                                    select  (
+                                                            select [value]
+                                                            from AssetDataProfileSample
+                                                            where
+                                                                AssetDataProfileId = ADP.ID
+                                                                and
+                                                                lower(SampleType) = 'bottomk'
+                                                            for json path
+                                                            ) as [value]
+                                                    ) bottomK
+                                    outer apply (
+                                                    select  (
+                                                            select [value]
+                                                            from AssetDataProfileSample
+                                                            where
+                                                                AssetDataProfileId = ADP.ID
+                                                                and
+                                                                lower(SampleType) = 'topk'
+                                                            for json path
+                                                            ) as [value]
+                                                    ) topK "
+                                : "" )}
                                 order by ids.[ProfileSetDate] desc";
 
             dbArgs.Add("@startDate", startDate.Date);

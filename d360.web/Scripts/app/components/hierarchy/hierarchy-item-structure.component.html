@@ -155,7 +155,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selected?.data != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selected?.data?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList"></data-profile>
+                        <data-profile [dataProfile]="dataProfile"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selected?.data?.AssetUid"

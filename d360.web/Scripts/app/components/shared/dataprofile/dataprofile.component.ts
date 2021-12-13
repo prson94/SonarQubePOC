@@ -1,10 +1,11 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter} from '@angular/core';
+﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter, ChangeDetectorRef} from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { DataProfileService } from '../../../services/dataprofile.service';
 
 @Component({
     selector: 'data-profile',
@@ -13,8 +14,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class DataProfileComponent extends BaseComponent implements OnInit {
-    @Input() dataProfile: any;
-    @Input() dataProfileList: any[] = [];
+    @Input() dataProfile: any;    
     @Input() isModal: boolean = false;  
     @Input() assetData: any;
     @Output() linkClicked = new EventEmitter();
@@ -25,7 +25,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     constructor(
         private assetService: AssetService,
         private assetTypeService: AssetTypeService,
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+        private dataProfileService: DataProfileService,
+        private cdRef: ChangeDetectorRef
     ) {
         super(settingsService);
     }
@@ -77,6 +79,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private hideDataProfileInstructionMessageKey = "hideDataProfileInstructionMessage";
     public chartType: string;
     public timeSeriesProfileList: any[] = [];
+    public dataProfileList: any[] = [];
 
     isMatchDetectionPopupVisible: boolean = false;
     matchType: string = "";
@@ -104,18 +107,28 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     });
                 });
         }
-        let maxProfileDate = new Date();
-        maxProfileDate.setFullYear(maxProfileDate.getFullYear() - 1);
-        this.timeSeriesProfileList = this.dataProfileList.filter((p) => new Date(p.profileSetDate) >= maxProfileDate);
     }    
     
     ngAfterViewInit() {
         if (!this.sampleDistributionChart) {
             setTimeout(() => this.renderSampleDistributionChart(), 10);
-        }            
+        }               
     }
 
     initialize() {
+        let startDate = new Date();
+        startDate.setFullYear(startDate.getUTCFullYear() - 100);
+        this.dataProfileService.getDataProfiles(this.dataProfile.assetUid, startDate, null, false, false, false).subscribe(
+            (r) => {
+                if (r && r.items && r.items.length > 1) {
+                    this.dataProfileList = r.items;
+                    let maxProfileDate = new Date();
+                    maxProfileDate.setFullYear(maxProfileDate.getFullYear() - 1);
+                    this.timeSeriesProfileList = this.dataProfileList.filter((p) => new Date(p.profileSetDate) >= maxProfileDate);
+                    this.cdRef.markForCheck();
+                }
+            });
+
         if (localStorage.getItem(this.hideDataProfileInstructionMessageKey)) {
             this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === "true";            
         }
