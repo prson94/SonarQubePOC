@@ -105,7 +105,7 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
                     c.CustomAsset("index", typeof(WebApiConfig).Assembly, "d360.web.Content.Swagger.index.html");
                     c.InjectStylesheet(typeof(WebApiConfig).Assembly, "d360.web.Content.Swagger.swagger.css");
                     c.DisableValidator();
-                    c.SupportedSubmitMethods("GET", "POST", "PUT", "DELETE");
+                    c.SupportedSubmitMethods("GET", "PATCH", "POST", "PUT", "DELETE");
                     c.EnableDiscoveryUrlSelector();                    
                 });
 

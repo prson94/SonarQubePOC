@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using Resources;
+using d360.core.exceptions;
 
 namespace d360.web.Handlers
 {
@@ -57,6 +58,16 @@ namespace d360.web.Handlers
                             };
                             var result = request.CreateResponse(response.StatusCode, responseMetadata);
                             return result;
+                        }
+                        else if (responseContent is GenericException)
+                        {
+                            var genEx = responseContent as GenericException;
+                            var responseMetadata = new ErrorResponse
+                            {
+                                message = genEx.StatusMessage,
+                                title = genEx.StatusDescription
+                            };
+                            return request.CreateResponse(genEx.StatusCode, responseMetadata);
                         }
                         else if (responseContent is Exception)
                         {
