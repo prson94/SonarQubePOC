@@ -28,6 +28,9 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using d360.model.helpers.filters;
 using MediatR;
+using d360.web.Controllers;
+using d360.web.Utilities;
+using LaunchDarkly.Client;
 
 namespace igx.UnitTests
 {
@@ -172,6 +175,20 @@ namespace igx.UnitTests
             dbSetMock.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(elementsAsQueryable.GetEnumerator());
 
             return dbSetMock;
+        }
+
+        public IApplicationUriProvider GetApplicationUriProvider()
+        {
+            var mock = new Mock<ApplicationUriProvider>();
+
+            return mock.Object;
+        }
+
+        public CoreComponentSet GetCoreComponentSet()
+        {
+            var mock = new Mock<CoreComponentSet>(GetCommunity(), GetCompany(), GetSettingsRepository(), new LdClient(""));
+
+            return mock.Object;
         }
 
         public IStorageProvider GetStorage()

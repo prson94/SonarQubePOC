@@ -7,26 +7,16 @@ using Moq;
 
 namespace igx.UnitTests.V2ControllerTests
 {
-    public partial class ResponsibilitiesControllerTests
+    public partial class ResponsibilitiesControllerTests: BaseTest
     {
         protected ResponsibilitiesControllerTests()
         {
-            MockResponsibilityRepository = new Mock<IResponsibilityRepository>();
-            MockAssetRepository = new Mock<IAssetRepository>();
-            MockSettingsRepository = new Mock<ISettingsRepository>();
-            MockCommunityContext = new Mock<ICommunityContext>();
-            MockCompanyContext = new Mock<ICompanyContext>();
-            MockMediator = new Mock<IMediator>();
-            MockApplicationUriProvider = new Mock<IApplicationUriProvider>();
-
             Controller = new ResponsibilitiesController(
-                MockCommunityContext.Object,
-                MockCompanyContext.Object,
-                MockResponsibilityRepository.Object,
-                MockAssetRepository.Object,
-                MockSettingsRepository.Object,
-                MockMediator.Object,
-                MockApplicationUriProvider.Object
+                GetCoreComponentSet(),
+                GetApplicationUriProvider(),
+                GetAssetRepository(),
+                GetMediator(), 
+                GetResponsibilityRepository()
             );
         }
 

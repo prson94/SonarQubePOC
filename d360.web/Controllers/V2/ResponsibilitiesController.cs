@@ -37,13 +37,17 @@ namespace d360.web.Controllers.V2
     ]
     public class ResponsibilitiesController : BaseV2ApiController
     {
-        private IMediator Mediator { get; }
         private IApplicationUriProvider ApplicationUriProvider { get; }
+        private IAssetRepository AssetRepository;
+        private IMediator Mediator { get; }
+        private IResponsibilityRepository ResponsibilityRepository;
 
-        IResponsibilityRepository ResponsibilityRepository;
-
-        IAssetRepository AssetRepository;
-        public ResponsibilitiesController(CoreComponentSet set, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository)
+        public ResponsibilitiesController(CoreComponentSet set, 
+            IApplicationUriProvider applicationUriProvider, 
+            IAssetRepository assetRepository,
+            IMediator mediator,
+            IResponsibilityRepository responsibilityRepository
+            )
             : base(set)
         {
             Mediator = mediator;

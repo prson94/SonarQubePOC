@@ -1353,7 +1353,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                await membershipRepository.ClearFavorites(_company.CurrentResourceID);
+                await membershipRepository.ClearFavorites(Company.CurrentResourceID);
                 return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
             }
             catch (Exception ex)
@@ -1386,7 +1386,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                await membershipRepository.DeleteFavorites(_company.CurrentResourceID, favoriteIds);
+                await membershipRepository.DeleteFavorites(Company.CurrentResourceID, favoriteIds);
                 return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
             }
             catch (Exception ex)
