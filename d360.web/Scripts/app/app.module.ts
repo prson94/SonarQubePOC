@@ -42,6 +42,12 @@ export function localeIdFactory() {
     return navigator.language;
 }
 
+export function featureFlagServiceInitializer(provider: FeatureFlagsService) {
+    return () => provider.initialize().subscribe((s) => {
+        provider.createClientConnection();
+    });
+}
+
 export function settingsInitializer(provider: CompanySettingsService) {
     return () => provider.loadSettings().then((r) => { provider.loadApplicationSettings(); });
 }
