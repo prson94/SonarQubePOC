@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import { Number, setTimeout } from 'core-js';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,

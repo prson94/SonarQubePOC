@@ -8,7 +8,6 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { Array } from 'core-js';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
 

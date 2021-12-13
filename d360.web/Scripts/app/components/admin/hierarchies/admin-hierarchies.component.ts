@@ -8,7 +8,6 @@ import { Title } from '@angular/platform-browser';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
-import { forEach } from 'core-js/fn/array';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
 

@@ -1,6 +1,6 @@
 ﻿<div class="tile tile-detail">
     <header>Select Directive</header>
-    <p>Angular directive that can be applied to PrimeNG dropdown component (p-dropdown).</p>
+    <p>Angular directive that can be applied to PrimeNG dropdown component (p-dropdown).!</p>
 </div>
 
 <div class="tile tile-detail">
@@ -112,7 +112,7 @@
         <h4>Disabled</h4>
         <div class="row">
             <p-dropdown igDropdown
-                        disabled
+                        [disabled]="true"
                         igSize="medium"
                         [(ngModel)]="reqValue"
                         [options]="cars"></p-dropdown>

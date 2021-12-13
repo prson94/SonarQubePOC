@@ -38,6 +38,7 @@ export class GalleryModalDrawerComponent implements OnInit {
     isVisible: boolean = false;
     isModalVisible: boolean = false;
     isModalDrawer2Visible: boolean = false;
+    radioSelection: string = null;
 
     sampleUsage = `
 <ng-container header>

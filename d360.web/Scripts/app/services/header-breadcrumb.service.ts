@@ -7,7 +7,6 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SiteMenuService } from './site-menu.service';
 import { SiteNav } from '../models/site-menu.model';
-import { Promise } from 'core-js';
 import { AssetStyleService } from './asset-style.service';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
