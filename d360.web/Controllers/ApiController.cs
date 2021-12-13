@@ -2,7 +2,6 @@ using d360.core;
 using d360.core.entities;
 using d360.core.entities.Views;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.core.helpers;
 using d360.extensions;
 using d360.model;
@@ -11,11 +10,9 @@ using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -735,7 +732,11 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         [HttpGet, Route("{type}/{uid}/grid/definition")]
         public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, string uid)
         {
-            Guid guid = Guid.Parse(uid);
+            if(!Guid.TryParse(uid, out var guid))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, ApiMessages.CustomUidNotValid);
+            }
+            
             int objectId = Company.GetObjectId(guid, type);
             return GetGridDefinitionByType(type, objectId);
         }
