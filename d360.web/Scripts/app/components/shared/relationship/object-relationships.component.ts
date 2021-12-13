@@ -66,7 +66,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        const hasApiParameterChanges = ('objectId' in changes || 'objectType' in changes);
+        const hasApiParameterChanges = ('objectID' in changes || 'objectType' in changes);
         if (!hasApiParameterChanges) {
             return;
         }
