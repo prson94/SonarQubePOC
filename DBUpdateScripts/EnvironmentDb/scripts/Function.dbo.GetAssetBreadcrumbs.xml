@@ -5,13 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="vlova" id="Function.dbo.GetBreadcrumbs-v1.2">
+  <changeSet author="vlova" id="Function.dbo.GetAssetBreadcrumbs-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter function [dbo].[GetBreadcrumbs]
+create or alter function [dbo].[GetAssetBreadcrumbs]
 (		        
 	@objectType varchar(max),
 	@objectId int
@@ -30,7 +30,9 @@ return
 		from	dbo.Asset A
 				left join dbo.PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
 		where	A.[Object] = @objectType and A.ObjectID = @objectId
+		
 		union all
+		
 		select	P.ID,
 				P.[ObjectID] as ID, 
 				P.AssetTypeID,
@@ -65,7 +67,7 @@ return
     </sql>
 	<rollback>
 		<![CDATA[	
-drop function [dbo].[GetBreadcrumbs]
+drop function [dbo].[GetAssetBreadcrumbs]
 		]]>
 	</rollback>
   </changeSet>

@@ -33,7 +33,8 @@
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
-	<include file="scripts/Function.dbo.GetBreadcrumbs.xml"/>
+	<include file="scripts/Function.dbo.GetAssetBreadcrumbs.xml"/>
+	<include file="scripts/Function.dbo.GetAssetTypeBreadcrumbs.xml"/>
 	<include file="scripts/Function.graph.GetKeyPath.xml"/>
 	<include file="scripts/Function.graph.GetPath.xml"/>
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>

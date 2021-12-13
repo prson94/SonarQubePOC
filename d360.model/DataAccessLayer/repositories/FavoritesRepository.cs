@@ -119,18 +119,14 @@ where favorite.ResourceId = @resourceId";
 
 	select favorite.FavoriteId, breadcrumbs.Level, breadcrumbs.Name
 	from @assets favorite
-	cross apply dbo.GetBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
+	cross apply dbo.GetAssetBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
 	
 	union
 	
-	select favorite.FavoriteId, 0 as Level, assetType.Name
+	select favorite.FavoriteId, breadcrumbs.Level, breadcrumbs.TypeName as Name
 	from @assetTypes favorite
-	join dbo.AssetType assetType 
-		on favorite.ObjectType = assetType.Object
-		and favorite.ObjectId = assetType.ObjectId
+	cross apply dbo.GetAssetTypeBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
 ", new { favorites = correctItems.AsUDTParameter() });
-			// TODO: recursive breadcrumbs for assetTypes
-
             var favorites = await grid.ReadListAsync<FavoriteItem>();
             var breadcrumbs = await grid.ReadListAsync<FavoriteBreadcrumbItem>();
 
