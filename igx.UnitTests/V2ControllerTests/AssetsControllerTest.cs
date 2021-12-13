@@ -760,5 +760,34 @@ namespace igx.UnitTests
             AssertJSON.True<List<AssetTagSuccessApiModel>>(data.Result);
 
         }
+
+        [Theory]
+        [InlineData(DataConstants.InvalidGUID)]
+        [InlineData(DataConstants.ValidGUID)]
+        public async void GetAssetDescendents(string uid)
+        {
+            bool isGoodUID = uid == DataConstants.ValidGUID;
+
+            var testGuid = Guid.Parse(uid);
+            if (isGoodUID)
+            {
+                var actionResult = await assetsController.GetAssetDescendents(testGuid);
+                var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+                var str = res.Result.Content.ReadAsStringAsync().Result;
+
+                Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                AssertJSON.True<AssetDescendantsResults>(str);
+
+            }
+
+            if (!isGoodUID)
+            {
+                var actionResult = await assetsController.GetAssetDescendents(testGuid);
+                var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+
+                Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            }
+
+        }
     }
 }

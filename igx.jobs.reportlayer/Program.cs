@@ -143,7 +143,7 @@ namespace igx.jobs.reportlayer
                             var objectName = "";
                             var assetTypePluralizedName = "";
                             var legacyPrefix = "Glossary";
-                            var allAssetTypes = companyConnection.Query<AssetType>($"select * from dbo.AssetType  where[Class] in ({ (int)AssetTypeClass.BusinessAsset}, { (int)AssetTypeClass.TechnicalAsset}, { (int)AssetTypeClass.Model}, { (int)AssetTypeClass.Policy})").ToList();
+                            var allAssetTypes = companyConnection.Query<AssetType>($"select * from dbo.AssetType  where[Class] in ({ (int)AssetTypeClass.BusinessAsset}, { (int)AssetTypeClass.Model}, { (int)AssetTypeClass.Policy})").ToList();
 
                             //Generate required view names
                             foreach(var at in allAssetTypes)
@@ -203,9 +203,9 @@ namespace igx.jobs.reportlayer
                                     "A.ID");
 
 
-                                if (o.Class == AssetTypeClass.BusinessAsset || o.Class == AssetTypeClass.TechnicalAsset)
+                                if (o.Class == AssetTypeClass.BusinessAsset)
                                 {
-                                    #region Business/Technical
+                                    #region Business
 
                                     var parentIntersectType = companyConnection.Query<IntersectTypeDetail>($"select * from IntersectTypeDetail where Object = '{o.Object}' and ObjectID = {o.ObjectID} and PredicateType = @pt", new { id = o.ObjectID, pt = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault();
 
@@ -409,7 +409,7 @@ END");
                                             FOR XML RAW
                                         ))  as  NewHashValue
                                     from dbo.AssetType as AT
-                                    where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})
+                                    where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})
                                     
 
                                     select uid from #hashTable 

@@ -85,14 +85,16 @@
                                                                  [fields]="fields"
                                                                  [useApiName]="true"
                                                                  styleClass="cell-link"
-                                                                 [item]="item"></d3s-dynamic-field-value>
+                                                                 [item]="item"
+                                                                 [isDateUTC]="true"></d3s-dynamic-field-value>
                                     </a>
                                 </ng-container>
                                 <ng-container *ngIf="i !== linkColumnIndex">
                                     <d3s-dynamic-field-value [column]="column"
                                                              [fields]="fields"
                                                              [useApiName]="true"
-                                                             [item]="item"></d3s-dynamic-field-value>
+                                                             [item]="item"
+                                                             [isDateUTC]="true"></d3s-dynamic-field-value>
                                 </ng-container>
                             </td>
                             <td class="asset-grid-tools">

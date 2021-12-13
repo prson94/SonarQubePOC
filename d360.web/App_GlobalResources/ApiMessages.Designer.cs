@@ -124,6 +124,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Artifact not found..
+        /// </summary>
+        public static string ArtifactNotFound {
+            get {
+                return ResourceManager.GetString("ArtifactNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset cross reference already exists..
         /// </summary>
         public static string AssetCorssRefAlreadyExists {
@@ -1141,6 +1150,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid LoadUid provided..
+        /// </summary>
+        public static string InvalidLoadUid {
+            get {
+                return ResourceManager.GetString("InvalidLoadUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid model.
         /// </summary>
         public static string InvalidModel {
@@ -1200,6 +1218,15 @@ namespace Resources {
         public static string InvalidParameter {
             get {
                 return ResourceManager.GetString("InvalidParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is an invalid value for {1}.
+        /// </summary>
+        public static string InvalidParameterMessage {
+            get {
+                return ResourceManager.GetString("InvalidParameterMessage", resourceCulture);
             }
         }
         
@@ -1479,6 +1506,15 @@ namespace Resources {
         public static string OneMoreUidExists {
             get {
                 return ResourceManager.GetString("OneMoreUidExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The OpenID provider response is missing code and/or state. Your administrator may have misconfigured your identity provider settings..
+        /// </summary>
+        public static string OpenIdCodeOrStateIsNotPresent {
+            get {
+                return ResourceManager.GetString("OpenIdCodeOrStateIsNotPresent", resourceCulture);
             }
         }
         

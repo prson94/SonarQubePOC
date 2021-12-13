@@ -68,5 +68,7 @@ namespace d360.model.DataAccessLayer
         ApiExecutionExternalViewModel AddConnectorStatus(ApiExecutionExternalRequestModel model);
 
         IEnumerable<dynamic> GetPossibleOwnersForAssetType(AssetType assetType);
+
+        Task<AssetDescendantsResults> GetAssetDescendants(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

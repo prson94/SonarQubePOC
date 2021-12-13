@@ -16,13 +16,13 @@
 <div class="ig-lookup-grid-filter-container" *ngIf="filtersLoadIdentifier">
     <div class="grid-actions-header" [style.padding]="hideFilter ? '0 0 0 0' : null">
         <ng-container *ngIf="!hideFilter">
-            <div [ngClass]="minwidth ===0 ? 'simple-search' : 'flexsimple-search'">
+            <div [ngClass]="isSidePanel ? 'flexsimple-search' : 'simple-search'">
                 <ig-search-field mode="Keypress"
                                  [debounce]="600"
                                  (onSearch)="loadData($event)"
                                  [(ngModel)]="simpleTextFilter"
                                  [infoTooltip]="simpleSearchTooltipHTML"
-                                 [minWidth]="minwidth">
+                                 [IsFlexApply]="isSidePanel">
                 </ig-search-field>
             </div>
             <advanced-filtering *ngIf="showAdvancedFilterField" [externalAllocations]="externalAllocations" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
@@ -40,7 +40,9 @@
         </ng-container>
     </div>
     <ng-container *ngIf="hideFilter">
-        <ig-portal-content-provider [name]="field.Name + 'asset-detail-category/label-right'" [template]="assetGridExportLink">
+        <ig-portal-content-provider 
+            [name]="'field/' + field.Name + '-' + objectIdService.getObjectId(field) + '/asset-detail-category/label-right'"
+            [template]="assetGridExportLink">
             <ng-template #assetGridExportLink>
                 <div class="asset-grid-export-link">
                     <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>

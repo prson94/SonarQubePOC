@@ -87,6 +87,13 @@ namespace d360.core.entities
         public IEnumerable<dynamic> items { get; set; }
     }
 
+    public class AssetsQueryResults
+    {
+        public int? total { get; set; }
+        public IEnumerable<dynamic> items { get; set; }
+        public IEnumerable<dynamic> ownershipData { get; set; }
+    }
+
     public class AssetAuditApiItemModel
     {
         public Guid uid { get; set; }
@@ -258,5 +265,18 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
+    }
+
+    public class AssetDescendantsResults : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<AssetDescendants> items { get; set; }
+    }
+
+    public class AssetDescendants
+    {
+        public Guid? AssetUid { get; set; }
+
+        public Guid? ParentUid { get; set; }
     }
 }

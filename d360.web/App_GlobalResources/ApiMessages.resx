@@ -744,4 +744,16 @@
   <data name="HelpMenuOrderError" xml:space="preserve">
     <value>Order cannot be a negative number.</value>
   </data>
+  <data name="InvalidLoadUid" xml:space="preserve">
+    <value>Invalid LoadUid provided.</value>
+  </data>
+  <data name="ArtifactNotFound" xml:space="preserve">
+    <value>Artifact not found.</value>
+  </data>
+  <data name="OpenIdCodeOrStateIsNotPresent" xml:space="preserve">
+    <value>The OpenID provider response is missing code and/or state. Your administrator may have misconfigured your identity provider settings.</value>
+  </data>
+  <data name="InvalidParameterMessage" xml:space="preserve">
+    <value>'{0}' is an invalid value for {1}</value>
+  </data>
 </root>

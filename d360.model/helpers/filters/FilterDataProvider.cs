@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace d360.model.helpers.filters
 {
+ 
+    [ExcludeFromCodeCoverageAttribute]
     public class FilterDataProvider : IFilterDataProvider
     {
         private readonly ICompanyContext companyContext;

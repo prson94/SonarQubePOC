@@ -26,11 +26,11 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                                 <div class="row" *ngIf="!isLoading">
                                     <div class="col s12">
-                                        <codemirror [(ngModel)]="customCss"
+                                        <ngx-codemirror [(ngModel)]="customCss"
                                                             name="css"
-                                                            [config]="baseConfig"
+                                                            [options]="baseConfig"
                                                             style="height:600px;">
-                                        </codemirror>                                          
+                                        </ngx-codemirror>
                                     </div>
                                     <div class="col s12">&nbsp;</div>
                                     <div class="col s12">

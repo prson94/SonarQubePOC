@@ -534,21 +534,6 @@ export class WorkflowService extends BaseObservableService {
         this.http.get(uri, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'excel.xlsx'));  
     }
 
-    downloadFile(data: Blob, filename: string) {
-        if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename);
-        }
-        else {
-            var url = window.URL.createObjectURL(data);
-            var anchor = document.createElement("a");
-            anchor.setAttribute("style", "display:none;");
-            document.body.appendChild(anchor);
-            anchor.setAttribute("download", filename);
-            anchor.href = url;
-            anchor.click();
-        }
-    }
-
     getWorkflowOpenActions(types: string):Observable<any> {
         return this.http.get(`services/workflow/openactions?types=${types}`)
             .pipe(

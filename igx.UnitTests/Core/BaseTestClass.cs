@@ -73,6 +73,7 @@ namespace igx.UnitTests
             var assetTypeMock = CreateDbSetMock<AssetType>(assetTypes);
             mock.Setup(x => x.Filter<AssetType>(It.IsAny<Expression<Func<AssetType, bool>>>()))
                 .Returns(assetTypeMock.Object);
+
             var fieldTypes = new List<FieldType> { new FieldType { ID = 1, Name = "unit test", Type = "not a tag", AssetTypeID = 1 } }.AsQueryable();
             var fieldTypeMock = CreateDbSetMock<FieldType>(fieldTypes);
             mock.Setup(x => x.FieldTypes).Returns(fieldTypeMock.Object);
@@ -160,7 +161,7 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        private static Mock<DbSet<T>> CreateDbSetMock<T>(IEnumerable<T> elements) where T : class
+        public static Mock<DbSet<T>> CreateDbSetMock<T>(IEnumerable<T> elements) where T : class
         {
             var elementsAsQueryable = elements.AsQueryable();
             var dbSetMock = new Mock<DbSet<T>>();
@@ -308,6 +309,10 @@ namespace igx.UnitTests
                    Results = new List<DatabaseBulkAssetResult>()
                })
                : Task.FromResult<dynamic>(null));
+
+            mockRepo.Setup(x => x.GetAssetDescendants(It.IsAny<Guid>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(Task.FromResult(new AssetDescendantsResults()));            
+
             return mockRepo.Object;
         }
 

@@ -160,6 +160,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid test type. Valid values are &apos;when&apos; and &apos;then&apos;.
+        /// </summary>
+        public static string InvalidTestType {
+            get {
+                return ResourceManager.GetString("InvalidTestType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Responsibility override for &apos;{0}&apos; already exist..
         /// </summary>
         public static string ReponsibilityOverrideExists {

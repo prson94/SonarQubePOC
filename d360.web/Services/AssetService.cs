@@ -8,7 +8,13 @@ namespace d360.web.Services
     {
         public string GetAssetName(AssetType assetType)
         {
-            var defaultName = string.Empty;
+            var prefix = GetPrefix(assetType);
+            return string.IsNullOrWhiteSpace(prefix) ? assetType.Name : $"{prefix}: {assetType.Name}";
+        }
+
+        private string GetPrefix(AssetType assetType)
+        {
+            var result = string.Empty;
 
             switch (assetType.Object)
             {
@@ -16,32 +22,40 @@ namespace d360.web.Services
                     switch (assetType.Class)
                     {
                         case AssetTypeClass.BusinessAsset:
-                            return CommonNames.AssetTypeClass_Business;
+                            result = CommonNames.AssetTypeClass_Business;
+                            break;
                         case AssetTypeClass.TechnicalAsset:
-                            return CommonNames.AssetTypeClass_Technical;
-                        default:
-                            return defaultName;
-//                            return $"Unknown {assetType.Class} class {assetType.Class}";
+                            result = CommonNames.AssetTypeClass_Technical;
+                            break;
                     }
+                    break;
                 case "PolicyType":
-                    return CommonNames.AssetTypeClass_Policy;
+                    result = CommonNames.AssetTypeClass_Policy;
+                    break;
                 case "ReferenceItemType":
-                    return "Reference: ";
+                    result = "Reference";
+                    break;
                 case "RuleType":
-                    return CommonNames.AssetTypeClass_Rule;
+                    result = CommonNames.AssetTypeClass_Rule;
+                    break;
                 case "TaxonomyType":
-                    return CommonNames.AssetTypeClass_Model;
+                    result = CommonNames.AssetTypeClass_Model;
+                    break;
                 case "AttributeType":
-                    return "Attribute: ";
+                    result = "Attribute";
+                    break;
                 case "GroupType":
-                    return "Group: ";
+                    result = "Group";
+                    break;
                 case "OrganizationType":
-                    return "Organization: ";
+                    result = "Organization";
+                    break;
                 case "ResourceType":
-                    return "Resource: ";
-                default:
-                    return defaultName;
+                    result = "Resource";
+                    break;
             }
+
+            return result;
         }
     }
 }

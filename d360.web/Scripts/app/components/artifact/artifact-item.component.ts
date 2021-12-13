@@ -103,7 +103,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
                     let startDate = new Date();
-                    startDate.setDate(-367);
+                    startDate.setFullYear(startDate.getUTCFullYear() - 100);
                     this.dataProfileService.getDataProfiles(this.artifact.Uid, startDate).subscribe(
                         (r) => {
                             if (r && r.items && r.items.length > 0) {

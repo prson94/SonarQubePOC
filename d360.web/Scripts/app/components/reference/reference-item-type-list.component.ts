@@ -114,20 +114,21 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
             .assetTypeService
             .deleteSingleAssetType(uid)
             .subscribe((result) => {
-                this.showMessageForResult(this.messagesService, result);
+                if (result) {
+                    this.showMessageForResult(this.messagesService, result);
 
-                if (result.type != 'error') {
-                    let index = this.referenceTypes.findIndex(x => x.AssetTypeID == id);
-                    if (index >= 0 && index < this.referenceTypes.length) {
-                        this.referenceTypes.splice(index, 1);
-                    }
+                    if (result.type != 'error') {
+                        let index = this.referenceTypes.findIndex(x => x.AssetTypeID == id);
+                        if (index >= 0 && index < this.referenceTypes.length) {
+                            this.referenceTypes.splice(index, 1);
+                        }
 
-                    if (this.referenceTypes.length > 0) {
-                        this.selected = this.referenceTypes[0];
-                        this.selectedChange.emit(this.selected);
+                        if (this.referenceTypes.length > 0) {
+                            this.selected = this.referenceTypes[0];
+                            this.selectedChange.emit(this.selected);
+                        }
                     }
                 }
-
                 this.isLoading = false;
                 this.showDelete = false;
             });

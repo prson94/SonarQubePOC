@@ -2204,8 +2204,6 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
                 }
 
-
-
                 //list items for parent field
                 if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
                 {
@@ -2236,7 +2234,8 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
                                 where a.AssetTypeID = @parentAssetTypeId {whereQuery}
                                 order by node.displaypath 
-                                {pagingQuery};
+                                {pagingQuery}
+                                option(recompile);
 
                                 select count(*) from Asset A
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
@@ -2349,7 +2348,8 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
                                 where a.AssetTypeID = @assetTypeId {whereQuery}
                                 order by node.displaypath
-                                {pagingQuery};
+                                {pagingQuery}
+                                OPTION(RECOMPILE);
 
                                 select count(*) from Asset A
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id

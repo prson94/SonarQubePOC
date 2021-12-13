@@ -10,6 +10,7 @@ import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering
 import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { AssetTypeClass, State } from "../../../models/asset.model";
 import { CompanySettingsService } from "../../../services/settings.service";
+import { ObjectIdService } from "../../../services/object-id.service";
 
 declare var CurrentResourceID;
 
@@ -33,7 +34,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     isReferenceListFromRelationship = false;
     showDescription = false;
     lookupField: LookupGridField;
-    minwidth: number = 0;
     isComplex = false;
     showSimpleFilter = true;
     isColumnsLoaded = false;
@@ -56,7 +56,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     constructor(private router: Router,
         private assetService: AssetService,
         protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        public objectIdService: ObjectIdService
     ) {
         super(settingsService);
 
@@ -64,12 +65,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     ngOnInit() {
         this.showAdvancedFilterField = !this.router.url.startsWith("/sidebar/visualization/") && !this.isSidePanel;
-        if (this.isSidePanel) {
-            this.minwidth = 310;
-        }
-        else {
-            this.minwidth = 0;
-        }
         this.areFiltersLoaded = true;
     }
 

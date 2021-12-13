@@ -859,6 +859,22 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
+    [DataContract]
+    public class ResponsibilityRuleTestResponseModel : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<ResponsibilityRuleTestResultModel> items { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityRuleTestResultModel
+    {
+        [DataMember]
+        public Guid uid { get; set; }
+        [DataMember] 
+        public string path { get; set; }
+    }
+
     public class UpsertModel
     {
         public Guid AssetTypeUid { get; set; }
@@ -1043,5 +1059,5 @@ namespace d360.core.entities
         public string ResponsibilityName { get; set; }
         [DataMember]
         public int Count { get; set; }
-    }
+    }   
 }

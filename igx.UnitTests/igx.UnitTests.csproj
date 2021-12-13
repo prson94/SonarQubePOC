@@ -74,6 +74,7 @@
     <Compile Include="FilterParserTests\RuleResultTests.cs" />
     <Compile Include="HelperTests\ComplexFieldsHelper.cs" />
     <Compile Include="HelperTests\DecimalFieldValidatorTests.cs" />
+    <Compile Include="HelperTests\QueryConstrantsTests.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
     <Compile Include="FilterParserTests\AssetsGridFilteringTests.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="HelperTests\PasswordHelperTests.cs" />
     <Compile Include="LibraryTests\JsonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RepositoryTests\AssetRepositoryTests.cs" />
     <Compile Include="ScoringTests\OperatorTests-BooleanCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-LookupCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-HtmlCompares.cs" />

@@ -284,11 +284,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             .subscribe(res => {
 
                 if (event.action == "new") {
-                    this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully added!");
+                    this.showMessageForApiResults(this.messagesService, res, " Relationship(s) successfully added.");
                     this.relationshipAdded.emit({ uid: this.intersectTypeUid, isSubject: this.isSubject, data: model });
                 }
                 else {
-                    this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully updated!");
+                    this.showMessageForApiResults(this.messagesService, res, " Relationship(s) successfully updated.");
                 }
 
                 if (!res.some(x => x.Success != true)) {
@@ -311,7 +311,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.relationshipsService.deleteRelationshipV2(this.intersectTypeUid, model)
             .subscribe(res => {
 
-                this.showMessageForApiResults(this.messagesService, res, " Relationship succesfully deleted!");
+                this.showMessageForApiResults(this.messagesService, res, " Relationship successfully deleted.");
                 if (!res.some((x) => x.Success != true)) {
                     this.relations = this.relations.filter((x) => x.Uid != item);
                     this.relationshipRemoved.emit({ uid: this.intersectTypeUid, isSubject: this.isSubject });

@@ -81,18 +81,6 @@ export class AuditService extends BaseObservableService {
         name: string
     ) {
         var filename = `${name} Audit Data ${new Date().toDateString()}.xlsx`;
-
-        if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename);
-        } else {
-            var url = window.URL.createObjectURL(data);
-            var anchor = document.createElement("a");
-
-            anchor.setAttribute("style", "display:none;");
-            document.body.appendChild(anchor);
-            anchor.setAttribute("download", filename);
-            anchor.href = url;
-            anchor.click();
-        }
+        super.downloadFile(data, filename);
     }
 }

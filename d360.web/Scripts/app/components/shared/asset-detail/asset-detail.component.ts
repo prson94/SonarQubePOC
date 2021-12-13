@@ -6,13 +6,14 @@ import { AssetService } from '../../../services/asset.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { SynonymPermission } from '../../../models/artifacts.model';
+import { ProcessService } from '../../../services/process.service';
 
 declare var CurrentResourceID;
 
 @Component({
     selector: 'ig-asset-detail',
     templateUrl: './asset-detail.component.html',
-    providers: [ObjectDetailService, AssetService]
+    providers: [ObjectDetailService, AssetService, ProcessService]
 })
 
 
@@ -43,6 +44,7 @@ export class AssetDetailComponent implements OnChanges {
 
     assetUID: string;
     assetTypeUID: string;
+    assetUrl: string;
     isLoading = false;
     DetailFieldType = DetailFieldType;
 
@@ -60,6 +62,7 @@ export class AssetDetailComponent implements OnChanges {
         private router: Router,
         private objectDetailService: ObjectDetailService,
         protected messagesService: MessagesObservableService,
+        private processService: ProcessService,
         private assetService: AssetService,
         private cdRef: ChangeDetectorRef) { }
 
@@ -158,6 +161,7 @@ export class AssetDetailComponent implements OnChanges {
                     this.rows = displayRows;
                     this.loadCategory();
                     this.loadState();
+                    this.loadUrl();
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });
@@ -199,6 +203,18 @@ export class AssetDetailComponent implements OnChanges {
                     this.categories[ix].active = s.active;
                 }
             });
+        }
+    }
+
+    private loadUrl() {
+        if (this.model.Object.toLowerCase() === 'task') {
+            this.processService
+                .getProcessUrlByDiagramAssetUid(this.model.AssetUid)
+                .subscribe((res) => {
+                    this.assetUrl = res;
+                });
+        } else {
+            this.assetUrl = SiteUrlHelpers.getObjectUrl(this.model.Object, this.model.ObjectID, this.model.ObjectTypeID);
         }
     }
 
@@ -310,12 +326,12 @@ export class AssetDetailComponent implements OnChanges {
     }
 
     open(newTab: boolean = false) {
-        let url = SiteUrlHelpers.getObjectUrl(this.model.Object, this.model.ObjectID, this.model.ObjectTypeID);
-
-        if (newTab) {
-            window.open(url, '_blank');
-        } else {
-            this.router.navigateByUrl(url);
+        if (this.assetUrl) {
+            if (newTab) {
+                window.open(this.assetUrl, '_blank');
+            } else {
+                this.router.navigateByUrl(this.assetUrl);
+            }
         }
     }
 
@@ -342,7 +358,6 @@ export class AssetDetailComponent implements OnChanges {
         if (this.objectType) {
             isAllowedObject = allowedObjects.indexOf(this.objectType) !== -1;
         }
-
-        return this.hasEditLink && isAllowedObject;
+        return this.hasEditLink && isAllowedObject && this.model?.CanEdit;
     }
 }

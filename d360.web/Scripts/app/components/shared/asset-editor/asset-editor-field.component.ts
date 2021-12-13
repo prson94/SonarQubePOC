@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, Subscription } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
@@ -34,6 +34,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { Dropdown } from 'primeng/dropdown';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import { Table } from 'primeng/table';
+import { isArray } from 'core-js/library/core/array';
 
 @Component({
     selector: 'asset-editor-field',
@@ -302,6 +303,22 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 });
                 this.selectSingleItem(null, { value: null });
 
+            }
+        }
+
+        if (this.field.FieldType === 'Relationship') {
+            //dropdown with showClear attribute shows clear button even if value is empty string
+            var hasNoValue = false;
+            if (!this.field.Value) {
+                hasNoValue = true;
+            }
+            else if (Array.isArray(this.field.Value) && (this.field.Value as []).length === 0) {
+                hasNoValue = true;
+
+            }
+
+            if (hasNoValue) {
+                this.form.controls[this.field.FieldName].setValue(null);
             }
         }
 
@@ -733,6 +750,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     lookupSelectedValue: any[] = [];
     lookupValues: any[] = [];
+    lookupSub: Subscription;
 
     lastParams: any;
     loadListLazy($params) {
@@ -746,12 +764,17 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
 
         this.isLookupValuesLoading = true;
-        this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
+
+        if (this.lookupSub) {
+            this.lookupSub.unsubscribe();
+        }
+
+        this.lookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
             if (!this.lookupValues || this.lookupValues.length === 0) {
                 this.lookupValues = Array.from({ length: res.count });
             }
 
-            if (this.lookupValues.length > 10) {
+            if (this.lookupValues.length > 10 || loadParams["filter"]) {
                 this.showLookupSearchField = true;
             }
             else {

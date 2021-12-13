@@ -76,6 +76,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     public displayChart: boolean = false;
     private hideDataProfileInstructionMessageKey = "hideDataProfileInstructionMessage";
     public chartType: string;
+    public timeSeriesProfileList: any[] = [];
 
     isMatchDetectionPopupVisible: boolean = false;
     matchType: string = "";
@@ -103,6 +104,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     });
                 });
         }
+        let maxProfileDate = new Date();
+        maxProfileDate.setFullYear(maxProfileDate.getFullYear() - 1);
+        this.timeSeriesProfileList = this.dataProfileList.filter((p) => new Date(p.profileSetDate) >= maxProfileDate);
     }    
     
     ngAfterViewInit() {
@@ -268,7 +272,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             } else {
                 this.maxValue = Number(this.dataProfile?.max);
                 this.maxValueStr = Number(this.dataProfile?.max).toLocaleString();
-                this.lastMaxValue = Number(this.dataProfileList[1]?.max);
+                this.lastMaxValue = Number(this.timeSeriesProfileList[1]?.max);
                 this.showMaxValueGraphIcon = true;
             }
 
@@ -277,7 +281,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             } else {
                 this.minValue = Number(this.dataProfile?.min);
                 this.minValueStr = Number(this.dataProfile?.min).toLocaleString();
-                this.lastMinValue = Number(this.dataProfileList[1]?.min);
+                this.lastMinValue = Number(this.timeSeriesProfileList[1]?.min);
                 this.showMinValueGraphIcon = true;
             }
         } else {

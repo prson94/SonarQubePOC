@@ -49,6 +49,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
     private dataProfileList: any[];
     public advancedFiltersLoaded: boolean = false;
 
+    showEditor: boolean = false;
+
     public extraButtons: SidePanelButton[] = [new SidePanelButton({
         label: 'Filters',
         tooltip: 'Filters',
@@ -129,7 +131,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
             let startDate = new Date();
-            startDate.setDate(-367);
+            startDate.setFullYear(startDate.getUTCFullYear() - 100);
             this.dataProfileService.getDataProfiles(this.selection.AssetUid, startDate).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
@@ -295,5 +297,10 @@ export class SearchComponent extends BaseComponent implements OnInit {
             this.searchStateService.connector = this.parseConnector(this.advancedFilter.conditions.connector);
             this.doSearch(true);
         }
+    }
+
+    saveItem() {
+        this.showEditor = false;
+        this.doSearch(true);
     }
 }
