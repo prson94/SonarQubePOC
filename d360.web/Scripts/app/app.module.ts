@@ -52,12 +52,6 @@ export function settingsInitializer(provider: CompanySettingsService) {
     return () => provider.loadSettings().then((r) => { provider.loadApplicationSettings(); });
 }
 
-export function featureFlagServiceInitializer(provider: FeatureFlagsService) {
-    return () => provider.initialize().subscribe((s) => {
-        provider.createClientConnection();
-    });
-}
-
 export function localeInitializer(localeId: string) {                  
     return (): Promise<any> => {
         if (localeId && localeId.toLowerCase() != 'en-us') {
