@@ -39,7 +39,7 @@ namespace d360.web.Controllers.V2
 
         IAssetRepository AssetRepository;
         IStorageProvider Storage;
-        public ExecutionsController(CoreComponentSet set, IAssetRepository repository, IStorageProvider storage)
+        public ExecutionsController(ICoreComponentSet set, IAssetRepository repository, IStorageProvider storage)
             : base(set)
         {
             Storage = storage;

@@ -131,7 +131,7 @@ namespace d360.web.Controllers.V2
         IMetricsRepository MetricsRepository;
         IScoringRepository ScoringRepository;
 
-        public MetricsController(CoreComponentSet set, IQueueSource queueSource, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
+        public MetricsController(ICoreComponentSet set, IQueueSource queueSource, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
             : base(set)
         {
             QueueSource = queueSource;

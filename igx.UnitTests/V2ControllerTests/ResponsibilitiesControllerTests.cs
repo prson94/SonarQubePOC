@@ -11,12 +11,20 @@ namespace igx.UnitTests.V2ControllerTests
     {
         protected ResponsibilitiesControllerTests()
         {
+            MockResponsibilityRepository = new Mock<IResponsibilityRepository>();
+            MockAssetRepository = new Mock<IAssetRepository>();
+            MockSettingsRepository = new Mock<ISettingsRepository>();
+            MockCommunityContext = new Mock<ICommunityContext>();
+            MockCompanyContext = new Mock<ICompanyContext>();
+            MockMediator = new Mock<IMediator>();
+            MockApplicationUriProvider = new Mock<IApplicationUriProvider>();
+
             Controller = new ResponsibilitiesController(
                 GetCoreComponentSet(),
-                GetApplicationUriProvider(),
-                GetAssetRepository(),
-                GetMediator(), 
-                GetResponsibilityRepository()
+                MockApplicationUriProvider.Object,
+                MockAssetRepository.Object,
+                MockMediator.Object,
+                MockResponsibilityRepository.Object
             );
         }
 

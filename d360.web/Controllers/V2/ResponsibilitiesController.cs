@@ -42,7 +42,7 @@ namespace d360.web.Controllers.V2
         private IMediator Mediator { get; }
         private IResponsibilityRepository ResponsibilityRepository;
 
-        public ResponsibilitiesController(CoreComponentSet set, 
+        public ResponsibilitiesController(ICoreComponentSet set, 
             IApplicationUriProvider applicationUriProvider, 
             IAssetRepository assetRepository,
             IMediator mediator,

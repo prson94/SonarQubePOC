@@ -70,12 +70,20 @@ namespace d360.web.Controllers
         }
     }
 
-    public class CoreComponentSet
+    public interface ICoreComponentSet
     {
-        public ICompanyContext Company;
-        public ICommunityContext Community;
-        public ISettingsRepository SettingsRepository;
-        public LaunchDarkly.Sdk.Server.LdClient Ld;
+        ICompanyContext Company { get; set; }
+        ICommunityContext Community { get; set; }
+        ISettingsRepository SettingsRepository { get; set; }
+        LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
+    }
+
+    public class CoreComponentSet: ICoreComponentSet
+    {
+        public ICompanyContext Company { get; set; }
+        public ICommunityContext Community { get; set; }
+        public ISettingsRepository SettingsRepository { get; set; }
+        public LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
 
         public CoreComponentSet(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository, LaunchDarkly.Sdk.Server.LdClient ld)
         {
@@ -118,7 +126,7 @@ namespace d360.web.Controllers
 
         #endregion
 
-        public BaseApiController(CoreComponentSet set)
+        public BaseApiController(ICoreComponentSet set)
         {
             Company = set.Company;
             Community = set.Community;
@@ -558,7 +566,7 @@ from	CompanyResource CR
             DataType.Counter.ToString()
         };
 
-        public BaseController(CoreComponentSet set)
+        public BaseController(ICoreComponentSet set)
         {
             Community = set.Community;
             Company = set.Company;

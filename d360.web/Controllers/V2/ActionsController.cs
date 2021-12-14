@@ -40,7 +40,7 @@ namespace d360.web.Controllers.V2
         IIssueRepository issueRepository;
         IResponsibilityRepository responsibilityRepository;
 
-        public ActionsController(CoreComponentSet set, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
+        public ActionsController(ICoreComponentSet set, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
             : base(set)
         {
             assetRepository = assets;

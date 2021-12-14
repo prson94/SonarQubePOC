@@ -34,7 +34,7 @@ namespace d360.web.Controllers.V2
 
         #region DI
 
-        public CrossReferencesController(CoreComponentSet set, ICrossReferencesRepository crossReferencesRepository,IAssetRepository assetRepository)
+        public CrossReferencesController(ICoreComponentSet set, ICrossReferencesRepository crossReferencesRepository,IAssetRepository assetRepository)
             : base(set)
         {
             this.crossReferencesRepository = crossReferencesRepository;

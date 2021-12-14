@@ -28,7 +28,7 @@ namespace d360.web.Controllers.V2
     {
         ISearchSource SearchSource;
 
-        public SearchController(CoreComponentSet set, ISearchSource searchSource) : base(set)
+        public SearchController(ICoreComponentSet set, ISearchSource searchSource) : base(set)
         {
             SearchSource = searchSource;
         }

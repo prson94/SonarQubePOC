@@ -24,9 +24,9 @@ namespace d360.web.Controllers
     public class NavigationController : BaseController
     {
         IStorageProvider Storage;
-        CoreComponentSet Set;
+        ICoreComponentSet Set;
 
-        public NavigationController(CoreComponentSet set, IStorageProvider storage)
+        public NavigationController(ICoreComponentSet set, IStorageProvider storage)
             : base(set)
         {
             Set = set;

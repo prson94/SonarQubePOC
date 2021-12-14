@@ -37,7 +37,7 @@ namespace d360.web.Controllers
         readonly IStorageProvider Storage;
         readonly IResponsibilityRepository ResponsibilityRepository;
 
-        public FormController(CoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
+        public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
             : base(set)
         {
             Storage = storage;

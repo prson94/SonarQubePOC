@@ -35,7 +35,7 @@ namespace d360.web.Controllers.V2
         #region DI
         IAssetRepository AssetRepository;
 
-        public PermissionsController(CoreComponentSet set, IAssetRepository repository): base(set)
+        public PermissionsController(ICoreComponentSet set, IAssetRepository repository): base(set)
         {
             AssetRepository = repository;
         }

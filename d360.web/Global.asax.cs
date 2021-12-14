@@ -65,7 +65,7 @@ namespace d360.web
                 .SingleInstance()
                 .WithParameter("sdkKey", "sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68");
 
-            builder.RegisterType<CoreComponentSet>().As<CoreComponentSet>().InstancePerRequest();
+            builder.RegisterType<CoreComponentSet>().As<ICoreComponentSet>().InstancePerRequest();
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()

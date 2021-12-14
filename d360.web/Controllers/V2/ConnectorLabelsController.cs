@@ -40,7 +40,7 @@ namespace d360.web.Controllers.V2
 
         IConnectorLabelRepository ConnectorLabelRepository;
 
-        public ConnectorLabelsController(CoreComponentSet set, IConnectorLabelRepository connectorLabelRepository): base(set)
+        public ConnectorLabelsController(ICoreComponentSet set, IConnectorLabelRepository connectorLabelRepository): base(set)
         {
             this.ConnectorLabelRepository = connectorLabelRepository;
         }

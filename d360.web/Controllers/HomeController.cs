@@ -24,7 +24,7 @@ namespace d360.web.Controllers
 
         ICachingProvider Cache;
 
-        public HomeController(CoreComponentSet set, ICachingProvider cache)
+        public HomeController(ICoreComponentSet set, ICachingProvider cache)
             : base(set)
         {
             Cache = cache;

@@ -40,7 +40,7 @@ namespace d360.web.Controllers.V2
         IStorageProvider _storage;
         readonly ICompanyContext _company;
 
-        public EnvironmentController(CoreComponentSet set, IStorageProvider storage) : base(set)
+        public EnvironmentController(ICoreComponentSet set, IStorageProvider storage) : base(set)
         {
             _storage = storage;
         }

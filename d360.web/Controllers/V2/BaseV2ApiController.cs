@@ -20,7 +20,7 @@ namespace d360.web.Controllers.V2
     [ValidateCompanyState]
     public class BaseV2ApiController : BaseApiController
     {
-        public BaseV2ApiController(CoreComponentSet set): base(set)
+        public BaseV2ApiController(ICoreComponentSet set): base(set)
         {
         }
 

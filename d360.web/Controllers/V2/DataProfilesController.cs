@@ -31,7 +31,7 @@ namespace d360.web.Controllers.V2
         internal IDataProfileRepository DataProfiles;
         internal IAssetRepository AssetRepository;
 
-        public DataProfilesController(CoreComponentSet set, IDataProfileRepository dataProfileRepository, IAssetRepository assetRepository)
+        public DataProfilesController(ICoreComponentSet set, IDataProfileRepository dataProfileRepository, IAssetRepository assetRepository)
             : base(set)
         {
             this.DataProfiles = dataProfileRepository;

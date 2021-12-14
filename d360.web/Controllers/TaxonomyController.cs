@@ -13,7 +13,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public TaxonomyController(CoreComponentSet set)
+        public TaxonomyController(ICoreComponentSet set)
             : base(set)
         {
         }

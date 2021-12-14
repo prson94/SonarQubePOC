@@ -36,7 +36,7 @@ namespace d360.web.Controllers.V2
         IWorkflowRepository workflowRepository;
         IWorkflowApiModelValidator validator;
 
-        public WorkflowController(CoreComponentSet set, IWorkflowRepository workflowRepository, IWorkflowApiModelValidator validator): base(set)
+        public WorkflowController(ICoreComponentSet set, IWorkflowRepository workflowRepository, IWorkflowApiModelValidator validator): base(set)
         {
             this.workflowRepository = workflowRepository;
             this.validator = validator;

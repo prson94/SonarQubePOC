@@ -22,7 +22,7 @@ namespace d360.web.Controllers
         ISearchSource SearchSource;
         IAssetRepository AssetRepository;
 
-        public SearchController(CoreComponentSet set, ISearchSource searchSource, IAssetRepository repository): base(set)
+        public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository repository): base(set)
         {
             SearchSource = searchSource;
             AssetRepository = repository;

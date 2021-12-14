@@ -43,7 +43,7 @@ namespace d360.web.Controllers.V2
         IFieldsRepository FieldsRepository;
         private readonly IAssetRepository AssetRepository;
 
-        public FieldsController(CoreComponentSet set, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
+        public FieldsController(ICoreComponentSet set, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
             : base(set)
         {
             QueueSource = queueSource;

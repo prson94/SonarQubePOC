@@ -46,7 +46,7 @@ namespace d360.web.Controllers.V2
 
         private ISemanticsRepository SemanticsRepository;
         
-        public SemanticsController(CoreComponentSet set, ISemanticsRepository semanticsRepository)
+        public SemanticsController(ICoreComponentSet set, ISemanticsRepository semanticsRepository)
             : base(set)
         {
             SemanticsRepository = semanticsRepository;

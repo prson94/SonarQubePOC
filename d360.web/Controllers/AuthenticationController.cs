@@ -48,7 +48,7 @@ namespace d360.web.Controllers
 
         TelemetryClient Telemetry;
 
-        public AuthenticationController(CoreComponentSet set, IMailProvider mail)
+        public AuthenticationController(ICoreComponentSet set, IMailProvider mail)
             : base(set)
         {
             Mail = mail;

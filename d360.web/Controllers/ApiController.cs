@@ -43,7 +43,7 @@ namespace d360.web.Controllers
         IConnectorLabelRepository connectorLabelRepository;
         IFieldsRepository fieldsRepository;
 
-        public D3SApiController(CoreComponentSet set, ICommentRepository comments, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider, IFieldsRepository fieldsRepository)
+        public D3SApiController(ICoreComponentSet set, ICommentRepository comments, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider, IFieldsRepository fieldsRepository)
             : base(set)
         {
 #if DEBUG
