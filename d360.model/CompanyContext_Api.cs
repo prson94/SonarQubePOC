@@ -1400,7 +1400,8 @@ where T.ExecutionId = @executionid;
             bool useFriendlyNames = false,
             bool allowTagFields = false,
             FieldValidationFieldProperties validationFieldProperties = null,
-            bool jsonElementsEnabled = true
+            bool jsonElementsEnabled = true,
+            bool IslookupFieldsPassedByValue = false
             )
         {
             List<DataRow> fieldRows = new List<DataRow>();
@@ -1586,10 +1587,10 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "Lookup":
-                                    if (fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1)
+                                    if (fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1 && IslookupFieldsPassedByValue)
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} does not allow selection of multiple values");
+                                        errorMessages.Add( string.Format(CompanyContextApiError.FieldNotAllowedMultipleValies,fieldName));
                                     }
                                     break;
                                 case "Number":
@@ -4534,7 +4535,7 @@ where   ExecutionID = @ExecutionID
                         {
                             bool success;
                             string errorMessage;
-                            var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties, jsonElementsEnabled: enableJsonAttributes);
+                            var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties, jsonElementsEnabled: enableJsonAttributes, IslookupFieldsPassedByValue: lookupFieldsPassedByValue);
 
                             if (success && isInsert && parentObjectID.HasValue && predicateType == PredicateType.InterTypeHierarchy)
                             {
@@ -4715,6 +4716,7 @@ where   ExecutionID = @ExecutionID
                     }
 
                     if (hasLookupFieldTypes)
+
                     {
                         if (lookupFieldsPassedByValue)
                         {
@@ -5427,7 +5429,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                             bool success;
                             string errorMessage;
-                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false);
+                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false, IslookupFieldsPassedByValue: lookupFieldsPassedByValue);
 
                             if (success)
                             {
@@ -6197,7 +6199,7 @@ end",
 
                             bool success;
                             string errorMessage;
-                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false);
+                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false, IslookupFieldsPassedByValue: lookupFieldsPassedByValue);
 
                             if (success)
                             {
