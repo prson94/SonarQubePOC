@@ -1,7 +1,9 @@
 import { Component, Input } from '@angular/core';
+import { map } from 'rxjs/operators';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { FavoritePageType, FavoriteViewModel } from '../../../models/favorite.model';
 import { IconService } from '../../../services/icon.service';
+import { FavoritesManagementService } from './FavoritesManagementService';
 
 @Component({
     selector: 'd3s-site-menu-favorite-item',
@@ -11,7 +13,7 @@ import { IconService } from '../../../services/icon.service';
 export class SiteMenuFavoriteItemComponent {
     @Input() favorite: FavoriteViewModel;
 
-    constructor(private iconService: IconService) { }
+    constructor(private iconService: IconService, private store: FavoritesManagementService) { }
 
     AssetTypeClass = AssetTypeClass;
     FavoritePageType = FavoritePageType;
@@ -53,4 +55,8 @@ export class SiteMenuFavoriteItemComponent {
             }
         }
     }
+
+    homePageRoute$ = this.store.state$.pipe(
+        map(x => x.homepageAndFavorites?.Homepage?.Route)
+    );
 };

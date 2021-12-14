@@ -510,7 +510,7 @@ namespace d360.web.Services.Favorites
 
         private static Func<string, Dictionary<string, string>, string> WithTabName(string tabName)
         {
-            return (pageName, p) => pageName + "-" + tabName;
+            return (pageName, p) => pageName + " - " + tabName;
         }
 
         private static Func<string, Dictionary<string, string>, string> FixedName(string name)

@@ -33,5 +33,9 @@
 			</ng-container>
 		</span>
 		<span *ngIf="favorite.Breadcrumbs?.length > 0">: {{favorite.Breadcrumbs.join(" > ")}}</span>
+
 	</div>
+</div>
+<div *ngIf="favorite.Route === (homePageRoute$ | async)" class="fav-homepage-icon">
+	<span class="fa fa-home"></span>
 </div>
