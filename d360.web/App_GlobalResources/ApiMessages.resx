@@ -672,9 +672,6 @@
   <data name="NameRequired" xml:space="preserve">
     <value>Name is required.</value>
   </data>
-  <data name="UidInvalid" xml:space="preserve">
-    <value>Uid Invalid for {0}</value>
-  </data>
   <data name="SucessfullyCreated" xml:space="preserve">
     <value>{0} successfully created.</value>
   </data>

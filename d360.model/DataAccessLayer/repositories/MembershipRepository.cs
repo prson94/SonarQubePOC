@@ -1230,8 +1230,8 @@ namespace d360.model.DataAccessLayer
 
         private string SanitizeValue(string ParameterValue)
         {
-            var allowedTags = new[] {"data"};
-            var allowedSchemas = new[] {"data"};
+            var allowedTags = new[] { "data" };
+            var allowedSchemas = new[] { "data" };
 
             var sanitizer = new Ganss.XSS.HtmlSanitizer(allowedTags: allowedTags, allowedSchemes: allowedSchemas);
             var retstring = sanitizer.Sanitize(ParameterValue);
@@ -1298,50 +1298,17 @@ order by	q.SortOrder";
             return results;
         }
 
-        public async Task<bool> ToggleFavorite(int resourceID, FavoriteApiModel apiFavorite, bool isHomepage = false)
+        public async Task ToggleFavorite(int resourceID, FavoriteApiModel apiFavorite, bool isHomepage = false)
         {
-            bool result = false;
-            return await Task.Run(() =>
+            await Task.Run(() =>
             {
                 Favorite favorite = new Favorite()
                 {
                     ResourceID = resourceID,
                     IsHomePage = isHomepage,
-                    Type = apiFavorite.Type.ToString(),
+                    Type = FavoriteType.Page.ToString(),
                     Route = apiFavorite.Route
                 };
-
-                // TODO: drop this, it's not really useful
-                switch (apiFavorite.Type)
-                {
-                    case FavoriteType.Page:
-                        favorite.Name = apiFavorite.Name ?? apiFavorite.Route;
-                        break;
-                    case FavoriteType.Asset:
-                        AssetDetail asset = GetAssetDetailsFromRoute(apiFavorite.Route);
-                        if (asset == null)
-                        {
-                            return false;
-                        }
-
-                        favorite.Object = asset.Object;
-                        favorite.ObjectID = asset.ObjectID;
-                        favorite.Uid = asset.uid;
-                        favorite.Name = asset.DisplayValue;
-                        break;
-                    case FavoriteType.AssetType:
-                        AssetType assettype = GetAssetTypeFromRoute(apiFavorite.Route);
-                        if (assettype == null)
-                        {
-                            return false;
-                        }
-
-                        favorite.Object = assettype.Object;
-                        favorite.ObjectID = assettype.ObjectID;
-                        favorite.Uid = assettype.uid;
-                        favorite.Name = assettype.Name;
-                        break;
-                }
 
                 //only 1 home page allowed at once, remove old one(s)
                 if (favorite.IsHomePage)
@@ -1351,21 +1318,11 @@ order by	q.SortOrder";
                     CompanyContext.SaveChanges();
                 }
 
-                Favorite existing = null;
-
-                if (!string.IsNullOrEmpty(favorite.Object) && favorite.ObjectID > 0)
-                {
-                    existing = CompanyContext.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Object == favorite.Object && f.ObjectID == favorite.ObjectID);
-                }
-                else
-                {
-                    existing = CompanyContext.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Name == favorite.Name && f.Route == favorite.Route);
-                }
-
+                // TODO: this is not really correct, because it doesn't refers to actual objectId
+                var existing = CompanyContext.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Route == favorite.Route);
                 if (existing == null)
                 {
                     CompanyContext.Add(favorite);
-                    result = true;
                 }
                 else
                 {
@@ -1373,63 +1330,13 @@ order by	q.SortOrder";
                     {
                         existing.IsHomePage = favorite.IsHomePage;
                         CompanyContext.Update(existing);
-                        result = true;
                     }
                     else
                     {
                         CompanyContext.Delete(existing);
-                        result = true;
                     }
                 }
-                return result;
             });
-        }
-
-        private AssetDetail GetAssetDetailsFromRoute(string route)
-        {
-            AssetDetail asset = null;
-            Dictionary<int, string> patterns = new Dictionary<int, string>()
-            {
-                {0, @"\b([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})\/?" }, //UID pattern
-                {1, @"^([a-z\/]+)\/(\d+)(\/|[;a-z=]+)(\d+)$" }, // type/typeid/objectid pattern
-                {2, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" }, // type/objectid pattern
-                {3, @"^([a-z\/]+)\/([\d\/]+)\/([id\/]+)\/(\d+)$" } // type/typeid/ID/objectid pattern
-            };
-            foreach (KeyValuePair<int, string> entry in patterns)
-            {
-                Match regex = Regex.Match(route, entry.Value, RegexOptions.IgnoreCase);
-                if (regex.Success)
-                {
-                    switch (entry.Key)
-                    {
-                        case 0: //UID
-                            Guid uid = Guid.Parse(regex.Groups[1].Value);
-                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.uid == uid);
-                            break;
-                        case 1: //type/typeid/objectid
-                            string objecttype = RoutePrefixToObjectType(regex.Groups[1].Value);
-                            int typeobjectid = int.Parse(regex.Groups[2].Value);
-                            int oid = int.Parse(regex.Groups[4].Value);
-                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objecttype && a.ObjectID == oid);
-                            break;
-                        case 2: //type/objectid
-                            string objectType = RoutePrefixToObjectType(regex.Groups[1].ToString());
-                            int oId = int.Parse(regex.Groups[2].ToString());
-                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objectType && a.ObjectID == oId);
-                            break;
-                        case 3: //type/typeid/id/objectid
-                            string objecTType = RoutePrefixToObjectType(regex.Groups[1].Value);
-                            int oID = int.Parse(regex.Groups[4].Value);
-                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objecTType && a.ObjectID == oID);
-                            break;
-                    }
-                }
-                if (asset != null)
-                {
-                    break;
-                }
-            }
-            return asset;
         }
 
         public List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups)
@@ -1507,44 +1414,6 @@ order by	q.SortOrder";
             }
 
             return results;
-        }
-
-        private AssetType GetAssetTypeFromRoute(string route)
-        {
-            AssetType assettype = null;
-            Dictionary<int, string> patterns = new Dictionary<int, string>()
-            {
-                {0, @"\b([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})\/?" }, //UID pattern
-                {1, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" }, // type/typeid pattern
-            };
-            foreach (KeyValuePair<int, string> entry in patterns)
-            {
-                Match regex = Regex.Match(route, entry.Value, RegexOptions.IgnoreCase);
-                if (regex.Success)
-                {
-                    switch (entry.Key)
-                    {
-                        case 0: //UID
-                            Guid uid = Guid.Parse(regex.Groups[1].Value);
-                            assettype = CompanyContext.AssetTypes.FirstOrDefault(a => a.uid == uid);
-                            break;
-                        case 1: //type/typeid
-                            string objecttype = RoutePrefixToObjectType(regex.Groups[1].Value);
-                            int oid = int.Parse(regex.Groups[2].Value);
-                            if (objecttype != "")
-                            {
-                                objecttype += "Type";
-                                assettype = CompanyContext.AssetTypes.FirstOrDefault(a => a.Object == objecttype && a.ObjectID == oid);
-                            }
-                            break;
-                    }
-                }
-                if (assettype != null)
-                {
-                    break;
-                }
-            }
-            return assettype;
         }
 
         private string RoutePrefixToObjectType(string prefix)

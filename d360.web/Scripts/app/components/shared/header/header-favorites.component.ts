@@ -40,8 +40,6 @@ import * as _ from 'lodash';
 export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     @Input() uri: string;
     @Input() favItems: FavoriteApiModel[] = [];
-    @Input() currentObject: string; // TODO: get rid of mixed clientside-serverside work here. 
-    @Input() currentObjectId: number; // TODO: get rid of mixed clientside-serverside work here. 
     @Input() homePageItem: FavoriteApiModel = null;
 
     private subBreadcrumb: any;
@@ -100,15 +98,6 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
 
         this.isLoading = true;
         let f = new FavoriteApiModel();
-        // TODO: get rid of mixed clientside-serverside work here. 
-        // TODO: Either Type&Name is determined by server, or Route isn't passed to server
-        if (this.IsPageType()) {
-            f.Type = "Page";
-        } else if (this.currentObject.endsWith("Type")) {
-            f.Type = "AssetType";
-        } else {
-            f.Type = "Asset";
-        }
         f.Name = this.name;
         f.Route = this.currentUri;
         this.favoritesService.toggleFavoriteV2(f).subscribe(
@@ -118,20 +107,6 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
                 this.ref.markForCheck();
             }
         );
-    }
-
-    IsPageType(): any {
-        let res = false;
-        if ((!this.currentObject && !this.currentObjectId) || (this.currentObject == 'ReferenceItemType')) {
-            res = true;
-        }
-        if (this.uri.toLowerCase().indexOf("sidebar") !== -1) {
-            res = true;
-        }
-        if (this.uri.toLowerCase().indexOf("dashboard/ArtifactType".toLowerCase()) !== -1) {
-            res = true;
-        }
-        return res;
     }
 
     get isFavoriteItem() {

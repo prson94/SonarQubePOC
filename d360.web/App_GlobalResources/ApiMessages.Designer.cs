@@ -1897,15 +1897,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uid Invalid for {0}.
-        /// </summary>
-        public static string UidInvalid {
-            get {
-                return ResourceManager.GetString("UidInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type not found for UID.
         /// </summary>
         public static string UIDNotFoundObjectAndObjectType {

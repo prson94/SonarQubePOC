@@ -16,7 +16,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false);
         Task<IEnumerable<UserApiUpsertResult>> ProcessUpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false);
         Task<ApiExecutionInfo> UpsertBulkUsers(ApiExecution execution, UserUpsertModel model);
-        Task<bool> ToggleFavorite(int resourceID, FavoriteApiModel favorite, bool isHomepage = false);
+        Task ToggleFavorite(int resourceID, FavoriteApiModel favorite, bool isHomepage = false);
 
         [Obsolete]
         Task ClearFavorites(int resourceID);

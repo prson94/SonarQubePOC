@@ -23,7 +23,6 @@ namespace d360.web.Services
 
         public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
-            // TODO: cleanup non-existing favorites & homepages by contion
             var favorites = await favoritesRepository.GetFavorites(request.ResourceId);
             var routeMatchers = favorites.Select(GetRouteMatch).ToList();
             var favoritesDetails = await favoritesRepository.GetFavoriteDetails(routeMatchers.Select(r => r.ObjectId));
@@ -34,6 +33,7 @@ namespace d360.web.Services
                                   join favoriteDetails in favoritesDetails
                                     on favorite.Id equals favoriteDetails.FavoriteId into joinedFavoriteDetails
                                   from favoriteDetails in joinedFavoriteDetails.DefaultIfEmpty()
+                                  where IsCorrectFavorite(routeMatch, favoriteDetails)
                                   orderby favorite.SortOrder
                                   select new FavoriteExtendedApiViewModel
                                   {
@@ -56,6 +56,13 @@ namespace d360.web.Services
         public class Request : IRequest<IEnumerable<FavoriteExtendedApiViewModel>>
         {
             public int ResourceId { get; set; }
+        }
+
+        private bool IsCorrectFavorite(RouteMatchResult routeMatch, FavoritesObjectDetailsResponse favoriteDetails)
+        {
+            var isNonArtifact = routeMatch.Matcher.PageType != FavoritePageType.Artifact;
+            var favoriteExists = favoriteDetails != null;
+            return isNonArtifact || favoriteExists;
         }
 
         private RouteMatchResult GetRouteMatch(FavoriteShortModel f)

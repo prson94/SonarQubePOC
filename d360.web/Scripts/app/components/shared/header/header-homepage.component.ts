@@ -31,8 +31,6 @@ import * as _ from 'lodash';
 export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
     @Input() uri: string;
     @Input() homePageItem: FavoriteApiModel = null;
-    @Input() currentObject: string; // TODO: get rid of mixed clientside-serverside work here. 
-    @Input() currentObjectId: number; // TODO: get rid of mixed clientside-serverside work here. 
 
     private subBreadcrumb: any;
     public isLoading = false;
@@ -81,16 +79,6 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
 
         this.isLoading = true;
         let f = new FavoriteApiModel();
-        // TODO: get rid of mixed clientside-serverside work here. 
-        // TODO: Either Type&Name is determined by server, or Route isn't passed to server
-        //check these to determine fav type
-        if (this.IsPageType()) {
-            f.Type = "Page";
-        } else if (this.currentObject.endsWith("Type")) {
-            f.Type = "AssetType";
-        } else {
-            f.Type = "Asset";
-        }
         f.Name = this.name;
         f.Route = this.currentUri;   
         this.favoritesService.toggleHomePageV2(f).subscribe(
@@ -100,17 +88,6 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
                 this.ref.markForCheck();
             }
         );
-    }
-
-    IsPageType(): any {
-        let res = false;
-        if ((!this.currentObject && !this.currentObjectId) || (this.currentObject == 'ReferenceItemType')) {
-            res = true;
-        }
-        if (this.uri.toLowerCase().indexOf("sidebar") !== -1) {
-            res = true;
-        }
-        return res;
     }
 
     get isHomePageItem() {

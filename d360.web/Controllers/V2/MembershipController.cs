@@ -1435,7 +1435,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             bool isNewHomePage = true;
             if (currentHome != null)
             {
-                if (currentHome.Name == favorite.Name && currentHome.Type == favorite.Type.ToString() && favorite.Route == currentHome.Route)
+                if (favorite.Route == currentHome.Route)
                 {
                     isNewHomePage = false;
                 }
@@ -1448,27 +1448,18 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                favorite.Name = favorite.Name?.Trim();
-
-                if (favorite.Type == FavoriteType.Page && string.IsNullOrWhiteSpace(favorite.Route))
+                if (string.IsNullOrWhiteSpace(favorite.Route))
                 {
-                    string message = ApiMessages.FavoritesEmptyRoute;
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
                 }
                 else
                 {
                     favorite.Route = favorite.Route.Trim();
                 }
-                bool result = await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
-                if (result)
-                {
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created))).ConfigureAwait(false);
-                }
-                else
-                {
-                    string message = string.Format(ApiMessages.UidInvalid, favorite.Type.ToString());
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
-                }
+
+                await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
             }
             catch (Exception ex)
             {
@@ -1477,7 +1468,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", "Membership.ToggleFavoriteOrHomepage => " }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
             }
         }
 
