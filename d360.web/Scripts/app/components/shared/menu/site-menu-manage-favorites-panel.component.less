@@ -27,6 +27,11 @@ d3s-loading {
     display: flex;
     padding-top: 6px;
     padding-bottom: 6px;
+
+    label {
+        display: block; // this ensures that all label is clickable, even empty content
+        cursor: pointer;
+    }
 }
 
 // This magic fixes GOV-16402 - issue with having two scrollbars
