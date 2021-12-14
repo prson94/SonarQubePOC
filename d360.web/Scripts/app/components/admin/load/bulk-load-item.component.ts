@@ -80,7 +80,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     load(): void {
         this.isLoading = true;
         this.loadService.getLoadColumns(this.id).subscribe(
-            columnData => {
+            (columnData) => {
                 this.columns = columnData;
                 this.isLoading = false;
             }
@@ -96,7 +96,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
             this.itemsSearchSub.unsubscribe();
         }
 
-        this.loadService.getLoadUid(this.id).subscribe(r => {
+        this.loadService.getLoadUid(this.id).subscribe((r) => {
             this.itemsSearchSub =  this.loadService.getLoadItemsV2(r, this.getParams()).pipe(debounceTime(400)).subscribe((data) => {
                 this.items = data.items;
                 this.totalRecords = data.total;
@@ -120,15 +120,16 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
         params._pageNum = this.pageNum + 1;
 
         params._pageSize = this.rowsPerPage;
-        if (this.sortField != undefined) {
+        if (this.sortField) {
             params._order = this.sortField;
         }
         else {
             delete params['_order'];
         }
 
-        if (this.sortOrder != SortOrder.None)
-            params._direction = this.sortOrder == SortOrder.Ascending ? "asc" : "desc";
+        if (this.sortOrder !== SortOrder.None) {
+            params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";
+        }
         else {
             delete params['_direction'];
         }
@@ -140,7 +141,6 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
             delete params['_simpleFilter'];
         }
 
-        console.log(params);
         return params;
     }
 

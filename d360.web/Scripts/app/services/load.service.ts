@@ -47,22 +47,23 @@ export class LoadService extends BaseObservableService {
     getLoadItemsV2(loadUid: string, params: any): Observable<LoadItemsModel> {
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-            if (qString)
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+            if (qString) {
                 qString = '?' + qString;
+            }
         }
 
-        var url = `api/v2/executions/bulkload/${loadUid}/items${qString}`
+        var url = `api/v2/executions/bulkload/${loadUid}/items${qString}`;
         return this.http.get(url).pipe(
-            map(response => <LoadItemsModel>response),
-            catchError(err => this.handleError(err))
+            map((response) => <LoadItemsModel>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getLoadUid(id: number): Observable<any> {
         return this.http.get(`api/loads/${id}/uid`).pipe(
-            map(response => <any>response),
-            catchError(err => this.handleError(err))
+            map((response) => <any>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
