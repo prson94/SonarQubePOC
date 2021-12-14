@@ -61,10 +61,10 @@ namespace d360.core.entities
         public SemanticMatchType MatchType { get; set; }
 
         [JsonProperty("maximum")]
-        public float? Maximum { get; set; }
+        public decimal? Maximum { get; set; }
 
         [JsonProperty("minimum")]
-        public float? Minimum { get; set; }
+        public decimal? Minimum { get; set; }
 
         [JsonProperty("minSamples")]
         public int? MinimumSamples { get; set; }
@@ -432,18 +432,27 @@ namespace d360.core.entities
                 }
             }
 
-            if (model.BaseType == SemanticBaseType.Long && model.Minimum.HasValue && !long.TryParse(model.Minimum.Value.ToString(), out _))
+            decimal minValue = -999999999999.999999m;
+            decimal maxValue = 999999999999.999999m;
+
+            if (model.BaseType == SemanticBaseType.Long && model.Minimum.HasValue)
             {
-                errors.Add("Since BaseType is Long, Minimum must be a whole number value.");
+                if (!long.TryParse(model.Minimum.Value.ToString(), out _))
+                {
+                    errors.Add("Since BaseType is Long, Minimum must be a whole number value.");
+                }
             }
             else if (model.BaseType != SemanticBaseType.Long && model.BaseType != SemanticBaseType.Double && model.Minimum.HasValue)
             {
                 errors.Add("Since BaseType is not Long or Double, Minimum must not contain a value.");
             }
 
-            if (model.BaseType == SemanticBaseType.Long && model.Maximum.HasValue && !long.TryParse(model.Maximum.Value.ToString(), out _))
+            if (model.BaseType == SemanticBaseType.Long && model.Maximum.HasValue)
             {
-                errors.Add("Since BaseType is Long, Maximum must be a whole number value.");
+                if (!long.TryParse(model.Maximum.Value.ToString(), out _))
+                {
+                    errors.Add("Since BaseType is Long, Maximum must be a whole number value.");
+                }
             }
             else if (model.BaseType != SemanticBaseType.Long && model.BaseType != SemanticBaseType.Double && model.Maximum.HasValue)
             {
@@ -453,6 +462,20 @@ namespace d360.core.entities
             if (model.Minimum.HasValue && model.Maximum.HasValue && model.Minimum.Value > model.Maximum.Value)
             {
                 errors.Add("Minimum must not be greater than Maximum.");
+            }
+            if (model.Minimum.HasValue)
+            {
+                if (model.Minimum.Value < minValue || model.Minimum.Value > maxValue)
+                {
+                    errors.Add($"Minimum must not fall outside the range of {minValue} or {maxValue}.");
+                }
+            }
+            if (model.Maximum.HasValue)
+            {
+                if (model.Maximum.Value < minValue || model.Maximum.Value > maxValue)
+                {
+                    errors.Add($"Maximum must not fall outside the range of {minValue} or {maxValue}.");
+                }
             }
 
             if ((!model.Minimum.HasValue || !model.Maximum.HasValue) && model.MinMaxPresent.HasValue)

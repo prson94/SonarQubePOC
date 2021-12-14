@@ -186,7 +186,9 @@ namespace d360.web.Controllers.V2
         /// For Built-in semantics, you may only update the following properties:
         ///  - **name**
         ///  - **description**
-        ///  
+        ///
+        /// Minimum and Maximum properties, if provided, must fall within the range: -999999999999.999999 to 999999999999.999999
+        ///
         /// For a list of possible values for the following fields, check the relevant endpoint:
         ///  - **baseType** : /api/v2/semantics/lookups/basetypes
         ///  - **matchType** : /api/v2/semantics/lookups/matchtypes
@@ -239,6 +241,8 @@ namespace d360.web.Controllers.V2
         ///  - **baseType** : /api/v2/semantics/lookups/basetypes
         ///  - **matchType** : /api/v2/semantics/lookups/matchtypes
         ///  - **status** : /api/v2/semantics/lookups/statuses
+        ///
+        /// Minimum and Maximum properties, if provided, must fall within the range: -999999999999.999999 to 999999999999.999999
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
@@ -286,6 +290,8 @@ namespace d360.web.Controllers.V2
         ///  - **baseType** : /api/v2/semantics/lookups/basetypes
         ///  - **matchType** : /api/v2/semantics/lookups/matchtypes
         ///  - **status** : /api/v2/semantics/lookups/statuses
+        ///
+        /// Minimum and Maximum properties, if provided, must fall within the range: -999999999999.999999 to 999999999999.999999
         /// </remarks>
         /// <returns>A list of updated semantics.</returns>
         [
