@@ -2,20 +2,19 @@
 <div *ngIf="!isLoading">
     <header>
         {{title}}
-        <d3s-tile-actions [hasFilterMode]="true"
-                          [(filterMode)]="showSimpleFilter"
-                          [hasRefresh]="true"
+        <d3s-tile-actions [hasRefresh]="true"
                           (refreshClick)="refresh()"
                           [hasExportErrors]="true"
                           (exportErrorsClick)="exportErrors()"
                           [hasExportOriginal]="true"
                           (exportOriginalClick)="exportOriginal()"></d3s-tile-actions>
     </header>
-    <div class="flexccontainer">
+    <div>
         <ig-search-field mode="Keypress"
                          [debounce]="300"
                          (onSearch)="onSimpleSearch($event)"
-                         [(ngModel)]="simpleTextFilter">
+                         [(ngModel)]="simpleTextFilter"
+                         style="width:100%; padding-bottom:5px">
         </ig-search-field>
     </div>
     <p-table #dt

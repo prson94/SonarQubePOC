@@ -6,6 +6,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { SortOrder } from '../../../models/enums.model';
 
 @Component({
     selector: 'd3s-bulk-load-item',
@@ -21,9 +23,12 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
 
     columns: GridColumn[];
     items: any[];
-    rowsPerPage: number = 10;
+    rowsPerPage: number = 25;
     totalRecords: number = 0;
     simpleTextFilter: string;
+    pageNum: number = 1;
+    sortOrder: number = SortOrder.None;
+    sortField: string = "";
 
     private itemsSearchSub: Subscription;
 
@@ -38,7 +43,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     constructor(
         private loadService: LoadService,
         protected settingsService: CompanySettingsService,
-        private cdr: ChangeDetectorRef    ) {
+        private changeDetectorRef: ChangeDetectorRef,    ) {
         super(settingsService);
     }
 
@@ -86,37 +91,48 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
         if (this.id == null)
             return;
 
-        this.isLoading = true;
+        //this.isLoading = true;
         if (this.itemsSearchSub) {
             this.itemsSearchSub.unsubscribe();
         }
-        console.log(this.id);
-        console.log("get data");
 
-        this.itemsSearchSub = this.loadService.getLoadUid(this.id).subscribe(r => {
-            console.log(this.simpleTextFilter);
-            this.loadService.getLoadItemsV2(r, this.getParams()).subscribe((data) => {
+        this.loadService.getLoadUid(this.id).subscribe(r => {
+            this.itemsSearchSub =  this.loadService.getLoadItemsV2(r, this.getParams()).pipe(debounceTime(400)).subscribe((data) => {
                 this.items = data.items;
                 this.totalRecords = data.total;
-
                 this.isLoading = false;
-            })
-        }
-        );
+            });
+        })
     }
 
 
     loadItemsLazy(event: LazyLoadEvent) {
-        console.log(event);
+        this.pageNum = event.first / event.rows;
+        this.sortOrder = event.sortOrder;
+        this.sortField = event.sortField;
+        this.rowsPerPage = event.rows;
         this.getData();
     }
     
 
     getParams() {
         var params = new V2ApiFilters();
-        //params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
+        params._pageNum = this.pageNum + 1;
 
         params._pageSize = this.rowsPerPage;
+        if (this.sortField != undefined) {
+            params._order = this.sortField;
+        }
+        else {
+            delete params['_order'];
+        }
+
+        if (this.sortOrder != SortOrder.None)
+            params._direction = this.sortOrder == SortOrder.Ascending ? "asc" : "desc";
+        else {
+            delete params['_direction'];
+        }
+
         if (this.simpleTextFilter && this.simpleTextFilter.length > 0) {
             params._simpleFilter = encodeURIComponent(this.simpleTextFilter);
         }
@@ -124,7 +140,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
             delete params['_simpleFilter'];
         }
 
-
+        console.log(params);
         return params;
     }
 
