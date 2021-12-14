@@ -1,0 +1,31 @@
+﻿<div [style.padding-left]="paddingLeft" class="asset-detail">
+    <div *ngIf="isLoading" style="width:100%; text-align:center;">
+        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+    </div>
+    <div *ngIf="!isLoading">
+        <div class="asset-detail-header">
+            <div class="asset-name">
+                ASDADAS
+            </div>
+            <div class="class-name">
+                ASDASDSA
+            </div>
+            <div>
+                <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a>
+            </div>
+        </div>
+        <div class="windowtabs">
+            <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">Details</button>
+            <button [class]="(tab == 'items') ? 'tab-selected' : 'tab'" (click)="clickTab('items')">Items</button>
+        </div>
+        <ng-container [ngSwitch]="tab">
+            <ng-container *ngSwitchCase="'detail'">
+                detail
+            </ng-container>
+            <ng-container *ngSwitchCase="'items'">
+                items
+            </ng-container>
+        </ng-container>
+
+    </div>
+</div>

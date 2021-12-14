@@ -36,6 +36,7 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { AssetDetailModule } from "../shared/asset-detail/asset-detail.module";
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
+import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
 
 @NgModule({
     imports: [
@@ -69,6 +70,7 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
         SharedDynamicGridEditorModule,
         SharedAssetScoreModule,
         SharedAssetEditorsModule,
+        AssetTypeDetailModule,
         TilesModule,
         WorkflowModule,
         AssetGridModule,

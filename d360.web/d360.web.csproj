@@ -1063,6 +1063,7 @@
     <Content Include="Scripts\app\components\shared\asset-editor\asset-editor-field.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Content\styles\infogix-ui\IgTooltip.less" />
@@ -1217,6 +1218,8 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\services\href-click-service.ts" />
     <Content Include="Scripts\environments\workaround.js" />
     <Content Include="webpack.prod.config.js" />

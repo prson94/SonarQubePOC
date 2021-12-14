@@ -19,7 +19,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
-import { HrefClickService } from '../../services/href-click-service';
+import { AssetDetailClickType, HrefClickService } from '../../services/href-click-service';
 import { AssetService } from '../../services/asset.service';
 
 declare var CurrentResourceID;
@@ -47,6 +47,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private synonymPermission: SynonymPermission;
     hrefSub: Subscription;
     selectedAsset: any;
+    selectedReferenceItem: any;
 
     constructor(
         private route: ActivatedRoute,
@@ -79,19 +80,16 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                 });
 
             this.hrefSub = this.hrefClickService.getEvents().subscribe(ev => {
-                if (ev) {
-                    ev.event.preventDefault();
-                    ev.event.stopPropagation();
-
-                    if (ev?.data?.DataType === "Lookup") {
-                        var val = ev.data.Values[0];
-                        console.log(val);
-                        this.selectedAsset = { uid: val.uid, type: val.TooltipType };
-                    }
-
-                } else {
-                    // clear messages when empty message received
+                this.selectedAsset = null;
+                this.selectedReferenceItem = null;
+                if (ev.type === AssetDetailClickType.Asset) {
+                    this.selectedAsset = { uid: ev.uid, type: ev.objectType };
                 }
+
+                if (ev.type === AssetDetailClickType.ReferenceItem) {
+                    this.selectedReferenceItem = { uid: ev.uid, type: ev.objectType };
+                }
+
             });
 
             this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;

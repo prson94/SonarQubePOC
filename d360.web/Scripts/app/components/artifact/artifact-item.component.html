@@ -26,7 +26,7 @@
                         </ng-container>
 
                         <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
-                            <div class="empty-overlay" *ngIf="!selectedAsset">
+                            <div class="empty-overlay" *ngIf="!selectedAsset && !selectedReferenceItem">
                                 <div class="content">
                                     <div class="icon-holder">
                                         <i class="fa fa-info-circle"></i>
@@ -49,7 +49,9 @@
                                                  [hasModifyRelationshipsPermissions]="false"
                                                  [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
                             </ng-container>
-
+                            <ng-container *ngIf="selectedReferenceItem">
+                                <ig-asset-type-detail [uid]="selectedReferenceItem.uid"></ig-asset-type-detail>
+                            </ng-container>
                         </ng-container>
                     </side-panel>
                 </div>
