@@ -500,7 +500,7 @@ namespace igx.functions.databasetaskprocessor
 
                     parameters.Add("@MainObject", queueRecord.Object, DbType.AnsiString, size: 50);
                     parameters.Add("@MainObjectID", queueRecord.ObjectID);
-                    parameters.Add("@DependentObject", model.ActionObjectValue, DbType.AnsiString, size: 50);
+                    parameters.Add("@DependentObject", model.ActionObject, DbType.AnsiString, size: 50);
                     parameters.Add("@DependentObjectID", model.ActionObjectID);
                     parameters.Add("@Date", queueRecord.Date);
                     parameters.Add("@ResourceID", model.ResourceID);

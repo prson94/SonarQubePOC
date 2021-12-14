@@ -59,7 +59,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 2).ToList();
+                companies = companies.Where(i => i.CompanyID == 1).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -605,7 +605,7 @@ from    [queue].[Task] T
 
                     parameters.Add("@MainObject", queueRecord.Object, DbType.AnsiString, size: 50);
                     parameters.Add("@MainObjectID", queueRecord.ObjectID);
-                    parameters.Add("@DependentObject", model.ActionObjectValue, DbType.AnsiString, size: 50);
+                    parameters.Add("@DependentObject", model.ActionObject, DbType.AnsiString, size: 50);
                     parameters.Add("@DependentObjectID", model.ActionObjectID);
                     parameters.Add("@Date", queueRecord.Date);
                     parameters.Add("@ResourceID", model.ResourceID);
