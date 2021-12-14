@@ -277,6 +277,26 @@ namespace d360.core.entities
             this.cardinalityDetail = samples.Where((s) => s.SampleType.Equals("cardinalitydetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
             this.topK = samples.Where((s) => s.SampleType.Equals("topk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();            
             this.bottomK = samples.Where((s) => s.SampleType.Equals("bottomk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
+            if (this.shapesDetail.Count==0)
+            {
+                this.shapesDetail = null;
+            }
+            if (this.outlierDetail.Count == 0)
+            {
+                this.outlierDetail = null;
+            }
+            if (this.cardinalityDetail.Count == 0)
+            {
+                this.cardinalityDetail = null;
+            }
+            if (this.topK.Count == 0)
+            {
+                this.topK = null;
+            }
+            if (this.bottomK.Count == 0)
+            {
+                this.bottomK = null;
+            }
         }
     }
 

@@ -66,7 +66,7 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var validationResult = ValidateDataProfileGetParmeters(assetUid, queryParams);
+                var validationResult = ValidateDataProfileGetParameters(assetUid, queryParams);
 
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
@@ -88,7 +88,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private WorkHttpStatus ValidateDataProfileGetParmeters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        private WorkHttpStatus ValidateDataProfileGetParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var isValid = isPageSizeAndNumValid(queryParams);
 
