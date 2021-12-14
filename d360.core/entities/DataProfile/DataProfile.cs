@@ -272,9 +272,9 @@ namespace d360.core.entities
             typeQualifier = profile.TypeQualifier;
 
             //samples
-            this.shapesDetail = samples.Where((s) => s.SampleType.Equals("shapesdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail() { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
-            this.outlierDetail = samples.Where((s) => s.SampleType.Equals("outlierdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail() { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
-            this.cardinalityDetail = samples.Where((s) => s.SampleType.Equals("cardinalitydetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail() { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            this.shapesDetail = samples.Where((s) => s.SampleType.Equals("shapesdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            this.outlierDetail = samples.Where((s) => s.SampleType.Equals("outlierdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            this.cardinalityDetail = samples.Where((s) => s.SampleType.Equals("cardinalitydetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
             this.topK = samples.Where((s) => s.SampleType.Equals("topk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();            
             this.bottomK = samples.Where((s) => s.SampleType.Equals("bottomk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
         }
