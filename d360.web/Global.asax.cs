@@ -19,6 +19,7 @@ using d360.extensions.caching;
 using d360.web.Controllers.V2;
 using d360.web.Services;
 using MediatR.Extensions.Autofac.DependencyInjection;
+using d360.web.Services.Favorites;
 
 namespace d360.web
 {
@@ -33,7 +34,8 @@ namespace d360.web
             builder.RegisterType<Int64Service>().As<IInt64Service>().SingleInstance();
             builder.RegisterType<DependencyInjectionTypeServiceProvider>().As<ITypeServiceProvider>().SingleInstance();
             builder.RegisterType<AssetService>().As<IAssetService>().SingleInstance();
-            
+            builder.RegisterType<FavoriteRouteMatcherService>().SingleInstance();
+
             builder.RegisterType<ApplicationUriProvider>().As<IApplicationUriProvider>().SingleInstance();
 
             builder.RegisterControllers(typeof(MvcApplication).Assembly);

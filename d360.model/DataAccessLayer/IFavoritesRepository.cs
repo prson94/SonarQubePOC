@@ -13,6 +13,7 @@ namespace d360.model.DataAccessLayer
 
         Task<IReadOnlyList<FavoritesObjectDetailsResponse>> GetFavoriteDetails(IEnumerable<FavoritesObjectDetailsRequest> items);
     }
+
     public class FavoriteShortModel
     {
         public int Id { get; set; }
