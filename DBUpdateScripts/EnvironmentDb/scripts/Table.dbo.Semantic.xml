@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.Semantic-v1">
+  <changeSet author="Pappas" id="Table.dbo.Semantic-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,8 +32,8 @@ BEGIN
 		MinimumSamples int null,
 		HeaderFilter nvarchar(max) null,
 		HeaderFilterConfidence int null,
-		Minimum float null,
-		Maximum float null,
+		Minimum decimal(18,6) null,
+		Maximum decimal(18,6) null,
 		MinMaxPresent bit null,
 		JsonPayload nvarchar(max) null,
 		CreatedBy int not null,
@@ -44,6 +44,9 @@ BEGIN
 		CONSTRAINT [PK_Semantic] PRIMARY KEY CLUSTERED ( [ID] DESC )
 	)
 END
+
+alter table Semantic alter column Minimum decimal(18,6) null;
+alter table Semantic alter column Maximum decimal(18,6) null;
 		]]>
     </sql>
 	<rollback>
