@@ -6,6 +6,7 @@ import { TooltipComponent } from './tooltip.component';
 import { PreviewTooltipComponent } from './preview-tooltip.component';
 import { LookupTooltipComponent } from './lookup-tooltip.component';
 import { LoadingComponent } from './loading.component';
+import { HighlightSearchTextComponent } from './highlight-search-text.component';
 import { D3STreeTableToggler } from './treetable-toggler.component';
 import { D3SColumnFilterModule } from './turbotable-column-filter.component';
 import { D3SSortIconModule } from './turbotable-sorticon.component';
@@ -20,7 +21,8 @@ import { IgColorPickerModule } from './controls/color-picker/color-picker.module
         PreviewTooltipComponent,
         LoadingComponent,
         LookupTooltipComponent,
-        D3STreeTableToggler
+        D3STreeTableToggler,
+        HighlightSearchTextComponent
     ],
     exports: [
         TooltipComponent,
@@ -30,7 +32,8 @@ import { IgColorPickerModule } from './controls/color-picker/color-picker.module
         D3STreeTableToggler,
         D3SSortIconModule,
         D3SColumnFilterModule,
-        DirectivesModule
+        DirectivesModule,
+        HighlightSearchTextComponent
     ]
     , imports: [
         CommonModule,

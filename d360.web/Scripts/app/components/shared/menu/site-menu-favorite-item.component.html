@@ -4,7 +4,9 @@
 	</span>
 </div>
 <div class="fav-description">
-	<div class="fav-title">{{favorite.Name}}</div>
+	<div class="fav-title">
+		<d3s-highlight-search-text [text]="favorite.Name" [highlight]="searchText$ | async"></d3s-highlight-search-text>
+	</div>
 	<div class="fav-breadcrumbs">
 		<!-- Please, note, that favorite breadcrumbs have different design than page breadcrumbs -->
 		<!-- This is reason, why there are no reuse of rendering -->

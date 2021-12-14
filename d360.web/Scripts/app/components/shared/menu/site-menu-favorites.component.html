@@ -10,7 +10,9 @@
 	(activeItemChanged)="handleActiveItem($event);"
 	rootIconName="fa-star">
 	<ng-template #showFavorites>
-		<d3s-site-menu-show-favorites-panel (activeItemChanged)="handleActiveItem($event);">
+		<d3s-site-menu-show-favorites-panel
+			[isActive]="menu.isActiveItem"
+			(activeItemChanged)="handleActiveItem($event);" >
 			<ng-container additionalButtons>
 				<button (click)="store.toggleManageFavoritesOnAction()"
 					igButton

@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { Favorite, FavoriteViewModel } from '../../../models/favorite.model';
+import { SearchFieldComponent } from '../controls/search-field/search-field.component';
 import { FavoritesManagementService } from './FavoritesManagementService';
 
 @Component({
@@ -11,10 +12,21 @@ import { FavoritesManagementService } from './FavoritesManagementService';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SiteMenuShowFavoritesPanelComponent {
-    // TODO: highlight search text
-    searchText = '';
+    @Input() isActive: boolean = false;
+
+    @ViewChild('searchinput', { static: false }) searchInput: SearchFieldComponent;
 
     constructor(public store: FavoritesManagementService, private router: Router) {
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (this.isActive) {
+            if (this.searchInput) {
+                this.searchInput.focus();
+            }
+
+            this.store.setSearchTextAction({ searchText: '' });
+        }
     }
 
     isLoading$ = this.store.state$.pipe(
@@ -25,14 +37,12 @@ export class SiteMenuShowFavoritesPanelComponent {
         map(state => state.homepageAndFavorites?.Favorites ?? [])
     );
 
-    filterBySearch = (favorites: FavoriteViewModel[], searchText: string): FavoriteViewModel[] => {
-        return favorites.filter(f => matches(f));
+    searchText$ = this.store.state$.pipe(
+        map(state => state.searchText)
+    );
 
-        function matches(f: FavoriteViewModel) {
-            return includes(f.Name, searchText)
-                // TODO: include also area
-                || includes(f.Breadcrumbs.join(" > "), searchText);
-        }
+    filterBySearch = (favorites: FavoriteViewModel[], searchText: string): FavoriteViewModel[] => {
+        return favorites.filter(f => includes(f.Name, searchText));
 
         function includes(where: string, what: string) {
             return (where ?? '').toLowerCase().includes((what ?? '').toLowerCase());

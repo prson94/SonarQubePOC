@@ -3,8 +3,9 @@
 		<div class="megamenu-header truncate showFavoritesHeader">
 			<ig-search-field #searchinput
 				[darkMode]="true"
-				[(ngModel)]="searchText"
+				[ngModel]="searchText$ | async"
 				[placeholder]="'Search menu...'"
+				(ngModelChange)="store.setSearchTextAction({searchText: $event})"
 				(onSearch)="contentSizeChanged.emit();"
 				mode="Keypress"></ig-search-field>
 			<br>
@@ -14,7 +15,7 @@
 			class="row megamenu-items favorites-scroll-fix">
 			<d3s-loading [isLoading]="isLoading"></d3s-loading>
 			<ng-container *ngIf="!isLoading">
-				<ng-container *ngLet="filterBySearch(favorites$ | async, this.searchText) as favorites">
+				<ng-container *ngLet="filterBySearch(favorites$ | async, searchText$ | async) as favorites">
 					<ng-container *ngFor="let favorite of favorites">
 						<div class="col s12 megamenu-items-container">
 							<ul class="menu-group">

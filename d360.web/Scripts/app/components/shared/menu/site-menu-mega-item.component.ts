@@ -14,8 +14,9 @@ import { CompanySettingsService } from "../../../services/settings.service";
                         <div class="caret" (click)="handleArrowClick($event)">
                             <i *ngIf="item.Items" [class]="!item.ShowChildren ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
                         </div>
-                        <div *ngIf="searchText" class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
-                        <div *ngIf="!searchText" class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerText]="highlight()"></div>
+                        <div class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}">
+                            <d3s-highlight-search-text [text]="item.Name" [highlight]="searchText"></d3s-highlight-search-text>
+                        </div>
                         <div *ngIf="count > 0" class="d3s-badge pull-right">{{count}}</div>
                     </div>
                 </a>
@@ -77,14 +78,6 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
             this.item.ShowChildren = false;
             this.hideChildElements();
         }
-    }
-    public highlight() {
-        if (!this.searchText) {
-            return this.item.Name;
-        }
-        return this.item.Name.replace(new RegExp(this.searchText, "gi"), match => {
-            return '<span style="background: #f5eeff;">' + match + '</span>';
-        });
     }
 
     itemClick() {
