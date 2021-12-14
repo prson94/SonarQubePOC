@@ -40,7 +40,6 @@ export class FeatureFlagsService extends BaseObservableService {
     }
 
     createClientConnection() {
-        console.log(this.currentUser);
         this.ldClient = initialize(this.clientId, this.currentUser);
 
         this.ldClient.on('change', (flags) => {
@@ -52,7 +51,7 @@ export class FeatureFlagsService extends BaseObservableService {
 
         this.ldClient.on('ready', () => {
             this.setFlags();
-        })
+        });
     }
 
     setFlags() {

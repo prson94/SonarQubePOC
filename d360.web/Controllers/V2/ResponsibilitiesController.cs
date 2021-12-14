@@ -38,7 +38,7 @@ namespace d360.web.Controllers.V2
     public class ResponsibilitiesController : BaseV2ApiController
     {
         private IApplicationUriProvider ApplicationUriProvider { get; }
-        private IAssetRepository AssetRepository;
+        private readonly IAssetRepository AssetRepository;
         private IMediator Mediator { get; }
         private IResponsibilityRepository ResponsibilityRepository;
 

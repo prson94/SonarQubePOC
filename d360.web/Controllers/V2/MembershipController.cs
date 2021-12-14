@@ -41,7 +41,7 @@ namespace d360.web.Controllers.V2
     ]
     public class MembershipController : BaseV2ApiController
     {
-        ICachingProvider Cache;
+        readonly ICachingProvider Cache;
         readonly IMembershipRepository membershipRepository;
         readonly IAssetRepository assetRepository;
         public MembershipController(ICoreComponentSet set, IMembershipRepository membershipRepository, IAssetRepository assetRepository, ICachingProvider cache)

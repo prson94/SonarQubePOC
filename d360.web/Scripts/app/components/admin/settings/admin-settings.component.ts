@@ -85,7 +85,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.distributedCacheEnabled = featureFlagService.flags[FeatureFlags.DistributedCacheFlag];
         this._featureFlagSubscription = featureFlagService.flagChange.subscribe((flags) => {
             this.distributedCacheEnabled = flags[FeatureFlags.DistributedCacheFlag].current;
-        })
+        });
 
         this.load();
     }

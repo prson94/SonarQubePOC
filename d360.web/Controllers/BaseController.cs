@@ -196,7 +196,7 @@ from	CompanyResource CR
                 firstName = userModel.FirstName,
                 lastName = userModel.LastName,
                 email = userModel.Email,
-                custom = new Dictionary<string, string>() {
+                custom = new Dictionary<string, string> {
                  { "tenantId", userModel.TenantId.ToString() },
                  { "tenantName", userModel.TenantName }
              }
