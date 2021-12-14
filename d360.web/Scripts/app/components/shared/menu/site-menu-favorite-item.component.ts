@@ -26,7 +26,8 @@ export class SiteMenuFavoriteItemComponent {
             [FavoritePageType.DashboardPage, 'tachometer'],
             [FavoritePageType.HomePage, 'home'],
             [FavoritePageType.CommunityPage, 'group'],
-            [FavoritePageType.WorkflowPage, 'usb']
+            [FavoritePageType.WorkflowPage, 'usb'],
+            [FavoritePageType.CartPage, 'shopping-cart']
         ])
 
         switch (this.favorite.PageType) {

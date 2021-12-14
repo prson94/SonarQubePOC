@@ -23,7 +23,8 @@ export enum FavoritePageType {
     CommunityPage = 'CommunityPage',
     WorkflowPage = 'WorkflowPage',
     HomePage = 'HomePage',
-    ResourceListPage = 'ResourceListPage'
+    ResourceListPage = 'ResourceListPage',
+    CartPage = 'CartPage'
 }
 
 export class Favorite {

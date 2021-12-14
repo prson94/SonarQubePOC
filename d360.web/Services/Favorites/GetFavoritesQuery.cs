@@ -24,8 +24,6 @@ namespace d360.web.Services
         public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
             // TODO: cleanup non-existing favorites & homepages by contion
-            // TODO: should remove non-unique favorites
-            // TODO: breadcrumbs are empty for Asset Types, Policy Types and so on
             var favorites = await favoritesRepository.GetFavorites(request.ResourceId);
             var routeMatchers = favorites.Select(GetRouteMatch).ToList();
             var favoritesDetails = await favoritesRepository.GetFavoriteDetails(routeMatchers.Select(r => r.ObjectId));
@@ -36,6 +34,7 @@ namespace d360.web.Services
                                   join favoriteDetails in favoritesDetails
                                     on favorite.Id equals favoriteDetails.FavoriteId into joinedFavoriteDetails
                                   from favoriteDetails in joinedFavoriteDetails.DefaultIfEmpty()
+                                  orderby favorite.SortOrder
                                   select new FavoriteExtendedApiViewModel
                                   {
                                       Id = favorite.Id,
@@ -302,6 +301,13 @@ namespace d360.web.Services
                 GetName = (name, p) => name + " - "  + "Policy", // TODO: resources,                
                 ObjectType = SystemObjects.Policy
             },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "policy/:parentId/id/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Definition", // TODO: resources,                
+                ObjectType = SystemObjects.Policy
+            },
 
             // rule type
             new FavoriteRouteMatcher
@@ -338,6 +344,13 @@ namespace d360.web.Services
             },
             new FavoriteRouteMatcher
             {
+                RoutePattern = "model/:objectId/structure",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Model", // TODO: resources,                
+                ObjectType = SystemObjects.TaxonomyType
+            },
+            new FavoriteRouteMatcher
+            {
                 RoutePattern = "sidebar/visualization/diagram/:objectId",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name,
@@ -347,7 +360,14 @@ namespace d360.web.Services
             // model
             new FavoriteRouteMatcher
             {
-                RoutePattern = "model/:any;hierarchyId=:objectId",
+                RoutePattern = "model/:parentId;hierarchyId=:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Definition", // TODO: resources,                
+                ObjectType = SystemObjects.Taxonomy
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "model/:parentId/id/:objectId",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Definition", // TODO: resources,                
                 ObjectType = SystemObjects.Taxonomy
@@ -428,6 +448,12 @@ namespace d360.web.Services
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/score/:uid",
+                PageType = FavoritePageType.Artifact,
+                GetName = (name, p) => name + " - "  + "Scoring", // TODO: resources
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/score/:uid/:any",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name + " - "  + "Scoring", // TODO: resources
             },
@@ -523,6 +549,12 @@ namespace d360.web.Services
                 RoutePattern = "monitor",
                 PageType = FavoritePageType.WorkflowPage,
                 GetName = FixedName("Workflow"), // TODO: resources,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "cart",
+                PageType = FavoritePageType.CartPage,
+                GetName = FixedName("Cart"), // TODO: resources,
             },
 
             // search results page

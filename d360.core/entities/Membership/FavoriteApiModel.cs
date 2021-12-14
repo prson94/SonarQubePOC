@@ -47,7 +47,8 @@ namespace d360.core.entities.Membership
         HomePage,
         DashboardPage,
         CommunityPage,
-        WorkflowPage
+        WorkflowPage,
+        CartPage
     }
     public class FavoriteExtendedApiViewModel
     {
