@@ -327,7 +327,15 @@ export class AdvancedFilterFieldCondition {
             if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.fieldType === "Relationship" || this.field === SystemFields.OwnedByFieldCode || this.isRelationship) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
-                    let arr = value.map((v: SelectItem) => _.escape(v.title));
+                    let chevronHtml = "<i class='slim-fa fa fa-chevron-right'></i>";
+                    let placeholder = "#chevronPlaceholder";
+
+                    //escape user input, but avoid escaping chevron icons using js replace all method .split(x).join(y)
+                    let arr = value
+                        .map((v: SelectItem) =>
+                            _.escape(v.title.split(chevronHtml).join(placeholder)).split(placeholder).join(chevronHtml)
+                    );
+
                     if (arr.length === 1) {
                         return arr[0];
                     }
@@ -391,7 +399,6 @@ export class AdvancedFilterFieldCondition {
                 return valueAsString.trim();
 
             }
-
             return _.escape(value);
         }
         catch (ex) {
