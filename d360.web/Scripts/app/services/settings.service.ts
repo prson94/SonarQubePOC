@@ -110,7 +110,6 @@ export class CompanySettingsService extends BaseObservableService {
 
     private parseSettingChange(setting: SettingsPutModel): SettingsPutModel {
         let currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);
-
         if (currentSetting.BooleanSetting && setting.BooleanSetting && currentSetting.BooleanSetting.Value !== setting.BooleanSetting.Value) {
             currentSetting.BooleanSetting.Value = setting.BooleanSetting.Value;
             return setting;
@@ -141,23 +140,11 @@ export class CompanySettingsService extends BaseObservableService {
 
     putSetting(setting: SettingsPutModel): Observable<any> {
         let updatedSetting = this.parseSettingChange(setting);
+        var headers = new HttpHeaders({
+            'Content-Type': 'application/json'
+        });
 
-        if (updatedSetting !== null) {
-            var headers = new HttpHeaders({
-                'Content-Type': 'application/json'
-            });
-
-            return this.http.put('/api/v2/environment/settings', JSON.stringify(updatedSetting), { headers })
-                .pipe(
-                    tap((_) => {
-                        return of({ type: "success" });
-                    }),
-                    catchError((err) => {
-                        this.handleError(err);
-                        return of({ type: "error" });
-                    })
-                );
-        }
+        return this.http.put('/api/v2/environment/settings', JSON.stringify(updatedSetting), { headers });
     }
 
     putSettings(settings: SettingsPutModel[]): Observable<any> {
