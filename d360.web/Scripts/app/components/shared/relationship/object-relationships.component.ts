@@ -187,7 +187,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             params["objectUid"] = this.assetUid;
         }
 
-        this.relationshipsService.getRelationships(this.selected.Uid, params, true).subscribe();
+        const p = _.omit(this.relGrid.getCurrentParams(), ["_includePath", "_listcolorsasjson", "_pageSize", "_pageNum"]);
+        _.merge(params, p);
+
+        this.relationshipsService.getRelationships(this.selected.Uid, params, true);
     }
 
     addRelationship(event: any) {
