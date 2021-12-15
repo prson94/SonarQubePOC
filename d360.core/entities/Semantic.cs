@@ -44,18 +44,18 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         [JsonProperty("headerRegExps"), NotMapped]
-        public SemanticHeaderFilter HeaderFilter { get; set; }
+        public SemanticHeaderFilter HeaderFilterStructured { get; set; }
 
         [JsonProperty("headerRegExpConfidence")]
         public int? HeaderFilterConfidence { get; set; }
 
         [JsonProperty("invalidList"), NotMapped]
-        public List<string> InvalidValues { get; set; }
+        public List<string> InvalidValuesStructured { get; set; }
 
 
 
         [JsonProperty("advanced"), NotMapped]
-        public JObject JsonPayload { get; set; }
+        public JObject JsonPayloadStructured { get; set; }
 
         [JsonProperty("matchType")]
         public SemanticMatchType MatchType { get; set; }
@@ -91,10 +91,10 @@ namespace d360.core.entities
         public int Threshold { get; set; }
 
         [JsonProperty("validLocales"), NotMapped]
-        public List<string> ValidLocales { get; set; }
+        public List<string> ValidLocalesStructured { get; set; }
  
         [JsonProperty("validList"), NotMapped]
-        public List<string> ValidValues { get; set; }
+        public List<string> ValidValuesStructured { get; set; }
     }
 
     public class GetSemantics 
@@ -177,20 +177,20 @@ namespace d360.core.entities
 
         #region Internal Fields To Manage Complex Objects
 
-        [Column("HeaderFilter", TypeName = "nvarchar")]
-        internal string _HeaderFilter { get; set; }
+        [Column(TypeName = "nvarchar")]
+        public string HeaderFilter { get; set; }
 
-        [Column("InvalidValues", TypeName = "nvarchar")]
-        internal string _InvalidValues { get; set; }
+        [Column(TypeName = "nvarchar")]
+        public string InvalidValues { get; set; }
         
-        [Column("JsonPayload", TypeName = "nvarchar")]
-        internal string _JsonPayload { get; set; }
+        [Column(TypeName = "nvarchar")]
+        public string JsonPayload { get; set; }
         
-        [Column("ValidLocales", TypeName = "nvarchar")]
-        internal string _ValidLocales { get; set; }
+        [Column(TypeName = "nvarchar")]
+        public string ValidLocales { get; set; }
         
-        [Column("ValidValues", TypeName = "nvarchar")]
-        internal string _ValidValues { get; set; }
+        [Column(TypeName = "nvarchar")]
+        public string ValidValues { get; set; }
 
         #endregion
 
@@ -222,10 +222,10 @@ namespace d360.core.entities
                 CreatedOn = model.CreatedOn,
                 Description = model.Description,
                 EffectiveDate = model.EffectiveDate,
-                HeaderFilter = model.deserializeTextProperty<SemanticHeaderFilter>(model._HeaderFilter),
+                HeaderFilterStructured = model.deserializeTextProperty<SemanticHeaderFilter>(model.HeaderFilter),
                 HeaderFilterConfidence = model.HeaderFilterConfidence,
-                InvalidValues = model.deserializeTextProperty<List<string>>(model._InvalidValues),
-                JsonPayload = (string.IsNullOrEmpty(model._JsonPayload)) ? null : JObject.Parse(model._JsonPayload),
+                InvalidValuesStructured = model.deserializeTextProperty<List<string>>(model.InvalidValues),
+                JsonPayloadStructured = (string.IsNullOrEmpty(model.JsonPayload)) ? null : JObject.Parse(model.JsonPayload),
                 MatchType = model.MatchType,
                 Maximum = model.Maximum,
                 Minimum = model.Minimum,
@@ -244,8 +244,8 @@ namespace d360.core.entities
                     Uid = updatedBy.Uid
                 },
                 UpdatedOn = model.UpdatedOn,
-                ValidLocales = model.deserializeTextProperty<List<string>>(model._ValidLocales),
-                ValidValues = model.deserializeTextProperty<List<string>>(model._ValidValues)
+                ValidLocalesStructured = model.deserializeTextProperty<List<string>>(model.ValidLocales),
+                ValidValuesStructured = model.deserializeTextProperty<List<string>>(model.ValidValues)
             };
         }
 
@@ -260,10 +260,10 @@ namespace d360.core.entities
                 CreatedOn = date,
                 Description = model.Description,
                 EffectiveDate = date,
-                HeaderFilter = model.HeaderFilter,
+                HeaderFilterStructured = model.HeaderFilterStructured,
                 HeaderFilterConfidence = model.HeaderFilterConfidence,
-                InvalidValues = model.InvalidValues,
-                JsonPayload = model.JsonPayload,
+                InvalidValuesStructured = model.InvalidValuesStructured,
+                JsonPayloadStructured = model.JsonPayloadStructured,
                 MatchType = model.MatchType,
                 Maximum = model.Maximum,
                 Minimum = model.Minimum,
@@ -278,15 +278,15 @@ namespace d360.core.entities
                 Threshold = model.Threshold,
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
-                ValidLocales = model.ValidLocales,
-                ValidValues = model.ValidValues
+                ValidLocalesStructured = model.ValidLocalesStructured,
+                ValidValuesStructured = model.ValidValuesStructured
             };
 
-            repoModel._HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilter);
-            repoModel._InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValues);
-            repoModel._JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayload);
-            repoModel._ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocales);
-            repoModel._ValidValues = repoModel.serializeTextProperty(repoModel.ValidValues);
+            repoModel.HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilterStructured);
+            repoModel.InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValuesStructured);
+            repoModel.JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayloadStructured);
+            repoModel.ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocalesStructured);
+            repoModel.ValidValues = repoModel.serializeTextProperty(repoModel.ValidValuesStructured);
 
             return repoModel;
         }
@@ -302,10 +302,10 @@ namespace d360.core.entities
                 CreatedOn = existing.CreatedOn,
                 Description = model.Description,
                 EffectiveDate = date,
-                HeaderFilter = model.HeaderFilter,
+                HeaderFilterStructured = model.HeaderFilterStructured,
                 HeaderFilterConfidence = model.HeaderFilterConfidence,
-                InvalidValues = model.InvalidValues,
-                JsonPayload = model.JsonPayload,
+                InvalidValuesStructured = model.InvalidValuesStructured,
+                JsonPayloadStructured = model.JsonPayloadStructured,
                 MatchType = model.MatchType,
                 Maximum = model.Maximum,
                 Minimum = model.Minimum,
@@ -320,15 +320,15 @@ namespace d360.core.entities
                 Threshold = model.Threshold,
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
-                ValidLocales = model.ValidLocales,
-                ValidValues = model.ValidValues
+                ValidLocalesStructured = model.ValidLocalesStructured,
+                ValidValuesStructured = model.ValidValuesStructured
             };
 
-            repoModel._HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilter);
-            repoModel._InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValues);
-            repoModel._JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayload);
-            repoModel._ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocales);
-            repoModel._ValidValues = repoModel.serializeTextProperty(repoModel.ValidValues);
+            repoModel.HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilterStructured);
+            repoModel.InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValuesStructured);
+            repoModel.JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayloadStructured);
+            repoModel.ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocalesStructured);
+            repoModel.ValidValues = repoModel.serializeTextProperty(repoModel.ValidValuesStructured);
 
             return repoModel;
         }
@@ -344,10 +344,10 @@ namespace d360.core.entities
                 CreatedOn = existing.CreatedOn,
                 Description = model.Description ?? existing.Description,
                 EffectiveDate = date,
-                HeaderFilter = (model.HeaderFilter != null) ? model.HeaderFilter : existing.HeaderFilter,
+                HeaderFilterStructured = (model.HeaderFilterStructured != null) ? model.HeaderFilterStructured : existing.HeaderFilterStructured,
                 HeaderFilterConfidence = model.HeaderFilterConfidence ?? existing.HeaderFilterConfidence,
-                InvalidValues = (model.InvalidValues != null) ? model.InvalidValues : existing.InvalidValues,
-                JsonPayload = model.JsonPayload ?? existing.JsonPayload,
+                InvalidValuesStructured = (model.InvalidValuesStructured != null) ? model.InvalidValuesStructured : existing.InvalidValuesStructured,
+                JsonPayloadStructured = model.JsonPayloadStructured ?? existing.JsonPayloadStructured,
                 MatchType = model.MatchType ?? existing.MatchType,
                 Maximum = model.Maximum ?? existing.Maximum,
                 Minimum = model.Minimum ?? existing.Minimum,
@@ -362,15 +362,15 @@ namespace d360.core.entities
                 Threshold = model.Threshold ?? existing.Threshold,
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
-                ValidLocales = (model.ValidLocales != null) ? model.ValidLocales : existing.ValidLocales,
-                ValidValues = (model.ValidValues != null) ? model.ValidValues : existing.ValidValues
+                ValidLocalesStructured = (model.ValidLocalesStructured != null) ? model.ValidLocalesStructured : existing.ValidLocalesStructured,
+                ValidValuesStructured = (model.ValidValuesStructured != null) ? model.ValidValuesStructured : existing.ValidValuesStructured
             };
 
-            repoModel._HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilter);
-            repoModel._InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValues);
-            repoModel._JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayload);
-            repoModel._ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocales);
-            repoModel._ValidValues = repoModel.serializeTextProperty(repoModel.ValidValues);
+            repoModel.HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilterStructured);
+            repoModel.InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValuesStructured);
+            repoModel.JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayloadStructured);
+            repoModel.ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocalesStructured);
+            repoModel.ValidValues = repoModel.serializeTextProperty(repoModel.ValidValuesStructured);
 
             return repoModel;
         }
@@ -383,11 +383,11 @@ namespace d360.core.entities
 
             Func<bool> headerFilterPopulated = () => 
             {
-                if (model.HeaderFilter != null)
+                if (model.HeaderFilterStructured != null)
                 {
-                    if (model.HeaderFilter.values != null)
+                    if (model.HeaderFilterStructured.values != null)
                     {
-                        return (model.HeaderFilter.values.Count > 0) || !string.IsNullOrEmpty(model.HeaderFilter.match);
+                        return (model.HeaderFilterStructured.values.Count > 0) || !string.IsNullOrEmpty(model.HeaderFilterStructured.match);
                     }
                     else
                     {
@@ -402,7 +402,7 @@ namespace d360.core.entities
 
             Func<bool> jsonPayloadPopulated = () =>
             {
-                return (!string.IsNullOrEmpty(model._JsonPayload));
+                return (!string.IsNullOrEmpty(model.JsonPayload));
             };
 
             #endregion
@@ -420,11 +420,11 @@ namespace d360.core.entities
                 errors.Add("HeaderFilterConfidence must be a whole number value between 1 and 100.");
             }
 
-            if (!string.IsNullOrEmpty(model._JsonPayload))
+            if (!string.IsNullOrEmpty(model.JsonPayload))
             {
                 try
                 {
-                    JToken.Parse(model._JsonPayload);
+                    JToken.Parse(model.JsonPayload);
                 }
                 catch
                 {
@@ -503,7 +503,7 @@ namespace d360.core.entities
                         errors.Add("Since MatchType is Advanced, HeaderFilter must be empty.");
                     }
 
-                    if (model.InvalidValues != null && model.InvalidValues.Count > 0)
+                    if (model.InvalidValuesStructured != null && model.InvalidValuesStructured.Count > 0)
                     {
                         errors.Add("Since MatchType is Advanced, InvalidValues must be empty.");
                     }
@@ -523,7 +523,7 @@ namespace d360.core.entities
                         errors.Add("Since MatchType is Advanced, RegularExpression must be empty.");
                     }
 
-                    if (model.ValidValues != null && model.ValidValues.Count > 0)
+                    if (model.ValidValuesStructured != null && model.ValidValuesStructured.Count > 0)
                     {
                         errors.Add("Since MatchType is Advanced, ValidValues must be empty.");
                     }

@@ -465,10 +465,10 @@ from    AssetDataProfile P
                         if (patchModel != null)
                         { 
                             if (patchModel.BaseType.HasValue
-                                || patchModel.HeaderFilter != null
+                                || patchModel.HeaderFilterStructured != null
                                 || patchModel.HeaderFilterConfidence.HasValue
-                                || patchModel.InvalidValues != null
-                                || patchModel.JsonPayload != null
+                                || patchModel.InvalidValuesStructured != null
+                                || patchModel.JsonPayloadStructured != null
                                 || patchModel.MatchType.HasValue
                                 || patchModel.Maximum.HasValue
                                 || patchModel.Minimum.HasValue
@@ -477,8 +477,8 @@ from    AssetDataProfile P
                                 || !string.IsNullOrEmpty(patchModel.RegularExpression)
                                 || patchModel.Status.HasValue
                                 || patchModel.Threshold.HasValue
-                                || patchModel.ValidLocales != null
-                                || patchModel.ValidValues != null)
+                                || patchModel.ValidLocalesStructured != null
+                                || patchModel.ValidValuesStructured != null)
                             {
                                 nonUpdatedableSemantics.Add(e.Qualifier);
                             }

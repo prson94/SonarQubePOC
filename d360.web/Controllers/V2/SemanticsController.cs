@@ -433,7 +433,7 @@ namespace d360.web.Controllers.V2
                     Qualifier = "ADV_Q",
                     Name = "Some advanced semantic",
                     Description = "An example that uses the advanced proeprty to send a custom object.",
-                    JsonPayload = JObject.Parse("{clazz: \"namespace.classname\", custnum1: 12345 }")
+                    JsonPayloadStructured = JObject.Parse("{clazz: \"namespace.classname\", custnum1: 12345 }")
                 }
             };
         }
@@ -451,7 +451,7 @@ namespace d360.web.Controllers.V2
                     Qualifier = "NORTHEAST_STATES",
                     Name = "New England States",
                     Description = "A list of states in the New England region of the US.",
-                    ValidValues = new List<string> { "CT", "MA", "ME", "NH", "RI", "VT" }
+                    ValidValuesStructured = new List<string> { "CT", "MA", "ME", "NH", "RI", "VT" }
                 }
             };
         }
@@ -467,7 +467,7 @@ namespace d360.web.Controllers.V2
                     Qualifier = "IPADDRESS.IPV6",
                     Name = "IP V6 Address",
                     Description = "Version 6 of an IP address.",
-                    HeaderFilter = new SemanticHeaderFilter { 
+                    HeaderFilterStructured = new SemanticHeaderFilter { 
                         match = "all", 
                         values = new List<SemanticHeaderFilterValue> { new SemanticHeaderFilterValue { @operator = "eq", value = ".*(?i)(ip).*" } } 
                     },
