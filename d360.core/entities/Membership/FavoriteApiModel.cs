@@ -4,7 +4,17 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities.Membership
 {
-    public enum FavoriteType { Asset, AssetType, Page };
+    public enum FavoritePageType
+    {
+        Artifact,
+        SearchResultsPage,
+        ResourceListPage,
+        HomePage,
+        DashboardPage,
+        CommunityPage,
+        WorkflowPage,
+        CartPage
+    }
 
     public interface IFavoriteUpsert
     {
@@ -18,30 +28,7 @@ namespace d360.core.entities.Membership
         public string Route { get; set; }
     }
 
-    public class FavoriteApiViewModel : IFavoriteUpsert
-    {
-        public int Id { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Route { get; set; }
-    }
-
-    public enum FavoritePageType
-    {
-        Artifact,
-        SearchResultsPage,
-        ResourceListPage,
-        HomePage,
-        DashboardPage,
-        CommunityPage,
-        WorkflowPage,
-        CartPage
-    }
-
-    public class FavoriteExtendedApiViewModel
+    public class FavoriteApiViewModel
     {
         public int Id { get; set; }
 
@@ -54,11 +41,5 @@ namespace d360.core.entities.Membership
         public AssetTypeClass? AssetTypeClass { get; set; }
 
         public List<string> Breadcrumbs { get; set; }
-
-        // TODO: remove this
-        public SystemObjects? ObjectType { get; set; }
-
-        // TODO: remove this
-        public int? ObjectId { get; set; }
     }
 }

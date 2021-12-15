@@ -9,7 +9,7 @@ using MediatR;
 
 namespace d360.web.Services
 {
-    public class GetFavoritesQuery : IRequestHandler<GetFavoritesQuery.Request, IEnumerable<FavoriteExtendedApiViewModel>>
+    public class GetFavoritesQuery : IRequestHandler<GetFavoritesQuery.Request, IEnumerable<FavoriteApiViewModel>>
     {
         private readonly IFavoritesRepository favoritesRepository;
         private readonly FavoriteRouteMatcherService matcherService;
@@ -20,7 +20,7 @@ namespace d360.web.Services
             this.matcherService = matcherService;
         }
 
-        public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<FavoriteApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
             var favorites = await favoritesRepository.GetFavorites(request.ResourceId, request.HomePageOnly);
             var routeMatchers = favorites.Select(matcherService.MatchRoute).ToList();
@@ -34,7 +34,7 @@ namespace d360.web.Services
                                   from favoriteDetails in joinedFavoriteDetails.DefaultIfEmpty()
                                   where IsCorrectFavorite(routeMatch, favoriteDetails)
                                   orderby favorite.SortOrder
-                                  select new FavoriteExtendedApiViewModel
+                                  select new FavoriteApiViewModel
                                   {
                                       Id = favorite.Id,
                                       Route = favorite.Route,
@@ -43,8 +43,6 @@ namespace d360.web.Services
                                           .OrderBy(p => p.Level)
                                           .Select(p => p.Name)
                                           .ToList(),
-                                      ObjectType = favoriteDetails?.ObjectType,
-                                      ObjectId = favoriteDetails?.ObjectId,
                                       AssetTypeClass = routeMatch.Matcher.ForcedAssetClass ?? favoriteDetails?.AssetTypeClass,
                                       Name = routeMatch.Matcher.GetName(favoriteDetails?.Name, routeMatch.RouteParams)
                                   };
@@ -52,7 +50,7 @@ namespace d360.web.Services
             return mappedFavorites.ToList();
         }
 
-        public class Request : IRequest<IEnumerable<FavoriteExtendedApiViewModel>>
+        public class Request : IRequest<IEnumerable<FavoriteApiViewModel>>
         {
             public int ResourceId { get; set; }
 

@@ -1263,47 +1263,6 @@ namespace d360.model.DataAccessLayer
             return true;
         }
 
-        public async Task ToggleFavorite(int resourceID, FavoriteApiModel apiFavorite, bool isHomepage = false)
-        {
-            await Task.Run(() =>
-            {
-                Favorite favorite = new Favorite()
-                {
-                    ResourceID = resourceID,
-                    IsHomePage = isHomepage,
-                    Type = FavoriteType.Page.ToString(),
-                    Route = apiFavorite.Route
-                };
-
-                //only 1 home page allowed at once, remove old one(s)
-                if (favorite.IsHomePage)
-                {
-                    var favorites = CompanyContext.Filter<Favorite>(f => f.ResourceID == resourceID && f.IsHomePage).ToList();
-                    CompanyContext.Favorites.RemoveRange(favorites);
-                    CompanyContext.SaveChanges();
-                }
-
-                // TODO: this is not really correct, because it doesn't refers to actual objectId
-                var existing = CompanyContext.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Route == favorite.Route);
-                if (existing == null)
-                {
-                    CompanyContext.Add(favorite);
-                }
-                else
-                {
-                    if (existing.IsHomePage != favorite.IsHomePage)
-                    {
-                        existing.IsHomePage = favorite.IsHomePage;
-                        CompanyContext.Update(existing);
-                    }
-                    else
-                    {
-                        CompanyContext.Delete(existing);
-                    }
-                }
-            });
-        }
-
         public List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups)
         {
             List<GroupResponseResult> results = null;

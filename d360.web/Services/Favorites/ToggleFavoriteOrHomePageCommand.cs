@@ -14,18 +14,15 @@ namespace d360.web.Services.Favorites
 {
     public class ToggleFavoriteOrHomePageCommand : IRequestHandler<ToggleFavoriteOrHomePageCommand.Argument, Unit>
     {
-        private readonly IMembershipRepository membershipRepository;
         private readonly ICompanyContext companyContext;
         private readonly FavoriteRouteMatcherService matcherService;
         private readonly IFavoritesRepository favoritesRepository;
 
         public ToggleFavoriteOrHomePageCommand(
-            IMembershipRepository membershipRepository,
             ICompanyContext companyContext,
             FavoriteRouteMatcherService matcherService,
             IFavoritesRepository favoritesRepository)
         {
-            this.membershipRepository = membershipRepository;
             this.companyContext = companyContext;
             this.matcherService = matcherService;
             this.favoritesRepository = favoritesRepository;
@@ -35,24 +32,6 @@ namespace d360.web.Services.Favorites
         {
             request.Route = request.Route.Trim();
 
-            await CheckIsValidFavorite(request);
-
-            var isNewHomePage = await GetIsNewHomePage(request);
-
-            await membershipRepository.ToggleFavorite(
-                request.ResourceId,
-                new FavoriteApiModel
-                {
-                    Route = request.Route
-                },
-                isNewHomePage
-                );
-
-            return Unit.Value;
-        }
-
-        private async Task CheckIsValidFavorite(Argument request)
-        {
             var routeMatch = matcherService.MatchRoute(new FavoriteShortModel
             {
                 Route = request.Route,
@@ -66,6 +45,17 @@ namespace d360.web.Services.Favorites
                     $"Failed to find object {JsonConvert.SerializeObject(routeMatch.ObjectId)} " +
                     $"in order to match favorite route {request.Route}");
             }
+
+            var isNewHomePage = await GetIsNewHomePage(request);
+
+            await ToggleFavorite(
+                request,
+                routeMatch,
+                favoriteDetails,
+                isNewHomePage
+                );
+
+            return Unit.Value;
         }
 
         private bool IsCorrectFavorite(FavoriteRouteMatchResult routeMatch, FavoritesObjectDetailsResponse favoriteDetails)
@@ -93,6 +83,56 @@ namespace d360.web.Services.Favorites
             }
 
             return isNewHomePage;
+        }
+
+        private async Task ToggleFavorite(
+            Argument request,
+            FavoriteRouteMatchResult routeMatch,
+            FavoritesObjectDetailsResponse @object,
+            bool isHomepage = false)
+        {
+            var newFavorite = new Favorite()
+            {
+                ResourceID = request.ResourceId,
+                Route = request.Route,
+
+                IsHomePage = isHomepage,
+                Type = routeMatch.Matcher.PageType.ToString(),
+                Name = routeMatch.Matcher.GetName(@object?.Name, routeMatch.RouteParams),
+                Object = @object?.ObjectType.ToString(),
+                ObjectID = @object?.ObjectId
+            };
+
+            // only 1 home page allowed at once, remove old one(s)
+            if (newFavorite.IsHomePage)
+            {
+                var favorites = await companyContext.Filter<Favorite>(f => f.ResourceID == request.ResourceId && f.IsHomePage).ToListAsync();
+                companyContext.Favorites.RemoveRange(favorites);
+                await companyContext.SaveChangesAsync();
+            }
+
+            var existing = await companyContext.Favorites.FirstOrDefaultAsync(f => f.ResourceID == newFavorite.ResourceID && f.Route == newFavorite.Route);
+            if (existing == null)
+            {
+                companyContext.Add(newFavorite);
+            }
+            else
+            {
+                if (existing.IsHomePage != newFavorite.IsHomePage)
+                {
+                    existing.IsHomePage = newFavorite.IsHomePage;
+                    existing.Type = newFavorite.Type;
+                    existing.Name = newFavorite.Name;
+                    existing.Object = newFavorite.Object;
+                    existing.ObjectID = newFavorite.ObjectID;
+
+                    companyContext.Update(existing);
+                }
+                else
+                {
+                    companyContext.Delete(existing);
+                }
+            }
         }
 
         public class Argument : IRequest<Unit>

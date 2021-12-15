@@ -1293,7 +1293,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             HttpGet,
             Route("users/me/favorites"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteExtendedApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetFavorites()
@@ -1310,7 +1310,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             HttpGet,
             Route("users/me/getHomePage"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(FavoriteExtendedApiViewModel)),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(FavoriteApiViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
