@@ -122,6 +122,11 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             var allItems = res[0] as RelationshipTypeUIModel[];
             var counts = res[1] as RelationshipCount[];
 
+            if (this.objectType === 'Task') {
+                //hide relationship types of predicate type 'Diagram' when we are on Diagram asset relationship screen
+                allItems = allItems.filter((rel) => rel.Predicate.Type !== 'Diagram');
+            }
+
             this.ProcessRelationshipTypesResponse(allItems, counts);
         });
 
