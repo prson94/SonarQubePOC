@@ -1804,7 +1804,7 @@ namespace d360.web.Controllers.Services
 
                 if (config == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError,OthersMessages.EndPointNotFound);
+                    return Request.CreateResponse(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
                 }
             }
             catch (Exception)
