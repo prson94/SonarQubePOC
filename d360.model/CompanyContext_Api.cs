@@ -1027,12 +1027,14 @@ where	ExecutionID = @executionID
 
                         delete from [Intersect] where [uid] in (select [uid] from #DeletedRelationships);
 
-                        insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                        insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID, CreatedBy, UpdatedBy)
                         select  R.IntersectTypeID,
                                 R.Subject,
                                 R.SubjectID,
                                 R.Object,
-                                R.ObjectID
+                                R.ObjectID,
+                                {CurrentResourceID},
+                                {CurrentResourceID}
                             from    #Relationships R
 							inner join [IntersectType] IT on IT.ID = IntersectTypeID
                             inner join AssetType ST on ST.ID = R.SubjectAssetTypeID
