@@ -129,7 +129,6 @@ namespace d360.web.Models
         }
     }
 
-    // TODO: update it
     public class FavoriteApiModelExample : IExamplesProvider
     {
         public object GetExamples()
