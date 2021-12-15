@@ -116,6 +116,7 @@
     <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.DeleteResponsibilityRules.cs" />
     <Compile Include="V2ControllerTests\TestExtensions.cs" />
     <Compile Include="ValidatorTests\SurveyApiModelValidatorTests.cs" />
+    <Compile Include="ValidatorTests\SemanticValidationTests.cs" />
     <Compile Include="WebControllerTests\NavigationControllerTest.cs" />
     <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />
     <Compile Include="V2ControllerTests\AssetsControllerTest.cs" />
