@@ -9,7 +9,7 @@ namespace d360.model.DataAccessLayer
 {
     public interface IFavoritesRepository
     {
-        Task<IReadOnlyList<FavoriteShortModel>> GetFavorites(int resourceID);
+        Task<IReadOnlyList<FavoriteShortModel>> GetFavorites(int resourceID, bool homePageOnly);
 
         Task<IReadOnlyList<FavoritesObjectDetailsResponse>> GetFavoriteDetails(IEnumerable<FavoritesObjectDetailsRequest> items);
     }

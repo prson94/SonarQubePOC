@@ -3,8 +3,6 @@ using d360.core.entities.Membership;
 using d360.core.queue;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -21,7 +19,6 @@ namespace d360.model.DataAccessLayer
         [Obsolete]
         Task ClearFavorites(int resourceID);
         Task DeleteFavorites(int resourceID, List<int> favoriteIds);
-        Task<FavoriteApiViewModel> GetHomePage(int resourceID);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
         List<GroupResponseResult> AddGroups(ApiExecution execution, List<UpdateGroupModel> groups);

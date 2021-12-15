@@ -13,7 +13,7 @@ namespace d360.model.DataAccessLayer.repositories
         {
         }
 
-        public async Task<IReadOnlyList<FavoriteShortModel>> GetFavorites(int resourceId)
+        public async Task<IReadOnlyList<FavoriteShortModel>> GetFavorites(int resourceId, bool homePageOnly)
         {
             string sql = $@"
 select 
@@ -22,9 +22,10 @@ select
 	favorite.IsHomePage,
 favorite.SortOrder
 from dbo.Favorite favorite
-where favorite.ResourceId = @resourceId";
+where favorite.ResourceId = @resourceId
+and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 
-            var results = await QueryComposer.QueryMultipleAsync(sql, new { resourceId });
+            var results = await QueryComposer.QueryMultipleAsync(sql, new { resourceId, homePageOnly });
 
             return (await results.ReadListAsync<FavoriteShortModel>());
         }

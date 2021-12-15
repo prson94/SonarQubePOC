@@ -1306,11 +1306,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// </summary>
         /// <returns></returns>
         [
-        HttpGet,
-        Route("users/me/getHomePage"),
-        SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-        ApiExplorerSettings(IgnoreApi = true)
+            HttpGet,
+            Route("users/me/getHomePage"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(FavoriteExtendedApiViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetHomePage()
         {
@@ -1318,9 +1319,10 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                var results = await membershipRepository.GetHomePage(_company.CurrentResourceID);
+                var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = _company.CurrentResourceID, HomePageOnly = true });
+                var homePage = favorites.SingleOrDefault();
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, homePage));
             }
             catch (Exception ex)
             {
@@ -1329,7 +1331,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
             }
         }
 

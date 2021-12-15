@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using d360.core;
 using d360.core.entities.Membership;
-using d360.core.enums;
 using d360.model.DataAccessLayer;
 using d360.web.Services.Favorites;
 using MediatR;
@@ -26,7 +22,7 @@ namespace d360.web.Services
 
         public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
-            var favorites = await favoritesRepository.GetFavorites(request.ResourceId);
+            var favorites = await favoritesRepository.GetFavorites(request.ResourceId, request.HomePageOnly);
             var routeMatchers = favorites.Select(matcherService.GetRouteMatch).ToList();
             var favoritesDetails = await favoritesRepository.GetFavoriteDetails(routeMatchers.Select(r => r.ObjectId));
 
@@ -59,6 +55,8 @@ namespace d360.web.Services
         public class Request : IRequest<IEnumerable<FavoriteExtendedApiViewModel>>
         {
             public int ResourceId { get; set; }
+
+            public bool HomePageOnly { get; set; }
         }
 
         private bool IsCorrectFavorite(FavoriteRouteMatchResult routeMatch, FavoritesObjectDetailsResponse favoriteDetails)
