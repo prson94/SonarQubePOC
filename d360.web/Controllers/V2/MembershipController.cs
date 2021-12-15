@@ -32,6 +32,7 @@ using static d360.web.UserIDCheckMiddleware;
 using Resources;
 using MediatR;
 using d360.web.Services;
+using d360.web.Services.Favorites;
 
 namespace d360.web.Controllers.V2
 {
@@ -1415,8 +1416,19 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
         {
-            // TODO: check that route can be matched
-            return await ToggleFavoriteOrHomepage(favorite).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(favorite.Route))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
+            }
+
+            await this.mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
+            {
+                ResourceId = Company.CurrentResourceID,
+                Route = favorite.Route,
+                IsHomePage = false
+            });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
         }
 
         /// <summary>
@@ -1433,45 +1445,19 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
         {
-            var currentHome = Company.Filter<Favorite>(x => x.ResourceID == _company.CurrentResourceID && x.IsHomePage).FirstOrDefault();
-            bool isNewHomePage = true;
-            if (currentHome != null)
+            if (string.IsNullOrWhiteSpace(favorite.Route))
             {
-                if (favorite.Route == currentHome.Route)
-                {
-                    isNewHomePage = false;
-                }
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
             }
-            return await ToggleFavoriteOrHomepage(favorite, isNewHomePage).ConfigureAwait(false);
-        }
 
-        private async Task<IHttpActionResult> ToggleFavoriteOrHomepage(FavoriteApiModel favorite, bool isHomepage = false)
-        {
-
-            try
+            await this.mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
             {
-                if (string.IsNullOrWhiteSpace(favorite.Route))
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
-                }
-                else
-                {
-                    favorite.Route = favorite.Route.Trim();
-                }
+                ResourceId = Company.CurrentResourceID,
+                Route = favorite.Route,
+                IsHomePage = true
+            });
 
-                await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", "Membership.ToggleFavoriteOrHomepage => " }
-                });
-
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-            }
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
         }
 
         /// <summary>

@@ -12,9 +12,9 @@ namespace d360.web.Services.Favorites
 {
     public class FavoriteRouteMatcherService
     {
-        public FavoriteRouteMatchResult GetRouteMatch(FavoriteShortModel f)
+        public FavoriteRouteMatchResult MatchRoute(FavoriteShortModel f)
         {
-            var matchResults = matchers.Select(matcher => TryGetRouteMatch(f, matcher)).Where(r => r != null).ToList();
+            var matchResults = matchers.Select(matcher => TryMatchRoute(f, matcher)).Where(r => r != null).ToList();
             if (!matchResults.Any())
             {
                 throw new InvalidOperationException($"Failed to match favorite with route {f.Route}");
@@ -30,7 +30,7 @@ namespace d360.web.Services.Favorites
             return matchResults.Single();
         }
 
-        public FavoriteRouteMatchResult TryGetRouteMatch(FavoriteShortModel f, FavoriteRouteMatcher matcher)
+        public FavoriteRouteMatchResult TryMatchRoute(FavoriteShortModel f, FavoriteRouteMatcher matcher)
         {
             var routeParams = TryMatchRoute(matcher, f.Route);
             if (routeParams == null)

@@ -23,7 +23,7 @@ namespace d360.web.Services
         public async Task<IEnumerable<FavoriteExtendedApiViewModel>> Handle(Request request, CancellationToken cancellationToken)
         {
             var favorites = await favoritesRepository.GetFavorites(request.ResourceId, request.HomePageOnly);
-            var routeMatchers = favorites.Select(matcherService.GetRouteMatch).ToList();
+            var routeMatchers = favorites.Select(matcherService.MatchRoute).ToList();
             var favoritesDetails = await favoritesRepository.GetFavoriteDetails(routeMatchers.Select(r => r.ObjectId));
 
             var mappedFavorites = from favorite in favorites
