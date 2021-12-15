@@ -27,6 +27,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     @Input() assetTypeUid: string;
     @Input() typeName: string;
     @Input() hasAdd: boolean = false;
+    @Input() readOnly: boolean = false;
 
     private sortField: string = 'Code';
     private items: any[] = [];

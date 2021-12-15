@@ -87,9 +87,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                 }
 
                 if (ev.type === AssetDetailClickType.ReferenceItem) {
-                    this.selectedReferenceItem = { uid: ev.uid, type: ev.objectType };
+                    this.selectedReferenceItem = { uid: ev.assetTypeUid, type: ev.objectType };
                 }
-
+                console.log(ev);
             });
 
             this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;

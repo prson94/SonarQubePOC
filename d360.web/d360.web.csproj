@@ -1218,6 +1218,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\services\href-click-service.ts" />

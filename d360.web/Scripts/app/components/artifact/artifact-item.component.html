@@ -50,7 +50,9 @@
                                                  [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
                             </ng-container>
                             <ng-container *ngIf="selectedReferenceItem">
-                                <ig-asset-type-detail [uid]="selectedReferenceItem.uid"></ig-asset-type-detail>
+                                <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                      [paddingLeft]="'11px'">
+                                </ig-asset-type-detail>
                             </ng-container>
                         </ng-container>
                     </side-panel>

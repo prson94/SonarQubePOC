@@ -35,18 +35,18 @@
                     {{column.text}}
                     <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
                 </th>
-                <th style="width: 40px"></th>
-                <th style="width: 40px"></th>
-                <th style="width: 40px"></th>
+                <th style="width: 40px" *ngIf="!readOnly"></th>
+                <th style="width: 40px" *ngIf="!readOnly"></th>
+                <th style="width: 40px" *ngIf="!readOnly"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
                 <th *ngFor="let column of columns">
                     <d3s-column-filter [field]="column.datafield"
                                        [datatype]="'text'"></d3s-column-filter>
                 </th>
-                <th></th>
-                <th></th>
-                <th></th>
+                <th *ngIf="!readOnly"></th>
+                <th *ngIf="!readOnly"></th>
+                <th *ngIf="!readOnly"></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
@@ -55,7 +55,7 @@
                     <d3s-dynamic-field-value [column]="column" [fields]="fields"
                                              [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
                 </td>
-                <td>
+                <td *ngIf="!readOnly">
                     <div class="RowTools" *ngIf="item.AssetUid">
                         <a style="cursor:pointer;" (click)="selected=item;">
                             <i [copy-clipboard]="item.AssetUid"
@@ -64,14 +64,14 @@
                         </a>
                     </div>
                 </td>
-                <td>
+                <td *ngIf="!readOnly">
                     <div class="RowTools" *ngIf="showEditButton || item.Permissions.ModifyAsset">
                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;">
                             <i class="fa fa-pencil"></i>
                         </a>
                     </div>
                 </td>
-                <td>
+                <td *ngIf="!readOnly">
                     <div class="RowTools" *ngIf="showDeleteButton || item.Permissions.DeleteAsset">
                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;">
                             <i class="fa fa-trash-o"></i>

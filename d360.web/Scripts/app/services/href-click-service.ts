@@ -10,7 +10,7 @@ export class HrefClickService {
         if (origEvent) {
             origEvent.preventDefault();
             origEvent.stopPropagation();
-
+            console.log(data);
             var adcEv = new AssetDetailClickEvent();
             if (data.DataType === "Lookup"
                 || data.FieldName === "ReferenceList"
@@ -24,6 +24,7 @@ export class HrefClickService {
                 adcEv.objectId = val.TooltipID;
                 adcEv.objectType = val.TooltipType;
                 adcEv.uid = val.uid;
+                adcEv.assetTypeUid = val.assetTypeUid;
             }
 
         } else {
@@ -50,4 +51,5 @@ export class AssetDetailClickEvent {
     objectId: number;
     objectType: string;
     uid: string;
+    assetTypeUid: string;
 }

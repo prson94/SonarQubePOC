@@ -52,6 +52,7 @@ namespace d360.web.Models
         public string ColorJson { get; set; }
         public string DisplayText { get; set; }
         public Guid? uid { get; set; }
+        public Guid? assetTypeUid { get; set; }
     }
 
     public class DetailReadOnlyRowModel
@@ -188,7 +189,9 @@ namespace d360.web.Models
         public string TooltipUrl { get; set; }
 
         [DataMember]
-        public Guid uid { get; set; }
+        public Guid uid { get; set; } 
+        [DataMember]
+        public Guid assetTypeUid { get; set; }
     }
 
     public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>

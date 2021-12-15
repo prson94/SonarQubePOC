@@ -22,6 +22,8 @@ import { PeopleResponsibilitiesModule } from "../responsibilities/people-respons
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
 import { AssetTypeDetailComponent } from "./asset-type-detail.component";
+import { FieldValueComponent } from "./field-value.component";
+import { ReferenceModule } from "../../reference/reference.module";
 
 
 @NgModule({
@@ -45,13 +47,16 @@ import { AssetTypeDetailComponent } from "./asset-type-detail.component";
         ScoreBadgeModule,
         PeopleResponsibilitiesModule,
         DynamicFieldNameModule,
-        PortalsModule
+        PortalsModule,
+        ReferenceModule
     ],
     declarations: [
         AssetTypeDetailComponent,
+        FieldValueComponent
     ],
     exports: [
         AssetTypeDetailComponent,
+        FieldValueComponent
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,
