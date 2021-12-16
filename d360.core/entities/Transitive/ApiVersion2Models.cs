@@ -862,6 +862,8 @@ namespace d360.core.entities
     [DataContract]
     public class ResponsibilityRuleTestResponseModel : PagedApiBaseViewModel
     {
+        public bool Success { get; set; } = true;
+        public string Message { get; set; }
         [DataMember]
         public IEnumerable<ResponsibilityRuleTestResultModel> items { get; set; }
     }

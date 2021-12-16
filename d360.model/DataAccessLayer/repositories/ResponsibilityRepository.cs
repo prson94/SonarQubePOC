@@ -1186,7 +1186,11 @@ where   Success is null", transaction: trans);
 
             if (!string.IsNullOrEmpty(errorMessage))
             {
-                throw new ArgumentException(errorMessage);
+                return new ResponsibilityRuleTestResponseModel
+                {
+                    Success = false,
+                    Message = errorMessage
+                };
             }
 
             int? total = null;
