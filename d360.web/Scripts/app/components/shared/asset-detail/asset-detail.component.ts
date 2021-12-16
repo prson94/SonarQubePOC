@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { DetailRow, DetailField, DetailFieldType, NymType, Category, ComplexLookupType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -6,6 +6,8 @@ import { AssetService } from '../../../services/asset.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { SynonymPermission } from '../../../models/artifacts.model';
+import { ResourcesService } from '../../../services/resources.service';
+import { Subscription } from 'rxjs';
 
 declare var CurrentResourceID;
 
@@ -16,7 +18,7 @@ declare var CurrentResourceID;
 })
 
 
-export class AssetDetailComponent implements OnChanges {
+export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() nymTypes: NymType[] = [];
@@ -31,7 +33,6 @@ export class AssetDetailComponent implements OnChanges {
     @Input() showTabs: boolean = false;
     @Input() showHeaderLine: boolean = true;
     @Input() spacerHeight: string = '32px';
-    @Input() paddingLeft: string;
     @Input() isSidePanel: boolean = false;
     @Input() useAssetDetailColumnDefinition: boolean = false;
     @Input() synonymPermission: SynonymPermission;
@@ -56,11 +57,15 @@ export class AssetDetailComponent implements OnChanges {
     systemPropertiesCategory: Category = new Category(this.systemProperties);
 
     rows = new Array<DetailRow>();
+    userGroups: any = [];
+    loadGroupSub: Subscription;
+
     constructor(
         private router: Router,
         private objectDetailService: ObjectDetailService,
         protected messagesService: MessagesObservableService,
         private assetService: AssetService,
+        private resourceService: ResourcesService,
         private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -79,6 +84,12 @@ export class AssetDetailComponent implements OnChanges {
         this.load();
     }
 
+    ngOnDestroy() {
+        if (this.loadGroupSub) {
+            this.loadGroupSub.unsubscribe();
+        }
+    }
+
     public load(): void {
         let detailSub = null;
         if (this.assetDetail) {
@@ -91,6 +102,17 @@ export class AssetDetailComponent implements OnChanges {
             if (this.objectType && this.objectUID) {
                 detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
             }
+        }
+
+        if (this.objectType === 'Resource') {
+            this.useAccordion = false;
+            if (this.loadGroupSub) {
+                this.loadGroupSub.unsubscribe();
+            }
+            this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
+                .subscribe((res) => {
+                    this.userGroups = res.items;
+                });
         }
 
         if (detailSub) {

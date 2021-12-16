@@ -1221,6 +1221,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.module.ts" />
+    <Content Include="Scripts\app\components\shared\assignments\assignments.component.html" />
     <TypeScriptCompile Include="Scripts\app\services\href-click-service.ts" />
     <Content Include="Scripts\environments\workaround.js" />
     <Content Include="webpack.prod.config.js" />

@@ -40,9 +40,8 @@
         </ng-container>
     </div>
     <ng-container *ngIf="hideFilter">
-        <ig-portal-content-provider 
-            [name]="'field/' + field.Name + '-' + objectIdService.getObjectId(field) + '/asset-detail-category/label-right'"
-            [template]="assetGridExportLink">
+        <ig-portal-content-provider [name]="'field/' + field.Name + '-' + objectIdService.getObjectId(field) + '/asset-detail-category/label-right'"
+                                    [template]="assetGridExportLink">
             <ng-template #assetGridExportLink>
                 <div class="asset-grid-export-link">
                     <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>
@@ -105,13 +104,11 @@
                         <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
                         <span *ngSwitchCase="'lookup'" style="display:block; word-wrap:break-word !important">
                             <d3s-lookup-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
-                                <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
+                                <a (click)="navigate(item[column.urlfield], $event, column)" [innerText]="item[column.datafield]"></a>
                             </d3s-lookup-tooltip>
                         </span>
                         <span *ngSwitchCase="'preview'" style="display:block; word-wrap:break-word !important">
-                            <d3s-preview-tooltip [uid]="item[column.uidfield]" [align]="'right'">
-                                <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
-                            </d3s-preview-tooltip>
+                            <a (click)="navigate(item[column.urlfield], $event, {column,item})" [innerText]="item[column.datafield]"></a>
                         </span>
                         <span *ngSwitchCase="'link'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
                         <span *ngSwitchCase="'html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>

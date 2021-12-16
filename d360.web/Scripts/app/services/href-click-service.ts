@@ -1,4 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
+import { HAMMER_LOADER } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -7,11 +8,27 @@ export class HrefClickService {
 
     sendEvent(origEvent: any, data: any) {
         var adcEv = new AssetDetailClickEvent();
+        adcEv.type = AssetDetailClickType.Undefined;
         if (origEvent) {
             origEvent.preventDefault();
             origEvent.stopPropagation();
+
             console.log(data);
             var adcEv = new AssetDetailClickEvent();
+
+            if (data.column && data.column.uidfield === "SecurityAssetUid") {
+                if (data.column.text === "Via") {
+                    adcEv.type = AssetDetailClickType.Group;
+                    adcEv.objectType = "Group";
+                    adcEv.uid = data.item.SecurityAssetUid;
+                }
+                else {
+                    adcEv.type = AssetDetailClickType.User;
+                    adcEv.objectType = "Resource";
+                    adcEv.uid = data.item.ResourceUid;
+                }
+            }
+
             if (data.DataType === "Lookup"
                 || data.FieldName === "ReferenceList"
                 || data.DataType === "color"
@@ -39,8 +56,11 @@ export class HrefClickService {
 }
 
 export enum AssetDetailClickType {
+    Undefined = 'Undefined',
     Asset = 'Asset',
-    ReferenceItem = 'ReferenceItem'
+    ReferenceItem = 'ReferenceItem',
+    User = 'User',
+    Group = 'Group'
 }
 
 export class AssetDetailClickEvent {
