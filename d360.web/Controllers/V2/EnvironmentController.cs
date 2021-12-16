@@ -38,15 +38,11 @@ namespace d360.web.Controllers.V2
     public class EnvironmentController : BaseV2ApiController
     {
         IStorageProvider _storage;
-        IAssetRepository _assetRepository;
         readonly ICompanyContext _company;
 
-        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public EnvironmentController(ICoreComponentSet set, IStorageProvider storage) : base(set)
         {
             _storage = storage;
-            _assetRepository = assetRepository;
-            _company = company;
-
         }
 
         [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]

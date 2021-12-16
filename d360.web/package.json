@@ -35,6 +35,7 @@
     "core-js": "2.6.12",
     "gojs": "2.1.22",
     "highcharts": "9.1.2",
+    "ldclient-js": "^2.10.2",
     "lodash": "4.17.21",
     "ng-json-view": "4.0.0",
     "powerbi-client": "2.17.2",

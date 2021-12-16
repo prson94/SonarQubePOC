@@ -46,5 +46,12 @@ namespace d360.model
         void SetOpenIdRequest(OpenIdRequest request);
 
         #endregion
+
+        #region Caching Logic
+
+        void AddItemToCachedList<T>(string cacheKey, string itemId, T item);
+        T GetItemInCachedList<T>(string cacheKey, string itemId);
+
+        #endregion
     }
 }

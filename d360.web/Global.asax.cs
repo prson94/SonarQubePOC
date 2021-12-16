@@ -61,6 +61,12 @@ namespace d360.web
 
             builder.RegisterModelModule();
 
+            builder.RegisterType<LaunchDarkly.Sdk.Server.LdClient>().As<LaunchDarkly.Sdk.Server.LdClient>()
+                .SingleInstance()
+                .WithParameter("sdkKey", "sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68");
+
+            builder.RegisterType<CoreComponentSet>().As<ICoreComponentSet>().InstancePerRequest();
+
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()
                 .OnActivating(i => {
@@ -71,6 +77,7 @@ namespace d360.web
                         {
                             var ctx = req.GetOwinContext();
                             i.Instance.CompanyPrefix = ctx.Get<string>("CompanyDomain");
+                            i.Instance.ClientID = ctx.Get<int>("ClientID");
                             i.Instance.CompanyID = ctx.Get<int>("CompanyID");
                             i.Instance.DomainSettingID = ctx.Get<int>("DomainSettingID");
                             i.Instance.ResourceID= ctx.Get<int>("ResourceID");

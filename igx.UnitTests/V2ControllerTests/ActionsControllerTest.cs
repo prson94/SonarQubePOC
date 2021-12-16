@@ -4,10 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Xunit;
 
@@ -21,7 +18,7 @@ namespace igx.UnitTests.V2ControllerTests
         
         public ActionsControllerTest()
         {
-            this.actionsController = new ActionsController(GetCommunity(), GetCompany(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepository(), GetSettingsRepository())
+            this.actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

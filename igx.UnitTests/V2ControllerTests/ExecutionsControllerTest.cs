@@ -23,7 +23,7 @@ namespace igx.UnitTests.V2ControllerTests
         internal ExecutionsController executionsController;
         public ExecutionsControllerTest()
         {
-            this.executionsController = new ExecutionsController(GetCommunity(), GetCompany(), GetAssetRepository(), GetSettingsRepository(), GetStorage())
+            this.executionsController = new ExecutionsController(GetCoreComponentSet(), GetAssetRepository(), GetStorage())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

@@ -45,11 +45,12 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        ISemanticsRepository SemanticsRepository;
-        public SemanticsController(ICommunityContext community, ICompanyContext company, ISemanticsRepository semanticsRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        private ISemanticsRepository SemanticsRepository;
+        
+        public SemanticsController(ICoreComponentSet set, ISemanticsRepository semanticsRepository)
+            : base(set)
         {
-            this.SemanticsRepository = semanticsRepository;
+            SemanticsRepository = semanticsRepository;
         }
 
         #endregion

@@ -24,10 +24,12 @@ namespace d360.web.Controllers
     public class NavigationController : BaseController
     {
         IStorageProvider Storage;
+        readonly ICoreComponentSet Set;
 
-        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public NavigationController(ICoreComponentSet set, IStorageProvider storage)
+            : base(set)
         {
+            Set = set;
             Storage = storage;
         }
 
@@ -1126,7 +1128,7 @@ namespace d360.web.Controllers
 
                     if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
                     {
-                        var apiCtrlr = new D3SApiController(this.Community, this.Company, null, SettingsRepository, null, null, null, null);
+                        var apiCtrlr = new D3SApiController(Set, null, null, null, null, null);
                         apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
                         responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
                     }
@@ -1134,7 +1136,7 @@ namespace d360.web.Controllers
 
                     if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
                     {
-                        var apiCtrlr = new TaxonomyController(this.Community, this.Company, this.SettingsRepository);
+                        var apiCtrlr = new TaxonomyController(Set);
                         responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
                     }
 
