@@ -29,6 +29,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     pageNum: number = 1;
     sortOrder: number = SortOrder.None;
     sortField: string = "";
+    itemsLoading: boolean = false;
 
     private itemsSearchSub: Subscription;
 
@@ -90,17 +91,18 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     getData(): void {
         if (this.id == null)
             return;
-
-        //this.isLoading = true;
+    
         if (this.itemsSearchSub) {
             this.itemsSearchSub.unsubscribe();
         }
+
+        this.itemsLoading = true;
 
         this.loadService.getLoadUid(this.id).subscribe((r) => {
             this.itemsSearchSub =  this.loadService.getLoadItemsV2(r, this.getParams()).pipe(debounceTime(400)).subscribe((data) => {
                 this.items = data.items;
                 this.totalRecords = data.total;
-                this.isLoading = false;
+                this.itemsLoading = false;
             });
         })
     }
