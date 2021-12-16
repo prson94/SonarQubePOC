@@ -3192,8 +3192,8 @@ select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Descri
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_parentAssetUid", "Filter by provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_onlyTotal", "Specifies whether the items or just the descentants count should be returned.  The default is false meaning the items are included when present.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_parentAssetUid", "Filter by provided parent asset uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_onlyTotal", "Specifies whether the items or just the descendants count should be returned.  The default is false meaning the items are included when present.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetDescendents(Guid assetUid)
         {
