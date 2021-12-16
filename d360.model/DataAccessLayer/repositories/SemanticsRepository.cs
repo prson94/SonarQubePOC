@@ -37,7 +37,7 @@ namespace d360.model.DataAccessLayer
 
         #region Private
 
-        List<string> complexNonSortableFields = new List<string> 
+        readonly List<string> complexNonSortableFields = new List<string> 
         {
             "headerRegExps", 
             "invalidList", 
@@ -47,7 +47,7 @@ namespace d360.model.DataAccessLayer
             "validList"
         };
 
-        Dictionary<string, string> orderFields = new Dictionary<string, string> 
+        readonly Dictionary<string, string> orderFields = new Dictionary<string, string> 
         {
             { "baseType", "BaseType" },
             { "description", "Description" },
@@ -452,7 +452,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
             }
 
             var qualifiers = new List<string> { qualifier };
-            var existingSemantics = findLatestExistingSemantics(qualifiers, 1);
+            findLatestExistingSemantics(qualifiers, 1);
 
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@qualifier", qualifier);
