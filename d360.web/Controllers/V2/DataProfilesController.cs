@@ -257,8 +257,8 @@ namespace d360.web.Controllers.V2
         /// Removes Data Profile results for a given asset. 
         /// </summary>
         /// <param name="assetUid">The unique identifier of an asset.</param>
-        /// <param name="startDate">Start date of data profile data to be deleted.</param>
-        /// <param name="endDate">End date of data profile data to be deleted.</param>
+        /// <param name="startDate">Start date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
+        /// <param name="endDate">End date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
         /// <param name="cascade">True/false flag used to indicate if assets children should be deleted.</param>
         /// <returns>Results response with the count of records deleted.</returns>
         [
@@ -441,7 +441,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Provides support for deleting a large set of Data Profile records.
         /// </summary>
-        /// <param name="models">Data Profile Delete request collection.</param>
+        /// <param name="models">Data Profile Delete request collection. Note: Expected date format is yyyy-MM-dd</param>
         /// <returns>Results response containing the ExecutionID of the request.</returns>
         [
             HttpDelete,
