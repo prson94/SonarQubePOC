@@ -4343,7 +4343,7 @@ where   A.[uid] = @assetUid";
                                     into #descendants 
                                     from descendants";
 
-            var countSQL = "Select count(*)-1 from #descendants";
+            var countSQL = $"Select count(*) from #descendants d {(whereSQL != "" ? $"inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0 {whereSQL}": "where d.ParentAssetID > 0")}";
 
             var itemsSQL = $@"select                                         
                                   a.uid as AssetUid, 
