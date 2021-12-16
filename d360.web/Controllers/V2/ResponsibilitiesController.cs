@@ -1696,6 +1696,12 @@ namespace d360.web.Controllers.V2
                 }
 
                 var results = await ResponsibilityRepository.GetResponsibilityRuleTestResults(responsibilityRule, hideD3SUsers, includeThen, queryParams);
+
+                if (!results.Success)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, results.Message)).ConfigureAwait(false);
+                }
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
