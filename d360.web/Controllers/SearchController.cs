@@ -68,19 +68,6 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpGet, Route("AutoComplete"), NonNullableParameters]
-        public JsonResult AutoComplete(string search)
-        {
-            List<string> results = new List<string>();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                results = SearchSource.GetSearchPhrases(Company.CurrentCompanyID, string.Format("{0}*",search), 20).ToList();                
-            }
-
-            return Json(results, JsonRequestBehavior.AllowGet);
-        }
-
         [HttpGet, Route("Typeahead"), NonNullableParameters]
         [ValidateInput(false)]
         public async Task<JsonNetResult> Typeahead(string q, string t, int? num)
