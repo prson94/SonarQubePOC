@@ -680,7 +680,7 @@ from	[Load] L
         /// <summary>
         /// Retrieves bulk load items details for a given load unique identifier.
         /// </summary>
-        /// /// <param name="uid">The unique identifier of the load which details are returned for.</param>
+        /// /// <param name="loadUid">The unique identifier of the load which details are returned for.</param>
         /// <returns></returns>
         [
             HttpGet,

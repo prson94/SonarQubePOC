@@ -1256,6 +1256,19 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             return Company.GetLoadItemDetails(id);
         }
 
+        [HttpGet, Route("loads/{id:int}/uid")]
+        public Guid GetLoadUid(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+            }
+
+            var load = Company.GetById<Load>(id);
+
+            return load.uid;
+        }
+
         #endregion
 
         #region Lookup Methods
