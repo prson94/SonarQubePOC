@@ -57,6 +57,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetDataProfiles(Guid assetUid)
         {
@@ -65,7 +66,7 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var validationResult = ValidateDataProfileGetParmeters(assetUid, queryParams);
+                var validationResult = ValidateDataProfileGetParameters(assetUid, queryParams);
 
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
@@ -87,7 +88,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private WorkHttpStatus ValidateDataProfileGetParmeters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        private WorkHttpStatus ValidateDataProfileGetParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var isValid = isPageSizeAndNumValid(queryParams);
 
@@ -106,7 +107,7 @@ namespace d360.web.Controllers.V2
             if (isValid.Length > 0)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid);
-            }
+            }            
 
             if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
             {
@@ -140,6 +141,14 @@ namespace d360.web.Controllers.V2
                 if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out bool includeTotal))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.Invalid_includeChildAssetsProvided);
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_includesamples"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, out bool includeTotal))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidParameterMessage, queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, "_includeSamples"));
                 }
             }
 
