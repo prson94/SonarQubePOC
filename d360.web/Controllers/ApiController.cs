@@ -26,6 +26,7 @@ using d360.web.Extensions;
 using Resources;
 using d360.core.Models;
 using SmartFormat;
+using d360.model.helpers;
 
 namespace d360.web.Controllers
 {
@@ -57,7 +58,7 @@ namespace d360.web.Controllers
 
         #region Field Data
 
-        async Task<List<DetailReadOnlyRowModel>> loadDynamicDisplayField(FieldType ft, List<FieldWithRelation> fields, ObjectDetail details, SystemObjects type, int id, List<LookupDataReadOnlyModel> lookupFieldData)
+        async Task<List<DetailReadOnlyRowModel>> loadDynamicDisplayField(FieldType ft, List<FieldWithRelation> fields, ObjectDetail details, SystemObjects type, int id, List<LookupDataReadOnlyModel> lookupFieldData, ComplexRelationFieldHasAnyModel complexRelationFieldHasAnyModel)
         {
             var list = new List<DetailReadOnlyRowModel>();
 
@@ -250,7 +251,7 @@ from	metrics.Score S
             else if (ft.Type == DataType.ComplexRelationLookup.ToString() || ft.Type == DataType.OwnershipLookup.ToString() || ft.Type == DataType.RefListRelationship.ToString())
             {
                 //look at ownershiplookup / relationship lookup / reference list lookup field and figure out what to show
-                list.AddRange(await RenderComplexLookupField(type.ToString(), id, ft).ConfigureAwait(false));
+                list.AddRange(await RenderComplexLookupField(type.ToString(), id, ft, complexRelationFieldHasAnyModel).ConfigureAwait(false));
             }
             else if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
             {
@@ -411,7 +412,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
-                var lookupData = await Company.QueryAsync<LookupDataReadOnlyModel>($@"select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText from asset a
+                var lookupDataSql = $@"select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText from asset a
                     inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
                     left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
                     cross apply (
@@ -426,16 +427,64 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     where a.uid = @uid 
                     and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
                     and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
-                    and Val.Value is not null and Val.value <> ''", new { uid = details.UID });
+                    and Val.Value is not null and Val.value <> '';";
+
+                var relationLookupDataSql = $@"
+                        select ftl.* from fieldtype ft
+                        inner join FieldTypeLookup ftl on ftl.FieldTypeID = ft.id
+                        where ft.assettypeid = @AssetTypeID
+                        and ft.type ='ComplexRelationLookup';";
+
+                var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID });
+
+                var lookupData = dataReader.Read<LookupDataReadOnlyModel>().ToList();
+                var fieldTypeLookups = dataReader.Read<FieldTypeLookup>().ToList();
+
+                List<ComplexRelationFieldHasAnyModel> complexRelationFieldHasAnyModels
+                    = await RelationshipLookupsHasValueResolver(details, fieldTypes, fieldTypeLookups);
 
                 foreach (var ft in fieldTypes)
                 {
                     var listData = lookupData.Where(x => x.FieldTypeId == ft.ID).ToList();
-                    list.AddRange(await loadDynamicDisplayField(ft, fields, details, type, id, listData).ConfigureAwait(false));
+                    var complexRelationModel = complexRelationFieldHasAnyModels.FirstOrDefault(x => x.FieldTypeId == ft.ID);
+                    list.AddRange(await loadDynamicDisplayField(ft, fields, details, type, id, listData, complexRelationModel).ConfigureAwait(false));
                 }
             }
 
             return list;
+        }
+        ///<summary>
+        ///This method does bulk check of all complex relation lookup fields if there are any values to render
+        ///</summary>
+        private async Task<List<ComplexRelationFieldHasAnyModel>> RelationshipLookupsHasValueResolver(ObjectDetail details, List<FieldType> fieldTypes, List<FieldTypeLookup> fieldTypeLookups)
+        {
+            var complexRelationFieldHasAnyModels = new List<ComplexRelationFieldHasAnyModel>();
+            try
+            {
+                complexRelationFieldHasAnyModels = ComplexFieldsHelper.GetComplexRelationFieldHasAnyModels(fieldTypeLookups, fieldTypes);
+                string multiSql = "";
+                var complexModels = complexRelationFieldHasAnyModels.Where(x => !string.IsNullOrEmpty(x.SQL)).ToList();
+                complexModels.ForEach(x => multiSql += x.SQL);
+                var relationLookupHasAnyReader = await Company.QueryMultipleAsync(multiSql, new { assetUid = details.UID });
+                foreach (var item in complexModels)
+                {
+                    var data = relationLookupHasAnyReader.Read<int>().FirstOrDefault();
+                    item.HasAny = data > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                //Add exception to Azure instead of throwing an error and not showing detail page
+                //We needs this to preserve old behavior where invalid configuration of relation lookup fields was reported to azure
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", "ApiController.RelationshipLookupsHasValueResolver" },
+                    { "SQL Satetment", $"Asset UID: {details.UID}, {Company.CurrentResourceID}" }
+                });
+
+                complexRelationFieldHasAnyModels.ForEach(x => x.NeedsFullCheck = true);
+            }
+
+            return complexRelationFieldHasAnyModels;
         }
 
         private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id)
@@ -732,11 +781,11 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         [HttpGet, Route("{type}/{uid}/grid/definition")]
         public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, string uid)
         {
-            if(!Guid.TryParse(uid, out var guid))
+            if (!Guid.TryParse(uid, out var guid))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, ApiMessages.CustomUidNotValid);
             }
-            
+
             int objectId = Company.GetObjectId(guid, type);
             return GetGridDefinitionByType(type, objectId);
         }
@@ -1114,7 +1163,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 return Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.ArtifactNotFound);
             }
 
-            json.Add("SynonymPermission", permission);        
+            json.Add("SynonymPermission", permission);
 
             return Request.CreateResponse(HttpStatusCode.OK, json);
         }
@@ -1330,15 +1379,30 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
         #region Complex Lookup Fields
 
-        private async Task<List<DetailReadOnlyRowModel>> RenderComplexLookupField(string type, int id, FieldType ft)
+        private async Task<List<DetailReadOnlyRowModel>> RenderComplexLookupField(string type, int id, FieldType ft, ComplexRelationFieldHasAnyModel complexRelationFieldHasAnyModel)
         {
             var list = new List<DetailReadOnlyRowModel>();
 
             if (ft != null)
             {
-                var lookup = await Company.QueryFirstOrDefaultAsync<FieldTypeLookup>("select FieldTypeID, HideHeader, HideFooter, LookupType, Definition, HideFilter from FieldTypeLookup where FieldTypeID = @id", new { id = ft.ID });
+                bool hasAnyGridValues;
 
-                if (await AnyComplexLookupGridValues(type, id, ft.ID))
+                var lookup = complexRelationFieldHasAnyModel?.FieldTypeLookup;
+                if (lookup == null)
+                {
+                    lookup = await Company.QueryFirstOrDefaultAsync<FieldTypeLookup>("select FieldTypeID, HideHeader, HideFooter, LookupType, Definition, HideFilter from FieldTypeLookup where FieldTypeID = @id", new { id = ft.ID });
+                }
+
+                if (complexRelationFieldHasAnyModel == null || complexRelationFieldHasAnyModel.NeedsFullCheck == true)
+                {
+                    hasAnyGridValues = await AnyComplexLookupGridValues(type, id, ft.ID);
+                }
+                else
+                {
+                    hasAnyGridValues = complexRelationFieldHasAnyModel.HasAny.Value;
+                }
+
+                if (hasAnyGridValues)
                 {
                     bool isGrid = true;
                     if (ft.Type == DataType.OwnershipLookup.ToString() && !string.IsNullOrWhiteSpace(lookup.Definition))
