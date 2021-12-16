@@ -90,7 +90,6 @@ namespace d360.model.helpers
                 model.SQL = sql;
                 model.HasAny = true;
                 model.NeedsFullCheck = false;
-                continue;
             }
             return ret;
         }
