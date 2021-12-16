@@ -6,6 +6,7 @@ using d360.core.exceptions;
 using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
+using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -74,7 +75,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default (and maximum) value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the semantics are ordered by Qualifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
@@ -96,11 +97,15 @@ namespace d360.web.Controllers.V2
             {
                 throw ex;
             }
+            catch (FilterExpressionParserException ex)
+            {
+                throw new GenericException(HttpStatusCode.BadRequest, "Invalid Filter Configuration", ex.Message);
+            }
             catch
             {
                 return errorMessageResponse(
-                    HttpStatusCode.InternalServerError, 
-                    "Error retrieving semantics", 
+                    HttpStatusCode.InternalServerError,
+                    "Error retrieving semantics",
                     ApiMessages.UnknownErrorInvestigatingMessage);
             }
         }
@@ -201,10 +206,10 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(List<PatchSemantic>), typeof(PatchSemanticExample1)),
             SwaggerRequestExample(typeof(List<PatchSemantic>), typeof(PatchSemanticExample2)),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding allocation.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding semantics.", typeof(List<GetSemantic>)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that one or more semantics were not found based on the provided qualifiers.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to update these semantics is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "One or more semantics were not found based on the provided qualifiers.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to update these semantics is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PatchSemantics(List<PatchSemantic> semantics)
@@ -251,10 +256,9 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(List<PostSemantic>), typeof(PostSemanticExample1)),
             SwaggerRequestExample(typeof(List<PostSemantic>), typeof(PostSemanticExample2)),
-            SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding allocation.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding semantics.", typeof(List<GetSemantic>)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to insert this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert these semantics is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostSemantics(List<PostSemantic> semantics)
@@ -300,10 +304,10 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(List<PutSemantic>), typeof(PutSemanticExample1)),
             SwaggerRequestExample(typeof(List<PutSemantic>), typeof(PutSemanticExample2)),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding allocation.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding semantics.", typeof(List<GetSemantic>)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your allocation was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to update this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "One or more semantics were not found based on the provided qualifiers.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to update these semantics is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutSemantics(List<PutSemantic> semantics)
@@ -342,15 +346,15 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route("{qualifier}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns a success message.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your metric was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Your semantic was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this semantic is invalid, possibly due to being used on one or more data profiles.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteSemantic(string qualifier)
         {
-            const string ERROR_HEADING = "Error deleting allocation";
+            const string ERROR_HEADING = "Error deleting semantic";
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
