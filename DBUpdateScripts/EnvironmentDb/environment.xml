@@ -33,8 +33,6 @@
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
-	<include file="scripts/Function.dbo.GetAssetBreadcrumbs.xml"/>
-	<include file="scripts/Function.dbo.GetAssetTypeBreadcrumbs.xml"/>
 	<include file="scripts/Function.graph.GetKeyPath.xml"/>
 	<include file="scripts/Function.graph.GetPath.xml"/>
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
@@ -268,7 +266,7 @@
 	<include file="scripts/Function.dbo.GetAssetTypeChildrenByID.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeTextPathById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/View.dbo.IntersectTypeDetail.xml"/>
-        <include file="scripts/View.dbo.OrganizationDetail.xml"/>
+    <include file="scripts/View.dbo.OrganizationDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationInvitationDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationResourceDetail.xml"/>
 	<include file="scripts/View.dbo.Relationship.xml"/>
@@ -277,8 +275,8 @@
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
 	<include file="scripts/View.graph.AssetNodeDisplayPath.xml"/>
 	<include file="scripts/View.graph.AssetNodeKeyPath.xml"/>
-        <include file="scripts/View.utility.ArtifactAssetParent.xml"/>
-        <include file="scripts/View.utility.FieldValue.xml"/>
+    <include file="scripts/View.utility.ArtifactAssetParent.xml"/>
+    <include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
 	<include file="scripts/View.workflow.ItemAsset.xml"/>
@@ -327,11 +325,13 @@
 	<include file="scripts/Function.dbo.CustomSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.FieldLookupValueByFieldTypeID.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactChildByAssetID.xml"/>
+	<include file="scripts/Function.dbo.GetAssetBreadcrumbs.xml"/>
 	<include file="scripts/Function.dbo.GetAssetColorJsonByColor.xml"/>	
 	<include file="scripts/Function.dbo.GetAssetHasChildrenByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHash.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHashById.xml"/>
 	<include file="scripts/Function.dbo.GetAssetTextPath.xml"/>
+	<include file="scripts/Function.dbo.GetAssetTypeBreadcrumbs.xml"/>
 	<include file="scripts/Function.dbo.GetContractValidations.xml"/>
 	<include file="scripts/Function.dbo.GetEmailStepRecipients.xml"/>
 	<include file="scripts/Function.dbo.GetParentObjectId.xml"/>
@@ -345,8 +345,8 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
-        <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
-        <include file="scripts/Function.utility.FieldDetails.xml"/>
+    <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
+    <include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
 	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
@@ -386,8 +386,8 @@
 	<include file="scripts/Procedure.dbo.GetSiteNavigationCounts.xml"/>  
 	<include file="scripts/Procedure.dbo.ResponsibilityRuleShouldRun.xml"/>
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
-        <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
-        <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
+    <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
+    <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Initial.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_ImpactHop.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_LineageHop.xml"/>
@@ -411,9 +411,9 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
-        <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
+    <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
 
-        <include file="scripts/Function.Deletions.xml"/>
+    <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
 
 	<!-- Data Changes -->
