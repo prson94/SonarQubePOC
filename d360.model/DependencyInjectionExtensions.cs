@@ -11,6 +11,7 @@ namespace d360.model
         {
             builder.RegisterType<CompanyDbConnectionProvider>().As<ICompanyDbConnectionProvider>().InstancePerRequest();
             builder.RegisterType<ResponsibilityDapperRepository>().As<IResponsibilityDapperRepository>().InstancePerRequest();
+            builder.RegisterType<FavoritesRepository>().AsImplementedInterfaces().InstancePerRequest();
             builder.RegisterType<ResponsibilityTypeRepository>().As<IResponsibilityTypeRepository>().InstancePerRequest();
 
             builder.RegisterGeneric(typeof(DapperQueryComposer<>)).As(typeof(IDapperQueryComposer<>)).InstancePerRequest();

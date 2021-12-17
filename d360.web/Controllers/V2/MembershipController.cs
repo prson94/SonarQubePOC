@@ -30,6 +30,9 @@ using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
 using Resources;
+using MediatR;
+using d360.web.Services;
+using d360.web.Services.Favorites;
 
 namespace d360.web.Controllers.V2
 {
@@ -42,12 +45,19 @@ namespace d360.web.Controllers.V2
     public class MembershipController : BaseV2ApiController
     {
         readonly ICachingProvider Cache;
+        readonly IMediator mediator;
         readonly IMembershipRepository membershipRepository;
         readonly IAssetRepository assetRepository;
-        public MembershipController(ICoreComponentSet set, IMembershipRepository membershipRepository, IAssetRepository assetRepository, ICachingProvider cache)
-            : base(set)
+
+        public MembershipController(
+            ICoreComponentSet set,
+            IMembershipRepository membershipRepository,
+            IAssetRepository assetRepository,
+            ICachingProvider cache,
+            IMediator mediator) : base(set)
         {
             Cache = cache;
+            this.mediator = mediator;
             this.membershipRepository = membershipRepository;
             this.assetRepository = assetRepository;
         }
@@ -1040,7 +1050,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 UserUpsertModel model = new UserUpsertModel
                 {
-                    Users = users.Select(u => new UserApiUpdateModel {
+                    Users = users.Select(u => new UserApiUpdateModel
+                    {
                         Username = u.Username,
                         FirstName = u.FirstName,
                         LastName = u.LastName,
@@ -1276,20 +1287,40 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// </summary>
         /// <returns></returns>
         [
-        HttpGet,
-        Route("users/me/favorites"),
-        SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiModel>)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            HttpGet,
+            Route("users/me/favorites"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetFavorites()
         {
-            var prefix = "Membership.GetFavorites => ";
+            var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = Company.CurrentResourceID });
+            return Ok(favorites);
+        }
+
+        /// <summary>
+        /// Retrieves the Home Page the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("users/me/getHomePage"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(FavoriteApiViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetHomePage()
+        {
+            var prefix = "Membership.GetHomePage => ";
 
             try
             {
-                var results = await membershipRepository.GetFavorites(Company.CurrentResourceID);
+                var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = Company.CurrentResourceID, HomePageOnly = true });
+                var homePage = favorites.SingleOrDefault();
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, homePage));
             }
             catch (Exception ex)
             {
@@ -1299,38 +1330,6 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 });
 
                 return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the Home Page the current user
-        /// </summary>
-        /// <returns></returns>
-        [
-        HttpGet,
-        Route("users/me/getHomePage"),
-        SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-        ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public async Task<IHttpActionResult> GetHomePage()
-        {
-            var prefix = "Membership.GetHomePage => ";
-
-            try
-            {
-                var results = await membershipRepository.GetHomePage(Company.CurrentResourceID);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1414,7 +1413,19 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
         {
-            return await ToggleFavoriteOrHomepage(favorite).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(favorite.Route))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
+            }
+
+            await this.mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
+            {
+                ResourceId = Company.CurrentResourceID,
+                Route = favorite.Route,
+                IsHomePage = false
+            });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
         }
 
         /// <summary>
@@ -1431,61 +1442,19 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
         {
-            var currentHome = Company.Filter<Favorite>(x => x.ResourceID == Company.CurrentResourceID && x.IsHomePage).FirstOrDefault();
-            bool isNewHomePage = true;
-            if (currentHome != null)
+            if (string.IsNullOrWhiteSpace(favorite.Route))
             {
-                if (currentHome.Name == favorite.Name && currentHome.Type == favorite.Type.ToString() && favorite.Route == currentHome.Route)
-                {
-                    isNewHomePage = false;
-                }
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
             }
-            return await ToggleFavoriteOrHomepage(favorite, isNewHomePage).ConfigureAwait(false);
-        }
 
-        private async Task<IHttpActionResult> ToggleFavoriteOrHomepage(FavoriteApiModel favorite, bool isHomepage = false)
-        {
-
-            try
+            await this.mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
             {
-                if (string.IsNullOrWhiteSpace(favorite.Name))
-                {
-                    string message = ApiMessages.NameRequired;
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
-                }
-                else
-                {
-                    favorite.Name = favorite.Name.Trim();
-                }
-                if (favorite.Type == FavoriteType.Page && string.IsNullOrWhiteSpace(favorite.Route))
-                {
-                    string message = ApiMessages.FavoritesEmptyRoute;
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
-                }
-                else
-                {
-                    favorite.Route = favorite.Route.Trim();
-                }
-                bool result = await membershipRepository.ToggleFavorite(Company.CurrentResourceID, favorite, isHomepage);
-                if (result)
-                {
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created))).ConfigureAwait(false);
-                }
-                else
-                {
-                    string message = string.Format(ApiMessages.UidInvalid, favorite.Type.ToString());
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", "Membership.ToggleFavoriteOrHomepage => " }
-                });
+                ResourceId = Company.CurrentResourceID,
+                Route = favorite.Route,
+                IsHomePage = true
+            });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
         }
 
         /// <summary>
