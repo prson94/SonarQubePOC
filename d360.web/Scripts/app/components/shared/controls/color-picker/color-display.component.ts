@@ -3,7 +3,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { DetailField } from '../../../../models/object-detail.model';
-import { HrefClickService } from '../../../../services/href-click-service';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
     selector: 'd3s-color-display',
@@ -36,7 +36,7 @@ export class ColorDisplayComponent implements OnInit {
     public colorsObject: any;
 
     constructor(private router: Router,
-        private hrefClickService: HrefClickService) {
+        private linkClickInterceptor: LinkClickInterceptor) {
     }
     ngOnInit() {
         if (this.colorsJSON) {
@@ -84,7 +84,7 @@ export class ColorDisplayComponent implements OnInit {
 
     navigate(url: string, e: any) {
         if (this.interceptLinkClick) {
-            this.hrefClickService.sendEvent(e, this.field)
+            this.linkClickInterceptor.sendEvent(e, this.field)
             return;
         }
         this.router.navigateByUrl(url);

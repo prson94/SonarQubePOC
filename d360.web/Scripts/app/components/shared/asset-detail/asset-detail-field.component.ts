@@ -3,7 +3,7 @@ import { DetailField, DetailFieldType } from '../../../models/object-detail.mode
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
-import { HrefClickService } from '../../../services/href-click-service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 @Component({
     selector: 'ig-asset-detail-field',
@@ -30,7 +30,7 @@ export class AssetDetailFieldComponent {
     constructor(private router: Router,
         private assetService: AssetService,
         private ref: ChangeDetectorRef,
-        private hrefClickService: HrefClickService
+        private linkClickInterceptor: LinkClickInterceptor
     ) { }
 
     ngOnInit() {
@@ -41,7 +41,7 @@ export class AssetDetailFieldComponent {
 
     navigate(url: string, e: any) {
         if (this.interceptLinkClick) {
-            this.hrefClickService.sendEvent(e, this.field)
+            this.linkClickInterceptor.sendEvent(e, this.field)
             return;
         }
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));

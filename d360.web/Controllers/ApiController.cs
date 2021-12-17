@@ -1125,7 +1125,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 return Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.ArtifactNotFound);
             }
 
-            json.Add("SynonymPermission", permission);        
+            json.Add("SynonymPermission", permission);
 
             return Request.CreateResponse(HttpStatusCode.OK, json);
         }
@@ -2759,24 +2759,48 @@ from    (
                             }
                         });
 
-                        if (group.PrimaryOwnerResourceID.HasValue && group.SecondaryOwnerResourceID.HasValue)
+                        if (group.PrimaryOwnerResourceID.HasValue || group.SecondaryOwnerResourceID.HasValue)
                         {
                             var groupOwnerIDs = new List<int>();
-                            if (group.PrimaryOwnerResourceID.HasValue) groupOwnerIDs.Add(group.PrimaryOwnerResourceID.Value);
-                            if (group.SecondaryOwnerResourceID.HasValue) groupOwnerIDs.Add(group.SecondaryOwnerResourceID.Value);
+                            if (group.PrimaryOwnerResourceID.HasValue)
+                            {
+                                groupOwnerIDs.Add(group.PrimaryOwnerResourceID.Value);
+                            }
+                            if (group.SecondaryOwnerResourceID.HasValue)
+                            {
+                                groupOwnerIDs.Add(group.SecondaryOwnerResourceID.Value);
+                            }
 
                             var groupOwners = GetCompanyResources().Where(i => groupOwnerIDs.Contains(i.ID)).ToList();
-
-                            model.rows.Add(new DetailReadOnlyRowModel
+                            var row = new DetailReadOnlyRowModel
                             {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = group.GetName(i => i.PrimaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.PrimaryOwnerResourceID.Value).FormatDisplayName() }
-                                },
-                                SecondColumnFields = new List<ReadOnlyField>
+                                }
+                            };
+
+                            if (group.SecondaryOwnerResourceID.HasValue)
+                            {
+                                row.SecondColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = group.GetName(i => i.SecondaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.SecondaryOwnerResourceID.Value).FormatDisplayName() }
+                                };
+                            }
+
+
+                            model.rows.Add(row);
+                        }
+
+                        if (useAssetDetailColumnDefinition || useSingleColumn)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Is Active Directory Group", FieldName = "IsActiveDirectoryGroup", FieldDescription = group.GetDescription(i => i.IsActiveDirectoryGroup), DataType = "Bool", Value = group.IsActiveDirectoryGroup.ToString() }
                                 }
                             });
                         }

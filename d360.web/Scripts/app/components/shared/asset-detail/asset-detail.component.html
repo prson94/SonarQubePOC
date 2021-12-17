@@ -22,8 +22,9 @@
         <ng-container *ngIf="isSidePanel">
             <div class="windowtabs">
                 <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">Details</button>
-                <button *ngIf="objectType !== 'Resource'" [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading">Ownership</button>
-                <button *ngIf="'Resource'" [class]="(tab == 'groups') ? 'tab-selected' : 'tab'" (click)="clickTab('groups')">Groups</button>
+                <button *ngIf="showOwnershipTab" [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading">Ownership</button>
+                <button *ngIf="showGroupTab" [class]="(tab == 'groups') ? 'tab-selected' : 'tab'" (click)="clickTab('groups')">Groups</button>
+                <button *ngIf="showMemberTab" [class]="(tab == 'members') ? 'tab-selected' : 'tab'" (click)="clickTab('members')">Members</button>
             </div>
         </ng-container>
         <div class="asset-detail-tabs">
@@ -101,6 +102,9 @@
                     </div>
 
                     <div class="user-assignments" *ngIf="objectType === 'Resource'">
+                        <label nclass="ig-label">
+                            <span>{{model.AssetName}}'s Assignments</span>
+                        </label>
                         <d3s-assignments [resourceId]="objectID" [isSidePanel]="true"></d3s-assignments>
                     </div>
                 </ng-container>
@@ -163,6 +167,48 @@
                         </p-table>
                     </div>
 
+                </ng-container>
+
+                <ng-container *ngSwitchCase="'members'">
+                    <div class="groups-tab" *ngIf="objectType === 'Group'">
+                        <div class="search-input">
+                            <ig-search-field mode="Keypress"
+                                             [debounce]="600"
+                                             [IsFlexApply]="true"
+                                             (onSearch)="dt2.filterGlobal($event, 'contains')"
+                                             [infoTooltip]="simpleSearchTooltipHTML">
+                            </ig-search-field>
+                        </div>
+                        <p-table #dt2
+                                 [value]="groupMemebers"
+                                 [pageLinks]="3"
+                                 [paginator]="true"
+                                 paginatorDropdownAppendTo="body"
+                                 [rows]="10"
+                                 [globalFilterFields]="['FirstName','LastName','Owner']">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Last Name</th>
+                                    <th>FirstName</th>
+                                    <th>Owner</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-member>
+                                <tr>
+                                    <td><a (click)="memberClicked($event, member);">{{member.LastName}}</a></td>
+                                    <td><a (click)="memberClicked($event, member);">{{member.FirstName}}</a></td>
+                                    <td>{{member.Owner}}</td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage" let-columns>
+                                <tr>
+                                    <td [attr.colspan]="3">
+                                        No results match your search criteria
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
                 </ng-container>
             </ng-container>
         </div>

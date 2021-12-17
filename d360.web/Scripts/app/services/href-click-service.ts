@@ -1,9 +1,8 @@
 ﻿import { Injectable } from '@angular/core';
-import { HAMMER_LOADER } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
-export class HrefClickService {
+export class LinkClickInterceptor {
     private subject = new Subject<AssetDetailClickEvent>();
 
     sendEvent(origEvent: any, data: any) {
@@ -17,6 +16,7 @@ export class HrefClickService {
             var adcEv = new AssetDetailClickEvent();
 
             if (data.column && data.column.uidfield === "SecurityAssetUid") {
+                //clicked on ownership lookup
                 if (data.column.text === "Via") {
                     adcEv.type = AssetDetailClickType.Group;
                     adcEv.objectType = "Group";
@@ -33,6 +33,7 @@ export class HrefClickService {
                 || data.FieldName === "ReferenceList"
                 || data.DataType === "color"
             ) {
+                //list fields
                 var val = data.Values[0];
                 adcEv.event = origEvent;
                 adcEv.type = data.FieldName !== "ReferenceList" ? AssetDetailClickType.Asset : AssetDetailClickType.ReferenceItem;
@@ -42,6 +43,20 @@ export class HrefClickService {
                 adcEv.objectType = val.TooltipType;
                 adcEv.uid = val.uid;
                 adcEv.assetTypeUid = val.assetTypeUid;
+            }
+
+            if (data.ResourceID) {
+                //call from members section of groups
+                adcEv.type = AssetDetailClickType.User;
+                adcEv.objectType = "Resource";
+                adcEv.uid = data.uid;
+            }
+
+            if (data.column && data.column.uidfield && data.column.uidfield.indexOf("_Uid") > 0) {
+                //clicked on preview column on relation lookup
+                adcEv.type = AssetDetailClickType.Asset;
+                adcEv.objectType = "Artifact";
+                adcEv.uid = data.item[data.column.uidfield];
             }
 
         } else {

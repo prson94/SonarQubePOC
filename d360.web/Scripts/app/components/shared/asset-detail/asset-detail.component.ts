@@ -8,6 +8,8 @@ import { Router } from '@angular/router';
 import { SynonymPermission } from '../../../models/artifacts.model';
 import { ResourcesService } from '../../../services/resources.service';
 import { Subscription } from 'rxjs';
+import { GroupService } from '../../../services/group.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 declare var CurrentResourceID;
 
@@ -58,7 +60,9 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 
     rows = new Array<DetailRow>();
     userGroups: any = [];
+    groupMemebers: any = [];
     loadGroupSub: Subscription;
+    loadGroupMembersSub: Subscription;
 
     constructor(
         private router: Router,
@@ -66,6 +70,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         protected messagesService: MessagesObservableService,
         private assetService: AssetService,
         private resourceService: ResourcesService,
+        private groupService: GroupService,
+        private linkClickInterceptor: LinkClickInterceptor,
         private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -87,6 +93,9 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     ngOnDestroy() {
         if (this.loadGroupSub) {
             this.loadGroupSub.unsubscribe();
+        }
+        if (this.loadGroupMembersSub) {
+            this.loadGroupMembersSub.unsubscribe();
         }
     }
 
@@ -112,6 +121,17 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
                 .subscribe((res) => {
                     this.userGroups = res.items;
+                });
+        }
+
+        if (this.objectType === 'Group') {
+            this.useAccordion = false;
+            if (this.loadGroupMembersSub) {
+                this.loadGroupMembersSub.unsubscribe();
+            }
+            this.loadGroupMembersSub = this.groupService.getGroupMembers(this.objectUID)
+                .subscribe((res) => {
+                    this.groupMemebers = res.items;
                 });
         }
 
@@ -365,5 +385,24 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             isAllowedObject = allowedObjects.indexOf(this.objectType) !== -1;
         }
         return this.hasEditLink && isAllowedObject && this.model?.CanEdit;
+    }
+
+    get showOwnershipTab(): boolean {
+        return this.objectType !== 'Resource' && this.objectType !== 'Group';
+    }
+
+    get showGroupTab(): boolean {
+        return this.objectType === 'Resource';
+    }
+
+    get showMemberTab(): boolean {
+        return this.objectType === 'Group';
+    }
+
+    memberClicked($event, data) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent($event, data)
+            return;
+        }
     }
 }

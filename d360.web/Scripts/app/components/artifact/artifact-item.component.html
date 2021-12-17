@@ -31,7 +31,7 @@
                                     <div class="icon-holder">
                                         <i class="fa fa-info-circle"></i>
                                     </div>
-                                    <span>Select a single item from the {{(viewType == 'diagram' ? 'diagram' : 'list')}} to view its properties</span>
+                                    <span>Select a link or a tag to display the properties of a referenced item</span>
                                 </div>
                             </div>
                             <ng-container *ngIf="selectedAsset">
@@ -44,6 +44,7 @@
                                                  [spacerHeight]="'16px'"
                                                  [tooltipAlign]="'left'"
                                                  [isSidePanel]="true"
+                                                 [interceptLinkClick]="true"
                                                  [hasAddRelationshipsPermissions]="false"
                                                  [hasModifyRelationshipsPermissions]="false"
                                                  [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>

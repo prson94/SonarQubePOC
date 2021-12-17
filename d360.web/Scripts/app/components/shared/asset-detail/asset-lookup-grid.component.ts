@@ -11,7 +11,7 @@ import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { AssetTypeClass, State } from "../../../models/asset.model";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ObjectIdService } from "../../../services/object-id.service";
-import { HrefClickService } from "../../../services/href-click-service";
+import { LinkClickInterceptor } from "../../../services/href-click-service";
 
 declare var CurrentResourceID;
 
@@ -60,7 +60,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         public objectIdService: ObjectIdService,
-        private hrefClickService: HrefClickService
+        private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(settingsService);
 
@@ -168,7 +168,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     navigate(url: string, e: any, data: any) {
         if (this.interceptLinkClick) {
-            this.hrefClickService.sendEvent(e, data)
+            this.linkClickInterceptor.sendEvent(e, data)
             return;
         }
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));

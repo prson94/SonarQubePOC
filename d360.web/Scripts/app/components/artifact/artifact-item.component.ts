@@ -19,7 +19,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
-import { AssetDetailClickType, HrefClickService } from '../../services/href-click-service';
+import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
 import { AssetService } from '../../services/asset.service';
 
 declare var CurrentResourceID;
@@ -60,7 +60,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         protected permissionsService: PermissionsService,
         private dataProfileService: DataProfileService,
         protected settingsService: CompanySettingsService,
-        private hrefClickService: HrefClickService,
+        private linkClickInterceptor: LinkClickInterceptor,
         private assetService: AssetService
     ) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
@@ -79,7 +79,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.load(artifactId, this.artifactTypeId);
                 });
 
-            this.hrefSub = this.hrefClickService.getEvents().subscribe(ev => {
+            this.hrefSub = this.linkClickInterceptor.getEvents().subscribe(ev => {
                 this.selectedAsset = null;
                 this.selectedReferenceItem = null;
                 if (ev.type === AssetDetailClickType.Asset) {
@@ -90,7 +90,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.selectedReferenceItem = { uid: ev.assetTypeUid, type: ev.objectType };
                 }
 
-                if (ev.type === AssetDetailClickType.User) {
+                if (ev.type === AssetDetailClickType.User || ev.type === AssetDetailClickType.Group) {
                     this.selectedAsset = { uid: ev.uid, type: ev.objectType };
                 }
                 console.log(ev);

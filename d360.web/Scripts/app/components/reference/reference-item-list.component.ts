@@ -87,8 +87,9 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
 
     private assetTimeout: any;
     private loadItems() {
-        if (this.getAssetSub)
-            this.getAssetSub.unsubscribe();
+        if (this.getAssetSub) {
+            this.getAssetSub.unsubscribe(); 
+        }
 
         this.loadParams.useGraphForParent = false;
         this.isLoading = true;
