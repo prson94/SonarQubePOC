@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="vlova" id="Function.dbo.GetAssetTypeBreadcrumbs">
+  <changeSet author="vlova" id="Function.dbo.GetAssetTypeBreadcrumbs-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -38,7 +38,9 @@ return
 		from	h child
 				inner join dbo.IntersectType intersectType
 					on intersectType.ObjectId = child.ObjectID
-					and intersectType.PredicateID = 9
+				inner join [Predicate] P 
+					on P.ID = intersectType.PredicateID 
+					and P.[Type] = 3
 				inner join dbo.AssetType parentType
 					on parentType.ObjectID = intersectType.SubjectID
 	)
