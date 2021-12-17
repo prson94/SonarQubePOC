@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.Semantic-v2">
+  <changeSet author="Pappas" id="Table.dbo.Semantic-1.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -15,7 +15,7 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo
 BEGIN
 	CREATE TABLE [dbo].[Semantic] (
 		ID bigint identity(1,1) not null,
-		Qualifier nvarchar(200) not null,
+		Qualifier nvarchar(250) not null,
 		EffectiveDate datetime not null,
 		Name nvarchar(250) not null,
 		Description nvarchar(4000) null,
@@ -47,6 +47,7 @@ END
 
 alter table Semantic alter column Minimum decimal(18,6) null;
 alter table Semantic alter column Maximum decimal(18,6) null;
+alter table Semantic alter column Qualifier nvarchar(250) not null;
 		]]>
     </sql>
 	<rollback>
