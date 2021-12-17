@@ -9,7 +9,7 @@
                 <div *ngIf="showDataProfile" class="tile tile-detail side-panel">
                         <side-panel (expandedChange)="sidePanelOpen=$event" [hasProfiling]="true" [storageKey]="sidePanelStorageKey">
                             <ng-container *ngIf="sidePanelOpen">
-                                <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList" (showTimeSeries)="showTimeSeriesPanel($event)"></data-profile>
+                                <data-profile [dataProfile]="dataProfile"></data-profile>
                             </ng-container>
                         </side-panel>
                 </div>                

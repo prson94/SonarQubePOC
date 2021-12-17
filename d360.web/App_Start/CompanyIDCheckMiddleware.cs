@@ -17,6 +17,7 @@ namespace d360.web
     {
         public class cd
         {
+            public int ClientID { get; set; }
             public int CompanyID { get; set; }
             public int DomainSettingID { get; set; }
             public string UrlPrefix { get; set; }
@@ -39,7 +40,7 @@ namespace d360.web
                 {
                     cnn.Open();
                     dict = (await cnn.QueryAsync<cd>(@"
-select	S.CompanyID, S.DomainSettingID, S.UrlPrefix 
+select	E.ClientID, S.CompanyID, S.DomainSettingID, S.UrlPrefix 
 from	CompanyDomainSetting S 
 		inner join Company E on E.ID = S.CompanyID and E.Status = 'Active'")).ToList();                                        
                 }
@@ -71,6 +72,7 @@ from	CompanyDomainSetting S
                 {
                     var domainSetting = dict.Single(d => d.UrlPrefix == host);
                     context.Request.Set("CompanyDomain", host);
+                    context.Request.Set("ClientID", domainSetting.ClientID);
                     context.Request.Set("CompanyID", domainSetting.CompanyID);
                     context.Request.Set("DomainSettingID", domainSetting.DomainSettingID);
                 }

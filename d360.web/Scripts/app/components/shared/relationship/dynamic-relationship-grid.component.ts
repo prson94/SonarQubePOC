@@ -126,6 +126,10 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             });
     }
 
+    public getCurrentParams() {
+        return this.currentParams;
+    }
+
     loadRelationshipLazy($event: LazyLoadEvent) {
 
         var params = {};

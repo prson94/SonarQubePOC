@@ -46,21 +46,18 @@ namespace d360.web.Controllers.V2
     {
         readonly ICachingProvider Cache;
         readonly IMediator mediator;
-        readonly ICompanyContext _company;
         readonly IMembershipRepository membershipRepository;
         readonly IAssetRepository assetRepository;
+
         public MembershipController(
-            ICommunityContext community,
-            ICompanyContext company,
+            ICoreComponentSet set,
             IMembershipRepository membershipRepository,
             IAssetRepository assetRepository,
-            ISettingsRepository settingsRepository,
             ICachingProvider cache,
-            IMediator mediator) : base(community, company, settingsRepository)
+            IMediator mediator) : base(set)
         {
             Cache = cache;
             this.mediator = mediator;
-            _company = company;
             this.membershipRepository = membershipRepository;
             this.assetRepository = assetRepository;
         }
@@ -262,11 +259,11 @@ namespace d360.web.Controllers.V2
 
                 if (iscommunityuserresposibility)
                 {
-                    fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1 && f.IsListable == true).ToList();
+                    fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1 && f.IsListable == true).ToList();
                 }
                 else
                 {
-                    fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+                    fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
                 }
 
                 getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
@@ -706,7 +703,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
             }
 
-            var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+            var fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
             foreach (var col in fieldColumns)
             {
@@ -836,7 +833,7 @@ select G.* from [Group] G
 inner join Asset a on A.Object = 'Group' and A.ObjectID = G.ID 
 where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
-                var userId = _company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
+                var userId = Company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
 
                 if (group?.PrimaryOwnerResourceID == userId)
                 {
@@ -1298,7 +1295,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> GetFavorites()
         {
-            var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = _company.CurrentResourceID });
+            var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = Company.CurrentResourceID });
             return Ok(favorites);
         }
 
@@ -1320,7 +1317,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = _company.CurrentResourceID, HomePageOnly = true });
+                var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = Company.CurrentResourceID, HomePageOnly = true });
                 var homePage = favorites.SingleOrDefault();
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, homePage));
@@ -1355,7 +1352,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                await membershipRepository.ClearFavorites(_company.CurrentResourceID);
+                await membershipRepository.ClearFavorites(Company.CurrentResourceID);
                 return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
             }
             catch (Exception ex)
@@ -1388,7 +1385,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                await membershipRepository.DeleteFavorites(_company.CurrentResourceID, favoriteIds);
+                await membershipRepository.DeleteFavorites(Company.CurrentResourceID, favoriteIds);
                 return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
             }
             catch (Exception ex)
@@ -1806,7 +1803,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                var resource = Community.GetById<Resource>(_company.CurrentResourceID);
+                var resource = Community.GetById<Resource>(Company.CurrentResourceID);
 
                 if (resource is null)
                 {
@@ -2127,7 +2124,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
 
-                var resource = Community.GetById<Resource>(_company.CurrentResourceID);
+                var resource = Community.GetById<Resource>(Company.CurrentResourceID);
 
 
                 if (model is null)

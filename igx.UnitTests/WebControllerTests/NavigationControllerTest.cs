@@ -1,16 +1,6 @@
 ﻿using d360.core.entities;
 using d360.web.Controllers;
-using d360.web.Controllers.V2;
-using igx.UnitTests.Core;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Http;
 using System.Xml.Linq;
 using Xunit;
 
@@ -23,7 +13,7 @@ namespace igx.UnitTests.WebControllerTests
         internal NavigationController navigationController;
         public NavigationControllerTest()
         {
-            this.navigationController = new NavigationController(GetCommunity(), GetCompany(), GetStorage(), GetSettingsRepository());
+            this.navigationController = new NavigationController(GetCoreComponentSet(), GetStorage());
         }
 
         [Fact]

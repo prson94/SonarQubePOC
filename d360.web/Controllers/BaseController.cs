@@ -9,6 +9,7 @@ using d360.model.DataAccessLayer;
 using d360.utils.excel;
 using d360.web.Models;
 using Dapper;
+using LaunchDarkly.Sdk;
 using Microsoft.ApplicationInsights;
 using Newtonsoft.Json;
 using Resources;
@@ -69,11 +70,37 @@ namespace d360.web.Controllers
         }
     }
 
+    public interface ICoreComponentSet
+    {
+        ICompanyContext Company { get; set; }
+        ICommunityContext Community { get; set; }
+        ISettingsRepository SettingsRepository { get; set; }
+        LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
+    }
+
+    public class CoreComponentSet: ICoreComponentSet
+    {
+        public ICompanyContext Company { get; set; }
+        public ICommunityContext Community { get; set; }
+        public ISettingsRepository SettingsRepository { get; set; }
+        public LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
+
+        public CoreComponentSet(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository, LaunchDarkly.Sdk.Server.LdClient ld)
+        {
+            Company = company;
+            Community = community;
+            Ld = ld;
+            SettingsRepository = settingsRepository;
+        }
+    }
+
+
     public class BaseApiController : System.Web.Http.ApiController
     {
         internal ICompanyContext Company;
         internal ICommunityContext Community;
         internal ISettingsRepository SettingsRepository;
+        internal LaunchDarkly.Sdk.Server.LdClient Ld;
 
         internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
@@ -99,12 +126,106 @@ namespace d360.web.Controllers
 
         #endregion
 
-        public BaseApiController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+        public BaseApiController(ICoreComponentSet set)
         {
-            Community = community;
-            Company = company;
-            SettingsRepository = settingsRepository;
+            Company = set.Company;
+            Community = set.Community;
+            Ld = set.Ld;
+            SettingsRepository = set.SettingsRepository;
         }
+
+
+        #region Feature Flag Logic
+
+        private ClientUserModel GetFeatureFlagUser()
+        {
+            var listKey = "ClientUserModels";
+            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+            var userModel = Community.GetItemInCachedList<ClientUserModel>(listKey, itemKey);
+            if (userModel == null)
+            {
+                userModel = Community.Query<ClientUserModel>(@"
+select	C.PublicID as TenantId,
+		C.Name as TenantName,
+		R.Email,
+		R.FirstName,
+		R.LastName,
+		R.uid as UserId,
+		CR.IsAdministrator
+from	CompanyResource CR
+		inner join [Resource] R on R.ID = CR.ResourceID and CR.CompanyID = @CurrentCompanyID and CR.ResourceID = @CurrentResourceID
+		inner join Company E on E.ID = CR.CompanyID
+		inner join Client C on C.ID = E.ClientID", new { Community.CurrentCompanyID, Community.CurrentResourceID }).FirstOrDefault();
+
+                if (userModel != null)
+                {
+                    Community.AddItemToCachedList(listKey, itemKey, userModel);
+                }
+            }
+
+            return userModel;
+        }
+
+        internal LaunchDarkly.Sdk.User GetSdkFeatureFlagUser()
+        {
+            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+            var userModel = GetFeatureFlagUser();
+
+            var b = LaunchDarkly.Sdk.User.Builder(itemKey);
+            if (userModel != null)
+            {
+                b.FirstName(userModel.FirstName)
+                    .LastName(userModel.LastName)
+                    .Email(userModel.Email)
+                    .Custom("tenantId", userModel.TenantId.ToString())
+                    .Custom("tenantName", userModel.TenantName);
+            }
+
+            return b.Build();
+        }
+
+        internal FeatureFlagUser GetClientFeatureFlagUser()
+        {
+            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+            var userModel = GetFeatureFlagUser();
+
+            var b = new FeatureFlagUser
+            {
+                key = itemKey,
+                anonymous = false,
+                firstName = userModel.FirstName,
+                lastName = userModel.LastName,
+                email = userModel.Email,
+                custom = new Dictionary<string, string> {
+                 { "tenantId", userModel.TenantId.ToString() },
+                 { "tenantName", userModel.TenantName }
+             }
+            };
+
+            return b;
+        }
+
+        internal bool GetBoolFlag(string flag, bool defaultValue = false)
+        {
+            return Ld.BoolVariation(flag, GetSdkFeatureFlagUser(), defaultValue);
+        }
+
+        internal int GetIntFlag(string flag, int defaultValue = 0)
+        {
+            return Ld.IntVariation(flag, GetSdkFeatureFlagUser(), defaultValue);
+        }
+
+        internal string GetJsonFlag(string flag, string defaultValue = "{}")
+        {
+            return Ld.JsonVariation(flag, GetSdkFeatureFlagUser(), LdValue.Parse(defaultValue)).AsString;
+        }
+
+        internal string GetStringFlag(string flag, string defaultValue = null)
+        {
+            return Ld.StringVariation(flag, GetSdkFeatureFlagUser(), defaultValue);
+        }
+
+        #endregion
 
         protected internal bool HideData3SixtyUsers()
         {
@@ -445,11 +566,11 @@ namespace d360.web.Controllers
             DataType.Counter.ToString()
         };
 
-        public BaseController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+        public BaseController(ICoreComponentSet set)
         {
-            Community = community;
-            Company = company;
-            SettingsRepository = settingsRepository;
+            Community = set.Community;
+            Company = set.Company;
+            SettingsRepository = set.SettingsRepository;
         }
 
         #region Validation constants

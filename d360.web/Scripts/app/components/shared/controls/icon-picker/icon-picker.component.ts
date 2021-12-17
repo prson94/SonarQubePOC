@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, NgModule, forwardRef, ViewEncapsulation, } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, Input, Output, EventEmitter, NgModule, forwardRef, ViewEncapsulation, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IconService } from '../../../../services/icon.service';
@@ -34,9 +34,10 @@ export class IconPickerComponent implements ControlValueAccessor {
 
     protected isRequired = false;
     protected categories: any = [];
-    isLoading: boolean = true;
+    public isLoading: boolean = true;
 
-    constructor(private iconService: IconService) {
+    constructor(private iconService: IconService,
+                private cdRef: ChangeDetectorRef) {
     }
 
     ngOnInit() {
@@ -75,6 +76,7 @@ export class IconPickerComponent implements ControlValueAccessor {
                 this.categories.forEach(c => c.items.sort((a, b) => this.sortByName(a, b)));
                 this.categories.sort((a, b) => this.sortByName(a, b));
                 this.isLoading = false;
+                this.cdRef.markForCheck();
             })
         });
     }

@@ -33,3 +33,10 @@ export class LoadColumn {
 export class LoadColumnValue {
     Value: string;
 }
+
+export class LoadItemsModel {
+    pageNum: number;
+    pageSize: number;
+    total: number;
+    items: any[];
+}

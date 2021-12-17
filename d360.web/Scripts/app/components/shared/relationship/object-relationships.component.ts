@@ -66,7 +66,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        const hasApiParameterChanges = ('objectId' in changes || 'objectType' in changes);
+        const hasApiParameterChanges = ('objectID' in changes || 'objectType' in changes);
         if (!hasApiParameterChanges) {
             return;
         }
@@ -121,6 +121,11 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             this.changeDetectorRef.markForCheck();
             var allItems = res[0] as RelationshipTypeUIModel[];
             var counts = res[1] as RelationshipCount[];
+
+            if (this.objectType === 'Task') {
+                //hide relationship types of predicate type 'Diagram' when we are on Diagram asset relationship screen
+                allItems = allItems.filter((rel) => rel.Predicate.Type !== 'Diagram');
+            }
 
             this.ProcessRelationshipTypesResponse(allItems, counts);
         });
@@ -187,7 +192,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             params["objectUid"] = this.assetUid;
         }
 
-        this.relationshipsService.getRelationships(this.selected.Uid, params, true).subscribe();
+        const p = _.omit(this.relGrid.getCurrentParams(), ["_includePath", "_listcolorsasjson", "_pageSize", "_pageNum"]);
+        _.merge(params, p);
+
+        this.relationshipsService.getRelationships(this.selected.Uid, params, true);
     }
 
     addRelationship(event: any) {

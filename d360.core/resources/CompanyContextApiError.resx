@@ -120,6 +120,9 @@
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>Duplicate execution item identifiers: {0}. Identifiers must be unique within a batch.</value>
   </data>
+  <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
+    <value>{0} does not allow selection of multiple values</value>
+  </data>
   <data name="NotPermissionModifyRelationobjectAsset" xml:space="preserve">
     <value>You do not have permission to modify relationships on the object asset.</value>
   </data>

@@ -94,25 +94,22 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
         //calling save function
         this.isSaving = true;
 
-        var updateRefList = new SettingsPutModel();
-        updateRefList.SettingID = CompanySettingEnum.GovernanceRoleReferenceListUid;
+        var setting = new SettingsPutModel();
+        setting.SettingID = CompanySettingEnum.GovernanceRoleReferenceListUid;
+        setting.GuidSetting = new GuidSetting();
+        setting.GuidSetting.Value = this.model.RefListUid;
 
-        if (this.datatype == 4) {
-            updateRefList.GuidSetting = new GuidSetting();
-            updateRefList.GuidSetting.Value = this.model.RefListUid;
-        }
-        else
-        {
-            updateRefList.StringSetting = new StringSetting();
-            updateRefList.StringSetting.Value = this.model.RefListUid;
-        }
-
-        this.settingsService.putSetting(updateRefList)
-            .subscribe((res) => {
-                this.isSaving = false;
-                this.originalModel = this.model;
-                this.messagesService.showInfoMessage('Success', 'Governance Role successfully updated');
-            });
+        this.settingsService.putSetting(setting)
+            .subscribe(
+                (res) => {
+                    this.isSaving = false;
+                    this.originalModel = this.model;
+                    this.messagesService.showInfoMessage('Success', 'Governance Role successfully updated');
+                },
+                (err) => {
+                    this.messagesService.showError('Error saving governance role', err.error.message);
+                }
+            );
     }
 
     ngOnDestroy() {

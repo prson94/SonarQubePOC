@@ -71,6 +71,7 @@ namespace d360.model
             QueueSource = queueSource;
             Storage = storage;
 
+            CurrentClientID = context.ClientID;
             CurrentCompanyID = context.CompanyID;
             CurrentDomainSettingID = context.DomainSettingID;
             CurrentResourceID = context.ResourceID;
@@ -166,6 +167,8 @@ namespace d360.model
         public DbSet<Report> Reports { get; set; }
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
+
+        public DbSet<Semantic> Semantics { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
 

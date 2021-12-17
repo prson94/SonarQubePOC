@@ -233,6 +233,71 @@ namespace d360.core.entities
         [DataMember(Name = "decimalSeparator")]
         [StringLength(1, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string DecimalSeparator { get; set; }
+
+        public DataProfileModel() { }
+
+        public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples)
+        {
+            assetUid = uid;
+            blankCount = profile.BlankCount;
+            cardinality = profile.Cardinality;
+            confidence = profile.Confidence;
+            dataSignature = profile.DataSignature;
+            DecimalSeparator = profile.DecimalSeparator;
+            DetectionLocale = profile.DetectionLocale;
+            FtaVersion = profile.FtaVersion;
+            KeyConfidence = profile.KeyConfidence;
+            leadingWhiteSpace = profile.LeadingWhiteSpace;
+            leadingZeroCount = profile.LeadingZeroCount;
+            logicalType = profile.LogicalType;
+            matchCount = profile.MatchCount;
+            maxLength = profile.MaximumLength;
+            maxValue = profile.MaximumValue;
+            meanValue = profile.MeanValue;
+            minLength = profile.MinimumLength;
+            minValue = profile.MinimumValue;
+            multiline = profile.Multiline;
+            nullCount = profile.NullCount;
+            outlierCardinality = profile.OutlierCardinality;
+            OutlierCount = profile.OutlierCount;
+            profileSetDate = profile.ProfileSetDate;
+            regExp = profile.RegExp;
+            sampleCount = profile.SampleCount;
+            shapesCardinality = profile.ShapeCardinality;
+            standardDeviation = profile.StandardDeviation;
+            structureSignature = profile.StructureSignature;
+            TotalCount = profile.TotalCount;
+            trailingWhiteSpace = profile.TrailingWhiteSpace;
+            type = profile.Type;
+            typeQualifier = profile.TypeQualifier;
+
+            //samples
+            this.shapesDetail = samples.Where((s) => s.SampleType.Equals("shapesdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            this.outlierDetail = samples.Where((s) => s.SampleType.Equals("outlierdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            this.cardinalityDetail = samples.Where((s) => s.SampleType.Equals("cardinalitydetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            this.topK = samples.Where((s) => s.SampleType.Equals("topk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();            
+            this.bottomK = samples.Where((s) => s.SampleType.Equals("bottomk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
+            if (this.shapesDetail.Count==0)
+            {
+                this.shapesDetail = null;
+            }
+            if (this.outlierDetail.Count == 0)
+            {
+                this.outlierDetail = null;
+            }
+            if (this.cardinalityDetail.Count == 0)
+            {
+                this.cardinalityDetail = null;
+            }
+            if (this.topK.Count == 0)
+            {
+                this.topK = null;
+            }
+            if (this.bottomK.Count == 0)
+            {
+                this.bottomK = null;
+            }
+        }
     }
 
     public class DataProfileUpsertModel: DataProfileModel, IExecutionItem

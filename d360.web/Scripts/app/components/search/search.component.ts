@@ -46,7 +46,6 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public sidePanelStorageKey: string = "searchresults";
     public hasProfiling: boolean = false;
     public dataProfile: any;
-    private dataProfileList: any[];
     public advancedFiltersLoaded: boolean = false;
 
     showEditor: boolean = false;
@@ -130,12 +129,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.selection = $event;
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
-            let startDate = new Date();
-            startDate.setFullYear(startDate.getUTCFullYear() - 100);
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid, startDate).subscribe(
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
-                        this.dataProfileList = r.items;
                         this.dataProfile = r.items[0];
 
                         forkJoin(

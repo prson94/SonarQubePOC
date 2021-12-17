@@ -18,7 +18,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public DiagramsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository) { }
+        public DiagramsController(CoreComponentSet set) : base(set) { }
 
         #endregion
 

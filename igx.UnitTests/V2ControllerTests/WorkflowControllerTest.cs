@@ -1,15 +1,12 @@
 ﻿using d360.core.entities.Workflow;
 using d360.web.Controllers.V2;
+using igx.UnitTests.Core;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Xunit;
-using igx.UnitTests.Core;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -20,7 +17,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public WorkflowControllerTest()
         {
-            this.workflowController = new WorkflowController(GetCommunity(), GetCompany(), GetSettingsRepository(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
+            this.workflowController = new WorkflowController(GetCoreComponentSet(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

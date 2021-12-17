@@ -1,19 +1,12 @@
-﻿using d360.core.entities.Workflow;
+﻿using d360.core.entities;
 using d360.web.Controllers.V2;
-using Newtonsoft.Json;
+using igx.UnitTests.Core;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Web.Http;
 using Xunit;
-using igx.UnitTests.Core;
-using System.Net;
-using System.Threading;
-using d360.core.entities;
-using d360.extensions;
-using d360.web.Utilities;
-using Moq;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -24,8 +17,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public ResponsibilitiesControllerTest()
         {
-            this.responsibilitiesController = new ResponsibilitiesController(GetCommunity(), GetCompany(), GetResponsibilityRepository(), GetAssetRepository(),
-                GetSettingsRepository(), GetMediator(), new Mock<IApplicationUriProvider>().Object)
+            this.responsibilitiesController = new ResponsibilitiesController(GetCoreComponentSet(), GetApplicationUriProvider(), GetAssetRepository(), GetMediator(), GetResponsibilityRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

@@ -57,9 +57,9 @@ namespace d360.web.Controllers.V2
         IRelationshipRepository relationshipRepository;
         IFieldsRepository fieldsRepository;
 
-        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
-            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public AssetsController(ICoreComponentSet set, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
+            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository)
+            : base(set)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -214,7 +214,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.  An exception to this setting is if an ownershiplookup type field is used in the sort for the asset type this setting will be ignored and the field always returned.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeProfilingCheck", "Include a check for whether or not the asset has Data Profiling.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeProfilingCheck", "Include a check for whether or not the asset has Data Profiling. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid, CancellationToken cancellationToken)
         {
@@ -3186,15 +3186,14 @@ select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Descri
             HttpGet,
             Route("asset/{assetUid:Guid}/descendants"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDescendantsResults)),
-            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_parentAssetUid", "Filter by provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_onlyTotal", "Specifies whether the items or just the descentants count should be returned.  The default is false meaning the items are included when present.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_parentAssetUid", "Filter by provided parent asset uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_onlyTotal", "Specifies whether the items or just the descendants count should be returned.  The default is false meaning the items are included when present.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetDescendents(Guid assetUid)
         {

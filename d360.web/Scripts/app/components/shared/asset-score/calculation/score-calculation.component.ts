@@ -1,5 +1,4 @@
 ﻿import { Component, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
-import { match } from "core-js/fn/symbol";
 import { MetricFieldTypeViewModel, ScoreType, MetricAssetDefinitionViewModel } from "../../../../models/metrics.model";
 import { Operator } from "../../../../models/operator.model";
 import { PointBreakdown, PointBreakDownConditionItem} from "../../../../models/score.model";

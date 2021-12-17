@@ -28,6 +28,9 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using d360.model.helpers.filters;
 using MediatR;
+using d360.web.Controllers;
+using d360.web.Utilities;
+using LaunchDarkly.Sdk.Server;
 
 namespace igx.UnitTests
 {
@@ -172,6 +175,23 @@ namespace igx.UnitTests
             dbSetMock.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(elementsAsQueryable.GetEnumerator());
 
             return dbSetMock;
+        }
+
+        public IApplicationUriProvider GetApplicationUriProvider()
+        {
+            var mock = new Mock<IApplicationUriProvider>();
+            return mock.Object;
+        }
+
+        public ICoreComponentSet GetCoreComponentSet()
+        {
+            //var mock = new Mock<CoreComponentSet>(GetCommunity(), GetCompany(), GetSettingsRepository(), new LdClient("sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68"));
+            var mock = new Mock<ICoreComponentSet>();
+            mock.Setup(s => s.Community).Returns(GetCommunity());
+            mock.Setup(s => s.Company).Returns(GetCompany());
+            mock.Setup(s => s.Ld).Returns(new LdClient("sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68"));
+            mock.Setup(s => s.SettingsRepository).Returns(GetSettingsRepository());
+            return mock.Object;
         }
 
         public IStorageProvider GetStorage()

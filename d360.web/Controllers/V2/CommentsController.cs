@@ -26,8 +26,7 @@ namespace d360.web.Controllers.V2
 
         readonly ICommentRepository Comments;
 
-        public CommentsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public CommentsController(ICoreComponentSet set, ICommentRepository comments): base(set)
         {
             Comments = comments;
         }

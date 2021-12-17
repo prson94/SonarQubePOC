@@ -1,17 +1,12 @@
-﻿using d360.core.entities.Workflow;
+﻿using d360.core.entities;
 using d360.web.Controllers.V2;
+using igx.UnitTests.Core;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Xunit;
-using igx.UnitTests.Core;
-using d360.core.entities;
-using Newtonsoft.Json.Linq;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -22,7 +17,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public TagsControllerTest()
         {
-            this.tagsController = new TagsController(GetCommunity(), GetCompany(), GetTagRepository(), GetAssetRepository(), GetSettingsRepository())
+            this.tagsController = new TagsController(GetCoreComponentSet(), GetTagRepository(), GetAssetRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
