@@ -610,7 +610,7 @@ namespace d360.web.Controllers.V2
                         Request.CreateResponse(HttpStatusCode.OK, new
                         {
                             clientId = ClientId,
-                            user = user
+                            user
                         }))
                     ).ConfigureAwait(false);
 
@@ -618,7 +618,7 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetFeatureFlagInfo => " } });
+                SendException(ex, new Dictionary<string, string> { { "Endpoint Method", "Environment.GetFeatureFlagInfo => " } });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
