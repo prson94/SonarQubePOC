@@ -10501,6 +10501,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 		                where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object is null
 		                for json path, include_null_values
                 )ConditionsWhen(json)
+                where Object is not null
                 group by ItemNumber,ExecutionId,ConditionsThen.json, ConditionsWhen.json)
                 update #convertedData 
                 set [When] = c.[When],
