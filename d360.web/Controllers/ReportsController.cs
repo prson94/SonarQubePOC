@@ -59,7 +59,7 @@ namespace d360.web.Controllers
 
             if (authenticationResult == null)
             {
-                throw new ArgumentNullException(FormControllerApiMessage.AuthenticationFailed);
+                return jsonNetException(FormControllerApiMessage.AuthenticationFailed, HttpStatusCode.BadRequest);
             }
 
             var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
@@ -71,7 +71,7 @@ namespace d360.web.Controllers
 
                 if (report == null)
                 {
-                    throw new ArgumentNullException(FormControllerApiMessage.NoSuchReport);
+                    return jsonNetException(FormControllerApiMessage.NoSuchReport, HttpStatusCode.BadRequest);
                 }
 
                 Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest(accessLevel: "view");
@@ -80,7 +80,7 @@ namespace d360.web.Controllers
 
                 if (tokenResponse == null)
                 {
-                    throw new ArgumentNullException(FormControllerApiMessage.FailedGenerateToken);
+                    return jsonNetException(FormControllerApiMessage.FailedGenerateToken, HttpStatusCode.BadRequest);
                 }
 
                 var viewModel = new PowerBIReportViewModel
