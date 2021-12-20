@@ -15,7 +15,7 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
                             <span *ngIf="!url" class="ig-colorfield-item-label">
                                 {{item.name}}
                             </span>
-                            <a *ngIf="url" class="ig-colorfield-item-label" [href]="url" (click)="navigate(url, $event)">
+                            <a context-link *ngIf="url" class="ig-colorfield-item-label" (click)="navigate(url, $event)">
                                 {{item.name}}
                             </a>
                         </span>

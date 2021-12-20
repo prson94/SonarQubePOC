@@ -19,7 +19,7 @@ export class LinkClickInterceptor {
             var adcEv = new AssetDetailClickEvent();
 
             var event = origEvent["from-context-method"] ?? "";
-
+            console.log(event);
             if (event === "open") {
                 this.router.navigateByUrl(url);
                 return;

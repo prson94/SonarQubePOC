@@ -3,14 +3,14 @@
         <ul *ngFor="let item of field.Values">
             <li *ngIf="item.TooltipContext == 'Preview'" [class]="valueCount > 1 ? 'ig-item' : ''">
                 <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'" [align]="tooltipAlign">
-                    <a *ngIf="item.TooltipUrl && fieldDataType != 'color'" [href]="item.TooltipUrl" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event)"></a>
+                    <a context-link *ngIf="item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event)"></a>
                     <span *ngIf="!item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="item.Value"></span>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="item.TooltipUrl" [colorsJSON]="item.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
                 </d3s-preview-tooltip>
             </li>
             <li *ngIf="item.TooltipContext != 'Preview'">
                 <d3s-lookup-tooltip *ngIf="item.TooltipUrl; else noLinkTooltip" [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
-                    <a *ngIf="fieldDataType != 'color'" [href]="item.TooltipUrl" (click)="navigate(item.TooltipUrl, $event)" [innerText]="(valueCount > 1 ? '&bull; ' : '') + item.Value"></a>
+                    <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(item.TooltipUrl, $event)" [innerText]="(valueCount > 1 ? '&bull; ' : '') + item.Value"></a>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="item.Value" [url]="item.TooltipUrl" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
                 </d3s-lookup-tooltip>
             </li>
@@ -40,7 +40,7 @@
                     <div class="ig-value ig-html ql-editor no-padding" [innerHtml]="field.Value | safeHtml"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'link'">
-                    <div class="ig-value"><a [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>
+                    <div class="ig-value"><a  [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'json'">
                     <div class="ig-value">
@@ -96,11 +96,11 @@
     <ng-container *ngIf="field.Type == DetailFieldType.Tooltip">
         <div style="padding-bottom: 9px">
             <d3s-preview-tooltip *ngIf="field.TooltipContext == 'Preview'; else listTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID" [align]="tooltipAlign">
-                <a [href]="field.TooltipUrl" (click)="navigate(field.TooltipUrl, $event)">{{field.Value}}</a>
+                <a context-link (click)="navigate(field.TooltipUrl, $event)">{{field.Value}}</a>
             </d3s-preview-tooltip>
             <ng-template #listTooltip>
                 <d3s-lookup-tooltip *ngIf="field.TooltipUrl; else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                    <a *ngIf="fieldDataType != 'color'" [href]="field.TooltipUrl" (click)="navigate(field.TooltipUrl, $event)" [innerText]="field.Value"></a>
+                    <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(field.TooltipUrl, $event)" [innerText]="field.Value"></a>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="field.TooltipUrl" [colorsJSON]="field.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
                 </d3s-lookup-tooltip>
                 <ng-template #noLinkTooltip>
