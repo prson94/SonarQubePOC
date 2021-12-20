@@ -7,7 +7,7 @@
         <div class="row">
             <div class="col l4 m4 s12">
                 <div class="FieldName">Subject</div>
-                <p-dropdown igDropdown igSize="full" [ellipsisDirection]="'rtl'" placeholder="Select Subject" filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="editedRelationship.Subject" [disabled]="editedRelationship.LimitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);"></p-dropdown>
+                <p-dropdown igDropdown igSize="full" [ellipsisDirection]="'rtl'" placeholder="Select Subject" filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="relationshipType.Subject.Uid" [disabled]="limitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);"></p-dropdown>
             </div>
             <div class="col l4 m4 s12">
                 <div class="FieldName">Predicate</div>
@@ -16,7 +16,7 @@
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingObject"></d3s-loading>
                 <div *ngIf="!isLoadingObject" class="FieldName">Object</div>
-                <p-dropdown igDropdown igSize="full" [ellipsisDirection]="'rtl'" placeholder="Select Object" *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="editedRelationship.LimitedChangesOnly || !canChangeObject" required></p-dropdown>
+                <p-dropdown igDropdown igSize="full" [ellipsisDirection]="'rtl'" placeholder="Select Object" *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="limitedChangesOnly || !canChangeObject" required></p-dropdown>
             </div>
         </div>
 
@@ -40,8 +40,8 @@
 
         <div class="row">
             <div class="col s12">
-                <button pButton type="submit" [disabled]="!relationshipEditorForm.form.valid" style="width: '150px';" label="Save"></button>
-                <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
+                <button pButton type="submit" [disabled]="!relationshipEditorForm.form.valid" style="width: 150px;" label="Save"></button>
+                <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: 150px;"></button>
             </div>
         </div>
 

@@ -600,6 +600,23 @@ order by r.Name";
             }
         }
 
+        [HttpGet, Route("IntersectType_PredicateOptionsNew")]
+        public JsonNetResult IntersectType_PredicateOptionsNew(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
+        {
+            try
+            {
+                var models = Company.GetPredicateOptions2(subjectUid, objectUid, predicateUid)
+                    .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.UID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
+                    .OrderBy(i => i.label);
+
+                return new JsonNetResult { Data = models, Formatting = Formatting.None };
+            }
+            catch (Exception ex)
+            {
+                return jsonNetException(ex);
+            }
+        }
+
         [Route("IntersectType_CardinalityOptions")]
         public JsonNetResult IntersectType_CardinalityOptions()
         {
@@ -614,7 +631,7 @@ order by r.Name";
         {
             var models = Company.GetIntersectTypeOptions()
                 .Where(i => i.Type != "MetricAllocation" && i.Type != "Predicate")
-                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
+                .Select(i => new { title = i.Name, value = i.Uid });
 
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
@@ -637,7 +654,35 @@ order by r.Name";
 
                 var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID, classLimits)
                     .Where(i => i.Type != "IntersectType")
-                    .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
+                    .Select(i => new { title = i.Name, value = i.Uid.ToString()});
+
+                return new JsonNetResult { Data = models, Formatting = Formatting.None };
+            }
+            catch (Exception ex)
+            {
+                return jsonNetException(ex);
+            }
+        }
+
+        [HttpGet, Route("IntersectType_ObjectOptionsNew")]
+        public JsonNetResult IntersectType_ObjectOptionsNew(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
+        {
+            try
+            {
+                List<AssetTypeClass> classLimits = null;
+
+                if (predicateUid.HasValue)
+                {
+                    var predicate = Company.Predicates.FirstOrDefault(p => p.UID == predicateUid);
+                    if (predicate != null)
+                    {
+                        classLimits = predicate.Type.AsInfoModel().ObjectAssetClassesSupported.ToList();
+                    }
+                }
+
+                var models = Company.GetIntersectTypeOptions2(subjectUid, objectUid, predicateUid, classLimits)
+                    .Where(i => i.Type != "IntersectType")
+                    .Select(i => new { title = i.Name, value = i.Uid.ToString() });
 
                 return new JsonNetResult { Data = models, Formatting = Formatting.None };
             }

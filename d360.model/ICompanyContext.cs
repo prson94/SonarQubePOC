@@ -186,7 +186,9 @@ namespace d360.model
         string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
         string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null, List<AssetTypeClass> limitToClasses = null);
+        List<IntersectTypeOption> GetIntersectTypeOptions2(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null);
         List<Predicate> GetPredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
+        List<Predicate> GetPredicateOptions2(Guid subjectUid, Guid? objectUid, Guid? predicateUid);
         IEnumerable<dynamic> GetLoadColumnDetails(int id);
         BulkLoadGetLoadColumnsModel GetLoadColumns(string action, string type, int id, bool includeLookupValues);
         BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues);
