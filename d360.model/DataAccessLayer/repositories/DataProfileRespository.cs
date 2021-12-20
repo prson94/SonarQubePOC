@@ -91,23 +91,27 @@ namespace d360.model.DataAccessLayer
                 if (dataprofile != null)
                 {
                     startDate = endDate = dataprofile.ProfileSetDate;
-                }
 
-                if (!includeChildAssets)
-                {
-                    List<AssetDataProfileSample> dataProfileSamples = CompanyContext.AssetDataProfileSample.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList();
-                    results.items = new List<DataProfileModel>{ new DataProfileModel(assetUid, dataprofile, dataProfileSamples) };
+                    if (!includeChildAssets)
+                    {
+                        List<AssetDataProfileSample> dataProfileSamples = CompanyContext.AssetDataProfileSample.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList();
+                        results.items = new List<DataProfileModel> { new DataProfileModel(assetUid, dataprofile, dataProfileSamples) };
 
-                    if (includeTotal)
-                    {
-                        results.total = 1;
+                        if (includeTotal)
+                        {
+                            results.total = 1;
+                        }
+                        else
+                        {
+                            results.total = null;
+                        }
+                        return results;
                     }
-                    else
-                    {
-                        results.total = null;
-                    }
-                    return results;
                 }
+                else
+                {                    
+                    return results;//no profiling records
+                }               
             }
 
             var descendantsSQL = $@"with descendants as (select @assetID as AssetID)";
