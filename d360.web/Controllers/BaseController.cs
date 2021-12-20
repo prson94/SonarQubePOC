@@ -598,6 +598,7 @@ from	CompanyResource CR
 
         internal JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
+            Response.StatusCode = (int)statusCode;
             return new JsonNetResult
             {
                 Data = new { type = "error", title, message },
