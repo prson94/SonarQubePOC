@@ -109,8 +109,10 @@ namespace d360.model.DataAccessLayer
                     }
                 }
                 else
-                {                    
-                    return results;//no profiling records
+                {
+                    //no profiling records
+                    results.items = new List<DataProfileModel>();
+                    return results;
                 }               
             }
 
