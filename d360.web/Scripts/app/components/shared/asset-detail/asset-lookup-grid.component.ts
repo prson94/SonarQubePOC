@@ -168,7 +168,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     navigate(url: string, e: any, data: any) {
         if (this.interceptLinkClick) {
-            this.linkClickInterceptor.sendEvent(e, data)
+            this.linkClickInterceptor.sendEvent(e, data, SiteUrlHelpers.convertClassicUrl(url))
             return;
         }
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));

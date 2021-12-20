@@ -104,11 +104,11 @@
                         <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
                         <span *ngSwitchCase="'lookup'" style="display:block; word-wrap:break-word !important">
                             <d3s-lookup-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
-                                <a (click)="navigate(item[column.urlfield], $event, column)" [innerText]="item[column.datafield]"></a>
+                                <a context-link (click)="navigate(item[column.urlfield], $event, column)" [innerText]="item[column.datafield]"></a>
                             </d3s-lookup-tooltip>
                         </span>
                         <span *ngSwitchCase="'preview'" style="display:block; word-wrap:break-word !important">
-                            <a (click)="navigate(item[column.urlfield], $event, {column,item})" [innerText]="item[column.datafield]"></a>
+                            <a context-link (click)="navigate(item[column.urlfield], $event, {column,item})" [innerText]="item[column.datafield]"></a>
                         </span>
                         <span *ngSwitchCase="'link'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
                         <span *ngSwitchCase="'html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>

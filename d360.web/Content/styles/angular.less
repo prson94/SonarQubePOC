@@ -19,6 +19,17 @@
 
 @import "./infogix-ui/infogix-ui.less";
 
+.link-context-menu {
+  background-color: white;
+  padding: 4px 0;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  min-width: 128px;
+  position: fixed;
+  min-height: 50px;
+  z-index: 1000;
+}
+
 .ng-loading {
   position: fixed;
   height: 100%;
@@ -6709,6 +6720,7 @@ table {
     margin-bottom: 8px;
     line-height: 1;
     border-bottom: 1px solid #ebebeb;
+
     button.tab {
       box-sizing: border-box;
       padding: 0 15px;

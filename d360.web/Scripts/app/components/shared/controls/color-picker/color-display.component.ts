@@ -84,7 +84,7 @@ export class ColorDisplayComponent implements OnInit {
 
     navigate(url: string, e: any) {
         if (this.interceptLinkClick) {
-            this.linkClickInterceptor.sendEvent(e, this.field)
+            this.linkClickInterceptor.sendEvent(e, this.field, url)
             return;
         }
         this.router.navigateByUrl(url);

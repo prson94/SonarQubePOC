@@ -11,6 +11,7 @@ import { CheckboxDirective, IgCheckboxModule } from './ig-checkbox-directive';
 import { DropdownModule, DropdownDirective } from './ig-dropdown.directive';
 import { RadioButtonDirective, IgRadioButtonModule } from './ig-radio-button-directive';
 import { NgLetDirective } from './ng-let-directive';
+import { LinkWithContextDirective } from './link-with-context-menu-directive';
 
 
 @NgModule({ 
@@ -28,7 +29,8 @@ import { NgLetDirective } from './ng-let-directive';
         CopyClipboardDirective,
         ClickOutsideDirective,  
         AutoFocusDirective,
-        NgLetDirective
+        NgLetDirective,
+        LinkWithContextDirective
     ],
     exports: [
         TextHighlightDirective,
@@ -42,7 +44,8 @@ import { NgLetDirective } from './ng-let-directive';
         DropdownDirective,
         RadioButtonDirective,
         CheckboxDirective,
-        NgLetDirective
+        NgLetDirective,
+        LinkWithContextDirective
     ]
 })
 export class DirectivesModule { }

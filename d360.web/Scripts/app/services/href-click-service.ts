@@ -1,19 +1,34 @@
 ﻿import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class LinkClickInterceptor {
     private subject = new Subject<AssetDetailClickEvent>();
 
-    sendEvent(origEvent: any, data: any) {
+    constructor(private router: Router) { }
+
+    sendEvent(origEvent: any, data: any, url: string) {
         var adcEv = new AssetDetailClickEvent();
         adcEv.type = AssetDetailClickType.Undefined;
         if (origEvent) {
             origEvent.preventDefault();
             origEvent.stopPropagation();
 
-            console.log(data);
+            console.log(origEvent);
             var adcEv = new AssetDetailClickEvent();
+
+            var event = origEvent["from-context-method"] ?? "";
+
+            if (event === "open") {
+                this.router.navigateByUrl(url);
+                return;
+            }
+
+            if (event === "new-tab") {
+                window.open(url, '_blank');
+                return;
+            }
 
             if (data.column && data.column.uidfield === "SecurityAssetUid") {
                 //clicked on ownership lookup
