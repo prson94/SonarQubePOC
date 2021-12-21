@@ -37,6 +37,11 @@ namespace d360.web.Services.Favorites
                 Route = request.Route,
             });
 
+            if (routeMatch.Matcher.PageType == FavoritePageType.Unknown)
+            {
+                throw new InvalidOperationException($"Failed to match favorite with route {request.Route}");
+            }
+
             var favoriteDetails = (await favoritesRepository.GetFavoriteDetails(new[] { routeMatch.ObjectId })).SingleOrDefault();
             var isCorrect = IsCorrectFavorite(routeMatch, favoriteDetails);
             if (!isCorrect)
