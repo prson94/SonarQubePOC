@@ -39,7 +39,6 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private showSocialScoreBar: boolean = true;
     private showDataProfile: boolean = false;
     private dataProfile: any;
-    private dataProfileList: any[];
     private sidePanelOpen: boolean = false;
     private sidePanelStorageKey;
     private synonymPermission: SynonymPermission;    
@@ -102,12 +101,10 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-                    let startDate = new Date();
-                    startDate.setFullYear(startDate.getUTCFullYear() - 100);
-                    this.dataProfileService.getDataProfiles(this.artifact.Uid, startDate).subscribe(
+
+                    this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
                         (r) => {
                             if (r && r.items && r.items.length > 0) {
-                                this.dataProfileList = r.items;
                                 this.dataProfile = r.items[0];
 
                                 forkJoin(

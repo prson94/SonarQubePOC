@@ -48,13 +48,13 @@ namespace d360.web.Controllers
 
         TelemetryClient Telemetry;
 
-        public AuthenticationController(ICommunityContext community, ICompanyContext company, IMailProvider mail, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public AuthenticationController(ICoreComponentSet set, IMailProvider mail)
+            : base(set)
         {
             Mail = mail;
             Telemetry = new TelemetryClient();
             Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
-            Telemetry.Context.GlobalProperties["CompanyID"] = company.CurrentCompanyID.ToString();
+            Telemetry.Context.GlobalProperties["CompanyID"] = Company.CurrentCompanyID.ToString();
         }
 
         #endregion

@@ -23,7 +23,7 @@ namespace igx.UnitTests
         internal FieldsController fieldsController;
         public FieldsControllerTest()
         {
-            this.fieldsController = new FieldsController(GetCommunity(), GetCompany(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository(), GetSettingsRepository())
+            this.fieldsController = new FieldsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

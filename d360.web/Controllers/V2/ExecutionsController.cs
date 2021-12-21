@@ -39,12 +39,11 @@ namespace d360.web.Controllers.V2
 
         IAssetRepository AssetRepository;
         IStorageProvider Storage;
-        public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, ISettingsRepository settingsRepository, IStorageProvider storage)
-            : base(community, company, settingsRepository)
+        public ExecutionsController(ICoreComponentSet set, IAssetRepository repository, IStorageProvider storage)
+            : base(set)
         {
             Storage = storage;
             AssetRepository = repository;
-            Company = company;
         }
 
         #endregion
@@ -680,7 +679,7 @@ from	[Load] L
         /// <summary>
         /// Retrieves bulk load items details for a given load unique identifier.
         /// </summary>
-        /// /// <param name="uid">The unique identifier of the load which details are returned for.</param>
+        /// /// <param name="loadUid">The unique identifier of the load which details are returned for.</param>
         /// <returns></returns>
         [
             HttpGet,

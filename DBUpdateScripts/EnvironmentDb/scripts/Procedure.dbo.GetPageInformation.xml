@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.dbo.GetPageInformation-v3">
+  <changeSet author="vlova" id="Procedure.dbo.GetPageInformation-v4.2">
     <comment>GOV-13402</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -19,50 +19,10 @@ CREATE OR ALTER PROCEDURE [dbo].[GetPageInformation]
 as
 begin
 	declare @breadcrumbsRaw table ([Level] int, [TypeName] nvarchar(500), [Name] nvarchar(max), [TypeUrl] nvarchar(2500), [Url] nvarchar(2500));
-	declare @breadcrumbs table ([Name] nvarchar(max), [Url] nvarchar(2500), Active bit, IsType bit);
-
-	with h as
-		(
-		select	A.ID,
-				A.[ObjectID], 
-				A.AssetTypeID,
-				I.SubjectID as [ParentID], 
-				0 as [Level]
-		from	Asset A
-				left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
-		where	A.[Object] = @o and A.ObjectID = @oid
-		union all
-		select	P.ID,
-				P.[ObjectID] as ID, 
-				P.AssetTypeID,
-				I.SubjectID as ParentID, 
-				h.[Level]-1 as [Level]
-		from	Asset P
-				inner join h on P.[Object] = @o and P.ObjectID = h.ParentID
-				outer apply (
-							select	SubjectID
-							from	PredicateIntersect 
-							where	Object = P.Object 
-									and ObjectID = P.ObjectID 
-									and PredicateType = 3
-							) I
-		)
-
+	
 	insert into @breadcrumbsRaw
-		select		distinct	
-					[Level],
-					ltrim(rtrim(T.Name)),
-					ltrim(rtrim(D.DisplayValue)),
-					UT.Url,
-					U.Url
-		from		h 
-					inner join AssetType T on T.ID = h.AssetTypeID
-					left join AssetDisplayValue D on D.AssetID = h.ID
-					cross apply dbo.GetAssetUrlByID(h.ID) U
-					cross apply dbo.GetAssetTypeUrlById(T.ID) UT
-		where		ltrim(rtrim(T.Name)) is not null
-					and ltrim(rtrim(D.DisplayValue)) is not null
-		order by	[Level]
+	select *
+	from dbo.GetAssetBreadcrumbs(@o, @oid)
 
 	select	distinct
 			O.[Uid],
@@ -219,7 +179,6 @@ begin
 				when Child.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)
 			end as HasChildArtifacts,
-			cast(0 as bit) as AllowAttributes,
 			case 
 				when Hier.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)

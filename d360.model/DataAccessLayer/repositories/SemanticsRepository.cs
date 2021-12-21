@@ -1,4 +1,5 @@
 using d360.core.entities;
+using d360.core.enums;
 using d360.core.exceptions;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
@@ -35,6 +36,34 @@ namespace d360.model.DataAccessLayer
         #endregion
 
         #region Private
+
+        readonly List<string> complexNonSortableFields = new List<string> 
+        {
+            "headerRegExps", 
+            "invalidList", 
+            "advanced", 
+            "regExReturned", 
+            "validLocales", 
+            "validList"
+        };
+
+        readonly Dictionary<string, string> orderFields = new Dictionary<string, string> 
+        {
+            { "baseType", "BaseType" },
+            { "description", "Description" },
+            { "effectiveDate", "" },
+            { "headerRegExpConfidence", "HeaderFilterConfidence" },
+            { "matchType", "MatchType" },
+            { "maximum", "Maximum" },
+            { "minimum", "Minimum" },
+            { "minSamples", "MinimumSamples" },
+            { "minMaxPresent", "MinMaxPresent" },
+            { "name", "Name" },
+            { "priority", "Priority" },
+            { "qualifier", "Qualifier" },
+            { "status", "Status" },
+            { "threshold", "Threshold" }
+        };
 
         void addToChangeLog(string transactionId, string action)
         {
@@ -227,15 +256,16 @@ insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Ve
                 var qualifiers = new List<string> { qualifier };
                 findLatestExistingSemantics(qualifiers, 1);
 
-                var anyProfilesQuery = await CompanyContext.QueryAsync<int>(@"select  count(1)  
+                var anyProfilesQuery = await CompanyContext.QueryAsync<int>(@"
+select  count(1)  
 from    AssetDataProfile P 
         cross apply (
             select  max(EffectiveDate) as EffectiveDate
             from    Semantic 
             where   Qualifier = @qualifier 
-                    and Qualifier = P.TypeQualifier
                     and EffectiveDate <= P.ProfileSetDate
-        ) S", new { qualifier });
+        ) S
+where   P.TypeQualifier = @qualifier", new { qualifier });
 
                 var profileRecordCount = anyProfilesQuery.Single();
 
@@ -272,7 +302,7 @@ from    AssetDataProfile P
             var dbArgs = new DynamicParameters();
 
             var pageNum = 1;
-            var pageSize = 25;
+            var pageSize = 200;
             var order = "Qualifier";
             var direction = "asc";
             DateTime asOfEffectiveDate = DateTime.UtcNow;
@@ -300,6 +330,7 @@ from    AssetDataProfile P
                 if (!string.IsNullOrEmpty(simpleFilter))
                 {
                     simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+                    var possibleEnumStringValue = simpleFilter.Replace("%", "");
 
                     dbArgs.Add("@simpleFilter", simpleFilter);
 
@@ -308,11 +339,23 @@ from    AssetDataProfile P
                     simpleFilters.Add($"Name like @simpleFilter");
                     simpleFilters.Add($"Description like @simpleFilter");
                     simpleFilters.Add($"Qualifier like @simpleFilter");
-                    simpleFilters.Add($"Status like @simpleFilter");
-                    simpleFilters.Add($"[Source] like @simpleFilter");
+                    SemanticSource source;
+                    if (Enum.TryParse(possibleEnumStringValue, out source))
+                    { 
+                        simpleFilters.Add($"[Source] = {(int)source}");
+                    }
+                    SemanticStatus status;
+                    if (Enum.TryParse(possibleEnumStringValue, out status))
+                    {
+                        simpleFilters.Add($"Status = {(int)status}");
+                    }
                     simpleFilters.Add($"Threshold like @simpleFilter");
                     simpleFilters.Add($"Priority like @simpleFilter");
-                    simpleFilters.Add($"BaseType like @simpleFilter");
+                    SemanticBaseType baseType;
+                    if (Enum.TryParse(possibleEnumStringValue, out baseType))
+                    {
+                        simpleFilters.Add($"BaseType = {(int)baseType}");
+                    }
                     simpleFilters.Add($"EffectiveDate like @simpleFilter");
 
                     whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
@@ -351,14 +394,19 @@ from    AssetDataProfile P
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_order"))
             {
                 order = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
-                var orderFields = new List<string> { "baseType", "description", "effectiveDate", "name", "priority", "qualifier", "source", "status", "threshold" };
-                if (!orderFields.Contains(order))
+
+                if (complexNonSortableFields.Contains(order))
                 {
-                    throw new GenericException(HttpStatusCode.BadRequest, "You have provided an invalid field as an order parameter.");
+                    throw new GenericException(HttpStatusCode.BadRequest, "Invalid sort configuration", "You have provided a complex non-sortable field as an order parameter.");
                 }
+                if (!orderFields.ContainsKey(order))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "Invalid sort configuration", "You have provided an invalid field as an order parameter.");
+                }
+
+                order = orderFields[order]; // Get the appropriate column name.
             }
             
-
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_direction"))
             {
                 direction = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value;
@@ -403,6 +451,9 @@ from    AssetDataProfile P
                 cancellationToken = CancellationToken.None;
             }
 
+            var qualifiers = new List<string> { qualifier };
+            findLatestExistingSemantics(qualifiers, 1);
+
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@qualifier", qualifier);
 
@@ -412,11 +463,17 @@ from    AssetDataProfile P
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_order"))
             {
                 order = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
-                var orderFields = new List<string> { "baseType", "description", "effectiveDate", "name", "priority", "qualifier", "source", "status", "threshold" };
-                if (!orderFields.Contains(order))
+
+                if (complexNonSortableFields.Contains(order))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "You have provided a complex non-sortable field as an order parameter.");
+                }
+                if (!orderFields.ContainsKey(order))
                 {
                     throw new GenericException(HttpStatusCode.BadRequest, "You have provided an invalid field as an order parameter.");
                 }
+
+                order = orderFields[order]; // Get the appropriate column name.
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_direction"))
@@ -465,10 +522,10 @@ from    AssetDataProfile P
                         if (patchModel != null)
                         { 
                             if (patchModel.BaseType.HasValue
-                                || patchModel.HeaderFilter != null
+                                || patchModel.HeaderFilterStructured != null
                                 || patchModel.HeaderFilterConfidence.HasValue
-                                || patchModel.InvalidValues != null
-                                || patchModel.JsonPayload != null
+                                || patchModel.InvalidValuesStructured != null
+                                || patchModel.JsonPayloadStructured != null
                                 || patchModel.MatchType.HasValue
                                 || patchModel.Maximum.HasValue
                                 || patchModel.Minimum.HasValue
@@ -477,8 +534,8 @@ from    AssetDataProfile P
                                 || !string.IsNullOrEmpty(patchModel.RegularExpression)
                                 || patchModel.Status.HasValue
                                 || patchModel.Threshold.HasValue
-                                || patchModel.ValidLocales != null
-                                || patchModel.ValidValues != null)
+                                || patchModel.ValidLocalesStructured != null
+                                || patchModel.ValidValuesStructured != null)
                             {
                                 nonUpdatedableSemantics.Add(e.Qualifier);
                             }

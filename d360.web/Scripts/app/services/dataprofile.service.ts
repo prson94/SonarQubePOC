@@ -22,7 +22,7 @@ export class DataProfileService extends BaseObservableService {
         super(messagesService);
     }
 
-    public getDataProfiles(assetUid: string, startDate: Date = null, endDate: Date = null, includeChildAssets: boolean = false, includeTotal: boolean = false): Observable<any> {
+    public getDataProfiles(assetUid: string, startDate: Date = null, endDate: Date = null, includeChildAssets: boolean = false, includeTotal: boolean = false, includeSamples: boolean = true): Observable<any> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),            
         };
@@ -43,6 +43,10 @@ export class DataProfileService extends BaseObservableService {
 
         if (includeTotal) {
             url += `&_includeTotal=${includeTotal}`;
+        }
+
+        if (!includeSamples) {
+            url += `&_includeSamples=${includeSamples}`;
         }
 
         return this

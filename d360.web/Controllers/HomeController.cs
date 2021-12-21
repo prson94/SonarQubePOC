@@ -24,8 +24,8 @@ namespace d360.web.Controllers
 
         readonly ICachingProvider Cache;
 
-        public HomeController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository, ICachingProvider cache)
-            : base(community, company, settingsRepository)
+        public HomeController(ICoreComponentSet set, ICachingProvider cache)
+            : base(set)
         {
             Cache = cache;
         }

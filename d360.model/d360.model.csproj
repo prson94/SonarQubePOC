@@ -96,6 +96,7 @@
     <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\FavoritesRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\GraphFilterRepository.cs" />
     <Compile Include="DataAccessLayer\IProcessRepository.cs" />
     <Compile Include="DataAccessLayer\IConnectorLabelRepository.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="DataAccessLayer\IDapperQueryComposer.cs" />
     <Compile Include="DataAccessLayer\IDbConnectionProvider.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityDapperRepository.cs" />
+    <Compile Include="DataAccessLayer\IFavoritesRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
@@ -113,6 +115,7 @@
     <Compile Include="DataAccessLayer\ISurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MembershipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MetricsRepository.cs" />
+    <Compile Include="helpers\udt\ObjectsTableUDT.cs" />
     <Compile Include="DataAccessLayer\repositories\ProcessRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
@@ -125,6 +128,9 @@
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
+    <Compile Include="helpers\udt\UDTExtensions.cs" />
+    <Compile Include="helpers\udt\UDTNameAttribute.cs" />
+    <Compile Include="helpers\udt\UDTOrderAttribute.cs" />
     <Compile Include="DataAccessLayer\repositories\WorkflowRepository.cs" />
     <Compile Include="DependencyInjectionExtensions.cs" />
     <Compile Include="Extensions.cs" />

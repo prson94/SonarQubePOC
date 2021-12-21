@@ -38,6 +38,9 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
         return this.store.state$;
     }
 
+    // Please, note that this mapping is almost not required (at least, we don't need to put actual favorites inside)
+    // But our site-menu-category.component depends on it's existence
+    // TODO: once upon a time, cleanup this
     menu$ = this.store.state$.pipe(
         map(x => x.homepageAndFavorites),
         distinctUntilChanged(isEqual),
@@ -51,13 +54,11 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
             menu.NavigationItems = [];
 
             for (let favorite of homefav.Favorites) {
-                let isHomePage = _.isEqual(favorite, homefav.Homepage);
                 menu.NavigationItems.push({
                     Name: favorite.Name,
                     Url: favorite.Route,
                     IsLink: false,
                     Items: null,
-                    IsHomePage: isHomePage,
                     count: null
                 });
             }

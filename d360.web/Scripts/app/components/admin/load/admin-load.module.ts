@@ -21,6 +21,7 @@ import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
+import { SearchFieldModule } from "../../shared/controls/search-field/search-field.component";
 
 import { TableModule } from 'primeng/table';
 
@@ -31,6 +32,8 @@ import { TableModule } from 'primeng/table';
         HttpClientModule,
 
         AdminLoadRoutingModule,
+
+        SearchFieldModule,
 
         //prime
         ButtonModule,

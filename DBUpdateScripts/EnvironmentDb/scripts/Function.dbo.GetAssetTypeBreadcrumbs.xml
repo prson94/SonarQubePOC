@@ -1,0 +1,62 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="vlova" id="Function.dbo.GetAssetTypeBreadcrumbs-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter function [dbo].[GetAssetTypeBreadcrumbs]
+(		        
+	@objectType varchar(max),
+	@objectId int
+)
+returns table
+as
+return 
+(
+		with h as (
+		select 
+			0 as Level, 
+			assetType.Name,
+			assetType.ObjectID
+		from dbo.AssetType assetType
+		where assetType.[Object] = @objectType 
+		and assetType.ObjectId = @objectId
+
+		union all
+	
+		select	
+				child.[Level]-1 as [Level],
+				parentType.Name,
+				parentType.ObjectID
+		from	h child
+				inner join dbo.IntersectType intersectType
+					on intersectType.ObjectId = child.ObjectID
+				inner join [Predicate] P 
+					on P.ID = intersectType.PredicateID 
+					and P.[Type] = 3
+				inner join dbo.AssetType parentType
+					on parentType.ObjectID = intersectType.SubjectID
+	)
+	select distinct top 1000000
+		h.Level, 
+		h.Name as TypeName
+	from h
+	order by h.Level
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop function [dbo].[GetAssetTypeBreadcrumbs]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

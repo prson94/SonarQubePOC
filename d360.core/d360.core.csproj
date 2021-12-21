@@ -104,6 +104,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>OthersError.resx</DependentUpon>
     </Compile>
+    <Compile Update="resources\PageNames.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PageNames.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\Permissions.Designer.cs">
       <DependentUpon>Permissions.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -204,6 +209,10 @@
     <EmbeddedResource Update="resources\OthersError.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>OthersError.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\PageNames.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PageNames.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Permissions.resx">
       <LastGenOutput>Permissions.Designer.cs</LastGenOutput>

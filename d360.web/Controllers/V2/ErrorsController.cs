@@ -22,8 +22,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        public ErrorsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public ErrorsController(CoreComponentSet set): base(set)
         {
 
         }

@@ -53,7 +53,6 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     @ViewChild('grid', { static: false }) assetGrid: AssetGridComponent;
 
 
-    private dataProfileList: any[];
 
 
     constructor(private route: ActivatedRoute,
@@ -128,12 +127,9 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
-            let startDate = new Date();
-            startDate.setFullYear(startDate.getUTCFullYear() - 100);
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid, startDate).subscribe(
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
-                        this.dataProfileList = r.items;
                         this.dataProfile = r.items[0];
 
                         forkJoin(

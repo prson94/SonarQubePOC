@@ -128,15 +128,14 @@ namespace d360.web.Models
                 new InsertUserToGroup { Uid = Guid.Empty };
         }
     }
+
     public class FavoriteApiModelExample : IExamplesProvider
     {
         public object GetExamples()
         {
             return new FavoriteApiModel
             {
-                Name = "My favorite name",
-                Route = "asset/" + Guid.Empty.ToString(),
-                Type = FavoriteType.Asset
+                Route = "asset/" + Guid.Empty.ToString()
             };
         }
     }

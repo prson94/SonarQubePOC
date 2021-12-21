@@ -27,6 +27,19 @@ d3s-loading {
     display: flex;
     padding-top: 6px;
     padding-bottom: 6px;
+
+    label {
+        display: block; // this ensures that all label is clickable, even empty content
+        cursor: pointer;
+    }
+
+    label {
+        flex: 1;
+
+        d3s-site-menu-favorite-item {
+            flex: 1
+        }    
+    }
 }
 
 // This magic fixes GOV-16402 - issue with having two scrollbars
@@ -34,4 +47,8 @@ d3s-loading {
 // position:relative causes this element to be independent of parent containers
 .favorites-scroll-fix {
     position: relative;
+}
+
+.megamenu-items {
+    overflow-x: auto;
 }

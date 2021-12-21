@@ -2,22 +2,21 @@
 <div *ngIf="!isLoading">
     <header>
         {{title}}
-        <d3s-tile-actions [hasFilterMode]="true"
-                          [(filterMode)]="showSimpleFilter"
-                          [hasRefresh]="true"
+        <d3s-tile-actions [hasRefresh]="true"
                           (refreshClick)="refresh()"
                           [hasExportErrors]="true"
                           (exportErrorsClick)="exportErrors()"
                           [hasExportOriginal]="true"
                           (exportOriginalClick)="exportOriginal()"></d3s-tile-actions>
     </header>
-    <input type="text"
-           [hidden]="!showSimpleFilter"
-           pInputText
-           size="100"
-           (input)="dt.filterGlobal($event.target.value, 'contains')"
-           placeholder="Search..."
-           class="grid-simple-filter">
+    <div>
+        <ig-search-field mode="Keypress"
+                         [debounce]="300"
+                         (onSearch)="onSimpleSearch($event)"
+                         [(ngModel)]="simpleTextFilter"
+                         style="width:100%; padding-bottom:5px">
+        </ig-search-field>
+    </div>
     <p-table #dt
              [value]="items"
              [scrollable]="true"
@@ -25,9 +24,14 @@
              selectionMode="single"
              [metaKeySelection]="true"
              [globalFilterFields]="globalFilterFields"
+             [lazy]="true"
+             (onLazyLoad)="loadItemsLazy($event)"
+             [totalRecords]="totalRecords"
              [paginator]="true"
-             [rows]="25"
-             [rowsPerPageOptions]="defaultPagingOptions">
+             [rows]="rowsPerPage"
+             [rowsPerPageOptions]="defaultPagingOptions"
+             [loading]="itemsLoading"
+             [loadingIcon]="'fa fa-spinner fa-spin'">
         <ng-template pTemplate="colgroup">
             <colgroup>
                 <col style="width:125px">
@@ -89,7 +93,7 @@
                         <span *ngSwitchCase="'date'"><span *ngIf="item[column.datafield]">{{item[column.datafield] | date:'shortDate'}}</span></span>
                         <span *ngSwitchCase="'datetime'"><span *ngIf="item[column.datafield]">{{item[column.datafield] | utcDate | date:'medium'}}</span></span>
                         <span *ngSwitchDefault><span *ngIf="item[column.datafield]">{{item[column.datafield]}}</span></span>
-                    </span>                
+                    </span>
                 </td>
                 <td>{{item.RowIndex}}</td>
                 <td>

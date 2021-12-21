@@ -1,0 +1,35 @@
+<div class="ie-min-content">
+	<ng-container *ngLet="isLoading$ | async as isLoading">
+		<div class="megamenu-header truncate showFavoritesHeader">
+			<ig-search-field #searchinput
+				[darkMode]="true"
+				[ngModel]="searchText$ | async"
+				[placeholder]="'Search menu...'"
+				(ngModelChange)="store.setSearchTextAction({searchText: $event})"
+				(onSearch)="contentSizeChanged.emit();"
+				mode="Keypress"></ig-search-field>
+			<br>
+			<ng-content select="[additionalButtons]"></ng-content>
+		</div>
+		<div [ngStyle]="{'max-height': maxHeight}"
+			class="row megamenu-items favorites-scroll-fix">
+			<d3s-loading [isLoading]="isLoading"></d3s-loading>
+			<ng-container *ngIf="!isLoading">
+				<ng-container *ngLet="filterBySearch(favorites$ | async, searchText$ | async) as favorites">
+					<ng-container *ngFor="let favorite of favorites">
+						<div class="col s12 megamenu-items-container">
+							<ul class="menu-group">
+								<div (click)="openFavorite(favorite)"
+									class="menu-item">
+									<div class="favorite-container">
+										<d3s-site-menu-favorite-item [favorite]="favorite"></d3s-site-menu-favorite-item>
+									</div>
+								</div>
+							</ul>
+						</div>
+					</ng-container>
+				</ng-container>
+			</ng-container>
+		</div>
+	</ng-container>
+</div>

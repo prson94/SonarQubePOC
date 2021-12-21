@@ -38,15 +38,11 @@ namespace d360.web.Controllers.V2
     public class EnvironmentController : BaseV2ApiController
     {
         IStorageProvider _storage;
-        IAssetRepository _assetRepository;
         readonly ICompanyContext _company;
 
-        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public EnvironmentController(ICoreComponentSet set, IStorageProvider storage) : base(set)
         {
             _storage = storage;
-            _assetRepository = assetRepository;
-            _company = company;
-
         }
 
         [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
@@ -590,6 +586,42 @@ namespace d360.web.Controllers.V2
             }
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
+        }
+
+        /// <summary>
+        /// Retrieves environment licensing info. 
+        /// Infogix users are excluded from user counts.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("featureflaginfo"),
+            SwaggerConsumes("application/json"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetFeatureFlagInfo()
+        {
+            try
+            {
+                var user = GetClientFeatureFlagUser();
+                var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
+                return await Task.FromResult(
+                    ResponseMessage(
+                        Request.CreateResponse(HttpStatusCode.OK, new
+                        {
+                            clientId = ClientId,
+                            user
+                        }))
+                    ).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> { { "Endpoint Method", "Environment.GetFeatureFlagInfo => " } });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+            }
         }
 
         /// <summary>

@@ -6,21 +6,20 @@
     OnChanges,
     OnDestroy,
     OnInit,
-    SimpleChange
+    SimpleChanges
 } from '@angular/core';
-import {Router} from '@angular/router';
-import {FavoritesService} from '../../../services/favorites.service';
-import { FavoriteApiModel} from '../../../models/favorite.model';
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {HeaderActionsService} from '../../../services/header-actions.service';
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import { FavoritesService } from '../../../services/favorites.service';
+import { FavoriteApiModel } from '../../../models/favorite.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { HeaderActionsService } from '../../../services/header-actions.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 
 @Component({
     selector: 'd3s-header-favorites',
     template:
-    `
+        `
         <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="handleClick()">
             <div class="mini-menu-line">
                 <div class="check-gutter">
@@ -40,21 +39,16 @@ import * as _ from 'lodash';
 
 export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     @Input() uri: string;
-    @Input() isFavoriteItem: boolean = false;
     @Input() favItems: FavoriteApiModel[] = [];
-    @Input() currentObject: string;
-    @Input() currentObjectId: number;
-    @Input() Uid: string;
     @Input() homePageItem: FavoriteApiModel = null;
 
-    private isHomePageItem: boolean = false;
     private subBreadcrumb: any;
     private isLoading = false;
+    private favoriteRoutesSet = new Set<string>();
 
     private name: string;
-    public visible: boolean = true;
 
-    constructor(private router: Router,
+    constructor(
         private favoritesService: FavoritesService,
         private breadcrumbService: HeaderBreadcrumbService,
         protected headerActionsService: HeaderActionsService,
@@ -68,11 +62,12 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         });
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.uri && changes["uri"]) {
-            this.visible = this.checkVisible();
+    ngOnChanges(changes: SimpleChanges) {
+        if ('favItems' in changes) {
+            this.favoriteRoutesSet = new Set(this.favItems.map(f => f.Route));
         }
-        this.checkIsFavorite();
+
+        this.ref.markForCheck();
     }
 
     ngOnDestroy() {
@@ -103,17 +98,8 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
 
         this.isLoading = true;
         let f = new FavoriteApiModel();
-        //check these to determine fav type
-        if (this.IsPageType()) {
-            f.Type = "Page";
-        } else if (this.currentObject.endsWith("Type")) {
-            f.Type = "AssetType";
-        } else {
-            f.Type = "Asset";
-        }
         f.Name = this.name;
-        f.Route = this.uri ? this.uri : 'home';//null route is home        
-        this.isFavoriteItem = !this.isFavoriteItem;
+        f.Route = this.currentUri;
         this.favoritesService.toggleFavoriteV2(f).subscribe(
             fav => {
                 this.headerActionsService.emitFavoritesChange();
@@ -122,47 +108,20 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             }
         );
     }
-    
-    IsPageType(): any {
-        let res = false;
-        if ((!this.currentObject && !this.currentObjectId) || (this.currentObject == 'ReferenceItemType')){
-            res = true;
-        }
-        if (this.uri.toLowerCase().indexOf("sidebar") !== -1) {
-            res = true;
-        }
-        return res;
+
+    get isFavoriteItem() {
+        return this.favoriteRoutesSet.has(this.currentUri);
     }
 
-    checkIsFavorite() {
-        if (this.favItems == null) return;
-        
-        this.isFavoriteItem = false;
-        if (!this.uri) this.uri = 'home';
-        if (!this.Uid) this.Uid = "";
-        let index = this.favItems.filter(x => x.Uid != undefined).findIndex(x => x.Uid.toLowerCase() == this.Uid.toLowerCase());
-        if (index == -1)
-            index = this.favItems.findIndex(x => x.Route == this.uri);
-
-        this.isFavoriteItem = index >= 0;
+    get isHomePageItem() {
+        return this.homePageItem?.Route === this.currentUri;
     }
 
-    checkIsHomePage() {
-        if (this.favItems == null) return;
-
-        this.isHomePageItem = false;
-        if (!this.uri) this.uri = 'home';
-        let index = this.favItems.findIndex(x => _.isEqual(x, this.homePageItem));
-        if (index >= 0)
-            if (this.favItems[index].Type.toLowerCase() != "page")
-                this.isHomePageItem = (this.favItems[index].Uid == this.Uid);
-            else
-                this.isHomePageItem = this.favItems[index].Route == this.uri;
-        else
-            this.isHomePageItem = false;
+    get currentUri() {
+        return this.uri ?? 'home';
     }
 
-    checkVisible() {
+    get visible() {
         return !this.isAdminUri() && !this.isIssueUri();
     }
 

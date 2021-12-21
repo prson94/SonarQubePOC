@@ -41,17 +41,50 @@ namespace igx.UnitTests.SearchTests
                 AssetType = "TestAsset",
                 Uid = new Guid(),
                 Fields = new Dictionary<string, string>() {
-                    { "Name", "Test name"}
+                    { "Name", "Test name" }
                 }
             };
         }
 
-
-        [Fact]
-        public void ElasticVersion()
+        private IndexObjectModel GetIndexObjectModelWithField(int id, string field)
         {
-            string version = "6.5.4";
-            Version ver = new Version(version);
+            return new IndexObjectModel
+            {
+                ID = id,
+                Category = "User",
+                CompanyID = CompanyID,
+                AssetType = "User",
+                Uid = new Guid(),
+                AssetTypeUid = new Guid(),
+                RelativeUrl = $"/{id}",
+                AssetPath = new[] { "Asset", "Path" },
+                Fields = new Dictionary<string, string>() {
+                    { "Name", "Test name" },
+                    { "Special", field },
+                    { "Data3SixtyUser", "1" }
+                },
+                Tags = new Dictionary<string, string>() {
+                },
+                NoRead = new Dictionary<string, List<int>>() {
+                    { "G", new List<int>() { 0,1,2 } }
+                },
+                IndexFlags = IndexMode.WithFields | IndexMode.WithResponsibility | IndexMode.WithTags
+            };
+        }
+        [Fact]
+        public void ElasticSearchSourceBasic()
+        {
+            ElasticSearchSource searchSource = new ElasticSearchSource("connection string");
+            searchSource.IndexFieldLimit = 1000;
+            Assert.Equal(1000, searchSource.IndexFieldLimit);
+        }
+
+
+        [Theory]
+        [InlineData("6.5.4")]
+        [InlineData("not_valid")]
+        public void ElasticVersion(string version)
+        {
             var response = new
             {
                 version = new
@@ -66,9 +99,14 @@ namespace igx.UnitTests.SearchTests
                 .Returns(CreateESClientWithResponse(response))
                 .Verifiable();
 
-            Version result = source.Object.GetElasticVersion(CompanyID);
-
-            Assert.Equal(ver.ToString(), result.ToString());
+            if(Version.TryParse(version, out Version ver))
+            {
+                Version result = source.Object.GetElasticVersion(CompanyID);
+                Assert.Equal(ver.ToString(), result.ToString());
+            } else
+            {
+                Assert.Throws<ArgumentException>(() => source.Object.GetElasticVersion(CompanyID));
+            }
         }
 
         [Fact]
@@ -207,6 +245,40 @@ namespace igx.UnitTests.SearchTests
         }
 
         [Theory]
+        [InlineData("")]
+        [InlineData("\"Test\"")]
+        [InlineData(":^\"{}")]
+        [InlineData("Text with <b>html</b> tags")]
+        public void ElasticAddToIndexStringEscape(string escapestring)
+        {
+            var response = new
+            {
+                took = 30,
+                errors = false,
+                items = new[] {
+                    new { }
+                }
+            };
+
+            IndexObjectModel model = GetIndexObjectModelWithField(1, escapestring);
+
+            var source = new Mock<ElasticSearchSource>(MockBehavior.Strict);
+            source.Protected()
+                .Setup<IElasticClient>("GetElasticClient", ItExpr.IsAny<int>())
+                .Returns(CreateESClientWithResponse(response))
+                .Verifiable();
+
+            try
+            {
+                source.Object.AddToIndex(model);
+            }
+            catch (ArgumentException ex)
+            {
+                Assert.Equal("", ex.Message);
+            }
+        }
+
+        [Theory]
         [InlineData(1)]
         [InlineData(50)]
         [InlineData(10000)]
@@ -323,6 +395,34 @@ namespace igx.UnitTests.SearchTests
         }
 
         [Fact]
+        public void ElasticAddUpdateRemoveNull()
+        {
+            List<IndexObjectModel> models = new List<IndexObjectModel>
+            {
+                null
+            };
+
+            var source = new Mock<ElasticSearchSource>(MockBehavior.Strict);
+            source.Protected()
+                .Setup<IElasticClient>("GetElasticClient", ItExpr.IsAny<int>())
+                .Returns(CreateESClientWithResponse(new { }))
+                .Verifiable();
+
+            try
+            {
+                source.Object.AddToIndex(models);
+                source.Object.UpdateInIndex(models);
+                source.Object.RemoveFromIndex(models);
+                Assert.True(true);
+            }
+            catch
+            {
+                Assert.True(false, "Add/Update/Remove with null as input failed");
+            }
+
+        }
+
+        [Fact]
         public void ElasticGetSearchResultsWithAggregation()
         {
             QueryRequest queryRequest = new QueryRequest() {
@@ -361,6 +461,18 @@ namespace igx.UnitTests.SearchTests
             Assert.Equal(typeof(SearchResultsHitsModel), model.hits.GetType());
             Assert.Equal(typeof(SearchResultsShardModel), model._shards.GetType());
             Assert.Equal(typeof(List<SearchResultsHitModel>), model.hits.hits.GetType());
+            Assert.NotNull(model.hits.hits[0]._source);
+            Assert.Equal("BusinessAsset", model.hits.hits[0].d3sCategory);
+        }
+
+        [Fact]
+        public void SearchResultsModelNoSource()
+        {
+            SearchResultsModel model = JsonConvert.DeserializeObject<SearchResultsModel>("{\"took\": 41,\"timed_out\": false,\"_shards\": {\"total\": 2,\"successful\": 2,\"skipped\": 0,\"failed\": 0},\"hits\": {\"total\": 1,\"max_score\": 16.608347,\"hits\": [{\"_shard\": \"[d3s7][1]\",\"_node\": \"8WUUk5HDSsqNBhS46TEDaQ\",\"_index\": \"d3s7\",\"_type\": \"_doc\",\"_id\": \"Artifact|373492\",\"_score\": 16.608347,}]}}");
+            Assert.True(model != null, "SearchResultsModel is null and should not be.");
+            Assert.True(model.hits.total == 1, "Total hits in results is not 1 and should be");
+            Assert.Null(model.hits.hits[0]._source);
+            Assert.Null(model.hits.hits[0].d3sCategory);
         }
 
 

@@ -28,7 +28,7 @@ namespace d360.web.Controllers.V2
 
         #region DI
 
-        public CustomEndpointsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) :base(community, company, settingsRepository)
+        public CustomEndpointsController(CoreComponentSet set): base(set)
         {
 
         }
