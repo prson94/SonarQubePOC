@@ -890,8 +890,10 @@ new
                 document.SelectWorksheet(relatedSheetName);
 
                 var par = new List<KeyValuePair<string, string>>();
-                par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", assetTypeGroup.Select(x => x.AssetUid).Distinct().Select(x => x.ToString()))));
+                var assetUidForParam = assetTypeGroup.Select(x => x.AssetUid).Distinct().Select(x => x.ToString());
+                par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", assetUidForParam)));
                 par.Add(new KeyValuePair<string, string>("includeParent", "true"));
+                par.Add(new KeyValuePair<string, string>("_pagesize", assetUidForParam.Count().ToString()));
                 var assets = await AssetRepository.GetAssets(assetType, par, true);
 
                 var hierarchy = Company.IntersectTypes
@@ -966,6 +968,7 @@ new
 
 
                 int rowNumber = 1;
+
                 foreach (var row in data)
                 {
                     index = 1;
@@ -995,8 +998,13 @@ new
 
                         index++;
                     }
-                    document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
+
+                    if (rowValues.ContainsKey("AssetUid"))
+                    {
+                        document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
+                    }
                 }
+
                 SetExcelColumnWidths(document, fields);
 
             }

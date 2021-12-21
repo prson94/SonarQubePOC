@@ -50,7 +50,7 @@ namespace d360.web.Controllers.V2
         IFieldsRepository FieldsRepository;
         IAssetRepository AssetRepository;
 
-        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage, IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public RelationshipsController(ICoreComponentSet set, IQueueSource queueSource, IStorageProvider storage, IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, IAssetRepository assetRepository) : base(set)
         {
             QueueSource = queueSource;
             Storage = storage;

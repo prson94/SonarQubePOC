@@ -21,6 +21,7 @@ using System.Data.SqlClient;
 using System.Data;
 using d360.core.entities.Membership;
 using d360.model.helpers.filters;
+using System.Threading;
 
 namespace d360.model
 {
@@ -109,6 +110,7 @@ namespace d360.model
 
         DbSet<ScoreExecution> ScoreExecutions { get; set; }
         DbSet<ScoreExecutionItem> ScoreExecutionItems { get; set; }
+        DbSet<Semantic> Semantics { get; set; }
         DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         DbSet<ShoppingCart> ShoppingCarts { get; set; }
         DbSet<ShoppingCartType> ShoppingCartTypes { get; set; }
@@ -279,6 +281,7 @@ namespace d360.model
         int GetObjectId(Guid uid, SystemObjects objectType);
 
         Guid GetAssetUid(int objectId, SystemObjects assetType);
+        Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData);
 
         List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
         List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
@@ -293,7 +296,7 @@ namespace d360.model
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
         void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
         void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600, string fieldTable = "api.ExecutionField", SqlTransaction trans = null);
-        List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage, bool useFriendlyNames = false, bool allowTagFields = false, FieldValidationFieldProperties validationFieldProperties = null, bool jsonElementsEnabled = true);
+        List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage, bool useFriendlyNames = false, bool allowTagFields = false, FieldValidationFieldProperties validationFieldProperties = null, bool jsonElementsEnabled = true, bool IslookupFieldsPassedByValue = false);
         List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200, int maxRetryCount = 10);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);

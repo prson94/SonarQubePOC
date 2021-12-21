@@ -30,6 +30,7 @@ using d360.model.helpers;
 using System.Text;
 using d360.model.helpers.filters;
 using Microsoft.ApplicationInsights;
+using System.Threading;
 
 namespace d360.model
 {
@@ -70,6 +71,7 @@ namespace d360.model
             QueueSource = queueSource;
             Storage = storage;
 
+            CurrentClientID = context.ClientID;
             CurrentCompanyID = context.CompanyID;
             CurrentDomainSettingID = context.DomainSettingID;
             CurrentResourceID = context.ResourceID;
@@ -165,6 +167,8 @@ namespace d360.model
         public DbSet<Report> Reports { get; set; }
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
+
+        public DbSet<Semantic> Semantics { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
 
@@ -2802,6 +2806,31 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                               new { fieldTypeId, assetId }).FirstOrDefault();
         }
 
+        public async Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData)
+        {
+            var model = new AssetsQueryResults();
+
+            var gridReader = await Database.Connection.QueryMultipleAsync(
+              new CommandDefinition(getAllQuery,
+              cancellationToken: cancellationToken,
+              parameters: dbArgs,
+              commandTimeout: ApiTimeout
+            ));
+
+            if (includeTotal)
+            {
+                model.total = gridReader.Read<int>().FirstOrDefault();
+            }
+
+            model.items = gridReader.Read<dynamic>().ToList();
+
+            if (includeOwnershipData)
+            {
+                model.ownershipData = gridReader.Read<dynamic>().ToList();
+            }
+
+            return model;
+        }
 
         #region Environment Settings
 

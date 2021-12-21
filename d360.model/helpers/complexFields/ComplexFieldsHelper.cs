@@ -7,8 +7,93 @@ using System.Linq;
 
 namespace d360.model.helpers
 {
+    public class ComplexRelationFieldHasAnyModel
+    {
+        public int FieldTypeId { get; set; }
+        public FieldTypeLookup FieldTypeLookup { get; set; }
+        public bool? HasAny { get; set; } = true;
+        public bool NeedsFullCheck { get; set; } = true;
+        public string SQL { get; set; }
+    }
+
     public static class ComplexFieldsHelper
     {
+        ///<summary>
+        ///Generate SQL query for relation lookup field type which contains only existance of relationships
+        ///If there are filters on fields NeedsFullCheck is set to true and full query needs to be run in loadDynamicDisplayField
+        ///</summary>
+        public static List<ComplexRelationFieldHasAnyModel> GetComplexRelationFieldHasAnyModels(List<FieldTypeLookup> lookups, List<FieldType> fieldTypes)
+        {
+            var ret = new List<ComplexRelationFieldHasAnyModel>();
+            foreach (var ft in fieldTypes.Where(x => x.Type == "ComplexRelationLookup").ToList())
+            {
+                var ftl = lookups.FirstOrDefault(x => x.FieldTypeID == ft.ID);
+                var model = new ComplexRelationFieldHasAnyModel { FieldTypeId = ft.ID, NeedsFullCheck = true };
+                ret.Add(model);
+
+                if (ftl == null || ftl.Definition == null)
+                {
+                    model.HasAny = false;
+                    model.NeedsFullCheck = false;
+                    continue;
+                }
+
+                model.FieldTypeLookup = ftl;
+
+                var definition = ftl.ParseComplexLookupDefinition();
+
+                if (definition.Fields.Any(x => !string.IsNullOrEmpty(x.Filter)))
+                {
+                    model.NeedsFullCheck = true;
+                    continue;
+                }
+
+                List<string> joins = new List<string>();
+                int idx = 1;
+                foreach (var rel in definition.Relations)
+                {
+
+                    if (definition.Relations.IndexOf(rel) == 0)
+                    {
+                        if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
+                        {
+                            joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
+                            joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                        }
+                        else
+                        {
+                            joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$from_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
+                            joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$to_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                        }
+                    }
+                    else
+                    {
+                        if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
+                        {
+                            joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$from_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
+                            joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$to_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                        }
+                        else
+                        {
+                            joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
+                            joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+                        }
+                    }
+                    idx++;
+                }
+
+
+                var sql = $@"select distinct count(*)
+                                from graph.AssetNode H1
+                                {(string.Join("\n", joins))};";
+
+                model.SQL = sql;
+                model.HasAny = true;
+                model.NeedsFullCheck = false;
+            }
+            return ret;
+        }
+
 
         public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping)
         {

@@ -37,7 +37,7 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController : BaseV2ApiController
     {
-        public AuditController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public AuditController(CoreComponentSet set): base(set)
         {
 
         }
@@ -816,12 +816,8 @@ namespace d360.web.Controllers.V2
                     END AS 'PreviousValue'
                 from reporting.global_audit ga
                 left outer join reporting.global_fieldaudit fa on(fa.auditid = ga.id)
-                inner join[reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-                    and ga.[Object] = 'ReferenceItem'
-                    and ga.ObjectID in 
-                        (select a.objectid from[dbo].[asset] a
-                        inner join[dbo].[assettype] att on(a.assettypeid = att.id)
-                        where att.uid = @uid)
+                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+				inner join [dbo].[assettype] att on att.Name = ga.ActionObjectTypeName and ga.[Object] = 'ReferenceItem' and att.[Object] = 'ReferenceItemType' and att.uid = @uid
                 left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
                 left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
                 left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID

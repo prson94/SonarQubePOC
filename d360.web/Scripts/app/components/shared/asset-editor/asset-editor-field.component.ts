@@ -34,7 +34,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { Dropdown } from 'primeng/dropdown';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import { Table } from 'primeng/table';
-import { isArray } from 'core-js/library/core/array';
 
 @Component({
     selector: 'asset-editor-field',

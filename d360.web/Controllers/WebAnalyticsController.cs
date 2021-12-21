@@ -20,11 +20,10 @@ namespace d360.web.Controllers
         #region DI
 
 
-        public D3SWebAnalyticsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public D3SWebAnalyticsController(CoreComponentSet set): base(set)
         {
 #if DEBUG
-            company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
+            Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
         }
 

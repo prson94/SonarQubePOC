@@ -10,13 +10,14 @@ import { ResourcesService } from '../../../services/resources.service';
 import { Subscription } from 'rxjs';
 import { GroupService } from '../../../services/group.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { ProcessService } from '../../../services/process.service';
 
 declare var CurrentResourceID;
 
 @Component({
     selector: 'ig-asset-detail',
     templateUrl: './asset-detail.component.html',
-    providers: [ObjectDetailService, AssetService]
+    providers: [ObjectDetailService, AssetService, ProcessService]
 })
 
 
@@ -46,6 +47,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 
     assetUID: string;
     assetTypeUID: string;
+    assetUrl: string;
     isLoading = false;
     DetailFieldType = DetailFieldType;
 
@@ -68,6 +70,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         private router: Router,
         private objectDetailService: ObjectDetailService,
         protected messagesService: MessagesObservableService,
+        private processService: ProcessService,
         private assetService: AssetService,
         private resourceService: ResourcesService,
         private groupService: GroupService,
@@ -200,6 +203,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.rows = displayRows;
                     this.loadCategory();
                     this.loadState();
+                    this.loadUrl();
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });
@@ -241,6 +245,18 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.categories[ix].active = s.active;
                 }
             });
+        }
+    }
+
+    private loadUrl() {
+        if (this.model.Object.toLowerCase() === 'task') {
+            this.processService
+                .getProcessUrlByDiagramAssetUid(this.model.AssetUid)
+                .subscribe((res) => {
+                    this.assetUrl = res;
+                });
+        } else {
+            this.assetUrl = SiteUrlHelpers.getObjectUrl(this.model.Object, this.model.ObjectID, this.model.ObjectTypeID);
         }
     }
 
@@ -352,12 +368,12 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     open(newTab: boolean = false) {
-        let url = SiteUrlHelpers.getObjectUrl(this.model.Object, this.model.ObjectID, this.model.ObjectTypeID);
-
-        if (newTab) {
-            window.open(url, '_blank');
-        } else {
-            this.router.navigateByUrl(url);
+        if (this.assetUrl) {
+            if (newTab) {
+                window.open(this.assetUrl, '_blank');
+            } else {
+                this.router.navigateByUrl(this.assetUrl);
+            }
         }
     }
 

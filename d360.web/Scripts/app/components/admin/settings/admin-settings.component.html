@@ -20,6 +20,9 @@
         </div>
     </div>
     <div class="col s12 m12 l3">
+        <div *ngIf="distributedCacheEnabled" class="info-tip">
+            Caching Is Distributed
+        </div>
         <div class="tile tile-detail">
             <header>Features</header>
             <p-checkbox igCheckbox

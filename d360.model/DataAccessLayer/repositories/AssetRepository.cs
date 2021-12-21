@@ -1278,24 +1278,20 @@ namespace d360.model.DataAccessLayer
                 getAllQuery += selectOwnershipSQL;
             }
 
-            var gridReader = await CompanyContext.Database.Connection.QueryMultipleAsync(
-                  new CommandDefinition(getAllQuery,
-                  cancellationToken: cancellationToken.Value,
-                  parameters: dbArgs,
-                  commandTimeout: ApiTimeout
-                ));
+            bool hasOwnershipData = !string.IsNullOrEmpty(selectOwnershipSQL);
+
+            var assetsResult = await CompanyContext.ExecuteGetAssetsQuery(getAllQuery, cancellationToken.Value, dbArgs, includeTotal, hasOwnershipData);
 
             if (includeTotal)
             {
-                model.total = gridReader.Read<int>().FirstOrDefault();
+                model.total = assetsResult.total;
             }
-            var results = gridReader.Read<dynamic>().ToList();
-
+            var results = assetsResult.items.ToList();
 
             List<Tuple<List<int>, dynamic>> ownershipData = new List<Tuple<List<int>, dynamic>>();
-            if (!string.IsNullOrEmpty(selectOwnershipSQL))
+            if (hasOwnershipData)
             {
-                var dyOwnData = gridReader.Read<dynamic>().ToList();
+                var dyOwnData = assetsResult.ownershipData;
                 foreach (var ow in dyOwnData)
                 {
                     var data = (IDictionary<string, object>)ow;
@@ -4347,7 +4343,7 @@ where   A.[uid] = @assetUid";
                                     into #descendants 
                                     from descendants";
 
-            var countSQL = "Select count(*)-1 from #descendants";
+            var countSQL = $"Select count(*) from #descendants d {(whereSQL != "" ? $"inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0 {whereSQL}": "where d.ParentAssetID > 0")}";
 
             var itemsSQL = $@"select                                         
                                   a.uid as AssetUid, 

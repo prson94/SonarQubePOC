@@ -1,0 +1,98 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.dbo.Semantic-1.2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Semantic')
+BEGIN
+	CREATE TABLE [dbo].[Semantic] (
+		ID bigint identity(1,1) not null,
+		Qualifier nvarchar(250) not null,
+		EffectiveDate datetime not null,
+		Name nvarchar(250) not null,
+		Description nvarchar(4000) null,
+		Threshold int not null,
+		[Status] int not null,
+		[Priority] int not null,
+		[Source] int not null,
+		MatchType int not null,
+		BaseType int null,
+		RegularExpression nvarchar(max) null,
+		ValidValues nvarchar(max) null,
+		InvalidValues nvarchar(max) null,
+		ValidLocales nvarchar(max) null,
+		MinimumSamples int null,
+		HeaderFilter nvarchar(max) null,
+		HeaderFilterConfidence int null,
+		Minimum decimal(18,6) null,
+		Maximum decimal(18,6) null,
+		MinMaxPresent bit null,
+		JsonPayload nvarchar(max) null,
+		CreatedBy int not null,
+		CreatedOn datetime not null,
+		UpdatedBy int not null,
+		UpdatedOn datetime not null,
+		TransactionId char(10) NULL,
+		CONSTRAINT [PK_Semantic] PRIMARY KEY CLUSTERED ( [ID] DESC )
+	)
+END
+
+alter table Semantic alter column Minimum decimal(18,6) null;
+alter table Semantic alter column Maximum decimal(18,6) null;
+alter table Semantic alter column Qualifier nvarchar(250) not null;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+    
+  <changeSet author="Pappas" id="Constraint.dbo.Semantic-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from [sys].[key_constraints] where name = 'UQ_Semantic_Qualifier_EffectiveDate')
+begin
+	ALTER TABLE [dbo].[Semantic] add constraint UQ_Semantic_Qualifier_EffectiveDate UNIQUE (Qualifier, EffectiveDate)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Index.dbo.Semantic-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'IX_Semantic_Qualifier')
+begin
+	CREATE NONCLUSTERED INDEX [IX_Semantic_Qualifier] ON [dbo].[Semantic] ( [Qualifier] ASC )
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet> 
+
+</databaseChangeLog>

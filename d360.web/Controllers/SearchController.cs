@@ -22,12 +22,7 @@ namespace d360.web.Controllers
         ISearchSource SearchSource;
         IAssetRepository AssetRepository;
 
-        public SearchController(
-            ICommunityContext community,
-            ICompanyContext company,
-            ISearchSource searchSource,
-            IAssetRepository repository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository repository): base(set)
         {
             SearchSource = searchSource;
             AssetRepository = repository;
@@ -71,19 +66,6 @@ namespace d360.web.Controllers
                 Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
                 return jsonException(ex, System.Net.HttpStatusCode.InternalServerError);
             }
-        }
-
-        [HttpGet, Route("AutoComplete"), NonNullableParameters]
-        public JsonResult AutoComplete(string search)
-        {
-            List<string> results = new List<string>();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                results = SearchSource.GetSearchPhrases(Company.CurrentCompanyID, string.Format("{0}*",search), 20).ToList();                
-            }
-
-            return Json(results, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet, Route("Typeahead"), NonNullableParameters]

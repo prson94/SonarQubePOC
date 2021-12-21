@@ -591,12 +591,6 @@ namespace d360.extensions.search
             }
         }
 
-        public IEnumerable<string> GetSearchPhrases(int companyID, string term, int maxResults)
-        {
-            CreateIndexIfNotExists(companyID);
-            return null;
-        }
-
         private bool IsElasticSearchSpecialChar(char ch)
         {
             if (ch == '\\' || ch == '/' || ch == ':' || ch == '^' || ch == '~' || ch == ')' || ch == '(' ||

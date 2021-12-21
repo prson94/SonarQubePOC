@@ -5,7 +5,7 @@ using Dapper;
 
 namespace d360.model.DataAccessLayer.repositories
 {
-    internal sealed class DapperQueryComposer<TDbConnectionProvider> : IDapperQueryComposer<TDbConnectionProvider> 
+    internal sealed class DapperQueryComposer<TDbConnectionProvider> : IDapperQueryComposer<TDbConnectionProvider>
         where TDbConnectionProvider : IDbConnectionProvider
     {
         private TDbConnectionProvider ConnectionProvider { get; }
@@ -38,6 +38,14 @@ namespace d360.model.DataAccessLayer.repositories
         {
             var result = await ConnectionProvider.Connection.QueryAsync<TItem>(procedureName, parameters, null, commandTimeout, CommandType.StoredProcedure);
             return result as IReadOnlyList<TItem> ?? new List<TItem>(result);
+        }
+
+        public Task<SqlMapper.GridReader> QueryMultipleAsync(
+            string sql,
+            object parameters,
+            int? commandTimeout = null)
+        {
+            return ConnectionProvider.Connection.QueryMultipleAsync(sql, parameters, null, commandTimeout);
         }
     }
 }

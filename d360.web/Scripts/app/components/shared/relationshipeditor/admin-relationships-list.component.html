@@ -1,0 +1,108 @@
+﻿<header *ngIf="!showEditor && !showDelete">
+    Relationship Types
+    <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+</header>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!showEditor && !showDelete && !isLoading" class="row">
+    <div class="col s12">
+        <input type="text"
+               [hidden]="!showSimpleFilter"
+               pInputText
+               size="100"
+               (input)="dt.filterGlobal($event.target.value, 'contains')"
+               placeholder="Search..."
+               class="grid-simple-filter"
+               [ngModel]="dt.filters['global']?.value">
+        <p-table #dt [value]="relationships"
+                 selectionMode="single"
+                 [metaKeySelection]="true"
+                 [globalFilterFields]="['Id','Subject.Name','Predicate.Name','Predicate.Inverse','Object.Name']"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="20"
+                 [selection]="selected"
+                 [stateStorage]="gridStateStorage"
+                 stateKey="{{gridStorageKey}}"
+                 (selectionChange)="selected=$event;selectedChange.emit(selected)"
+                 (onFilter)="onFilter($event)">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th [pSortableColumn]="'Id'" style="width: 70px;">
+                        ID
+                        <d3s-sortIcon [field]="'Id'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Subject.Name'">
+                        Subject
+                        <d3s-sortIcon [field]="'Subject.Name'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Predicate.Name'">
+                        Predicate
+                        <d3s-sortIcon [field]="'Predicate.Name'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Object.Name'">
+                        Object
+                        <d3s-sortIcon [field]="'Object.Name'"></d3s-sortIcon>
+                    </th>
+                    <th style="width: 40px"></th>
+                    <th style="width: 40px"></th>
+                    <th style="width: 40px"></th>
+                    <th style="width: 40px"></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th><d3s-column-filter [value]="dt.filters['Id']?.value" [field]="'Id'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [value]="dt.filters['Subject.Name']?.value" [field]="'Subject.Name'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [value]="dt.filters['Predicate.Name']?.value" [field]="'Predicate.Name'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [value]="dt.filters['Object.Name']?.value" [field]="'Object.Name'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr (dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;" [pSelectableRow]="item">
+                    <td>{{item.Id}}</td>
+                    <td>
+                        <span>{{item?.Subject.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Subject.Class}})</span></span>
+                    </td>
+                    <td>
+                        <span *ngIf="item.Predicate.Name && item.Predicate.Inverse">{{item.Predicate.Name}} / {{item.Predicate.Inverse}} <span style="color: #999;font-size:75%;">({{getFriendlyNameForFunctionalType(item.Predicate.Type)}})</span></span>
+                    </td>
+                    <td>
+                        <span>{{item?.Object.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Object.Class}})</span></span>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <d3s-preview-tooltip objectType="IntersectType" [objectId]="item.Id" icon="info"></d3s-preview-tooltip>
+                        </div>
+                    </td>
+                    <td>
+                        <div *ngIf="item?.Predicate.Type != 'Diagram' && item?.Predicate.Type != 'DiagramUse' && item?.Predicate.Type != 'DiagramReference'" class="RowTools">
+                            <a style="cursor:pointer;" title="Download all relationships in this type" (click)="downloadRel(item)"><i class="fa fa-download"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div *ngIf="!item.IsSystem" class="RowTools">
+                            <a style="cursor:pointer;" (click)="selected=item;selectedChange.emit(selected);showEditor=true"><i class="fa fa-pencil"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div *ngIf="!item.IsSystem" class="RowTools">
+                            <a style="cursor:pointer;" (click)="selected=item;selectedChange.emit(selected);showDelete=true"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+<d3s-delete-form *ngIf="showDelete"
+                 [callback]="theDeleteCallback"
+                 [itemId]="selected?.Id"
+                 [method]="'callback'"
+                 [prompt]="'Are you sure you want to delete the relationship [' + [selected?.Subject.Name] + ' / ' + [selected?.Object.Name]  + ']?'"
+                 (onCancel)="showDelete=false;"></d3s-delete-form>
+<d3s-admin-relationships-editor *ngIf="showEditor" [relationshipID]="selected?.Id" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>

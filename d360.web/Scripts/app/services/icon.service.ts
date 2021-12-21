@@ -10,12 +10,11 @@ import { AssetTypeClass } from '../models/asset.model';
 @Injectable({
     providedIn: 'root'
 })
-export class IconService extends BaseObservableService   {
+export class IconService extends BaseObservableService {
     constructor(
         private http: HttpClient,
         messagesService: MessagesObservableService
-        )
-    {
+    ) {
         super(messagesService);
     }
 
@@ -29,7 +28,7 @@ export class IconService extends BaseObservableService   {
             return of(this.data);
         } else if (this.observable) {
             return this.observable;
-        } else {            
+        } else {
             this.observable = this.http.get('/content/json/fontawesome4x.json', {
                 observe: 'response'
             }).pipe(
@@ -40,7 +39,7 @@ export class IconService extends BaseObservableService   {
                 }),
                 catchError(err => this.handleError(err))
             );
-                    
+
             return this.observable;
         }
     }
@@ -80,6 +79,8 @@ export class IconService extends BaseObservableService   {
                 return 'list-alt';
             case AssetTypeClass.Rule:
                 return 'check-square';
+            case AssetTypeClass.User:
+                return 'user';
             default:
                 console.warn('No default icon defined for ' + AssetTypeClass[c]);
                 return '';

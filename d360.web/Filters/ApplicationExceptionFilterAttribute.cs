@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http;
 using System.Web.Http.Filters;
+using d360.core.exceptions;
 using d360.web.Models;
 using d360.web.Services;
 using Resources;
@@ -18,32 +19,14 @@ namespace d360.web.Filters
 
         public override void OnException(HttpActionExecutedContext context)
         {
-            // compose error message (probably better formatting is needed)
-            var ex = context.Exception;
-            var errorMessage = ex.Message; // + (ex.InnerException?.Message ?? "");
-
-            //#region I don't understand why this trace is needed however moved it here for now... ask @pungupta
-
-            //var traceAttribute = context.ActionContext.ActionDescriptor.GetCustomAttributes<TracePrefixAttribute>().FirstOrDefault();
-            //var traceScope = "UNKNOWN";
-
-            //if (traceAttribute != null)
-            //{
-            //    traceScope = traceAttribute.Text;
-            //}
-            //else
-            //{
-            //    var controllerName = context.ActionContext.ControllerContext.ControllerDescriptor.ControllerName;
-            //    var actionName = context.ActionContext.ActionDescriptor.ActionName;
-            //    traceScope = $"{controllerName}.{actionName}";
-            //}
-
-            //Trace.TraceError("{0} => {1}", traceScope, errorMessage);
-
-            //#endregion
-
             switch (context.Exception)
             {
+                case GenericException genericException:
+                    context.Response = context.Request.CreateResponse(
+                        genericException.StatusCode,
+                        new ErrorResponse { title = genericException.StatusMessage, message = genericException.StatusDescription }
+                    );
+                    break;
                 case RestApiException restApiException:
                     context.Response = context.Request.CreateResponse(
                         restApiException.Status,
@@ -81,7 +64,7 @@ namespace d360.web.Filters
                     {
                         context.Response = context.Request.CreateResponse(
                             HttpStatusCode.InternalServerError,
-                            new ErrorResponse { title = ApiMessages.UnknownError, message = errorMessage }
+                            new ErrorResponse { title = ApiMessages.UnknownError, message = context.Exception.Message }
                         );
                     }
                     break;

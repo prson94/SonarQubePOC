@@ -3,7 +3,7 @@ import { catchError, map, shareReplay, takeUntil, tap } from "rxjs/operators";
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from '@angular/core';
 
-import { FavoriteApiModel, HomepageAndFavoritesModel} from '../models/favorite.model';
+import { FavoriteApiModel, FavoriteViewModel, HomepageAndFavoritesModel} from '../models/favorite.model';
 import {JsonResult} from '../models/jsonresult.model';
 
 import {MessagesObservableService} from './messages-observable.service';
@@ -20,7 +20,7 @@ export class FavoritesService extends BaseObservableService {
         super(messagesService);
     }
 
-    getFavorites(adminOnly: boolean = false): Observable<FavoriteApiModel[]> {
+    getFavorites(): Observable<FavoriteViewModel[]> {
         return this
             .http
             .get(`api/v2/membership/users/me/favorites`)

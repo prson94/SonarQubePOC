@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v16">
+  <changeSet author="vlova" id="Procedure.dbo.DeleteObject-v17">
   <comment>GOV-4862</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -38,7 +38,6 @@ create or alter procedure [dbo].[DeleteObject]
 	  declare	@workflowType table (id int)
 	  declare	@ClearComments bit = 1,
 			  @ClearIntersects bit = 1,
-			  @ClearFavorites bit = 1,
 			  @ClearFields bit = 1,
 			  @ClearFollows bit = 1,
 			  @ClearIssues bit = 1,
@@ -160,7 +159,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 0
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -238,7 +236,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 0
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -254,7 +251,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 1
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -271,7 +267,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 0
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -304,7 +299,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 0
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -538,27 +532,6 @@ create or alter procedure [dbo].[DeleteObject]
 			  from	sitenav nav
 					  inner join #types t on t.ObjectID = nav.ObjectID and nav.Object = @Object;
 		  end;
-
-		  if @ClearFavorites = 1
-		  begin
-			  if @IsType = 1
-			  begin
-				  delete	O
-				  from	Favorite O
-						  inner join Asset A on A.Object = O.Object and A.ObjectID = O.ObjectID
-						  inner join #types T on T.ID = A.AssetTypeID;
-
-				  delete	O
-				  from	Favorite O
-						  inner join #types T on T.Object = O.Object and T.ObjectID = O.ObjectID;
-			  end
-			  else
-			  begin
-				  delete	O
-				  from	Favorite O
-						  inner join #items T on T.Object = O.Object and T.ObjectID = O.ObjectID;
-			  end
-		  end;
    
 		  if @ClearFields = 1
 		  begin
@@ -754,7 +727,6 @@ create or alter procedure [dbo].[DeleteObject]
 	  declare	@workflowType table (id int)
 	  declare	@ClearComments bit = 1,
 			  @ClearIntersects bit = 1,
-			  @ClearFavorites bit = 1,
 			  @ClearFields bit = 1,
 			  @ClearFollows bit = 1,
 			  @ClearIssues bit = 1,
@@ -876,7 +848,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 0
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -954,7 +925,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 0
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -970,7 +940,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 1
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -987,7 +956,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 0
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -1020,7 +988,6 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  set @ClearComments = 0
 			  set @ClearIntersects = 0
-			  set @ClearFavorites = 0
 			  set @ClearFields = 0
 			  set @ClearFollows = 0
 			  set @ClearIssues = 0
@@ -1271,27 +1238,6 @@ create or alter procedure [dbo].[DeleteObject]
 			  delete	nav
 			  from	sitenav nav
 					  inner join #types t on t.ObjectID = nav.ObjectID and nav.Object = @Object;
-		  end;
-
-		  if @ClearFavorites = 1
-		  begin
-			  if @IsType = 1
-			  begin
-				  delete	O
-				  from	Favorite O
-						  inner join Asset A on A.Object = O.Object and A.ObjectID = O.ObjectID
-						  inner join #types T on T.ID = A.AssetTypeID;
-
-				  delete	O
-				  from	Favorite O
-						  inner join #types T on T.Object = O.Object and T.ObjectID = O.ObjectID;
-			  end
-			  else
-			  begin
-				  delete	O
-				  from	Favorite O
-						  inner join #items T on T.Object = O.Object and T.ObjectID = O.ObjectID;
-			  end
 		  end;
    
 		  if @ClearFields = 1

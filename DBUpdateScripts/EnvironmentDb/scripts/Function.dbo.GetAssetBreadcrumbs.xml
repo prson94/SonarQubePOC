@@ -1,0 +1,75 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="vlova" id="Function.dbo.GetAssetBreadcrumbs-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter function [dbo].[GetAssetBreadcrumbs]
+(		        
+	@objectType varchar(max),
+	@objectId int
+)
+returns table
+as
+return 
+(
+	with h as
+		(
+		select	A.ID,
+				A.[ObjectID], 
+				A.AssetTypeID,
+				I.SubjectID as [ParentID], 
+				0 as [Level]
+		from	dbo.Asset A
+				left join dbo.PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
+		where	A.[Object] = @objectType and A.ObjectID = @objectId
+		
+		union all
+		
+		select	P.ID,
+				P.[ObjectID] as ID, 
+				P.AssetTypeID,
+				I.SubjectID as ParentID, 
+				h.[Level]-1 as [Level]
+		from	dbo.Asset P
+				inner join h on P.[Object] = @objectType and P.ObjectID = h.ParentID
+				outer apply (
+							select	SubjectID
+							from	dbo.PredicateIntersect 
+							where	Object = P.Object 
+									and ObjectID = P.ObjectID 
+									and PredicateType = 3
+							) I
+		)
+	select		distinct top 1000000 	
+				[Level],
+				ltrim(rtrim(T.Name)) as TypeName,
+				ltrim(rtrim(D.DisplayValue)) as Name,
+				UT.Url as TypeUrl,
+				U.Url as Url
+	from		h 
+				inner join dbo.AssetType T on T.ID = h.AssetTypeID
+				left join dbo.AssetDisplayValue D on D.AssetID = h.ID
+				cross apply dbo.GetAssetUrlByID(h.ID) U
+				cross apply dbo.GetAssetTypeUrlById(T.ID) UT
+	where		ltrim(rtrim(T.Name)) is not null
+				and ltrim(rtrim(D.DisplayValue)) is not null
+	order by	[Level]
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop function [dbo].[GetAssetBreadcrumbs]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

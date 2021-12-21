@@ -37,6 +37,7 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "H1_00006", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
             fieldTypes.Add(new FieldType() { Name = "H1_00007", ID = 7, Type = "Counter", CounterPrefix = "CNT-" });
             fieldTypes.Add(new FieldType() { Name = "$Related:4df68f30-daa0-48da-912f-2daaea6961e0", ID = 8, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
+            fieldTypes.Add(new FieldType() { Name = "H1__assetPath", ID = 9, Type = "Path" });
 
             var filterDataProvider = GetFilterDataProvider();
             this.filterParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField);
@@ -57,6 +58,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("H1_00005 eq 'text'", "H1_00005.FormattedValue = @filter_1")]
         [InlineData("H1_00005 ne 'text'", "(H1_00005.FormattedValue <> @filter_1 or H1_00005.FormattedValue is null)")]
         [InlineData("H1_00005 ct 'text'", "H1_00005.FormattedValue like @filter_1")]
+        [InlineData("H1_00005 ct 'text*'", "H1_00005.FormattedValue like @filter_1")]
         [InlineData("H1_00005 nct 'text'", "(H1_00005.FormattedValue not like @filter_1 or H1_00005.FormattedValue is null)")]
         [InlineData("H1_00005 eq null", "H1_00005.FormattedValue is null", 0)]
         [InlineData("H1_00005 ne null", "H1_00005.FormattedValue is not null", 0)]
@@ -193,6 +195,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("h1_00006 nct 'France'")]
         [InlineData("h1_00006 gt France")]
         [InlineData("h1_00006 eq France")]
+        [InlineData("h1_00006 gt null")]
         public void InvalidTests(string input)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -205,9 +208,25 @@ namespace igx.UnitTests.FilterExpressionTests
             {
                 Assert.True(true);
             }
-
         }
 
+        [Theory]
+        [InlineData("H1__assetPath ct '*true'", "H1p.Segments.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1")] //starts with
+        [InlineData("H1__assetPath ct 'true*'", "H1p.Segments.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1")] //ends with
+        [InlineData("H1__assetPath ct 'true'", "H1p.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1")] // contains
+        [InlineData("H1__assetPath nct 'true'", "H1p.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 0")] // not contains
+        [InlineData("H1__assetPath gt 'true'", "H1p.Segments.exist('/path/segment[. > sql:variable(\"@filter_1\")]') = 1")] // not contains
+        [InlineData("H1__assetPath ge 'true'", "H1p.Segments.exist('/path/segment[. >= sql:variable(\"@filter_1\")]') = 1")] // not contains
+        [InlineData("H1__assetPath lt 'true'", "H1p.Segments.exist('/path/segment[. < sql:variable(\"@filter_1\")]') = 1")] // not contains
+        [InlineData("H1__assetPath le 'true'", "H1p.Segments.exist('/path/segment[. <= sql:variable(\"@filter_1\")]') = 1")] // not contains
+        [InlineData("H1__assetPath eq 'true > true1'", "H1p.Segments.exist('/path/segment[1][lower-case(.)=sql:variable(\"@filter_1_0\")]') = 1 and H1p.Segments.exist('/path/segment[2][lower-case(.)=sql:variable(\"@filter_1_1\")]') = 1")] // multiple tokens equal
+        [InlineData("H1__assetPath ne 'true > true1'", "H1p.Segments.exist('/path/segment[1][lower-case(.)=sql:variable(\"@filter_1_0\")]') = 0 and H1p.Segments.exist('/path/segment[2][lower-case(.)=sql:variable(\"@filter_1_1\")]') = 0")] // multiple tokens not-equal
+        public void AssetPathTests(string input, string expectedResult)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.Equal(result, expectedResult);
+        }
     }
 
 }

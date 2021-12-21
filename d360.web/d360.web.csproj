@@ -25,8 +25,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>
-    </IISExpressSSLPort>
+    <IISExpressSSLPort>443</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -98,6 +97,27 @@
     </Reference>
     <Reference Include="IPAddressRange, Version=4.0.0.0, Culture=neutral, PublicKeyToken=578e3c3d17e7c751, processorArchitecture=MSIL">
       <HintPath>..\packages\IPAddressRange.4.0.0\lib\net45\IPAddressRange.dll</HintPath>
+    </Reference>
+    <Reference Include="LaunchDarkly.Cache, Version=1.0.2.0, Culture=neutral, PublicKeyToken=caeed01e3c7cd028, processorArchitecture=MSIL">
+      <HintPath>..\packages\LaunchDarkly.Cache.1.0.2\lib\net45\LaunchDarkly.Cache.dll</HintPath>
+    </Reference>
+    <Reference Include="LaunchDarkly.CommonSdk, Version=5.2.1.0, Culture=neutral, PublicKeyToken=45ef1738a929a7df, processorArchitecture=MSIL">
+      <HintPath>..\packages\LaunchDarkly.CommonSdk.5.2.1\lib\net452\LaunchDarkly.CommonSdk.dll</HintPath>
+    </Reference>
+    <Reference Include="LaunchDarkly.EventSource, Version=4.1.3.0, Culture=neutral, PublicKeyToken=18e8c36453e3060f, processorArchitecture=MSIL">
+      <HintPath>..\packages\LaunchDarkly.EventSource.4.1.3\lib\net452\LaunchDarkly.EventSource.dll</HintPath>
+    </Reference>
+    <Reference Include="LaunchDarkly.InternalSdk, Version=2.1.1.0, Culture=neutral, PublicKeyToken=ff53908ab73043b6, processorArchitecture=MSIL">
+      <HintPath>..\packages\LaunchDarkly.InternalSdk.2.1.1\lib\net452\LaunchDarkly.InternalSdk.dll</HintPath>
+    </Reference>
+    <Reference Include="LaunchDarkly.JsonStream, Version=1.0.2.0, Culture=neutral, PublicKeyToken=baa039a572ce18d0, processorArchitecture=MSIL">
+      <HintPath>..\packages\LaunchDarkly.JsonStream.1.0.2\lib\net461\LaunchDarkly.JsonStream.dll</HintPath>
+    </Reference>
+    <Reference Include="LaunchDarkly.Logging, Version=1.0.1.0, Culture=neutral, PublicKeyToken=d9182e4b0afd33e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\LaunchDarkly.Logging.1.0.1\lib\net452\LaunchDarkly.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="LaunchDarkly.ServerSdk, Version=6.2.2.0, Culture=neutral, PublicKeyToken=f86add69004e6885, processorArchitecture=MSIL">
+      <HintPath>..\packages\LaunchDarkly.ServerSdk.6.2.2\lib\net471\LaunchDarkly.ServerSdk.dll</HintPath>
     </Reference>
     <Reference Include="MediatR, Version=9.0.0.0, Culture=neutral, PublicKeyToken=bb9a41a5e8aaa7e2, processorArchitecture=MSIL">
       <HintPath>..\packages\MediatR.9.0.0\lib\net461\MediatR.dll</HintPath>
@@ -236,6 +256,9 @@
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.7.1\lib\net461\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
@@ -522,6 +545,7 @@
     <Compile Include="Controllers\V2\HealthController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\PermissionsController.cs" />
+    <Compile Include="Controllers\V2\SemanticsController.cs" />
     <Compile Include="Controllers\V2\ScoringController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
@@ -582,7 +606,10 @@
     </Compile>
     <Compile Include="Models\Attributes\NonNullableParametersAttribute.cs" />
     <Compile Include="Models\ClientErrorModel.cs" />
+    <Compile Include="Models\ClientUserModel.cs" />
+    <Compile Include="Models\FeatureFlagExtensions.cs" />
     <Compile Include="Models\Diagram Models.cs" />
+    <Compile Include="Models\FeatureFlagUser.cs" />
     <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
@@ -598,6 +625,11 @@
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AssetService.cs" />
+    <Compile Include="Services\Favorites\FavoriteRouteMatcher.cs" />
+    <Compile Include="Services\Favorites\FavoriteRouteMatcherService.cs" />
+    <Compile Include="Services\Favorites\GetFavoritesQuery.cs" />
+    <Compile Include="Services\Favorites\FavoriteRouteMatchResult.cs" />
+    <Compile Include="Services\Favorites\ToggleFavoriteOrHomePageCommand.cs" />
     <Compile Include="Services\Models\IsEntityExistsRequest.cs" />
     <Compile Include="Services\Models\IsEntityExistsResponse.cs" />
     <Compile Include="Services\Models\ResourceIsExistsRequest.cs" />
@@ -1356,6 +1388,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
+    <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationships-modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
@@ -1613,6 +1646,7 @@
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\side-panel.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dataprofile.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\featureflags.service.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />

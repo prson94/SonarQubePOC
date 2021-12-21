@@ -44,5 +44,10 @@ namespace d360.model.DataAccessLayer
             string procedureName,
             SqlMapper.IDynamicParameters parameters,
             int? commandTimeout = null);
+
+        Task<SqlMapper.GridReader> QueryMultipleAsync(
+           string sql,
+           object parameters,
+           int? commandTimeout = null);
     }
 }

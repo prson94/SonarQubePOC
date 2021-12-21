@@ -70,6 +70,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} does not allow selection of multiple values.
+        /// </summary>
+        public static string FieldNotAllowedMultipleValies {
+            get {
+                return ResourceManager.GetString("FieldNotAllowedMultipleValies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You do not have permission to modify relationships on the object asset..
         /// </summary>
         public static string NotPermissionModifyRelationobjectAsset {

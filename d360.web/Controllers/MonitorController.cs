@@ -19,8 +19,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public MonitorController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public MonitorController(CoreComponentSet set)
+            : base(set)
         {
         }
 
@@ -139,7 +139,7 @@ namespace d360.web.Controllers
                         break;
                     case "Asset":
                         dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
-                        typeClause.Add($@"coalesce(wiis.AssetName,IntersectName.Name,wia.AssetName) Like @{ff.FieldName}{count}");
+                        typeClause.Add($@"coalesce(wiis.AssetName,IntersectName.Name,wia1.AssetName) Like @{ff.FieldName}{count}");
                         break;
                     case "TypeName":
                         dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
@@ -187,8 +187,8 @@ namespace d360.web.Controllers
                         break;
                     case "AssignedTo":
                         dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}%");
-                        assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemID = wi.ID and WIA.ResourceObject = 'Resource'
-                                            inner join reporting.Global_Resource GRA on WIA.ResourceObjectID = GRA.ResourceID ";
+                        assignedSql = @"inner join workflow.ItemAssignment WIA2 on WIA2.ItemID = wi.ID and WIA2.ResourceObject = 'Resource'
+                                            inner join reporting.Global_Resource GRA on WIA2.ResourceObjectID = GRA.ResourceID ";
                         typeClause.Add($@"( gra.firstName Like @{ff.FieldName}{count} or gra.lastName Like @{ff.FieldName}{count} or gra.firstName + ' ' + gra.lastName LIKE @{ff.FieldName}{count} )");
                         break;
                     case "Object":
@@ -226,7 +226,7 @@ namespace d360.web.Controllers
 
 
             var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
-		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid,IntersectName.Name,wia.AssetName, wiis.AssetName";
+		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid,IntersectName.Name,wia1.AssetName, wiis.AssetName";
 
             var fromSql = @"		from [workflow].[type] wt 
                                 inner join [workflow].[version] wv on (wt.id = wv.typeid) 
@@ -241,7 +241,7 @@ namespace d360.web.Controllers
                                 left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
                                 left  join [dbo].[intersect] inter on (wi.[object]='Intersect' and inter.id=wi.[objectId])
                                 outer apply dbo.GetIntersectTypeNames(inter.IntersectTypeId) ITypeName
-								left join [workflow].[ItemAsset] wia on wia.WorkFlowItemId = wi.id
+								left join [workflow].[ItemAsset] wia1 on wia1.WorkFlowItemId = wi.id
 								left join [workflow].[ItemIssue] wiis on wiis.WorkFlowItemId = wi.id
 								outer apply (select utility.deriveintersectname(wi.objectid))IntersectName(Name)
 ";
@@ -269,7 +269,7 @@ namespace d360.web.Controllers
                             end as 'Type',                    
                          coalesce(assettype.Name, it.Name,ITypeName.Name) as TypeName,                    
                          case when wi.[object] = 'Intersect' then coalesce(IntersectName.Name,'(unknown relationship)')   
-                         else coalesce(wiis.AssetName,wia.AssetName,'(unknown)') end as 'Asset',                     
+                         else coalesce(wiis.AssetName,wia1.AssetName,'(unknown)') end as 'Asset',                     
                          gr.firstName + ' ' + gr.lastName as 'Initiator' ,                    
                          wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',
                         case when   wi.CompletedOn is null then    'Pending'            
