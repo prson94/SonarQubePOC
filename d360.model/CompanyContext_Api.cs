@@ -7153,6 +7153,16 @@ where   ER.ExecutionID = @ExecutionID
 
 update  ER 
 set     Success = 0,
+        Message = 'Cannot change SubjectUid or ObjectUid for a relationship type that already has relationships.' 
+from    [api].[ExecutionRelationshipType] ER 
+        inner join IntersectType T on T.Uid = ER.Uid
+where   ER.ExecutionID = @ExecutionID 
+    and ER.Success is null 
+    and (ER.SubjectUid is not null or ER.ObjectUid is not null)
+    and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);
+
+update  ER 
+set     Success = 0,
         Message = 'Relationship type referenced in FieldFromRelationship field type. Cardinality may not be changed.' 
 from    [api].[ExecutionRelationshipType] ER 
         inner join IntersectType I on I.Uid = ER.[Uid] 
