@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter, NgModule, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HTTP_INTERCEPTORS } from '@angular/common/http'; 
-import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
+
 
 @Component({
     selector: 'd3s-overlay-window',
@@ -78,10 +78,7 @@ export class OverlayWindowComponent implements OnChanges {
         CommonModule,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class D3SOverlayWindowModule { }

@@ -24,11 +24,7 @@ import { ColorDisplayComponent } from './color-display.component';
         ColorDisplayComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class IgColorPickerModule { }

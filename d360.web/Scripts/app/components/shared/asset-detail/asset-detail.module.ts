@@ -1,4 +1,4 @@
-﻿import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+﻿
 import { HTTP_INTERCEPTORS, } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { AssetDetailFieldComponent } from "./asset-detail-field.component";
@@ -65,10 +65,6 @@ import { PortalsModule } from "../portals/portals.module";
         AssetLookupGridComponent,
         AssetLookupListComponent,
     ],
-    providers: [{
-        provide: HTTP_INTERCEPTORS,
-        useClass: GovernRequestInterceptor,
-        multi: true
-    }]
+    providers: []
 })
 export class AssetDetailModule { }

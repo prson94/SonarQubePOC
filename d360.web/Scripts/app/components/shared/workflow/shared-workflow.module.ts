@@ -17,7 +17,7 @@ import { DropdownModule } from "primeng/dropdown";
 import { SelectButtonModule } from "primeng/selectbutton";
 import { TooltipModule } from "primeng/tooltip";
 import { PipesModule } from "../../../pipes/pipes.module";
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
 import { CoreModule } from "../core.module";
 import { TilesModule } from "../tiles/tiles.module";
 import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
@@ -39,7 +39,7 @@ import { WorkflowMonitorStepHttpResponseDetailsComponent } from "./workflowmonit
 @NgModule({
     imports: [
         CommonModule,
-        HttpClientModule,
+
         RouterModule,
         FormsModule,
         PipesModule,
@@ -84,10 +84,7 @@ import { WorkflowMonitorStepHttpResponseDetailsComponent } from "./workflowmonit
         WorkflowMonitorActionDetailsComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class SharedWorkflowMonitorModule { }
