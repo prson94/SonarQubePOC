@@ -1,0 +1,105 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="View.reporting.RuleImplementations_Results-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[RuleImplementations_Results] AS 
+   with results as (select 
+     AR.Uid resultUid, 
+	 AR.Passcount, 
+	 AR.FailCount, 
+	 AR.EffectiveDate, 
+	 AR.RunDate, 
+	 AR.PassFraction, 
+	 AR.CreatedBy,
+	 AR.CreatedOn,
+	 AR.UpdatedBy,
+	 AR.UpdatedOn,
+	 AN.Uid as RuleUid
+ from 
+     AssetResult AR, assetResultedge ARE, graph.AssetNode AN
+	  where 
+     Match (AN -(ARE)-> AR)
+     and 
+     ARE.Class = 1
+	 )
+select 
+        A.ObjectId as RuleID,
+	    1 as Threshold,
+		null as RuleImplementationID,
+		'default' as RuleImplementation,
+		null as RuleResultID,
+		RR.EffectiveDate,
+		RR.CreatedOn,
+		RR.RunDate,
+		RR.PassCount as RowsPassed,
+		RR.FailCount as RowsFailed,
+		case 
+			when [PassCount]=(0) AND [FailCount]=(0) then (0) 
+			else CONVERT([decimal](18,17),CONVERT([decimal](18,3),[PassCount],(0))/(CONVERT([decimal](18,3),[PassCount],(0))+CONVERT([decimal](18,3),[FailCount],(0))),(0)) 
+		end as [PassFraction],
+	    case 
+			when [PassCount]=(0) AND [FailCount]=(0) then (0) 
+			when [PassCount]=(0) AND [FailCount]<>(0) then (1) 
+			else CONVERT([decimal](18,17),CONVERT([decimal](18,15),CONVERT([decimal](18,3),(1),(0))-CONVERT([decimal](18,3),[PassCount],(0))/(CONVERT([decimal](18,3),[PassCount],(0))+CONVERT([decimal](18,3),[FailCount],(0))),(0)),(0)) 
+		end as [FailFraction],
+		cast(1 as bit) as Passed
+from results RR
+inner join Asset A on A.uid = RR.RuleUid
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+CREATE OR ALTER VIEW [reporting].[RuleImplementations_Results] AS 
+   with results as (select 
+     AR.Uid resultUid, 
+	 AR.Passcount, 
+	 AR.FailCount, 
+	 AR.EffectiveDate, 
+	 AR.RunDate, 
+	 AR.PassFraction, 
+	 AR.CreatedBy,
+	 AR.CreatedOn,
+	 AR.UpdatedBy,
+	 AR.UpdatedOn,
+	 AN.Uid as RuleUid
+ from 
+     AssetResult AR, assetResultedge ARE, graph.AssetNode AN
+	  where 
+     Match (AN -(ARE)-> AR)
+     and 
+     ARE.Class = 1
+	 )
+select 
+        R.Id as RuleID,
+	    R.Threshold as Threshold,
+		null as RuleImplementationID,
+		'default' as RuleImplementation,
+		null as RuleResultID,
+		RR.EffectiveDate,
+		RR.CreatedOn,
+		RR.RunDate,
+		RR.PassCount as RowsPassed,
+		RR.FailCount as RowsFailed,
+		case when [PassCount]=(0) AND [FailCount]=(0) then (0) else CONVERT([decimal](18,17),CONVERT([decimal](18,3),[PassCount],(0))/(CONVERT([decimal](18,3),[PassCount],(0))+CONVERT([decimal](18,3),[FailCount],(0))),(0)) end as [PassFraction],
+	    case when [PassCount]=(0) AND [FailCount]=(0) then (0) when [PassCount]=(0) AND [FailCount]<>(0) then (1) else CONVERT([decimal](18,17),CONVERT([decimal](18,15),CONVERT([decimal](18,3),(1),(0))-CONVERT([decimal](18,3),[PassCount],(0))/(CONVERT([decimal](18,3),[PassCount],(0))+CONVERT([decimal](18,3),[FailCount],(0))),(0)),(0)) end as [FailFraction],
+		case 
+						when RR.PassFraction >= R.Threshold then cast(1 as bit)
+						else cast(0 as bit)
+					end as Passed
+from results RR
+inner join Asset A on A.uid = RR.RuleUid
+inner join [Rule] R on R.Id = A.ObjectId    
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
