@@ -1214,6 +1214,37 @@ namespace d360.model.DataAccessLayer
 
             bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("kp.keypath");
 
+            if (queryParams.Any(x => x.Key.ToLowerInvariant() == "_pagewithasset"))
+            {
+                Guid findAssetUid = Guid.Parse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagewithasset").Value);
+                dbArgs.Add("findAssetUid", findAssetUid);
+                var orderQuery = pagingSql.Count > 0 ? pagingSql[0] : "a.id";
+                var getElementIndexSql = $@"
+                 ;with results_map as (
+                        select 
+				            ROW_NUMBER() OVER({orderQuery}) as row_number,
+                            A.[UID] as [AssetUid],
+                        from Asset A
+                        left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
+				        left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
+                        {string.Join("\n", fieldJoins)}
+                        {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
+                        left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+                        {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
+                        {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
+                        {(includePermissionDetails ? permissionDetailSQL : "")}
+                        {(includeProfilingCheck ? profilingCheckSql : "")}
+                        {hierarchyParentUidSelect}
+                        {(includeParent ? parentApplySQL : "")}
+                        {whereSql})
+		            select top 1 row_number from results_map where assetuid = @findAssetUid";
+
+                var assetIndex = (await CompanyContext.QueryAsync<int>(getElementIndexSql, dbArgs, timeout: ApiTimeout)).FirstOrDefault();
+                model.pageNum = (assetIndex / model.pageSize) + 1;
+            }
+
+
+
             var countSql = $@"
                 select  count(*)
                 from    Asset A 
@@ -4315,9 +4346,9 @@ where   A.[uid] = @assetUid";
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_onlytotal").Value, out onlyTotal);
             }
 
-            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentassetuid") )
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentassetuid"))
             {
-                if(Guid.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_parentassetuid").Value, out Guid parentUid))
+                if (Guid.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_parentassetuid").Value, out Guid parentUid))
                 {
                     if (parentUid != Guid.Empty)
                     {
@@ -4343,7 +4374,7 @@ where   A.[uid] = @assetUid";
                                     into #descendants 
                                     from descendants";
 
-            var countSQL = $"Select count(*) from #descendants d {(whereSQL != "" ? $"inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0 {whereSQL}": "where d.ParentAssetID > 0")}";
+            var countSQL = $"Select count(*) from #descendants d {(whereSQL != "" ? $"inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0 {whereSQL}" : "where d.ParentAssetID > 0")}";
 
             var itemsSQL = $@"select                                         
                                   a.uid as AssetUid, 
@@ -4358,9 +4389,9 @@ where   A.[uid] = @assetUid";
 
             var sql = $@"{descendantsSQL}
                         
-                        {(!onlyTotal ? itemsSQL: "")}
+                        {(!onlyTotal ? itemsSQL : "")}
 
-                        {(includeTotal || onlyTotal ? countSQL: "")}
+                        {(includeTotal || onlyTotal ? countSQL : "")}
 						";
 
             var multiQuery = await CompanyContext.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
@@ -4368,7 +4399,7 @@ where   A.[uid] = @assetUid";
             if (!onlyTotal)
             {
                 results.items = multiQuery.Read<AssetDescendants>();
-            }            
+            }
 
             if (includeTotal || onlyTotal)
             {
