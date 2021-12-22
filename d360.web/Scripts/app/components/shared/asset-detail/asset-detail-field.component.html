@@ -9,10 +9,8 @@
                 </d3s-preview-tooltip>
             </li>
             <li *ngIf="item.TooltipContext != 'Preview'">
-                <d3s-lookup-tooltip *ngIf="item.TooltipUrl; else noLinkTooltip" [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
-                    <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(item.TooltipUrl, $event)" [innerText]="(valueCount > 1 ? '&bull; ' : '') + item.Value"></a>
-                    <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="item.Value" [url]="item.TooltipUrl" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
-                </d3s-lookup-tooltip>
+                <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(item.TooltipUrl, $event)" [innerText]="(valueCount > 1 ? '&bull; ' : '') + item.Value"></a>
+                <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="item.Value" [url]="item.TooltipUrl" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
             </li>
         </ul>
     </div>
@@ -40,7 +38,7 @@
                     <div class="ig-value ig-html ql-editor no-padding" [innerHtml]="field.Value | safeHtml"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'link'">
-                    <div class="ig-value"><a  [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>
+                    <div class="ig-value"><a [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'json'">
                     <div class="ig-value">
@@ -99,15 +97,11 @@
                 <a context-link (click)="navigate(field.TooltipUrl, $event)">{{field.Value}}</a>
             </d3s-preview-tooltip>
             <ng-template #listTooltip>
-                <d3s-lookup-tooltip *ngIf="field.TooltipUrl; else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                    <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(field.TooltipUrl, $event)" [innerText]="field.Value"></a>
-                    <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="field.TooltipUrl" [colorsJSON]="field.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
-                </d3s-lookup-tooltip>
+                <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(field.TooltipUrl, $event)" [innerText]="field.Value"></a>
+                <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="field.TooltipUrl" [colorsJSON]="field.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
                 <ng-template #noLinkTooltip>
-                    <d3s-lookup-tooltip [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                        <span *ngIf="fieldDataType != 'color'" [innerText]="field.Value"></span>
-                        <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="field.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
-                    </d3s-lookup-tooltip>
+                    <span *ngIf="fieldDataType != 'color'" [innerText]="field.Value"></span>
+                    <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="field.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
                 </ng-template>
             </ng-template>
         </div>

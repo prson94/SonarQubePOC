@@ -414,7 +414,15 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
-                var lookupDataSql = $@"select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText from asset a
+                var lookupDataSql = $@"  select ft.id as FieldTypeId, 
+                        trim(Val.Value) as Value, 
+                        od.AssetId, 
+                        od.Url, 
+                        Color.ColorJson, 
+                        flv.DisplayText, 
+                        refAsset.uid,
+                        refType.uid as assetTypeUid
+                    from asset a
                     inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
                     left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
                     cross apply (
@@ -424,6 +432,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         )Val
                     outer apply utility.ObjectDetail(ft.LookupObjectType, trim(Val.Value))OD
                     left join Asset refAsset on refAsset.ID = od.AssetID
+                    left join AssetType refType on refType.ID = od.AssetTypeId
                     outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
                     left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
                     where a.uid = @uid 
