@@ -15,11 +15,14 @@ namespace d360.utils.excel
                 document.SelectWorksheet(sourceSheet.Name);
 
                 FillRows(sourceSheet);
+                SetHeaderRowStyles(sourceSheet);
                 SetColumnSettings(sourceSheet);
 
                 if (sourceSheet.FreezeHeaderRows)
                 {
-                    document.FreezePanes(NumberOfTopMostRows: sourceSheet.HeaderRows.Count, NumberOfLeftMostColumns: 0);
+                    document.FreezePanes(
+                        NumberOfTopMostRows: sourceSheet.HeaderRows.Count,
+                        NumberOfLeftMostColumns: sourceSheet.FreezeColumns);
                 }
             }
 
@@ -29,6 +32,17 @@ namespace d360.utils.excel
             }
 
             return document;
+
+            void SetHeaderRowStyles(ExcelSheet sourceSheet)
+            {
+                int rowIndex = 1;
+                foreach (var sourceRow in sourceSheet.HeaderRows)
+                {
+                    document.SetRowStyle(rowIndex, new SLStyle { Font = new SLFont { Bold = true } });
+
+                    rowIndex++;
+                }
+            }
 
             void FillRows(ExcelSheet sourceSheet)
             {
@@ -69,6 +83,11 @@ namespace d360.utils.excel
                     if (columnSettings.Autofit)
                     {
                         document.AutoFitColumn(columnIndex);
+                    }
+
+                    if (columnSettings.Style != null)
+                    {
+                        document.SetColumnStyle(columnIndex, columnSettings.Style);
                     }
                 }
             }

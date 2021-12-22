@@ -25,6 +25,7 @@ using d360.core.resources;
 using Newtonsoft.Json;
 using d360.model.DataAccessLayer;
 using d360.core.helpers;
+using d360.utils.excel;
 
 namespace d360.web.Controllers
 {
@@ -1380,46 +1381,40 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
             var loadItems = Company.Query<dynamic>(itemSql, new { id }).ToList();
             var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { id }).ToList();
+            var columnCount = loadColumns.Count();
 
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
-
-            #region Create the list sheet
-
-            var r = 1;
-            var columnCount = loadColumns.Count;
-
-            #region Header
-
-            foreach (var lc in loadColumns)
+            var document = new ExcelDocument($"Errors-{id}.xlsx")
             {
-                document.SetCellValue(r, lc.ColumnIndex, lc.Name);
-            }
-            document.SetCellValue(r, columnCount + 1, "Error");
-            document.SetRowStyle(r, new SLStyle { Font = new SLFont { Bold = true } });
-            document.FreezePanes(1, columnCount);
-
-            #endregion
-
-
-            foreach (var i in loadItems)
-            {
-                r++;
-                foreach (var lic in loadItemColumns.Where(c => c.RowIndex == (int)i.RowIndex).OrderBy(c => c.ColumnIndex))
+                new ExcelSheet("Items")
                 {
-                    document.SetCellValue(r, lic.ColumnIndex, (string)lic.Value);
+                    HeaderRows = new List<ExcelRow>
+                    {
+                        new ExcelRow(loadColumns.Select(lc => lc.Name).Concat(new []{ "Error" }))
+                    },
+
+                    ValueRows = loadItems
+                        .Select(row => new ExcelRow(
+                            loadItemColumns
+                            .Where(c => c.RowIndex == (int)row.RowIndex)
+                            .OrderBy(c => c.ColumnIndex)
+                            .Select(lic => lic.Value)
+                            .Concat(new []{ row.StatusMessage })
+                        )).ToList(),
+
+                    FreezeColumns = columnCount,
+
+                    ColumnSettings = {
+                        {
+                            columnCount +1,
+                            new ExcelColumnSettings {
+                                Style = new SLStyle { Font = new SLFont { FontColor = System.Drawing.Color.Red } }
+                            }
+                        }
+                    }
                 }
-                document.SetCellValue(r, columnCount + 1, i.StatusMessage);
-            }
+            };
 
-            document.SetColumnStyle(columnCount + 1, new SLStyle { Font = new SLFont { FontColor = System.Drawing.Color.Red } });
-
-            #endregion
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"Errors-{id}.xlsx");
+            return ExcelDocumentAsFile(document);
         }
 
         [Route("loads/{id:int}/all.xlsx"), FileDownload, HttpGet]

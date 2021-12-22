@@ -42,6 +42,8 @@ namespace d360.utils.excel
 
         public bool FreezeHeaderRows { get; set; } = true;
 
+        public int FreezeColumns { get; set; }
+
         public ExcelSheet(string name)
         {
             this.Name = name;
@@ -56,6 +58,18 @@ namespace d360.utils.excel
     public class ExcelRow : IEnumerable<object>
     {
         public List<object> Cells { get; set; } = new List<object>();
+
+        public ExcelRow()
+        {
+        }
+
+        public ExcelRow(IEnumerable<object> cells)
+        {
+            foreach (var cell in cells)
+            {
+                this.Add(cell);
+            }
+        }
 
         public void Add(object cell)
         {
@@ -92,6 +106,8 @@ namespace d360.utils.excel
     public class ExcelColumnSettings
     {
         public bool Autofit { get; set; }
+
+        public SLStyle Style { get; set; }
 
         public static ExcelColumnSettings Default => new ExcelColumnSettings
         {
