@@ -142,15 +142,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can Own Fusion.
-        /// </summary>
-        public static string CanOwnFusion {
-            get {
-                return ResourceManager.GetString("CanOwnFusion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Class &apos;{0}&apos; is not supported. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule..
         /// </summary>
         public static string ClassNotSupport {

@@ -123,12 +123,6 @@
   <data name="AssetNotValidError" xml:space="preserve">
     <value>{0} {1} is not valid</value>
   </data>
-  <data name="BothValuesMinimumError" xml:space="preserve">
-    <value>{0} and {1} are both {2}</value>
-  </data>
-  <data name="DuplicateFieldError" xml:space="preserve">
-    <value>{0} must be Unique. {1} is used elsewhere in the collection.</value>
-  </data>
   <data name="GenericInvalidFieldValueError" xml:space="preserve">
     <value>{0} is an invalid {1} value.</value>
   </data>
@@ -143,9 +137,6 @@
   </data>
   <data name="InvalidUpdateError" xml:space="preserve">
     <value>You must provide at least one of the following: EvaluatedAssetUid, RunDate, PassCount, FailCount.</value>
-  </data>
-  <data name="MustBeGreaterThanError" xml:space="preserve">
-    <value>{0} must be greater than or equal to {1}</value>
   </data>
   <data name="RequiredFieldError" xml:space="preserve">
     <value>{0} is a required field.</value>

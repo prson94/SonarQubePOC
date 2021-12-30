@@ -120,7 +120,7 @@
   <data name="AssetType_Permissions_Not_Supported" xml:space="preserve">
     <value>AssetType "{1}" does not support permissions.</value>
   </data>
-  <data name="InsufficientAssetPermissions" xml:space="preserve">
+  <data name="InsufficientAssetPermissions1" xml:space="preserve">
     <value>You do not have read permissions to the underlying asset.</value>
   </data>
   <data name="Permissions_Not_Supported" xml:space="preserve">

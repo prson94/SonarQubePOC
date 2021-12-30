@@ -79,24 +79,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} and {1} are both {2}.
-        /// </summary>
-        public static string BothValuesMinimumError {
-            get {
-                return ResourceManager.GetString("BothValuesMinimumError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} must be Unique. {1} is used elsewhere in the collection..
-        /// </summary>
-        public static string DuplicateFieldError {
-            get {
-                return ResourceManager.GetString("DuplicateFieldError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {0} is an invalid {1} value..
         /// </summary>
         public static string GenericInvalidFieldValueError {
@@ -138,15 +120,6 @@ namespace d360.core.resources {
         public static string InvalidUpdateError {
             get {
                 return ResourceManager.GetString("InvalidUpdateError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} must be greater than or equal to {1}.
-        /// </summary>
-        public static string MustBeGreaterThanError {
-            get {
-                return ResourceManager.GetString("MustBeGreaterThanError", resourceCulture);
             }
         }
         
