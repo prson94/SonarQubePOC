@@ -196,15 +196,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;confidence&apos; and &apos;path&apos;..
-        /// </summary>
-        internal static string InvalidOrderConfidencePath {
-            get {
-                return ResourceManager.GetString("InvalidOrderConfidencePath", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is an invalid similar type..
         /// </summary>
         internal static string InvalidSimilarType {

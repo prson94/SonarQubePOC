@@ -167,9 +167,6 @@
   <data name="InvalidOrder" xml:space="preserve">
     <value>Invalid value for parameter '_order'. Allowed values are 'path' and 'tags'.</value>
   </data>
-  <data name="InvalidOrderConfidencePath" xml:space="preserve">
-    <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
-  </data>
   <data name="InvalidSimilarType" xml:space="preserve">
     <value>'{0}' is an invalid similar type.</value>
   </data>
