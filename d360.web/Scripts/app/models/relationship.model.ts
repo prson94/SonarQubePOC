@@ -31,6 +31,12 @@ export class RelationshipType {
     Object: RelationshipTypeEdge;
 }
 
+export class RelationshipTypeApiRequestModel {
+    Uid: string;
+
+}
+
+
 export class RelationshipCount {
     IntersectTypeUid: string;
     Count: number;

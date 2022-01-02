@@ -549,63 +549,12 @@ order by r.Name";
 
         #region Json Feeds To Support Editing
 
-        [Route("IntersectType_FormData"), NonNullableParameters]
-        public JsonNetResult IntersectType_FormData(int id)
+        [HttpGet, Route("IntersectType_PredicateOptions")]
+        public JsonNetResult IntersectType_PredicateOptions(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
         {
             try
             {
-                var type = Company.GetById<IntersectType>(id);
-                if (type == null) return new JsonNetResult { Data = null };
-
-                var currentIntersects = Company.Filter<Intersect>(i => i.IntersectTypeID == id).Any();
-
-                Predicate predicate = null;
-
-                if (type.PredicateID.HasValue)
-                    predicate = Company.GetById<Predicate>((int)type.PredicateID);
-
-                var model = new Dictionary<string, object> {
-                    { "ID", id },
-                    { "LimitedChangesOnly", currentIntersects },
-                    { "Subject", $"{type.Subject}|{type.SubjectID}" },
-                    { "SubjectCardinality", $"{(int)type.SubjectCardinality}" },
-                    { "Object", $"{type.Object}|{type.ObjectID}" },
-                    { "ObjectCardinality", $"{(int)type.ObjectCardinality}" },
-                    { "Predicate", type.PredicateID },
-                    { "PredicateType", predicate?.Type }
-                };
-
-                return new JsonNetResult { Data = model, Formatting = Formatting.None };
-            }
-            catch (Exception ex)
-            {
-                return jsonNetException(ex);
-            }
-        }
-
-        [Route("IntersectType_PredicateOptions"), NonNullableParameters]
-        public JsonNetResult IntersectType_PredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
-        {
-            try
-            {
-                var models = Company.GetPredicateOptions(subject, subjectID, @object, objectID, predicateID)
-                    .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
-                    .OrderBy(i => i.label);
-
-                return new JsonNetResult { Data = models, Formatting = Formatting.None };
-            }
-            catch (Exception ex)
-            {
-                return jsonNetException(ex);
-            }
-        }
-
-        [HttpGet, Route("IntersectType_PredicateOptionsNew")]
-        public JsonNetResult IntersectType_PredicateOptionsNew(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
-        {
-            try
-            {
-                var models = Company.GetPredicateOptions2(subjectUid, objectUid, predicateUid)
+                var models = Company.GetPredicateOptions(subjectUid, objectUid, predicateUid)
                     .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.UID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
                     .OrderBy(i => i.label);
 
@@ -621,7 +570,7 @@ order by r.Name";
         public JsonNetResult IntersectType_CardinalityOptions()
         {
             var models = Cardinality.One.GetList()
-                .Select(i => new { title = i.Name, value = i.ID });
+                .Select(i => new { title = i.Name, value = i.Name });
 
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
@@ -636,36 +585,8 @@ order by r.Name";
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
-        [Route("IntersectType_ObjectOptions"), NonNullableParameters]
-        public JsonNetResult IntersectType_ObjectOptions(SystemObjects type, int id, SystemObjects? side2Type = null, int? side2ID = null, int? predicateID = null)
-        {
-            try
-            {
-                List<AssetTypeClass> classLimits = null;
-
-                if (predicateID.HasValue)
-                {
-                    var predicate = Company.GetById<Predicate>(predicateID.Value);
-                    if (predicate != null)
-                    {
-                        classLimits = predicate.Type.AsInfoModel().ObjectAssetClassesSupported.ToList();
-                    }
-                }
-
-                var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID, classLimits)
-                    .Where(i => i.Type != "IntersectType")
-                    .Select(i => new { title = i.Name, value = i.Uid.ToString()});
-
-                return new JsonNetResult { Data = models, Formatting = Formatting.None };
-            }
-            catch (Exception ex)
-            {
-                return jsonNetException(ex);
-            }
-        }
-
-        [HttpGet, Route("IntersectType_ObjectOptionsNew")]
-        public JsonNetResult IntersectType_ObjectOptionsNew(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
+        [HttpGet, Route("IntersectType_ObjectOptions")]
+        public JsonNetResult IntersectType_ObjectOptions(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
         {
             try
             {
@@ -680,7 +601,7 @@ order by r.Name";
                     }
                 }
 
-                var models = Company.GetIntersectTypeOptions2(subjectUid, objectUid, predicateUid, classLimits)
+                var models = Company.GetIntersectTypeOptions(subjectUid, objectUid, predicateUid, classLimits)
                     .Where(i => i.Type != "IntersectType")
                     .Select(i => new { title = i.Name, value = i.Uid.ToString() });
 
@@ -689,213 +610,6 @@ order by r.Name";
             catch (Exception ex)
             {
                 return jsonNetException(ex);
-            }
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIntersectType")]
-        public JsonResult AddIntersectType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (form == null)
-                {
-                    throw new NoFormDataException(FormControllerApiMessage.RelationshipType);
-                }
-                var subject = form["Subject"];
-                var subjectInfo = subject.Split('|');
-                var @object = form["Object"];
-                var objectInfo = @object.Split('|');
-                var predicate = form["Predicate"];
-
-                if (string.IsNullOrEmpty(predicate))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, ApiMessages.Predicate,FormControllerApiMessage.SelectPredicate);
-                }
-
-                var model = new IntersectType
-                {
-                    Subject = subjectInfo[0],
-                    SubjectCardinality = parseEnumField<Cardinality>(form, "SubjectCardinality"),
-                    SubjectID = int.Parse(subjectInfo[1]),
-                    Object = objectInfo[0],
-                    ObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality"),
-                    ObjectID = int.Parse(objectInfo[1]),
-                    IsSystem = false,
-                    PredicateID = int.Parse(predicate)
-                };
-
-                Company.UpsertIntersectType(model);
-                var id = model.ID;
-
-                Company.CreateRollupPathChangedExecution(id);
-
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.RelationshipType), id.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteIntersectType")]
-        public JsonResult DeleteIntersectType(FormCollection form)
-        {
-            try
-            {
-                var intersectTypes = new List<string> { DataType.Relationship.ToString(), DataType.RefListRelationship.ToString(), DataType.FieldFromRelationship.ToString() };
-                var id = parseIntField(form, "ID");
-                var uid = Guid.Parse(parseTextField(form, "IntersectTypeUid"));
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException(FormControllerApiMessage.RelationshipType);
-                }
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == uid);
-
-                if (intersectType.Predicate.Type != PredicateType.Diagram)
-                {
-                    if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
-                        return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
-                }
-                else if (Company.HasRelationshipInProcessDiagram(intersectType.uid))
-                {
-                    return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
-                }
-
-                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && intersectTypes.Contains(i.Type) && i.LookupObjectType == "IntersectType").Count() > 0)
-                    return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
-                if (Company.Filter<FieldTypeLookup>(i => i.Definition.Contains("\"IntersectTypeUid\":\"" + uid + "\"")).Count() > 0)
-                {
-                    return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
-                }
-
-                var model = Company.GetById<IntersectType>(id);
-                if (model == null)
-                {
-                    throw new NotFoundException(FormControllerApiMessage.RelationshipType);
-                }
-                var impactedMeasureVersions = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Relation, id);
-
-                Company.Delete(SystemObjects.IntersectType, id);
-
-                if (impactedMeasureVersions.Count > 0)
-                {
-                    Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
-                }
-
-                Company.CreateRollupPathChangedExecution(id);
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved,FormControllerApiMessage.Item), id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditIntersectType")]
-        public JsonResult EditIntersectType(FormCollection form)
-        {
-            try
-            {
-                if (form == null)
-                {
-                    throw new NoFormDataException(FormControllerApiMessage.RelationshipType);
-                }
-                var id = int.Parse(form["ID"]);
-
-                // Permissions validation.
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var model = Company.GetById<IntersectType>(id);
-                if (model == null)
-                {
-                    throw new NotFoundException(FormControllerApiMessage.RelationshipType);
-                }
-
-                var subject = form["Subject"];
-                var subjectInfo = subject.Split('|');
-
-                var @object = form["Object"];
-                var objectInfo = @object.Split('|');
-
-                var predicate = form["Predicate"];
-
-                if (string.IsNullOrEmpty(predicate))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict,ApiMessages.Predicate,FormControllerApiMessage.SelectPredicate);
-                }
-
-                var newSubjectCardinality = parseEnumField<Cardinality>(form, "SubjectCardinality");
-                var newObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality");
-
-                #region We need to perform a check here to validate that this relationship type is NOT used on any FieldFromRelationship field types.
-
-                bool isCardinalityException = false;
-                var fieldFromRelationshipTypeString = DataType.FieldFromRelationship.ToString();
-
-                if (model.SubjectCardinality == Cardinality.One && newSubjectCardinality != Cardinality.One)
-                {
-                    if (Company.Any<FieldType>(ft => ft.Object == model.Object && ft.ObjectID == model.ObjectID && ft.Type == fieldFromRelationshipTypeString && ft.LookupObjectType == "IntersectType" && ft.LookupObjectID == model.ID))
-                    {
-                        isCardinalityException = true;
-                    }
-                }
-
-                if (model.ObjectCardinality == Cardinality.One && newObjectCardinality != Cardinality.One)
-                {
-                    if (Company.Any<FieldType>(ft => ft.Object == model.Subject && ft.ObjectID == model.SubjectID && ft.Type == fieldFromRelationshipTypeString && ft.LookupObjectType == "IntersectType" && ft.LookupObjectID == model.ID))
-                    {
-                        isCardinalityException = true;
-                    }
-                }
-                if (isCardinalityException)
-                {
-                    return jsonException( FormControllerApiMessage.NotAllowedUpdateRelationship, HttpStatusCode.Conflict);
-                }
-
-                #endregion
-
-                model.Subject = subjectInfo[0];
-                model.SubjectCardinality = newSubjectCardinality;
-                model.SubjectID = int.Parse(subjectInfo[1]);
-                model.Object = objectInfo[0];
-                model.ObjectCardinality = newObjectCardinality;
-                model.ObjectID = int.Parse(objectInfo[1]);
-                model.PredicateID = int.Parse(predicate);
-
-                Company.UpsertIntersectType(model);
-                Company.CreateRollupPathChangedExecution(id);
-
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.RelationshipType), model.ID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 

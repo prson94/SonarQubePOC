@@ -7,16 +7,51 @@
         <div class="row">
             <div class="col l4 m4 s12">
                 <div class="FieldName">Subject</div>
-                <p-dropdown igDropdown igSize="full" [ellipsisDirection]="'rtl'" placeholder="Select Subject" filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="relationshipType.Subject.Uid" [disabled]="limitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);"></p-dropdown>
+                <p-dropdown igDropdown 
+                            igSize="full" 
+                            [ellipsisDirection]="'rtl'" 
+                            placeholder="Select Subject" 
+                            filter="true" 
+                            appendTo="body" 
+                            name="subject" 
+                            #subject="ngModel" 
+                            [options]="subjectOptions" 
+                            [(ngModel)]="relationshipType.Subject.Uid" 
+                            [disabled]="limitedChangesOnly" 
+                            required 
+                            (ngModelChange)="relationshipType.Subject.Uid=$event;subjectChanged($event);"></p-dropdown>
             </div>
             <div class="col l4 m4 s12">
                 <div class="FieldName">Predicate</div>
-                <p-dropdown igDropdown igSize="full" placeholder="Select A Predicate" filter="true" appendTo="body" name="predicate" #predicate="ngModel" [options]="predicates" [(ngModel)]="editedRelationship.Predicate" [disabled]="!canChangePredicate" required (ngModelChange)="editedRelationship.Predicate=$event;predicateChanged($event);"></p-dropdown>
+                <p-dropdown igDropdown 
+                            igSize="full" 
+                            placeholder="Select A Predicate" 
+                            filter="true" 
+                            appendTo="body" 
+                            name="predicate" 
+                            #predicate="ngModel" 
+                            [options]="predicates" 
+                            [(ngModel)]="relationshipType.Predicate.Uid" 
+                            [disabled]="!canChangePredicate" 
+                            required 
+                            (ngModelChange)="relationshipType.Predicate.Uid=$event;predicateChanged($event);"></p-dropdown>
             </div>
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingObject"></d3s-loading>
                 <div *ngIf="!isLoadingObject" class="FieldName">Object</div>
-                <p-dropdown igDropdown igSize="full" [ellipsisDirection]="'rtl'" placeholder="Select Object" *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="limitedChangesOnly || !canChangeObject" required></p-dropdown>
+                <p-dropdown igDropdown 
+                            igSize="full" 
+                            [ellipsisDirection]="'rtl'" 
+                            placeholder="Select Object" 
+                            *ngIf="!isLoadingObject" 
+                            filter="true" 
+                            appendTo="body" 
+                            name="object" 
+                            #object="ngModel" 
+                            [options]="objectOptions" 
+                            [(ngModel)]="relationshipType.Object.Uid" 
+                            [disabled]="limitedChangesOnly || !canChangeObject" 
+                            required></p-dropdown>
             </div>
         </div>
 
@@ -24,13 +59,33 @@
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
                 <div *ngIf="!isLoadingCardinality" class="FieldName">Subject Cardinality</div>
-                <p-dropdown igDropdown igSize="full" placeholder="Select Cardinality" *ngIf="!isLoadingCardinality" panelStyleClass="dropdown-z-correction" filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="subjectCardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" [disabled]="!canChangeCardinality" required></p-dropdown>
+                <p-dropdown igDropdown 
+                            igSize="full" 
+                            placeholder="Select Cardinality" 
+                            *ngIf="!isLoadingCardinality" 
+                            panelStyleClass="dropdown-z-correction" 
+                            filter="true" 
+                            name="subjectCardinality" 
+                            #subjectCardinality="ngModel" 
+                            [options]="subjectCardinalityOptions" 
+                            [(ngModel)]="relationshipType.Subject.Cardinality" 
+                            [disabled]="!canChangeCardinality" required></p-dropdown>
             </div>
             <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br />to</div>
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
                 <div *ngIf="!isLoadingCardinality" class="FieldName">Object Cardinality</div>
-                <p-dropdown igDropdown igSize="full" placeholder="Select Cardinality" *ngIf="!isLoadingCardinality" filter="true" name="objectCardinality" #objectCardinality="ngModel" [options]="objectCardinalityOptions" [(ngModel)]="editedRelationship.ObjectCardinality" [disabled]="!canChangeCardinality" required></p-dropdown>
+                <p-dropdown igDropdown 
+                            igSize="full" 
+                            placeholder="Select Cardinality" 
+                            *ngIf="!isLoadingCardinality" 
+                            filter="true" 
+                            name="objectCardinality" 
+                            #objectCardinality="ngModel" 
+                            [options]="objectCardinalityOptions" 
+                            [(ngModel)]="relationshipType.Object.Cardinality" 
+                            [disabled]="!canChangeCardinality" 
+                            required></p-dropdown>
             </div>
         </div>
 

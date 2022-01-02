@@ -135,9 +135,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     deleteRelationship(uid: string) {
         this.relationshipsService.deleteRelationshipType(uid)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
+                result = result[0];
+                this.showMessageForApiResult(this.messagesService, result);
                 this.showDelete = false;
-                if (result.type != 'error') {
+                if (result.Success === true) {
                     this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
                     this.relationships.splice(this.findRelationshipIndex(uid), 1);
                 }
@@ -146,9 +147,12 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     saveRelationship(event) {
         this.relationshipsService.saveRelationshipType(event.relationship)
-            .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type == "confirm") {
+            .subscribe((result) => {
+                
+                result = result[0];
+                this.showMessageForApiResult(this.messagesService, result);
+               
+                if (result.Success === true) {
                     this.getRelationships();
                     this.showEditor = false;
                 }

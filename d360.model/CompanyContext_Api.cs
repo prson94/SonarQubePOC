@@ -4076,6 +4076,8 @@ where   ExecutionID = @ExecutionID
                             row["ExecutionItemUid"] = item.ExecutionItemUid.Value;
                         row["SubjectCardinality"] = (int)item.SubjectCardinality;
                         row["ObjectCardinality"] = (int)item.ObjectCardinality;
+                        row["SubjectUid"] = item.SubjectUid;
+                        row["ObjectUid"] = item.ObjectUid;
                         row["PredicateUid"] = item.PredicateUid;
                         row["uid"] = item.Uid;
                         row["IsNew"] = false;
@@ -4104,6 +4106,8 @@ where   ExecutionID = @ExecutionID
 
                             bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
                             bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
+                            bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
+                            bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
                             bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
                             bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
                             bulkCopy.ColumnMappings.Add("uid", "uid");
@@ -4120,6 +4124,12 @@ where   ExecutionID = @ExecutionID
                             Set PredicateID=ER.PredicateID,
                                 SubjectCardinality=ER.SubjectCardinality, 
                                 ObjectCardinality=ER.ObjectCardinality,
+                                [Subject] = ER.Subject,
+                                SubjectID = ER.SubjectID,
+                                SubjectUid = ER.SubjectUid,
+                                [Object] = ER.Object,
+                                ObjectID = ER.ObjectID,
+                                ObjectUid = ER.ObjectUid,
                                 UpdatedBy=@resourceId,
                                 UpdatedOn=@utcNow
                             from [intersecttype] IT
@@ -7163,6 +7173,7 @@ from    [api].[ExecutionRelationshipType] ER
 where   ER.ExecutionID = @ExecutionID 
     and ER.Success is null 
     and (ER.SubjectUid is not null or ER.ObjectUid is not null)
+    and (ER.SubjectUid <> T.SubjectUid or ER.ObjectUid <> T.ObjectUid)
     and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);
 
 update  ER 
@@ -7178,13 +7189,18 @@ from    [api].[ExecutionRelationshipType] ER
             and ER.Success is null;
 
 Update  T
-set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID,
-        ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
+set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID
 from    [api].[ExecutionRelationshipType] T
         inner join IntersectType S on S.Uid = T.Uid
         inner join AssetType SA on SA.Object = S.Subject and SA.ObjectID = S.SubjectID
+where   T.ExecutionID = @ExecutionID and T.Success is null and T.SubjectUid is null;
+
+Update  T
+set     ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
+from    [api].[ExecutionRelationshipType] T
+        inner join IntersectType S on S.Uid = T.Uid
         inner join AssetType OA on OA.Object = S.Object and OA.ObjectID = S.ObjectID
-where   T.ExecutionID = @ExecutionID and T.Success is null;",
+where   T.ExecutionID = @ExecutionID and T.Success is null and T.ObjectUid is null;",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
 
@@ -7370,15 +7386,6 @@ where   ER.ExecutionID = @ExecutionID
             else
             {
                 Connection.Execute(@"
-update  ER
-set     Success = 0, 
-    Message='Relationships already present for this type' 
-from    [api].[ExecutionRelationshipType] ER 
-    inner join [intersecttype] IT on IT.UID = ER.UID 
-where   ER.ExecutionID = @ExecutionID 
-    and ER.Success is null
-    and exists (select 1 from [Intersect] where IntersectTypeID =IT.ID);
-
 update  ER 
 set     Success = 0, 
     Message = 'Relationship type with the specified predicate already exists.' 

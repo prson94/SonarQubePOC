@@ -572,8 +572,6 @@ namespace d360.web.Controllers
                     return EditServiceEndpoint(form);
                 case "INTERSECT":
                     return EditRelationship(form);
-                case "INTERSECTTYPE":
-                    return EditIntersectType(form);
                 case "NAMESPACE":
                     return EditNamespace(form);
                 case "ORGANIZATION":
@@ -617,10 +615,6 @@ namespace d360.web.Controllers
                     return DeleteCustomSynonym(form);
                 case "ENDPOINT":
                     return DeleteCustomAPIEndPoint(form);
-                case "INTERSECTTYPE":
-                    IntersectType intersectType = Company.GetById<IntersectType>(objectID);
-                    form.Add("IntersectTypeUid", intersectType.uid.ToString());
-                    return DeleteIntersectType(form);
                 case "NAMESPACE":
                     return DeleteCustomAPINamespace(form);
                 case "ORGANIZATION":
@@ -671,8 +665,6 @@ namespace d360.web.Controllers
                     return AddServiceEndpoint(form);
                 case "INTERSECT":
                     return AddRelationship(form);
-                case "INTERSECTTYPE":
-                    return AddIntersectType(form);
                 case "NAMESPACE":
                     return AddNamespace(form);
                 case "ORGANIZATION":
