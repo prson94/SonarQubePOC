@@ -133,15 +133,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NewPassword parameter value missing..
-        /// </summary>
-        public static string MissingNewPasswordParameter {
-            get {
-                return ResourceManager.GetString("MissingNewPasswordParameter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to New password may not be the same as current password.
         /// </summary>
         public static string NewAndCurrentNotSame {

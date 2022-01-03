@@ -61,15 +61,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0) must be a decimal greater than {1} and less than or equal to {2}..
-        /// </summary>
-        public static string DecimalPlaceValidation {
-            get {
-                return ResourceManager.GetString("DecimalPlaceValidation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid pageNum value provided..
         /// </summary>
         public static string InvalidPageNum {

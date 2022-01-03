@@ -1392,4 +1392,13 @@ SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
 	]]>
 		</sql>
 	</changeSet>
+	<changeSet author="vlova" id="Data.Corrections.GOV-16650">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+		<comment>Remove favorites with incorrect routes from the envs</comment>
+	<![CDATA[
+		delete from [dbo].[Favorite]
+		where Route like 'fusion%'
+	]]>
+		</sql>
+	</changeSet>
 </databaseChangeLog>

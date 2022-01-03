@@ -13,7 +13,8 @@ namespace d360.core.entities.Membership
         DashboardPage,
         CommunityPage,
         WorkflowPage,
-        CartPage
+        CartPage,
+        Unknown
     }
 
     public interface IFavoriteUpsert

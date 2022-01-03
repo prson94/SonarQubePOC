@@ -126,9 +126,6 @@
   <data name="AssetTypeWithUidExists" xml:space="preserve">
     <value>An asset type with the specified Uid already exists.</value>
   </data>
-  <data name="BadDisplayFormat" xml:space="preserve">
-    <value>Display Format contains invalid field references.</value>
-  </data>
   <data name="CheckRequest" xml:space="preserve">
     <value>Please check your request and try again.</value>
   </data>
@@ -146,9 +143,6 @@
   </data>
   <data name="InvalidPolicyDepth" xml:space="preserve">
     <value>Invalid maximum depth. Policy level specified must be a value between 1 and 10.</value>
-  </data>
-  <data name="InvalidParentForClass" xml:space="preserve">
-    <value>Not valid ParentUid for the Class.</value>
   </data>
   <data name="InvalidParentUid" xml:space="preserve">
     <value>Invalid ParentUid provided.</value>
@@ -186,9 +180,6 @@
   <data name="MatchingIconStyle" xml:space="preserve">
     <value>Icon Style ForeColor and BackColor cannot be the same value.</value>
   </data>
-  <data name="MaxLengthExceeded" xml:space="preserve">
-    <value>{0} cannot exceed {1} characters.</value>
-  </data>
   <data name="AutoDisplayParentRestriction" xml:space="preserve">
     <value>Auto Display Parent can be set only asset types that are a Business or Technical class and are the child of another asset type.</value>
   </data>
@@ -212,9 +203,6 @@
   </data>
   <data name="CanEditParentClassRestriction" xml:space="preserve">
     <value>Can Edit Parent can be set only asset types that are a Business or Technical class and are the child of another asset type.</value>
-  </data>
-  <data name="CanEditParentRestriction" xml:space="preserve">
-    <value>Can Edit Parent can be set only on children asset types.</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Invalid order direction passed in the request.</value>
@@ -359,9 +347,6 @@
   </data>
   <data name="FieldProvideCorrectValue" xml:space="preserve">
     <value>Please provide valid value.</value>
-  </data>
-  <data name="NameContainInvalidCharacters" xml:space="preserve">
-    <value>Invalid character(-s) provided in the asset type name. Please fix content of asset type name field.</value>
   </data>
   <data name="InvalidRelationshipFieldType" xml:space="preserve">
     <value>Invalid or deleted relationship type encountered on Relationship field with friendly name "{FriendlyName}".</value>

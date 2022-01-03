@@ -4159,7 +4159,7 @@ where v.id = {0}", id)).FirstOrDefault();
                     asset = Company.Filter<AssetDetail>(i => i.Object == sType && i.ObjectID == id).FirstOrDefault();
                     if (asset == null)
                     {
-                        throw new ArgumentNullException(ApiMessages.AssetNotfound);
+                        throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ApiMessages.AssetNotfound });
                     }
                     return GetPermissionsByObject(asset, isAdmin);
                 }
