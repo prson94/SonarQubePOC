@@ -41,6 +41,7 @@
                                     [menu]="adminMenu"
                                     [isActive]="adminMenu.isActiveItem"
                                     (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
+            <div class="menu-bottom-padding" #menuBottomPadding></div>
         </ul>
         <div class="toggle-container" [ngClass]="{'open ': menuOpen}">
             <div [ngClass]="{'open ': menuOpen}"
