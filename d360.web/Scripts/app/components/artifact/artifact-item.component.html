@@ -26,7 +26,7 @@
                         </ng-container>
 
                         <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
-                            <div class="empty-overlay" *ngIf="!selectedAsset && !selectedReferenceItem">
+                            <div class="empty-overlay" *ngIf="!selectedAsset && !selectedReferenceItem && !selectedTag">
                                 <div class="content">
                                     <div class="icon-holder">
                                         <i class="fa fa-info-circle"></i>
@@ -53,6 +53,9 @@
                                 <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
                                                       [paddingLeft]="'11px'">
                                 </ig-asset-type-detail>
+                            </ng-container>
+                            <ng-container *ngIf="selectedTag">
+                                <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
                             </ng-container>
                         </ng-container>
                     </side-panel>

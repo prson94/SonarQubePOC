@@ -90,9 +90,27 @@ export class LinkClickInterceptor {
                 adcEv.assetTypeUid = val.assetTypeUid;
             }
 
+            if (data.TooltipType === "tag") {
+                adcEv.event = origEvent;
+                adcEv.type = AssetDetailClickType.Tag;
+                adcEv.uid = data.uid;
+            }
+
+            //if tags object exist this did came from tagged assets page
+            if (data.Tags) {
+                console.log(data);
+                adcEv.event = origEvent;
+                adcEv.type = AssetDetailClickType.Asset;
+                adcEv.objectId = data.ObjectID;
+                adcEv.objectType = data.Object;
+                adcEv.uid = data.AssetUid;
+                adcEv.assetTypeUid = data.AssetTypeUid;
+            }
+
         } else {
             adcEv = null;
         }
+        console.log(adcEv);
         this.subject.next(adcEv);
     }
 
@@ -106,6 +124,7 @@ export enum AssetDetailClickType {
     Asset = 'Asset',
     ReferenceItem = 'ReferenceItem',
     User = 'User',
+    Tag = 'Tag',
     Group = 'Group'
 }
 

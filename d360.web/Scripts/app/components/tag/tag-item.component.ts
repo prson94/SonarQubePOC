@@ -101,7 +101,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     load() {
         this.isLoading = true;
-        this.tagsService.getTagByUid(this.tagUid)
+        this.tagsService.getTagByUid(this.tagUid.toLocaleString())
             .subscribe(result => {
                 if (result) {
                     this.tag = result;

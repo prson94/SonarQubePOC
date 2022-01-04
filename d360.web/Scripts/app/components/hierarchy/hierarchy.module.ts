@@ -43,6 +43,7 @@ import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.compon
 import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 
 @NgModule({
     imports: [
@@ -77,6 +78,7 @@ import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-de
         SharedAssetScoreModule,
         SharedDynamicGridEditorModule,
         SharedAssetEditorsModule,
+        TaggedAssetDetailModule,
         AssetEditorModule,
         SiteModalModule,
         TilesModule,

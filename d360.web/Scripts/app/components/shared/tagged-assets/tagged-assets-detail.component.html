@@ -1,0 +1,79 @@
+﻿<div class="asset-detail">
+    <div *ngIf="isLoading" style="width:100%; text-align:center;">
+        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+    </div>
+    <div *ngIf="!isLoading && tag">
+        <div class="asset-detail-header">
+            <div class="asset-name">
+                {{tag.Value}}
+            </div>
+            <div class="class-name">
+                Tag
+            </div>
+            <div>
+                <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a>
+            </div>
+        </div>
+
+        <div class="tagged-assets">
+            <div class="row">
+                <div class="row-header">
+                    <label class="ig-label">
+                        <span class="ng-star-inserted">Tagged Assets</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="search-input">
+                <ig-search-field mode="Keypress"
+                                 [debounce]="600"
+                                 [IsFlexApply]="true"
+                                 [(ngModel)]="filters.globalSearch"
+                                 (onSearch)="dt.filterGlobal($event, 'contains')">
+                </ig-search-field>
+                <div pTooltip="'Export to Excel'"
+                     tooltipPosition="left"
+                     tooltipStyleClass="ig-tooltip">
+                    <button igButton
+                            icon="fa-download"
+                            [loading]="isExportInProgress"
+                            (click)="export()">
+                    </button>
+                </div>
+            </div>
+            <p-table #dt [value]="tagUsage"
+                     selectionMode="single"
+                     [metaKeySelection]="true"
+                     [globalFilterFields]="['DisplayValue','AssetType']"
+                     sortField="DisplayValue"
+                     [sortOrder]="1"
+                     [pageLinks]="3"
+                     [paginator]="true"
+                     [rowsPerPageOptions]="[10,20,50,100,200,500]"
+                     [rows]="10" [(selection)]="selected">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th [pSortableColumn]="'DisplayValue'" style="width: 20%">
+                            Asset
+                        </th>
+                        <th [pSortableColumn]="'AssetType'" style="width: 20%">
+                            Asset Type
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>
+                            <a context-link (click)="navigate(item, $event)">{{item.DisplayValue}}</a>
+                        </td>
+                        <td [innerHTML]="formatValue(item)"></td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
+        </div>
+
+    </div>
+</div>

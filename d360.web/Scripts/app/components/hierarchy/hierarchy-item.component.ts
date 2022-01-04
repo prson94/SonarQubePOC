@@ -49,6 +49,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
     hrefSub: Subscription;
     selectedAsset: any;
+    selectedTag: any;
     selectedReferenceItem: any;
 
     sidePanelOpen: boolean = false;
@@ -66,7 +67,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         protected settingsService: CompanySettingsService,
         webAnalyticsService: WebAnalyticsService,
         private linkClickInterceptor: LinkClickInterceptor,
-        ) {
+    ) {
         super(settingsService);
 
         this.webAnalyticsService = webAnalyticsService;
@@ -104,8 +105,8 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
             this.currentAreaNameSub =
                 this.headerBreadcrumbService
-                .getAreaName(this.objectType, newObjectTypeId)
-                .subscribe(result => { this.currentAreaName = result; if (this.assetType) this.buildBreadcrumb(); });
+                    .getAreaName(this.objectType, newObjectTypeId)
+                    .subscribe(result => { this.currentAreaName = result; if (this.assetType) this.buildBreadcrumb(); });
 
             if (!hierarchyId)
                 hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
@@ -123,6 +124,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe(ev => {
             this.selectedAsset = null;
             this.selectedReferenceItem = null;
+            this.selectedTag = null;
 
             if (ev.type === AssetDetailClickType.Asset) {
                 this.selectedAsset = { uid: ev.uid, type: ev.objectType };
@@ -130,6 +132,10 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
             if (ev.type === AssetDetailClickType.ReferenceItem) {
                 this.selectedReferenceItem = { uid: ev.assetTypeUid, type: ev.objectType };
+            }
+
+            if (ev.type === AssetDetailClickType.Tag) {
+                this.selectedTag = { uid: ev.uid };
             }
 
             if (ev.type === AssetDetailClickType.User || ev.type === AssetDetailClickType.Group) {
@@ -157,9 +163,9 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             case AssetTypeClass.Policy:
                 this.policiesService.getPolicyType(this.objectTypeId)
                     .subscribe(result => {
-                            this.assetType = result;
-                            this.loadHierarchy(this.objectTypeId, hierarchyId);
-                            this.buildBreadcrumb();
+                        this.assetType = result;
+                        this.loadHierarchy(this.objectTypeId, hierarchyId);
+                        this.buildBreadcrumb();
                     });
                 break;
         }

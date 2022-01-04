@@ -1095,6 +1095,7 @@
     <Content Include="Scripts\app\components\shared\asset-editor\asset-editor-field.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.html" />
+    <Content Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.component.html" />
     <Content Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
@@ -1251,6 +1252,8 @@
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <Content Include="Scripts\app\components\rule\rule-item.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\asset-type-detail.module.ts" />

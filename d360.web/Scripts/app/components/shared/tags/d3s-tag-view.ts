@@ -9,6 +9,7 @@ import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { DatePipe } from '@angular/common';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 declare var CurrentResourceID;
 
@@ -31,6 +32,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     @Input() ignoreResizing: boolean = false;
     @Input() placeHolder: string = "Click to add...";
     @Output() tagsChanged = new EventEmitter();   
+    @Input() interceptLinkClick: boolean = false;
 
     showEditor: boolean = false;
     showDelete: boolean = false;
@@ -69,7 +71,8 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         private tagService: TagService,
         private ref: ChangeDetectorRef,
         private datePipe: DatePipe,
-        private router: Router) {
+        private router: Router,
+        private linkClickInterceptor: LinkClickInterceptor) {
         super(settingsService);
     }
 
@@ -454,6 +457,11 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
 
     openTagPage(event: MouseEvent, item: any) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent(event, item, `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`);
+            return;
+        }
+
         if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper')
             this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`]);
         event.stopPropagation();

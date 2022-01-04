@@ -11,14 +11,13 @@ import { Subscription } from 'rxjs';
     templateUrl: './asset-type-detail.component.html',
     providers: [ObjectDetailService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: ['.p-datatable-wrapper { overflow:auto; } .p-datatable-wrapper table { table-layout: unset !important; }'],
+    styles: [`.p-datatable-wrapper { overflow:auto; } .p-datatable-wrapper table { table-layout: unset !important;} .asset-type-detail-wrapper {padding-left:16px;}`],
     encapsulation: ViewEncapsulation.None
 })
 
 
 export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
     @Input() uid: string;
-    @Input() paddingLeft: string;
 
     isLoading: boolean = false;
     assetType: AssetTypeApiModel;

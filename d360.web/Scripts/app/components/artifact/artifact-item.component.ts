@@ -47,6 +47,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     hrefSub: Subscription;
     selectedAsset: any;
     selectedReferenceItem: any;
+    selectedTag: any;
 
     constructor(
         private route: ActivatedRoute,
@@ -81,6 +82,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
             this.hrefSub = this.linkClickInterceptor.getEvents().subscribe(ev => {
                 this.selectedAsset = null;
                 this.selectedReferenceItem = null;
+                this.selectedTag = null;
+
                 if (ev.type === AssetDetailClickType.Asset) {
                     this.selectedAsset = { uid: ev.uid, type: ev.objectType };
                 }
@@ -91,6 +94,10 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
                 if (ev.type === AssetDetailClickType.User || ev.type === AssetDetailClickType.Group) {
                     this.selectedAsset = { uid: ev.uid, type: ev.objectType };
+                }
+
+                if (ev.type === AssetDetailClickType.Tag) {
+                    this.selectedTag = { uid: ev.uid };
                 }
             });
 
