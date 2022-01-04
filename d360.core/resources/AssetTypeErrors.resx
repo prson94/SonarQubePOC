@@ -369,4 +369,7 @@
   <data name="DuplicateItem" xml:space="preserve">
     <value>Duplicate items found in request</value>
   </data>
+  <data name="MaxLengthExceeded" xml:space="preserve">
+    <value>{0} cannot exceed {1} characters.</value>
+  </data>
 </root>
