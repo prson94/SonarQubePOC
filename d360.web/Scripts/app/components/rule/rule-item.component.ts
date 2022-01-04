@@ -69,7 +69,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe(ev => {
             this.selectedAsset = null;
             this.selectedReferenceItem = null;
-            console.log(ev);
+
             if (ev.type === AssetDetailClickType.Asset) {
                 this.selectedAsset = { uid: ev.uid, type: ev.objectType };
             }

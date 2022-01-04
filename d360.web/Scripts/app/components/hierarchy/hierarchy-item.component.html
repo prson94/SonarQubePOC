@@ -1,14 +1,57 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading"
-     class="row">
-    <div class="col s12">
-        <div class="tile tile-detail">
-            <d3s-object-definition-tile [nymTypes]="assetType?.NymTypes"
-                                        [objectPermissions]="permissions"
-                                        [objectType]="object"
-                                        [useV2Api]="true"
-                                        [objectID]="selected?.ID"
-                                        (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div>
+            <div class="col s12" style="display:flex;">
+                <div class="tile tile-detail main-panel">
+                    <d3s-object-definition-tile [nymTypes]="assetType?.NymTypes"
+                                                [objectPermissions]="permissions"
+                                                [objectType]="object"
+                                                [useV2Api]="true"
+                                                [objectID]="selected?.ID"
+                                                (onEditComplete)="editComplete($event)"
+                                                [interceptLinkClick]="true"></d3s-object-definition-tile>
+                </div>
+                <div class="tile tile-detail side-panel">
+                    <side-panel (expandedChange)="sidePanelOpen=$event"
+                                [hasProfiling]="false"
+                                [storageKey]="sidePanelStorageKey"
+                                (selectedPanelChange)="sidePanelTab=$event"
+                                [selectedPanel]="sidePanelTab"
+                                hasDetail="true">
+                        <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
+                            <div class="empty-overlay" *ngIf="!selectedAsset && !selectedReferenceItem">
+                                <div class="content">
+                                    <div class="icon-holder">
+                                        <i class="fa fa-info-circle"></i>
+                                    </div>
+                                    <span>Select a link or a tag to display the properties of a referenced item</span>
+                                </div>
+                            </div>
+                            <ng-container *ngIf="selectedAsset">
+                                <ig-asset-detail [objectUID]="selectedAsset.uid"
+                                                 [objectType]="selectedAsset.type"
+                                                 [useAccordion]="true"
+                                                 [shouldBePadded]="false"
+                                                 [showHeader]="true"
+                                                 [showHeaderLine]="false"
+                                                 [spacerHeight]="'16px'"
+                                                 [tooltipAlign]="'left'"
+                                                 [isSidePanel]="true"
+                                                 [interceptLinkClick]="true"
+                                                 [hasAddRelationshipsPermissions]="false"
+                                                 [hasModifyRelationshipsPermissions]="false"
+                                                 [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                            </ng-container>
+                            <ng-container *ngIf="selectedReferenceItem">
+                                <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                      [paddingLeft]="'11px'">
+                                </ig-asset-type-detail>
+                            </ng-container>
+                        </ng-container>
+                    </side-panel>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</div> 

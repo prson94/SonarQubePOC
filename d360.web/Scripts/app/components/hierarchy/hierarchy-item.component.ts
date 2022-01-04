@@ -16,6 +16,8 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-hierarchy-item',
@@ -45,6 +47,13 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
     crumbs: Breadcrumb[] = [];
     messages: MessageBarItem[] = [];
 
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+
+    sidePanelOpen: boolean = false;
+    sidePanelStorageKey;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -55,7 +64,8 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         protected settingsService: CompanySettingsService,
-        webAnalyticsService: WebAnalyticsService
+        webAnalyticsService: WebAnalyticsService,
+        private linkClickInterceptor: LinkClickInterceptor,
         ) {
         super(settingsService);
 
@@ -107,6 +117,23 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
                 this.load(hierarchyId);
 
                 this.isLoading = false;
+            }
+        });
+
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe(ev => {
+            this.selectedAsset = null;
+            this.selectedReferenceItem = null;
+
+            if (ev.type === AssetDetailClickType.Asset) {
+                this.selectedAsset = { uid: ev.uid, type: ev.objectType };
+            }
+
+            if (ev.type === AssetDetailClickType.ReferenceItem) {
+                this.selectedReferenceItem = { uid: ev.assetTypeUid, type: ev.objectType };
+            }
+
+            if (ev.type === AssetDetailClickType.User || ev.type === AssetDetailClickType.Group) {
+                this.selectedAsset = { uid: ev.uid, type: ev.objectType };
             }
         });
 

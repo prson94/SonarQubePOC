@@ -42,6 +42,7 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
+import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
 
 @NgModule({
     imports: [
@@ -80,6 +81,7 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
         SiteModalModule,
         TilesModule,
         AssetDetailModule,
+        AssetTypeDetailModule,
         DataProfileModule,
         SidePanelModule,
         PopupMenuModule,
