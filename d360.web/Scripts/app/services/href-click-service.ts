@@ -15,11 +15,10 @@ export class LinkClickInterceptor {
             origEvent.preventDefault();
             origEvent.stopPropagation();
 
-            console.log(origEvent);
             var adcEv = new AssetDetailClickEvent();
 
             var event = origEvent["from-context-method"] ?? "";
-            console.log(event);
+
             if (event === "open") {
                 this.router.navigateByUrl(url);
                 return;
@@ -56,6 +55,11 @@ export class LinkClickInterceptor {
 
                 adcEv.objectId = val.TooltipID;
                 adcEv.objectType = val.TooltipType;
+
+                if (adcEv.objectType === "ReferenceItem") {
+                    adcEv.type = AssetDetailClickType.ReferenceItem;
+                }
+
                 adcEv.uid = val.uid;
                 adcEv.assetTypeUid = val.assetTypeUid;
             }
@@ -72,6 +76,18 @@ export class LinkClickInterceptor {
                 adcEv.type = AssetDetailClickType.Asset;
                 adcEv.objectType = "Artifact";
                 adcEv.uid = data.item[data.column.uidfield];
+            }
+
+            if (data.DataType === "Relationship") {
+                var val = data.Values[0];
+                adcEv.event = origEvent;
+                adcEv.type = data.FieldName !== "ReferenceItem" ? AssetDetailClickType.Asset : AssetDetailClickType.ReferenceItem;
+                adcEv.data = data;
+
+                adcEv.objectId = val.TooltipID;
+                adcEv.objectType = val.TooltipType;
+                adcEv.uid = val.uid;
+                adcEv.assetTypeUid = val.assetTypeUid;
             }
 
         } else {

@@ -1596,7 +1596,14 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     url = null;
                 }
 
-                values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });
+                var relVal = new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url };
+
+                var assetUid = Company.Assets.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
+                if (assetUid != null)
+                {
+                    relVal.uid = assetUid;
+                }
+                values.Add(relVal);
             }
 
             values = values.Distinct(new ReadOnlyFieldValueComparer()).OrderBy(x => x.Value).ToList();
@@ -2512,7 +2519,9 @@ from    (
                     return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
-                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+
+                    SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
+                    return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
             }
         }
 
