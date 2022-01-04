@@ -30,6 +30,7 @@ import { TableModule } from 'primeng/table';
 import { ReferenceItemGridComponent } from './reference-item-list.component';
 import { DirectivesModule } from '../../directives/directives.module';
 import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
+import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -62,6 +63,7 @@ import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-ed
         SharedAssetTypeEditorModule,
         SharedAssetEditorsModule,
         TilesModule,
+        SearchFieldModule
     ],
     declarations: [
         ReferenceItemTypeGridComponent,

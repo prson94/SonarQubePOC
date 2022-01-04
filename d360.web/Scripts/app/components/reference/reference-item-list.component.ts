@@ -28,6 +28,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     @Input() typeName: string;
     @Input() hasAdd: boolean = false;
     @Input() readOnly: boolean = false;
+    @Input() isForAssetDetailPage: boolean = false;
 
     private sortField: string = 'Code';
     private items: any[] = [];

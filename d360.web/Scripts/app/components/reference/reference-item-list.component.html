@@ -1,20 +1,38 @@
-<header *ngIf="!showEditor && !showDelete">
+<header *ngIf="!showEditor && !showDelete && !isForAssetDetailPage">
     {{title}}
-    <d3s-tile-actions [hasAdd]="hasAdd" 
-                      (addClick)="add()" 
+    <d3s-tile-actions [hasAdd]="hasAdd"
+                      (addClick)="add()"
                       hasFilterMode="true"
-                      [(filterMode)]="showSimpleFilter" 
+                      [(filterMode)]="showSimpleFilter"
                       [hasExport]="true"
                       (exportClick)="export()"
                       [isExportDisabled]="!canExportRecords()"
-                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
-                      ></d3s-tile-actions>
+                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"></d3s-tile-actions>
 </header>
 <d3s-loading [isLoading]="isLoading && showDelete && showEditor"></d3s-loading>
 <span *ngIf="!showDelete && !showEditor">
-    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
+    <input type="text" [hidden]="!showSimpleFilter || isForAssetDetailPage" pInputText size="100"
            (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
            class="grid-simple-filter">
+
+    <ng-container *ngIf="isForAssetDetailPage">
+        <div class="info-panel-table-grid">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="dt.filterGlobal($event, 'contains')">
+            </ig-search-field>
+            <div *ngIf="canExportRecords()" pTooltip="'Export to Excel'"
+                 tooltipPosition="left"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        icon="fa-download"
+                        [loading]="isExportInProgress"
+                        (click)="export()">
+                </button>
+            </div>
+        </div>
+    </ng-container>
+
     <p-table #dt [value]="items" selectionMode="single"
              [metaKeySelection]="true"
              [globalFilterFields]="globalFilterFields"
