@@ -45,6 +45,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
     @ViewChildren(SiteMenuFavoritesComponent) favoritesMenuRefs: QueryList<SiteMenuFavoritesComponent>;
     @ViewChild("menu", { static: false }) menu: ElementRef;
+    @ViewChild("menuBottomPadding", { static: false }) menuBottomPadding: ElementRef;
     isMenuActive: boolean;
 
     @HostListener('document:click', ['$event'])
@@ -151,11 +152,20 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     checkScroller() {
-        if (this.menu) {
-            let elem = this.menu.nativeElement;
-            this.isScrollerVisable = (elem.clientHeight < elem.scrollHeight);
+        if (!this.menu) {
+            return;
         }
+
+        const paddingElement = this.menuBottomPadding.nativeElement as HTMLDivElement;
+        const paddingHeight = paddingElement.clientHeight;
+
+        const menu = this.menu.nativeElement as HTMLUListElement;
+        const heightOfContent = menu.scrollHeight - paddingHeight;
+        
+        this.isScrollerVisable = (menu.clientHeight < heightOfContent);
+        this.ref.markForCheck();
     }
+    
     @HostListener('scroll', ['$event'])
     onElementScroll($event) {
         this.delayedCheckScrollerPos();
@@ -298,6 +308,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     toggleMenu() {
         this.menuOpen = !this.menuOpen;
         this.menuChanged.emit(this.menuOpen);
+        this.checkScroller();
     }
 
     changeActiveMenu($event) {
