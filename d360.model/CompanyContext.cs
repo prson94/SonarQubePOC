@@ -20,7 +20,6 @@ using System.Configuration;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
@@ -52,7 +51,7 @@ namespace d360.model
             }
         }
 
-        #region Ctors
+#region Ctors
 
         public CompanyContext(
             ICommunityContext community, 
@@ -96,9 +95,9 @@ namespace d360.model
             }
         }
 
-        #endregion
+#endregion
 
-        #region DbSets
+#region DbSets
 
         public DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }
 
@@ -199,9 +198,9 @@ namespace d360.model
         public DbSet<AssetDataProfile> AssetDataProfile { get; set; }
         public DbSet<AssetDataProfileSample> AssetDataProfileSample { get; set; }
 
-        #endregion
+#endregion
 
-        #region Repository Methods
+#region Repository Methods
 
 
         public void AddOrUpdateFields(List<Field> items)
@@ -339,7 +338,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)
         {
-            #region SQL
+#region SQL
 
             var sql = $@"
 	declare @tbl table (SortOrder int, [Group] varchar(50), [Object] varchar(50), ObjectID int, Label nvarchar(500), [Type] varchar(50));
@@ -408,7 +407,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
 	select [Group], [Object], [ObjectID], [Label], [Type] from @tbl order by SortOrder, Label
 ";
-            #endregion
+#endregion
 
             return await Database.Connection.QueryAsync<FieldFilterModel>(sql, new
             {
@@ -699,8 +698,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
             {
-                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+#if RUNNING_ON_STANDARD
+                model.PluralizedName = PluralizeService.Core.PluralizationProvider.Pluralize(model.Name ?? "");
+#endif
+
+#if RUNNING_ON_NET48
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 model.PluralizedName = pluralize.Pluralize(model.Name ?? "");
+#endif
             }
             return model;
         }
@@ -928,7 +933,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             return value;
         }
 
-        #region Relationships
+#region Relationships
 
         public IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID)
         {
@@ -1322,9 +1327,9 @@ where	I.ID is null";
             return model;
         }
 
-        #endregion
+#endregion
 
-        #region Social
+#region Social
 
         /// <summary>
         /// Get a list of those following the current object.
@@ -1341,9 +1346,9 @@ where	I.ID is null";
             return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = fs }).AsQueryable();
         }
 
-        #endregion
+#endregion
 
-        #region Token Processing Methods
+#region Token Processing Methods
 
         private string renderTemplate(string templateType, string action, SystemObjects type, int id)
         {
@@ -1362,11 +1367,11 @@ where	I.ID is null";
             return renderTemplate("Tooltip", action, type, id);
         }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
 
-        #region Generic Methods
+#region Generic Methods
 
         public override bool Add<T>(T item)
         {
@@ -1663,37 +1668,37 @@ where	I.ID is null";
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
             {
-                #region Business logic : ICreatedMetadata
+#region Business logic : ICreatedMetadata
                 if (entry.Entity is ICreatedMetadata)
                 {
                     var o = entry.Entity as ICreatedMetadata;
                     o.CreatedBy = CurrentResourceID;
                     o.CreatedOn = DateTime.UtcNow;
                 }
-                #endregion
+#endregion
 
-                #region Business logic : IUIDMetadata
+#region Business logic : IUIDMetadata
                 if (entry.Entity is IUIDMetadata)
                 {
                     var o = entry.Entity as IUIDMetadata;
                     o.UID = Guid.NewGuid();
                 }
-                #endregion
+#endregion
 
             }
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Modified | EntityState.Deleted))
             {
-                #region Business logic : IUpdatedMetadata
+#region Business logic : IUpdatedMetadata
                 if (entry.Entity is IUpdatedMetadata)
                 {
                     var o = entry.Entity as IUpdatedMetadata;
                     o.UpdatedBy = CurrentResourceID;
                     o.UpdatedOn = DateTime.UtcNow;
                 }
-                #endregion
+#endregion
 
-                #region Business logic : Field
+#region Business logic : Field
                 if (entry.Entity is Field)
                 {
 
@@ -1717,9 +1722,9 @@ where	I.ID is null";
                     }
 
                 }
-                #endregion
+#endregion
 
-                #region Business logic : FieldType
+#region Business logic : FieldType
                 if (entry.Entity is FieldType)
                 {
                     var o = entry.Entity as FieldType;
@@ -1751,9 +1756,9 @@ where	I.ID is null";
                         }
                     }
                 }
-                #endregion
+#endregion
                                 
-                #region Business logic : Group
+#region Business logic : Group
                 if (entry.Entity is Group)
                 {
                     var o = entry.Entity as Group;
@@ -1779,9 +1784,9 @@ where	I.ID is null";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : Intersect
+#region Business logic : Intersect
                 if (entry.Entity is Intersect)
                 {
                     var o = entry.Entity as Intersect;
@@ -1802,9 +1807,9 @@ where	I.ID is null";
                     }
 
                 }
-                #endregion
+#endregion
 
-                #region Business logic : IntersectType
+#region Business logic : IntersectType
                 if (entry.Entity is IntersectType)
                 {
                     var o = entry.Entity as IntersectType;
@@ -1862,9 +1867,9 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : AssetType
+#region Business logic : AssetType
                 if (entry.Entity is AssetType)
                 {
                     var o = entry.Entity as AssetType;
@@ -1873,9 +1878,9 @@ select @err";
                         throw new ArgumentException(Messages.Error_Name_Required);
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : QuestionType
+#region Business logic : QuestionType
                 if (entry.Entity is QuestionType)
                 {
                     var o = entry.Entity as QuestionType;
@@ -1894,9 +1899,9 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : Report
+#region Business logic : Report
                 if (entry.Entity is Report)
                 {
                     var o = entry.Entity as Report;
@@ -1915,9 +1920,9 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : ResponsibilityType
+#region Business logic : ResponsibilityType
                 if (entry.Entity is ResponsibilityType)
                 {
                     var o = entry.Entity as ResponsibilityType;
@@ -1945,9 +1950,9 @@ select @err";
 
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : SurveyType
+#region Business logic : SurveyType
                 if (entry.Entity is SurveyType)
                 {
                     var o = entry.Entity as SurveyType;
@@ -1966,9 +1971,9 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : Tag
+#region Business logic : Tag
                 if (entry.Entity is Tag)
                 {
                     var o = entry.Entity as Tag;
@@ -1987,11 +1992,11 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
             }
 
-            #region Get objects that need event tracking.
+#region Get objects that need event tracking.
 
             var modifiedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
                .Where(p => p.State == EntityState.Modified)
@@ -2005,7 +2010,7 @@ select @err";
                 .Where(p => p.State == EntityState.Deleted)
                 .Select(p => p.Entity).ToList();
 
-            #endregion
+#endregion
 
             //check for changed field values before the new values are written tothe db
             if (fieldsToCheckForChanges.Any())
@@ -2150,9 +2155,9 @@ select @err";
         }
 
 
-        #endregion
+#endregion
 
-        #region Dynamic Field Methods
+#region Dynamic Field Methods
 
         public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false)
         {
@@ -2477,9 +2482,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return relationFieldInfos;
         }
 
-        #endregion
+#endregion
 
-        #region API Query Parameter Parsing
+#region API Query Parameter Parsing
 
         public void ParseAdvancedFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
         {
@@ -2656,7 +2661,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return offset;
         }
 
-        #endregion
+#endregion
 
         public int GetObjectId(Guid objectUid, SystemObjects objectType)
         {
@@ -2832,7 +2837,7 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
             return model;
         }
 
-        #region Environment Settings
+#region Environment Settings
 
         private class EnvironmentSetting
         {
@@ -2925,6 +2930,6 @@ end", new { ID = (int)setting, value });
             Caching.RemoveItem(SettingsCacheKey);
         }
 
-        #endregion
+#endregion
     }
 }

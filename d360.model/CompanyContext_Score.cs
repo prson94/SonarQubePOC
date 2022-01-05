@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
-using System.Data.Entity.Design.PluralizationServices;
+//using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -925,8 +925,14 @@ where   E.ExecutionID = @ExecutionID
 
                         if (PluralCultureHelper.IsNeutralCultureEnglish())
                         {
-                            var namePluralizationInstance = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+#if RUNNING_ON_STANDARD
+                            name = PluralizeService.Core.PluralizationProvider.Pluralize(i.Name ?? "");
+#endif
+
+#if RUNNING_ON_NET48
+                            var namePluralizationInstance = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                             name = namePluralizationInstance.Pluralize(i.Name ?? "");
+#endif
                         }
 
                         model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value.GetValueOrDefault(), Name = name, TypeID = i.TypeID });
