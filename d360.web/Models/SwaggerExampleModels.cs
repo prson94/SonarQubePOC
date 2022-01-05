@@ -136,7 +136,7 @@ namespace d360.web.Models
         {
             return new FavoriteApiModel
             {
-                Route = "asset/" + Guid.Empty.ToString()
+                Route = "artifact/100000000/100000000/"
             };
         }
     }
