@@ -132,6 +132,9 @@
   <data name="ChangeLogTab" xml:space="preserve">
     <value>Change Log</value>
   </data>
+  <data name="ChildrenTab" xml:space="preserve">
+    <value>Children</value>
+  </data>
   <data name="CommentsTab" xml:space="preserve">
     <value>Comments</value>
   </data>
