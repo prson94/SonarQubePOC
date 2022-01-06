@@ -811,6 +811,7 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             Route("groups/{groupUid:Guid}/{resourceUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - Provided group could not be updated", typeof(ErrorResponse)),
@@ -882,6 +883,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpDelete,
             Route("users"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(DeleteUserModel), typeof(DeleteUserExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
@@ -960,6 +962,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPost,
             Route("users"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(UserApiInsertModel), typeof(UserPostExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
@@ -1119,6 +1122,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPut,
             Route("users"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(UserApiUpdateModel), typeof(UserPutExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
@@ -1335,13 +1339,13 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
         /// <summary>
         /// Clears the list of favorite items for the current user.
-        /// This endpoint is obsolete, please prefer to use POST /api/v2/users/me/favorites/bulkDelete
+        /// This endpoint is obsolete, please prefer to use DELETE /api/v2/users/me/favorites/bulk
         /// </summary>
         /// <returns></returns>
         [
             HttpDelete,
             Route("users/me/favorites"),
-            SwaggerProduces("application/json"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, ""),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             Obsolete
@@ -1406,6 +1410,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPut,
             Route("users/me/favorites"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
             SwaggerResponse(HttpStatusCode.Created, "Favorite status toggled."),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1435,6 +1440,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPut,
             Route("users/me/homepage"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
             SwaggerResponse(HttpStatusCode.Created, "Homepage status toggled."),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
