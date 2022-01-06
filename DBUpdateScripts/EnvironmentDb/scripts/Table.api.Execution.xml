@@ -131,4 +131,39 @@ END
 	</rollback>
   </changeSet>
 
-</databaseChangeLog>
+  
+   <changeSet author="Puneet Gupta" id="Index.api.Execution-v1">
+   <comment>GOV-16678</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_CompletedOn_StartedOn')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Api_Execution_CompletedOn_StartedOn] ON [api].[Execution] ([CompletedOn], [StartedOn])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_Route_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Api_Execution_Route_Include] ON [api].[Execution] ([Route]) INCLUDE ([CompletedOn], [ExecutionID])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_CompletedOn_StartedOn')
+BEGIN
+	DROP INDEX [IX_Api_Execution_CompletedOn_StartedOn] ON [api].[Execution]
+END
+
+IF EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_Route_Include')
+BEGIN
+	DROP INDEX [IX_Api_Execution_Route_Include] ON [api].[Execution]
+END
+
+		]]>
+	</rollback>
+  </changeSet> 
+
+ </databaseChangeLog>
