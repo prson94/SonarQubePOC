@@ -165,7 +165,18 @@ select
         						                C.TypeID,
         						                count(1) as [Count],
         										A.Count as AssetCount
-        			                from ResponsibilityDetail C
+        			                from (
+										select distinct 
+											CInner.Type, 
+											CInner.TypeId, 
+											CInner.ApplyToType, 
+											CInner.AssetID, 
+											CInner.AssetTypeID, 
+											CInner.SecurityAsset, 
+											CInner.SecurityAssetID, 
+											CInner.IsVisible
+										from ResponsibilityDetail CInner
+									) C
         							cross apply (
         								select 
         										case when C.ApplyToType = 1 and C.AssetID = 0 then 
