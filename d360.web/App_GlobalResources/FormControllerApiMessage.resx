@@ -394,7 +394,7 @@
     <value>No selected items</value>
   </data>
   <data name="NoSuchReport" xml:space="preserve">
-    <value>No such report</value>
+    <value>No Dashboard Found</value>
   </data>
   <data name="NotAllowedUpdateRelationship" xml:space="preserve">
     <value>You are not allowed to update this relationship type as there are existing field types that depend on it.</value>

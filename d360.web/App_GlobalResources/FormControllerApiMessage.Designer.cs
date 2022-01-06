@@ -889,7 +889,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No such report.
+        ///   Looks up a localized string similar to No Dashboard Found.
         /// </summary>
         public static string NoSuchReport {
             get {
