@@ -77,6 +77,9 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.contextMenuItems.forEach((item) => {
             var menuItem = this.document.createElement('div');
             this.renderer.setAttribute(menuItem, 'class', 'menu-item');
+            if (item.value === "info") {
+                menuItem.style.fontWeight = "700";
+            }
             menuItem.innerHTML = item.title;
             menuItem.onclick = ($event) => { this.menuItemClicked($event, item.value); };
             this.contextElement.appendChild(menuItem);

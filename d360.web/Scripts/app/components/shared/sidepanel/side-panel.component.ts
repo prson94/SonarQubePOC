@@ -118,7 +118,6 @@ export class SidePanelComponent extends BaseComponent {
 
                         if (b) {
                             this.selectedPanel = state.selectedPanel;
-
                         }
                     }
                 }

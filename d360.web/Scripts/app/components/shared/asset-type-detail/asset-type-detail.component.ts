@@ -5,6 +5,7 @@ import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeApiModel } from '../../../models/asset.model';
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'ig-asset-type-detail',
@@ -27,6 +28,7 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
 
     constructor(
         protected messagesService: MessagesObservableService,
+        private router: Router,
         private assetService: AssetService,
         private assetTypeService: AssetTypeService,
         private cdRef: ChangeDetectorRef) { }
@@ -54,12 +56,20 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
             this.assetType = res;
             this.isLoading = false;
             this.cdRef.markForCheck();
-            console.log(this.assetType);
         });
     }
 
     open(isNewTab: boolean = false) {
-        console.log("oopen link");
+        var url = "/assettype/" + this.uid;
+
+        if (isNewTab) {
+            window.open(url, '_blank');
+            return;
+        }
+        else {
+            this.router.navigateByUrl(url);
+            return;
+        }
     }
 
     clickTab(key: string) {

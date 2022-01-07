@@ -117,6 +117,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         }
 
         if (this.objectType === 'Resource') {
+            this.tab = 'detail';
             this.useAccordion = false;
             if (this.loadGroupSub) {
                 this.loadGroupSub.unsubscribe();
@@ -128,6 +129,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         }
 
         if (this.objectType === 'Group') {
+            this.tab = 'detail';
             this.useAccordion = false;
             if (this.loadGroupMembersSub) {
                 this.loadGroupMembersSub.unsubscribe();

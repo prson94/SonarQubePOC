@@ -50,11 +50,9 @@
         </ig-portal-content-provider>
     </ng-container>
 </div>
-<div>
+<div class="complex-lookup-table">
     <p-table #dt
              [value]="data?.Values"
-             selectionMode="single"
-             [metaKeySelection]="true"
              [globalFilterFields]="globalFilterFields"
              [pageLinks]="3"
              [paginator]="!hideFooter"
@@ -86,7 +84,7 @@
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
-            <tr [pSelectableRow]="item">
+            <tr>
                 <td *ngFor="let column of visibleColumns" class="ig-lookup-grid-cell">
                     <div [ngSwitch]="column.type">
                         <span *ngSwitchCase="'date'">

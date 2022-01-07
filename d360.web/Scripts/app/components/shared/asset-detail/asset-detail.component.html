@@ -18,6 +18,11 @@
                     <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
                 </div>
             </div>
+
+            <img class="resource-image" *ngIf="objectType === 'Resource'" 
+                 [src]="'/api/v2/membership/users/' + objectUID + '/image?size=70'"
+                 style="border-radius: 50%; position: absolute; top: 70px; right: 16px;"/>
+
         </ng-container>
         <ng-container *ngIf="isSidePanel">
             <div class="windowtabs">
