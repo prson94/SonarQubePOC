@@ -186,7 +186,7 @@ output inserted.ID, inserted.ObjectName into @ids
 select	Object, ObjectID, Qualifier, 
 		ResourceID, Date, Action,
 		Object, ObjectID, 'Semantic', Qualifier,
-		'Semantic ' + case @action
+		'Semantic type ' + case @action
 				when 'C' then 'created'
 				when 'U' then 'updated'
 				else 'removed'
