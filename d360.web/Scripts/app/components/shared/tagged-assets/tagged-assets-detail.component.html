@@ -44,7 +44,7 @@
             <p-table #dt [value]="tagUsage"
                      selectionMode="single"
                      [metaKeySelection]="true"
-                     [globalFilterFields]="['DisplayValue','AssetType']"
+                     [globalFilterFields]="['DisplayValue','AssetType','TagsAsString']"
                      sortField="DisplayValue"
                      [sortOrder]="1"
                      [pageLinks]="3"
@@ -59,6 +59,9 @@
                         <th [pSortableColumn]="'AssetType'" style="width: 20%">
                             Asset Type
                         </th>
+                        <th [pSortableColumn]="'TagsAsString'" style="width: 50%">
+                            Tags
+                        </th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
@@ -67,6 +70,9 @@
                             <a context-link (click)="navigate(item, $event)">{{item.DisplayValue}}</a>
                         </td>
                         <td [innerHTML]="formatValue(item)"></td>
+                        <td>
+                            <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid" [interceptLinkClick]="true"></d3s-tag-view>
+                        </td>
                     </tr>
                 </ng-template>
                 <ng-template *ngIf="dt.totalRecords" pTemplate="summary">

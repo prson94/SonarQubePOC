@@ -10,7 +10,9 @@ import { DomHandler } from 'primeng/dom';
 export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChecked {
     contextElement: HTMLDivElement;
     hoverElement: HTMLDivElement;
-    hoverTooltipWidth: number = 300;
+    hoverTooltipWidth: number = 350;
+
+    private isTagTooltip: boolean = false;
 
     contextMenuItems: any[] = [
         { title: 'View Information', value: 'info' },
@@ -22,30 +24,40 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         @Inject(DOCUMENT) private document: Document,
         private renderer: Renderer2) { }
 
-    //<div class="p-tooltip p-component p-tooltip-top ig-tooltip" style = "display: inline-block; left: 484.828px; top: 444px; opacity: 1.048; z-index: 1012;" >
-    //<div class="p-tooltip-arrow" > </div><div class="p-tooltip-text">Export to Excel</div > </div>
-
     ngOnInit() {
         var htmlEl = this.el.nativeElement as HTMLElement;
         htmlEl.onmouseenter = () => {
-            this.hoverElement = this.document.createElement('div');
-            this.hoverElement.style.display = "block";
-            this.hoverElement.style.position = "fixed";
-            this.hoverElement.style.width = this.hoverTooltipWidth + "px";
-
-            this.renderer.setAttribute(this.hoverElement, 'class', 'link-context-menu-p-tooltip p-tooltip p-component p-tooltip-top ig-tooltip');
-
-            var hoverItem = this.document.createElement('div');
-            this.renderer.setAttribute(hoverItem, 'class', 'p-tooltip-text');
-            hoverItem.innerHTML = "Click the link to view information in the side panel or right-click for more options";
-            this.hoverElement.appendChild(hoverItem);
-            this.renderer.appendChild(this.document.body, this.hoverElement);
+            this.addTooltip();
         };
 
         htmlEl.onmouseleave = () => {
             this.removeTooltip();
         };
         DomHandler.addClass(htmlEl, 'has-context');
+    }
+
+    addTooltip() {
+        this.hoverElement = this.document.createElement('div');
+        this.hoverElement.style.display = "block";
+        this.hoverElement.style.position = "fixed";
+        this.hoverElement.style.width = this.hoverTooltipWidth + "px";
+
+        this.renderer.setAttribute(this.hoverElement, 'class', 'link-context-menu-p-tooltip p-tooltip p-component p-tooltip-top ig-tooltip');
+
+        var hoverItem = this.document.createElement('div');
+        this.renderer.setAttribute(hoverItem, 'class', 'p-tooltip-text');
+
+        var value = this.el.nativeElement.dataset['tooltip'];
+        var html = "";
+        if (value) {
+            html += value + "</br>";
+            this.isTagTooltip = true;
+        }
+        html += "Click the link to view information in the side panel or right-click for more options";
+
+        hoverItem.innerHTML = html;
+        this.hoverElement.appendChild(hoverItem);
+        this.renderer.appendChild(this.document.body, this.hoverElement);
     }
 
     @HostListener('contextmenu', ['$event.target'])
@@ -58,8 +70,6 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         else {
             htmlEl.classList.add('visible');
         }
-
-
 
         this.contextElement = this.document.createElement('div');
         this.renderer.setAttribute(this.contextElement, 'class', 'link-context-menu');
@@ -111,6 +121,11 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         if (htmlEl && this.hoverElement) {
             var box = htmlEl.getBoundingClientRect();
             this.hoverElement.style.top = (box.top - 62) + "px";
+
+            if (this.isTagTooltip) {
+                this.hoverElement.style.top = (box.top - 84) + "px";
+            }
+
             this.hoverElement.style.left = (box.left + (box.width / 2) - (this.hoverTooltipWidth / 2)) + "px";
         }
     }

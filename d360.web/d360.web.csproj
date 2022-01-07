@@ -1252,6 +1252,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <Content Include="Scripts\app\components\rule\rule-item.component.html" />
+    <Content Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\field-value.component.ts" />

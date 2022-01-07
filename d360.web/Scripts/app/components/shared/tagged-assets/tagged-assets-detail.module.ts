@@ -23,6 +23,7 @@ import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
 import { ReferenceModule } from "../../reference/reference.module";
 import { TaggedAssetDetailComponent } from "./tagged-assets-detail.component";
+import { DirectivesModule } from "../../../directives/directives.module";
 
 
 @NgModule({
@@ -32,6 +33,7 @@ import { TaggedAssetDetailComponent } from "./tagged-assets-detail.component";
         CoreModule,
         PipesModule,
         TooltipModule,
+        DirectivesModule,
         NgxJsonViewModule,
         IgColorPickerModule,
         PropertyGroupModule,

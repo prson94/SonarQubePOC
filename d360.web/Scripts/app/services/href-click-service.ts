@@ -40,6 +40,9 @@ export class LinkClickInterceptor {
                     adcEv.type = AssetDetailClickType.User;
                     adcEv.objectType = "Resource";
                     adcEv.uid = data.item.ResourceUid;
+                    if (data.item.SecurityAssetUid) {
+                        adcEv.uid = data.item.SecurityAssetUid;
+                    }
                 }
             }
 
@@ -71,6 +74,19 @@ export class LinkClickInterceptor {
                 adcEv.uid = data.uid;
             }
 
+            if (data.ResourceUid) {
+                adcEv.type = AssetDetailClickType.User;
+                adcEv.objectType = "Resource";
+                adcEv.uid = data.ResourceUid;
+            }
+
+            //this is a group object
+            if (data.PrimaryOwnerUid) {
+                adcEv.type = AssetDetailClickType.Group;
+                adcEv.objectType = "Group";
+                adcEv.uid = data.Uid;
+            }
+
             if (data.column && data.column.uidfield && data.column.uidfield.indexOf("_Uid") > 0) {
                 //clicked on preview column on relation lookup
                 adcEv.type = AssetDetailClickType.Asset;
@@ -98,7 +114,6 @@ export class LinkClickInterceptor {
 
             //if tags object exist this did came from tagged assets page
             if (data.Tags) {
-                console.log(data);
                 adcEv.event = origEvent;
                 adcEv.type = AssetDetailClickType.Asset;
                 adcEv.objectId = data.ObjectID;
@@ -110,7 +125,6 @@ export class LinkClickInterceptor {
         } else {
             adcEv = null;
         }
-        console.log(adcEv);
         this.subject.next(adcEv);
     }
 

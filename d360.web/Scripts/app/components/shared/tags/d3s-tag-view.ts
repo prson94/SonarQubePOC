@@ -31,7 +31,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     @Input() assetUIDList: string[];
     @Input() ignoreResizing: boolean = false;
     @Input() placeHolder: string = "Click to add...";
-    @Output() tagsChanged = new EventEmitter();   
+    @Output() tagsChanged = new EventEmitter();
     @Input() interceptLinkClick: boolean = false;
 
     showEditor: boolean = false;
@@ -80,7 +80,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.theDeleteCallback = this.deleteTags.bind(this);
         this.tags = [];
         if (this.data) {
-            
+
             if (typeof this.data == 'string') {
                 this.data.split('|').forEach(t => {
                     this.tags.push({ Value: t, uid: null });
@@ -98,15 +98,15 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             }
             if (this.tags) {
                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
-            }            
-            this.selected = this.tags;      
+            }
+            this.selected = this.tags;
         }
 
         this.resizeSub = this.stateService.recalculateTagSize$.subscribe(() => {
             setTimeout(() => this.manageWidth(), 200);
         });
     }
-  
+
     populateTagUids(taglist: TagType[]) {
         if (taglist && taglist.length > 0) {
             this.tags.forEach(
@@ -181,7 +181,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     openDeleteModal(tag: any) {
         if (this.isEditable == true) {
-            this.deleteTags(tag);            
+            this.deleteTags(tag);
         }
     }
 
@@ -192,15 +192,15 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         }
     }
 
-    saveTag(event) {        
+    saveTag(event) {
         this.savingTag = true;
         this.existingTag = false;
-        var tags = Array<TagApiModel>();        
+        var tags = Array<TagApiModel>();
         event.Value = event.Value.trim();
-        if (this.assetUIDList) {            
+        if (this.assetUIDList) {
             this.assetUIDList.forEach((uid) => {
                 let tag = new TagApiModel();
-                tag.AssetUID = uid;                
+                tag.AssetUID = uid;
                 tag.TagName = event.Value;
                 tags.push(tag);
             })
@@ -209,16 +209,16 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             tag.AssetUID = this.assetUID;
             tag.TagName = event.Value;
             tags.push(tag);
-        }       
+        }
         this.tags.forEach(x => {
             if (x.Value == event.Value) {
                 this.existingTag = true;
                 this.showEditor = false;
                 this.savingTag = false;
-                this.messagesService.showError('Error', `Tag already assigned to Asset${(this.assetUIDList.length > 1? "s" : "")}`);
+                this.messagesService.showError('Error', `Tag already assigned to Asset${(this.assetUIDList.length > 1 ? "s" : "")}`);
             }
         });
-        
+
         if (event.Value.includes("|")) {
             this.existingTag = true;
             this.savingTag = false;
@@ -246,8 +246,8 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                             .subscribe(result => {
                                 let msg: string = '';
                                 if (result != null) {
-                                    msg = `${event.Value} successfully added to ${tags.length === 1?"Asset":"Assets"}`;
-                                }                                
+                                    msg = `${event.Value} successfully added to ${tags.length === 1 ? "Asset" : "Assets"}`;
+                                }
                                 this.showMessageForResult(this.messagesService, result, msg);
                                 event.uid = result[0].Uid;
                                 this.tags.push(event);
@@ -290,7 +290,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                             this.EditingTagsLoading = false;
                                             this.tagsChanged.emit();
                                             this.ref.markForCheck();
-                                        });                                    
+                                        });
                                 });
                         }
                     },
@@ -299,10 +299,10 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                     }
                 );
         }
-        this.showEditor = false;        
+        this.showEditor = false;
     }
 
-    deleteTags(selectedTag) {    
+    deleteTags(selectedTag) {
         this.deletingTag = true;
         if (!selectedTag.uid || selectedTag.uid === null) {
             this.tagService.getTagsList().subscribe(
@@ -333,7 +333,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 msg = `Tag successfully removed`;
                 this.showMessageForResult(this.messagesService, result, msg);
                 //remove the template with this id from the grid
-                if (result.type != 'error') {                    
+                if (result.type != 'error') {
                     this.tags = this.tags.filter((x) => x.Value !== selectedTag.Value);
                 }
                 this.tagsChanged.emit();
@@ -342,10 +342,10 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             }, err => {
                 this.showMessageForResult(this.messagesService, err);
                 this.deletingTag = false;
-            }); 
+            });
     }
 
-    private getTagsApiModel(selectedTag, assetUid)  {
+    private getTagsApiModel(selectedTag, assetUid) {
         let tag = new TagApiModel();
         tag.AssetUID = assetUid;
         tag.TagName = selectedTag.Value;
@@ -367,10 +367,10 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 })();
                 this.tags.forEach(tag => {
                     if (this.assetUIDList) {
-                        this.assetUIDList.forEach((uid) => { this.checkIfTagOwner(tagElements, tag, uid)});
+                        this.assetUIDList.forEach((uid) => { this.checkIfTagOwner(tagElements, tag, uid) });
                     } else {
                         this.checkIfTagOwner(tagElements, tag, this.assetUID);
-                    }                    
+                    }
                 })
             }
         }
@@ -458,12 +458,14 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     openTagPage(event: MouseEvent, item: any) {
         if (this.interceptLinkClick) {
+            item["TooltipType"] = "tag";
             this.linkClickInterceptor.sendEvent(event, item, `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`);
             return;
         }
 
-        if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper')
+        if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper') {
             this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`]);
+        }
         event.stopPropagation();
     }
 
@@ -498,6 +500,10 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 this.isTooltipLoaded = true;
                 this.tooltipValue = `<span class="span-break">${this.tagTooltip.Value}</span>
                             <span>Tag added by ${this.tagTooltip.CreatedBy} on ${(this.datePipe.transform(this.tagTooltip.CreatedOn, 'short'))}</span>`;
+
+                if (this.interceptLinkClick) {
+                    this.tooltipValue = `<span>Added by ${this.tagTooltip.CreatedBy} on ${(this.datePipe.transform(this.tagTooltip.CreatedOn, 'short'))}</span>`;
+                }
                 this.ref.markForCheck();
             });
     }

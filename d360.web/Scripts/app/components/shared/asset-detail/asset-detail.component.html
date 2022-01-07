@@ -45,7 +45,7 @@
                                                               [tooltipAlign]="tooltipAlign"
                                                               [spacerHeight]="spacerHeight"
                                                               [isSidePanel]="isSidePanel"
-                                                              [interceptLinkClick]="true">
+                                                              [interceptLinkClick]="interceptLinkClick">
                                     </ig-asset-detail-category>
                                 </div>
                             </ig-property-group>
@@ -57,7 +57,7 @@
                                                       [tooltipAlign]="tooltipAlign"
                                                       [isSidePanel]="isSidePanel"
                                                       [spacerHeight]="spacerHeight"
-                                                      [interceptLinkClick]="true">
+                                                      [interceptLinkClick]="interceptLinkClick">
                             </ig-asset-detail-category>
                         </ng-template>
                     </div>
@@ -95,7 +95,7 @@
                                                           [tooltipAlign]="tooltipAlign"
                                                           [spacerHeight]="spacerHeight"
                                                           [isSidePanel]="isSidePanel"
-                                                          [interceptLinkClick]="true">
+                                                          [interceptLinkClick]="interceptLinkClick">
                                 </ig-asset-detail-category>
                             </div>
                         </ig-property-group>
@@ -154,7 +154,7 @@
                             </ng-template>
                             <ng-template pTemplate="body" let-group>
                                 <tr>
-                                    <td>{{group.Name}}</td>
+                                    <td><a context-link (click)="groupClicked($event, group);">{{group.Name}}</a></td>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="emptymessage" let-columns>
@@ -195,8 +195,8 @@
                             </ng-template>
                             <ng-template pTemplate="body" let-member>
                                 <tr>
-                                    <td><a (click)="memberClicked($event, member);">{{member.LastName}}</a></td>
-                                    <td><a (click)="memberClicked($event, member);">{{member.FirstName}}</a></td>
+                                    <td><a context-link (click)="memberClicked($event, member);">{{member.LastName}}</a></td>
+                                    <td><a context-link (click)="memberClicked($event, member);">{{member.FirstName}}</a></td>
                                     <td>{{member.Owner}}</td>
                                 </tr>
                             </ng-template>

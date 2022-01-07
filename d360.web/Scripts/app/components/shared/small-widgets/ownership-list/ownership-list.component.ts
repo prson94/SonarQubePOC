@@ -1,5 +1,8 @@
 ﻿import { NgModule, Component, Input, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { DirectivesModule } from "../../../../directives/directives.module";
+import { LinkClickInterceptor } from "../../../../services/href-click-service";
+import { Router } from "@angular/router";
 
 class OwnershipResource {
     ResourceName: string;
@@ -10,13 +13,7 @@ class OwnershipResource {
 
 @Component({
     selector: "d3s-ownership-list",
-    template: `<span *ngIf="listLength===0">- - -</span>
-                <ul *ngIf="listLength > 0" class="ownershiplist {{(listLength === 1 ? 'single-entry' : '')}}">
-                    <li *ngFor="let owner of list; let i = index" [ngClass]="{'noshow': ((i >= moreLimit) && !showMore)}">
-                        <span><a [href]="owner.ResourceItemUrl" [innerHtml]="owner.ResourceName" (click)="$event.stopPropagation()"></a> {{formatResponsibilityTypes(owner.ResponsibilityTypes)}}</span>
-                    </li>
-                </ul>
-                <a *ngIf="listLength > moreLimit" [innerHtml]="moreText()" (click)="toggleMore($event)"></a>`,
+    templateUrl: 'ownership-list.component.html',
     styles: [`
         ul.ownershiplist {
             padding: 0;
@@ -42,11 +39,14 @@ class OwnershipResource {
 export class OwnershipListComponent implements OnInit {
     @Input() list: OwnershipResource[];
     @Input() moreLimit: number = 3;
+    @Input() interceptLinkClick: boolean = false;
 
     listLength: number = 0;
     showMore: boolean = false;
 
-    constructor() {
+    constructor(
+        private linkClickInterceptor: LinkClickInterceptor,
+        private router: Router) {
     }
 
     ngOnInit() {
@@ -74,11 +74,24 @@ export class OwnershipListComponent implements OnInit {
         }
         return types;
     }
+
+    onClick($event, data) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent($event, data, data.ResourceItemUrl)
+            return;
+        }
+        this.router.navigateByUrl(data.ResourceItemUrl);
+        if ($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
+        }
+    }
 }
 
 @NgModule({
     imports: [
         CommonModule,
+        DirectivesModule
     ],
     declarations: [
         OwnershipListComponent

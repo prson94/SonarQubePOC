@@ -421,4 +421,11 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             return;
         }
     }
+
+    groupClicked($event, data) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent($event, data, "asset/" + data.Uid);
+            return;
+        }
+    }
 }
