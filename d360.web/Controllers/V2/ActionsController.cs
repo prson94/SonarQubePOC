@@ -1036,7 +1036,7 @@ for json path";
 
                     if (model.Fields.ContainsKey(ft.Name))
                     {
-                        lookupValues = model.Fields[ft.Name].Trim().Split(',');
+                        lookupValues = ft.AllowMultipleValues ? model.Fields[ft.Name].Split(',').ToList().Select(v => v.Trim()).ToArray() : new[] { model.Fields[ft.Name].Trim() };
                     }
 
                     if (lookupValues.Length > 0)
