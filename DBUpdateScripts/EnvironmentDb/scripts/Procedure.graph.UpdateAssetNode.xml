@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.graph.UpdateAssetNode-v4">
+  <changeSet author="Puneet Gupta" id="Procedure.graph.UpdateAssetNode-v5">
+  <comment>GOV-16671</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,7 +28,12 @@ begin
 		-- Delete any edge relationships connected to this asset.
 		delete E
 		from    graph.AssetEdge E
-				inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
+				inner join graph.AssetNode N on E.$from_id = N.$node_id
+		where   N.[uid] = @uid
+
+		delete E
+		from    graph.AssetEdge E
+				inner join graph.AssetNode N on E.$to_id = N.$node_id
 		where   N.[uid] = @uid
 
 		-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
@@ -126,6 +132,7 @@ begin
 		create table #Uids (Uid uniqueidentifier)
 		create clustered index CIX_TempUids on #Uids (Uid)
 
+		-- Get all Result Uids where the asset is the result owner. 
 		insert into #Uids
 			select	R.Uid
 			from	graph.AssetNode A,
@@ -135,6 +142,13 @@ begin
 					and E.Class = 1
 					and A.Uid = @uid;
 
+		--Delete all edge records including those linking the result to the evaluated asset.
+		delete	E
+		from    dbo.AssetResultEdge E
+				inner join AssetResult AR on E.$to_id = AR.$node_id
+				inner join #Uids S on S.Uid = AR.Uid
+		
+		--Delete all remaining edge records linked to the Asset, e.g. Where asset is not owner. 
 		delete	E
 		from    dbo.AssetResultEdge E
 				inner join graph.AssetNode N on E.$from_id = N.$node_id
