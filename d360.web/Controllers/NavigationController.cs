@@ -1048,6 +1048,7 @@ namespace d360.web.Controllers
                     responseModel.DisplayValue = "Groups";
                     responseModel.MainTabTitle = "Groups";
                     responseModel.Items.HasAudit = true;
+                    responseModel.Items.HasField = true;
                 }
 
                 if (model.ObjectType == SystemObjects.MetricAllocation.ToString())
@@ -1065,6 +1066,7 @@ namespace d360.web.Controllers
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
                     responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-b00000000012");
                     responseModel.DisplayValue = "Predicates";
                     responseModel.MainTabTitle = "Predicates";
                     responseModel.Items.HasAudit = true;

@@ -1,5 +1,8 @@
 ﻿<div class="row">
-    <div class="col l3 m4 s12">
+    <div class="col s12" *ngIf="isLoading">
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    </div>
+    <div class="col s12" style="display: flex" *ngIf="!isLoading">
         <div class="tile tile-detail">
             <header>Groups<d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
             <div id="List">
@@ -42,8 +45,27 @@
                 </p-table>
             </div>
         </div>
+        <div class="tile tile-detail side-panel" *ngIf="formMode === FormMode.Default">
+            <side-panel [panelApplies]="panelApplies"
+                        [hasProfiling]="false"
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey"
+                        [selectedPanel]="sidePanelTab">
+                <ng-container *ngIf="sidePanelTab === 'detail'">
+                    <d3s-group-members [groupId]="0" [groupUid]="selectedRow?.Uid" [groupName]="selectedRow?.Name" [groupIsActiveDirectory]="selectedRow?.IsActiveDirectoryGroup"></d3s-group-members>
+                </ng-container>
+            </side-panel>
+        </div>
     </div>
-    <div class="col l9 m8 s12" [ngSwitch]="formMode">
+</div>
+
+
+
+<div class="row">
+    <div class="col l3 m4 s12">
+
+    </div>
+    <!--<div class="col l9 m8 s12" [ngSwitch]="formMode">
         <div *ngSwitchDefault class="tile tile-detail">
             <d3s-group-members [groupId]="0" [groupUid]="selectedRow?.Uid" [groupName]="selectedRow?.Name" [groupIsActiveDirectory]="selectedRow?.IsActiveDirectoryGroup"></d3s-group-members>
         </div>
@@ -62,5 +84,5 @@
                          (onCancel)="cancel();">
             </d3s-delete-form>
         </div>
-    </div>
+    </div>-->
 </div>

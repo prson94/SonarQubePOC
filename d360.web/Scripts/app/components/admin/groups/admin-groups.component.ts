@@ -28,6 +28,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     groupUid: string;
     public showDelete: boolean = false;
 
+    sidePanelTab: string = 'detail';
     constructor(
         private router: Router,
         private groupService: GroupService,
