@@ -5,7 +5,7 @@
     <div *ngFor="let row of category.rows; let last=last">
         <div class="row" attr.data-category="{{row.Category}}">
             <div *ngFor="let field of row.FirstColumnFields" class="{{getRowClass(row.FirstColumnFields)}}"
-                [style.width.px]="getColumnWidth(row.FirstColumnFields)">
+                 [style.width.px]="getColumnWidth(row.FirstColumnFields)">
                 <div class="row-header">
                     <label class="ig-label">
                         <d3s-dynamic-field-name [field]="field"></d3s-dynamic-field-name>
@@ -14,7 +14,8 @@
                     </ig-portal-renderer>
                 </div>
                 <ig-asset-detail-field [field]="field" [assetUid]="assetUID" [tooltipAlign]="tooltipAlign"
-                    [isSidePanel]="isSidePanel"></ig-asset-detail-field>
+                                       [isSidePanel]="isSidePanel"
+                                       [interceptLinkClick]="interceptLinkClick"></ig-asset-detail-field>
             </div>
             <div *ngIf="last" [style.height]="spacerHeight">
                 &nbsp;

@@ -1,6 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 
@@ -8,7 +8,7 @@ import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
 import { PipesModule } from '../../pipes/pipes.module';
-import { TilesModule  } from '../shared/tiles/tiles.module';
+import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-field-definition.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
@@ -30,6 +30,7 @@ import { TableModule } from 'primeng/table';
 import { ReferenceItemGridComponent } from './reference-item-list.component';
 import { DirectivesModule } from '../../directives/directives.module';
 import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
+import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -43,37 +44,45 @@ import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-ed
         //primeng
         ButtonModule,
         EditorModule,
-        InputTextModule,                       
+        InputTextModule,
         SharedModule,
         TooltipModule,
         TableModule,
-        
-        
+
+
         //d3s        
-        CoreModule,      
+        CoreModule,
         PipesModule,
         DirectivesModule,
-            
+
         SharedDeleteFormModule,
-        SharedFieldDefinitionModule,        
+        SharedFieldDefinitionModule,
         SharedDynamicGridEditorModule,
-        SharedGridPagingInfoModule,        
+        SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
         SharedAssetTypeEditorModule,
         SharedAssetEditorsModule,
         TilesModule,
+        SearchFieldModule
     ],
-    declarations: [                
+    declarations: [
         ReferenceItemTypeGridComponent,
         ReferenceItemGridComponent,
         ReferenceListComponent,
         ReferenceComponent,
     ],
+    exports: [
+        ReferenceItemTypeGridComponent,
+        ReferenceItemGridComponent,
+        ReferenceListComponent,
+        ReferenceComponent
+    ],
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
-    ]   
+            multi: true
+        },
+    ]
 })
 export class ReferenceModule { }

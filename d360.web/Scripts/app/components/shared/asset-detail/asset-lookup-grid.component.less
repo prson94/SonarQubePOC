@@ -53,27 +53,27 @@
 }
 
 .grid-actions-header {
-    display: inline-flex;
-    padding: 8px 0;
-    width: 100%;
+  display: inline-flex;
+  padding: 8px 0;
+  width: 100%;
 
-    .grid-action-buttons {
-        div {
-            display: inline-block;
-        }
-
-        button {
-            margin-left: 8px;
-        }
+  .grid-action-buttons {
+    div {
+      display: inline-block;
     }
 
-    &.hidden {
-        display: none;
+    button {
+      margin-left: 8px;
     }
+  }
 
-    .simple-search {
-        width: 200px;
-    }
+  &.hidden {
+    display: none;
+  }
+
+  .simple-search {
+    width: 200px;
+  }
 }
 
 .flexsimple-search {
@@ -91,6 +91,17 @@
   margin: 11px;
   padding: 4px;
   background: #f8ffe3;
+}
+
+.complex-lookup-table {
+  tr:hover {
+    cursor: default;
+
+    td {
+      background-color: white;
+      cursor: default;
+    }
+  }
 }
 
 .asset-grid-export-link {

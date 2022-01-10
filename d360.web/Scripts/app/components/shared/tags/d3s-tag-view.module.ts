@@ -6,6 +6,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedModule } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip'; 
 import { TagView } from './d3s-tag-view';
+import { DirectivesModule } from '../../../directives/directives.module';
  
 @NgModule({
     declarations: [
@@ -20,7 +21,8 @@ import { TagView } from './d3s-tag-view';
         FormsModule,
         PipesModule,
         SharedModule,
-        TooltipModule
+        TooltipModule,
+        DirectivesModule
     ]
 })
 export class TagViewModule { }

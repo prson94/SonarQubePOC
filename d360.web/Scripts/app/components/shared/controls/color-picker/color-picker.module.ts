@@ -7,12 +7,14 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ColorPickerComponent } from './color-picker.component';
 import { DropdownModule } from 'primeng/dropdown';
 import { ColorDisplayComponent } from './color-display.component';
+import { DirectivesModule } from '../../../../directives/directives.module';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule, 
         DropdownModule,
+        DirectivesModule
 
     ],
     declarations: [

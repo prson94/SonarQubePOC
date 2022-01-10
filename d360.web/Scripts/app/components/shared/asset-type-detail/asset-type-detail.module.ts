@@ -1,7 +1,6 @@
 ﻿import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { HTTP_INTERCEPTORS, } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-import { AssetDetailFieldComponent } from "./asset-detail-field.component";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { PipesModule } from "../../../pipes/pipes.module";
@@ -10,10 +9,6 @@ import { TooltipModule } from "primeng/tooltip";
 import { NgxJsonViewModule } from "ng-json-view";
 import { IgColorPickerModule } from "../controls/color-picker/color-picker.module";
 import { TagViewModule } from "../tags/d3s-tag-view.module";
-import { AssetDetailCategoryComponent } from "./asset-detail-category.component";
-import { AssetDetailComponent } from "./asset-detail.component";
-import { AssetLookupGridComponent } from "./asset-lookup-grid.component";
-import { AssetLookupListComponent } from "./asset-lookup-list.component";
 import { SharedObjectDetailsModule } from "../objectdetails/shared-object-details.module";
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";
 import { TilesModule } from "../tiles/tiles.module";
@@ -26,7 +21,9 @@ import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.modul
 import { PeopleResponsibilitiesModule } from "../responsibilities/people-responsibilities.tile";
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
-import { SharedAssignmentsModule } from "../assignments/shared-assignments.module";
+import { AssetTypeDetailComponent } from "./asset-type-detail.component";
+import { FieldValueComponent } from "./field-value.component";
+import { ReferenceModule } from "../../reference/reference.module";
 
 
 @NgModule({
@@ -51,21 +48,15 @@ import { SharedAssignmentsModule } from "../assignments/shared-assignments.modul
         PeopleResponsibilitiesModule,
         DynamicFieldNameModule,
         PortalsModule,
-        SharedAssignmentsModule
+        ReferenceModule
     ],
     declarations: [
-        AssetDetailFieldComponent,
-        AssetDetailCategoryComponent,
-        AssetDetailComponent,
-        AssetLookupGridComponent,
-        AssetLookupListComponent,
+        AssetTypeDetailComponent,
+        FieldValueComponent
     ],
     exports: [
-        AssetDetailFieldComponent,
-        AssetDetailCategoryComponent,
-        AssetDetailComponent,
-        AssetLookupGridComponent,
-        AssetLookupListComponent,
+        AssetTypeDetailComponent,
+        FieldValueComponent
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,
@@ -73,4 +64,4 @@ import { SharedAssignmentsModule } from "../assignments/shared-assignments.modul
         multi: true
     }]
 })
-export class AssetDetailModule { }
+export class AssetTypeDetailModule { }

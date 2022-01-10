@@ -1,0 +1,57 @@
+﻿<div class="{{isSidePanel ? '' : 'tile tile-detail'}}">
+    <header *ngIf="!isSidePanel">
+        Assignments
+        <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>
+    </header>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <ng-container *ngIf="!isLoading && counts.length > 0">
+        <div class="search-input" *ngIf="isSidePanel">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             [IsFlexApply]="true"
+                             (onSearch)="dt.filterGlobal($event, 'contains')">
+            </ig-search-field>
+        </div>
+        <p-table #dt
+                 [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Version','Step','Total']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th [pSortableColumn]="'Name'">
+                        Name
+                        <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Version'" style="text-align:center">
+                        Version
+                        <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'Step'" style="text-align:left">
+                        Step
+                        <d3s-sortIcon [field]="'Step'"></d3s-sortIcon>
+                    </th>
+                    <th *ngIf="!isSidePanel" [pSortableColumn]="'Total'" style="text-align:center">
+                        Count
+                        <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr (dblclick)="selected=item;doSelect(selected)" [pSelectableRow]="item">
+                    <td>
+                        <ng-container *ngIf="isSidePanel">{{item.Name}}</ng-container>
+                        <ng-container *ngIf="!isSidePanel">
+                            <a (click)="doSelect(item)">{{item.Name}}</a>
+                        </ng-container>
+                    </td>
+                    <td style="text-align:center">{{item.Version}}</td>
+                    <td>{{item.Step}}</td>
+                    <td *ngIf="!isSidePanel" style="text-align:center">{{item.Total}}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+    </ng-container>
+
+    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">You currently have no assignments</div>
+</div>
