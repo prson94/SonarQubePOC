@@ -5,36 +5,26 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Data.Initial.AssetType-v1">
+  <changeSet author="MDonato" id="Data.Initial.AssetType-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if not exists (select 1 from AssetType where Object = 'ResourceType' or ObjectID = 1)
+if not exists (select 1 from AssetType where Object = 'ResourceType' and ObjectID = 1)
 begin
 	insert into [AssetType] (Name, Description, Class, DisplayFormat, Object, ObjectID, Uid) 
 	values ('User', 'A resource account', 11, '{FirstName} {LastName}', 'ResourceType', 1, '00000001-0000-0000-0000-a00000000011')
 end
-if not exists (select 1 from AssetType where Object = 'GroupType' or ObjectID = 1)
+if not exists (select 1 from AssetType where Object = 'GroupType' and ObjectID = 1)
 begin
 	insert into [AssetType] (Name, Description, Class, DisplayFormat, Object, ObjectID, Uid) 
 	values ('Group', 'A security group.', 12, '{Name}', 'GroupType', 1, '00000001-0000-0000-0000-b00000000012')
 end
-if not exists (select 1 from AssetType where Object = 'ReferenceItemType' or ObjectID = 0)
+if not exists (select 1 from AssetType where Object = 'ReferenceItemType' and ObjectID = 0)
 begin
 	insert into [AssetType] (Name, Description, Class, DisplayFormat, Object, ObjectID, Uid) 
 	values ('Reference List', 'A reference list.', 9, '{Name}', 'ReferenceItemType', 0, '0000000a-0000-0000-0000-000000000009')
-end
-if not exists (select 1 from AssetType where Object = 'ReferenceItemType' or ObjectID = 1)
-begin
-	insert into [AssetType] (Name, Class, DisplayFormat, Object, ObjectID, Uid) 
-	values ('Rule Status', 9, '{Code}', 'ReferenceItemType', 1, '8537fe49-62fa-472a-aa0d-72cf7c51dca3')
-end
-if not exists (select 1 from AssetType where Object = 'ReferenceItemType' or ObjectID = 2)
-begin
-	insert into [AssetType] (Name, Class, DisplayFormat, Object, ObjectID, Uid) 
-	values ('Rule Dimension', 9, '{Code}', 'ReferenceItemType', 2, '619e92f4-9b87-47ca-989a-e45abc8dccae')
 end
 		]]>
     </sql>
