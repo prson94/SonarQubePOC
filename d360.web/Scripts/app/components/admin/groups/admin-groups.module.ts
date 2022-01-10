@@ -25,6 +25,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
+import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
 
 @NgModule({
     imports: [
@@ -50,7 +51,8 @@ import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
         SharedGridPagingInfoModule,
         SharedFieldDefinitionModule,
         TilesModule,
-        SidePanelModule
+        SidePanelModule,
+        AssetDetailModule
     ],
     declarations: [
         AdminGroupsComponent,

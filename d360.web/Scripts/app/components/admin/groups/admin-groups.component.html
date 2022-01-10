@@ -7,7 +7,13 @@
             <header>Groups<d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
             <div id="List">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                <p-table #dt [value]="groupItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [paginator]="true" [rows]="20" [style]="{'width':'100%'}" (onRowSelect)="select($event)">
+                <p-table #dt [value]="groupItems"
+                         selectionMode="single" 
+                         [metaKeySelection]="true" 
+                         [globalFilterFields]="['Name']" 
+                         [paginator]="true" 
+                         [rows]="20" 
+                         [style]="{'width':'100%'}" (onRowSelect)="select($event)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'Name'" style="width: 100px">
@@ -45,14 +51,29 @@
                 </p-table>
             </div>
         </div>
-        <div class="tile tile-detail side-panel" *ngIf="formMode === FormMode.Default">
-            <side-panel [panelApplies]="panelApplies"
+        <div class="tile tile-detail side-panel">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selectedRow"
+                        [panelApplies]="true"
                         [hasProfiling]="false"
                         hasDetail="true"
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="sidePanelTab">
-                <ng-container *ngIf="sidePanelTab === 'detail'">
-                    <d3s-group-members [groupId]="0" [groupUid]="selectedRow?.Uid" [groupName]="selectedRow?.Name" [groupIsActiveDirectory]="selectedRow?.IsActiveDirectoryGroup"></d3s-group-members>
+                <ng-container *ngIf="sidePanelOpen && selectedRow != null">
+                    <ng-container *ngIf="sidePanelTab === 'detail'">
+                        <ig-asset-detail [objectUID]="selectedRow.Uid"
+                                         objectType="Group"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [hideLinks]="true"
+                                         [hideClassName]="true"></ig-asset-detail>
+                    </ng-container>
                 </ng-container>
             </side-panel>
         </div>

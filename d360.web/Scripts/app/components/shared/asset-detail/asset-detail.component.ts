@@ -42,7 +42,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() hasEditLink: boolean = false;
     @Input() interceptLinkClick: boolean = false;
     @Input() assetDetail: any;
-
+    @Input() hideLinks: boolean = false;
+    @Input() hideClassName: boolean = false;
     @Output() onEditClick = new EventEmitter();
 
     assetUID: string;
@@ -130,7 +131,6 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 
         if (this.objectType === 'Group') {
             this.tab = 'detail';
-            this.useAccordion = false;
             if (this.loadGroupMembersSub) {
                 this.loadGroupMembersSub.unsubscribe();
             }
