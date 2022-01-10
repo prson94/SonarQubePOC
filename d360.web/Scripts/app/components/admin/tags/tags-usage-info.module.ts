@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { RouterModule } from '@angular/router';
 
@@ -14,7 +14,7 @@ import { TooltipModule } from 'primeng/tooltip';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
         PipesModule, 
 
@@ -28,10 +28,7 @@ import { TooltipModule } from 'primeng/tooltip';
         TagUsageInfoBox,        
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class TagUsageInfoModule { }

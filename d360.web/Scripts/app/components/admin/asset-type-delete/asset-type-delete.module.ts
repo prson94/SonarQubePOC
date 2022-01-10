@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -20,7 +20,7 @@ import { AssetTypeDeleteComponent } from './asset-type-delete.component';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
 
 
         //prime
@@ -41,11 +41,6 @@ import { AssetTypeDeleteComponent } from './asset-type-delete.component';
         AssetTypeDeleteComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
     ]
 })
 

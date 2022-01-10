@@ -179,7 +179,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     , imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         //primeng

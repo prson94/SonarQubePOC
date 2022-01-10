@@ -22,11 +22,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
         ScoreBadgeComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
         ScoreDisplayPipe
     ]
 })

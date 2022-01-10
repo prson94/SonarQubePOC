@@ -26,7 +26,7 @@ import { DropdownModule } from "primeng/dropdown";
 import { TableModule } from "primeng/table";
 import { MultiSelectModule } from "primeng/multiselect";
 import { TooltipModule } from "primeng/tooltip";
-import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
+
 import { AssetGridCustomExportComponent } from "./asset-grid-custom-export.component";
 import { AssetGridTopLevelListComponent } from "./asset-grid-top-level-list.component";
 import { AssetGridComponent } from "./asset-grid.component";
@@ -39,7 +39,7 @@ import { SiteModalModule } from "../shared/modal/gov-modal.module";
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         //primeng        
@@ -83,11 +83,7 @@ import { SiteModalModule } from "../shared/modal/gov-modal.module";
         AssetGridTopLevelListComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }        
+                
     ]
 })
 

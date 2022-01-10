@@ -35,11 +35,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
         ActionsComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class ActionsModule { }

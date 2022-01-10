@@ -2,8 +2,8 @@
 import { CommonModule }       from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule }    from '@angular/router';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
@@ -32,7 +32,7 @@ import { CheckboxModule } from 'primeng/checkbox';
         CommonModule,
         RouterModule,
         FormsModule,
-        HttpClientModule,
+
         //d3s
         CoreModule,
         PipesModule,
@@ -63,10 +63,7 @@ import { CheckboxModule } from 'primeng/checkbox';
         RelationshipsModalComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class SharedRelationshipModule { }

@@ -206,7 +206,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
     , imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         //primeng
