@@ -115,14 +115,15 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
 
     updatePosition() {
         var htmlEl = (this.el.nativeElement as HTMLElement);
+        var box;
         if (htmlEl && this.contextElement) {
-            var box = htmlEl.getBoundingClientRect();
+            box = htmlEl.getBoundingClientRect();
             this.contextElement.style.top = (box.top + box.height) + "px";
             this.contextElement.style.left = box.left + "px";
         }
 
         if (htmlEl && this.hoverElement) {
-            var box = htmlEl.getBoundingClientRect();
+            box = htmlEl.getBoundingClientRect();
             this.hoverElement.style.top = (box.top - 62) + "px";
 
             if (this.isTagTooltip) {

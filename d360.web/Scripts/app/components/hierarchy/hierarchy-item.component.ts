@@ -121,7 +121,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             }
         });
 
-        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe(ev => {
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
             this.selectedAsset = null;
             this.selectedReferenceItem = null;
             this.selectedTag = null;

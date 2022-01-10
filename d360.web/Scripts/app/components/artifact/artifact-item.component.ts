@@ -79,7 +79,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.load(artifactId, this.artifactTypeId);
                 });
 
-            this.hrefSub = this.linkClickInterceptor.getEvents().subscribe(ev => {
+            this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
                 this.selectedAsset = null;
                 this.selectedReferenceItem = null;
                 this.selectedTag = null;

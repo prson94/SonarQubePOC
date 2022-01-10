@@ -77,7 +77,7 @@ export class OwnershipListComponent implements OnInit {
 
     onClick($event, data) {
         if (this.interceptLinkClick) {
-            this.linkClickInterceptor.sendEvent($event, data, data.ResourceItemUrl)
+            this.linkClickInterceptor.sendEvent($event, data, data.ResourceItemUrl);
             return;
         }
         this.router.navigateByUrl(data.ResourceItemUrl);

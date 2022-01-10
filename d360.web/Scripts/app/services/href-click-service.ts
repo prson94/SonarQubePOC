@@ -2,6 +2,26 @@
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 
+export enum AssetDetailClickType {
+    Undefined = 'Undefined',
+    Asset = 'Asset',
+    ReferenceItem = 'ReferenceItem',
+    User = 'User',
+    Tag = 'Tag',
+    Group = 'Group'
+}
+
+export class AssetDetailClickEvent {
+    event: any;
+    type: AssetDetailClickType;
+    data: any;
+
+    objectId: number;
+    objectType: string;
+    uid: string;
+    assetTypeUid: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LinkClickInterceptor {
     private subject = new Subject<AssetDetailClickEvent>();
@@ -14,8 +34,6 @@ export class LinkClickInterceptor {
         if (origEvent) {
             origEvent.preventDefault();
             origEvent.stopPropagation();
-
-            var adcEv = new AssetDetailClickEvent();
 
             var event = origEvent["from-context-method"] ?? "";
 
@@ -95,15 +113,15 @@ export class LinkClickInterceptor {
             }
 
             if (data.DataType === "Relationship") {
-                var val = data.Values[0];
+                var valRel = data.Values[0];
                 adcEv.event = origEvent;
                 adcEv.type = data.FieldName !== "ReferenceItem" ? AssetDetailClickType.Asset : AssetDetailClickType.ReferenceItem;
                 adcEv.data = data;
 
-                adcEv.objectId = val.TooltipID;
-                adcEv.objectType = val.TooltipType;
-                adcEv.uid = val.uid;
-                adcEv.assetTypeUid = val.assetTypeUid;
+                adcEv.objectId = valRel.TooltipID;
+                adcEv.objectType = valRel.TooltipType;
+                adcEv.uid = valRel.uid;
+                adcEv.assetTypeUid = valRel.assetTypeUid;
             }
 
             if (data.TooltipType === "tag") {
@@ -131,24 +149,4 @@ export class LinkClickInterceptor {
     getEvents(): Observable<AssetDetailClickEvent> {
         return this.subject.asObservable();
     }
-}
-
-export enum AssetDetailClickType {
-    Undefined = 'Undefined',
-    Asset = 'Asset',
-    ReferenceItem = 'ReferenceItem',
-    User = 'User',
-    Tag = 'Tag',
-    Group = 'Group'
-}
-
-export class AssetDetailClickEvent {
-    event: any;
-    type: AssetDetailClickType;
-    data: any;
-
-    objectId: number;
-    objectType: string;
-    uid: string;
-    assetTypeUid: string;
 }

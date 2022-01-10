@@ -41,7 +41,7 @@ export class AssetDetailFieldComponent {
 
     navigate(url: string, e: any) {
         if (this.interceptLinkClick) {
-            this.linkClickInterceptor.sendEvent(e, this.field, SiteUrlHelpers.convertClassicUrl(url))
+            this.linkClickInterceptor.sendEvent(e, this.field, SiteUrlHelpers.convertClassicUrl(url));
             return;
         }
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
