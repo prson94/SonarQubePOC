@@ -210,10 +210,12 @@ export class RelationshipsService extends BaseObservableService {
 
     getRelationshipPredicates(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<PredicateDropdown[]> {
         let url = `form/IntersectType_PredicateOptions?subjectUid=${subjectUid}`;
-        if (objectUid != undefined)
+        if (objectUid != undefined) {
             url = url += `&objectUid=${objectUid}`;
-        if (predicateUid != undefined)
+        }
+        if (predicateUid != undefined) {
             url = url += `&predicateUid=${predicateUid}`;
+        }
         return this.http.get(url)
             .pipe(
                 map(response => <PredicateDropdown[]>response),
@@ -239,10 +241,12 @@ export class RelationshipsService extends BaseObservableService {
 
     getObjectOptions(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<DropdownOption[]> {
         let url = `form/IntersectType_ObjectOptions?subjectUid=${subjectUid}`;
-        if (objectUid != undefined)
+        if (objectUid != undefined) {
             url = url += `&objectUid=${objectUid}`;
-        if (predicateUid != undefined)
+        }
+        if (predicateUid != undefined) {
             url = url += `&predicateUid=${predicateUid}`;
+        }
 
         return this.http.get(url)
             .pipe(

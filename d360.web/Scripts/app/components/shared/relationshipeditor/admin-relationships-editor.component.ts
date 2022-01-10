@@ -148,7 +148,7 @@ export class AdminRelationshipsEditor {
                     });
                 }
 
-                this.selectedPredicate = this.predicates.find(p => p.value == this.relationshipType.Predicate.Uid);
+                this.selectedPredicate = this.predicates.find((p) => p.value === this.relationshipType.Predicate.Uid);
                 this.loadCardinalityOptions();
             });
     }
@@ -200,14 +200,14 @@ export class AdminRelationshipsEditor {
             this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.cardinalityOptions));
             this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.cardinalityOptions));
 
-            if (this.selectedPredicate && this.selectedPredicate.type == 'DiagramReference') {
-                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter((x) => x.label != Cardinality[Cardinality.Many])));
+            if (this.selectedPredicate && this.selectedPredicate.type === 'DiagramReference') {
+                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter((x) => x.label !== Cardinality[Cardinality.Many])));
 
             }
 
-            if (this.selectedPredicate && this.selectedPredicate.type == 'Diagram') {
-                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter((x) => x.label != Cardinality[Cardinality.One])));
-                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter((x) => x.label != Cardinality[Cardinality.One])));
+            if (this.selectedPredicate && this.selectedPredicate.type === 'Diagram') {
+                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter((x) => x.label !== Cardinality[Cardinality.One])));
+                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter((x) => x.label !== Cardinality[Cardinality.One])));
 
             }
             this.isLoadingCardinality = false;
