@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetService } from '../../services/asset.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
@@ -6,6 +6,8 @@ import { GridColumn, GridField } from '../../models/grid-definition.model';
 import { Subscription } from 'rxjs';
 import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import { filter } from 'lodash';
+import { Table } from 'primeng/table';
 
 @Component({
     selector: 'd3s-reference-item-list',
@@ -29,6 +31,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     @Input() hasAdd: boolean = false;
     @Input() readOnly: boolean = false;
     @Input() isForAssetDetailPage: boolean = false;
+    @Input() highlightUid: string = '';
 
     private sortField: string = 'Code';
     private items: any[] = [];
@@ -41,7 +44,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     showEditor: boolean = false;
     showDelete: boolean = false;
     private getAssetSub: Subscription;
-
+    @ViewChild('dt', { static: false }) table: Table;
 
     private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true };
 
@@ -89,10 +92,15 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     private assetTimeout: any;
     private loadItems() {
         if (this.getAssetSub) {
-            this.getAssetSub.unsubscribe(); 
+            this.getAssetSub.unsubscribe();
         }
 
         this.loadParams.useGraphForParent = false;
+
+        if (this.highlightUid) {
+            this.loadParams["_pageWithAsset"] = this.highlightUid;
+        }
+
         this.isLoading = true;
         this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe(result => {
             this.items = result.items;
@@ -100,6 +108,17 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
 
             if (this.items.length > 0) {
                 this.selected = this.items[0];
+            }
+
+            if (this.highlightUid) {
+                var highlighted = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
+                if (highlighted) {
+                    this.selected = highlighted[0];
+                }
+                this.table.first = (+result.pageSize - 1) * +result.pageNum;
+                this.highlightUid = null;
+                delete this.loadParams["_pageWithAsset"];
+
             }
 
             if (this.totalRecords < 1000) {

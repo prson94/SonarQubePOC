@@ -19,6 +19,7 @@ import { Router } from '@angular/router';
 
 export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
     @Input() uid: string;
+    @Input() highlightUid: string;
 
     isLoading: boolean = false;
     assetType: AssetTypeApiModel;

@@ -89,7 +89,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                 }
 
                 if (ev.type === AssetDetailClickType.ReferenceItem) {
-                    this.selectedReferenceItem = { uid: ev.assetTypeUid, type: ev.objectType };
+                    this.selectedReferenceItem = { uid: ev.assetTypeUid, assetUid: ev.uid, type: ev.objectType };
                 }
 
                 if (ev.type === AssetDetailClickType.User || ev.type === AssetDetailClickType.Group) {

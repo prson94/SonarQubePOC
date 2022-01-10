@@ -28,7 +28,7 @@
                     <ig-field-value [field]="'Hierarchical'" [value]="assetType.Hierarchical ? 'Yes' : 'No'"></ig-field-value>
                 </ng-container>
                 <ng-container *ngSwitchCase="'items'">
-                    <d3s-reference-item-list [assetTypeUid]="assetType.uid" [readOnly]="true" [isForAssetDetailPage]="true"></d3s-reference-item-list>
+                    <d3s-reference-item-list [assetTypeUid]="assetType.uid" [readOnly]="true" [isForAssetDetailPage]="true" [highlightUid]="highlightUid"></d3s-reference-item-list>
                 </ng-container>
             </ng-container>
         </div>

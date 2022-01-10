@@ -1216,6 +1216,7 @@ namespace d360.model.DataAccessLayer
 
             if (queryParams.Any(x => x.Key.ToLowerInvariant() == "_pagewithasset"))
             {
+                //if we are looking for a specific asset, run query to find index of an asset than update paging to return only that page
                 Guid findAssetUid = Guid.Parse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagewithasset").Value);
                 dbArgs.Add("findAssetUid", findAssetUid);
                 var orderQuery = pagingSql.Count > 0 ? pagingSql[0] : "a.id";
@@ -1223,7 +1224,7 @@ namespace d360.model.DataAccessLayer
                  ;with results_map as (
                         select 
 				            ROW_NUMBER() OVER({orderQuery}) as row_number,
-                            A.[UID] as [AssetUid],
+                            A.UID AS assetuid
                         from Asset A
                         left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				        left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
@@ -1239,8 +1240,19 @@ namespace d360.model.DataAccessLayer
                         {whereSql})
 		            select top 1 row_number from results_map where assetuid = @findAssetUid";
 
-                var assetIndex = (await CompanyContext.QueryAsync<int>(getElementIndexSql, dbArgs, timeout: ApiTimeout)).FirstOrDefault();
-                model.pageNum = (assetIndex / model.pageSize) + 1;
+                try
+                {
+                    var assetIndex = (await CompanyContext.QueryAsync<int>(getElementIndexSql, dbArgs, timeout: ApiTimeout)).FirstOrDefault();
+                    model.pageNum = ((assetIndex-1) / model.pageSize) + 1;
+                    pagingSql[1] = $"offset {(model.pageNum - 1) * model.pageSize} rows fetch next {model.pageSize} rows only";
+
+                }
+                catch (Exception ex)
+                {
+                    model.pageNum = 1;
+                }
+
+
             }
 
 
