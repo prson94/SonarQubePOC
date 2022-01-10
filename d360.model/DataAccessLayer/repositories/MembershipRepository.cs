@@ -44,6 +44,10 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             List<string> condition = new List<string>();
             string resourceString = "";
+
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+
             if (queryParams != null)
             {
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "uid"))
@@ -85,8 +89,10 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("user", user);
                     }
                 }
-
             }
+
+            var fieldTypes = CompanyContext.FieldTypes.Where(f => f.Object == "GroupType" && f.ObjectID == 1).ToList();
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
             var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
             var sql = $@"
@@ -96,11 +102,13 @@ namespace d360.model.DataAccessLayer
                        G.Description,
                        gr1.uid as PrimaryOwnerUid,
                        gr2.uid as SecondaryOwnerUid,
-                       G.IsActiveDirectoryGroup 
+                       G.IsActiveDirectoryGroup,
+                       {(fieldColumns.Count > 0 ? string.Join(",\n", fieldColumns) : "")}
                        from [Group] G
                            inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
                            left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
                            left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
+                           {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins) : "")}
                            {resourceString} 
                            {whereStatements}  
                            order by G.Name  ";
@@ -109,13 +117,14 @@ namespace d360.model.DataAccessLayer
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
+               {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins) : "")}
                 {resourceString} 
                 {whereStatements}  ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             var count = countResults.First();
 
-            var results = await this.CompanyContext.QueryAsync<GroupApiModel>(sql, dbArgs, ApiTimeout);
+            var results = await this.CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
 
             return new GroupApiModels() { items = results, Total = count };
 
