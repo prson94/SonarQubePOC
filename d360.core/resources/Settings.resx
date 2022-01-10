@@ -243,12 +243,6 @@
   <data name="EnableShoppingCart_Name" xml:space="preserve">
     <value>Enable Shopping Cart</value>
   </data>
-  <data name="EnableVersion1VerboseLineage_Desc" xml:space="preserve">
-    <value>This setting indicates whether the Govern UI should display extra nodes in the lineage diagram that are not directly tied to the focal point, but are indirectly related.</value>
-  </data>
-  <data name="EnableVersion1VerboseLineage_Name" xml:space="preserve">
-    <value>Enable Verbose Display in Lineage Digram v1</value>
-  </data>
   <data name="FramingDomains_Desc" xml:space="preserve">
     <value>Specify a comma separated list of allowed domains</value>
   </data>
@@ -308,12 +302,6 @@
   </data>
   <data name="JwtAuthority_Name" xml:space="preserve">
     <value>Authority Uri for JWT</value>
-  </data>
-  <data name="LineageVersion_Desc" xml:space="preserve">
-    <value>This setting indicates which version of lineage the current environment is set to. Each version of lineage functions very differently so care should be taken before changing this value.</value>
-  </data>
-  <data name="LineageVersion_Name" xml:space="preserve">
-    <value>Lineage Version</value>
   </data>
   <data name="MaxDropdownItems_Desc" xml:space="preserve">
     <value>This is the maximum number of items to show in a dropdown before switching to typeahead.</value>

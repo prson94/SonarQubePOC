@@ -17,7 +17,7 @@ namespace d360.web.Services.Favorites
             var matchResults = matchers.Select(matcher => TryMatchRoute(f, matcher)).Where(r => r != null).ToList();
             if (!matchResults.Any())
             {
-                throw new InvalidOperationException($"Failed to match favorite with route {f.Route}");
+                return TryMatchRoute(f, UnknownRouteMatcher);
             }
 
             if (matchResults.Count > 1)
@@ -112,9 +112,12 @@ namespace d360.web.Services.Favorites
                 return null;
             }
 
-            return match.Groups
+            var routeParams = match.Groups
                 .OfType<Group>()
                 .ToDictionary(g => g.Name, g => g.Value);
+
+            routeParams.Add("route", route);
+            return routeParams;
         }
 
         private static string SanitizeRoute(string route)
@@ -156,6 +159,13 @@ namespace d360.web.Services.Favorites
 
             return new Regex(routePattern, RegexOptions.IgnoreCase);
         }
+
+        private static FavoriteRouteMatcher UnknownRouteMatcher = new FavoriteRouteMatcher
+        {
+            RoutePattern = ".*",
+            PageType = FavoritePageType.Unknown,
+            GetName = (name, routeParams) => "/" + routeParams["route"]
+        };
 
         private static IEnumerable<FavoriteRouteMatcher> matchers = new[]
         {
@@ -410,6 +420,12 @@ namespace d360.web.Services.Favorites
                 RoutePattern = "sidebar/relationships/:type/:objectId",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.RelationshipsTab),
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "sidebar/children/:type/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = WithTabName(PageNames.ChildrenTab)
             },
             new FavoriteRouteMatcher
             {

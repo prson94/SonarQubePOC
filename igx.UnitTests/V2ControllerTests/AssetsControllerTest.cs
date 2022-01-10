@@ -9,12 +9,15 @@ using System.Web.Http;
 using System.Net.Http;
 using d360.core.enums;
 using d360.core.entities;
+using d360.model;
+using d360.model.DataAccessLayer;
 using igx.UnitTests.Core;
 using System.Web.Http.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Threading;
+using Moq;
 
 namespace igx.UnitTests
 {
@@ -788,6 +791,60 @@ namespace igx.UnitTests
                 Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
+        }
+
+        [Fact]
+        public async void GetAssetsSearchDetails()
+        {
+
+            var testGuid = Guid.Parse(DataConstants.ValidGUID);
+
+            //In the method GetAssetsSearchDetailsAsync, This will execute the condition that GetAssetByUID does not return null
+
+            var actionResult = await assetsController.GetAssetsSearchDetailsAsync(testGuid);
+            var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+
+            var str = res.Result.Content.ReadAsStringAsync().Result;
+
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+
+            //Mocking the database calls to execute method GetAssetByUID, GetAssetTypeByUID, GetAssetTypeDetails
+            //In the method GetAssetsSearchDetailsAsync, This will execute the condition that GetAssetByUID return null
+
+            var mockCompanyContext = new Mock<ICompanyContext>();
+           
+            d360.model.ICompanyContext CompanyContext = this.assetsController.Company;
+           
+            var assetRepo = new Mock<IAssetRepository>();
+            assetRepo.Setup(x => x.GetAssetByUID(It.IsAny<Guid>())).Returns((Guid assetUid) =>
+            {
+                return null;
+            });
+
+            assetRepo.Setup(x => x.GetAssetTypeByUID(It.IsAny<Guid>())).Returns((Guid assetUid) =>
+            {
+                return new AssetType();
+            });
+
+            assetRepo.Setup(x => x.GetAssetTypeDetails(It.IsAny<AssetType>())).Returns((AssetType type) =>
+            {
+                return Task.FromResult<object>(Task.CompletedTask);
+            });
+
+            var assetsControllerTemp = new AssetsController(GetCoreComponentSet(), GetStorage(), GetQueue(), assetRepo.Object, GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository())
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
+
+             actionResult = await assetsControllerTemp.GetAssetsSearchDetailsAsync(testGuid);
+             res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+
+             str = res.Result.Content.ReadAsStringAsync().Result;
+
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.NotNull(str);
+           
         }
     }
 }

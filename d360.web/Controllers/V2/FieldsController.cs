@@ -2406,14 +2406,10 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         colorjoin = "";
                     }
                 }
-
-
-
-                var query = $@"
+                string query = $@"
                     select {selectStatement} 
                     from FieldLookupValue V
                     {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
-                    {colorjoin}
                     where @fieldTypeId = v.FieldTypeID
                     {whereQuery}
                     order by text asc
@@ -2423,6 +2419,24 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
                         where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
+
+                if (hasColor)
+                {
+                    query = $@"
+                    drop table if exists #tempResults
+			            select *
+				        into #tempResults
+                        from FieldLookupValue V
+                        where @fieldTypeId = FieldTypeID {whereQuery}
+                        order by text asc
+					    {pagingQuery};
+
+					 select {selectStatement} from #tempResults V {colorjoin};
+
+                    select count(1) from FieldLookupValue V
+                        where @fieldTypeId = FieldTypeID {whereQuery};
+                    ";
+                }
 
                 var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel });
 

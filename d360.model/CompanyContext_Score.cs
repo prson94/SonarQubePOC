@@ -1557,19 +1557,28 @@ where   J.Payload like '%Measures%';";
 
         public void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null)
         {
-            var execution = createScoreExecution(triggeredByApiExecutionUid);
+            var count = Query<int>(@"
+select	count(1) as [Count] 
+from	metrics.Execution E
+		inner join metrics.ExecutionItem I on I.ExecutionID = E.ID and I.ChangeType = 5 and E.StartedOn > dateadd(day, -1, getutcdate()) and E.CompletedOn is null and (E.Failures = 0 and E.ErrorMessage is null)")
+                .Single();
 
-            var executionItem = new ScoreExecutionItem
+            if (count == 0)
             {
-                ExecutionID = execution.ID,
-                ChangeType = ScoreQueueChangeType.RollupPathChanged,
-                RowNumber = 1,
-                State = ScoreExecutionItemState.NotProcessed,
-                Payload = JsonConvert.SerializeObject(new RollupPathChangedModel { IntersectTypeId = intersectTypeId, AssetTypeId = assetTypeId })
-            };
-            Add(executionItem);
+                var execution = createScoreExecution(triggeredByApiExecutionUid);
 
-            sendScoreQueueMessage(execution, ScoreQueueChangeType.RollupPathChanged);
+                var executionItem = new ScoreExecutionItem
+                {
+                    ExecutionID = execution.ID,
+                    ChangeType = ScoreQueueChangeType.RollupPathChanged,
+                    RowNumber = 1,
+                    State = ScoreExecutionItemState.NotProcessed,
+                    Payload = JsonConvert.SerializeObject(new RollupPathChangedModel { IntersectTypeId = intersectTypeId, AssetTypeId = assetTypeId })
+                };
+                Add(executionItem);
+
+                sendScoreQueueMessage(execution, ScoreQueueChangeType.RollupPathChanged);
+            }
         }
 
         public void CreateRuleResultsRemovedExecution(Guid assetUid)

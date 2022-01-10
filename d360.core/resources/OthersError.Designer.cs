@@ -178,15 +178,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Job is not currently running.
-        /// </summary>
-        public static string JobNotRunning {
-            get {
-                return ResourceManager.GetString("JobNotRunning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to DEV ERROR - NO SEARCH BASE URL SPECIFIED..
         /// </summary>
         public static string NoSearchUrlError {

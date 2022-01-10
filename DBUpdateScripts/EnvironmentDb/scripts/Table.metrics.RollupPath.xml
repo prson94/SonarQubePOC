@@ -51,36 +51,18 @@ end
 	</rollback>
   </changeSet>
 
-    <changeSet author="Puneet Gupta" id="Index.Metrics.RollupPath-v1">
-   <comment>GOV-16460</comment>
+    <changeSet author="Pappas" id="Index.Metrics.RollupPath-v3">
+   <comment>GOV-16708</comment>
    <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Metrics_RollupPath_PathHash')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Metrics_RollupPath_PathHash] ON [metrics].[RollupPath] ([PathHash])
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 IF EXISTS (select * from sys.indexes where name = 'IX_Metrics_RollupPath_PathHash')
 BEGIN
 	DROP INDEX [IX_Metrics_RollupPath_PathHash] ON [metrics].[RollupPath]
 END
-		]]>
-	</rollback>
-  </changeSet> 
-  
-  <changeSet author="Puneet Gupta" id="Index.Metrics.RollupPath-v2">
-   <comment>GOV-16460</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Metrics_RollupPath_AssetTypeID_ScoreType_State')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Metrics_RollupPath_AssetTypeID_ScoreType_State] ON [metrics].[RollupPath] ([AssetTypeID], [ScoreType], [State])
@@ -96,4 +78,5 @@ END
 		]]>
 	</rollback>
   </changeSet> 
+
 </databaseChangeLog>

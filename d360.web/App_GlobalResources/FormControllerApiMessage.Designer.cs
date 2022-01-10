@@ -277,15 +277,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Company settings.
-        /// </summary>
-        public static string CompanySettings {
-            get {
-                return ResourceManager.GetString("CompanySettings", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Contract.
         /// </summary>
         public static string Contract {
@@ -484,24 +475,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Folder item added successfully..
-        /// </summary>
-        public static string FolderItemAdded {
-            get {
-                return ResourceManager.GetString("FolderItemAdded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Folder Item Id ${id} not found.
-        /// </summary>
-        public static string FolderItemNotFound {
-            get {
-                return ResourceManager.GetString("FolderItemNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Folder item removed successfully..
         /// </summary>
         public static string FolderItemRemoved {
@@ -610,15 +583,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid file type: {0} cannot be uploaded..
-        /// </summary>
-        public static string InvalidFileType {
-            get {
-                return ResourceManager.GetString("InvalidFileType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid folder..
         /// </summary>
         public static string InvalidFolder {
@@ -660,15 +624,6 @@ namespace Resources {
         public static string InvalidRelationshipType {
             get {
                 return ResourceManager.GetString("InvalidRelationshipType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to IP Restrictions.
-        /// </summary>
-        public static string IPRestriction {
-            get {
-                return ResourceManager.GetString("IPRestriction", resourceCulture);
             }
         }
         
@@ -934,7 +889,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No such report.
+        ///   Looks up a localized string similar to No Dashboard Found.
         /// </summary>
         public static string NoSuchReport {
             get {
@@ -1209,15 +1164,6 @@ namespace Resources {
         public static string ServiceEndpointCreated {
             get {
                 return ResourceManager.GetString("ServiceEndpointCreated", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Settings successfully updated..
-        /// </summary>
-        public static string SettingSucessfullyUpdated {
-            get {
-                return ResourceManager.GetString("SettingSucessfullyUpdated", resourceCulture);
             }
         }
         

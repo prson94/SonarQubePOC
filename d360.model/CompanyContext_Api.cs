@@ -2630,7 +2630,7 @@ insert into #tempruleresults
             dbo.AssetResult R
     where	MATCH(A-(E)->R)
             and E.Class = 1
-            and A.Id in (select id from #tempassetid);
+            and A.Id in (select assetid from #tempassetid);
 
 create clustered index cix_tempruleresults on #tempruleresults (Uid);
 
@@ -10518,6 +10518,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 		                where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object is null
 		                for json path, include_null_values
                 )ConditionsWhen(json)
+                where Object is not null
                 group by ItemNumber,ExecutionId,ConditionsThen.json, ConditionsWhen.json)
                 update #convertedData 
                 set [When] = c.[When],

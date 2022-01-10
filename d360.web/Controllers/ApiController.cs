@@ -1886,11 +1886,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         public IEnumerable<dynamic> GetResponsibilitiesByGroupByType(int groupID, SystemObjects type, int id)
         {
             var sql = $@"
-		select 
+		select distinct
 			RD.SecurityAsset,
 		    RD.SecurityAssetID,
 		    RD.SecurityAssetName,
-		    RD.ResourceID,
 		    RD.ResponsibilityTypeID,
 		    T.Object as Type,
 		    T.ObjectID as TypeID,
@@ -1913,10 +1912,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 		
 		union all
 
-		select	RD.SecurityAsset,
+		select	distinct
+                RD.SecurityAsset,
 		        RD.SecurityAssetID,
 		        RD.SecurityAssetName,
-		        RD.ResourceID,
 		        RD.ResponsibilityTypeID,
 		        RD.Type,
 		        RD.TypeID,
@@ -4124,7 +4123,7 @@ where v.id = {0}", id)).FirstOrDefault();
                     asset = Company.Filter<AssetDetail>(i => i.Object == sType && i.ObjectID == id).FirstOrDefault();
                     if (asset == null)
                     {
-                        throw new ArgumentNullException(ApiMessages.AssetNotfound);
+                        throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ApiMessages.AssetNotfound });
                     }
                     return GetPermissionsByObject(asset, isAdmin);
                 }

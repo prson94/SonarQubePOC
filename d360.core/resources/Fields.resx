@@ -117,173 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Action_Description" xml:space="preserve">
-    <value>The action or event that triggers this template.</value>
-  </data>
-  <data name="Action_Name" xml:space="preserve">
-    <value>Action</value>
-  </data>
-  <data name="Active_Description" xml:space="preserve">
-    <value>Indicates whether this item is in an active state.</value>
-  </data>
-  <data name="Active_Name" xml:space="preserve">
-    <value>Is active?</value>
-  </data>
-  <data name="AllowMultipleEntries_Description" xml:space="preserve">
-    <value>May this attribute be assigned to the underlying item multiple times?</value>
-  </data>
-  <data name="AllowMultipleEntries_Name" xml:space="preserve">
-    <value>Allow multiple entries?</value>
-  </data>
-  <data name="AllowMultiple_Description" xml:space="preserve">
-    <value>The setting for this item.</value>
-  </data>
-  <data name="AllowMultiple_Name" xml:space="preserve">
-    <value>Allow multiple instances?</value>
-  </data>
-  <data name="AllowOptions_Description" xml:space="preserve">
-    <value>Does this response allow for selecting a predefined option?</value>
-  </data>
-  <data name="AllowOptions_Name" xml:space="preserve">
-    <value>Allow options?</value>
-  </data>
-  <data name="AllowValueOverride_Description" xml:space="preserve">
-    <value>Does this response allow for overriding a predefined option with a custom value?</value>
-  </data>
-  <data name="AllowValueOverride_Name" xml:space="preserve">
-    <value>Allow custom value?</value>
-  </data>
-  <data name="ArtifactType_Description" xml:space="preserve">
-    <value>The type of artifact.</value>
-  </data>
-  <data name="ArtifactType_ErrorRequired" xml:space="preserve">
-    <value>Artifact type is a required field.</value>
-  </data>
-  <data name="ArtifactType_Name" xml:space="preserve">
-    <value>Type</value>
-  </data>
-  <data name="Artifact_Description" xml:space="preserve">
-    <value>Artifact</value>
-  </data>
-  <data name="Artifact_Name" xml:space="preserve">
-    <value>Artifact</value>
-  </data>
-  <data name="Assignable_Description" xml:space="preserve">
-    <value>Is item assignable?</value>
-  </data>
-  <data name="Assignable_Name" xml:space="preserve">
-    <value>Assignable?</value>
-  </data>
-  <data name="Body_Description" xml:space="preserve">
-    <value>The content/body for this item.</value>
-  </data>
-  <data name="Body_ErrorRequired" xml:space="preserve">
-    <value>Body is a required field.</value>
-  </data>
-  <data name="Body_Name" xml:space="preserve">
-    <value>Body</value>
-  </data>
-  <data name="SourcingApplies_Description" xml:space="preserve">
-    <value>Items of this type can inherit sourcing information and optionally override sourcing.</value>
-  </data>
-  <data name="SourcingApplies_Name" xml:space="preserve">
-    <value>Sourcing Applies?</value>
-  </data>
-  <data name="Code_Description" xml:space="preserve">
-    <value>The code for this item.</value>
-  </data>
   <data name="Code_Name" xml:space="preserve">
     <value>Code</value>
-  </data>
-  <data name="CommentCount_Description" xml:space="preserve">
-    <value>The # of comments for this item.</value>
-  </data>
-  <data name="CommentCount_Name" xml:space="preserve">
-    <value># Comments</value>
-  </data>
-  <data name="Company_Description" xml:space="preserve">
-    <value>The assigned company for this item.</value>
-  </data>
-  <data name="Company_ErrorRequired" xml:space="preserve">
-    <value>Company is a required field.</value>
-  </data>
-  <data name="Company_Name" xml:space="preserve">
-    <value>Company</value>
-  </data>
-  <data name="CreatingResource_Description" xml:space="preserve">
-    <value>The resource who created this item.</value>
-  </data>
-  <data name="CreatingResource_Name" xml:space="preserve">
-    <value>Created by</value>
-  </data>
-  <data name="CurrentDescription_Description" xml:space="preserve">
-    <value>What is Going Wrong?</value>
-  </data>
-  <data name="CurrentDescription_ErrorRequired" xml:space="preserve">
-    <value>What is Going Wrong? is a required field.</value>
-  </data>
-  <data name="CurrentDescription_Name" xml:space="preserve">
-    <value>What is Going Wrong?</value>
-  </data>
-  <data name="DatabaseName_Description" xml:space="preserve">
-    <value>The name of the database for your account.</value>
-  </data>
-  <data name="DatabaseName_ErrorRequired" xml:space="preserve">
-    <value>Database name is a required field.</value>
-  </data>
-  <data name="DatabaseName_Name" xml:space="preserve">
-    <value>Database name</value>
-  </data>
-  <data name="DatabasePassword_Description" xml:space="preserve">
-    <value>The password used to connect to your database.</value>
-  </data>
-  <data name="DatabasePassword_ErrorRequired" xml:space="preserve">
-    <value>Database password is a required field.</value>
-  </data>
-  <data name="DatabasePassword_Name" xml:space="preserve">
-    <value>Database password</value>
-  </data>
-  <data name="DatabaseServer_Description" xml:space="preserve">
-    <value>The server name of the database for your account.</value>
-  </data>
-  <data name="DatabaseServer_ErrorRequired" xml:space="preserve">
-    <value>Database server is a required field.</value>
-  </data>
-  <data name="DatabaseServer_Name" xml:space="preserve">
-    <value>Database server</value>
-  </data>
-  <data name="DatabaseUsername_Description" xml:space="preserve">
-    <value>The username used to connect to your database.</value>
-  </data>
-  <data name="DatabaseUsername_ErrorRequired" xml:space="preserve">
-    <value>Database username is a required field.</value>
-  </data>
-  <data name="DatabaseUsername_Name" xml:space="preserve">
-    <value>Database username</value>
-  </data>
-  <data name="DateCreated_Description" xml:space="preserve">
-    <value>The date this item was created.</value>
-  </data>
-  <data name="DateCreated_Name" xml:space="preserve">
-    <value>Created on</value>
   </data>
   <data name="LastLoggedInOn_Description" xml:space="preserve">
     <value>The date this resource last logged in.</value>
   </data>
   <data name="LastLoggedInOn_Name" xml:space="preserve">
     <value>Last logged in on</value>
-  </data>
-  <data name="DateUpdated_Description" xml:space="preserve">
-    <value>The date this item was last updated.</value>
-  </data>
-  <data name="DateUpdated_Name" xml:space="preserve">
-    <value>Last updated on</value>
-  </data>
-  <data name="Definition_Description" xml:space="preserve">
-    <value>This item's definition</value>
-  </data>
-  <data name="Definition_Name" xml:space="preserve">
-    <value>Definition</value>
   </data>
   <data name="Description_Description" xml:space="preserve">
     <value>The description for this item.</value>
@@ -293,15 +134,6 @@
   </data>
   <data name="Description_Name" xml:space="preserve">
     <value>Description</value>
-  </data>
-  <data name="DomainPrefix_Description" xml:space="preserve">
-    <value>The domain prefix for your account.</value>
-  </data>
-  <data name="DomainPrefix_ErrorRequired" xml:space="preserve">
-    <value>Domain prefix is a required field.</value>
-  </data>
-  <data name="DomainPrefix_Name" xml:space="preserve">
-    <value>Domain Prefix</value>
   </data>
   <data name="Email_Description" xml:space="preserve">
     <value>The email for this resource.</value>
@@ -315,24 +147,6 @@
   <data name="Email_Name" xml:space="preserve">
     <value>Email</value>
   </data>
-  <data name="Enabled_Description" xml:space="preserve">
-    <value>Is this item enabled for use?</value>
-  </data>
-  <data name="Enabled_Name" xml:space="preserve">
-    <value>Enabled?</value>
-  </data>
-  <data name="EnforceParentItemSelection_Description" xml:space="preserve">
-    <value>Enforce parent item selection?</value>
-  </data>
-  <data name="EnforceParentItemSelection_Name" xml:space="preserve">
-    <value>Enforce parent item selection?</value>
-  </data>
-  <data name="ExceptionLogCount_Description" xml:space="preserve">
-    <value>The number of logs associated with this exception</value>
-  </data>
-  <data name="ExceptionLogCount_Name" xml:space="preserve">
-    <value># Logs</value>
-  </data>
   <data name="FirstName_Description" xml:space="preserve">
     <value>The first name for this resource.</value>
   </data>
@@ -345,18 +159,6 @@
   <data name="FirstName_Name" xml:space="preserve">
     <value>First name</value>
   </data>
-  <data name="FontColor_Description" xml:space="preserve">
-    <value>The color of the font in RBG (i.e. #RRGGBB) format.</value>
-  </data>
-  <data name="FontColor_Name" xml:space="preserve">
-    <value>Font Color</value>
-  </data>
-  <data name="FormatExpression_Description" xml:space="preserve">
-    <value>The format expression, if any, to format all entries with.</value>
-  </data>
-  <data name="FormatExpression_Name" xml:space="preserve">
-    <value>Format Expression</value>
-  </data>
   <data name="FriendlyName_Description" xml:space="preserve">
     <value>The name used when displaying this field value to your audience.</value>
   </data>
@@ -366,57 +168,12 @@
   <data name="FriendlyName_Name" xml:space="preserve">
     <value>Friendly Name</value>
   </data>
-  <data name="GroupAllowed_Description" xml:space="preserve">
-    <value>Is group assignment allowed?</value>
-  </data>
-  <data name="GroupAllowed_Name" xml:space="preserve">
-    <value>Group Assignment Allowed</value>
-  </data>
-  <data name="Group_Description" xml:space="preserve">
-    <value>The group assigned to this item.</value>
-  </data>
-  <data name="Group_ErrorRequired" xml:space="preserve">
-    <value>Group is a required field.</value>
-  </data>
-  <data name="Group_Name" xml:space="preserve">
-    <value>Group</value>
-  </data>
   <data name="ID_Description" xml:space="preserve">
     <value>The unique identifier for this item.</value>
   </data>
   <data name="ID_Name" xml:space="preserve">
     <value>ID</value>
     <comment>u</comment>
-  </data>
-  <data name="IsGlobal_Description" xml:space="preserve">
-    <value>Is this item globally available?</value>
-  </data>
-  <data name="IsGlobal_Name" xml:space="preserve">
-    <value>Is Global?</value>
-  </data>
-  <data name="IsHierarchical_Description" xml:space="preserve">
-    <value>Can this item have nested/hierarchical levels?</value>
-  </data>
-  <data name="IsHierarchical_Name" xml:space="preserve">
-    <value>Is Hierarchical?</value>
-  </data>
-  <data name="IsRequired_Description" xml:space="preserve">
-    <value>Is a user required to choose or provide a value for this field?</value>
-  </data>
-  <data name="IsRequired_Name" xml:space="preserve">
-    <value>Required?</value>
-  </data>
-  <data name="IsSystemLookup_Description" xml:space="preserve">
-    <value>Is this item set as a system lookup?</value>
-  </data>
-  <data name="IsSystemLookup_Name" xml:space="preserve">
-    <value>Is System Lookup?</value>
-  </data>
-  <data name="ItemCount_Description" xml:space="preserve">
-    <value>The # items for this lookup.</value>
-  </data>
-  <data name="ItemCount_Name" xml:space="preserve">
-    <value># Items</value>
   </data>
   <data name="LastName_Description" xml:space="preserve">
     <value>The last name for this resource.</value>
@@ -436,12 +193,6 @@
   <data name="Length_Name" xml:space="preserve">
     <value>Length</value>
   </data>
-  <data name="LookupDisplayFormat_Description" xml:space="preserve">
-    <value>The format used for displaying this field.  This format is used when resolving the underlying lookup value to display.</value>
-  </data>
-  <data name="LookupDisplayFormat_Name" xml:space="preserve">
-    <value>Lookup Display Format</value>
-  </data>
   <data name="LookupObjectID_Description" xml:space="preserve">
     <value />
   </data>
@@ -459,15 +210,6 @@
   </data>
   <data name="MaximumLength_Name" xml:space="preserve">
     <value>Maximum Length</value>
-  </data>
-  <data name="MeasurementDescription_Description" xml:space="preserve">
-    <value>How Do We Measure?</value>
-  </data>
-  <data name="MeasurementDescription_ErrorRequired" xml:space="preserve">
-    <value>How Do We Measure? is a required field.</value>
-  </data>
-  <data name="MeasurementDescription_Name" xml:space="preserve">
-    <value>How Do We Measure?</value>
   </data>
   <data name="MinimumLength_Description" xml:space="preserve">
     <value>The minimum allowed length for this field's value.</value>
@@ -487,48 +229,6 @@
   <data name="Name_Name" xml:space="preserve">
     <value>Name</value>
   </data>
-  <data name="NotificationLevel_Description" xml:space="preserve">
-    <value>The notification level for this item.</value>
-  </data>
-  <data name="NotificationLevel_ErrorRequired" xml:space="preserve">
-    <value>Notification level is a required field.</value>
-  </data>
-  <data name="NotificationLevel_Name" xml:space="preserve">
-    <value>Notification level</value>
-  </data>
-  <data name="Order_Description" xml:space="preserve">
-    <value>The assigned company for this item.</value>
-  </data>
-  <data name="Order_ErrorRequired" xml:space="preserve">
-    <value>Company is a required field.</value>
-  </data>
-  <data name="Order_Name" xml:space="preserve">
-    <value>Company</value>
-  </data>
-  <data name="OwnerDomain_Description" xml:space="preserve">
-    <value>The information model that owns this item.</value>
-  </data>
-  <data name="OwnerDomain_Name" xml:space="preserve">
-    <value>Information model</value>
-  </data>
-  <data name="OwnershipType_Description" xml:space="preserve">
-    <value>The type of ownership</value>
-  </data>
-  <data name="OwnershipType_Name" xml:space="preserve">
-    <value>Ownership Type</value>
-  </data>
-  <data name="Parent_Description" xml:space="preserve">
-    <value>The owner for this item.</value>
-  </data>
-  <data name="Parent_Name" xml:space="preserve">
-    <value>Owner/Parent</value>
-  </data>
-  <data name="PartOfScore_Description" xml:space="preserve">
-    <value>Should this check be part of the overall scoring of the target object?  If not part of the scoring, this statistic will display on the top bar of the object detail page.</value>
-  </data>
-  <data name="PartOfScore_Name" xml:space="preserve">
-    <value>Part of Scoring?</value>
-  </data>
   <data name="Path_Description" xml:space="preserve">
     <value>The path within the hierachy.</value>
   </data>
@@ -541,101 +241,8 @@
   <data name="Pattern_Name" xml:space="preserve">
     <value>Validation Pattern</value>
   </data>
-  <data name="ResourceAllowed_Description" xml:space="preserve">
-    <value>Is resource assignment allowed?</value>
-  </data>
-  <data name="ResourceAllowed_Name" xml:space="preserve">
-    <value>Resource Assignment Allowed</value>
-  </data>
-  <data name="ResourceCount_Description" xml:space="preserve">
-    <value>The # of resources for this item.</value>
-  </data>
-  <data name="ResourceCount_Name" xml:space="preserve">
-    <value># Resources</value>
-  </data>
-  <data name="ResourceType_Description" xml:space="preserve">
-    <value>The type of resource for this item.</value>
-  </data>
-  <data name="ResourceType_ErrorRequired" xml:space="preserve">
-    <value>Type is a required field.</value>
-  </data>
-  <data name="ResourceType_Name" xml:space="preserve">
-    <value>Resource Type</value>
-  </data>
-  <data name="Role_Description" xml:space="preserve">
-    <value>The role assigned to this item.</value>
-  </data>
-  <data name="Role_ErrorRequired" xml:space="preserve">
-    <value>Role is a required field.</value>
-  </data>
-  <data name="Role_Name" xml:space="preserve">
-    <value>Role</value>
-  </data>
-  <data name="Rule_Description" xml:space="preserve">
-    <value>The presence rule for this item.</value>
-  </data>
-  <data name="Rule_Name" xml:space="preserve">
-    <value>Rule</value>
-  </data>
-  <data name="SourceID_Description" xml:space="preserve">
-    <value>The item's ID from the system that generated it.</value>
-  </data>
-  <data name="SourceID_Name" xml:space="preserve">
-    <value>Source System's ID</value>
-  </data>
-  <data name="StandardDescription_Description" xml:space="preserve">
-    <value>What is The Data Standard?</value>
-  </data>
-  <data name="StandardDescription_ErrorRequired" xml:space="preserve">
-    <value>What is The Data Standard? is a required field.</value>
-  </data>
-  <data name="StandardDescription_Name" xml:space="preserve">
-    <value>What is The Data Standard?</value>
-  </data>
-  <data name="Status_Description" xml:space="preserve">
-    <value>The status of this item.</value>
-  </data>
-  <data name="Status_ErrorRequired" xml:space="preserve">
-    <value>Status is a required field.</value>
-  </data>
   <data name="Status_Name" xml:space="preserve">
     <value>Status</value>
-  </data>
-  <data name="Subject_Description" xml:space="preserve">
-    <value>The subject of the email.</value>
-  </data>
-  <data name="Subject_ErrorRequired" xml:space="preserve">
-    <value>Subject is a required field.</value>
-  </data>
-  <data name="Subject_Name" xml:space="preserve">
-    <value>Subject</value>
-  </data>
-  <data name="SurveyTypeObject_Description" xml:space="preserve">
-    <value>The target filter based on the selected type of object.</value>
-  </data>
-  <data name="SurveyTypeObject_Name" xml:space="preserve">
-    <value>Object</value>
-  </data>
-  <data name="System_Description" xml:space="preserve">
-    <value>Is this item a system-level object?</value>
-  </data>
-  <data name="System_Name" xml:space="preserve">
-    <value>System-level?</value>
-  </data>
-  <data name="Tab_Description" xml:space="preserve">
-    <value>The name of the tab this information appears under.</value>
-  </data>
-  <data name="Tab_Name" xml:space="preserve">
-    <value>Tab</value>
-  </data>
-  <data name="TaxonomyType_Name" xml:space="preserve">
-    <value>Information model</value>
-  </data>
-  <data name="TextFormatString_Description" xml:space="preserve">
-    <value>The format used for displaying this field.  This format is used when resolving the underlying fields to display.</value>
-  </data>
-  <data name="TextFormatString_Name" xml:space="preserve">
-    <value>Text Format</value>
   </data>
   <data name="Type_Description" xml:space="preserve">
     <value>The type for this item.</value>
@@ -645,12 +252,6 @@
   </data>
   <data name="Type_Name" xml:space="preserve">
     <value>Type</value>
-  </data>
-  <data name="UpdatingResource_Description" xml:space="preserve">
-    <value>The resource who last updated this item.</value>
-  </data>
-  <data name="UpdatingResource_Name" xml:space="preserve">
-    <value>Last updated by</value>
   </data>
   <data name="Username_Description" xml:space="preserve">
     <value>The username for this resource.</value>
@@ -663,30 +264,6 @@
   </data>
   <data name="Username_Name" xml:space="preserve">
     <value>Username</value>
-  </data>
-  <data name="Value_Description" xml:space="preserve">
-    <value>The value for this option.</value>
-  </data>
-  <data name="Value_Name" xml:space="preserve">
-    <value>Value</value>
-  </data>
-  <data name="Version_Description" xml:space="preserve">
-    <value>The version number for this item.</value>
-  </data>
-  <data name="Version_Name" xml:space="preserve">
-    <value>Version</value>
-  </data>
-  <data name="Class_Description" xml:space="preserve">
-    <value>The high-level classification of the model you are adding/editing.  You may configure these classes under Model Administration.</value>
-  </data>
-  <data name="Class_Name" xml:space="preserve">
-    <value>Classification</value>
-  </data>
-  <data name="ControlsOwnership_Description" xml:space="preserve">
-    <value>All ownership propagates from these models to any related artifacts.  Only one catalog can control ownership.</value>
-  </data>
-  <data name="ControlsOwnership_Name" xml:space="preserve">
-    <value>Controls Ownership?</value>
   </data>
   <data name="Level_Description" xml:space="preserve">
     <value>The level of this information model within the overall catalog tree.</value>
@@ -712,18 +289,6 @@
   <data name="MaximumDepth_Name" xml:space="preserve">
     <value>Maximum Depth</value>
   </data>
-  <data name="ResponsibilityTypeGroup_Description" xml:space="preserve">
-    <value>The group associated with this responsibility type.</value>
-  </data>
-  <data name="ResponsibilityTypeGroup_Name" xml:space="preserve">
-    <value>Responsibility Group</value>
-  </data>
-  <data name="Score_Description" xml:space="preserve">
-    <value>The score that will be added to the total.</value>
-  </data>
-  <data name="Score_Name" xml:space="preserve">
-    <value>Score</value>
-  </data>
   <data name="GroupPrimaryOwner_Description" xml:space="preserve">
     <value>The primary owner of the group.  This person is responsible for the day to day management of the group, including assigning any tasks to members.</value>
   </data>
@@ -736,95 +301,8 @@
   <data name="GroupSecondaryOwner_Name" xml:space="preserve">
     <value>Secondary Owner</value>
   </data>
-  <data name="AllowRelatedArtifacts_Description" xml:space="preserve">
-    <value>Allowing related artifacts will enable a new tile on artifact details of this type.</value>
-  </data>
-  <data name="AllowRelatedArtifacts_Name" xml:space="preserve">
-    <value>Allow Related Artifacts?</value>
-  </data>
-  <data name="ContentAreaNumber_Description" xml:space="preserve">
-    <value>Location within the rpeort's layout that this tile will appear in.</value>
-  </data>
-  <data name="ContentAreaNumber_Name" xml:space="preserve">
-    <value>Content Area Number</value>
-  </data>
   <data name="ReportDescription_Description" xml:space="preserve">
     <value>A description of the meaning for this report; what this report trying to explain.</value>
-  </data>
-  <data name="RuleType_Description" xml:space="preserve">
-    <value>The type of rule defined.  This impacts whether the events under a rule can be assigned.</value>
-  </data>
-  <data name="RuleType_Name" xml:space="preserve">
-    <value>Rule Type</value>
-  </data>
-  <data name="DateLastCertified_Description" xml:space="preserve">
-    <value>The date this item was last certified by its owners.</value>
-  </data>
-  <data name="DateLastCertified_Name" xml:space="preserve">
-    <value>Date Last Certified</value>
-  </data>
-  <data name="DaysGivenToCompleteCertification_Description" xml:space="preserve">
-    <value>Indicates the number of days an owner has to complete a certification of a given item.</value>
-  </data>
-  <data name="DaysGivenToCompleteCertification_Name" xml:space="preserve">
-    <value># Days To Complete Certification</value>
-  </data>
-  <data name="MonthsUntilCertification_Description" xml:space="preserve">
-    <value>Indicates the number of months before a certification request is triggered.</value>
-  </data>
-  <data name="MonthsUntilCertification_Name" xml:space="preserve">
-    <value># Months Between Certifications</value>
-  </data>
-  <data name="ResponsibilityTransformationType_Description" xml:space="preserve">
-    <value>The type of transformation you are working with.</value>
-  </data>
-  <data name="ResponsibilityTransformationType_Name" xml:space="preserve">
-    <value>Transformation Type</value>
-  </data>
-  <data name="ResponsibilityTransformation_Description_Description" xml:space="preserve">
-    <value>The detailed description of the transformation taking place for this responsibility.</value>
-  </data>
-  <data name="AllowGrouping_Description" xml:space="preserve">
-    <value>Allow users to group similar relationships together to form a grouping.</value>
-  </data>
-  <data name="AllowGrouping_Name" xml:space="preserve">
-    <value>Allow Grouping of Relationships?</value>
-  </data>
-  <data name="GroupComment_Description" xml:space="preserve">
-    <value>A comment on or description of the role this item has within the relationship group.</value>
-  </data>
-  <data name="GroupComment_Name" xml:space="preserve">
-    <value>Comment</value>
-  </data>
-  <data name="EventCount_Description" xml:space="preserve">
-    <value>The number of items for this particular run or group.</value>
-  </data>
-  <data name="EventCount_Name" xml:space="preserve">
-    <value># Events</value>
-  </data>
-  <data name="EnableValidations_Description" xml:space="preserve">
-    <value>Allow for storing validations</value>
-  </data>
-  <data name="EnableValidations_Name" xml:space="preserve">
-    <value>Enable Field Validations?</value>
-  </data>
-  <data name="AllowHierarchy_Description" xml:space="preserve">
-    <value>Hierarchies are allowed within this type of artifact.</value>
-  </data>
-  <data name="AllowHierarchy_Name" xml:space="preserve">
-    <value>Allow Hierarchy?</value>
-  </data>
-  <data name="HierarchyParent_Description" xml:space="preserve">
-    <value>The item's parent within a hierarchy.</value>
-  </data>
-  <data name="HierarchyParent_Name" xml:space="preserve">
-    <value>Hierarchy Parent</value>
-  </data>
-  <data name="IsListable_Description" xml:space="preserve">
-    <value>Should this field be displayed in the relevant grid or list within the application?</value>
-  </data>
-  <data name="IsListable_Name" xml:space="preserve">
-    <value>Listable?</value>
   </data>
   <data name="ValidationDescription_Description" xml:space="preserve">
     <value>This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear.</value>
@@ -832,119 +310,11 @@
   <data name="ValidationDescription_Name" xml:space="preserve">
     <value>Validation Message</value>
   </data>
-  <data name="SynonymType_Description" xml:space="preserve">
-    <value>The type or category for this synonym.</value>
-  </data>
-  <data name="SynonymType_Name" xml:space="preserve">
-    <value>Synonym Type</value>
-  </data>
-  <data name="ShowNameInTree_Description" xml:space="preserve">
-    <value>Show the name of this attribute group in the UI.</value>
-  </data>
-  <data name="ShowNameInTree_Name" xml:space="preserve">
-    <value>Show Name in Tree?</value>
-  </data>
-  <data name="RuleDimensionID_Description" xml:space="preserve">
-    <value>Data Quality Dimension for this rule.</value>
-  </data>
-  <data name="RuleDimensionID_Name" xml:space="preserve">
-    <value>Dimension</value>
-  </data>
-  <data name="SourceArtifact_Description" xml:space="preserve">
-    <value>The source artifact for this item.</value>
-  </data>
-  <data name="SourceArtifact_Name" xml:space="preserve">
-    <value>Source</value>
-  </data>
   <data name="DisplayFormat_Description" xml:space="preserve">
     <value>The format of the display value.</value>
   </data>
   <data name="DisplayFormat_Name" xml:space="preserve">
     <value>Display Format</value>
-  </data>
-  <data name="CreatedOn_Description" xml:space="preserve">
-    <value>The date that this item was created in Data360.</value>
-  </data>
-  <data name="CreatedOn_Name" xml:space="preserve">
-    <value>Date Created</value>
-  </data>
-  <data name="UpdatedOn_Description" xml:space="preserve">
-    <value>The date that this item was last modified in Data360.</value>
-  </data>
-  <data name="UpdatedOn_Name" xml:space="preserve">
-    <value>Date Last Modified</value>
-  </data>
-  <data name="Permissions_DeleteObject_Description" xml:space="preserve">
-    <value>Allow permission to remove item.</value>
-  </data>
-  <data name="Permissions_DeleteObject_Name" xml:space="preserve">
-    <value>Remove Item</value>
-  </data>
-  <data name="Permissions_DeleteRelationships_Description" xml:space="preserve">
-    <value>Allow permissions to remove relationships and lineage.</value>
-  </data>
-  <data name="Permissions_DeleteRelationships_Name" xml:space="preserve">
-    <value>Remove Relationships</value>
-  </data>
-  <data name="Permissions_DeleteSocial_Description" xml:space="preserve">
-    <value>Allow permissions to remove comments.</value>
-  </data>
-  <data name="Permissions_DeleteSocial_Name" xml:space="preserve">
-    <value>Remove Comments</value>
-  </data>
-  <data name="Permissions_ModifyObject_Description" xml:space="preserve">
-    <value>Allow permission to create or update item.</value>
-  </data>
-  <data name="Permissions_ModifyObject_Name" xml:space="preserve">
-    <value>Modify Item</value>
-  </data>
-  <data name="Permissions_ModifyRelationships_Description" xml:space="preserve">
-    <value>Allow permission to create or update relationships and lineage.</value>
-  </data>
-  <data name="Permissions_ModifyRelationships_Name" xml:space="preserve">
-    <value>Modify Relationships</value>
-  </data>
-  <data name="Permissions_ModifySocial_Description" xml:space="preserve">
-    <value>Allow permission to participate in collaboration.</value>
-  </data>
-  <data name="Permissions_ModifySocial_Name" xml:space="preserve">
-    <value>Participate in Collaboration</value>
-  </data>
-  <data name="Permissions_ReadAudit_Description" xml:space="preserve">
-    <value>Allow permission to read audit data and item history.</value>
-  </data>
-  <data name="Permissions_ReadAudit_Name" xml:space="preserve">
-    <value>Read Audit History</value>
-  </data>
-  <data name="Permissions_ReadDashboards_Description" xml:space="preserve">
-    <value>Allow permission to view dashboards and reports for this item.</value>
-  </data>
-  <data name="Permissions_ReadDashboards_Name" xml:space="preserve">
-    <value>Read Dashboards</value>
-  </data>
-  <data name="Permissions_ReadObject_Description" xml:space="preserve">
-    <value>Allow permission to read item.</value>
-  </data>
-  <data name="Permissions_ReadObject_Name" xml:space="preserve">
-    <value>Read Item</value>
-  </data>
-  <data name="Permissions_ReadRelationships_Description" xml:space="preserve">
-    <value>Allow permission to read relationships, lineage, and see impact analysis.</value>
-  </data>
-  <data name="Permissions_ReadRelationships_Name" xml:space="preserve">
-    <value>Read Relationships</value>
-  </data>
-  <data name="Permissions_ReadSocial_Description" xml:space="preserve">
-    <value>Allow permission to read comments.</value>
-  </data>
-  <data name="Permissions_ReadSocial_Name" xml:space="preserve">
-    <value>Read Comments</value>
-  </data>
-  <data name="ReportLayout_Description" xml:space="preserve">
-    <value>The layout this report will renders its content in.</value>
-  </data>
-  <data name="ReportLayout_Name" xml:space="preserve">
-    <value>Report Layout</value>
   </data>
   <data name="ReportName_Description" xml:space="preserve">
     <value>The name for this report.  This name will be used wherever the report is available for display.</value>
@@ -954,15 +324,6 @@
   </data>
   <data name="ReportObjectType_Name" xml:space="preserve">
     <value>Target Type</value>
-  </data>
-  <data name="ReportTileName_Description" xml:space="preserve">
-    <value>The name for this report tile.  the name will be displayed at the top of the contents for this tile.</value>
-  </data>
-  <data name="ReportTileType_Description" xml:space="preserve">
-    <value>The type of report tile to render with.</value>
-  </data>
-  <data name="ReportTileType_Name" xml:space="preserve">
-    <value>Type</value>
   </data>
   <data name="SourceNotes_Description" xml:space="preserve">
     <value>Defines information regarding the source or originator of this reference list.</value>
@@ -975,5 +336,8 @@
   </data>
   <data name="GroupIsActiveDirectory_Name" xml:space="preserve">
     <value>Is Active Directory</value>
+  </data>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>Owner/Parent</value>
   </data>
 </root>
