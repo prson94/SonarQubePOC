@@ -162,6 +162,11 @@ namespace d360.web.Controllers
                                     fieldValue = $"[{{\"name\":\"{item.DisplayText}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
                                 }
 
+                                if (url.ToLower().IndexOf("referencelistid") > -1)
+                                {
+                                    url += "," + (item.uid != null ? item.uid.Value.ToString() : Guid.Empty.ToString());
+                                }
+
                                 ro.Values.Add(new ReadOnlyFieldValue
                                 {
                                     TooltipContext = tooltipContext,
@@ -1602,6 +1607,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 if (assetUid != null)
                 {
                     relVal.uid = assetUid;
+                    if (relVal.TooltipUrl.ToLower().IndexOf("referencelistid") > -1)
+                    {
+                        relVal.TooltipUrl += "," + assetUid.ToString();
+                    }
                 }
                 values.Add(relVal);
             }

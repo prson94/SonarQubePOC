@@ -131,7 +131,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             }
 
             if (ev.type === AssetDetailClickType.ReferenceItem) {
-                this.selectedReferenceItem = { uid: ev.assetTypeUid, assetUid: ev.uid, type: ev.objectType };
+                this.selectedReferenceItem = { uid: ev.assetTypeUid, assetUid: ev.uid, type: ev.objectType, url: ev.url };
             }
 
             if (ev.type === AssetDetailClickType.Tag) {

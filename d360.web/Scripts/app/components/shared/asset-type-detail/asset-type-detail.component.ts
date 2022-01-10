@@ -20,6 +20,7 @@ import { Router } from '@angular/router';
 export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
     @Input() uid: string;
     @Input() highlightUid: string;
+    @Input() baseUrl: string = '';
 
     isLoading: boolean = false;
     assetType: AssetTypeApiModel;
@@ -62,6 +63,10 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
 
     open(isNewTab: boolean = false) {
         var url = "/assettype/" + this.uid;
+
+        if (this.baseUrl) {
+            url = this.baseUrl;
+        }
 
         if (isNewTab) {
             window.open(url, '_blank');

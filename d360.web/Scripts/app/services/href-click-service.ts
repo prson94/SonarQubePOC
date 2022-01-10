@@ -20,6 +20,7 @@ export class AssetDetailClickEvent {
     objectType: string;
     uid: string;
     assetTypeUid: string;
+    url: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -31,6 +32,7 @@ export class LinkClickInterceptor {
     sendEvent(origEvent: any, data: any, url: string) {
         var adcEv = new AssetDetailClickEvent();
         adcEv.type = AssetDetailClickType.Undefined;
+        adcEv.url = url;
         if (origEvent) {
             origEvent.preventDefault();
             origEvent.stopPropagation();

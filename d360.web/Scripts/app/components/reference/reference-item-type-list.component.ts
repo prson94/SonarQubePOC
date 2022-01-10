@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ReferenceService } from '../../services/reference.service';
@@ -9,6 +9,7 @@ import { AssetTypeService } from '../../services/asset-type.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
+import { Table } from 'primeng/table';
 
 @Component({
     selector: 'd3s-reference-item-type-list',
@@ -28,6 +29,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     assetTypeClass: AssetTypeClass = AssetTypeClass.Reference;
 
     @Output() formModeChange = new EventEmitter<FormMode>();
+    @ViewChild('dt', { static: false }) table: Table;
 
     get showEditor(): boolean {
         return this._showEditor;
@@ -93,6 +95,9 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                         this.initialSelectedListUid = '';
                         if (index >= 0 && index < this.referenceTypes.length) {
                             this.selected = this.referenceTypes[index];
+
+                            var page = index / 10;
+                            this.table.first = page * 10;
                         }
                         else {
                             this.selected = this.referenceTypes[0];
