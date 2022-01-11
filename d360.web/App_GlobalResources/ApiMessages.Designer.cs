@@ -655,6 +655,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Route {Route} points to unknown object.
+        /// </summary>
+        public static string FavoriteUnknownObject {
+            get {
+                return ResourceManager.GetString("FavoriteUnknownObject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Route {Route} is unknown or deprecated.
+        /// </summary>
+        public static string FavoriteUnknownRoute {
+            get {
+                return ResourceManager.GetString("FavoriteUnknownRoute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field moved successfully..
         /// </summary>
         public static string FieldMovedSuccessfully {
