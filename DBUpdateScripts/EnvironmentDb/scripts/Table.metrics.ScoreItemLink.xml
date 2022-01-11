@@ -71,4 +71,26 @@ end
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.Metrics.ScoreItemLink-v1">
+   <comment>GOV-16460</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Metrics_ScoreItemLink_ScoreItemUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Metrics_ScoreItemLink_ScoreItemUid] ON [metrics].[ScoreItemLink]([ScoreItemUid])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Metrics_ScoreItemLink_ScoreItemUid')
+BEGIN
+	DROP INDEX [IX_Metrics_ScoreItemLink_ScoreItemUid] ON [metrics].[ScoreItemLink]
+END
+		]]>
+	</rollback>
+  </changeSet>  
 </databaseChangeLog>

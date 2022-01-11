@@ -1,0 +1,17 @@
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { GovernRequestInterceptor } from "./govern-request.interceptor";
+import { ReuseInterceptor } from "./reuse.interceptor";
+
+export const governHttpInterceptorProviders = [
+    {
+        provide: HTTP_INTERCEPTORS,
+        useClass: GovernRequestInterceptor,
+        multi: true
+    },
+    {
+        provide: HTTP_INTERCEPTORS,
+        useFactory: (instance: ReuseInterceptor) => instance,
+        deps: [ReuseInterceptor],
+        multi: true
+    }
+]

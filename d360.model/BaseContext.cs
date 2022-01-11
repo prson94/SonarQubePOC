@@ -66,6 +66,7 @@ namespace d360.model
     public abstract class BaseContext : DbContext, IDisposable, IDbContext, IBaseContext
     {
         public int CurrentResourceID { get; set; }
+        public int CurrentClientID { get; set; }
         public int CurrentCompanyID { get; set; }
         public int CurrentDomainSettingID { get; set; }
         public string CurrentCompanyDomain { get; set; }
@@ -315,37 +316,6 @@ namespace d360.model
         public List<T> ExecuteQuery<T>(string commandText, List<SqlParameter> parameters)
         {
             return Database.SqlQuery<T>(commandText, parameters.ToArray()).ToList();
-        }
-
-        public void ExecuteNonQueryCommand(string commandText, List<SqlParameter> parameters)
-        {
-            var connection = new SqlConnection(Database.Connection.ConnectionString);
-            try
-            {
-                var command = new SqlCommand();
-                command.CommandTimeout = 1500;
-                command.Connection = connection;
-
-                connection.Open();
-
-                command.CommandText = commandText;
-                command.Parameters.AddRange(parameters.ToArray());
-                command.ExecuteNonQuery();
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                if (connection != null)
-                {
-                    if (connection.State != ConnectionState.Closed)
-                    {
-                        connection.Close();
-                    }
-                }
-            }
         }
 
         #endregion

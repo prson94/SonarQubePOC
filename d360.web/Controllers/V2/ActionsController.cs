@@ -40,14 +40,13 @@ namespace d360.web.Controllers.V2
         IIssueRepository issueRepository;
         IResponsibilityRepository responsibilityRepository;
 
-        public ActionsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public ActionsController(ICoreComponentSet set, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
+            : base(set)
         {
             assetRepository = assets;
             commentRepository = comments;
             issueRepository = issues;
             responsibilityRepository = responsibilities;
-            SettingsRepository = settingsRepository;
         }
 
         /// <summary>
@@ -1037,7 +1036,7 @@ for json path";
 
                     if (model.Fields.ContainsKey(ft.Name))
                     {
-                        lookupValues = model.Fields[ft.Name].Trim().Split(',');
+                        lookupValues = ft.AllowMultipleValues ? model.Fields[ft.Name].Split(',').ToList().Select(v => v.Trim()).ToArray() : new[] { model.Fields[ft.Name].Trim() };
                     }
 
                     if (lookupValues.Length > 0)

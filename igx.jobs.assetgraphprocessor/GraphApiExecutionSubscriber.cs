@@ -94,9 +94,14 @@ namespace igx.jobs.assetgraphprocessor
 
                             //we need to process the non-batch DELETE call here too since we could have thousands of assets when Cascade == true
                             //so we grab the uids from the API table since we may or may not have results in storage
+                            //If there are errors this may return an empty list. Only call ProcessAssets, if list is not empty
                             assets = (await company.QueryAsync<AssetUpdate>("select [uid] from api.ExecutionDeletedAsset where Success = 1 and ExecutionID = @ExecutionID", new { info.execution.ExecutionID })).ToList();
-                            
-                            await ProcessAssets(company, assets, typeUid, info, false);
+
+                            if (assets.Any())
+                            {
+                                await ProcessAssets(company, assets, typeUid, info, false);
+                            }
+
                             break;
                         case ApiExecutionAction.PostRelationships:
                             var postRelFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(execution.Fields);

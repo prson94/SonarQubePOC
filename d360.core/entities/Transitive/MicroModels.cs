@@ -102,6 +102,7 @@ namespace d360.core.entities
 
     public partial class IntersectTypeOption
     {
+        public Guid Uid { get; set; }
         public int ID { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
@@ -217,15 +218,19 @@ namespace d360.core.entities
 
     public class ObjectResult
     {
+        public Guid? uid { get; set; }
         public long AssetID { get; set; }
         public string Name { get; set; }
+        public string Path { get; set; }
     }
 
     public class SecurityResult
     {
+        public Guid uid { get; set; }
         public string SecurityAsset { get; set; }
         public int SecurityAssetID { get; set; }
         public string Name { get; set; }
+        public string Path { get; set; }
     }
 
     #endregion

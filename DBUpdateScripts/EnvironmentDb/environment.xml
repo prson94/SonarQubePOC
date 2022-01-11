@@ -26,6 +26,7 @@
 	<include file="scripts/Udt.dbo.ObjectsTable.xml"/>
 	<include file="scripts/Udt.dbo.RelationshipTypeTable.xml"/>
 	<include file="scripts/Udt.dbo.UidTable.xml"/>
+	<include file="scripts/Udt.dbo.FavoritesObjectDetailsRequest.xml"/>
 	<include file="scripts/Udt.utility.FieldValue.xml"/>
   
 	<!-- Functions (object-based naming) -->
@@ -137,6 +138,7 @@
 	<include file="scripts/Table.dbo.ResponsibilityRuleResultAsset.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityRuleResultSecurityAsset.xml"/>
 	<include file="scripts/Table.dbo.SearchBoost.xml"/>
+	<include file="scripts/Table.dbo.Semantic.xml"/>
 	<include file="scripts/Table.dbo.Setting.xml"/>
 	<include file="scripts/Table.dbo.ShoppingCartType.xml"/>
 	<include file="scripts/Table.dbo.ShoppingCart.xml"/>
@@ -264,7 +266,7 @@
 	<include file="scripts/Function.dbo.GetAssetTypeChildrenByID.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeTextPathById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/View.dbo.IntersectTypeDetail.xml"/>
-        <include file="scripts/View.dbo.OrganizationDetail.xml"/>
+    <include file="scripts/View.dbo.OrganizationDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationInvitationDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationResourceDetail.xml"/>
 	<include file="scripts/View.dbo.Relationship.xml"/>
@@ -273,8 +275,8 @@
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
 	<include file="scripts/View.graph.AssetNodeDisplayPath.xml"/>
 	<include file="scripts/View.graph.AssetNodeKeyPath.xml"/>
-        <include file="scripts/View.utility.ArtifactAssetParent.xml"/>
-        <include file="scripts/View.utility.FieldValue.xml"/>
+    <include file="scripts/View.utility.ArtifactAssetParent.xml"/>
+    <include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
 	<include file="scripts/View.workflow.ItemAsset.xml"/>
@@ -301,6 +303,7 @@
 	<include file="scripts/View.reporting.Resource_All.xml"/>
 	<include file="scripts/View.reporting.Responsibility_All.xml"/>
 	<include file="scripts/View.reporting.ResponsibilityTypeMap.xml"/>
+	<include file="scripts/View.reporting.RuleImplementations_Results.xml"/>
 	<include file="scripts/View.reporting.Rules_All.xml"/>
 	<include file="scripts/View.reporting.Rules_Fields.xml"/>
 	<include file="scripts/View.reporting.WorkflowForms.xml"/>
@@ -323,11 +326,13 @@
 	<include file="scripts/Function.dbo.CustomSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.FieldLookupValueByFieldTypeID.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactChildByAssetID.xml"/>
+	<include file="scripts/Function.dbo.GetAssetBreadcrumbs.xml"/>
 	<include file="scripts/Function.dbo.GetAssetColorJsonByColor.xml"/>	
 	<include file="scripts/Function.dbo.GetAssetHasChildrenByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHash.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHashById.xml"/>
 	<include file="scripts/Function.dbo.GetAssetTextPath.xml"/>
+	<include file="scripts/Function.dbo.GetAssetTypeBreadcrumbs.xml"/>
 	<include file="scripts/Function.dbo.GetContractValidations.xml"/>
 	<include file="scripts/Function.dbo.GetEmailStepRecipients.xml"/>
 	<include file="scripts/Function.dbo.GetParentObjectId.xml"/>
@@ -341,8 +346,8 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
-        <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
-        <include file="scripts/Function.utility.FieldDetails.xml"/>
+    <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
+    <include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
 	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
@@ -382,8 +387,8 @@
 	<include file="scripts/Procedure.dbo.GetSiteNavigationCounts.xml"/>  
 	<include file="scripts/Procedure.dbo.ResponsibilityRuleShouldRun.xml"/>
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
-        <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
-        <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
+    <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
+    <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Initial.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_ImpactHop.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_LineageHop.xml"/>
@@ -407,9 +412,9 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
-        <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
+    <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
 
-        <include file="scripts/Function.Deletions.xml"/>
+    <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
 
 	<!-- Data Changes -->

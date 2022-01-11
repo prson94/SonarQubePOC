@@ -1,43 +1,46 @@
-﻿using System;
+﻿using d360.core.enums;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities.Membership
 {
-    public enum FavoriteType { Asset, AssetType, Page };
+    public enum FavoritePageType
+    {
+        Artifact,
+        SearchResultsPage,
+        ResourceListPage,
+        HomePage,
+        DashboardPage,
+        CommunityPage,
+        WorkflowPage,
+        CartPage,
+        Unknown
+    }
 
     public interface IFavoriteUpsert
     {
         string Route { get; set; }
-        FavoriteType Type { get; set; }
     }
 
     public class FavoriteApiModel : IFavoriteUpsert
     {
 
         [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
         public string Route { get; set; }
-
-        [DataMember]
-        public FavoriteType Type { get; set; }
     }
 
-    public class FavoriteApiViewModel : IFavoriteUpsert
+    public class FavoriteApiViewModel
     {
         public int Id { get; set; }
 
-        [DataMember]
         public string Name { get; set; }
 
-        [DataMember]
         public string Route { get; set; }
 
-        [DataMember]
-        public FavoriteType Type { get; set; }
+        public FavoritePageType PageType { get; set; }
 
-        [DataMember]
-        public Guid? Uid { get; set; }
+        public AssetTypeClass? AssetTypeClass { get; set; }
+
+        public List<string> Breadcrumbs { get; set; }
     }
 }

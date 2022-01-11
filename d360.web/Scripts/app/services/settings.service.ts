@@ -108,60 +108,52 @@ export class CompanySettingsService extends BaseObservableService {
         return foundSetting;
     }
 
-    private parseSettingChange(setting: SettingsPutModel) {
+    private parseSettingChange(setting: SettingsPutModel): SettingsPutModel {
         let currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);
-
         if (currentSetting.BooleanSetting && setting.BooleanSetting && currentSetting.BooleanSetting.Value !== setting.BooleanSetting.Value) {
             currentSetting.BooleanSetting.Value = setting.BooleanSetting.Value;
-            this.settingToUpdate.push(setting);
+            return setting;
         }
 
         if (currentSetting.GuidSetting && setting.GuidSetting && currentSetting.GuidSetting.Value !== setting.GuidSetting.Value) {
             currentSetting.GuidSetting.Value = setting.GuidSetting.Value;
-            this.settingToUpdate.push(setting);
+            return setting;
         }
 
         if (currentSetting.IpAddressSetting && setting.IpAddressSetting && currentSetting.IpAddressSetting.Value !== setting.IpAddressSetting.Value) {
             currentSetting.IpAddressSetting.Value = setting.IpAddressSetting.Value;
-            this.settingToUpdate.push(setting);
+            return setting;
         }
 
         if (currentSetting.NumberSetting && setting.NumberSetting && currentSetting.NumberSetting.Value !== setting.NumberSetting.Value) {
             currentSetting.NumberSetting.Value = setting.NumberSetting.Value;
-            this.settingToUpdate.push(setting);
+            return setting;
         }
 
         if (currentSetting.StringSetting && setting.StringSetting && currentSetting.StringSetting.Value !== setting.StringSetting.Value) {
             currentSetting.StringSetting.Value = setting.StringSetting.Value;
-            this.settingToUpdate.push(setting);
+            return setting;
         }
 
+        return null;
     }
 
     putSetting(setting: SettingsPutModel): Observable<any> {
-        this.parseSettingChange(setting);
-
+        let updatedSetting = this.parseSettingChange(setting);
         var headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
 
-        return this.http.put('/api/v2/environment/settings', JSON.stringify(this.settingToUpdate), { headers })
-            .pipe(
-                tap((_) => {
-                    this.settingToUpdate = [];
-                    return of({ type: "success" });
-                }),
-                catchError((err) => {
-                    this.handleError(err);
-                    return of({ type: "error" });
-                })
-            );
+        return this.http.put('/api/v2/environment/settings', JSON.stringify(updatedSetting), { headers });
     }
 
     putSettings(settings: SettingsPutModel[]): Observable<any> {
 
         settings.forEach((s) => {
-            this.parseSettingChange(s);
+            var updatedSetting = this.parseSettingChange(s);
+            if (updatedSetting !== null) {
+                this.settingToUpdate.push(updatedSetting);
+            }
         });
 
         var headers = new HttpHeaders({

@@ -1,0 +1,34 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Udt.dbo.FavoritesObjectDetailsRequest-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if type_id(N'dbo.FavoritesObjectDetailsRequest') is null 
+begin
+	create type [dbo].[FavoritesObjectDetailsRequest] as table(
+		[FavoriteId] [int] not null,
+		[ObjectType] [varchar](25) null,
+		[ObjectId] [int] null,
+		[AssetId] [int] null,
+		[AssetTypeId] [int] null,
+		[Uid] [uniqueidentifier] null
+	)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

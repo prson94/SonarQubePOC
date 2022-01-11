@@ -51,4 +51,32 @@ end
 	</rollback>
   </changeSet>
 
+    <changeSet author="Pappas" id="Index.Metrics.RollupPath-v3">
+   <comment>GOV-16708</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_Metrics_RollupPath_PathHash')
+BEGIN
+	DROP INDEX [IX_Metrics_RollupPath_PathHash] ON [metrics].[RollupPath]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Metrics_RollupPath_AssetTypeID_ScoreType_State')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Metrics_RollupPath_AssetTypeID_ScoreType_State] ON [metrics].[RollupPath] ([AssetTypeID], [ScoreType], [State])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Metrics_RollupPath_AssetTypeID_ScoreType_State')
+BEGIN
+	DROP INDEX [IX_Metrics_RollupPath_AssetTypeID_ScoreType_State] ON [metrics].[RollupPath]
+END
+		]]>
+	</rollback>
+  </changeSet> 
+
 </databaseChangeLog>

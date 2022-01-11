@@ -44,7 +44,7 @@ import { GovernRequestInterceptor } from '../../../http-interceptors/govern-requ
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
 
         AdminExportTemplatesRoutingModule,
 
@@ -86,11 +86,6 @@ import { GovernRequestInterceptor } from '../../../http-interceptors/govern-requ
         AdminExportTemplateStyleFormComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
     ]
 })
 export class AdminExportTemplatesModule { }

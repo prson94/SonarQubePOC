@@ -442,8 +442,11 @@ namespace d360.core.entities
         [DataMember]
         public Guid PredicateUid { get; set; }
         [DataMember]
+        public Guid? SubjectUid { get; set; }
+        [DataMember]
         public Cardinality SubjectCardinality { get; set; }
-
+        [DataMember]
+        public Guid? ObjectUid { get; set; }
         [DataMember]
         public Cardinality ObjectCardinality { get; set; }
     }
@@ -859,6 +862,24 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
+    [DataContract]
+    public class ResponsibilityRuleTestResponseModel : PagedApiBaseViewModel
+    {
+        public bool Success { get; set; } = true;
+        public string Message { get; set; }
+        [DataMember]
+        public IEnumerable<ResponsibilityRuleTestResultModel> items { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityRuleTestResultModel
+    {
+        [DataMember]
+        public Guid uid { get; set; }
+        [DataMember] 
+        public string path { get; set; }
+    }
+
     public class UpsertModel
     {
         public Guid AssetTypeUid { get; set; }
@@ -1043,5 +1064,5 @@ namespace d360.core.entities
         public string ResponsibilityName { get; set; }
         [DataMember]
         public int Count { get; set; }
-    }
+    }   
 }

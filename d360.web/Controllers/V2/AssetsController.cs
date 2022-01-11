@@ -57,9 +57,9 @@ namespace d360.web.Controllers.V2
         IRelationshipRepository relationshipRepository;
         IFieldsRepository fieldsRepository;
 
-        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
-            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public AssetsController(ICoreComponentSet set, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
+            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository)
+            : base(set)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -213,8 +213,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeProfilingCheck", "Include a check for whether or not the asset has Data Profiling.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.  An exception to this setting is if an ownershiplookup type field is used in the sort for the asset type this setting will be ignored and the field always returned.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeProfilingCheck", "Include a check for whether or not the asset has Data Profiling. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid, CancellationToken cancellationToken)
         {
@@ -3174,6 +3174,110 @@ select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Descri
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
+        }
+
+
+        /// <summary>
+        /// Gets the descendents for a given asset.
+        /// </summary>
+        /// <param name="assetUid">The unique identifier of an asset.</param>
+        /// <returns>A list of descendent asset uids</returns>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            Route("asset/{assetUid:Guid}/descendants"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDescendantsResults)),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_parentAssetUid", "Filter by provided parent asset uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_onlyTotal", "Specifies whether the items or just the descendants count should be returned.  The default is false meaning the items are included when present.", DataType = "boolean", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetAssetDescendents(Guid assetUid)
+        {
+            var prefix = "Assets.GetAssetDescendent => ";
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var validationResult = ValidateGetDescendentParameters(assetUid, queryParams);
+                
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
+                }
+
+                var results = await AssetRepository.GetAssetDescendants(assetUid, queryParams);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        private WorkHttpStatus ValidateGetDescendentParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid);
+            }
+
+            if(assetUid == Guid.Empty)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+            }
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+
+            if (asset == null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidIncludeTotal);
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_onlytotal"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_onlytotal").Value, out bool onlytotal))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidParameterMessage, queryParams.FirstOrDefault(q => q.Key.ToLower() == "_onlytotal").Value, "_onlyTotal"));
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_parentassetuid"))
+            {
+                if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_parentassetuid").Value, out Guid parentAssetUid) || parentAssetUid==Guid.Empty)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, AssetsApiMessages.InvalidParentAssetUid);
+                }
+
+                var parentAsset = AssetRepository.GetAssetByUID(parentAssetUid);
+
+                if (parentAsset == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+                }
+            }
+
+            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
     }
 }

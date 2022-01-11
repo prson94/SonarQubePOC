@@ -347,13 +347,6 @@ namespace d360.extensions
         List<IndexableCount> GetStatusList(int companyID);
 
         /// <summary>
-        /// Get list of phrases that match the starting term used by autocomplete to suggest matches
-        /// </summary>
-        /// <param name="startsWith"></param>
-        /// <returns></returns>
-        IEnumerable<string> GetSearchPhrases(int companyID, string term, int maxResults);
-        
-        /// <summary>
         /// Removes and adds all entries of a certain type.
         /// </summary>
         /// <param name="companyID">The current company ID</param>

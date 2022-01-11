@@ -45,8 +45,8 @@ namespace d360.web.Controllers.V2
         IAssetRepository AssetRepository;
         IMetricsRepository MetricsRepository;
         IScoringRepository ScoringRepository;
-        public ScoringController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IAssetRepository assetRepository, IMetricsRepository metricsRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public ScoringController(ICoreComponentSet set, IQueueSource queueSource, IScoringRepository scoringRepository, IAssetRepository assetRepository, IMetricsRepository metricsRepository)
+            : base(set)
         {
             this.AssetRepository = assetRepository;
             this.MetricsRepository = metricsRepository;

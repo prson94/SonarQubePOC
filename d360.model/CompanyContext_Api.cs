@@ -1027,12 +1027,14 @@ where	ExecutionID = @executionID
 
                         delete from [Intersect] where [uid] in (select [uid] from #DeletedRelationships);
 
-                        insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                        insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID, CreatedBy, UpdatedBy)
                         select  R.IntersectTypeID,
                                 R.Subject,
                                 R.SubjectID,
                                 R.Object,
-                                R.ObjectID
+                                R.ObjectID,
+                                {CurrentResourceID},
+                                {CurrentResourceID}
                             from    #Relationships R
 							inner join [IntersectType] IT on IT.ID = IntersectTypeID
                             inner join AssetType ST on ST.ID = R.SubjectAssetTypeID
@@ -1400,7 +1402,8 @@ where T.ExecutionId = @executionid;
             bool useFriendlyNames = false,
             bool allowTagFields = false,
             FieldValidationFieldProperties validationFieldProperties = null,
-            bool jsonElementsEnabled = true
+            bool jsonElementsEnabled = true,
+            bool IslookupFieldsPassedByValue = false
             )
         {
             List<DataRow> fieldRows = new List<DataRow>();
@@ -1586,10 +1589,10 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "Lookup":
-                                    if (fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1)
+                                    if (fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1 && IslookupFieldsPassedByValue)
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} does not allow selection of multiple values");
+                                        errorMessages.Add( string.Format(CompanyContextApiError.FieldNotAllowedMultipleValies,fieldName));
                                     }
                                     break;
                                 case "Number":
@@ -2627,7 +2630,7 @@ insert into #tempruleresults
             dbo.AssetResult R
     where	MATCH(A-(E)->R)
             and E.Class = 1
-            and A.Id in (select id from #tempassetid);
+            and A.Id in (select assetid from #tempassetid);
 
 create clustered index cix_tempruleresults on #tempruleresults (Uid);
 
@@ -3084,7 +3087,22 @@ from    api.ExecutionDeletedAssetType T
 		cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
 where	T.ExecutionID = @ExecutionID
         and T.[Cascade] = 0
-        and ARE.ResultCount > 0;";
+        and ARE.ResultCount > 0;
+
+--Check if related lookup fields exist
+update	T
+set		T.Success = 0,
+		T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(LFT.FieldCount as nvarchar) + ' Lookup fields referenced to this type.'
+from    api.ExecutionDeletedAssetType T
+        inner join AssetType AT on AT.ID = T.AssetTypeID
+		cross apply (select count(1) as FieldCount
+            from fieldtype ft 
+            where ft.type = 'Lookup' 
+                and ft.LookupObjectType = REPLACE(AT.Object,'Type','') 
+                and ft.LookupObjectID = AT.ObjectId) LFT
+where	T.ExecutionID = @ExecutionID
+        and T.[Cascade] = 0 and LFT.FieldCount > 0;
+";
 
                         #region Log cascade errors
 
@@ -3746,6 +3764,10 @@ where	T.ExecutionID = @ExecutionID
                                             delete	T
                                     		from	FieldType T
                                     				where T.Object = @Object and T.ObjectID = @ObjectId;
+
+                                            delete	T
+                                    		from	FieldType T
+                                    				where T.LookupObjectType = REPLACE(@Object,'Type','') and T.LookupObjectId = @ObjectId;
                                                
                                     		delete	T
                                     		from	IssueTypeRelation T
@@ -4054,6 +4076,8 @@ where   ExecutionID = @ExecutionID
                             row["ExecutionItemUid"] = item.ExecutionItemUid.Value;
                         row["SubjectCardinality"] = (int)item.SubjectCardinality;
                         row["ObjectCardinality"] = (int)item.ObjectCardinality;
+                        row["SubjectUid"] = item.SubjectUid;
+                        row["ObjectUid"] = item.ObjectUid;
                         row["PredicateUid"] = item.PredicateUid;
                         row["uid"] = item.Uid;
                         row["IsNew"] = false;
@@ -4082,6 +4106,8 @@ where   ExecutionID = @ExecutionID
 
                             bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
                             bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
+                            bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
+                            bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
                             bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
                             bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
                             bulkCopy.ColumnMappings.Add("uid", "uid");
@@ -4098,6 +4124,12 @@ where   ExecutionID = @ExecutionID
                             Set PredicateID=ER.PredicateID,
                                 SubjectCardinality=ER.SubjectCardinality, 
                                 ObjectCardinality=ER.ObjectCardinality,
+                                [Subject] = ER.Subject,
+                                SubjectID = ER.SubjectID,
+                                SubjectUid = ER.SubjectUid,
+                                [Object] = ER.Object,
+                                ObjectID = ER.ObjectID,
+                                ObjectUid = ER.ObjectUid,
                                 UpdatedBy=@resourceId,
                                 UpdatedOn=@utcNow
                             from [intersecttype] IT
@@ -4515,7 +4547,7 @@ where   ExecutionID = @ExecutionID
                         {
                             bool success;
                             string errorMessage;
-                            var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties, jsonElementsEnabled: enableJsonAttributes);
+                            var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties, jsonElementsEnabled: enableJsonAttributes, IslookupFieldsPassedByValue: lookupFieldsPassedByValue);
 
                             if (success && isInsert && parentObjectID.HasValue && predicateType == PredicateType.InterTypeHierarchy)
                             {
@@ -4696,6 +4728,7 @@ where   ExecutionID = @ExecutionID
                     }
 
                     if (hasLookupFieldTypes)
+
                     {
                         if (lookupFieldsPassedByValue)
                         {
@@ -5408,7 +5441,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                             bool success;
                             string errorMessage;
-                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false);
+                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false, IslookupFieldsPassedByValue: lookupFieldsPassedByValue);
 
                             if (success)
                             {
@@ -6178,7 +6211,7 @@ end",
 
                             bool success;
                             string errorMessage;
-                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false);
+                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false, IslookupFieldsPassedByValue: lookupFieldsPassedByValue);
 
                             if (success)
                             {
@@ -7134,6 +7167,17 @@ where   ER.ExecutionID = @ExecutionID
 
 update  ER 
 set     Success = 0,
+        Message = 'Cannot change SubjectUid or ObjectUid for a relationship type that already has relationships.' 
+from    [api].[ExecutionRelationshipType] ER 
+        inner join IntersectType T on T.Uid = ER.Uid
+where   ER.ExecutionID = @ExecutionID 
+    and ER.Success is null 
+    and (ER.SubjectUid is not null or ER.ObjectUid is not null)
+    and (ER.SubjectUid <> T.SubjectUid or ER.ObjectUid <> T.ObjectUid)
+    and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);
+
+update  ER 
+set     Success = 0,
         Message = 'Relationship type referenced in FieldFromRelationship field type. Cardinality may not be changed.' 
 from    [api].[ExecutionRelationshipType] ER 
         inner join IntersectType I on I.Uid = ER.[Uid] 
@@ -7145,13 +7189,18 @@ from    [api].[ExecutionRelationshipType] ER
             and ER.Success is null;
 
 Update  T
-set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID,
-        ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
+set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID
 from    [api].[ExecutionRelationshipType] T
         inner join IntersectType S on S.Uid = T.Uid
         inner join AssetType SA on SA.Object = S.Subject and SA.ObjectID = S.SubjectID
+where   T.ExecutionID = @ExecutionID and T.Success is null and T.SubjectUid is null;
+
+Update  T
+set     ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
+from    [api].[ExecutionRelationshipType] T
+        inner join IntersectType S on S.Uid = T.Uid
         inner join AssetType OA on OA.Object = S.Object and OA.ObjectID = S.ObjectID
-where   T.ExecutionID = @ExecutionID and T.Success is null;",
+where   T.ExecutionID = @ExecutionID and T.Success is null and T.ObjectUid is null;",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
 
@@ -7337,15 +7386,6 @@ where   ER.ExecutionID = @ExecutionID
             else
             {
                 Connection.Execute(@"
-update  ER
-set     Success = 0, 
-    Message='Relationships already present for this type' 
-from    [api].[ExecutionRelationshipType] ER 
-    inner join [intersecttype] IT on IT.UID = ER.UID 
-where   ER.ExecutionID = @ExecutionID 
-    and ER.Success is null
-    and exists (select 1 from [Intersect] where IntersectTypeID =IT.ID);
-
 update  ER 
 set     Success = 0, 
     Message = 'Relationship type with the specified predicate already exists.' 
@@ -9771,20 +9811,6 @@ select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
-            List<string> invalidFieldTypes = new List<string> {
-            DataType.Path.ToString(),
-            DataType.ComplexRelationLookup.ToString(),
-            DataType.FieldFromRelationship.ToString(),
-            DataType.DataTableSelect.ToString(),
-            DataType.OwnershipLookup.ToString(),
-            DataType.RefListRelationship.ToString(),
-            DataType.JsonElement.ToString(),
-            DataType.Tag.ToString(),
-            DataType.JSON.ToString(),
-            DataType.Score.ToString(),
-            DataType.Relationship.ToString()
-        };
-
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             var uidDupes = import.Where(x => x.Uid.HasValue).GroupBy(x => x.Uid).Where(x => x.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
 
@@ -10070,291 +10096,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 
                     #region Parse new json to old format
 
-                    var jsonParseSql = $@"
-drop table if exists #tempData
-create table #tempData
-(
-ItemNumber int, 
-ExecutionId uniqueidentifier, 
-AssetTypeUid uniqueidentifier,
-AssigneeTypeUid uniqueidentifier, 
-MatchType nvarchar(20),
-RelIntersectTypeUid uniqueidentifier, 
-RelAssetUid uniqueidentifier,
-FieldApiName nvarchar(250),
-FieldValue nvarchar(250),
-AssigneeUid uniqueidentifier,
-ValueAsUid uniqueidentifier,
-)
-
-insert into #tempData
-select
-ItemNumber,
-ExecutionId,
-AssetTypeUid,
-ThenData.AssigneeTypeUid,
-ThenData.MatchType,
-ThenCond.*,
-case 
-when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
-else null
-end as ValueAsUid
-from api.executionresponsibilityrule
-cross apply OPENJSON (Definition, N'$.Then')
-WITH (
-AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
-MatchType nvarchar(20) N'$.MatchType',
-Conditions nvarchar(max) N'$.Conditions' as Json
-) AS ThenData
-outer apply OPENJSON(ThenData.Conditions)
-with(
-	IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
-	AssetUid uniqueidentifier N'$.Relation.AssetUid',
-	FieldApiName nvarchar(250) N'$.Field.ApiName',
-	Value nvarchar(250) N'$.Field.Value',
-	AssetUid uniqueidentifier  N'$.Assignee.Uid'
-) as ThenCond
-where executionid = @executionId and success is null
-
-insert into #tempData
-select
-ItemNumber,
-ExecutionId,
-AssetTypeUid,
-null as AssigneeTypeUid,
-null as MatchType,
-WhenData.*,
-case 
-when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
-else null
-end as ValueAsUid
-from api.executionresponsibilityrule
-cross apply OPENJSON (Definition, N'$.When')
-WITH (
-	IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
-	AssetUid uniqueidentifier N'$.Relation.AssetUid',
-	FieldApiName nvarchar(250) N'$.Field.ApiName',
-	Value nvarchar(250) N'$.Field.Value',
-	AssetUid uniqueidentifier  N'$.Assignee.Uid'
-) AS WhenData
-where executionid = @executionId and success is null
-
-drop table if exists #parsedData
-select  d.itemnumber, 
-	d.executionid ,
-	at.object,
-	at.objectid,
-	d.valueasuid,
-	d.AssigneeTypeUid,
-    d.MatchType,
-	d.AssigneeUid,
-	d.RelAssetUid,
-	case 
-		when d.RelIntersectTypeUid is null then 'F'
-		else 'R'
-	end as CheckType,
-	case 
-		when at.uid is not null then ft.id
-		else ft2.id
-	end as FieldTypeId,
-	case
-		when at.uid is not null then isnull(ft.friendlyname,d.fieldapiname)
-		else isnull(ft2.friendlyname, d.fieldapiname)
-	end as FieldTypeName,
-	case 
-		when it.id is null then d.FieldValue
-		else a.Object+'|'+ cast(a.objectid as nvarchar(20)) 
-	end as Value,
-	it.id as IntersectTypeId,
-	a.object as TargetObject,
-	isnull(a.objectid,0) as TargetObjectId,
-	cast('' as nvarchar(max)) as ErrorMessage,
-	ROW_NUMBER() OVER(ORDER BY(SELECT NULL)) as rowNumber,
-    ft2.type as FieldType
-into #parsedData
-from #tempData d
-	left join assettype at on d.assigneetypeuid = at.uid
-	left join FieldType ft on at.Object = ft.Object and at.ObjectID = ft.ObjectID and ft.Name = d.FieldApiName
-	left join IntersectType it on it.uid = d.RelIntersectTypeUid
-	left join assettype at2 on d.AssetTypeUid = at2.uid
-	left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
-	left join asset a on a.uid = d.RelAssetUid
-
-update #parsedData
-set FieldTypeId = 0,
-FieldTypeName = 'Name',
-Value = a.ObjectID
-from #parsedData
-inner join asset a on a.uid = AssigneeUid
-inner join assettype at on a.assettypeid = at.id and at.objectid = #parsedData.objectid and at.object = #parsedData.object
-where AssigneeUid is not null
-
-update #parsedData
-set Value = LOWER(pd.value)
-from #parsedData pd
-inner join fieldtype ft on pd.fieldtypeid = ft.id
-where pd.fieldtypeid is not null and ft.type = 'Boolean'
-
-update #parsedData
-set Value = flv.Value
-from #parsedData pd
-inner join fieldtype ft on pd.fieldtypeid = ft.id
-left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID  and TRIM(pd.value) = FLV.Text
-where pd.fieldtypeid is not null and ft.type = 'Lookup'
-
-update #parsedData
-set ErrorMessage = 'Invalid Field name.'
-where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
-
-update #parsedData
-set ErrorMessage = 'Invalid Field Type.'
-where 
-isnull(fieldtypeid,0) != 0 
-AND 
-fieldtypename <> '' 
-AND 
-AssigneeUid is null
-AND
-FieldType in @invalidFieldTypes
-
-update #parsedData
-set ErrorMessage = 'Invalid Lookup value.'
-from #parsedData pd
-inner join fieldtype ft on pd.fieldtypeid = ft.id
-where pd.fieldtypeid is not null and ft.type = 'Lookup' and Value is null
-
-update #parsedData
-set ErrorMessage = 'Invalid AssetUid for condition.'
-where isnull(value,0) = 0 and fieldtypename <> '' and AssigneeUid is not null
-
-update #parsedData
-set ErrorMessage = 'Invalid Intersect Type Uid for condition.'
-where CheckType = 'R' and IntersectTypeId is null
-
-update #parsedData
-set ErrorMessage = 'Invalid Asset UID for condition value.'
-where CheckType = 'R' and isnull(targetobjectid,0) = 0
-
-update #parsedData
-set ErrorMessage =  'Invalid Assignee Type. Allowed Types are ''Resource'', ''Group'' and ''Organization'''
-where object is not null and object not in('ResourceType','OrganizationType','GroupType')
-
-update #parsedData
-set ErrorMessage = 'Invalid Asset UID for Intersect Type.'
-from #parsedData
-left join IntersectType it on it.ID= IntersectTypeId
-left join Asset A on a.object = TargetObject and a.objectid = targetobjectid
-left join assettype at on a.AssetTypeID = at.ID 
-where CheckType = 'R' and (at.uid <> it.subjectuid and at.uid <> it.objectuid)
-
-update #parsedData
-set ErrorMessage = 'AssigneeType not found.'
-from #parsedData pd
-left join AssetType at on at.uid = pd.assigneetypeuid
-where pd.AssigneeTypeUid is not null and at.id is null
-
-update #parsedData
-set ErrorMessage = 'Invalid AssigneeType. Allowed types are ResourceType, GroupType and OrganizationType.'
-from #parsedData pd
-inner join AssetType at on at.uid = pd.assigneetypeuid
-where pd.AssigneeTypeUid is not null and at.Object not in ('ResourceType', 'GroupType','OrganizationType')
-
-update #parsedData
-set ErrorMessage = 'Invalid Assignee for Assignee Type.'
-from #parsedData pd
-left join AssetType at on at.uid = pd.assigneetypeuid
-left join asset a on a.uid = assigneeuid
-where pd.AssigneeTypeUid is not null and at.id is not null and at.id <> a.assettypeid
-
-update #parsedData
-set ErrorMessage = 'Invalid JSON Data.'
-where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null and errormessage is null
-
-MERGE api.ExecutionResponsibilityRule err
-USING (select itemnumber,executionid,trim(string_agg(errormessage,',')) as msg from #parsedData
-where isnull(errormessage,'') <> ''
-group by itemnumber,executionid
-) cd
-ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid and cd.msg <> '' 
-WHEN MATCHED
-THEN UPDATE
-SET [Message] = coalesce([Message] + '; ', '') + cd.msg,
-Success = 0;
-
-drop table if exists #convertedData
-create table #convertedData
-(
-ItemNumber int, 
-ExecutionId uniqueidentifier, 
-[When] nvarchar(max),
-[Then] nvarchar(max),
-[Definition] nvarchar(max)
-)
-
-insert into #convertedData
-select ItemNumber,ExecutionId, null,null,null
-from #parsedData
-group by ItemNumber,ExecutionId
-
-;with conditions as (select 
-ItemNumber,
-ExecutionId,
-ConditionsThen.json as [Then],
-ConditionsWhen.json as [When]
-from #parsedData pd
-cross apply (
-select top 1 Object,ObjectID, MatchType, Conditions.json as Conditions
-from #parsedData
-	outer apply(select
-		CheckType,
-		isnull(FieldTypeID,0) as FieldTypeID,
-		FieldTypeName,
-		Value,
-		isnull(IntersectTypeID,0) as IntersectTypeID,
-		TargetObject,
-		TargetObjectId        
-		from #parsedData
-		where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
-		for json path, include_null_values
-	)Conditions(json)
-where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
-for json path, include_null_values, without_array_wrapper
-)ConditionsThen(json)
-
-cross apply (
-select
-		CheckType,
-		isnull(FieldTypeID,0) as FieldTypeID,
-		FieldTypeName,
-		Value,
-		isnull(IntersectTypeID,0) as IntersectTypeID,
-		TargetObject,
-		TargetObjectId
-		from #parsedData
-		where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object is null
-		for json path, include_null_values
-)ConditionsWhen(json)
-where 
-object is not null
-group by ItemNumber,ExecutionId,ConditionsThen.json, ConditionsWhen.json)
-update #convertedData 
-set [When] = c.[When],
-[Then] = c.[Then],
-[Definition] = '{{'+Concat_ws(',','""When"":' + c.[When],'""Then"":' + c.[Then]) + '}}'
-from conditions c
-where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid
-
-
-MERGE api.ExecutionResponsibilityRule err
-USING #convertedData cd
-ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid
-WHEN MATCHED
-THEN UPDATE
-SET DefinitionConverted = cd.[Definition];
-
-
-                ";
-                    Connection.Execute(jsonParseSql, new { execution.ExecutionID, invalidFieldTypes }, commandTimeout: timeout);
+                    ParseResponsibilityRuleModel(execution.ExecutionID, null, timeout);
 
                     #endregion
 
@@ -10494,6 +10236,311 @@ SET DefinitionConverted = cd.[Definition];
             }
 
             return results;
+        }
+
+        public void ParseResponsibilityRuleModel(Guid executionId, SqlTransaction trans = null, int timeout = 3600, string sourceTable = "api.ExecutionResponsibilityRule")
+        {
+            List<string> invalidFieldTypes = new List<string> {
+            DataType.Path.ToString(),
+            DataType.ComplexRelationLookup.ToString(),
+            DataType.FieldFromRelationship.ToString(),
+            DataType.DataTableSelect.ToString(),
+            DataType.OwnershipLookup.ToString(),
+            DataType.RefListRelationship.ToString(),
+            DataType.JsonElement.ToString(),
+            DataType.Tag.ToString(),
+            DataType.JSON.ToString(),
+            DataType.Score.ToString(),
+            DataType.Relationship.ToString()
+            };
+            
+            var jsonParseSql = $@"
+                drop table if exists #tempData
+                create table #tempData
+                (
+                ItemNumber int, 
+                ExecutionId uniqueidentifier, 
+                AssetTypeUid uniqueidentifier,
+                AssigneeTypeUid uniqueidentifier, 
+                MatchType nvarchar(20),
+                RelIntersectTypeUid uniqueidentifier, 
+                RelAssetUid uniqueidentifier,
+                FieldApiName nvarchar(250),
+                FieldValue nvarchar(250),
+                AssigneeUid uniqueidentifier,
+                ValueAsUid uniqueidentifier,
+                )
+
+                insert into #tempData
+                select
+                ItemNumber,
+                ExecutionId,
+                AssetTypeUid,
+                ThenData.AssigneeTypeUid,
+                ThenData.MatchType,
+                ThenCond.*,
+                case 
+                when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
+                else null
+                end as ValueAsUid
+                from {sourceTable}
+                cross apply OPENJSON (Definition, N'$.Then')
+                WITH (
+                AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
+                MatchType nvarchar(20) N'$.MatchType',
+                Conditions nvarchar(max) N'$.Conditions' as Json
+                ) AS ThenData
+                outer apply OPENJSON(ThenData.Conditions)
+                with(
+	                IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+	                AssetUid uniqueidentifier N'$.Relation.AssetUid',
+	                FieldApiName nvarchar(250) N'$.Field.ApiName',
+	                Value nvarchar(250) N'$.Field.Value',
+	                AssetUid uniqueidentifier  N'$.Assignee.Uid'
+                ) as ThenCond
+                where executionid = @executionId and success is null
+
+                insert into #tempData
+                select
+                ItemNumber,
+                ExecutionId,
+                AssetTypeUid,
+                null as AssigneeTypeUid,
+                null as MatchType,
+                WhenData.*,
+                case 
+                when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
+                else null
+                end as ValueAsUid
+                from {sourceTable}
+                cross apply OPENJSON (Definition, N'$.When')
+                WITH (
+	                IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+	                AssetUid uniqueidentifier N'$.Relation.AssetUid',
+	                FieldApiName nvarchar(250) N'$.Field.ApiName',
+	                Value nvarchar(250) N'$.Field.Value',
+	                AssetUid uniqueidentifier  N'$.Assignee.Uid'
+                ) AS WhenData
+                where executionid = @executionId and success is null
+
+                drop table if exists #parsedData
+                select  d.itemnumber, 
+	                d.executionid ,
+	                at.object,
+	                at.objectid,
+	                d.valueasuid,
+	                d.AssigneeTypeUid,
+                    d.MatchType,
+	                d.AssigneeUid,
+	                d.RelAssetUid,
+	                case 
+		                when d.RelIntersectTypeUid is null then 'F'
+		                else 'R'
+	                end as CheckType,
+	                case 
+		                when at.uid is not null then ft.id
+		                else ft2.id
+	                end as FieldTypeId,
+	                case
+		                when at.uid is not null then isnull(ft.friendlyname,d.fieldapiname)
+		                else isnull(ft2.friendlyname, d.fieldapiname)
+	                end as FieldTypeName,
+	                case 
+		                when it.id is null then d.FieldValue
+		                else a.Object+'|'+ cast(a.objectid as nvarchar(20)) 
+	                end as Value,
+	                it.id as IntersectTypeId,
+	                a.object as TargetObject,
+	                isnull(a.objectid,0) as TargetObjectId,
+	                cast('' as nvarchar(max)) as ErrorMessage,
+	                ROW_NUMBER() OVER(ORDER BY(SELECT NULL)) as rowNumber,
+                    ft2.type as FieldType
+                into #parsedData
+                from #tempData d
+	                left join assettype at on d.assigneetypeuid = at.uid
+	                left join FieldType ft on at.Object = ft.Object and at.ObjectID = ft.ObjectID and ft.Name = d.FieldApiName
+	                left join IntersectType it on it.uid = d.RelIntersectTypeUid
+	                left join assettype at2 on d.AssetTypeUid = at2.uid
+	                left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
+	                left join asset a on a.uid = d.RelAssetUid
+
+                update #parsedData
+                set FieldTypeId = 0,
+                FieldTypeName = 'Name',
+                Value = a.ObjectID
+                from #parsedData
+                inner join asset a on a.uid = AssigneeUid
+                inner join assettype at on a.assettypeid = at.id and at.objectid = #parsedData.objectid and at.object = #parsedData.object
+                where AssigneeUid is not null
+
+                update #parsedData
+                set Value = LOWER(pd.value)
+                from #parsedData pd
+                inner join fieldtype ft on pd.fieldtypeid = ft.id
+                where pd.fieldtypeid is not null and ft.type = 'Boolean'
+
+                update #parsedData
+                set Value = flv.Value
+                from #parsedData pd
+                inner join fieldtype ft on pd.fieldtypeid = ft.id
+                left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID  and TRIM(pd.value) = FLV.Text
+                where pd.fieldtypeid is not null and ft.type = 'Lookup'
+
+                update #parsedData
+                set ErrorMessage = 'Invalid Field name.'
+                where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
+
+                update #parsedData
+                set ErrorMessage = 'Invalid Field Type.'
+                where 
+                isnull(fieldtypeid,0) != 0 
+                AND 
+                fieldtypename <> '' 
+                AND 
+                AssigneeUid is null
+                AND
+                FieldType in @invalidFieldTypes
+
+                update #parsedData
+                set ErrorMessage = 'Invalid Lookup value.'
+                from #parsedData pd
+                inner join fieldtype ft on pd.fieldtypeid = ft.id
+                where pd.fieldtypeid is not null and ft.type = 'Lookup' and Value is null
+
+                update #parsedData
+                set ErrorMessage = 'Invalid AssetUid for condition.'
+                where isnull(value,0) = 0 and fieldtypename <> '' and AssigneeUid is not null
+
+                update #parsedData
+                set ErrorMessage = 'Invalid Intersect Type Uid for condition.'
+                where CheckType = 'R' and IntersectTypeId is null
+
+                update #parsedData
+                set ErrorMessage = 'Invalid Asset UID for condition value.'
+                where CheckType = 'R' and isnull(targetobjectid,0) = 0
+
+                update #parsedData
+                set ErrorMessage =  'Invalid Assignee Type. Allowed Types are ''Resource'', ''Group'' and ''Organization'''
+                where object is not null and object not in('ResourceType','OrganizationType','GroupType')
+
+                update #parsedData
+                set ErrorMessage = 'Invalid Asset UID for Intersect Type.'
+                from #parsedData
+                left join IntersectType it on it.ID= IntersectTypeId
+                left join Asset A on a.object = TargetObject and a.objectid = targetobjectid
+                left join assettype at on a.AssetTypeID = at.ID 
+                where CheckType = 'R' and (at.uid <> it.subjectuid and at.uid <> it.objectuid)
+
+                update #parsedData
+                set ErrorMessage = 'AssigneeType not found.'
+                from #parsedData pd
+                left join AssetType at on at.uid = pd.assigneetypeuid
+                where pd.AssigneeTypeUid is not null and at.id is null
+
+                update #parsedData
+                set ErrorMessage = 'Invalid AssigneeType. Allowed types are ResourceType, GroupType and OrganizationType.'
+                from #parsedData pd
+                inner join AssetType at on at.uid = pd.assigneetypeuid
+                where pd.AssigneeTypeUid is not null and at.Object not in ('ResourceType', 'GroupType','OrganizationType')
+
+                update #parsedData
+                set ErrorMessage = 'Invalid Assignee for Assignee Type.'
+                from #parsedData pd
+                left join AssetType at on at.uid = pd.assigneetypeuid
+                left join asset a on a.uid = assigneeuid
+                where pd.AssigneeTypeUid is not null and at.id is not null and at.id <> a.assettypeid
+
+                update #parsedData
+                set ErrorMessage = 'Invalid JSON Data.'
+                where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null and errormessage is null
+
+                MERGE {sourceTable} err
+                USING (select itemnumber,executionid,trim(string_agg(errormessage,',')) as msg from #parsedData
+                where isnull(errormessage,'') <> ''
+                group by itemnumber,executionid
+                ) cd
+                ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid and cd.msg <> '' 
+                WHEN MATCHED
+                THEN UPDATE
+                SET [Message] = coalesce([Message] + '; ', '') + cd.msg,
+                Success = 0;
+
+                drop table if exists #convertedData
+                create table #convertedData
+                (
+                ItemNumber int, 
+                ExecutionId uniqueidentifier, 
+                [When] nvarchar(max),
+                [Then] nvarchar(max),
+                [Definition] nvarchar(max)
+                )
+
+                insert into #convertedData
+                select ItemNumber,ExecutionId, null,null,null
+                from #parsedData
+                group by ItemNumber,ExecutionId
+
+                ;with conditions as (select 
+                ItemNumber,
+                ExecutionId,
+                ConditionsThen.json as [Then],
+                ConditionsWhen.json as [When]
+                from #parsedData pd
+                cross apply (
+                select top 1 Object,ObjectID, MatchType, Conditions.json as Conditions
+                from #parsedData
+	                outer apply(select
+		                CheckType,
+		                isnull(FieldTypeID,0) as FieldTypeID,
+		                FieldTypeName,
+		                Value,
+		                isnull(IntersectTypeID,0) as IntersectTypeID,
+		                TargetObject,
+		                TargetObjectId        
+		                from #parsedData
+		                where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
+		                for json path, include_null_values
+	                )Conditions(json)
+                where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
+                for json path, include_null_values, without_array_wrapper
+                )ConditionsThen(json)
+
+                cross apply (
+                select
+		                CheckType,
+		                isnull(FieldTypeID,0) as FieldTypeID,
+		                FieldTypeName,
+		                Value,
+		                isnull(IntersectTypeID,0) as IntersectTypeID,
+		                TargetObject,
+		                TargetObjectId
+		                from #parsedData
+		                where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object is null
+		                for json path, include_null_values
+                )ConditionsWhen(json)
+                where Object is not null
+                group by ItemNumber,ExecutionId,ConditionsThen.json, ConditionsWhen.json)
+                update #convertedData 
+                set [When] = c.[When],
+                [Then] = c.[Then],
+                [Definition] = '{{'+Concat_ws(',','""When"":' + c.[When],'""Then"":' + c.[Then]) + '}}'
+                from conditions c
+                where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid
+
+
+                MERGE {sourceTable} err
+                USING #convertedData cd
+                ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid
+                WHEN MATCHED
+                THEN UPDATE
+                SET DefinitionConverted = cd.[Definition];
+
+
+                ";
+
+             Connection.Execute(jsonParseSql, new { executionId, invalidFieldTypes }, transaction: trans, commandTimeout: timeout);
+
+
         }
 
         public List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups)

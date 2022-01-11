@@ -1,19 +1,12 @@
-﻿using d360.core.entities.Workflow;
+﻿using d360.core.entities.Metric;
 using d360.web.Controllers.V2;
+using igx.UnitTests.Core;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Xunit;
-using igx.UnitTests.Core;
-using d360.core.entities;
-using Newtonsoft.Json.Linq;
-using d360.core.entities.Metric;
-using d360.web.Models;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -24,7 +17,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public ScoringControllerTest()
         {
-            this.scoringController = new ScoringController(GetCommunity(), GetCompany(), GetQueue(), GetScoringRepository(), GetAssetRepository(), GetMetricsRepository(), GetSettingsRepository())
+            this.scoringController = new ScoringController(GetCoreComponentSet(), GetQueue(), GetScoringRepository(), GetAssetRepository(), GetMetricsRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

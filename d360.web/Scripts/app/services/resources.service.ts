@@ -250,21 +250,6 @@ export class ResourcesService extends BaseObservableService {
             );
     }
 
-    downloadFile(data: Blob, filename: string) {
-        if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename);
-        }
-        else {
-            var url = window.URL.createObjectURL(data);
-            var anchor = document.createElement("a");
-            anchor.setAttribute("style", "display:none;");
-            document.body.appendChild(anchor);
-            anchor.setAttribute("download", filename);
-            anchor.href = url;
-            anchor.click();
-        }
-    }
-
     getLegacyData(uid: string): Observable<any> {
         return this.http.get(`/api/v2/membership/legacyData/resource/${uid}`)
             .pipe(map(res => <any>res),

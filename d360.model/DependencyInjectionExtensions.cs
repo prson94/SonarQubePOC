@@ -11,6 +11,7 @@ namespace d360.model
         {
             builder.RegisterType<CompanyDbConnectionProvider>().As<ICompanyDbConnectionProvider>().InstancePerRequest();
             builder.RegisterType<ResponsibilityDapperRepository>().As<IResponsibilityDapperRepository>().InstancePerRequest();
+            builder.RegisterType<FavoritesRepository>().AsImplementedInterfaces().InstancePerRequest();
             builder.RegisterType<ResponsibilityTypeRepository>().As<IResponsibilityTypeRepository>().InstancePerRequest();
 
             builder.RegisterGeneric(typeof(DapperQueryComposer<>)).As(typeof(IDapperQueryComposer<>)).InstancePerRequest();
@@ -40,6 +41,7 @@ namespace d360.model
             builder.RegisterType<ProcessRepository>().As<IProcessRepository>().InstancePerRequest();
             builder.RegisterType<ConnectorLabelRepository>().As<IConnectorLabelRepository>().InstancePerRequest();
             builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
+            builder.RegisterType<SemanticsRepository>().As<ISemanticsRepository>().InstancePerRequest();
         }
     }
 }

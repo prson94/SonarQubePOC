@@ -4,6 +4,7 @@ using d360.core.entities.Membership;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Models
 {
@@ -128,15 +129,14 @@ namespace d360.web.Models
                 new InsertUserToGroup { Uid = Guid.Empty };
         }
     }
+
     public class FavoriteApiModelExample : IExamplesProvider
     {
         public object GetExamples()
         {
             return new FavoriteApiModel
             {
-                Name = "My favorite name",
-                Route = "asset/" + Guid.Empty.ToString(),
-                Type = FavoriteType.Asset
+                Route = "asset/" + Guid.Empty.ToString()
             };
         }
     }
@@ -187,6 +187,8 @@ namespace d360.web.Models
                 ExecutionItemUid = Guid.Empty,
                 Uid = Guid.Empty,
                 PredicateUid = Guid.Empty,
+                SubjectUid = Guid.Empty,
+                ObjectUid = Guid.Empty,
                 SubjectCardinality = core.enums.Cardinality.Many,
                 ObjectCardinality = core.enums.Cardinality.Many
             };
@@ -375,6 +377,112 @@ namespace d360.web.Models
                 UsageNotes = "string",
                 IncludeFieldTypes = new string[] { "Name" },
                 ExportViewType = ExportView.None
+            };
+        }
+    }
+
+    #endregion
+
+    #region Semantic Type Request Examples
+
+    public class PatchSemanticExample1 : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new List<PatchSemantic> {
+                new PatchSemantic
+                {
+                    Qualifier = "EMAIL",
+                    Name = "Email address",
+                    Description = "A user's email address."
+                }
+            };
+        }
+    }
+
+    public class PatchSemanticExample2 : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new List<PatchSemantic> {
+                new PatchSemantic
+                {
+                    Qualifier = "EMAIL",
+                    Name = "Email address",
+                    Description = "A user's email address.",
+                    RegularExpression = @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"
+                }
+            };
+        }
+    }
+
+    public class PostSemanticExample1 : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new List<PostSemantic> {
+                new PostSemantic
+                {
+                    Qualifier = "EMAIL",
+                    Name = "Email address",
+                    Description = "A user's email address.",
+                    MatchType = SemanticMatchType.Pattern,
+                    RegularExpression = @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"
+                }
+            };
+        }
+    }
+
+    public class PostSemanticExample2 : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new List<PostSemantic> {
+                new PostSemantic
+                {
+                    Qualifier = "ADV_Q",
+                    Name = "Some advanced semantic",
+                    Description = "An example that uses the advanced proeprty to send a custom object.",
+                    JsonPayloadStructured = JObject.Parse("{clazz: \"namespace.classname\", custnum1: 12345 }")
+                }
+            };
+        }
+    }
+
+    public class PutSemanticExample1 : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new List<PutSemantic> {
+                new PutSemantic
+                {
+                    BaseType = SemanticBaseType.String,
+                    MatchType = SemanticMatchType.List,
+                    Qualifier = "NORTHEAST_STATES",
+                    Name = "New England States",
+                    Description = "A list of states in the New England region of the US.",
+                    ValidValuesStructured = new List<string> { "CT", "MA", "ME", "NH", "RI", "VT" }
+                }
+            };
+        }
+    }
+
+    public class PutSemanticExample2 : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new List<PutSemantic> {
+                new PutSemantic
+                {
+                    Qualifier = "IPADDRESS.IPV6",
+                    Name = "IP V6 Address",
+                    Description = "Version 6 of an IP address.",
+                    HeaderFilterStructured = new SemanticHeaderFilter {
+                        match = "all",
+                        values = new List<SemanticHeaderFilterValue> { new SemanticHeaderFilterValue { @operator = "eq", value = ".*(?i)(ip).*" } }
+                    },
+                    HeaderFilterConfidence = 70
+                }
             };
         }
     }

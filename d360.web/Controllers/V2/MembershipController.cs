@@ -30,6 +30,9 @@ using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
 using Resources;
+using MediatR;
+using d360.web.Services;
+using d360.web.Services.Favorites;
 
 namespace d360.web.Controllers.V2
 {
@@ -42,19 +45,19 @@ namespace d360.web.Controllers.V2
     public class MembershipController : BaseV2ApiController
     {
         readonly ICachingProvider Cache;
-        readonly ICompanyContext _company;
+        readonly IMediator mediator;
         readonly IMembershipRepository membershipRepository;
         readonly IAssetRepository assetRepository;
+
         public MembershipController(
-            ICommunityContext community,
-            ICompanyContext company,
+            ICoreComponentSet set,
             IMembershipRepository membershipRepository,
             IAssetRepository assetRepository,
-            ISettingsRepository settingsRepository,
-            ICachingProvider cache) : base(community, company, settingsRepository)
+            ICachingProvider cache,
+            IMediator mediator) : base(set)
         {
             Cache = cache;
-            _company = company;
+            this.mediator = mediator;
             this.membershipRepository = membershipRepository;
             this.assetRepository = assetRepository;
         }
@@ -256,11 +259,11 @@ namespace d360.web.Controllers.V2
 
                 if (iscommunityuserresposibility)
                 {
-                    fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1 && f.IsListable == true).ToList();
+                    fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1 && f.IsListable == true).ToList();
                 }
                 else
                 {
-                    fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+                    fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
                 }
 
                 getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
@@ -700,7 +703,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
             }
 
-            var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+            var fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
             foreach (var col in fieldColumns)
             {
@@ -808,6 +811,7 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             Route("groups/{groupUid:Guid}/{resourceUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - Provided group could not be updated", typeof(ErrorResponse)),
@@ -830,7 +834,7 @@ select G.* from [Group] G
 inner join Asset a on A.Object = 'Group' and A.ObjectID = G.ID 
 where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
-                var userId = _company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
+                var userId = Company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
 
                 if (group?.PrimaryOwnerResourceID == userId)
                 {
@@ -879,6 +883,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpDelete,
             Route("users"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(DeleteUserModel), typeof(DeleteUserExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
@@ -957,6 +962,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPost,
             Route("users"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(UserApiInsertModel), typeof(UserPostExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
@@ -1047,7 +1053,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 UserUpsertModel model = new UserUpsertModel
                 {
-                    Users = users.Select(u => new UserApiUpdateModel {
+                    Users = users.Select(u => new UserApiUpdateModel
+                    {
                         Username = u.Username,
                         FirstName = u.FirstName,
                         LastName = u.LastName,
@@ -1115,6 +1122,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPut,
             Route("users"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(UserApiUpdateModel), typeof(UserPutExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
@@ -1283,20 +1291,40 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// </summary>
         /// <returns></returns>
         [
-        HttpGet,
-        Route("users/me/favorites"),
-        SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiModel>)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            HttpGet,
+            Route("users/me/favorites"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetFavorites()
         {
-            var prefix = "Membership.GetFavorites => ";
+            var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = Company.CurrentResourceID });
+            return Ok(favorites);
+        }
+
+        /// <summary>
+        /// Retrieves the Home Page the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("users/me/getHomePage"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(FavoriteApiViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetHomePage()
+        {
+            var prefix = "Membership.GetHomePage => ";
 
             try
             {
-                var results = await membershipRepository.GetFavorites(_company.CurrentResourceID);
+                var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = Company.CurrentResourceID, HomePageOnly = true });
+                var homePage = favorites.SingleOrDefault();
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, homePage));
             }
             catch (Exception ex)
             {
@@ -1310,46 +1338,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
         /// <summary>
-        /// Retrieves the Home Page the current user
-        /// </summary>
-        /// <returns></returns>
-        [
-        HttpGet,
-        Route("users/me/getHomePage"),
-        SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-        ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public async Task<IHttpActionResult> GetHomePage()
-        {
-            var prefix = "Membership.GetHomePage => ";
-
-            try
-            {
-                var results = await membershipRepository.GetHomePage(_company.CurrentResourceID);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
         /// Clears the list of favorite items for the current user.
-        /// This endpoint is obsolete, please prefer to use POST /api/v2/users/me/favorites/bulkDelete
+        /// This endpoint is obsolete, please prefer to use DELETE /api/v2/users/me/favorites/bulk
         /// </summary>
         /// <returns></returns>
         [
             HttpDelete,
             Route("users/me/favorites"),
-            SwaggerProduces("application/json"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, ""),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             Obsolete
@@ -1360,7 +1356,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                await membershipRepository.ClearFavorites(_company.CurrentResourceID);
+                await membershipRepository.ClearFavorites(Company.CurrentResourceID);
                 return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
             }
             catch (Exception ex)
@@ -1393,7 +1389,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                await membershipRepository.DeleteFavorites(_company.CurrentResourceID, favoriteIds);
+                await membershipRepository.DeleteFavorites(Company.CurrentResourceID, favoriteIds);
                 return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
             }
             catch (Exception ex)
@@ -1414,6 +1410,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPut,
             Route("users/me/favorites"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
             SwaggerResponse(HttpStatusCode.Created, "Favorite status toggled."),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1421,7 +1418,19 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
         {
-            return await ToggleFavoriteOrHomepage(favorite).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(favorite.Route))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
+            }
+
+            await this.mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
+            {
+                ResourceId = Company.CurrentResourceID,
+                Route = favorite.Route,
+                IsHomePage = false
+            });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
         }
 
         /// <summary>
@@ -1431,6 +1440,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPut,
             Route("users/me/homepage"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
             SwaggerResponse(HttpStatusCode.Created, "Homepage status toggled."),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1438,61 +1448,19 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
         {
-            var currentHome = Company.Filter<Favorite>(x => x.ResourceID == _company.CurrentResourceID && x.IsHomePage).FirstOrDefault();
-            bool isNewHomePage = true;
-            if (currentHome != null)
+            if (string.IsNullOrWhiteSpace(favorite.Route))
             {
-                if (currentHome.Name == favorite.Name && currentHome.Type == favorite.Type.ToString() && favorite.Route == currentHome.Route)
-                {
-                    isNewHomePage = false;
-                }
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
             }
-            return await ToggleFavoriteOrHomepage(favorite, isNewHomePage).ConfigureAwait(false);
-        }
 
-        private async Task<IHttpActionResult> ToggleFavoriteOrHomepage(FavoriteApiModel favorite, bool isHomepage = false)
-        {
-
-            try
+            await this.mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
             {
-                if (string.IsNullOrWhiteSpace(favorite.Name))
-                {
-                    string message = ApiMessages.NameRequired;
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
-                }
-                else
-                {
-                    favorite.Name = favorite.Name.Trim();
-                }
-                if (favorite.Type == FavoriteType.Page && string.IsNullOrWhiteSpace(favorite.Route))
-                {
-                    string message = ApiMessages.FavoritesEmptyRoute;
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
-                }
-                else
-                {
-                    favorite.Route = favorite.Route.Trim();
-                }
-                bool result = await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
-                if (result)
-                {
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created))).ConfigureAwait(false);
-                }
-                else
-                {
-                    string message = string.Format(ApiMessages.UidInvalid, favorite.Type.ToString());
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message)).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", "Membership.ToggleFavoriteOrHomepage => " }
-                });
+                ResourceId = Company.CurrentResourceID,
+                Route = favorite.Route,
+                IsHomePage = true
+            });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
         }
 
         /// <summary>
@@ -1841,7 +1809,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             try
             {
-                var resource = Community.GetById<Resource>(_company.CurrentResourceID);
+                var resource = Community.GetById<Resource>(Company.CurrentResourceID);
 
                 if (resource is null)
                 {
@@ -2162,7 +2130,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
 
-                var resource = Community.GetById<Resource>(_company.CurrentResourceID);
+                var resource = Community.GetById<Resource>(Company.CurrentResourceID);
 
 
                 if (model is null)

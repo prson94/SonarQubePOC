@@ -30,7 +30,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
-import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
+
 import { AssetGridModule } from '../assets-grid/asset-grid.module';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
@@ -41,7 +41,7 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         ArtifactRoutingModule,
@@ -82,11 +82,7 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
         ArtifactListComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
+        
     ]
 })
 

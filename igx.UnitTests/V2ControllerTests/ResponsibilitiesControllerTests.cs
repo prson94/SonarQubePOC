@@ -7,7 +7,7 @@ using Moq;
 
 namespace igx.UnitTests.V2ControllerTests
 {
-    public partial class ResponsibilitiesControllerTests
+    public partial class ResponsibilitiesControllerTests: BaseTest
     {
         protected ResponsibilitiesControllerTests()
         {
@@ -20,13 +20,11 @@ namespace igx.UnitTests.V2ControllerTests
             MockApplicationUriProvider = new Mock<IApplicationUriProvider>();
 
             Controller = new ResponsibilitiesController(
-                MockCommunityContext.Object,
-                MockCompanyContext.Object,
-                MockResponsibilityRepository.Object,
+                GetCoreComponentSet(),
+                MockApplicationUriProvider.Object,
                 MockAssetRepository.Object,
-                MockSettingsRepository.Object,
                 MockMediator.Object,
-                MockApplicationUriProvider.Object
+                MockResponsibilityRepository.Object
             );
         }
 

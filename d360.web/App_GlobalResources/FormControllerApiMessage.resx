@@ -189,9 +189,6 @@
   <data name="bottomConstant" xml:space="preserve">
     <value>Bottom.</value>
   </data>
-  <data name="CompanySettings" xml:space="preserve">
-    <value>Company settings</value>
-  </data>
   <data name="Contract" xml:space="preserve">
     <value>Contract</value>
   </data>
@@ -258,12 +255,6 @@
   <data name="FolderIdNotFound" xml:space="preserve">
     <value>Folder id ${id} not found</value>
   </data>
-  <data name="FolderItemAdded" xml:space="preserve">
-    <value>Folder item added successfully.</value>
-  </data>
-  <data name="FolderItemNotFound" xml:space="preserve">
-    <value>Folder Item Id ${id} not found</value>
-  </data>
   <data name="FolderItemRemoved" xml:space="preserve">
     <value>Folder item removed successfully.</value>
   </data>
@@ -300,9 +291,6 @@
   <data name="InvalidEditType" xml:space="preserve">
     <value>Invalid/unsupported edit type</value>
   </data>
-  <data name="InvalidFileType" xml:space="preserve">
-    <value>Invalid file type: {0} cannot be uploaded.</value>
-  </data>
   <data name="InvalidFolder" xml:space="preserve">
     <value>Invalid folder.</value>
   </data>
@@ -317,9 +305,6 @@
   </data>
   <data name="InvalidRelationshipType" xml:space="preserve">
     <value>Invalid relationship type or source item.</value>
-  </data>
-  <data name="IPRestriction" xml:space="preserve">
-    <value>IP Restrictions</value>
   </data>
   <data name="IssueType" xml:space="preserve">
     <value>Issue type</value>
@@ -409,7 +394,7 @@
     <value>No selected items</value>
   </data>
   <data name="NoSuchReport" xml:space="preserve">
-    <value>No such report</value>
+    <value>No Dashboard Found</value>
   </data>
   <data name="NotAllowedUpdateRelationship" xml:space="preserve">
     <value>You are not allowed to update this relationship type as there are existing field types that depend on it.</value>
@@ -500,9 +485,6 @@
   </data>
   <data name="ServiceEndpointCreated" xml:space="preserve">
     <value>Service endpoint successfully created.</value>
-  </data>
-  <data name="SettingSucessfullyUpdated" xml:space="preserve">
-    <value>Settings successfully updated.</value>
   </data>
   <data name="ShoppingCartCleared" xml:space="preserve">
     <value>Shopping cart cleared successfully</value>

@@ -3,8 +3,6 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.extensions;
-using d360.model;
-using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
@@ -13,7 +11,6 @@ using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -22,8 +19,6 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
-using static d360.model.CommunityContext;
-using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -38,15 +33,10 @@ namespace d360.web.Controllers.V2
     public class EnvironmentController : BaseV2ApiController
     {
         IStorageProvider _storage;
-        IAssetRepository _assetRepository;
-        readonly ICompanyContext _company;
 
-        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public EnvironmentController(ICoreComponentSet set, IStorageProvider storage) : base(set)
         {
             _storage = storage;
-            _assetRepository = assetRepository;
-            _company = company;
-
         }
 
         [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
@@ -593,6 +583,42 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Retrieves environment licensing info. 
+        /// Infogix users are excluded from user counts.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("featureflaginfo"),
+            SwaggerConsumes("application/json"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetFeatureFlagInfo()
+        {
+            try
+            {
+                var user = GetClientFeatureFlagUser();
+                var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
+                return await Task.FromResult(
+                    ResponseMessage(
+                        Request.CreateResponse(HttpStatusCode.OK, new
+                        {
+                            clientId = ClientId,
+                            user
+                        }))
+                    ).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> { { "Endpoint Method", "Environment.GetFeatureFlagInfo => " } });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
         /// Retrieves usage information for assets and asset types a user or users has viewed.
         /// </summary>
         /// <returns></returns>
@@ -1124,7 +1150,7 @@ namespace d360.web.Controllers.V2
 
                     var uid = Guid.NewGuid();
                     uids.Add(uid);
-                    _company.HelpResources.Add(new HelpResource
+                    Company.HelpResources.Add(new HelpResource
                     {
                         Name = item.Name,
                         Description = item.Description,
@@ -1137,7 +1163,7 @@ namespace d360.web.Controllers.V2
                     });
                 }
 
-                _company.SaveChanges();
+                Company.SaveChanges();
                 foreach(var i in uids)
                 {
                     result.Add(new HelpMenuItemMessage{ uid = i, title = ApiMessages.HelpMenuItemsCreated, message = ApiMessages.HelpItemsAdded });
@@ -1178,7 +1204,7 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var item in items)
                 {
-                    HelpResource helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
+                    HelpResource helpItem = Company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
 
                     if (item.Name == null)
                     {
@@ -1227,7 +1253,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                _company.SaveChanges();
+                Company.SaveChanges();
                 if (uids.Count > 0)
                 {
                     foreach (var i in uids)
@@ -1281,7 +1307,7 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var item in items)
                 {
-                    var helpItem = _company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
+                    var helpItem = Company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
                     if (helpItem != null && helpItem.isSystem)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorDeletingDefaultHelpItem)).ConfigureAwait(false);
@@ -1289,11 +1315,11 @@ namespace d360.web.Controllers.V2
                     if (helpItem != null && !helpItem.isSystem)
                     {
                         uids.Add(item.uid);
-                        _company.HelpResources.Remove(helpItem);
+                        Company.HelpResources.Remove(helpItem);
                     }
                 }
 
-                _company.SaveChanges();
+                Company.SaveChanges();
                 if (uids.Count > 0)
                 {
                     foreach (var i in uids)

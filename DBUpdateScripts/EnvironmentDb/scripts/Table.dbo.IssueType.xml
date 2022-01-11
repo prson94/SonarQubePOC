@@ -34,6 +34,30 @@ END
 	</rollback>
   </changeSet>
 
+
+   <changeSet author="Puneet Gupta" id="Index.dbo.IssueType-v1">
+   <comment>GOV-16678</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_IssueType_Uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IssueType_Uid] ON [dbo].[IssueType] ([Uid])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_IssueType_Uid')
+BEGIN
+	DROP INDEX [IX_IssueType_Uid] ON [dbo].[IssueType]
+END
+		]]>
+	</rollback>
+  </changeSet>   
+
   <changeSet author="Core" id="Table.dbo.IssueType-IssueType_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

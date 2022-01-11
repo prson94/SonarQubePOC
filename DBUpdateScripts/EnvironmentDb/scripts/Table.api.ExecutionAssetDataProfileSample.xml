@@ -33,4 +33,27 @@ END
 	</rollback>
   </changeSet>
 
+   <changeSet author="Puneet Gupta" id="Table.api.ExecutionAssetDataProfileSample-v2-AddIndexExecutionIDAndItemNumber">
+   <comment>GOV-14869</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ExecutionAssetDataProfileSample_ExecutionID_ItemNumber')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ExecutionAssetDataProfileSample_ExecutionID_ItemNumber] ON [api].[ExecutionAssetDataProfileSample] ([ExecutionID], [ItemNumber] )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_ExecutionAssetDataProfileSample_ExecutionID_ItemNumber')
+BEGIN
+	DROP INDEX [IX_ExecutionAssetDataProfileSample_ExecutionID_ItemNumber] ON [api].[ExecutionAssetDataProfileSample]
+END
+		]]>
+	</rollback>
+  </changeSet>
+  
 </databaseChangeLog>

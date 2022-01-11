@@ -37,7 +37,7 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController : BaseV2ApiController
     {
-        public AuditController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public AuditController(CoreComponentSet set): base(set)
         {
 
         }
@@ -48,6 +48,7 @@ namespace d360.web.Controllers.V2
             { "IntersectType", "RelationshipType" },
             { "Taxonomy" , "Model" },
             { "TaxonomyType" , "ModelType" },
+            { "SemanticType" , "Semantic Type" },
             { "ResponsibilityTypeRelationOverrideItem" , "Responsibility Type Relation Override Item" },
         };
 
@@ -164,7 +165,9 @@ namespace d360.web.Controllers.V2
                     !Company.Any<ResponsibilityType>(i => i.UID == assetUid) &&
                     !Company.Any<Report>(i => i.uid == assetUid) &&
                     !Company.Any<MetricAllocation>(i => i.Uid == assetUid) &&
-                    !Company.Any<Predicate>(i => i.UID == assetUid))
+                    !Company.Any<Predicate>(i => i.UID == assetUid) &&
+                    !Company.Any<Semantic>(i => i.Uid == assetUid)
+                    )
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if (assetType == null)
@@ -717,6 +720,8 @@ namespace d360.web.Controllers.V2
                 select MA.uid, AT.Name as DisplayName, 'MetricAllocation' as Object, MA.ID as ObjectID, null as AssetTypeClass from metrics.Allocation MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.uid = @uid
                 union
 				select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Predicate] where uid = @uid
+                union 
+				select uid, name as DisplayName, 'Semantic' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Semantic] where uid = @uid 
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;
@@ -816,12 +821,8 @@ namespace d360.web.Controllers.V2
                     END AS 'PreviousValue'
                 from reporting.global_audit ga
                 left outer join reporting.global_fieldaudit fa on(fa.auditid = ga.id)
-                inner join[reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-                    and ga.[Object] = 'ReferenceItem'
-                    and ga.ObjectID in 
-                        (select a.objectid from[dbo].[asset] a
-                        inner join[dbo].[assettype] att on(a.assettypeid = att.id)
-                        where att.uid = @uid)
+                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+				inner join [dbo].[assettype] att on att.Name = ga.ActionObjectTypeName and ga.[Object] = 'ReferenceItem' and att.[Object] = 'ReferenceItemType' and att.uid = @uid
                 left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
                 left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
                 left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID

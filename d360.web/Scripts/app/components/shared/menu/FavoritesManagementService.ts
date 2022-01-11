@@ -75,6 +75,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
         this.mutate(state => {
             state.isManageFavoritesModeEnabled = !state.isManageFavoritesModeEnabled;
             state.removeFavoriteIds = new Set();
+            state.searchText = '';
         });
     }
 
@@ -82,6 +83,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
         this.mutate(state => {
             state.isManageFavoritesModeEnabled = false;
             state.removeFavoriteIds = new Set();
+            state.searchText = '';
         });
     }
 
@@ -97,7 +99,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
 
     public setAllFavoritesRemovalSaga(payload: { removeOn: boolean }) {
         for (const favorite of this.currentState.homepageAndFavorites.Favorites) {
-            this.setFavoriteRemovalAction({favoriteId: favorite.Id, removeOn: payload.removeOn});
+            this.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: payload.removeOn });
         }
     }
 
@@ -106,6 +108,12 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
             state.homepageAndFavorites = payload.homefav;
             state.removeFavoriteIds = new Set();
         })
+    }
+
+    public setSearchTextAction({ searchText }: { searchText: string }) {
+        this.mutate(state => {
+            state.searchText = searchText;
+        });
     }
 
     public removeFavoritesSaga() {
@@ -152,11 +160,13 @@ interface FavoritesManagementState {
     homepageAndFavorites: HomepageAndFavoritesModel | null;
     removeFavoriteIds: Set<number>;
     loadingCounter: number;
+    searchText: string;
 }
 
 const initialState: FavoritesManagementState = {
     isManageFavoritesModeEnabled: false,
     homepageAndFavorites: null,
     removeFavoriteIds: new Set(),
-    loadingCounter: 0
+    loadingCounter: 0,
+    searchText: '',
 }

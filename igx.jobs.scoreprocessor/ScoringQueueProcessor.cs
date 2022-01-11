@@ -96,15 +96,44 @@ namespace igx.jobs.scoreprocessor
                         { "ChangeType", scoreInfo.ChangeType.ToString() }
                     };
 
-                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+                bool warningOnly = false;
+                if (scoreInfo.ChangeType == ScoreQueueChangeType.RollupPathChanged)
+                {
+                    if (ex is System.Data.SqlClient.SqlException && ex.Message.Contains("deadlock"))
+                    {
+                        warningOnly = true;
+                    }
+                }
+
+                int minuteDelay = 5;
+                bool shouldRequeue = true;
+                if (warningOnly)
+                {
+                    CoreFunction.AITrackEvent(functionName, "Rollup Deadlock", props, scoreInfo.CompanyID);
+                    
+                    // Only requeue 1 out of 3 times as there are rapid changes that will put many messages on the queue.
+                    Random random = new Random();
+                    int ans = random.Next(1, 12);
+                    if (ans % 3 > 0)
+                    {
+                        shouldRequeue = false;
+                    }
+
+                    minuteDelay = random.Next(15, 45);
+                }
+                else
+                {
+                    CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+                }
+                
 
                 var execUpdater = new ExecutionUpdater { Info = scoreInfo };
                 var closedExecution = await execUpdater.UpdateAsync(ex);
 
-                if (!closedExecution)
+                if (!closedExecution && shouldRequeue)
                 {
                     var queue = new AzureQueueSource();
-                    await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 5, 0));
+                    await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, minuteDelay, 0));
                     queue = null;
                 }
             }

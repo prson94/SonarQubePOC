@@ -180,8 +180,7 @@ namespace d360.web.Controllers.Services
 
         #region DI
 
-        public CustomController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public CustomController(CoreComponentSet set): base(set)
         {
 
         }
@@ -1804,7 +1803,7 @@ namespace d360.web.Controllers.Services
 
                 if (config == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError,OthersMessages.EndPointNotFound);
+                    return Request.CreateResponse(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
                 }
             }
             catch (Exception)

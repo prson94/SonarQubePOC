@@ -10,6 +10,7 @@ import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering
 import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { AssetTypeClass, State } from "../../../models/asset.model";
 import { CompanySettingsService } from "../../../services/settings.service";
+import { ObjectIdService } from "../../../services/object-id.service";
 
 declare var CurrentResourceID;
 
@@ -55,7 +56,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     constructor(private router: Router,
         private assetService: AssetService,
         protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        public objectIdService: ObjectIdService
     ) {
         super(settingsService);
 

@@ -5,9 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Thomas Klok" id="Procedure.graph.UpdateGraphTableHierarchyBy-v15">
-  <comment>GOV-11726</comment>
-  <comment>GOV-15483</comment>
+  <changeSet author="TDuric" id="Procedure.graph.UpdateGraphTableHierarchyBy-v16">
+  <comment>GOV-16524</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -281,6 +280,22 @@ begin
 				from	#hierarchy A
 						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 						inner join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+						
+			--handle counter fields
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	distinct
+						A.GroupID, 
+						A.AssetTypeID,
+						A.ID,
+						A.[Level],
+						cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(5,3)) as Position,
+						A.ParentID,
+						A.[Level] - 1,
+						FT.ColumnOrder,
+						coalesce(FT.CounterPrefix,'')+ cast(FCV.Value as nvarchar(20)) as FormattedValue
+				from	#hierarchy A
+						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1 and FT.Type = 'Counter'
+						inner join FieldCounterValue FCV on FCV.AssetId = A.Id and FCV.FieldTypeId = FT.Id
 		end
 
 		create clustered index CIX_TempTbl on #tbl (GroupID)
@@ -651,6 +666,12 @@ begin
 							)
 		from	graph.AssetNode T
 				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
+				
+		--Queue Search index updates to path
+		insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		select 'ObjectIndex', 'Path', a.Object, a.ObjectID, S.ID
+		FROM [dbo].[asset] a
+		inner join #ids S on S.ID = a.ID and S.GroupID = S.ID;
 	end
 end
 		]]>

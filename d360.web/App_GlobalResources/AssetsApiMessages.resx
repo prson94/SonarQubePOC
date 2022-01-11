@@ -144,9 +144,6 @@
   <data name="CanEditParent" xml:space="preserve">
     <value>Can Edit Parent</value>
   </data>
-  <data name="CanOwnFusion" xml:space="preserve">
-    <value>Can Own Fusion</value>
-  </data>
   <data name="ClassNotSupport" xml:space="preserve">
     <value>Class '{0}' is not supported. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.</value>
   </data>
@@ -227,6 +224,9 @@
   </data>
   <data name="InvalidParameter_pageSize" xml:space="preserve">
     <value>Invalid integer value for parameter '_pageSize'</value>
+  </data>
+  <data name="InvalidParentAssetUid" xml:space="preserve">
+    <value>ParentAssetUid {0} is invalid</value>
   </data>
   <data name="InvalidResourceUID" xml:space="preserve">
     <value>Invalid resourceUid provided</value>

@@ -124,6 +124,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Artifact not found..
+        /// </summary>
+        public static string ArtifactNotFound {
+            get {
+                return ResourceManager.GetString("ArtifactNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset cross reference already exists..
         /// </summary>
         public static string AssetCorssRefAlreadyExists {
@@ -268,15 +277,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset cross reference already exists..
-        /// </summary>
-        public static string CrossRefExists {
-            get {
-                return ResourceManager.GetString("CrossRefExists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You are currently watching &apos;{0}&apos; via it&apos;s parent, &apos;{1}&apos;..
         /// </summary>
         public static string CurrentWatch {
@@ -336,15 +336,6 @@ namespace Resources {
         public static string EmptyInvalidParameterSet {
             get {
                 return ResourceManager.GetString("EmptyInvalidParameterSet", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Type cannot be empty. Please select a type from the dropdown..
-        /// </summary>
-        public static string EmptyType {
-            get {
-                return ResourceManager.GetString("EmptyType", resourceCulture);
             }
         }
         
@@ -898,15 +889,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _direction provided.
-        /// </summary>
-        public static string Invalid_Direction {
-            get {
-                return ResourceManager.GetString("Invalid_Direction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid _includeChildAssets provided.
         /// </summary>
         public static string Invalid_includeChildAssetsProvided {
@@ -957,15 +939,6 @@ namespace Resources {
         public static string InvalidAssetTypeID {
             get {
                 return ResourceManager.GetString("InvalidAssetTypeID", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No match found for AssetTypeUid provided..
-        /// </summary>
-        public static string InvalidAssetTypeUid {
-            get {
-                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
             }
         }
         
@@ -1213,6 +1186,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is an invalid value for {1}.
+        /// </summary>
+        public static string InvalidParameterMessage {
+            get {
+                return ResourceManager.GetString("InvalidParameterMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Request.
         /// </summary>
         public static string InvalidRequest {
@@ -1411,15 +1393,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name is required..
-        /// </summary>
-        public static string NameRequired {
-            get {
-                return ResourceManager.GetString("NameRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to No Groups provided in request.
         /// </summary>
         public static string NoGroupRequest {
@@ -1488,6 +1461,15 @@ namespace Resources {
         public static string OneMoreUidExists {
             get {
                 return ResourceManager.GetString("OneMoreUidExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The OpenID provider response is missing code and/or state. Your administrator may have misconfigured your identity provider settings..
+        /// </summary>
+        public static string OpenIdCodeOrStateIsNotPresent {
+            get {
+                return ResourceManager.GetString("OpenIdCodeOrStateIsNotPresent", resourceCulture);
             }
         }
         
@@ -1798,15 +1780,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error encountered while deleteing template {0}..
-        /// </summary>
-        public static string TemplateDeletedErrorMessage {
-            get {
-                return ResourceManager.GetString("TemplateDeletedErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Template Deleted Successfully..
         /// </summary>
         public static string TemplateDeletedMessage {
@@ -1866,15 +1839,6 @@ namespace Resources {
         public static string UidConstant {
             get {
                 return ResourceManager.GetString("UidConstant", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Uid Invalid for {0}.
-        /// </summary>
-        public static string UidInvalid {
-            get {
-                return ResourceManager.GetString("UidInvalid", resourceCulture);
             }
         }
         

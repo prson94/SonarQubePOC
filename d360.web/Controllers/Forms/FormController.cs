@@ -37,13 +37,13 @@ namespace d360.web.Controllers
         readonly IStorageProvider Storage;
         readonly IResponsibilityRepository ResponsibilityRepository;
 
-        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
+            : base(set)
         {
             Storage = storage;
             ResponsibilityRepository = responsibilityRepository;
 #if DEBUG
-            company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
+            Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
 
         }
@@ -572,8 +572,6 @@ namespace d360.web.Controllers
                     return EditServiceEndpoint(form);
                 case "INTERSECT":
                     return EditRelationship(form);
-                case "INTERSECTTYPE":
-                    return EditIntersectType(form);
                 case "NAMESPACE":
                     return EditNamespace(form);
                 case "ORGANIZATION":
@@ -617,10 +615,6 @@ namespace d360.web.Controllers
                     return DeleteCustomSynonym(form);
                 case "ENDPOINT":
                     return DeleteCustomAPIEndPoint(form);
-                case "INTERSECTTYPE":
-                    IntersectType intersectType = Company.GetById<IntersectType>(objectID);
-                    form.Add("IntersectTypeUid", intersectType.uid.ToString());
-                    return DeleteIntersectType(form);
                 case "NAMESPACE":
                     return DeleteCustomAPINamespace(form);
                 case "ORGANIZATION":
@@ -671,8 +665,6 @@ namespace d360.web.Controllers
                     return AddServiceEndpoint(form);
                 case "INTERSECT":
                     return AddRelationship(form);
-                case "INTERSECTTYPE":
-                    return AddIntersectType(form);
                 case "NAMESPACE":
                     return AddNamespace(form);
                 case "ORGANIZATION":

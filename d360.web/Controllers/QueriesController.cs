@@ -15,8 +15,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public QueriesController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public QueriesController(CoreComponentSet set): base(set)
         { }
 
         #endregion

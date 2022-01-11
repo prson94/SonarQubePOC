@@ -15,7 +15,7 @@ import { MeasureConditionsDetailsComponent } from './measure-conditions-details.
         FormsModule,
         CommonModule,
         RouterModule,
-        HttpClientModule,
+
         DirectivesModule,
         PipesModule,
 
@@ -31,11 +31,7 @@ import { MeasureConditionsDetailsComponent } from './measure-conditions-details.
         MeasureConditionsDetailsComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
+        
     ]
 })
 export class ScoreDefinitionModule { }

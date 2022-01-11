@@ -144,7 +144,7 @@ namespace d360.model.DataAccessLayer
 
                     if (model.CompanyResource == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound,AssetTypeErrors.NotFound, string.Format(MemberShipErrors.UserUidNotFound, model.Uid));
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.NotFound, string.Format(MemberShipErrors.UserUidNotFound, model.Uid));
                     }
                 }
 
@@ -193,10 +193,10 @@ namespace d360.model.DataAccessLayer
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
 
-                return new WorkHttpStatus(HttpStatusCode.InternalServerError,AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
+                return new WorkHttpStatus(HttpStatusCode.InternalServerError, AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
             }
 
-            return new WorkHttpStatus(HttpStatusCode.OK,AssetTypeErrors.Success, MemberShipErrors.UserDeletedMessage);
+            return new WorkHttpStatus(HttpStatusCode.OK, AssetTypeErrors.Success, MemberShipErrors.UserDeletedMessage);
         }
         public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
         {
@@ -206,7 +206,8 @@ namespace d360.model.DataAccessLayer
             {
                 results = await ProcessUpsertUsers(execution, users, lookupFieldsPassedByValue, isInsert, IsChangePasswordReqeust).ConfigureAwait(false);
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
                 execution.ErrorMessage = message;
@@ -399,6 +400,8 @@ namespace d360.model.DataAccessLayer
                 var success = true;
                 var messages = new List<string>();
 
+                user.FirstName = SanitizeValue(user.FirstName);
+                user.LastName = SanitizeValue(user.LastName);
 
                 if (user.IsNew)
                 {
@@ -503,7 +506,7 @@ namespace d360.model.DataAccessLayer
                         if (isUser == null || isUser.Object != "Resource")
                         {
                             success = false;
-                            messages.Add(string.Format(MemberShipErrors.UserUidNotFound,user.uid));
+                            messages.Add(string.Format(MemberShipErrors.UserUidNotFound, user.uid));
                         }
                     }
 
@@ -522,7 +525,7 @@ namespace d360.model.DataAccessLayer
                 if (string.IsNullOrEmpty(user.Username) || !Regex.IsMatch(user.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
                 {
                     success = false;
-                    messages.Add( MemberShipErrors.InvalidEmail);
+                    messages.Add(MemberShipErrors.InvalidEmail);
                 }
                 else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
                 {
@@ -556,12 +559,9 @@ namespace d360.model.DataAccessLayer
                 row["ItemNumber"] = user.ItemNumber;
                 row["Username"] = user.Username;
 
-                user.FirstName = SanitizeValue(user.FirstName);
-
                 row["FirstName"] = user.FirstName;
-
-                user.LastName = SanitizeValue(user.LastName);
                 row["LastName"] = user.LastName;
+
                 row["Password"] = user.Password;
                 if (user.State.HasValue && !IsChangePasswordReqeust)
                 {
@@ -1222,7 +1222,7 @@ namespace d360.model.DataAccessLayer
                 ExecutionID = Guid.NewGuid(),
                 ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.UpsertUsers,
-                
+
             };
 
             return await CreateApiBatchJob(executionInfo, execution, model, StorageProvider, QueueSource).ConfigureAwait(false);
@@ -1230,11 +1230,14 @@ namespace d360.model.DataAccessLayer
 
         private string SanitizeValue(string ParameterValue)
         {
-            var sanitizer = new Ganss.XSS.HtmlSanitizer();
-            sanitizer.AllowedSchemes.Add("data");
-            return sanitizer.Sanitize(ParameterValue);
+            var allowedTags = new[] { "data" };
+            var allowedSchemas = new[] { "data" };
 
+            var sanitizer = new Ganss.XSS.HtmlSanitizer(allowedTags: allowedTags, allowedSchemes: allowedSchemas);
+            var retstring = sanitizer.Sanitize(ParameterValue);
+            return retstring;
         }
+
         private bool validatePassword(string password)
         {
             if (string.IsNullOrEmpty(password))
@@ -1258,211 +1261,6 @@ namespace d360.model.DataAccessLayer
             }
 
             return true;
-        }
-
-        public async Task<List<FavoriteApiViewModel>> GetFavorites(int resourceID)
-        {
-            var dbArgs = new DynamicParameters();
-            dbArgs.Add("resourceId", resourceID);
-
-            string sql = $@"select q.[Id], q.[Name], q.[Route], q.[Type], q.[Uid] from (
-select	coalesce(AName.DisplayValue, TA.[Name]) as [Name],
-		lower(f.[Type] +'/' + convert(nvarchar(50),f.[Uid])) as [Route],
-		f.[Type],
-		f.SortOrder,
-        f.[Uid],
-        f.[ID] as Id
-from	Favorite f
-		left join Asset a on a.[Object] = f.[Object] and a.[ObjectID] = f.[ObjectID]
-		left join AssetType ta on ta.[Object] = f.[Object] and ta.[ObjectID] = f.[ObjectID]
-        outer apply [dbo].[GetAssetDisplayValueById](A.ID) AName
-where	f.ObjectID > 0 and f.ResourceID = @resourceId
-union
-select		coalesce(f.Name, f.Route) as Name,	
-			f.Route as [Route],
-			f.[Type],
-			f.SortOrder,
-            f.[Uid],
-            f.[ID] as Id
-from		Favorite f	
-where		f.ObjectID is null 
-			and f.ResourceID = @resourceId
-) q
-order by	q.SortOrder";
-
-            var results = await CompanyContext.QueryAsync<FavoriteApiViewModel>(sql, dbArgs, ApiTimeout);
-
-            return results.ToList();
-        }
-
-        public async Task<FavoriteApiViewModel> GetHomePage(int resourceID)
-        {
-            var dbArgs = new DynamicParameters();
-            dbArgs.Add("resourceId", resourceID);
-
-            string sql = $@"select q.[Id], q.[Name], q.[Route], q.[Type], q.[Uid] from (
-select	coalesce(AName.DisplayValue, TA.[Name]) as [Name],
-		lower(f.[Type] +'/' + convert(nvarchar(50),f.[Uid])) as [Route],
-		f.[Type],
-		f.SortOrder,
-        f.[Uid],
-        f.[ID] as Id
-from	Favorite f
-		left join Asset a on a.[Object] = f.[Object] and a.[ObjectID] = f.[ObjectID]
-		left join AssetType ta on ta.[Object] = f.[Object] and ta.[ObjectID] = f.[ObjectID]
-        outer apply [dbo].[GetAssetDisplayValueById](A.ID) AName
-where	f.ObjectID > 0 	
-		and f.IsHomePage = 1
-        and f.ResourceID = @resourceId
-union
-select		coalesce(f.Name, f.Route) as Name,	
-			f.Route as [Route],
-			f.[Type],
-			f.SortOrder,
-            f.[Uid],
-            f.[ID] as Id
-from		Favorite f	
-where		f.ObjectID is null	
-		    and f.IsHomePage = 1
-			and f.ResourceID = @resourceId
-) q
-order by	q.SortOrder";
-
-            var results = await CompanyContext.QueryFirstOrDefaultAsync<FavoriteApiViewModel>(sql, dbArgs, ApiTimeout);
-
-            return results;
-        }
-
-        public async Task<bool> ToggleFavorite(int resourceID, FavoriteApiModel apiFavorite, bool isHomepage = false)
-        {
-            bool result = false;
-            return await Task.Run(() =>
-            {
-                Favorite favorite = new Favorite()
-                {
-                    ResourceID = resourceID,
-                    IsHomePage = isHomepage,
-                    Type = apiFavorite.Type.ToString(),
-                    Route = apiFavorite.Route
-                };
-                switch (apiFavorite.Type)
-                {
-                    case FavoriteType.Page:
-                        favorite.Name = apiFavorite.Name ?? apiFavorite.Route;
-                        break;
-                    case FavoriteType.Asset:
-                        AssetDetail asset = GetAssetDetailsFromRoute(apiFavorite.Route);
-                        if (asset == null)
-                        {
-                            return false;
-                        }
-
-                        favorite.Object = asset.Object;
-                        favorite.ObjectID = asset.ObjectID;
-                        favorite.Uid = asset.uid;
-                        favorite.Name = asset.DisplayValue;
-                        break;
-                    case FavoriteType.AssetType:
-                        AssetType assettype = GetAssetTypeFromRoute(apiFavorite.Route);
-                        if (assettype == null)
-                        {
-                            return false;
-                        }
-
-                        favorite.Object = assettype.Object;
-                        favorite.ObjectID = assettype.ObjectID;
-                        favorite.Uid = assettype.uid;
-                        favorite.Name = assettype.Name;
-                        break;
-                }
-
-                //only 1 home page allowed at once, remove old one(s)
-                if (favorite.IsHomePage)
-                {
-                    var favorites = CompanyContext.Filter<Favorite>(f => f.ResourceID == resourceID && f.IsHomePage).ToList();
-                    CompanyContext.Favorites.RemoveRange(favorites);
-                    CompanyContext.SaveChanges();
-                }
-
-                Favorite existing = null;
-
-                if (!string.IsNullOrEmpty(favorite.Object) && favorite.ObjectID > 0)
-                {
-                    existing = CompanyContext.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Object == favorite.Object && f.ObjectID == favorite.ObjectID);
-                }
-                else
-                {
-                    existing = CompanyContext.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Name == favorite.Name && f.Route == favorite.Route);
-                }
-
-                if (existing == null)
-                {
-                    CompanyContext.Add(favorite);
-                    result = true;
-                }
-                else
-                {
-                    if (existing.IsHomePage != favorite.IsHomePage)
-                    {
-                        existing.IsHomePage = favorite.IsHomePage;
-                        CompanyContext.Update(existing);
-                        result = true;
-                    }
-                    else
-                    {
-                        CompanyContext.Delete(existing);
-                        result = true;
-                    }
-                }
-                return result;
-            });
-        }
-
-        private AssetDetail GetAssetDetailsFromRoute(string route)
-        {
-            AssetDetail asset = null;
-            Dictionary<int, string> patterns = new Dictionary<int, string>()
-            {
-                {0, @"\b([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})\/?" }, //UID pattern
-                {1, @"^([a-z\/]+)\/(\d+)(\/|[;a-z=]+)(\d+)$" }, // type/typeid/objectid pattern
-                {2, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" }, // type/objectid pattern
-                {3, @"^([a-z\/]+)\/([\d\/]+)\/([id\/]+)\/(\d+)$" } // type/typeid/ID/objectid pattern
-            };
-            foreach (KeyValuePair<int, string> entry in patterns)
-            {
-                Match regex = Regex.Match(route, entry.Value, RegexOptions.IgnoreCase);
-                if (regex.Success)
-                {
-                    switch (entry.Key)
-                    {
-                        case 0: //UID
-                            Guid uid = Guid.Parse(regex.Groups[1].Value);
-                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.uid == uid);
-                            break;
-                        case 1: //type/typeid/objectid
-                            string objecttype = RoutePrefixToObjectType(regex.Groups[1].Value);
-                            int typeobjectid = int.Parse(regex.Groups[2].Value);
-                            int oid = int.Parse(regex.Groups[4].Value);
-                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objecttype && a.ObjectID == oid);
-                            break;
-                        case 2: //type/objectid
-                            string objectType = RoutePrefixToObjectType(regex.Groups[1].ToString());
-                            int oId = int.Parse(regex.Groups[2].ToString());
-                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objectType && a.ObjectID == oId);
-                            break;
-                        case 3: //type/typeid/id/objectid
-                            string objecTType = RoutePrefixToObjectType(regex.Groups[1].Value);
-                            int oID = int.Parse(regex.Groups[4].Value);
-                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objecTType && a.ObjectID == oID);
-                            break;
-                    }
-                }
-                if (asset != null)
-                {
-                    break;
-                }
-            }
-            return asset;
         }
 
         public List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups)
@@ -1540,44 +1338,6 @@ order by	q.SortOrder";
             }
 
             return results;
-        }
-
-        private AssetType GetAssetTypeFromRoute(string route)
-        {
-            AssetType assettype = null;
-            Dictionary<int, string> patterns = new Dictionary<int, string>()
-            {
-                {0, @"\b([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})\/?" }, //UID pattern
-                {1, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" }, // type/typeid pattern
-            };
-            foreach (KeyValuePair<int, string> entry in patterns)
-            {
-                Match regex = Regex.Match(route, entry.Value, RegexOptions.IgnoreCase);
-                if (regex.Success)
-                {
-                    switch (entry.Key)
-                    {
-                        case 0: //UID
-                            Guid uid = Guid.Parse(regex.Groups[1].Value);
-                            assettype = CompanyContext.AssetTypes.FirstOrDefault(a => a.uid == uid);
-                            break;
-                        case 1: //type/typeid
-                            string objecttype = RoutePrefixToObjectType(regex.Groups[1].Value);
-                            int oid = int.Parse(regex.Groups[2].Value);
-                            if (objecttype != "")
-                            {
-                                objecttype += "Type";
-                                assettype = CompanyContext.AssetTypes.FirstOrDefault(a => a.Object == objecttype && a.ObjectID == oid);
-                            }
-                            break;
-                    }
-                }
-                if (assettype != null)
-                {
-                    break;
-                }
-            }
-            return assettype;
         }
 
         private string RoutePrefixToObjectType(string prefix)

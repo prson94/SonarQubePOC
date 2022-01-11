@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
@@ -33,7 +33,7 @@ import { ScoreHistoryModule } from './history/score-history.module';
         FormsModule,
         CommonModule,
         RouterModule,
-        HttpClientModule,
+
         DirectivesModule,
         //d3s
         CoreModule,
@@ -63,11 +63,7 @@ import { ScoreHistoryModule } from './history/score-history.module';
         AssetScoreComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
+        
     ]
 })
 export class SharedAssetScoreModule { }

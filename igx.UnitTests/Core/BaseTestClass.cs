@@ -28,6 +28,9 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using d360.model.helpers.filters;
 using MediatR;
+using d360.web.Controllers;
+using d360.web.Utilities;
+using LaunchDarkly.Sdk.Server;
 
 namespace igx.UnitTests
 {
@@ -73,6 +76,7 @@ namespace igx.UnitTests
             var assetTypeMock = CreateDbSetMock<AssetType>(assetTypes);
             mock.Setup(x => x.Filter<AssetType>(It.IsAny<Expression<Func<AssetType, bool>>>()))
                 .Returns(assetTypeMock.Object);
+
             var fieldTypes = new List<FieldType> { new FieldType { ID = 1, Name = "unit test", Type = "not a tag", AssetTypeID = 1 } }.AsQueryable();
             var fieldTypeMock = CreateDbSetMock<FieldType>(fieldTypes);
             mock.Setup(x => x.FieldTypes).Returns(fieldTypeMock.Object);
@@ -160,7 +164,7 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        private static Mock<DbSet<T>> CreateDbSetMock<T>(IEnumerable<T> elements) where T : class
+        public static Mock<DbSet<T>> CreateDbSetMock<T>(IEnumerable<T> elements) where T : class
         {
             var elementsAsQueryable = elements.AsQueryable();
             var dbSetMock = new Mock<DbSet<T>>();
@@ -171,6 +175,23 @@ namespace igx.UnitTests
             dbSetMock.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(elementsAsQueryable.GetEnumerator());
 
             return dbSetMock;
+        }
+
+        public IApplicationUriProvider GetApplicationUriProvider()
+        {
+            var mock = new Mock<IApplicationUriProvider>();
+            return mock.Object;
+        }
+
+        public ICoreComponentSet GetCoreComponentSet()
+        {
+            //var mock = new Mock<CoreComponentSet>(GetCommunity(), GetCompany(), GetSettingsRepository(), new LdClient("sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68"));
+            var mock = new Mock<ICoreComponentSet>();
+            mock.Setup(s => s.Community).Returns(GetCommunity());
+            mock.Setup(s => s.Company).Returns(GetCompany());
+            mock.Setup(s => s.Ld).Returns(new LdClient("sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68"));
+            mock.Setup(s => s.SettingsRepository).Returns(GetSettingsRepository());
+            return mock.Object;
         }
 
         public IStorageProvider GetStorage()
@@ -308,6 +329,10 @@ namespace igx.UnitTests
                    Results = new List<DatabaseBulkAssetResult>()
                })
                : Task.FromResult<dynamic>(null));
+
+            mockRepo.Setup(x => x.GetAssetDescendants(It.IsAny<Guid>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(Task.FromResult(new AssetDescendantsResults()));            
+
             return mockRepo.Object;
         }
 

@@ -48,4 +48,28 @@ END
 	</rollback>
   </changeSet>
 
+    <changeSet author="Puneet Gupta" id="Index.api.ExecutionDeletedAssetType-v1">
+   <comment>GOV-16678</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_ExecutionDeletedAssetType_AssetTypeID_ExecutionID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Api_ExecutionDeletedAssetType_AssetTypeID_ExecutionID] ON [api].[ExecutionDeletedAssetType] ([AssetTypeID],[ExecutionID])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Api_ExecutionDeletedAssetType_AssetTypeID_ExecutionID')
+BEGIN
+	DROP INDEX [IX_Api_ExecutionDeletedAssetType_AssetTypeID_ExecutionID] ON [api].[ExecutionDeletedAssetType]
+END
+
+		]]>
+	</rollback>
+  </changeSet> 
+ 
 </databaseChangeLog>

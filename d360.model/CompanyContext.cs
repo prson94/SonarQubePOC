@@ -20,7 +20,6 @@ using System.Configuration;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
@@ -30,6 +29,7 @@ using d360.model.helpers;
 using System.Text;
 using d360.model.helpers.filters;
 using Microsoft.ApplicationInsights;
+using System.Threading;
 
 namespace d360.model
 {
@@ -51,7 +51,7 @@ namespace d360.model
             }
         }
 
-        #region Ctors
+#region Ctors
 
         public CompanyContext(
             ICommunityContext community, 
@@ -70,6 +70,7 @@ namespace d360.model
             QueueSource = queueSource;
             Storage = storage;
 
+            CurrentClientID = context.ClientID;
             CurrentCompanyID = context.CompanyID;
             CurrentDomainSettingID = context.DomainSettingID;
             CurrentResourceID = context.ResourceID;
@@ -94,9 +95,9 @@ namespace d360.model
             }
         }
 
-        #endregion
+#endregion
 
-        #region DbSets
+#region DbSets
 
         public DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }
 
@@ -166,6 +167,8 @@ namespace d360.model
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
+        public DbSet<Semantic> Semantics { get; set; }
+
         public DbSet<SiteNav> SiteNav { get; set; }
 
         public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
@@ -195,9 +198,9 @@ namespace d360.model
         public DbSet<AssetDataProfile> AssetDataProfile { get; set; }
         public DbSet<AssetDataProfileSample> AssetDataProfileSample { get; set; }
 
-        #endregion
+#endregion
 
-        #region Repository Methods
+#region Repository Methods
 
 
         public void AddOrUpdateFields(List<Field> items)
@@ -335,7 +338,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)
         {
-            #region SQL
+#region SQL
 
             var sql = $@"
 	declare @tbl table (SortOrder int, [Group] varchar(50), [Object] varchar(50), ObjectID int, Label nvarchar(500), [Type] varchar(50));
@@ -404,7 +407,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
 	select [Group], [Object], [ObjectID], [Label], [Type] from @tbl order by SortOrder, Label
 ";
-            #endregion
+#endregion
 
             return await Database.Connection.QueryAsync<FieldFilterModel>(sql, new
             {
@@ -695,8 +698,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
             {
-                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+#if RUNNING_ON_STANDARD
+                model.PluralizedName = PluralizeService.Core.PluralizationProvider.Pluralize(model.Name ?? "");
+#endif
+
+#if RUNNING_ON_NET48
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 model.PluralizedName = pluralize.Pluralize(model.Name ?? "");
+#endif
             }
             return model;
         }
@@ -924,7 +933,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             return value;
         }
 
-        #region Relationships
+#region Relationships
 
         public IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID)
         {
@@ -1113,16 +1122,10 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
         }
 
 
-        public List<IntersectTypeOption> GetIntersectTypeOptions(
-            SystemObjects? subject = null, int? subjectID = null,
-            SystemObjects? @object = null, int? objectID = null,
-            int? predicateID = null,
-            List<AssetTypeClass> limitToClasses = null)
+        public List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null)
         {
             string noClassLimitSql = "";
             string classLimitSql = "";
-            var dbArgs = new DynamicParameters();
-
 
             List<string> excludedClasses = new List<string>
             {
@@ -1134,7 +1137,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                 classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
             }
 
-            var predicate = Predicates.FirstOrDefault(x => x.ID == predicateID);
+            var predicate = Predicates.FirstOrDefault(x => x.UID == predicateUid);
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
             string whereStatement = "";
 
@@ -1146,20 +1149,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 				)";
             }
 
-            if (subject.HasValue && subjectID.HasValue && limitToClasses != null)
+            if (subjectUid.HasValue && limitToClasses != null)
             {
                 if (limitToClasses.Contains(AssetTypeClass.Reference))
                 {
-                    noClassLimitSql += @" UNION SELECT	0 as ID, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
+                    noClassLimitSql += @" UNION SELECT	0 as ID, null as Uid, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
                 }
             }
 
             var sql = $@"
     SELECT		I.ID,
+                I.Uid,
 				I.Name,
 				I.Type
 	FROM		(
                 select	T.ObjectID as ID,
+                        T.Uid,
 		                case 
 			                when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
                             when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
@@ -1178,28 +1183,27 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 			 	{noClassLimitSql}{whereStatement}
                 ) I";
 
-            if (subject.HasValue && subjectID.HasValue)
+            if (subjectUid.HasValue)
             {
-                sql += $@" left join IntersectType T on 
-(T.Subject = '{subject.Value.ToString()}' and T.SubjectID = {subjectID.Value} and T.Object = I.[Type] and T.ObjectID = I.ID)";
-                if ((@object.HasValue && objectID.HasValue) || predicateID.HasValue)
+                sql += $@" left join IntersectType T on (T.SubjectUid = @subjectUid and T.Object = I.[Type] and T.ObjectID = I.ID) ";
+                if (objectUid.HasValue || predicateUid.HasValue)
                 {
-                    if (@object.HasValue && objectID.HasValue)
+                    if (objectUid.HasValue)
                     {
-                        if (predicateID.HasValue)
+                        if (predicateUid.HasValue)
                         {
-                            sql += $@" and ((T.Object = '{@object.Value.ToString()}' and T.ObjectID = {objectID.Value} and T.PredicateID = {predicateID.Value}) or T.ID is null)";
+                            sql += $@" and (T.ObjectUid = @objectUid and T.PredicateID = (select top 1 ID from [Predicate] where UID = @predicateUid) or T.ID is null)";
                         }
                         else
                         {
-                            sql += $@" and ((T.Object = '{@object.Value.ToString()}' and T.ObjectID = {objectID.Value}) or T.ID is null)";
+                            sql += $@" and (T.ObjectUid = @objectUid or T.ID is null)";
                         }
                     }
                     else
                     {
-                        if (predicateID.HasValue)
+                        if (predicateUid.HasValue)
                         {
-                            sql += $@" and T.PredicateID = {predicateID.Value} where T.ID is null";
+                            sql += $@" and T.PredicateID = (select top 1 ID from [Predicate] where UID = @predicateUid) where T.ID is null";
                         }
                     }
                 }
@@ -1207,21 +1211,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             sql += " ORDER BY I.Name";
 
-            return Database.Connection.Query<IntersectTypeOption>(sql, dbArgs).ToList();
+            return Database.Connection.Query<IntersectTypeOption>(sql, new { subjectUid, predicateUid, objectUid }).ToList();
         }
 
-        public List<Predicate> GetPredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
-        {
-            var sSubject = subject.ToString();
-            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
 
-            if (sSubject == "IntersectType")
+        public List<Predicate> GetPredicateOptions(Guid subjectUid, Guid? objectUid, Guid? predicateUid)
+        {
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
+            var isSubjectIntersectType = IntersectTypes.Any(i => i.uid == subjectUid);
+
+            if (isSubjectIntersectType)
             {
                 allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
             }
             else
             {
-                var subjectAssetType = Filter<AssetType>(i => i.Object == sSubject && i.ObjectID == subjectID).FirstOrDefault();
+                var subjectAssetType = Filter<AssetType>(i => i.uid == subjectUid).FirstOrDefault();
                 if (subjectAssetType == null)
                 {
                     throw new ArgumentNullException(CompanyContextErrors.SubjectAssetTypeNotExists);
@@ -1230,23 +1235,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             }
 
             var sql = @"
-select	P.*
-from	[Predicate] P
-		left join IntersectType I on I.PredicateID = P.ID 
-			and I.Subject = @s and I.SubjectID = @sid 
-			and ( (@o is null) or (@o is not null and I.Object = @o and I.ObjectID = @oid) )
-			and ( (@pid is null) or (@pid is not null and I.PredicateID <> @pid) )
-where	I.ID is null";
+                select	P.*
+                from	[Predicate] P
+		                left join IntersectType I on I.PredicateID = P.ID 
+			                and I.SubjectUid = @subjectUid 
+			                and ( (@objectUid is null) or (@objectUid is not null and I.ObjectUid = @objectUid) )
+			                and ( (@predicateUid is null) or (@predicateUid is not null and I.PredicateID <> (select top 1 ID from [Predicate] where UID = @predicateUid) ) )
+                where	I.ID is null";
 
             var predicates = Query<Predicate>(sql, new
             {
-                s = new DbString { IsAnsi = true, Value = subject.ToString() },
-                sid = subjectID,
-                o = new DbString { IsAnsi = true, Value = @object.ToString() },
-                oid = objectID,
-                pid = predicateID
-            }).ToList()
-            .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
+                subjectUid,
+                objectUid,
+                predicateUid
+            })
+                .ToList()
+                .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
                         i.Type.AsInfoModel().AllowEditFromRelationshipEditor
                   );
 
@@ -1255,6 +1259,7 @@ where	I.ID is null";
             return predicates.ToList();
         }
 
+       
         public IntersectType UpsertIntersectType(IntersectType model)
         {
             var predicateModel = GetById<Predicate>(model.PredicateID.Value);
@@ -1318,9 +1323,9 @@ where	I.ID is null";
             return model;
         }
 
-        #endregion
+#endregion
 
-        #region Social
+#region Social
 
         /// <summary>
         /// Get a list of those following the current object.
@@ -1337,9 +1342,9 @@ where	I.ID is null";
             return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = fs }).AsQueryable();
         }
 
-        #endregion
+#endregion
 
-        #region Token Processing Methods
+#region Token Processing Methods
 
         private string renderTemplate(string templateType, string action, SystemObjects type, int id)
         {
@@ -1358,11 +1363,11 @@ where	I.ID is null";
             return renderTemplate("Tooltip", action, type, id);
         }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
 
-        #region Generic Methods
+#region Generic Methods
 
         public override bool Add<T>(T item)
         {
@@ -1659,37 +1664,37 @@ where	I.ID is null";
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added))
             {
-                #region Business logic : ICreatedMetadata
+#region Business logic : ICreatedMetadata
                 if (entry.Entity is ICreatedMetadata)
                 {
                     var o = entry.Entity as ICreatedMetadata;
                     o.CreatedBy = CurrentResourceID;
                     o.CreatedOn = DateTime.UtcNow;
                 }
-                #endregion
+#endregion
 
-                #region Business logic : IUIDMetadata
+#region Business logic : IUIDMetadata
                 if (entry.Entity is IUIDMetadata)
                 {
                     var o = entry.Entity as IUIDMetadata;
                     o.UID = Guid.NewGuid();
                 }
-                #endregion
+#endregion
 
             }
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Modified | EntityState.Deleted))
             {
-                #region Business logic : IUpdatedMetadata
+#region Business logic : IUpdatedMetadata
                 if (entry.Entity is IUpdatedMetadata)
                 {
                     var o = entry.Entity as IUpdatedMetadata;
                     o.UpdatedBy = CurrentResourceID;
                     o.UpdatedOn = DateTime.UtcNow;
                 }
-                #endregion
+#endregion
 
-                #region Business logic : Field
+#region Business logic : Field
                 if (entry.Entity is Field)
                 {
 
@@ -1713,9 +1718,9 @@ where	I.ID is null";
                     }
 
                 }
-                #endregion
+#endregion
 
-                #region Business logic : FieldType
+#region Business logic : FieldType
                 if (entry.Entity is FieldType)
                 {
                     var o = entry.Entity as FieldType;
@@ -1747,9 +1752,9 @@ where	I.ID is null";
                         }
                     }
                 }
-                #endregion
+#endregion
                                 
-                #region Business logic : Group
+#region Business logic : Group
                 if (entry.Entity is Group)
                 {
                     var o = entry.Entity as Group;
@@ -1775,9 +1780,9 @@ where	I.ID is null";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : Intersect
+#region Business logic : Intersect
                 if (entry.Entity is Intersect)
                 {
                     var o = entry.Entity as Intersect;
@@ -1798,9 +1803,9 @@ where	I.ID is null";
                     }
 
                 }
-                #endregion
+#endregion
 
-                #region Business logic : IntersectType
+#region Business logic : IntersectType
                 if (entry.Entity is IntersectType)
                 {
                     var o = entry.Entity as IntersectType;
@@ -1858,9 +1863,9 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : AssetType
+#region Business logic : AssetType
                 if (entry.Entity is AssetType)
                 {
                     var o = entry.Entity as AssetType;
@@ -1869,9 +1874,9 @@ select @err";
                         throw new ArgumentException(Messages.Error_Name_Required);
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : QuestionType
+#region Business logic : QuestionType
                 if (entry.Entity is QuestionType)
                 {
                     var o = entry.Entity as QuestionType;
@@ -1890,9 +1895,9 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : Report
+#region Business logic : Report
                 if (entry.Entity is Report)
                 {
                     var o = entry.Entity as Report;
@@ -1911,9 +1916,9 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : ResponsibilityType
+#region Business logic : ResponsibilityType
                 if (entry.Entity is ResponsibilityType)
                 {
                     var o = entry.Entity as ResponsibilityType;
@@ -1941,9 +1946,9 @@ select @err";
 
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : SurveyType
+#region Business logic : SurveyType
                 if (entry.Entity is SurveyType)
                 {
                     var o = entry.Entity as SurveyType;
@@ -1962,9 +1967,9 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
-                #region Business logic : Tag
+#region Business logic : Tag
                 if (entry.Entity is Tag)
                 {
                     var o = entry.Entity as Tag;
@@ -1983,11 +1988,11 @@ select @err";
                         }
                     }
                 }
-                #endregion
+#endregion
 
             }
 
-            #region Get objects that need event tracking.
+#region Get objects that need event tracking.
 
             var modifiedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
                .Where(p => p.State == EntityState.Modified)
@@ -2001,7 +2006,7 @@ select @err";
                 .Where(p => p.State == EntityState.Deleted)
                 .Select(p => p.Entity).ToList();
 
-            #endregion
+#endregion
 
             //check for changed field values before the new values are written tothe db
             if (fieldsToCheckForChanges.Any())
@@ -2146,9 +2151,9 @@ select @err";
         }
 
 
-        #endregion
+#endregion
 
-        #region Dynamic Field Methods
+#region Dynamic Field Methods
 
         public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false)
         {
@@ -2473,9 +2478,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return relationFieldInfos;
         }
 
-        #endregion
+#endregion
 
-        #region API Query Parameter Parsing
+#region API Query Parameter Parsing
 
         public void ParseAdvancedFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
         {
@@ -2652,7 +2657,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return offset;
         }
 
-        #endregion
+#endregion
 
         public int GetObjectId(Guid objectUid, SystemObjects objectType)
         {
@@ -2802,8 +2807,33 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                               new { fieldTypeId, assetId }).FirstOrDefault();
         }
 
+        public async Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData)
+        {
+            var model = new AssetsQueryResults();
 
-        #region Environment Settings
+            var gridReader = await Database.Connection.QueryMultipleAsync(
+              new CommandDefinition(getAllQuery,
+              cancellationToken: cancellationToken,
+              parameters: dbArgs,
+              commandTimeout: ApiTimeout
+            ));
+
+            if (includeTotal)
+            {
+                model.total = gridReader.Read<int>().FirstOrDefault();
+            }
+
+            model.items = gridReader.Read<dynamic>().ToList();
+
+            if (includeOwnershipData)
+            {
+                model.ownershipData = gridReader.Read<dynamic>().ToList();
+            }
+
+            return model;
+        }
+
+#region Environment Settings
 
         private class EnvironmentSetting
         {
@@ -2896,6 +2926,6 @@ end", new { ID = (int)setting, value });
             Caching.RemoveItem(SettingsCacheKey);
         }
 
-        #endregion
+#endregion
     }
 }

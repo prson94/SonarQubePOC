@@ -243,9 +243,6 @@
   <data name="ApiEntryNotFound" xml:space="preserve">
     <value>API Entity Not Found</value>
   </data>
-  <data name="CrossRefExists" xml:space="preserve">
-    <value>Asset cross reference already exists.</value>
-  </data>
   <data name="ExecutionIDNotFound" xml:space="preserve">
     <value>Execution unique identifier not found.</value>
   </data>
@@ -456,9 +453,6 @@
   <data name="TemplateDeletedError" xml:space="preserve">
     <value>Error Deleting Template</value>
   </data>
-  <data name="TemplateDeletedErrorMessage" xml:space="preserve">
-    <value>Error encountered while deleteing template {0}.</value>
-  </data>
   <data name="TemplateDeletedMessage" xml:space="preserve">
     <value>Template Deleted Successfully.</value>
   </data>
@@ -666,15 +660,6 @@
   <data name="FavoritesEmptyRoute" xml:space="preserve">
     <value>Favorites of type Page cannot have an empty route.</value>
   </data>
-  <data name="Invalid_Direction" xml:space="preserve">
-    <value>Invalid _direction provided</value>
-  </data>
-  <data name="NameRequired" xml:space="preserve">
-    <value>Name is required.</value>
-  </data>
-  <data name="UidInvalid" xml:space="preserve">
-    <value>Uid Invalid for {0}</value>
-  </data>
   <data name="SucessfullyCreated" xml:space="preserve">
     <value>{0} successfully created.</value>
   </data>
@@ -723,12 +708,6 @@
   <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
     <value>ApplicationId length cannot exceed 200 characters</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>No match found for AssetTypeUid provided.</value>
-  </data>
-  <data name="EmptyType" xml:space="preserve">
-    <value>Type cannot be empty. Please select a type from the dropdown.</value>
-  </data>
   <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
     <value>Successfully deleted specified favorites</value>
   </data>
@@ -746,5 +725,14 @@
   </data>
   <data name="InvalidLoadUid" xml:space="preserve">
     <value>Invalid LoadUid provided.</value>
+  </data>
+  <data name="ArtifactNotFound" xml:space="preserve">
+    <value>Artifact not found.</value>
+  </data>
+  <data name="OpenIdCodeOrStateIsNotPresent" xml:space="preserve">
+    <value>The OpenID provider response is missing code and/or state. Your administrator may have misconfigured your identity provider settings.</value>
+  </data>
+  <data name="InvalidParameterMessage" xml:space="preserve">
+    <value>'{0}' is an invalid value for {1}</value>
   </data>
 </root>

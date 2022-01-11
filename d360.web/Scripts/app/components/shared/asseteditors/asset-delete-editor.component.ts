@@ -20,6 +20,8 @@ export class AssetDeleteEditorComponent extends BaseComponent {
     @Output() onDeleted = new EventEmitter();
 
     theDeleteCallback: Function;
+    descendantsMessage: string = "";
+    isFormLoading: boolean = false;
 
     constructor(
         private assetService: AssetService,
@@ -30,6 +32,26 @@ export class AssetDeleteEditorComponent extends BaseComponent {
         super(settingsService);
 
         this.theDeleteCallback = this.deleteAsset.bind(this);
+    }
+
+    ngOnInit() {
+        var params: any = { _onlyTotal: true };
+        this.isFormLoading = true;
+        this.assetService.getAssetDescendants(this.uid, params)
+            .subscribe(
+                (result) => {
+                    let descendantsCount = result.total;
+                    this.descendantsMessage = '';
+                    if (descendantsCount > 0) {
+                        this.descendantsMessage = `The selected asset contains <b>${descendantsCount}</b> descendants that will be deleted. This action cannot be undone. Please check the box to continue.`;
+                        if (descendantsCount > 200) {
+                            this.descendantsMessage = `${this.descendantsMessage} <br/>For assets with a large number of descendants, greater than 200, it is recommended that the batch API endpoint is used.`;
+                        }
+                    }
+                    this.isFormLoading = false;
+                    this.changeDetectorRef.markForCheck();
+                }
+            )
     }
 
     private getDisplayValue(): string {

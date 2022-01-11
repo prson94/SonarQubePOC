@@ -41,9 +41,16 @@ namespace d360.model
 
         DbSet<OpenIdRequest> OpenIdRequests { get; set; }
         OpenIdRequest GetOpenIdRequest(string state);
-        string GenerateOpenIdRequestValue();
+        string GenerateOpenIdRequestValue(int length = 5);
         void RemoveOpenIdRequest(OpenIdRequest request);
         void SetOpenIdRequest(OpenIdRequest request);
+
+        #endregion
+
+        #region Caching Logic
+
+        void AddItemToCachedList<T>(string cacheKey, string itemId, T item);
+        T GetItemInCachedList<T>(string cacheKey, string itemId);
 
         #endregion
     }

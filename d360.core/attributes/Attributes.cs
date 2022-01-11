@@ -77,6 +77,15 @@ namespace d360.core
 
     #endregion
 
+    public class ColorAttribute : Attribute
+    {
+        public string Rgb { get; private set; }
+        public ColorAttribute(string rgb)
+        {
+            Rgb = rgb;
+        }
+    }
+
     public class EmojiValueAttribute : Attribute
     {
         public int Value { get; private set; }

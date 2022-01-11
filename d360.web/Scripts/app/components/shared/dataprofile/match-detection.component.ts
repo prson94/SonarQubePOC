@@ -133,7 +133,6 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             RemovePopulatedOperator: true
         }
     ]            
-    dataProfileList: any;
 
     constructor(
         private assetService: AssetService,
@@ -318,12 +317,9 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 this.assetDetail = this.objectDetailService.getObjectDetailByUid(this.selection.uid, StringConstants.ObjectArtifact, true, true, false);
                 this.assetDetail.subscribe((data) => {
                     this.assetData = data;
-                    let startDate = new Date();
-                    startDate.setFullYear(startDate.getUTCFullYear() - 100);
-                    this.dataProfileService.getDataProfiles(this.selection.uid, startDate).subscribe(
+                    this.dataProfileService.getDataProfiles(this.selection.uid).subscribe(
                         (r) => {
                             if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
-                                this.dataProfileList = r.items;
                                 this.dataProfile = r.items[0];
 
                                 forkJoin(

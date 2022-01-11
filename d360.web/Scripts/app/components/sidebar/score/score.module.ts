@@ -35,11 +35,7 @@ import { SharedAssetScoreModule } from '../../shared/asset-score/shared-asset-sc
         ScoreComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class ScoreModule { }

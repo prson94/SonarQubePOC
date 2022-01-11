@@ -313,7 +313,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Default value must be between {1} and {2}.
+        ///   Looks up a localized string similar to Default value must be between {0} and {1}.
         /// </summary>
         public static string DefaultValueError {
             get {

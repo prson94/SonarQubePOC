@@ -16,7 +16,7 @@ import { TooltipModule } from "primeng/tooltip";
         FormsModule,
         CommonModule,
         RouterModule,
-        HttpClientModule,
+
         DirectivesModule,
         PipesModule,
         CoreModule,
@@ -31,11 +31,7 @@ import { TooltipModule } from "primeng/tooltip";
         ScoreHistoryComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
         DatePipe
     ]
 })

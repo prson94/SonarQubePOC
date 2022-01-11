@@ -141,9 +141,6 @@
   <data name="MissingCurrentPasswordParameter" xml:space="preserve">
     <value>CurrentPassword parameter value missing.</value>
   </data>
-  <data name="MissingNewPasswordParameter" xml:space="preserve">
-    <value>NewPassword parameter value missing.</value>
-  </data>
   <data name="NewAndCurrentNotSame" xml:space="preserve">
     <value>New password may not be the same as current password</value>
   </data>

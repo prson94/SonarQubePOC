@@ -138,6 +138,9 @@
   <data name="InvalidResponsibilityUid" xml:space="preserve">
     <value>You have not provided a valid ResponsibilityType uid for this request.</value>
   </data>
+  <data name="InvalidTestType" xml:space="preserve">
+    <value>Invalid test type. Valid values are 'when' and 'then'</value>
+  </data>
   <data name="ReponsibilityOverrideExists" xml:space="preserve">
     <value>Responsibility override for '{0}' already exist.</value>
   </data>

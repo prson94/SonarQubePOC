@@ -31,10 +31,11 @@ namespace d360.web.Controllers.V2
         const int DEFAULT_DELETE_TIMEOUT = 90;
         private ICrossReferencesRepository crossReferencesRepository;
         private IAssetRepository assetRepository;
+
         #region DI
 
-        public CrossReferencesController(ICommunityContext community, ICompanyContext company, ICrossReferencesRepository crossReferencesRepository,IAssetRepository assetRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public CrossReferencesController(ICoreComponentSet set, ICrossReferencesRepository crossReferencesRepository,IAssetRepository assetRepository)
+            : base(set)
         {
             this.crossReferencesRepository = crossReferencesRepository;
             this.assetRepository = assetRepository;

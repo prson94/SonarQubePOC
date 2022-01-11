@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.bulkload.GetLoadColumns-v12">
-    <comment></comment>
+  <changeSet author="Puneet Gupta" id="Procedure.bulkload.GetLoadColumns-v13">
+    <comment>GOV-16538</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -292,6 +292,7 @@ begin
 					Label
 			from	@lookups
 			where	FieldTypeID = F.FieldTypeID
+			order by Label
 			for json path
 			) as Lookups
 	from	@fields F

@@ -2,8 +2,8 @@
 import { CommonModule } from '@angular/common';
 import { CoreModule } from '../core.module';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+
+
 import { InputTextModule } from 'primeng/inputtext';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { NgModule } from '@angular/core';
@@ -34,7 +34,7 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
         ButtonModule,
         CommonModule,
         CoreModule,        
-        HttpClientModule,
+
         InputTextModule,
         NgxJsonViewModule,
         PipesModule,
@@ -66,10 +66,6 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
         ObjectDetailFieldComponent,
         SynonymsTile,
     ],
-    providers: [{
-        provide: HTTP_INTERCEPTORS,
-        useClass: GovernRequestInterceptor,
-        multi: true
-    }]
+    providers: []
 })
 export class SharedObjectDetailsModule { }

@@ -47,7 +47,6 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     gridLoading: boolean = true;
     definitionLoaded: boolean = false;
     dataProfile: any;
-    private dataProfileList: any[];
     
 
     constructor(private route: ActivatedRoute,
@@ -165,13 +164,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.selection = event;
 
         if (this.selection && this.selection.HasProfiling) {
-            this.sidePanelLoading = true;
-            let startDate = new Date();            
-            startDate.setFullYear(startDate.getUTCFullYear() - 100);
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid, startDate).subscribe(
+            this.sidePanelLoading = true;                                  
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 0) {
-                        this.dataProfileList = r.items;
                         this.dataProfile = r.items[0];
                         
                         forkJoin(

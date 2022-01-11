@@ -1,13 +1,14 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { RouterModule } from '@angular/router';
 
 import { SiteMenuComponent } from './site-menu.component';
 import { SiteMenuMegaItemComponent } from './site-menu-mega-item.component';
+import { SiteMenuFavoriteItemComponent } from './site-menu-favorite-item.component';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 
@@ -18,6 +19,7 @@ import { SiteMenuCategoryPanelComponent } from './site-menu-category-panel.compo
 import { LinksKeyboardNavigationComponent } from './links-keyboard-navigation.component';
 import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
 import { SiteMenuManageFavoritesPanelComponent } from './site-menu-manage-favorites-panel.component';
+import { SiteMenuShowFavoritesPanelComponent } from './site-menu-show-favorites-panel.component';
 import { CheckboxModule } from 'primeng/checkbox';
 import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 import { CoreModule } from '../core.module';
@@ -27,7 +29,7 @@ import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
         PipesModule, 
 
@@ -45,7 +47,9 @@ import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
         SiteMenuMegaItemComponent,
         SiteMenuCategoryComponent,
         SiteMenuCategoryPanelComponent,
+        SiteMenuFavoriteItemComponent,
         SiteMenuFavoritesComponent,
+        SiteMenuShowFavoritesPanelComponent,
         SiteMenuManageFavoritesPanelComponent,
         LinksKeyboardNavigationComponent
     ],
@@ -53,10 +57,7 @@ import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
         SiteMenuComponent,        
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class SiteMenuModule { }

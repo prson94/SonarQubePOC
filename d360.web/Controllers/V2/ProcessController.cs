@@ -35,7 +35,7 @@ namespace d360.web.Controllers.V2
         readonly IAssetRepository AssetRepository;
         readonly IProcessRepository ProcessRepository;
 
-        public ProcessController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, IProcessRepository processRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
+        public ProcessController(ICoreComponentSet set, IAssetRepository assetRepository, IProcessRepository processRepository) : base(set)
         {
             this.AssetRepository = assetRepository;
             this.ProcessRepository = processRepository;

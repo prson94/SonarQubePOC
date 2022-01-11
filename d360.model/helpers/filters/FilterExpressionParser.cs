@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using d360.model.helpers.filters;
 using System;
 using System.Collections.Generic;
@@ -103,6 +104,23 @@ namespace d360.model.helpers
 
                 allowedDefaultFields.Add(new DefaultFilter("Object.[Path]", "ANDP_Object.DisplayPath", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("Subject.[Path]", "ANDP_Subject.DisplayPath", SqlFieldType.Text));
+            }
+
+            if (parseType == FilterExpressionParseType.Semantics)
+            {
+                allowedDefaultFields.Clear();
+                allowedDefaultFields.Add(new DefaultFilter("name", "Name", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("description", "Description", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("qualifier", "Qualifier", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("status",
+                    SemanticStatus.Draft.GetSqlCaseFilterStatement("Status"), SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("source",
+                    SemanticSource.BuiltIn.GetSqlCaseFilterStatement("[Source]"), SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("threshold", "Threshold", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("priority", "Priority", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("baseType",
+                    SemanticBaseType.Boolean.GetSqlCaseFilterStatement("BaseType"), SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("effectiveDate", "EffectiveDate", SqlFieldType.DateTime));
             }
         }
 

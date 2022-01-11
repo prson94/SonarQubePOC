@@ -22,21 +22,36 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using SpreadsheetLight;
 using d360.model.helpers.filters;
+using d360.core.exceptions;
+using System.Threading;
 
 namespace d360.web.Controllers.V2
 {
-    [ApiVersion("2.0"), RoutePrefix("api/v{version:apiVersion}/dataprofiles"), Authorize]
+    [
+        ApiVersion("2.0"), 
+        RoutePrefix("api/v{version:apiVersion}/dataprofiles"), 
+        Authorize,
+        StringEnumController
+    ]
     public class DataProfilesController : BaseV2ApiController
     {
-        internal IDataProfileRepository DataProfiles;
         internal IAssetRepository AssetRepository;
+        internal IDataProfileRepository DataProfiles;
+        private ISemanticsRepository SemanticsRepository;
 
-        public DataProfilesController(ICommunityContext community, ICompanyContext company, IDataProfileRepository dataProfileRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public DataProfilesController(
+            ICoreComponentSet set, 
+            IAssetRepository assetRepository, 
+            IDataProfileRepository dataProfileRepository,
+            ISemanticsRepository semanticsRepository)
+            : base(set)
         {
-            this.DataProfiles = dataProfileRepository;
             this.AssetRepository = assetRepository;
+            this.DataProfiles = dataProfileRepository;
+            this.SemanticsRepository = semanticsRepository;
         }
+
+        #region Core Data Profile Endpoints
 
         /// <summary>
         /// Retrieves Data Profile results for a given asset.
@@ -57,6 +72,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetDataProfiles(Guid assetUid)
         {
@@ -65,7 +81,7 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var validationResult = ValidateDataProfileGetParmeters(assetUid, queryParams);
+                var validationResult = ValidateDataProfileGetParameters(assetUid, queryParams);
 
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
@@ -87,7 +103,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private WorkHttpStatus ValidateDataProfileGetParmeters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        private WorkHttpStatus ValidateDataProfileGetParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var isValid = isPageSizeAndNumValid(queryParams);
 
@@ -106,7 +122,7 @@ namespace d360.web.Controllers.V2
             if (isValid.Length > 0)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid);
-            }
+            }            
 
             if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
             {
@@ -140,6 +156,14 @@ namespace d360.web.Controllers.V2
                 if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out bool includeTotal))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.Invalid_includeChildAssetsProvided);
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_includesamples"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, out bool includeTotal))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidParameterMessage, queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, "_includeSamples"));
                 }
             }
 
@@ -257,8 +281,8 @@ namespace d360.web.Controllers.V2
         /// Removes Data Profile results for a given asset. 
         /// </summary>
         /// <param name="assetUid">The unique identifier of an asset.</param>
-        /// <param name="startDate">Start date of data profile data to be deleted.</param>
-        /// <param name="endDate">End date of data profile data to be deleted.</param>
+        /// <param name="startDate">Start date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
+        /// <param name="endDate">End date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
         /// <param name="cascade">True/false flag used to indicate if assets children should be deleted.</param>
         /// <returns>Results response with the count of records deleted.</returns>
         [
@@ -441,7 +465,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Provides support for deleting a large set of Data Profile records.
         /// </summary>
-        /// <param name="models">Data Profile Delete request collection.</param>
+        /// <param name="models">Data Profile Delete request collection. Note: Expected date format is yyyy-MM-dd</param>
         /// <returns>Results response containing the ExecutionID of the request.</returns>
         [
             HttpDelete,
@@ -938,5 +962,332 @@ namespace d360.web.Controllers.V2
             #endregion
             return doc;
         }
+
+        #endregion
+
+        #region Semantic Types
+
+        /// <summary>
+        /// Gets a list of semantic types for use in data profiling.
+        /// </summary>
+        /// <remarks>
+        /// You may using the `_filter` parameter with the following fields:
+        ///  - **name**
+        ///  - **description**
+        ///  - **qualifier**
+        ///  - **status**
+        ///  - **source**
+        ///  - **threshold**
+        ///  - **priority**
+        ///  - **baseType**
+        ///  - **effectiveDate**
+        /// </remarks>
+        /// <returns>A list of semantic types based on the provided filtering and sorting criteria.</returns>
+        [
+            HttpGet,
+            Route("semantictypes"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default (and maximum) value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the semantic types are ordered by Qualifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of a semantic type. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("asOfEffectiveDate", "Assumed to be current UTC date if left empty, otherwise, gets semantic types as of the specified effective date, and nothing later. This is the parameter used to get prior versions.", DataType = "datetime", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic types.", typeof(GetSemantics)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetSemanticTypes(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+                var apiModels = await SemanticsRepository.GetSemanticsAsync(queryParams, cancellationToken);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch (FilterExpressionParserException ex)
+            {
+                throw new GenericException(HttpStatusCode.BadRequest, "Invalid Filter Configuration", ex.Message);
+            }
+            catch
+            {
+                return errorMessageResponse(
+                    HttpStatusCode.InternalServerError,
+                    "Error retrieving semantic types",
+                    ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of versions for a given semantic type qualifier.
+        /// </summary>
+        /// <returns>A list of semantic type versions.</returns>
+        [
+            HttpGet,
+            Route("semantictypes/{qualifier}/versions"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the semantic types are ordered by Qualifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic types.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetSemanticTypeVersions(string qualifier, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+                var responseModels = await SemanticsRepository.GetSemanticVersionsByQualifierAsync(qualifier, queryParams, cancellationToken);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModels));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving semantic types", ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of semantic base types.
+        /// </summary>
+        [
+            HttpGet,
+            Route("semantictypes/lookups/basetypes"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic base types.", typeof(List<SemanticBaseTypeInfo>)),
+        ]
+        public IHttpActionResult GetSemanticTypeBaseTypes()
+        {
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticBaseType.LocalDate.GetAsList()));
+        }
+
+        /// <summary>
+        /// Gets a list of semantic type base types.
+        /// </summary>
+        [
+            HttpGet,
+            Route("semantictypes/lookups/matchtypes"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic type match types.", typeof(List<SemanticMatchTypeInfo>)),
+        ]
+        public IHttpActionResult GetSemanticTypeMatchTypes()
+        {
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticMatchType.Pattern.GetAsList()));
+        }
+
+        /// <summary>
+        /// Gets a list of semantic type statuses.
+        /// </summary>
+        [
+            HttpGet,
+            Route("semantictypes/lookups/statuses"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic type statuses.", typeof(List<SemanticStatusInfo>)),
+        ]
+        public IHttpActionResult GetSemanticTypeStatuses()
+        {
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticStatus.Draft.GetAsList()));
+        }
+
+        /// <summary>
+        /// Selectively updates one or more semantic types based on the fields provided. 
+        /// If certain fields that make up a semantic type are missing from your request payload, then those fields will not be updated.
+        /// </summary>
+        /// <remarks>
+        /// For Built-in semantic types, you may only update the following properties:
+        ///  - **name**
+        ///  - **description**
+        ///
+        /// Minimum and Maximum properties, if provided, must fall within the range: -999999999999.999999 to 999999999999.999999
+        ///
+        /// For a list of possible values for the following fields, check the relevant endpoint:
+        ///  - **baseType** : /api/v2/dataprofiles/semantictypes/lookups/basetypes
+        ///  - **matchType** : /api/v2/dataprofiles/semantictypes/lookups/matchtypes
+        ///  - **status** : /api/v2/dataprofiles/semantictypes/lookups/statuses
+        /// </remarks>
+        /// <returns>A list of semantic types you updated.</returns>
+        [
+            HttpPatch,
+            Route("semantictypes"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerRequestExample(typeof(List<PatchSemantic>), typeof(PatchSemanticExample1)),
+            SwaggerRequestExample(typeof(List<PatchSemantic>), typeof(PatchSemanticExample2)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding semantic types.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "One or more semantic types were not found based on the provided qualifiers.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to update these semantic types is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PatchSemanticTypes(List<PatchSemantic> requestModels)
+        {
+            const string ERROR_HEADING = "Error patching semantic types";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var responseModels = await SemanticsRepository.PatchSemanticsAsync(requestModels);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModels));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error updating semantic types", ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Creates one or more user-defined semantic types.
+        /// </summary>
+        /// <remarks>
+        /// For a list of possible values for the following fields, check the relevant endpoint:
+        ///  - **baseType** : /api/v2/dataprofiles/semantictypes/lookups/basetypes
+        ///  - **matchType** : /api/v2/dataprofiles/semantictypes/lookups/matchtypes
+        ///  - **status** : /api/v2/dataprofiles/semantictypes/lookups/statuses
+        ///
+        /// Minimum and Maximum properties, if provided, must fall within the range: -999999999999.999999 to 999999999999.999999
+        /// </remarks>
+        /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        [
+            HttpPost,
+            Route("semantictypes"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerRequestExample(typeof(List<PostSemantic>), typeof(PostSemanticExample1)),
+            SwaggerRequestExample(typeof(List<PostSemantic>), typeof(PostSemanticExample2)),
+            SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding semantic types.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert these semantic types is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostSemanticTypes(List<PostSemantic> requestModels)
+        {
+            const string ERROR_HEADING = "Error adding semantic types";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var responseModels = await SemanticsRepository.PostSemanticsAsync(requestModels);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModels));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Updates one or more user-defined semantic types. Built-in semantic types may not be updated using this endpoint.
+        /// </summary>
+        /// <remarks>
+        /// For a list of possible values for the following fields, check the relevant endpoint:
+        ///  - **baseType** : /api/v2/dataprofiles/semantictypes/lookups/basetypes
+        ///  - **matchType** : /api/v2/dataprofiles/semantictypes/lookups/matchtypes
+        ///  - **status** : /api/v2/dataprofiles/semantictypes/lookups/statuses
+        ///
+        /// Minimum and Maximum properties, if provided, must fall within the range: -999999999999.999999 to 999999999999.999999
+        /// </remarks>
+        /// <returns>A list of updated semantic types.</returns>
+        [
+            HttpPut,
+            Route("semantictypes"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerRequestExample(typeof(List<PutSemantic>), typeof(PutSemanticExample1)),
+            SwaggerRequestExample(typeof(List<PutSemantic>), typeof(PutSemanticExample2)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding semantic types.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "One or more semantic types were not found based on the provided qualifiers.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to update these semantic types is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutSemanticTypes(List<PutSemantic> requestModels)
+        {
+            const string ERROR_HEADING = "Error updating semantic types";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var reponseModels = await SemanticsRepository.PutSemanticsAsync(requestModels);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModels));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a semantic type, provided it is not currently referenced in any asset data profiles.
+        /// </summary>
+        /// <remarks>
+        /// This action will remove all versions of the semantic type.
+        /// </remarks>
+        /// <returns>A confirmation response.</returns>
+        [
+            HttpDelete,
+            Route("semantictypes/{qualifier}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns a success message.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Your semantic type was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this semantic type is invalid, possibly due to being used on one or more data profiles.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteSemanticType(string qualifier)
+        {
+            const string ERROR_HEADING = "Error deleting semantic type";
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var status = await SemanticsRepository.DeleteSemanticAsync(qualifier);
+
+                return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Semantic type removed." }));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        #endregion
     }
 }

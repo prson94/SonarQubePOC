@@ -1,7 +1,10 @@
-﻿<d3s-delete-form
-                 [callback]="theDeleteCallback"
-                 [itemId]="0"
-                 method="callback"
-                 [prompt]="getPrompt()" 
-                 (onCancel)="onCancel.emit();">
-</d3s-delete-form>
+﻿<d3s-loading [isLoading]="isFormLoading"></d3s-loading>
+<div *ngIf="!isFormLoading">
+    <d3s-delete-form [callback]="theDeleteCallback"
+                     [itemId]="0"
+                     method="callback"
+                     [prompt]="getPrompt()"
+                     [warningMessage]="descendantsMessage"
+                     (onCancel)="onCancel.emit();">
+    </d3s-delete-form>
+</div>

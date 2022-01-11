@@ -4,7 +4,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
-import { FavoriteApiModel } from '../../../models/favorite.model';
+import { FavoriteApiModel, FavoriteViewModel } from '../../../models/favorite.model';
 import * as _ from 'lodash'; 
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -35,8 +35,8 @@ declare var ResourceEmail;
                                         <div class="expand-gutter right"></div>            
                                     </div>
                                 </li>
-                                <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [Uid]="Uid" [homePageItem]="homePageItem"></d3s-header-favorites></li>
-                                <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [homePageItem]="homePageItem"></d3s-header-homepage></li>
+                                <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [homePageItem]="homePageItem"></d3s-header-favorites></li>
+                                <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [homePageItem]="homePageItem"></d3s-header-homepage></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
                                 <li class="header-item" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i>Notifications</a></li>
                             </ul>                                                    
@@ -64,7 +64,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     private subFavorites: any;
 
     private homePageItem: FavoriteApiModel;
-    private favItems: FavoriteApiModel[] = [];
+    private favItems: FavoriteViewModel[] = [];
     private currentObject: string;
     private currentObjectId: number;
     private headerActionsSub;

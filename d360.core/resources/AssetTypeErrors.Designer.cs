@@ -115,15 +115,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Display Format contains invalid field references..
-        /// </summary>
-        public static string BadDisplayFormat {
-            get {
-                return ResourceManager.GetString("BadDisplayFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Bad Request.
         /// </summary>
         public static string BadRequest {
@@ -138,15 +129,6 @@ namespace d360.core.resources {
         public static string CanEditParentClassRestriction {
             get {
                 return ResourceManager.GetString("CanEditParentClassRestriction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Can Edit Parent can be set only on children asset types..
-        /// </summary>
-        public static string CanEditParentRestriction {
-            get {
-                return ResourceManager.GetString("CanEditParentRestriction", resourceCulture);
             }
         }
         
@@ -403,15 +385,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not valid ParentUid for the Class..
-        /// </summary>
-        public static string InvalidParentForClass {
-            get {
-                return ResourceManager.GetString("InvalidParentForClass", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid Parent Selected.
         /// </summary>
         public static string InvalidParentSelected {
@@ -642,15 +615,6 @@ namespace d360.core.resources {
         public static string NameConflicit {
             get {
                 return ResourceManager.GetString("NameConflicit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid character(-s) provided in the asset type name. Please fix content of asset type name field..
-        /// </summary>
-        public static string NameContainInvalidCharacters {
-            get {
-                return ResourceManager.GetString("NameContainInvalidCharacters", resourceCulture);
             }
         }
         

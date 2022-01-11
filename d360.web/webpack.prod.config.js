@@ -57,6 +57,20 @@ var webpackConfig = {
     module: {
         rules: [
             {
+                test: /\.[cm]?js$/,
+                resolve: {
+                    fullySpecified: false,
+                },
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        cacheDirectory: true,
+                        compact: false,
+                        plugins: ['@angular/compiler-cli/linker/babel'],
+                    },
+                },
+            },
+            {
                 test: /\.less$/,
                 exclude: /node_modules/,
                 use: ['raw-loader', 'less-loader']

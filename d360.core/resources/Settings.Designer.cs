@@ -439,24 +439,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This setting indicates whether the Govern UI should display extra nodes in the lineage diagram that are not directly tied to the focal point, but are indirectly related..
-        /// </summary>
-        internal static string EnableVersion1VerboseLineage_Desc {
-            get {
-                return ResourceManager.GetString("EnableVersion1VerboseLineage_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable Verbose Display in Lineage Digram v1.
-        /// </summary>
-        internal static string EnableVersion1VerboseLineage_Name {
-            get {
-                return ResourceManager.GetString("EnableVersion1VerboseLineage_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Specify a comma separated list of allowed domains.
         /// </summary>
         internal static string FramingDomains_Desc {
@@ -633,24 +615,6 @@ namespace d360.core.resources {
         internal static string JwtAuthority_Name {
             get {
                 return ResourceManager.GetString("JwtAuthority_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This setting indicates which version of lineage the current environment is set to. Each version of lineage functions very differently so care should be taken before changing this value..
-        /// </summary>
-        internal static string LineageVersion_Desc {
-            get {
-                return ResourceManager.GetString("LineageVersion_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Lineage Version.
-        /// </summary>
-        internal static string LineageVersion_Name {
-            get {
-                return ResourceManager.GetString("LineageVersion_Name", resourceCulture);
             }
         }
         

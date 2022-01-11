@@ -43,8 +43,8 @@ namespace d360.web.Controllers.V2
         IFieldsRepository FieldsRepository;
         private readonly IAssetRepository AssetRepository;
 
-        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
-            : base(community, company, settingsRepository)
+        public FieldsController(ICoreComponentSet set, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
+            : base(set)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -2204,8 +2204,6 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
                 }
 
-
-
                 //list items for parent field
                 if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
                 {
@@ -2236,7 +2234,8 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
                                 where a.AssetTypeID = @parentAssetTypeId {whereQuery}
                                 order by node.displaypath 
-                                {pagingQuery};
+                                {pagingQuery}
+                                option(recompile);
 
                                 select count(*) from Asset A
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
@@ -2349,7 +2348,8 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
                                 where a.AssetTypeID = @assetTypeId {whereQuery}
                                 order by node.displaypath
-                                {pagingQuery};
+                                {pagingQuery}
+                                OPTION(RECOMPILE);
 
                                 select count(*) from Asset A
                                  inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
@@ -2406,14 +2406,10 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         colorjoin = "";
                     }
                 }
-
-
-
-                var query = $@"
+                string query = $@"
                     select {selectStatement} 
                     from FieldLookupValue V
                     {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
-                    {colorjoin}
                     where @fieldTypeId = v.FieldTypeID
                     {whereQuery}
                     order by text asc
@@ -2423,6 +2419,24 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
                         where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
+
+                if (hasColor)
+                {
+                    query = $@"
+                    drop table if exists #tempResults
+			            select *
+				        into #tempResults
+                        from FieldLookupValue V
+                        where @fieldTypeId = FieldTypeID {whereQuery}
+                        order by text asc
+					    {pagingQuery};
+
+					 select {selectStatement} from #tempResults V {colorjoin};
+
+                    select count(1) from FieldLookupValue V
+                        where @fieldTypeId = FieldTypeID {whereQuery};
+                    ";
+                }
 
                 var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel });
 

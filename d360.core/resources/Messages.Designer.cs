@@ -61,51 +61,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are child artifacts assigned to this artifact.  You must first remove the child artifacts..
-        /// </summary>
-        public static string Error_Artifact_ExistingChildren {
-            get {
-                return ResourceManager.GetString("Error_Artifact_ExistingChildren", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to There are existing artifacts based on this type..
-        /// </summary>
-        public static string Error_ArtifactsAssignedToType {
-            get {
-                return ResourceManager.GetString("Error_ArtifactsAssignedToType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This attribute type is allocated to one ore more system objects..
-        /// </summary>
-        public static string Error_AttributeType_Allocations {
-            get {
-                return ResourceManager.GetString("Error_AttributeType_Allocations", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to There are child types assigned to this type..
-        /// </summary>
-        public static string Error_ChildTypesAssignedToType {
-            get {
-                return ResourceManager.GetString("Error_ChildTypesAssignedToType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This claim is already assigned to the specified object. You may not add it again..
-        /// </summary>
-        public static string Error_Claim_AlreadyAssignedToItem {
-            get {
-                return ResourceManager.GetString("Error_Claim_AlreadyAssignedToItem", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Duplicate Relationship Uid identifiers : {0}. Identifiers must be unique within a batch..
         /// </summary>
         public static string Error_Duplicate_Relationship_Uid {
@@ -115,47 +70,11 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This field type is allocated to one ore more system objects..
-        /// </summary>
-        public static string Error_FieldType_Allocations {
-            get {
-                return ResourceManager.GetString("Error_FieldType_Allocations", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to One or more JSON Attribute fields reference the field you are attempting to remove..
         /// </summary>
         public static string Error_Item_FieldJsonAttributeReferences {
             get {
                 return ResourceManager.GetString("Error_Item_FieldJsonAttributeReferences", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more fields reference this item..
-        /// </summary>
-        public static string Error_Item_FieldReferences {
-            get {
-                return ResourceManager.GetString("Error_Item_FieldReferences", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more relationships reference this item..
-        /// </summary>
-        public static string Error_Item_RelationshipsReferences {
-            get {
-                return ResourceManager.GetString("Error_Item_RelationshipsReferences", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more fields reference this list..
-        /// </summary>
-        public static string Error_List_FieldReferences {
-            get {
-                return ResourceManager.GetString("Error_List_FieldReferences", resourceCulture);
             }
         }
         
@@ -223,74 +142,11 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One or more child models exist. You must first remove the child models before continuing..
-        /// </summary>
-        public static string Error_Taxonomy_ChildModelsExist {
-            get {
-                return ResourceManager.GetString("Error_Taxonomy_ChildModelsExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more fields reference this model..
-        /// </summary>
-        public static string Error_Taxonomy_FieldReference {
-            get {
-                return ResourceManager.GetString("Error_Taxonomy_FieldReference", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more people responsibilities exist. You must first remove these responsibilities before continuing..
-        /// </summary>
-        public static string Error_Taxonomy_PeopleResponsibilitiesExist {
-            get {
-                return ResourceManager.GetString("Error_Taxonomy_PeopleResponsibilitiesExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more relationships reference this model..
-        /// </summary>
-        public static string Error_Taxonomy_RelationshipReference {
-            get {
-                return ResourceManager.GetString("Error_Taxonomy_RelationshipReference", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Information model could not be removed.
-        /// </summary>
-        public static string Error_Taxonomy_RemoveTitle {
-            get {
-                return ResourceManager.GetString("Error_Taxonomy_RemoveTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more sourcing responsibilities exist. You must first remove these responsibilities before continuing..
-        /// </summary>
-        public static string Error_Taxonomy_SourcingResponsibilitiesExist {
-            get {
-                return ResourceManager.GetString("Error_Taxonomy_SourcingResponsibilitiesExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Item Not Found.
         /// </summary>
         public static string ItemNotFound {
             get {
                 return ResourceManager.GetString("ItemNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This model type is assigned as a subject area to one or more artifacts and may not be removed..
-        /// </summary>
-        public static string TaxonomyType_Assigned {
-            get {
-                return ResourceManager.GetString("TaxonomyType_Assigned", resourceCulture);
             }
         }
     }

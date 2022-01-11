@@ -117,33 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Error_ArtifactsAssignedToType" xml:space="preserve">
-    <value>There are existing artifacts based on this type.</value>
-  </data>
-  <data name="Error_Artifact_ExistingChildren" xml:space="preserve">
-    <value>There are child artifacts assigned to this artifact.  You must first remove the child artifacts.</value>
-  </data>
-  <data name="Error_AttributeType_Allocations" xml:space="preserve">
-    <value>This attribute type is allocated to one ore more system objects.</value>
-  </data>
-  <data name="Error_ChildTypesAssignedToType" xml:space="preserve">
-    <value>There are child types assigned to this type.</value>
-  </data>
-  <data name="Error_Claim_AlreadyAssignedToItem" xml:space="preserve">
-    <value>This claim is already assigned to the specified object. You may not add it again.</value>
-  </data>
-  <data name="Error_FieldType_Allocations" xml:space="preserve">
-    <value>This field type is allocated to one ore more system objects.</value>
-  </data>
-  <data name="Error_Item_FieldReferences" xml:space="preserve">
-    <value>One or more fields reference this item.</value>
-  </data>
-  <data name="Error_Item_RelationshipsReferences" xml:space="preserve">
-    <value>One or more relationships reference this item.</value>
-  </data>
-  <data name="Error_List_FieldReferences" xml:space="preserve">
-    <value>One or more fields reference this list.</value>
-  </data>
   <data name="Error_NameTaken" xml:space="preserve">
     <value>The name is taken. Please try another name.</value>
   </data>
@@ -155,27 +128,6 @@
   </data>
   <data name="Error_ResponsibilityType_ExistingResponsibilities" xml:space="preserve">
     <value>There are existing assignments based on this responsibility type. Please remove those assignments first before continuing.</value>
-  </data>
-  <data name="Error_Taxonomy_ChildModelsExist" xml:space="preserve">
-    <value>One or more child models exist. You must first remove the child models before continuing.</value>
-  </data>
-  <data name="Error_Taxonomy_FieldReference" xml:space="preserve">
-    <value>One or more fields reference this model.</value>
-  </data>
-  <data name="Error_Taxonomy_PeopleResponsibilitiesExist" xml:space="preserve">
-    <value>One or more people responsibilities exist. You must first remove these responsibilities before continuing.</value>
-  </data>
-  <data name="Error_Taxonomy_RelationshipReference" xml:space="preserve">
-    <value>One or more relationships reference this model.</value>
-  </data>
-  <data name="Error_Taxonomy_RemoveTitle" xml:space="preserve">
-    <value>Information model could not be removed</value>
-  </data>
-  <data name="Error_Taxonomy_SourcingResponsibilitiesExist" xml:space="preserve">
-    <value>One or more sourcing responsibilities exist. You must first remove these responsibilities before continuing.</value>
-  </data>
-  <data name="TaxonomyType_Assigned" xml:space="preserve">
-    <value>This model type is assigned as a subject area to one or more artifacts and may not be removed.</value>
   </data>
   <data name="Error_Name_Required" xml:space="preserve">
     <value>The name is required.</value>

@@ -1,12 +1,17 @@
 ﻿<ng-template [ngIf]="!showAsModal">
     <div>
-        <div class="row">
+        <div class="row delete-form">
             <div *ngIf="isLoading" style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-            <div [innerHTML]="prompt">{{prompt}}</div>
+            <div class="prompt">{{prompt}}</div>
+            <div *ngIf="warningMessage.length>0" class="warning-message">
+                <p-checkbox igAutoFocus [(ngModel)]="confirmDelete" binary="true"></p-checkbox>    
+                <div><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></div>
+                <div [innerHTML]="warningMessage"></div>
+            </div>
         </div>
         <div class="row">
             <form-message [message]="message"></form-message>
-            <button pButton (click)="delete()" label="{{deleteButtonText ? deleteButtonText : 'Delete'}}" [disabled]="isLoading"></button>
+            <button pButton (click)="delete()" label="{{deleteButtonText ? deleteButtonText : 'Delete'}}" [disabled]="isLoading || (warningMessage.length>0 && !confirmDelete)"></button>
             <button pButton (click)="cancel()" label="{{cancelButtonText ? cancelButtonText : 'Cancel'}}" [disabled]="isLoading"></button>
         </div>
     </div>

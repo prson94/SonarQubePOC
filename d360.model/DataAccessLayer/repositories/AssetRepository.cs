@@ -1278,24 +1278,20 @@ namespace d360.model.DataAccessLayer
                 getAllQuery += selectOwnershipSQL;
             }
 
-            var gridReader = await CompanyContext.Database.Connection.QueryMultipleAsync(
-                  new CommandDefinition(getAllQuery,
-                  cancellationToken: cancellationToken.Value,
-                  parameters: dbArgs,
-                  commandTimeout: ApiTimeout
-                ));
+            bool hasOwnershipData = !string.IsNullOrEmpty(selectOwnershipSQL);
+
+            var assetsResult = await CompanyContext.ExecuteGetAssetsQuery(getAllQuery, cancellationToken.Value, dbArgs, includeTotal, hasOwnershipData);
 
             if (includeTotal)
             {
-                model.total = gridReader.Read<int>().FirstOrDefault();
+                model.total = assetsResult.total;
             }
-            var results = gridReader.Read<dynamic>().ToList();
-
+            var results = assetsResult.items.ToList();
 
             List<Tuple<List<int>, dynamic>> ownershipData = new List<Tuple<List<int>, dynamic>>();
-            if (!string.IsNullOrEmpty(selectOwnershipSQL))
+            if (hasOwnershipData)
             {
-                var dyOwnData = gridReader.Read<dynamic>().ToList();
+                var dyOwnData = assetsResult.ownershipData;
                 foreach (var ow in dyOwnData)
                 {
                     var data = (IDictionary<string, object>)ow;
@@ -1424,7 +1420,7 @@ namespace d360.model.DataAccessLayer
                         {
                             results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
                         }
-                        catch (ArgumentException ex)
+                        catch (ArgumentException)
                         {
                             //If dynamic object for property orderBy does not implement IComparable (i.e. JObject,JArray), use string comparison
                             results.Sort((x, y) =>
@@ -4289,6 +4285,100 @@ where   A.[uid] = @assetUid";
             var results = CompanyContext.Query<dynamic>(sql
          , new { id = assetType.ObjectID, assetType.Object }
          , ApiTimeout);
+            return results;
+        }
+
+        public async Task<AssetDescendantsResults> GetAssetDescendants(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var results = new AssetDescendantsResults();
+            var dbArgs = new DynamicParameters();
+            bool includeTotal = true;
+            bool onlyTotal = false;
+            var whereSQL = "";
+
+            results.pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+            results.pageSize = CompanyContext.ParsePageSize(queryParams);
+
+            var asset = GetAssetByUID(assetUid);
+
+            dbArgs.Add("@assetId", asset.ID);
+            dbArgs.Add("@pageNum", results.pageNum - 1);
+            dbArgs.Add("@pageSize", results.pageSize);
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_onlytotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_onlytotal").Value, out onlyTotal);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentassetuid") )
+            {
+                if(Guid.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_parentassetuid").Value, out Guid parentUid))
+                {
+                    if (parentUid != Guid.Empty)
+                    {
+                        whereSQL = "where p.uid = @parentUid";
+                        dbArgs.Add("@parentUid", parentUid);
+                    }
+                }
+            }
+
+            var descendantsSQL = $@"drop table if exists #descendants;
+                                    with descendants as (							
+	                                    select @assetID as AssetID, CAST(0 AS BIGINT) as ParentAssetID
+	                                    union all
+	                                    select 
+		                                    AAP.assetID, AAP.ParentAssetID
+	                                    from 
+		                                    descendants as d
+		                                    inner join 
+		                                    [utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
+                                    )
+
+                                    select * 
+                                    into #descendants 
+                                    from descendants";
+
+            var countSQL = $"Select count(*) from #descendants d {(whereSQL != "" ? $"inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0 {whereSQL}": "where d.ParentAssetID > 0")}";
+
+            var itemsSQL = $@"select                                         
+                                  a.uid as AssetUid, 
+                                  p.uid as ParentUid 
+                              from 
+                                  Asset a 
+                                  inner join #descendants d on a.id = d.AssetID 
+                                  inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0
+                              {whereSQL}
+                              order by p.Id asc
+                              OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY";
+
+            var sql = $@"{descendantsSQL}
+                        
+                        {(!onlyTotal ? itemsSQL: "")}
+
+                        {(includeTotal || onlyTotal ? countSQL: "")}
+						";
+
+            var multiQuery = await CompanyContext.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
+
+            if (!onlyTotal)
+            {
+                results.items = multiQuery.Read<AssetDescendants>();
+            }            
+
+            if (includeTotal || onlyTotal)
+            {
+                results.total = multiQuery.Read<int?>().FirstOrDefault();
+            }
+            else
+            {
+                results.total = null;
+            }
+
             return results;
         }
 
