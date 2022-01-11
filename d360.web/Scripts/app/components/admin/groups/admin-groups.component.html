@@ -1,54 +1,87 @@
 ﻿<div class="row">
-    <div class="col s12" *ngIf="isLoading">
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    </div>
-    <div class="col s12" style="display: flex" *ngIf="!isLoading">
+    <div class="col s12" style="display: flex">
         <div class="tile tile-detail">
             <header>Groups<d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
-            <div id="List">
+            <div id="List" *ngIf="formMode === FormMode.Default">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                 <p-table #dt [value]="groupItems"
-                         selectionMode="single" 
-                         [metaKeySelection]="true" 
-                         [globalFilterFields]="['Name']" 
-                         [paginator]="true" 
-                         [rows]="20" 
-                         [style]="{'width':'100%'}" (onRowSelect)="select($event)">
+                         selectionMode="single"
+                         [metaKeySelection]="true"
+                         [globalFilterFields]="['Name']"
+                         [paginator]="true"
+                         [rows]="20"
+                         [style]="{'width':'100%'}"
+                         (onRowSelect)="selectRow($event)"
+                         [loading]="isLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'">
+                    <ng-template pTemplate="colgroup">
+                        <colgroup>
+                            <col *ngFor="let col of columns"
+                                 [style.width]="col.columnWidth ? col.columnWidth + 'px' : null" />
+
+                            <col style="width: 48px" />
+                        </colgroup>
+                    </ng-template>
                     <ng-template pTemplate="header">
                         <tr>
-                            <th [pSortableColumn]="'Name'" style="width: 100px">
-                                Name
-                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                            <th *ngFor="let col of columns"
+                                [pSortableColumn]="col.sortable ? col.datafield : null"
+                                [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                                {{ col.text }}
+                                <d3s-sortIcon *ngIf="col.sortable"
+                                              [field]="col.datafield"></d3s-sortIcon>
                             </th>
-                            <th style="width: 20px"></th>
-                            <th style="width: 20px"></th>
-                            <th style="width: 20px"></th>
+                            <th style="width: 48px"></th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
-                        <tr [pSelectableRow]="item" #treetableRows>
-                            <td>{{item.Name}}</td>
-                            <td>
-                                <div class="RowTools">
-                                    <d3s-preview-tooltip [uid]="item.Uid" icon="info"></d3s-preview-tooltip>
-                                </div>
+                        <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
+                            <td *ngFor="let col of columns; let i=index">
+                                <ng-container *ngIf="i != linkColumnIndex; else linked">
+                                    <div style="display:block; word-wrap:break-word">
+                                        <d3s-dynamic-field-value [column]="col"
+                                                                 [fields]="fields"
+                                                                 [item]="item"
+                                                                 [useApiName]="true"
+                                                                 [isDateUTC]="true"></d3s-dynamic-field-value>
+                                    </div>
+                                </ng-container>
+                                <ng-template #linked>
+                                    <a (click)="selectArtifact(item)"
+                                       style="word-wrap:break-word;">
+                                        <d3s-dynamic-field-value [column]="col"
+                                                                 [fields]="fields"
+                                                                 [item]="item"
+                                                                 [useApiName]="true"
+                                                                 styleClass="cell-link"
+                                                                 [isDateUTC]="true"></d3s-dynamic-field-value>
+                                    </a>
+                                </ng-template>
+
                             </td>
-                            <td>
-                                <div class="RowTools">
-                                    <a (click)="edit(item.Uid)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="RowTools">
-                                    <a (click)="delete(item.Uid)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <td class="asset-grid-tools">
+                                <div style="display:inline-block">
+                                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #linkMenu [tabIndex]="1"></ig-popup-menu>
                                 </div>
                             </td>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="summary">
-                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <d3s-grid-paging-info [first]="dt.first"
+                                              [rows]="dt.rows"
+                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
+            </div>
+            <div *ngIf="formMode === FormMode.Deleting">
+                <d3s-delete-form [callback]="theDeleteCallback"
+                                 [method]="'callback'"
+                                 [prompt]="'Are you sure you want to remove ' + selectedRow.Name + '?'"
+                                 (onDeleteSuccess)="confirmDelete($event);"
+                                 (onDeleteFail)="errorDelete($event)"
+                                 (onCancel)="formMode = FormMode.Default;">
+                </d3s-delete-form>
             </div>
         </div>
         <div class="tile tile-detail side-panel">
@@ -80,6 +113,25 @@
     </div>
 </div>
 
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <asset-editor #dynamicEditor
+                  *ngIf="showEditor"
+                  [objectID]="selectedRow ? selectedRow.Uid : null"
+                  [objectType]="'GroupType'"
+                  [title]="selectedRow ? 'Edit Group' : 'Create New Group'"
+                  [selection]="selected"
+                  [rowID]="rowID"
+                  [objectTypeUid]="gridObject?.AssetTypeUID"
+                  [hidePath]="true"
+                  (saveClick)="saveItem($event)"
+                  [showAsModal]="true"
+                  [isV2API]="true"
+                  (closeClick)="showEditor=false"></asset-editor>
+
+</d3s-modal>
 
 
 <div class="row">

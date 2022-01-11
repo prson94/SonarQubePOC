@@ -530,6 +530,9 @@ namespace d360.web.Controllers
                 case "TAG":
                     res = Tag_AddFields();
                     break;
+                case "GROUPTYPE":
+                    res = Group_AddFields();
+                    break;
                 case "TASK":
                     res = Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
@@ -2009,6 +2012,16 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var list = new List<EditableField>();
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Tag name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("Group_AddFields")]
+        public JsonResult Group_AddFields()
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

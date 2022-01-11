@@ -1079,6 +1079,28 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     #endregion
             }
 
+            if (type == SystemObjects.GroupType)
+            {
+                totalItems = Company
+    .Filter<FieldType>(i => i.Object == SystemObjects.GroupType.ToString() && i.ObjectID == 1 && !skippedFieldTypes.Contains(i.Type))
+    .ToList();
+
+                items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+                items.Insert(0, new FieldType { FriendlyName = "Name", Name = "Name", Type = "Text" });
+                parseDynamicColumnsAndFields(items, columns, fields, 0, true);
+
+                filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
+
+                //clear the filtercolumns of the columns since they are not used and copied to the filtercolumns
+                foreach (var column in columns)
+                {
+                    column.filteritems = new List<string>();
+                }
+                var hiddenItems = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                parseDynamicFilterFields(hiddenItems, filterColumns, 0, true);
+            }
+
+
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
                 Title = (detail != null) ? detail.PluralizedName : "Child Items",
@@ -2845,6 +2867,7 @@ from    (
                     if (group != null)
                     {
                         var asset = Company.Assets.FirstOrDefault(x => x.Object == SystemObjects.Group.ToString() && x.ObjectID == group.ID);
+                        model.AssetName = group.Name;
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,

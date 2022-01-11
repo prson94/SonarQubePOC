@@ -26,6 +26,11 @@ import { TableModule } from 'primeng/table';
 import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
+import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { AssetEditorModule } from '../../shared/asset-editor/asset-editor.module';
+import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 
 @NgModule({
     imports: [
@@ -52,7 +57,12 @@ import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module
         SharedFieldDefinitionModule,
         TilesModule,
         SidePanelModule,
-        AssetDetailModule
+        AssetDetailModule,
+        SharedDynamicGridEditorModule,
+        SiteModalModule,
+        AssetEditorModule,
+        PropertyGroupModule,
+        PopupMenuModule
     ],
     declarations: [
         AdminGroupsComponent,
