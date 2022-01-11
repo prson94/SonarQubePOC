@@ -60,6 +60,9 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         [DataMember]
+        public float? Threshold { get; set; }
+
+        [DataMember]
         public decimal Weight { get; set; }
 
         [DataMember]

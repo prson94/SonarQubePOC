@@ -48,6 +48,7 @@ export class PointBreakdown {
     IsGroup: boolean;
     Name: string;
     Description: string;
+    Threshold: number;
     Weight: number;
     AdjustedWeight: number;
     AdjustedMaxWeight: number;

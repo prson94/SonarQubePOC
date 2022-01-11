@@ -20,6 +20,9 @@ export class MetricAssetViewModel {
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
     VersionCount: number;
     HasResults: boolean;
+
+    // Only used in UI.
+    HasThreshold: boolean;
 }
 
 export class MetricAssetHistoryViewModel {
@@ -48,6 +51,7 @@ export class MetricAssetVersionConditionViewModel {
     //used for the fieldconditiongrids
     conditionItemFields: FieldCondition[] = [];
     DisplayOrder: number;
+    DisplayThreshold: number;
     DisplayWeight: number;
 
 }

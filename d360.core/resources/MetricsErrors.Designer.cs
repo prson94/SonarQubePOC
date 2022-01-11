@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class MetricsErrors {
@@ -565,20 +565,11 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Condition group in position {0} must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based score definition..
+        ///   Looks up a localized string similar to Condition group in position {0} must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based measure..
         /// </summary>
         public static string ScoreDefinitionNotThresholdBased {
             get {
                 return ResourceManager.GetString("ScoreDefinitionNotThresholdBased", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Because the score definition is threshold-based, Condition group in position {0} must contain a valid Threshold between 0 and 1..
-        /// </summary>
-        public static string ScoreDefinitionThresholdBased {
-            get {
-                return ResourceManager.GetString("ScoreDefinitionThresholdBased", resourceCulture);
             }
         }
         

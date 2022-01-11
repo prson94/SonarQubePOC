@@ -4,6 +4,8 @@
         <div class="calculation-group">
             <div class="title">Pass Test</div>
             <div class="pass-test">{{formattedCheck}}</div>
+            <div *ngIf="selected.Threshold" class="pass-test">Rule results score >= Pass Threshold</div>
+            <div *ngIf="selected.Threshold" class="pass-test">{{getAsRawPrecentage(selected.DecimalValue, 3)}} >= {{getAsRawPrecentage(selected.Threshold, 3)}}</div>
             <ng-container *ngIf="selected.Value">
                 <i class="fa fa-check-circle good"></i> Succeeded
             </ng-container>

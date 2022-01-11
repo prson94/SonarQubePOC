@@ -520,27 +520,18 @@ namespace d360.model.DataAccessLayer
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ResultPathUidNotValid, model.Definition.DataQuality.ResultPathUid.ToString()));
                             }
                         }
-                        if (model.Allocation.IsThresholdBased)
+                        if (model.Threshold.HasValue)
                         {
-                            if (model.Threshold.HasValue)
+                            if (model.Threshold <= 0 || model.Threshold > 1)
                             {
-                                if (model.Threshold <= 0 || model.Threshold > 1)
-                                {
-                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdRangeCheck);
-                                }
-                            }
-                            else
-                            {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdValidValue);
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdRangeCheck);
                             }
                         }
                         else
                         {
-                            if (model.Threshold.HasValue)
-                            {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle,MetricsErrors.ProvideValueForNotThresholdBasedScoring);
-                            }
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdValidValue);
                         }
+
                         if (dq.Filters != null)
                         {
                             if (dq.Filters.Count > 0)
@@ -779,27 +770,21 @@ from	metrics.RollupPath P
                 {
                     #region Condition group validation
 
-                    if (model.Allocation.IsThresholdBased)
+                    if (group.Threshold.HasValue)
                     {
-                        if (group.Threshold.HasValue)
+                        switch (model.Allocation.ScoreType)
                         {
-                            if (group.Threshold <= 0 || group.Threshold > 1)
-                            {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ConditionGroupThresholdValue, group.Position.ToString()));
-                            }
-                        }
-                        else
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ScoreDefinitionThresholdBased, group.Position.ToString()));
+                            case ScoreType.DataQuality:
+                                if (group.Threshold <= 0 || group.Threshold > 1)
+                                {
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ConditionGroupThresholdValue, group.Position.ToString()));
+                                }
+                                break;
+                            default:
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ScoreDefinitionNotThresholdBased, group.Position.ToString()));
                         }
                     }
-                    else
-                    {
-                        if (group.Threshold.HasValue)
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ScoreDefinitionNotThresholdBased, group.Position.ToString()));
-                        }
-                    }
+
                     #endregion
 
                     foreach (var condition in group.ConditionItems)
@@ -1656,6 +1641,7 @@ from	(
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC, SI.UpdatedOn desc) as RowNum,
 				V.EffectiveEndDate as EndDate,
 				V.[Weight],
+                V.Threshold,
 				iif(SI.AdjustedWeight > 1, 1, SI.AdjustedWeight) as AdjustedWeight,
 				iif(SI.AdjustedMaxWeight > 1, 1, SI.AdjustedMaxWeight) as AdjustedMaxWeight,
 				coalesce(SI.DisplayWeight, SI.AdjustedWeight) as DisplayWeight,
@@ -1728,7 +1714,7 @@ select		R.*,
                 C.Uid,
 		    	MatchType,
 		    	Position,
-		    	threshold,
+		    	Threshold,
 		    	Weight,
 		    	(
                       select	F.FriendlyName as FieldName,
@@ -2514,6 +2500,7 @@ offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
                     		V.EffectiveDate,
 							V.EffectiveEndDate,
 							V.Weight,
+                            V.Threshold,
 							V.Uid as versionuid,
                             {hasResultsSql("V.Uid")}, 
 							{conditionGroupsJsonSql("V.Uid")}, 

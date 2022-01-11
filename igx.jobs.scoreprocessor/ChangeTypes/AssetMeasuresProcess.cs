@@ -24,7 +24,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 select	Al.AllocationUid,
 		Mal.ScoreType,
         Mal.CalculationMethod,
-        Mal.IsThresholdBased,
         Al.EffectiveDate,
 		V.AssetUid as MetricAssetUid,
 		A.ParentUid as MetricParentAssetUid,
@@ -375,10 +374,11 @@ where   AssetTypeID in (
                                                                     break;
                                                             }
 
-                                                            if (r.Measure.IsThresholdBased)
+                                                            if (r.Measure.Threshold.HasValue)
                                                             {
-                                                                scoreItem.DecimalValue = resultOperationValue;
                                                                 scoreItem.Value = (r.Measure.Threshold <= resultOperationValue);
+                                                                scoreItem.DecimalValue = resultOperationValue;
+                                                                scoreItem.HasThreshold = true;
                                                             }
                                                             else
                                                             {
@@ -686,6 +686,7 @@ where   AssetTypeID in (
                         itemsTable.Columns.Add("MeasureVersionUid", typeof(Guid));
                         itemsTable.Columns.Add("EffectiveDate", typeof(DateTime));
 
+                        itemsTable.Columns.Add("HasThreshold", typeof(bool));
                         itemsTable.Columns.Add("IsRemoved", typeof(bool));
 
                         itemsTable.Columns.Add("Value", typeof(bool));
@@ -704,6 +705,7 @@ where   AssetTypeID in (
                             itemRow["MeasureVersionUid"] = s.MeasureVersionUid;
                             itemRow["EffectiveDate"] = s.EffectiveDate;
                             itemRow["Value"] = s.Value;
+                            itemRow["HasThreshold"] = s.HasThreshold;
                             itemRow["IsRemoved"] = s.IsRemoved;
                             if (s.DecimalValue.HasValue)
                             {
@@ -732,6 +734,7 @@ CREATE TABLE #StagingScoreItem (
 	MeasureVersionUid uniqueidentifier NOT NULL,
 	EffectiveDate datetime NOT NULL,
 	[Value] bit NULL,
+    HasThreshold bit not null,
     IsRemoved bit not null,
 	DecimalValue float NULL,
 	RawWeight decimal(8, 6) NULL,
@@ -747,6 +750,7 @@ CREATE TABLE #StagingScoreItem (
                             bulkCopy.ColumnMappings.Add("MeasureUid", "MeasureUid");
                             bulkCopy.ColumnMappings.Add("MeasureVersionUid", "MeasureVersionUid");
                             bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
+                            bulkCopy.ColumnMappings.Add("HasThreshold", "HasThreshold");
                             bulkCopy.ColumnMappings.Add("IsRemoved", "IsRemoved");
                             bulkCopy.ColumnMappings.Add("Value", "Value");
                             bulkCopy.ColumnMappings.Add("DecimalValue", "DecimalValue");
@@ -781,6 +785,7 @@ update set
 	T.RawWeight = S.RawWeight,
 	T.ConditionUid = S.ConditionUid,
     T.IsRemoved = S.IsRemoved,
+    T.HasThreshold = S.HasThreshold,
 	T.Evidence = S.Evidence,
 	T.OtherConditions = S.OtherConditions,
     T.AllocationUid = S.AllocationUid
@@ -788,11 +793,11 @@ when not matched then
     insert (
         AllocationUid, AssetUid, MeasureUid, MeasureVersionUid, 
         EffectiveDate, [Value], DecimalValue, RawWeight, 
-        ConditionUid, Evidence, OtherConditions, IsRemoved
+        ConditionUid, Evidence, OtherConditions, IsRemoved, HasThreshold
     ) values (
         S.AllocationUid, S.AssetUid, S.MeasureUid, S.MeasureVersionUid, 
         S.EffectiveDate, S.[Value], S.DecimalValue, S.RawWeight, 
-        S.ConditionUid, S.Evidence, S.OtherConditions, S.IsRemoved
+        S.ConditionUid, S.Evidence, S.OtherConditions, S.IsRemoved, S.HasThreshold
     );", transaction: trans);
 
                         trans.Commit();

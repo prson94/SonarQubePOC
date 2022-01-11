@@ -68,8 +68,15 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
     showPassTest(): boolean {
         let show = true;
 
-        show = (!this.selected.IsGroup && this.scoreType !== ScoreType.DataQuality);
-
+        if (this.selected.IsGroup) {
+            show = false;
+        }
+        else {
+            if (this.scoreType === ScoreType.DataQuality && !this.selected.Threshold) {
+                show = false;
+            }
+        }
+        
         return show;
     }
 

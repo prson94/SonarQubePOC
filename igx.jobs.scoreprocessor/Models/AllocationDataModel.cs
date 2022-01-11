@@ -13,13 +13,12 @@ namespace igx.jobs.scoreprocessor.Models
         public MetricUpdateFrequency UpdateFrequency { get; set; }
         public ScoreType ScoreType { get; set; }
         public CalculationMethod CalculationMethod { get; set; }
-        public bool IsThresholdBased { get; set; }
         public Guid MetricAssetUid { get; set; }
         public Guid? MetricParentAssetUid { get; set; }
         public bool IsGroup { get; set; }
         public Guid MetricAssetVersionUid { get; set; }
         public decimal Weight { get; set; }
-        public float Threshold { get; set; }
+        public float? Threshold { get; set; }
         public bool MatchConditionsOnly { get; set; }
         public string Definition { get; set; }
         public string ConditionsJson { get; set; }
