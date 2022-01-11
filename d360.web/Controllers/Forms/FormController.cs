@@ -2021,7 +2021,13 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = "Is Active Directory Group", FieldType = DataType.Boolean.ToString() });
+
+            list.Add(new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = "Primary Owner", FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" });
+            list.Add(new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = "Secondary Owner", FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" });
+
+            list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

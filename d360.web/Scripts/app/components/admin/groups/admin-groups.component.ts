@@ -68,6 +68,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         this.buildSecondaryNavigationForObject(0, 'GroupType');
 
         this.sidePanelStorageKey = 'list_' + AssetTypeClass.Group + '_' + CurrentResourceID;
+        this.theDeleteCallback = this.deleteService.bind(this);
     }
 
     ngOnInit() {
@@ -111,8 +112,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         this.selectedRow = item;
         this.showEditor = true;
     }
-    selectRow(e) {
-        this.selectedRow = e.data;
+    selectRow(data) {
+        this.selectedRow = data;
     }
 
     private groupUrl(id: number) {
@@ -130,7 +131,17 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     deleteGroup(item) {
         this.selectedRow = item;
         this.formMode = FormMode.Deleting;
-        console.log(item);
+    }
+
+    deleteService() {
+        this.groupService.deleteGroupWithUid(this.selectedRow.Uid).subscribe(
+            result => {
+                this.showDelete = false;
+                this.formMode = FormMode.Default;
+                this.load();
+                this.showMessageForResult(this.messagesService, result);
+            }
+        );
     }
 
     clickMenuItem(event: any, item: any) {

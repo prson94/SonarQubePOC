@@ -12,7 +12,6 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 import { D3SSharedModule } from '../../shared/shared.module';
 
 import { AdminGroupsComponent } from './admin-groups.component';
-import { GroupForm } from './group.form';
 
 import { AdminGroupsRoutingModule } from './admin-groups.routes';
 
@@ -65,8 +64,7 @@ import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.com
         PopupMenuModule
     ],
     declarations: [
-        AdminGroupsComponent,
-        GroupForm,
+        AdminGroupsComponent
     ],
     providers: [
         {

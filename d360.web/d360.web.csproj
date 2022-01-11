@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1564,7 +1564,6 @@
     <None Include="Content\styles\Tooltip.less" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
-    <Content Include="Scripts\app\components\admin\groups\group.form.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
@@ -2140,7 +2139,6 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\groups\group.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />

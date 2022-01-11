@@ -2172,6 +2172,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             var prefix = "Fields.GetFilterVales => ";
             try
             {
+                string pagingQuery = "";
+                string whereQuery = "";
+
                 if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")
                 {
                     var classInfos = AssetTypeClass.BusinessAsset.GetAsList().Where(x => x.ID == AssetTypeClass.BusinessAsset || x.ID == AssetTypeClass.TechnicalAsset);
@@ -2194,15 +2197,44 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                 var assetType = Company.AssetTypes
                     .FirstOrDefault(x => x.uid == assetTypeUid);
-                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
 
-
-                string pagingQuery = "";
-                string whereQuery = "";
                 if (skip != null && take != null)
                 {
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
                 }
+
+                if (assetType.Class == AssetTypeClass.Group
+                    && (fieldName == "SecondaryOwnerUid" || fieldName == "PrimaryOwnerUid"))
+                {
+
+                    var baseSql = $@" from reporting.Global_Resource r where r.state = 1";
+
+                    if (HideData3SixtyUsers())
+                    {
+                        baseSql += " and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
+                    }
+
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        filter = "%" + filter + "%";
+                        whereQuery += " and r.LastName + ', ' + r.FirstName like @filter ";
+                    }
+
+                    var dataSelect = "select r.LastName + ', ' + r.FirstName as text, uid as value ";
+                    var countSelect = "select count(*) ";
+
+                    var sql = $"{dataSelect} {baseSql} order by r.LastName + ', ' + r.FirstName {pagingQuery};{countSelect} {baseSql}; ";
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { skip, take, filter });
+                    var data = new
+                    {
+                        items = resultsAssets.Read<dynamic>().ToList(),
+                        count = resultsAssets.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
 
                 //list items for parent field
                 if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")

@@ -110,19 +110,6 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    getGroupUserList(
-        id: number,
-        pagenum: number,
-        pagesize: number,
-        sortDataField: string,
-        sortOrder: string
-    ): Observable<any> {
-        return this.http.get(`form/GetGroupUserList?id=${id}&pagenum=${pagenum}&pagesize=${pagesize}&sortdatafield=${sortDataField}&sortorder=${sortOrder}`).pipe(
-            map((response) => response),
-            catchError((err) => this.handleError(err))
-        );
-    }
-
     getResponsibilityBreakdownByGroup(id: number): Observable<CountObject[]> {
         return this.http.get(`/api/v2/social//ResponsibilityBreakdownByGroup?id=${id}`).pipe(
             map((response) => <CountObject[]>response),

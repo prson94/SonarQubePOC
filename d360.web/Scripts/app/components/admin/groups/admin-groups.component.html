@@ -11,7 +11,6 @@
                          [paginator]="true"
                          [rows]="20"
                          [style]="{'width':'100%'}"
-                         (onRowSelect)="selectRow($event)"
                          [loading]="isLoading"
                          [loadingIcon]="'fa fa-spinner fa-spin'">
                     <ng-template pTemplate="colgroup">
@@ -35,7 +34,7 @@
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
-                        <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
+                        <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
                             <td *ngFor="let col of columns; let i=index">
                                 <ng-container *ngIf="i != linkColumnIndex; else linked">
                                     <div style="display:block; word-wrap:break-word">
@@ -47,7 +46,7 @@
                                     </div>
                                 </ng-container>
                                 <ng-template #linked>
-                                    <a (click)="selectArtifact(item)"
+                                    <a (click)="selectRow(item)"
                                        style="word-wrap:break-word;">
                                         <d3s-dynamic-field-value [column]="col"
                                                                  [fields]="fields"
@@ -59,7 +58,7 @@
                                 </ng-template>
 
                             </td>
-                            <td class="asset-grid-tools">
+                            <td class="asset-grid-tools" (click)="selectRow(item)">
                                 <div style="display:inline-block">
                                     <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #linkMenu [tabIndex]="1"></ig-popup-menu>
@@ -124,7 +123,7 @@
                   [title]="selectedRow ? 'Edit Group' : 'Create New Group'"
                   [selection]="selected"
                   [rowID]="rowID"
-                  [objectTypeUid]="gridObject?.AssetTypeUID"
+                  [objectTypeUid]="'00000001-0000-0000-0000-B00000000012'"
                   [hidePath]="true"
                   (saveClick)="saveItem($event)"
                   [showAsModal]="true"
@@ -141,12 +140,6 @@
     <!--<div class="col l9 m8 s12" [ngSwitch]="formMode">
         <div *ngSwitchDefault class="tile tile-detail">
             <d3s-group-members [groupId]="0" [groupUid]="selectedRow?.Uid" [groupName]="selectedRow?.Name" [groupIsActiveDirectory]="selectedRow?.IsActiveDirectoryGroup"></d3s-group-members>
-        </div>
-        <div *ngSwitchCase="FormMode.Adding" class="tile tile-detail">
-            <d3s-group-form [id]="0" [title]="'Add Group'" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>
-        </div>
-        <div *ngSwitchCase="FormMode.Editing" class="tile tile-detail">
-            <d3s-group-form [id]="0" [uid]="selectedRow?.Uid" [title]="'Edit ' + selectedRow.Name" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>
         </div>
         <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
             <d3s-delete-form [callback]="theDeleteCallback"
