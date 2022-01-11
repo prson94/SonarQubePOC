@@ -5,7 +5,7 @@ import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { TooltipModule } from "primeng/tooltip";
 import { DirectivesModule } from "../../../directives/directives.module";
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
 import { SiteModalModule } from "../../shared/modal/gov-modal.module";
 import { ResourceApiComponent } from "./resource-api.component";
 
@@ -17,7 +17,7 @@ import { ResourceApiComponent } from "./resource-api.component";
         //angular
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
         DirectivesModule,
 
@@ -28,11 +28,7 @@ import { ResourceApiComponent } from "./resource-api.component";
         ResourceApiComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 

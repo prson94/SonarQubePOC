@@ -1,7 +1,7 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
+
+
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -34,7 +34,7 @@ import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.
 @NgModule({
     imports: [
         CommonModule,
-        HttpClientModule,
+
         RouterModule,
         FormsModule,
 
@@ -71,10 +71,7 @@ import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.
         MonitorListComponent,
         ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ] 
 })
 export class MonitorModule { }

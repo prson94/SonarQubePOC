@@ -12,7 +12,7 @@ import { GovernRequestInterceptor } from '../../http-interceptors/govern-request
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         AssetsRoutingModule
@@ -21,11 +21,7 @@ import { GovernRequestInterceptor } from '../../http-interceptors/govern-request
         AssetsComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
+        
     ]
 })
 

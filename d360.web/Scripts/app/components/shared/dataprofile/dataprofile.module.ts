@@ -2,7 +2,7 @@
 import { CommonModule } from "@angular/common";
 import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
 import { DataProfileComponent } from "./dataprofile.component";
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";
 import { DirectivesModule } from '../../../directives/directives.module';
 import { TooltipModule } from 'primeng/tooltip';
@@ -28,7 +28,7 @@ import { DataProfileTimeSeriesComponent } from "./dataprofile-time-series.compon
     imports: [        
         CommonModule,
         FormsModule,
-        HttpClientModule,        
+        
         PropertyGroupModule,
         DirectivesModule,
         TooltipModule,
@@ -56,11 +56,7 @@ import { DataProfileTimeSeriesComponent } from "./dataprofile-time-series.compon
         DataProfileComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },        
+                
     ]
 })
 export class DataProfileModule { }

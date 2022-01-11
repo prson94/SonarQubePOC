@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import {AdminModule} from '../admin.module';
 import {CoreModule} from '../../shared/core.module';
@@ -42,7 +42,7 @@ import { TableModule } from 'primeng/table';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         AdminDiagramAssetRoutingModule,
         //prime
         ButtonModule,
@@ -79,11 +79,6 @@ import { TableModule } from 'primeng/table';
         AdminDiagramAssetComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
     ]
 })
 

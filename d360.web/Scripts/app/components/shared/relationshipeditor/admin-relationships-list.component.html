@@ -101,8 +101,8 @@
 </div>
 <d3s-delete-form *ngIf="showDelete"
                  [callback]="theDeleteCallback"
-                 [itemId]="selected?.Id"
+                 [itemId]="selected?.Uid"
                  [method]="'callback'"
                  [prompt]="'Are you sure you want to delete the relationship [' + [selected?.Subject.Name] + ' / ' + [selected?.Object.Name]  + ']?'"
                  (onCancel)="showDelete=false;"></d3s-delete-form>
-<d3s-admin-relationships-editor *ngIf="showEditor" [relationshipID]="selected?.Id" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>
+<d3s-admin-relationships-editor *ngIf="showEditor" [relationshipType]="selected" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>

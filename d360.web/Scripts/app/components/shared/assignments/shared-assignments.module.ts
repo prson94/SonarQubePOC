@@ -1,7 +1,7 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
@@ -16,7 +16,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 @NgModule({
     imports: [
         CommonModule,
-        HttpClientModule,
+
 
         //d3s
         CoreModule,        
@@ -34,10 +34,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
         AssignmentsComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class SharedAssignmentsModule { }

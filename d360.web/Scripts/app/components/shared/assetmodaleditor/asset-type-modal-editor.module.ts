@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 import { FormsModule } from '@angular/forms';
 
 import { ButtonModule } from 'primeng/button';
@@ -19,7 +19,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 @NgModule({
     imports: [
         CommonModule,
-        HttpClientModule,
+
         FormsModule,
         RouterModule,
         SharedDynamicGridEditorModule,
@@ -39,10 +39,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         AssetTypeModalEditorComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class AssetTypeModalEditorModule { }

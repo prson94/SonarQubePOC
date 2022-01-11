@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -44,7 +44,7 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 @NgModule({
     imports: [
         CommonModule,
-        HttpClientModule,
+
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
@@ -93,11 +93,7 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
         AssetEditorComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class AssetEditorModule { }

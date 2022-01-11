@@ -442,8 +442,11 @@ namespace d360.core.entities
         [DataMember]
         public Guid PredicateUid { get; set; }
         [DataMember]
+        public Guid? SubjectUid { get; set; }
+        [DataMember]
         public Cardinality SubjectCardinality { get; set; }
-
+        [DataMember]
+        public Guid? ObjectUid { get; set; }
         [DataMember]
         public Cardinality ObjectCardinality { get; set; }
     }

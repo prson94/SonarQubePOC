@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { RouterModule } from '@angular/router';
 
@@ -22,7 +22,7 @@ import { ResourceModule } from '../../resource/resource.module';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         //routing 
@@ -41,10 +41,7 @@ import { ResourceModule } from '../../resource/resource.module';
         MemberGroupComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true},
+        
     ]
 })
 export class MemberGroupModule { }

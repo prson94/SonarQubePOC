@@ -33,11 +33,7 @@ import { CheckboxModule } from 'primeng/checkbox';
         TakeSurveyComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class TakeSurveyModule { }

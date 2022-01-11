@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
+
+
 
 import { RouterModule } from '@angular/router';
 
@@ -27,7 +27,7 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
     imports: [
         CommonModule,        
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         TagRoutingModule,
@@ -54,10 +54,7 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
         TagItemComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class TagModule { }

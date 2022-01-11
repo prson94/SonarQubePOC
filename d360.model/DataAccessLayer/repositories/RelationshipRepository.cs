@@ -357,7 +357,10 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                         }
                     }
 
-                    whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $"({string.Join(" or ", simpleFilters)})";
+                    if (simpleFilters.Any()) //it prevents `and()` instruction appears in WHERE clause
+                    {
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $"({string.Join(" or ", simpleFilters)})";
+                    }
                 }
             }
 

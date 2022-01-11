@@ -1,6 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+
 import { GovernRequestInterceptor } from '../../http-interceptors/govern-request.interceptor';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -73,7 +73,7 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 @NgModule({
     imports: [
         CommonModule,
-        HttpClientModule,
+
         RouterModule,
         CoreModule,
         FormsModule,
@@ -146,11 +146,7 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
     ],
     providers: [
         GalleryGuard,
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class GalleryModule { }

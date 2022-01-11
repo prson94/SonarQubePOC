@@ -3,8 +3,8 @@ using d360.core.entities.Membership;
 using d360.model;
 using d360.model.DataAccessLayer;
 using MediatR;
-using Newtonsoft.Json;
-using System;
+using Resources;
+using SmartFormat;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading;
@@ -39,16 +39,14 @@ namespace d360.web.Services.Favorites
 
             if (routeMatch.Matcher.PageType == FavoritePageType.Unknown)
             {
-                throw new InvalidOperationException($"Failed to match favorite with route {request.Route}");
+                throw new InvalidRequestException(Smart.Format(ApiMessages.FavoriteUnknownRoute, new { request.Route }));
             }
 
             var favoriteDetails = (await favoritesRepository.GetFavoriteDetails(new[] { routeMatch.ObjectId })).SingleOrDefault();
             var isCorrect = IsCorrectFavorite(routeMatch, favoriteDetails);
             if (!isCorrect)
             {
-                throw new InvalidOperationException($"" +
-                    $"Failed to find object {JsonConvert.SerializeObject(routeMatch.ObjectId)} " +
-                    $"in order to match favorite route {request.Route}");
+                throw new InvalidRequestException(Smart.Format(ApiMessages.FavoriteUnknownObject, new { request.Route }));
             }
 
             var isNewHomePage = await GetIsNewHomePage(request);

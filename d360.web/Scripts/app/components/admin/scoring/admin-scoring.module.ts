@@ -38,7 +38,7 @@ import { SliderModule } from 'primeng/slider';
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { AllocationEditorComponent } from './allocation-editor.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
@@ -62,7 +62,7 @@ import { ScoreDefinitionModule } from '../../shared/asset-score/definition/score
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         ReactiveFormsModule,
 
         AdminScoringRoutingModule,
@@ -125,11 +125,6 @@ import { ScoreDefinitionModule } from '../../shared/asset-score/definition/score
         AdminMeasureHistoryComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
     ]
 })
 
