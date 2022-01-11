@@ -5,12 +5,330 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.CalculateRollups-v3">
+  <changeSet author="Pappas" id="Procedure.metrics.CalculateRollups-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [metrics].[CalculateRollups]
+as
+begin
+	set nocount on;
+
+	drop table if exists #edge
+	create table #edge (ID int, SubjectID int, SubjectName nvarchar(250), ObjectID int, ObjectName nvarchar(250), PredicateName nvarchar(250), PredicateInverse nvarchar(250), PredicateType int)
+	create index IX_TempEdge_SubjectID on #edge (SubjectID asc)
+	create index IX_TempEdge_ObjectID on #edge (ObjectID asc)
+	create clustered index IX_TempEdge_ID on #edge (ID)
+
+	insert into #edge
+		select	I.ID,
+				S.ID,
+				S.Name,
+				O.ID,
+				O.Name,
+				P.Name,
+				P.Inverse,
+				P.Type
+		from	IntersectType I
+				inner join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and S.Class in (1,2,6,7,8,9) 
+				inner join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.Class in (1,2,6,7,8,9) 
+				inner join [Predicate] P on P.ID = I.PredicateID
+
+	drop table if exists #final
+	create table #final (RowUid uniqueidentifier default(newid()), ID int, [Path] nvarchar(max), PathData varchar(max) default('[]'), [Level] int, LatestIntersectTypeID int)
+
+	drop table if exists #types
+	create table #types (ID int, Class int)
+	insert into #types (ID, Class)
+		select ID, Class from AssetType where Class in (1,2,6,7,8,9)
+
+	insert into #final (ID, [Path], [PathData], [Level], LatestIntersectTypeID)
+		select	I.ObjectID,
+				I.ObjectName + ' which is ' + lower(I.PredicateInverse) + ' ' + I.SubjectName,
+				json_Query(N'[{"I": '+cast(I.ID as varchar)+', "O": '+cast(I.SubjectID as varchar)+', "Sp": '+cast(-2 as varchar)+', "S": '+cast(I.ObjectID as varchar)+', "Op": '+cast(-1 as varchar)+' }]'),
+				1,
+				I.ID
+		from	#types P
+				inner join #edge I on I.ObjectID = P.ID and I.PredicateType = 2
+		union
+		select	I.SubjectID,
+				I.ObjectName + ' which is ' + lower(I.PredicateInverse) + ' ' + I.SubjectName,
+				json_Query(N'[{"I": '+cast(I.ID as varchar)+', "O": '+cast(I.SubjectID as varchar)+', "Sp": '+cast(-2 as varchar)+', "S": '+cast(I.ObjectID as varchar)+', "Op": '+cast(-1 as varchar)+' }]'),
+				1,
+				I.ID
+		from	#types P
+				inner join #edge I on I.ObjectID = P.ID and I.PredicateType = 2
+
+	delete	T
+	from	#edge T
+			inner join #final S on S.LatestIntersectTypeID = T.ID 
+
+	set nocount on;
+	declare @count int = 2,
+			@shouldContinue bit = 1
+
+	while @shouldContinue = 1
+	begin
+		insert into #final (ID, [Path], [PathData], [Level], LatestIntersectTypeID)
+			select	I.SubjectID
+					,I.SubjectName + ' which ' + lower(I.PredicateName) + ' ' + F.[Path]
+					,JSON_MODIFY(F.PathData, 'append $', json_Query(N'{"I": '+cast(I.ID as varchar)+', "S": '+cast(I.SubjectID as varchar)+', "Sp": '+cast(-@count-1 as varchar)+', "O": '+cast(I.ObjectID as varchar)+', "Op": '+cast(-@count as varchar)+'}'))
+					,@count
+					,I.ID
+			from	#final F
+					inner join #edge I on I.ObjectID = F.ID
+					inner join #types P on I.SubjectID = P.ID 
+			where	F.[Level] = @count-1
+
+		delete	T
+		from	#edge T
+				inner join #final S on S.LatestIntersectTypeID = T.ID 
+	
+		if not exists(select 1 from #final where [Level] = @count)
+		begin
+			set @shouldContinue = 0
+		end
+	
+		set @count = @count + 1
+	end
+
+	drop table if exists #raw
+	create table #raw (RowUid uniqueidentifier, AssetTypeID int, PathHash varchar(50), [Path] nvarchar(max), IntersectTypeID int, SubjectAssetTypeID int, SubjectPosition int, ObjectAssetTypeID int, ObjectPosition int)
+
+	insert into #raw
+		select	F.RowUid, --F.ID, F.Name, F.Class, 
+				F.ID,
+				[utility].GetHash(cast(F.ID as varchar) + H.PathHashRaw) as PathHash,
+				F.Path,
+				P.IntersectTypeID,
+				P.SubjectAssetTypeID,
+				P.SubjectPosition+M.Pos as SubjectPosition,
+				P.ObjectAssetTypeID,
+				P.ObjectPosition+M.Pos as ObjectPosition
+		from	#final F
+				cross apply openjson(F.PathData) with (IntersectTypeID int '$.I', SubjectAssetTypeID int '$.S', SubjectPosition int '$.Sp', ObjectAssetTypeID int '$.O', ObjectPosition int '$.Op') P
+				cross apply (
+							select STRING_AGG(IntersectTypeID, '|') as PathHashRaw 
+							from	openjson(F.PathData) with (IntersectTypeID int '$.I')
+							) H
+				inner join	(
+							select		F.RowUid,
+										abs(min(P.SubjectPosition))+1 as Pos
+							from		#final F
+										cross apply openjson(F.PathData) with (SubjectPosition int '$.Sp') P
+							group by	F.RowUid
+							) M on F.RowUid = M.RowUid
+		order by F.RowUid
+
+	drop table if exists #segments
+	create table #segments (RowUid uniqueidentifier, PathHash varchar(50), Position int, AssetTypeID int)
+
+	drop table if exists #links
+	create table #links (RowUid uniqueidentifier, PathHash varchar(50), IntersectTypeID int, StartPosition int, EndPosition int)
+
+	insert into #segments (RowUid, PathHash, Position, AssetTypeID)
+		select	RowUid,
+				PathHash,
+				SubjectPosition,
+				SubjectAssetTypeID
+		from	#raw
+
+	insert into #segments (RowUid, PathHash, Position, AssetTypeID)
+		select	R.RowUid,
+				R.PathHash,
+				ObjectPosition,
+				ObjectAssetTypeID
+		from	#raw R
+				left join #segments E on E.RowUid = R.RowUid and E.Position = R.ObjectPosition
+		where	E.RowUid is null
+
+	insert into #links (RowUid, PathHash, IntersectTypeID, StartPosition, EndPosition)
+		select	RowUid,
+				PathHash,
+				IntersectTypeID,
+				SubjectPosition,
+				ObjectPosition
+		from	#raw;
+
+	declare @retry int = 5;
+
+	while @retry > 0
+	begin
+		begin try
+			merge	metrics.RollupPath as T
+			using	(
+					select	distinct 
+							2 as ScoreType, --DataQuality
+							1 as [State],
+							PathHash,
+							AssetTypeID
+					from	#raw
+					where	AssetTypeID in (select ID from AssetType)
+					) as S
+			on		(T.PathHash = S.PathHash)
+			when	not matched by target then
+			insert	(Uid, AssetTypeID, ScoreType, State, PathHash)
+			values	(newid(), S.AssetTypeID, S.ScoreType, S.State, S.PathHash)
+			when	not matched by source then
+			update	set
+					T.State = 3;
+
+			update	T
+			set		T.State = 1,
+					T.AssetTypeID = S.AssetTypeID
+			from	metrics.RollupPath T
+					inner join #raw S on S.PathHash = T.PathHash and S.AssetTypeID in (select ID from AssetType);
+
+			delete	T
+			from	metrics.RollupPathSegment T
+					inner join metrics.RollupPath S on S.Uid = T.RollupPathUid and S.[State] = 3;
+
+			delete	T
+			from	metrics.RollupPathLink T
+					inner join metrics.RollupPath S on S.Uid = T.RollupPathUid and S.[State] = 3;
+
+			set @retry = 0;
+		end try
+		begin catch
+			set @retry -= 1;
+
+            if ( @retry > 0 AND ERROR_NUMBER() in (1205, 547, 2601) )
+            begin
+                if xact_state() = -1
+                    rollback transaction;
+
+                waitfor delay '00:00:01.000';
+            end
+            else
+            begin
+                print 'Suffered an error for which metrics.RollupPath Retry is inappropriate.';
+                throw;
+            end
+		end catch
+	end
+
+	set @retry = 5;
+	while @retry > 0
+	begin
+		begin try
+			merge	metrics.RollupPathSegment as T
+			using	(
+					select		distinct 
+								P.Uid as RollupPathUid,
+								S.Position,
+								S.AssetTypeID
+					from		#segments S
+								inner join metrics.RollupPath P on P.PathHash = S.PathHash
+					where		S.AssetTypeID in (select ID from AssetType)
+					) as S
+			on		(T.RollupPathUid = S.RollupPathUid and T.Position = S.Position)
+			when	matched then	
+			update	set
+					T.AssetTypeID = S.AssetTypeID
+			when	not matched by target then
+					insert (RollupPathUid, Position, AssetTypeID)
+					values (S.RollupPathUid, S.Position, S.AssetTypeID);
+
+			set @retry = 0;
+		end try
+		begin catch
+			set @retry -= 1;
+
+            if ( @retry > 0 AND ERROR_NUMBER() in (1205, 547, 2601) )
+            begin
+                if xact_state() = -1
+                    rollback transaction;
+
+                waitfor delay '00:00:01.000';
+            end
+            else
+            begin
+                print 'Suffered an error for which metrics.RollupPathSegment Retry is inappropriate.';
+                throw;
+            end
+		end catch
+	end
+
+	set @retry = 5;
+	while @retry > 0
+	begin
+		begin try
+			merge	metrics.RollupPathLink as T
+			using	(
+					select		distinct 
+								P.Uid as RollupPathUid,
+								S.StartPosition,
+								S.EndPosition,
+								S.IntersectTypeID
+					from		#links S
+								inner join metrics.RollupPath P on P.PathHash = S.PathHash
+					where		S.IntersectTypeID in (select ID from IntersectType)
+					) as S
+			on		(T.RollupPathUid = S.RollupPathUid and T.StartPosition = S.StartPosition)
+			when	matched then	
+			update	set
+					T.EndPosition = S.EndPosition,
+					T.IntersectTypeID = S.IntersectTypeID
+			when	not matched by target then
+					insert (RollupPathUid, StartPosition, EndPosition, IntersectTypeID)
+					values (S.RollupPathUid, S.StartPosition, S.EndPosition, S.IntersectTypeID);
+			set @retry = 0;
+		end try
+		begin catch
+			set @retry -= 1;
+
+            if ( @retry > 0 AND ERROR_NUMBER() in (1205, 547, 2601) )
+            begin
+                if xact_state() = -1
+                    rollback transaction;
+
+                waitfor delay '00:00:01.000';
+            end
+            else
+            begin
+                print 'Suffered an error for which metrics.RollupPathLink Retry is inappropriate.';
+                throw;
+            end
+		end catch
+	end
+
+	delete	L
+	from	[metrics].[RollupPathLink] L
+			inner join metrics.RollupPath P on P.Uid = L.RollupPathUid
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
+
+	delete	S
+	from	[metrics].[RollupPathSegment] S
+			inner join metrics.RollupPath P on P.Uid = S.RollupPathUid
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
+
+	delete	P
+	from	metrics.RollupPath P
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
+
+
+/*	select * from [metrics].[RollupPath]
+	select * from [metrics].[RollupPathLink]
+	select * from [metrics].[RollupPathSegment]
+
+	select	P.AssetTypeID,
+			P.Uid,
+			P.State,
+			T.Name,
+			metrics.CalculateRollupPath(P.Uid) as [Path]
+	from	[metrics].[RollupPath] P
+			left join AssetType T on T.ID = P.AssetTypeID
+*/
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [metrics].[CalculateRollups]
 as
 begin
@@ -305,220 +623,6 @@ begin
 			metrics.CalculateRollupPath(P.Uid) as [Path]
 	from	[metrics].[RollupPath] P
 			left join AssetType T on T.ID = P.AssetTypeID
-*/
-end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-create or alter  procedure [metrics].[CalculateRollups]
-as
-begin
-	drop table if exists #edge
-	create table #edge (ID int, SubjectID int, SubjectName nvarchar(250), ObjectID int, ObjectName nvarchar(250), PredicateName nvarchar(250), PredicateInverse nvarchar(250), PredicateType int)
-	create index IX_TempEdge_SubjectID on #edge (SubjectID asc)
-	create index IX_TempEdge_ObjectID on #edge (ObjectID asc)
-	create clustered index IX_TempEdge_ID on #edge (ID)
-
-	insert into #edge
-		select	I.ID,
-				S.ID,
-				S.Name,
-				O.ID,
-				O.Name,
-				P.Name,
-				P.Inverse,
-				P.Type
-		from	IntersectType I
-				inner join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and S.Class in (1,2,6,7,8,9) 
-				inner join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.Class in (1,2,6,7,8,9) 
-				inner join [Predicate] P on P.ID = I.PredicateID
-
-	drop table if exists #final
-	create table #final (RowUid uniqueidentifier default(newid()), ID int, [Path] nvarchar(max), PathData varchar(max) default('[]'), [Level] int, LatestIntersectTypeID int)
-
-	drop table if exists #types
-	create table #types (ID int, Class int)
-	insert into #types (ID, Class)
-		select ID, Class from AssetType where Class in (1,2,6,7,8,9)
-
-	insert into #final (ID, [Path], [PathData], [Level], LatestIntersectTypeID)
-		select	I.ObjectID,
-				I.ObjectName + ' which is ' + lower(I.PredicateInverse) + ' ' + I.SubjectName,
-				json_Query(N'[{"I": '+cast(I.ID as varchar)+', "O": '+cast(I.SubjectID as varchar)+', "Sp": '+cast(-2 as varchar)+', "S": '+cast(I.ObjectID as varchar)+', "Op": '+cast(-1 as varchar)+' }]'),
-				1,
-				I.ID
-		from	#types P
-				inner join #edge I on I.ObjectID = P.ID and I.PredicateType = 2
-		union
-		select	I.SubjectID,
-				I.ObjectName + ' which is ' + lower(I.PredicateInverse) + ' ' + I.SubjectName,
-				json_Query(N'[{"I": '+cast(I.ID as varchar)+', "O": '+cast(I.SubjectID as varchar)+', "Sp": '+cast(-2 as varchar)+', "S": '+cast(I.ObjectID as varchar)+', "Op": '+cast(-1 as varchar)+' }]'),
-				1,
-				I.ID
-		from	#types P
-				inner join #edge I on I.ObjectID = P.ID and I.PredicateType = 2
-
-	delete	T
-	from	#edge T
-			inner join #final S on S.LatestIntersectTypeID = T.ID 
-
-	set nocount on;
-	declare @count int = 2,
-			@shouldContinue bit = 1
-
-	while @shouldContinue = 1
-	begin
-		insert into #final (ID, [Path], [PathData], [Level], LatestIntersectTypeID)
-			select	I.SubjectID
-					,I.SubjectName + ' which ' + lower(I.PredicateName) + ' ' + F.[Path]
-					,JSON_MODIFY(F.PathData, 'append $', json_Query(N'{"I": '+cast(I.ID as varchar)+', "S": '+cast(I.SubjectID as varchar)+', "Sp": '+cast(-@count-1 as varchar)+', "O": '+cast(I.ObjectID as varchar)+', "Op": '+cast(-@count as varchar)+'}'))
-					,@count
-					,I.ID
-			from	#final F
-					inner join #edge I on I.ObjectID = F.ID
-					inner join #types P on I.SubjectID = P.ID 
-			where	F.[Level] = @count-1
-
-		delete	T
-		from	#edge T
-				inner join #final S on S.LatestIntersectTypeID = T.ID 
-	
-		if not exists(select 1 from #final where [Level] = @count)
-		begin
-			set @shouldContinue = 0
-		end
-	
-		set @count = @count + 1
-	end
-
-	drop table if exists #raw
-	create table #raw (RowUid uniqueidentifier, AssetTypeID int, PathHash varchar(50), [Path] nvarchar(max), IntersectTypeID int, SubjectAssetTypeID int, SubjectPosition int, ObjectAssetTypeID int, ObjectPosition int)
-
-	insert into #raw
-		select	F.RowUid, --F.ID, F.Name, F.Class, 
-				F.ID,
-				[utility].GetHash(cast(F.ID as varchar) + H.PathHashRaw) as PathHash,
-				F.Path,
-				P.IntersectTypeID,
-				P.SubjectAssetTypeID,
-				P.SubjectPosition+M.Pos as SubjectPosition,
-				P.ObjectAssetTypeID,
-				P.ObjectPosition+M.Pos as ObjectPosition
-		from	#final F
-				cross apply openjson(F.PathData) with (IntersectTypeID int '$.I', SubjectAssetTypeID int '$.S', SubjectPosition int '$.Sp', ObjectAssetTypeID int '$.O', ObjectPosition int '$.Op') P
-				cross apply (
-							select STRING_AGG(IntersectTypeID, '|') as PathHashRaw 
-							from	openjson(F.PathData) with (IntersectTypeID int '$.I')
-							) H
-				inner join	(
-							select		F.RowUid,
-										abs(min(P.SubjectPosition))+1 as Pos
-							from		#final F
-										cross apply openjson(F.PathData) with (SubjectPosition int '$.Sp') P
-							group by	F.RowUid
-							) M on F.RowUid = M.RowUid
-		order by F.RowUid
-
-	drop table if exists #segments
-	create table #segments (RowUid uniqueidentifier, PathHash varchar(50), Position int, AssetTypeID int)
-
-	drop table if exists #links
-	create table #links (RowUid uniqueidentifier, PathHash varchar(50), IntersectTypeID int, StartPosition int, EndPosition int)
-
-	insert into #segments (RowUid, PathHash, Position, AssetTypeID)
-		select	RowUid,
-				PathHash,
-				SubjectPosition,
-				SubjectAssetTypeID
-		from	#raw
-
-	insert into #segments (RowUid, PathHash, Position, AssetTypeID)
-		select	R.RowUid,
-				R.PathHash,
-				ObjectPosition,
-				ObjectAssetTypeID
-		from	#raw R
-				left join #segments E on E.RowUid = R.RowUid and E.Position = R.ObjectPosition
-		where	E.RowUid is null
-
-	insert into #links (RowUid, PathHash, IntersectTypeID, StartPosition, EndPosition)
-		select	RowUid,
-				PathHash,
-				IntersectTypeID,
-				SubjectPosition,
-				ObjectPosition
-		from	#raw;
-
-	merge	metrics.RollupPath as T
-	using	(
-			select	distinct 
-					2 as ScoreType, --DataQuality
-					1 as [State],
-					PathHash,
-					AssetTypeID
-			from	#raw
-			where	AssetTypeID in (select ID from AssetType)
-			) as S
-	on		(T.PathHash = S.PathHash)
-	when	not matched by target then
-	insert	(Uid, AssetTypeID, ScoreType, State, PathHash)
-	values	(newid(), S.AssetTypeID, S.ScoreType, S.State, S.PathHash)
-	when	not matched by source then
-	update	set
-			T.State = 3;
-
-	update	T
-	set		T.State = 1,
-			T.AssetTypeID = S.AssetTypeID
-	from	metrics.RollupPath T
-			inner join #raw S on S.PathHash = T.PathHash and S.AssetTypeID in (select ID from AssetType);
-
-	merge	metrics.RollupPathSegment as T
-	using	(
-			select		distinct 
-						P.Uid as RollupPathUid,
-						S.Position,
-						S.AssetTypeID
-			from		#segments S
-						inner join metrics.RollupPath P on P.PathHash = S.PathHash
-			where		S.AssetTypeID in (select ID from AssetType)
-			) as S
-	on		(T.RollupPathUid = S.RollupPathUid and T.Position = S.Position)
-	when	matched then	
-	update	set
-			T.AssetTypeID = S.AssetTypeID
-	when	not matched by target then
-			insert (RollupPathUid, Position, AssetTypeID)
-			values (S.RollupPathUid, S.Position, S.AssetTypeID);
-
-	merge	metrics.RollupPathLink as T
-	using	(
-			select		distinct 
-						P.Uid as RollupPathUid,
-						S.StartPosition,
-						S.EndPosition,
-						S.IntersectTypeID
-			from		#links S
-						inner join metrics.RollupPath P on P.PathHash = S.PathHash
-			where		S.IntersectTypeID in (select ID from IntersectType)
-			) as S
-	on		(T.RollupPathUid = S.RollupPathUid and T.StartPosition = S.StartPosition)
-	when	matched then	
-	update	set
-			T.EndPosition = S.EndPosition,
-			T.IntersectTypeID = S.IntersectTypeID
-	when	not matched by target then
-			insert (RollupPathUid, StartPosition, EndPosition, IntersectTypeID)
-			values (S.RollupPathUid, S.StartPosition, S.EndPosition, S.IntersectTypeID);
-
-/*	select * from [metrics].[RollupPath]
-	select * from [metrics].[RollupPathLink]
-	select * from [metrics].[RollupPathSegment]
-
-	select	*,
-			metrics.CalculateRollupPath(Uid) as [Path]
-	from	[metrics].[RollupPath]
 */
 end
 		]]>

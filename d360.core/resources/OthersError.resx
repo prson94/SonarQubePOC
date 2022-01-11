@@ -156,9 +156,6 @@
   <data name="JobIsRunning" xml:space="preserve">
     <value>Job is currently running</value>
   </data>
-  <data name="JobNotRunning" xml:space="preserve">
-    <value>Job is not currently running</value>
-  </data>
   <data name="NoSearchUrlError" xml:space="preserve">
     <value>DEV ERROR - NO SEARCH BASE URL SPECIFIED.</value>
   </data>

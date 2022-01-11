@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
@@ -31,7 +31,7 @@ import { ResourceMultiSelectGridModule } from '../resource-multiselect-grid.comp
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
 
         //d3s
         CoreModule,
@@ -64,10 +64,7 @@ import { ResourceMultiSelectGridModule } from '../resource-multiselect-grid.comp
         ResponsibilityRelationForm
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class SharedResponsibilitiesModule { }

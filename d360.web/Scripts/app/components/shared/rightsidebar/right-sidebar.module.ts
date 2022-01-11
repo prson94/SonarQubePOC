@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { RightSidebarComponent } from './right-sidebar.component';
@@ -22,7 +22,7 @@ import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.mo
         CommonModule,
         FormsModule,
         DynamicPercentageModule,
-        HttpClientModule,
+
         SharedDynamicGridEditorModule,
         TagUsageInfoModule,
         SharedDeleteFormModule,
@@ -41,10 +41,7 @@ import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.mo
         RightSidebarComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class RightsidebarModule { }

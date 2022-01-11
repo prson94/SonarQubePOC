@@ -19,11 +19,7 @@ import { MessageBoxComponent } from './message-box.component';
         MessageBoxComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class IgMessageBoxModule { }

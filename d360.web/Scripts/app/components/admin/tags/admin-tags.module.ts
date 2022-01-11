@@ -3,7 +3,7 @@ import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
@@ -56,11 +56,7 @@ import { AdminTagsActionModule } from './admin-tags-action.module';
         AdminTagsConsolidateComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
     
 })

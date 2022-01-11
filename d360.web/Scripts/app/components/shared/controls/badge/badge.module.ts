@@ -20,11 +20,7 @@ import { IgBadgeComponent } from './badge.component';
         IgBadgeComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class IgBadgeModule { }

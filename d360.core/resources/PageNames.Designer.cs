@@ -106,6 +106,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Children.
+        /// </summary>
+        public static string ChildrenTab {
+            get {
+                return ResourceManager.GetString("ChildrenTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Comments.
         /// </summary>
         public static string CommentsTab {

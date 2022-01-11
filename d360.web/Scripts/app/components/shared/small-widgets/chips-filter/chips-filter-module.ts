@@ -20,11 +20,7 @@ import { DirectivesModule } from '../../../../directives/directives.module';
         ChipsFilterComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class ChipsFilterModule { }

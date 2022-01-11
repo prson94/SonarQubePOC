@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -40,7 +40,7 @@ import { TableModule } from 'primeng/table';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
 
         AdminOrganizationsRoutingModule,
 
@@ -77,10 +77,6 @@ import { TableModule } from 'primeng/table';
         AdminOrganizationContractHistoryComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
     ]
 })
 export class AdminOrganizationsModule { }

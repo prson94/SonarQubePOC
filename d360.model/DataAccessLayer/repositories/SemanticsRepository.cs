@@ -51,7 +51,7 @@ namespace d360.model.DataAccessLayer
         {
             { "baseType", "BaseType" },
             { "description", "Description" },
-            { "effectiveDate", "" },
+            { "effectiveDate", "EffectiveDate" },
             { "headerRegExpConfidence", "HeaderFilterConfidence" },
             { "matchType", "MatchType" },
             { "maximum", "Maximum" },
@@ -186,7 +186,7 @@ output inserted.ID, inserted.ObjectName into @ids
 select	Object, ObjectID, Qualifier, 
 		ResourceID, Date, Action,
 		Object, ObjectID, 'Semantic', Qualifier,
-		'Semantic ' + case @action
+		'Semantic type ' + case @action
 				when 'C' then 'created'
 				when 'U' then 'updated'
 				else 'removed'
@@ -555,7 +555,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
                 var repoModels = (
                     from u in semantics
-                    join e in existingSemantics on u.Qualifier equals e.Qualifier
+                    join e in existingSemantics on u.Qualifier.ToLower() equals e.Qualifier.ToLower()
                     select u.ToRepositoryModel(e, CompanyContext.CurrentResourceID)
                     ).ToList();
 
@@ -663,7 +663,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
                 var repoModels = (
                     from u in semantics
-                    join e in existingSemantics on u.Qualifier equals e.Qualifier
+                    join e in existingSemantics on u.Qualifier.ToLower() equals e.Qualifier.ToLower()
                     select u.ToRepositoryModel(e, CompanyContext.CurrentResourceID)
                     ).ToList();
 

@@ -66,6 +66,11 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if ('objectPermissions' in changes) {
+            this.permissions = this.objectPermissions;
+            this.changeDetectorRef.markForCheck();
+        }
+
         const hasApiParameterChanges = ('objectID' in changes || 'objectType' in changes);
         if (!hasApiParameterChanges) {
             return;
@@ -129,8 +134,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
             this.ProcessRelationshipTypesResponse(allItems, counts);
         });
-
-        this.permissions = this.objectPermissions;
     }
 
     private ProcessRelationshipTypesResponse(allItems: RelationshipTypeUIModel[], counts: RelationshipCount[]) {

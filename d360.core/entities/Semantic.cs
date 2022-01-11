@@ -107,6 +107,9 @@ namespace d360.core.entities
 
     public class GetSemantic : SemanticBase
     {
+        [JsonProperty("uid")]
+        public Guid Uid { get; set; }
+
         [JsonProperty("createdBy")]
         public SemanticUserModel CreatedBy { get; set; }
 
@@ -158,6 +161,8 @@ namespace d360.core.entities
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ID { get; set; }
+
+        public Guid Uid { get; set; }
 
         public int CreatedBy { get; set; }
 
@@ -238,6 +243,7 @@ namespace d360.core.entities
                 Source = model.Source,
                 Status = model.Status,
                 Threshold = model.Threshold,
+                Uid = model.Uid,
                 UpdatedBy = new SemanticUserModel
                 {
                     FullName = updatedBy.FullName,
@@ -276,6 +282,7 @@ namespace d360.core.entities
                 Source = SemanticSource.UserDefined,
                 Status = model.Status,
                 Threshold = model.Threshold,
+                Uid = Guid.NewGuid(),
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
                 ValidLocalesStructured = model.ValidLocalesStructured,
@@ -318,6 +325,7 @@ namespace d360.core.entities
                 Source = existing.Source,
                 Status = model.Status,
                 Threshold = model.Threshold,
+                Uid = existing.Uid,
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
                 ValidLocalesStructured = model.ValidLocalesStructured,
@@ -360,6 +368,7 @@ namespace d360.core.entities
                 Source = existing.Source,
                 Status = model.Status ?? existing.Status,
                 Threshold = model.Threshold ?? existing.Threshold,
+                Uid = existing.Uid,
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
                 ValidLocalesStructured = (model.ValidLocalesStructured != null) ? model.ValidLocalesStructured : existing.ValidLocalesStructured,

@@ -1,8 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
 import {AdminModule} from '../admin.module';
 import {CoreModule} from '../../shared/core.module';
@@ -42,7 +40,7 @@ import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.mo
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
 
         AdminArtifactsRoutingModule,
 
@@ -81,11 +79,6 @@ import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.mo
         AdminArtifactsComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
     ]
 })
 

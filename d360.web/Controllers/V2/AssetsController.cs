@@ -3184,6 +3184,7 @@ select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Descri
         /// <returns>A list of descendent asset uids</returns>
         [
             HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("asset/{assetUid:Guid}/descendants"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDescendantsResults)),
             SwaggerProduces("application/json"),
