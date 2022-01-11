@@ -1,7 +1,14 @@
 ﻿import { Input, Component, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipDetail, PredicateDropdown } from '../../../models/relationship.model';
+import {
+    PredicateDropdown,
+    RelationshipType,
+    Cardinality,
+    RelationshipTypeEdge
+} from '../../../models/relationship.model';
+import { forkJoin } from 'rxjs';
+import { Predicate } from '../../../models/predicate.model';
 
 @Component({
     selector: 'd3s-admin-relationships-editor',
@@ -12,11 +19,11 @@ import { RelationshipDetail, PredicateDropdown } from '../../../models/relations
 
 export class AdminRelationshipsEditor {
     @Input() relationshipID: number = 0;
+    @Input() relationshipType: RelationshipType;
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
     action: string = "Edit";
     error: any;
-    editedRelationship: RelationshipDetail;
     cardinalityOptions: SelectItem[] = [];
     subjectCardinalityOptions: SelectItem[] = [];
     objectCardinalityOptions: SelectItem[] = [];
@@ -31,67 +38,82 @@ export class AdminRelationshipsEditor {
     canChangeCardinality: boolean = true;
     canChangeObject: boolean = true;
     selectedPredicate: any;
+    limitedChangesOnly: boolean = false;
+
 
     constructor(private relationshipsService: RelationshipsService, private cdRef: ChangeDetectorRef) { }
 
     ngOnInit() {
         this.loadSubjectOptions();
         this.loadCardinalityOptions();
-        if (this.relationshipID > 0) {
+        if (this.relationshipID > 0 || this.relationshipType != null) {
+            //copy model to avoid storing changes to properties after closing the editor
+            this.relationshipType = JSON.parse(JSON.stringify(this.relationshipType));
             this.loadItem(this.relationshipID);
         }
         else {
-            this.editedRelationship = new RelationshipDetail();
+            this.relationshipType = new RelationshipType();
+            this.relationshipType.Subject = new RelationshipTypeEdge();
+            this.relationshipType.Object = new RelationshipTypeEdge();
+            this.relationshipType.Predicate = new Predicate();
             this.action = 'New';
         }
     }
 
     private loadItem(id: number) {
         this.isLoadingItem = true;
-        this.relationshipsService.getRelation(id).subscribe(result => {
-            this.editedRelationship = result;
-            this.isLoadingItem = false;
-            if (this.editedRelationship.Subject) {
-                let subject = this.editedRelationship.Subject.split('|');
-                let object = this.editedRelationship.Object.split('|');
-                if (subject.length >= 2 && object.length >= 2) {
-                    this.loadObjectOptions(subject[0], Number(subject[1]), object[0], Number(object[1]), this.editedRelationship.Predicate);
-                    this.loadPredicates(subject[0], Number(subject[1]), object[0], Number(object[1]), this.editedRelationship.Predicate);
 
-                    if (this.editedRelationship.Predicate != undefined && this.editedRelationship.LimitedChangesOnly) {
-                        this.canChangePredicate = false;
-                    }
+        if (this.relationshipType && this.relationshipType.Subject) {
+            forkJoin(
+                this.relationshipsService.getIntersectTypeById(this.relationshipType.Id),
+                this.relationshipsService.getRelationshipUids(this.relationshipType.Uid)
+            )
+                .subscribe((results) => {
+                    let relationshipType = results[0];
+                    let relationships = results[1];
 
-                    if (this.editedRelationship.PredicateType >= 3 &&  this.editedRelationship.PredicateType  <=4)
-                    {
-                        var SubCardinality: number = Number(this.editedRelationship.SubjectCardinality);
-                        var ObjCardinality: number = Number(this.editedRelationship.ObjectCardinality);
-                        if (SubCardinality === 1 && ObjCardinality  === 2) {
+                    if (relationshipType) {
+                        relationshipType = relationshipType[0];
+
+                        this.loadObjectOptions(this.relationshipType.Subject.Uid, this.relationshipType.Object.Uid, this.relationshipType.Predicate.Uid);
+                        this.loadPredicates(this.relationshipType.Subject.Uid, this.relationshipType.Object.Uid, this.relationshipType.Predicate.Uid);
+
+                        if (relationshipType.PredicateID >= 3 && relationshipType.PredicateID <= 4) {
+
+                            if (this.relationshipType.Subject.Cardinality === Cardinality[Cardinality.One]
+                                && this.relationshipType.Object.Cardinality === Cardinality[Cardinality.Many]) {
                                 this.canChangeCardinality = false;
                             }
+                        }
+
+                        let hasRelationships = (relationships != null && relationships.Results != null && relationships.Results.length > 0) ? true : false;
+                        if (hasRelationships) {
+                            this.limitedChangesOnly = true;
+                        }
+
+                        if (this.relationshipType.Predicate.Uid != undefined && hasRelationships) {
+                            this.canChangePredicate = false;
+                        }
                     }
-                }
-                else {
-                    this.loadObjectOptions(subject[0], Number(subject[1]), null, null, this.editedRelationship.Predicate);
-                    this.loadPredicates(subject[0], Number(subject[1]), null, null, this.editedRelationship.Predicate);
-                }
-            }
-        });
+                    this.isLoadingItem = false;
+                });
+
+        } else {
+            this.isLoadingItem = false;
+        }
     }
 
     private subjectChanged(value) {
         if (!value) return;
-        let info = value.split('|');
-        if (info.length < 2) return;
 
-        this.editedRelationship.Object = null;
-        this.editedRelationship.Predicate = null;
-        this.loadPredicates(info[0], Number(info[1]));
+        this.relationshipType.Object.Uid = null;
+        this.relationshipType.Predicate.Uid = null;
+
+        this.loadPredicates(value);
     }
 
     private predicateChanged(value) {
         if (!value) return;
-        let predicateId = Number(value);
         let predicate = this.predicates.find(p => p.value == value);
         this.selectedPredicate = predicate;
         this.loadCardinalityOptions();
@@ -99,41 +121,43 @@ export class AdminRelationshipsEditor {
         if (predicate != null && predicate.isSemantic == true) {
             this.canChangeObject = false;
             this.objectOptions = this.subjectOptions.slice();
-            this.editedRelationship.Object = this.editedRelationship.Subject;
+            this.relationshipType.Object.Uid = this.relationshipType.Subject.Uid;
         }
         else {
             this.canChangeObject = true;
         }
 
-        let subject = this.editedRelationship.Subject.split('|');
-        if (!this.editedRelationship.LimitedChangesOnly && this.canChangeObject) {
-            this.editedRelationship.Object = null;
-            this.loadObjectOptions(subject[0], Number(subject[1]), null, null, predicateId);
+        if (!this.limitedChangesOnly && this.canChangeObject) {
+            this.relationshipType.Object.Uid = null;
+            this.loadObjectOptions(this.relationshipType.Subject.Uid, null, value);
         }
-
     }
 
-    private loadPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
-        this.relationshipsService.getRelationshipPredicates(subject, subjectId, object, objectId, predicateId)
-            .subscribe(result => {
+
+    private loadPredicates(subjectUid: string, objectUid?: string, predicateUid?: string) {
+        this.relationshipsService
+            .getRelationshipPredicates(subjectUid, objectUid, predicateUid)
+            .subscribe((result) => {
                 this.predicates = [];
                 for (let item of result) {
                     this.predicates.push({
                         label: item.label,
                         value: item.value,
-                        isSemantic: item.isSemantic, 
+                        isSemantic: item.isSemantic,
                         type: item.type
                     });
                 }
 
-                this.selectedPredicate = this.predicates.find(p => +p.value == this.editedRelationship.Predicate);
+                this.selectedPredicate = this.predicates.find((p) => p.value === this.relationshipType.Predicate.Uid);
                 this.loadCardinalityOptions();
             });
     }
 
     private loadSubjectOptions() {
         this.isLoading = true;
-        this.relationshipsService.getSubjectOptions().subscribe(result => {
+        this.relationshipsService
+            .getSubjectOptions()
+            .subscribe((result) => {
             this.subjectOptions = [];
             for (let item of result) {
                 this.subjectOptions.push({
@@ -145,9 +169,11 @@ export class AdminRelationshipsEditor {
         });
     }
 
-    private loadObjectOptions(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
+    private loadObjectOptions(subjectUid: string, objectUid?: string, predicateUid?: string) {
         this.isLoadingObject = true;
-        this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).subscribe((result) => {
+        this.relationshipsService
+            .getObjectOptions(subjectUid, objectUid, predicateUid)
+            .subscribe((result) => {
             this.objectOptions = [];
             for (let item of result) {
                 this.objectOptions.push({
@@ -161,7 +187,9 @@ export class AdminRelationshipsEditor {
 
     private loadCardinalityOptions() {
         this.isLoadingCardinality = true;
-        this.relationshipsService.getCardinalityOptions().subscribe((result) => {
+        this.relationshipsService
+            .getCardinalityOptions()
+            .subscribe((result) => {
             this.cardinalityOptions = [];
             for (let item of result) {
                 this.cardinalityOptions.push({
@@ -172,14 +200,14 @@ export class AdminRelationshipsEditor {
             this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.cardinalityOptions));
             this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.cardinalityOptions));
 
-            if (this.selectedPredicate && this.selectedPredicate.type == 'DiagramReference') {
-                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter(x => x.label != 'Many')));
+            if (this.selectedPredicate && this.selectedPredicate.type === 'DiagramReference') {
+                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter((x) => x.label !== Cardinality[Cardinality.Many])));
 
             }
 
-            if (this.selectedPredicate && this.selectedPredicate.type == 'Diagram') {
-                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter((x) => x.label != 'One')));
-                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter(x => x.label != 'One')));
+            if (this.selectedPredicate && this.selectedPredicate.type === 'Diagram') {
+                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter((x) => x.label !== Cardinality[Cardinality.One])));
+                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter((x) => x.label !== Cardinality[Cardinality.One])));
 
             }
             this.isLoadingCardinality = false;
@@ -188,6 +216,6 @@ export class AdminRelationshipsEditor {
 
     onSubmit() {
         //save the item back to the save or edit url        
-        this.saveClick.emit({ relationship: this.editedRelationship, action: this.relationshipID > 0 ? "new" : "edit" });
+        this.saveClick.emit({ relationship: this.relationshipType, action: this.relationshipType.Uid == null ? "new" : "edit" });
     }
 }

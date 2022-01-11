@@ -1122,16 +1122,10 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
         }
 
 
-        public List<IntersectTypeOption> GetIntersectTypeOptions(
-            SystemObjects? subject = null, int? subjectID = null,
-            SystemObjects? @object = null, int? objectID = null,
-            int? predicateID = null,
-            List<AssetTypeClass> limitToClasses = null)
+        public List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null)
         {
             string noClassLimitSql = "";
             string classLimitSql = "";
-            var dbArgs = new DynamicParameters();
-
 
             List<string> excludedClasses = new List<string>
             {
@@ -1143,7 +1137,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                 classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
             }
 
-            var predicate = Predicates.FirstOrDefault(x => x.ID == predicateID);
+            var predicate = Predicates.FirstOrDefault(x => x.UID == predicateUid);
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
             string whereStatement = "";
 
@@ -1155,20 +1149,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 				)";
             }
 
-            if (subject.HasValue && subjectID.HasValue && limitToClasses != null)
+            if (subjectUid.HasValue && limitToClasses != null)
             {
                 if (limitToClasses.Contains(AssetTypeClass.Reference))
                 {
-                    noClassLimitSql += @" UNION SELECT	0 as ID, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
+                    noClassLimitSql += @" UNION SELECT	0 as ID, null as Uid, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
                 }
             }
 
             var sql = $@"
     SELECT		I.ID,
+                I.Uid,
 				I.Name,
 				I.Type
 	FROM		(
                 select	T.ObjectID as ID,
+                        T.Uid,
 		                case 
 			                when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
                             when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
@@ -1187,28 +1183,27 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 			 	{noClassLimitSql}{whereStatement}
                 ) I";
 
-            if (subject.HasValue && subjectID.HasValue)
+            if (subjectUid.HasValue)
             {
-                sql += $@" left join IntersectType T on 
-(T.Subject = '{subject.Value.ToString()}' and T.SubjectID = {subjectID.Value} and T.Object = I.[Type] and T.ObjectID = I.ID)";
-                if ((@object.HasValue && objectID.HasValue) || predicateID.HasValue)
+                sql += $@" left join IntersectType T on (T.SubjectUid = @subjectUid and T.Object = I.[Type] and T.ObjectID = I.ID) ";
+                if (objectUid.HasValue || predicateUid.HasValue)
                 {
-                    if (@object.HasValue && objectID.HasValue)
+                    if (objectUid.HasValue)
                     {
-                        if (predicateID.HasValue)
+                        if (predicateUid.HasValue)
                         {
-                            sql += $@" and ((T.Object = '{@object.Value.ToString()}' and T.ObjectID = {objectID.Value} and T.PredicateID = {predicateID.Value}) or T.ID is null)";
+                            sql += $@" and (T.ObjectUid = @objectUid and T.PredicateID = (select top 1 ID from [Predicate] where UID = @predicateUid) or T.ID is null)";
                         }
                         else
                         {
-                            sql += $@" and ((T.Object = '{@object.Value.ToString()}' and T.ObjectID = {objectID.Value}) or T.ID is null)";
+                            sql += $@" and (T.ObjectUid = @objectUid or T.ID is null)";
                         }
                     }
                     else
                     {
-                        if (predicateID.HasValue)
+                        if (predicateUid.HasValue)
                         {
-                            sql += $@" and T.PredicateID = {predicateID.Value} where T.ID is null";
+                            sql += $@" and T.PredicateID = (select top 1 ID from [Predicate] where UID = @predicateUid) where T.ID is null";
                         }
                     }
                 }
@@ -1216,21 +1211,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             sql += " ORDER BY I.Name";
 
-            return Database.Connection.Query<IntersectTypeOption>(sql, dbArgs).ToList();
+            return Database.Connection.Query<IntersectTypeOption>(sql, new { subjectUid, predicateUid, objectUid }).ToList();
         }
 
-        public List<Predicate> GetPredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
-        {
-            var sSubject = subject.ToString();
-            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
 
-            if (sSubject == "IntersectType")
+        public List<Predicate> GetPredicateOptions(Guid subjectUid, Guid? objectUid, Guid? predicateUid)
+        {
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
+            var isSubjectIntersectType = IntersectTypes.Any(i => i.uid == subjectUid);
+
+            if (isSubjectIntersectType)
             {
                 allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
             }
             else
             {
-                var subjectAssetType = Filter<AssetType>(i => i.Object == sSubject && i.ObjectID == subjectID).FirstOrDefault();
+                var subjectAssetType = Filter<AssetType>(i => i.uid == subjectUid).FirstOrDefault();
                 if (subjectAssetType == null)
                 {
                     throw new ArgumentNullException(CompanyContextErrors.SubjectAssetTypeNotExists);
@@ -1239,23 +1235,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             }
 
             var sql = @"
-select	P.*
-from	[Predicate] P
-		left join IntersectType I on I.PredicateID = P.ID 
-			and I.Subject = @s and I.SubjectID = @sid 
-			and ( (@o is null) or (@o is not null and I.Object = @o and I.ObjectID = @oid) )
-			and ( (@pid is null) or (@pid is not null and I.PredicateID <> @pid) )
-where	I.ID is null";
+                select	P.*
+                from	[Predicate] P
+		                left join IntersectType I on I.PredicateID = P.ID 
+			                and I.SubjectUid = @subjectUid 
+			                and ( (@objectUid is null) or (@objectUid is not null and I.ObjectUid = @objectUid) )
+			                and ( (@predicateUid is null) or (@predicateUid is not null and I.PredicateID <> (select top 1 ID from [Predicate] where UID = @predicateUid) ) )
+                where	I.ID is null";
 
             var predicates = Query<Predicate>(sql, new
             {
-                s = new DbString { IsAnsi = true, Value = subject.ToString() },
-                sid = subjectID,
-                o = new DbString { IsAnsi = true, Value = @object.ToString() },
-                oid = objectID,
-                pid = predicateID
-            }).ToList()
-            .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
+                subjectUid,
+                objectUid,
+                predicateUid
+            })
+                .ToList()
+                .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
                         i.Type.AsInfoModel().AllowEditFromRelationshipEditor
                   );
 
@@ -1264,6 +1259,7 @@ where	I.ID is null";
             return predicates.ToList();
         }
 
+       
         public IntersectType UpsertIntersectType(IntersectType model)
         {
             var predicateModel = GetById<Predicate>(model.PredicateID.Value);

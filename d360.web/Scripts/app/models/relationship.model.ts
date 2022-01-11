@@ -1,5 +1,10 @@
 ﻿import { Predicate } from "./predicate.model";
 
+export enum Cardinality {
+    One = 1,
+    Many = 2
+}
+
 export class RelationItem {
     ID: number;
     IntersectTypeID: number;
@@ -26,6 +31,12 @@ export class RelationshipType {
     Object: RelationshipTypeEdge;
 }
 
+export class RelationshipTypeApiRequestModel {
+    Uid: string;
+
+}
+
+
 export class RelationshipCount {
     IntersectTypeUid: string;
     Count: number;
@@ -42,7 +53,7 @@ export class RelationshipTypeUIModel extends RelationshipType {
 export class RelationshipDetail {
     ID: number;
     LimitedChangesOnly: boolean;
-    Predicate: number;
+    Predicate: string;
     PredicateType: number;
     Subject: string;
     SubjectDisplayText: string;
