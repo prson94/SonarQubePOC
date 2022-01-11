@@ -48,6 +48,7 @@ namespace d360.web.Controllers.V2
             { "IntersectType", "RelationshipType" },
             { "Taxonomy" , "Model" },
             { "TaxonomyType" , "ModelType" },
+            { "SemanticType" , "Semantic Type" },
             { "ResponsibilityTypeRelationOverrideItem" , "Responsibility Type Relation Override Item" },
         };
 
@@ -164,7 +165,9 @@ namespace d360.web.Controllers.V2
                     !Company.Any<ResponsibilityType>(i => i.UID == assetUid) &&
                     !Company.Any<Report>(i => i.uid == assetUid) &&
                     !Company.Any<MetricAllocation>(i => i.Uid == assetUid) &&
-                    !Company.Any<Predicate>(i => i.UID == assetUid))
+                    !Company.Any<Predicate>(i => i.UID == assetUid) &&
+                    !Company.Any<Semantic>(i => i.Uid == assetUid)
+                    )
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if (assetType == null)
@@ -717,6 +720,8 @@ namespace d360.web.Controllers.V2
                 select MA.uid, AT.Name as DisplayName, 'MetricAllocation' as Object, MA.ID as ObjectID, null as AssetTypeClass from metrics.Allocation MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.uid = @uid
                 union
 				select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Predicate] where uid = @uid
+                union 
+				select uid, name as DisplayName, 'Semantic' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Semantic] where uid = @uid 
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;

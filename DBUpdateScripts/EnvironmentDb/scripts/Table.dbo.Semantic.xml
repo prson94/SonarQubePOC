@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.Semantic-1.2">
+  <changeSet author="Pappas" id="Table.dbo.Semantic-v3.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -48,6 +48,8 @@ END
 alter table Semantic alter column Minimum decimal(18,6) null;
 alter table Semantic alter column Maximum decimal(18,6) null;
 alter table Semantic alter column Qualifier nvarchar(250) not null;
+
+alter table Semantic add [Uid] uniqueidentifier constraint [DF_Semantic_Uid] DEFAULT (newid()) not null;
 		]]>
     </sql>
 	<rollback>
@@ -94,5 +96,34 @@ end
 		]]>
 	</rollback>
   </changeSet> 
+
+  <changeSet author="Pappas" id="Data.dbo.Semantic-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update	T
+set		T.Uid = S.Uid
+from	Semantic T
+		inner join (
+					select	S1.Uid,
+							S1.Qualifier
+					from	Semantic S1
+							inner join	(
+										select	min(ID) as ID,
+												Qualifier
+										from	Semantic
+										group by Qualifier
+										) S2 on S2.ID = S1.ID
+					) S on S.Qualifier = T.Qualifier;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+
+		]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>
