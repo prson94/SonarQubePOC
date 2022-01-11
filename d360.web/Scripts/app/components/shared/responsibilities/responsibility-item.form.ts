@@ -296,7 +296,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
 
         //d3s
         CoreModule,

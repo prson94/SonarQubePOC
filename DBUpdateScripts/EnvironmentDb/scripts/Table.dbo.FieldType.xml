@@ -238,6 +238,30 @@ end
     </rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.dbo.FieldType-v1">
+   <comment>GOV-16678</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_ObjectID_Type')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_FieldType_ObjectID_Type] ON [dbo].[FieldType] ([ObjectID], [Type])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_FieldType_ObjectID_Type')
+BEGIN
+	DROP INDEX [IX_FieldType_ObjectID_Type] ON [dbo].[FieldType]
+END
+		]]>
+	</rollback>
+  </changeSet> 
+
+  
   <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

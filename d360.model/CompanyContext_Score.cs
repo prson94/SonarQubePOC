@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
-using System.Data.Entity.Design.PluralizationServices;
+//using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -925,8 +925,14 @@ where   E.ExecutionID = @ExecutionID
 
                         if (PluralCultureHelper.IsNeutralCultureEnglish())
                         {
-                            var namePluralizationInstance = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+#if RUNNING_ON_STANDARD
+                            name = PluralizeService.Core.PluralizationProvider.Pluralize(i.Name ?? "");
+#endif
+
+#if RUNNING_ON_NET48
+                            var namePluralizationInstance = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                             name = namePluralizationInstance.Pluralize(i.Name ?? "");
+#endif
                         }
 
                         model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value.GetValueOrDefault(), Name = name, TypeID = i.TypeID });
@@ -1557,19 +1563,28 @@ where   J.Payload like '%Measures%';";
 
         public void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null)
         {
-            var execution = createScoreExecution(triggeredByApiExecutionUid);
+            var count = Query<int>(@"
+select	count(1) as [Count] 
+from	metrics.Execution E
+		inner join metrics.ExecutionItem I on I.ExecutionID = E.ID and I.ChangeType = 5 and E.StartedOn > dateadd(day, -1, getutcdate()) and E.CompletedOn is null and (E.Failures = 0 and E.ErrorMessage is null)")
+                .Single();
 
-            var executionItem = new ScoreExecutionItem
+            if (count == 0)
             {
-                ExecutionID = execution.ID,
-                ChangeType = ScoreQueueChangeType.RollupPathChanged,
-                RowNumber = 1,
-                State = ScoreExecutionItemState.NotProcessed,
-                Payload = JsonConvert.SerializeObject(new RollupPathChangedModel { IntersectTypeId = intersectTypeId, AssetTypeId = assetTypeId })
-            };
-            Add(executionItem);
+                var execution = createScoreExecution(triggeredByApiExecutionUid);
 
-            sendScoreQueueMessage(execution, ScoreQueueChangeType.RollupPathChanged);
+                var executionItem = new ScoreExecutionItem
+                {
+                    ExecutionID = execution.ID,
+                    ChangeType = ScoreQueueChangeType.RollupPathChanged,
+                    RowNumber = 1,
+                    State = ScoreExecutionItemState.NotProcessed,
+                    Payload = JsonConvert.SerializeObject(new RollupPathChangedModel { IntersectTypeId = intersectTypeId, AssetTypeId = assetTypeId })
+                };
+                Add(executionItem);
+
+                sendScoreQueueMessage(execution, ScoreQueueChangeType.RollupPathChanged);
+            }
         }
 
         public void CreateRuleResultsRemovedExecution(Guid assetUid)

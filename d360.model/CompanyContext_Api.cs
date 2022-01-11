@@ -2630,7 +2630,7 @@ insert into #tempruleresults
             dbo.AssetResult R
     where	MATCH(A-(E)->R)
             and E.Class = 1
-            and A.Id in (select id from #tempassetid);
+            and A.Id in (select assetid from #tempassetid);
 
 create clustered index cix_tempruleresults on #tempruleresults (Uid);
 

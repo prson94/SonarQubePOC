@@ -1913,11 +1913,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         public IEnumerable<dynamic> GetResponsibilitiesByGroupByType(int groupID, SystemObjects type, int id)
         {
             var sql = $@"
-		select 
+		select distinct
 			RD.SecurityAsset,
 		    RD.SecurityAssetID,
 		    RD.SecurityAssetName,
-		    RD.ResourceID,
 		    RD.ResponsibilityTypeID,
 		    T.Object as Type,
 		    T.ObjectID as TypeID,
@@ -1940,10 +1939,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 		
 		union all
 
-		select	RD.SecurityAsset,
+		select	distinct
+                RD.SecurityAsset,
 		        RD.SecurityAssetID,
 		        RD.SecurityAssetName,
-		        RD.ResourceID,
 		        RD.ResponsibilityTypeID,
 		        RD.Type,
 		        RD.TypeID,

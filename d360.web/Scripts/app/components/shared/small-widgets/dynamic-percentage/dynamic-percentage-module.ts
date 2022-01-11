@@ -18,11 +18,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
         DynamicPercentageComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class DynamicPercentageModule { }

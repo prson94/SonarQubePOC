@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { ColorPickerModule } from 'primeng/colorpicker';
@@ -27,7 +27,7 @@ import { DirectivesModule } from '../directives/directives.module';
 
 @NgModule({
     imports: [CommonModule,
-        HttpClientModule,
+
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
@@ -57,10 +57,7 @@ import { DirectivesModule } from '../directives/directives.module';
         AssetTypeEditorComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class SharedAssetTypeEditorModule { }

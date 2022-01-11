@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
+
+
 
 import { RouterModule } from '@angular/router';
 
@@ -26,7 +26,7 @@ import { TableModule } from 'primeng/table';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         CommunityRoutingModule,
@@ -48,11 +48,7 @@ import { TableModule } from 'primeng/table';
         CommunityResponsibilityCountComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }        
+                
     ]
 })
 export class CommunityModule { }

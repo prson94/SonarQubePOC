@@ -26,11 +26,7 @@ import { DirectivesModule } from '../../../../directives/directives.module';
         ColorDisplayComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class IgColorPickerModule { }

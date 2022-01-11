@@ -205,5 +205,29 @@ BEGIN
 END
 		]]>
 	</rollback>
-  </changeSet> 
+	</changeSet> 
+
+   <changeSet author="Puneet Gupta" id="Index.reporting.Global_Resource-v2">
+   <comment>GOV-16678</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Reporting_Global_Resource_Email')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Reporting_Global_Resource_Email] ON [reporting].[Global_Resource] ([Email])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Reporting_Global_Resource_Email')
+BEGIN
+	DROP INDEX [IX_Reporting_Global_Resource_Email] ON [reporting].[Global_Resource]
+END
+		]]>
+	</rollback>
+
+	</changeSet> 
 </databaseChangeLog>

@@ -201,7 +201,7 @@ export class SearchStateService extends BaseObservableService {
             //Get selected Classes and AssetTypes from checkbox tree
             types = this.selectedFilters.filter((x) => x.type === "subCategory").map((x) => x.data);
             categories = this.selectedFilters.filter((x) => x.type === "category").map((x) => x.data);
-            if (types.length > 0) {
+            if (types.length > 0 && this.currentCategories.length > 0) {
                 //Semi-marked classes are not "selected", so they must be added separately
                 categories = categories.concat(
                     this.currentCategories

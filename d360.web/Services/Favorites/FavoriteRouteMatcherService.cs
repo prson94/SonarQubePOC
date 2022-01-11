@@ -423,6 +423,12 @@ namespace d360.web.Services.Favorites
             },
             new FavoriteRouteMatcher
             {
+                RoutePattern = "sidebar/children/:type/:objectId",
+                PageType = FavoritePageType.Artifact,
+                GetName = WithTabName(PageNames.ChildrenTab)
+            },
+            new FavoriteRouteMatcher
+            {
                 RoutePattern = "sidebar/actions/:type/:objectId",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ActionsTab),
