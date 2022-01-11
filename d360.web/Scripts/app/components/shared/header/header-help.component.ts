@@ -129,4 +129,4 @@ export class HeaderHelpComponent implements OnInit {
                 this.closeAbout();
         }
     }
-}
+} 
