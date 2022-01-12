@@ -2175,7 +2175,18 @@ from	IntersectType I
             {
                 foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
                 {
-                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                    var value = HttpUtility.UrlEncode(simpleFilter);
+
+                    if (f.type == "bool")
+                    {
+                        bool parsedResult;
+                        if (bool.TryParse(value, out parsedResult))
+                        {
+                            value = parsedResult ? "1" : "0";
+                        }
+
+                    }
+                    simpleFilters.Add($"({f.apiName} ct '{value}')");
                 }
             }
 
