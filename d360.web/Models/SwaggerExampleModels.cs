@@ -100,7 +100,11 @@ namespace d360.web.Models
                     Name = "Name",
                     Description = "Description",
                     PrimaryOwnerUid = Guid.Empty,
-                    SecondaryOwnerUid = Guid.Empty
+                    SecondaryOwnerUid = Guid.Empty,
+                    Fields = new Dictionary<string, string>() {
+                        { "MyApiFieldName1", "My Field value" },
+                        { "MyApiFieldName2", "My Field value" }
+                    }
                 };
         }
     }
@@ -116,7 +120,11 @@ namespace d360.web.Models
                     Name = "Name",
                     Description = "Description",
                     PrimaryOwnerUid = Guid.Empty,
-                    SecondaryOwnerUid = Guid.Empty
+                    SecondaryOwnerUid = Guid.Empty,
+                    Fields = new Dictionary<string, string>() {
+                        { "MyApiFieldName1", "My Field value" },
+                        { "MyApiFieldName2", "My Field value" }
+                    }
                 };
         }
     }

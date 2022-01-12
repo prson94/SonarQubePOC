@@ -364,6 +364,9 @@ namespace d360.web.Controllers
                 case "TAG":
                     res = Tag_EditFields(oid);
                     break;
+                case "GROUPTYPE":
+                    res = Group_EditFields(oid);
+                    break;
                 case "TASKTYPE":
                     res = Diagram_EditFields(oid);
                     break;
@@ -2028,6 +2031,34 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             list.Add(new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = "Secondary Owner", FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" });
 
             list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+
+            var tempList = new List<EditableField>();
+            tempList = loadDynamicFields(tempList, Company.GetFieldTypesByObject(SystemObjects.GroupType, 1).ToList(), 1);
+            tempList.ForEach(x => x.Row += 3);
+
+            list.AddRange(tempList);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("Group_EditFields")]
+        public JsonResult Group_EditFields(int groupId)
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = "Is Active Directory Group", FieldType = DataType.Boolean.ToString() });
+
+            list.Add(new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = "Primary Owner", FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" });
+            list.Add(new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = "Secondary Owner", FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" });
+
+            list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+            
+            var tempList = new List<EditableField>();
+            tempList = loadDynamicFields(tempList, Company.GetFieldTypesByObject(SystemObjects.GroupType, 1).ToList(), 1);
+            tempList.ForEach(x => x.Row += 3);
+
+            list.AddRange(tempList);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

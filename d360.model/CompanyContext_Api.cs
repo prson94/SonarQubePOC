@@ -1592,7 +1592,7 @@ where T.ExecutionId = @executionid;
                                     if (fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1 && IslookupFieldsPassedByValue)
                                     {
                                         success = false;
-                                        errorMessages.Add( string.Format(CompanyContextApiError.FieldNotAllowedMultipleValies,fieldName));
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNotAllowedMultipleValies, fieldName));
                                     }
                                     break;
                                 case "Number":
@@ -2904,7 +2904,7 @@ drop table if exists #temprestable2;",
             AddMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
             sw.Restart();
             #endregion
-            
+
             return step;
         }
 
@@ -4891,23 +4891,27 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                         case AssetTypeClass.Rule:
                                             #region
                                             string @object = "Artifact";
-                                            
-                                            if (at.Class == AssetTypeClass.Policy) { 
-                                                @object = "Policy"; 
+
+                                            if (at.Class == AssetTypeClass.Policy)
+                                            {
+                                                @object = "Policy";
                                             }
-                                                
-                                            if (at.Class == AssetTypeClass.Rule) { 
-                                                @object = "Rule"; 
+
+                                            if (at.Class == AssetTypeClass.Rule)
+                                            {
+                                                @object = "Rule";
                                             }
-                                            
-                                            if (at.Class == AssetTypeClass.Diagram) { 
-                                                @object = "Task"; 
+
+                                            if (at.Class == AssetTypeClass.Diagram)
+                                            {
+                                                @object = "Task";
                                             }
-                                            
-                                            if (at.Class == AssetTypeClass.Model) { 
-                                                @object = "Taxonomy"; 
+
+                                            if (at.Class == AssetTypeClass.Model)
+                                            {
+                                                @object = "Taxonomy";
                                             }
-                                            
+
                                             sw.Restart();
                                             if (isInsert)
                                             {
@@ -4966,7 +4970,7 @@ where	{executionAssetWhereSql};",
                                                 AddMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             break;
-                                            #endregion
+                                        #endregion
                                         case AssetTypeClass.Reference:
                                             #region
                                             sw.Restart();
@@ -6135,7 +6139,7 @@ end",
             }
             else if (tooLongOwners.Any())
             {
-                string message =string.Format(CompanyContextApiError.OwnerValueMaxLength, string.Join(", ", tooLongOwners.Select(i => i.Owner)));
+                string message = string.Format(CompanyContextApiError.OwnerValueMaxLength, string.Join(", ", tooLongOwners.Select(i => i.Owner)));
                 execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new DatabaseBulkRelationshipUpdateResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
@@ -10236,7 +10240,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
             DataType.Score.ToString(),
             DataType.Relationship.ToString()
             };
-            
+
             var jsonParseSql = $@"
                 drop table if exists #tempData
                 create table #tempData
@@ -10521,7 +10525,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 
                 ";
 
-             Connection.Execute(jsonParseSql, new { executionId, invalidFieldTypes }, transaction: trans, commandTimeout: timeout);
+            Connection.Execute(jsonParseSql, new { executionId, invalidFieldTypes }, transaction: trans, commandTimeout: timeout);
 
 
         }
@@ -10532,12 +10536,16 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
             bool generalChecksCompleted = false;
             int itemNumber = 1;
             List<GroupResponseResult> results = new List<GroupResponseResult>();
+            var importFields = new Dictionary<int, List<string>>();
             CurrentExecutionLocationModel currentLocation = null;
+            bool isInsert = execution.Method == "POST";
 
             var dups = groups.GroupBy(x => x.Name.Trim()).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
 
             Add(execution);
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
             if (dups.Any())
             {
@@ -10563,6 +10571,14 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                     table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
                     table.Columns.Add("IsActiveDirectoryGroup", typeof(bool));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
+
+                    var fieldTable = new DataTable();
+
+                    fieldTable.Columns.Add("ExecutionID", typeof(Guid));
+                    fieldTable.Columns.Add("ItemNumber", typeof(int));
+                    fieldTable.Columns.Add("FieldName", typeof(string));
+                    fieldTable.Columns.Add("FieldValue", typeof(string));
+                    fieldTable.Columns.Add("FieldTypeID", typeof(int));
 
                     #region Generate data sets
 
@@ -10599,7 +10615,9 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
+                    {
                         Connection.Open();
+                    }
 
                     #region Bulk Copy
 
@@ -10626,6 +10644,55 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                     }
 
                     #endregion
+
+                    #region Handle Custom Fields
+                    // Get field types.
+                    var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'GroupType' and ObjectID = 1").ToList();
+                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
+                    var hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
+
+                    int i = 1;
+                    foreach (var group in groups.Where(x => x.Fields.Any()))
+                    {
+
+                        bool success;
+                        string errorMessage;
+                        var fieldRows = ValidateFields("Group", 1, isInsert, fieldTypes, requiredFieldTypeNames, group.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);
+
+                        if (success)
+                        {
+                            importFields.Add(i, group.Fields.Keys.ToList());
+                            fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
+                        }
+                        else
+                        {
+                            Connection.Execute(@"update	[api].[ExecutionGroup]
+                set		Success = 0,
+		                [Message] = coalesce([Message], '') + @errorMessage
+                where	ExecutionID = @ExecutionID;", new { execution.ExecutionID, emptyUid = Guid.Empty, errorMessage }, commandTimeout: timeout);
+                        }
+
+                        i++;
+                    }
+
+                    #endregion
+
+                    using (var bulkCopy = new SqlBulkCopy(Connection)
+                    {
+                        BatchSize = SqlBulkBatchSize,
+                        DestinationTableName = ApiExecutionFieldTable,
+                        BulkCopyTimeout = SqlBulkBatchTimeout
+                    })
+                    {
+
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+                        bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+                        bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+
+                        bulkCopy.WriteToServer(fieldTable);
+                    }
 
                     var checkSQL = $@"update	[api].[ExecutionGroup]
                 set		Success = 0,
@@ -10850,6 +10917,41 @@ EG.GroupUid
 
                                     Connection.Execute(insertSQL,
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+                                    if (isInsert)
+                                    {
+                                        Connection.Execute(
+                                            $@"
+                        INSERT INTO 
+                        dbo.[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
+                        select 		     A.Object as [ObjectType]
+                                        ,A.ObjectId as [ObjectID]
+                                        ,F.FieldTypeID as [FieldTypeID]
+                                        ,case 
+                                            when FT.Type = 'Link' then F.FieldValue
+                                            else F.LookupValue
+                                        end as [Value]
+                                        ,F.FieldValue as [FormattedValue]
+                                        ,getutcdate() as [UpdatedOn]
+                                        ,@resourceId as [UpdatedBy]
+                                        ,A.Id as [AssetID]                                        
+                                from    api.ExecutionGroup EG
+										inner join [Group] G on g.uid = eg.GroupUid
+										inner join Asset A on a.Object = 'Group' and a.objectid = g.id
+                                        inner join api.executionfield F on F.ExecutionID = EG.ExecutionID
+                                            and F.ItemNumber = EG.ItemNumber 
+                                            and A.ObjectID is not null 
+                                            and F.FieldTypeID is not null
+						                    and EG.Success is null
+                                        inner join FieldType FT on FT.Id = F.FieldTypeID
+                                where   EG.ExecutionID = @executionID
+                                        and EG.ItemNumber between @beginItemNumber and @endItemNumber 
+                                        and (F.Ignore = 0 or F.Ignore is null)
+                                        and FT.Type != 'Relationship'
+                                        and FT.Type != 'Counter'
+                                        and FieldValue is not null"
+                                            , new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+                                    }
 
                                     Connection.Execute(
                                                         $"update [api].[ExecutionGroup] set Success = 1, Message = 'Success' where	Success is null and ExecutionID = @ExecutionID;",
@@ -11935,7 +12037,7 @@ EG.GroupUid
 
                                 bulkCopy.WriteToServer(ResponsibilityTypeRelationOverrideTable);
                             }
-                            #endregion                            
+                            #endregion
 
                             transaction.Commit();
 
