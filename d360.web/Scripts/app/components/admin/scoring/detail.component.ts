@@ -152,7 +152,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     console.log("assetTypeUid: " + this.assetTypeUid);
                     console.log(data);
 
-                    data = data.filter(r => {
+                    data = data.filter((r) => {
                         return (
                             (r.Predicate.Type !== "InterTypeHierarchy" && r.Predicate.Type !== "IntraTypeHierarchy")
                             || (r.Predicate.Type == "InterTypeHierarchy" && r.Subject.Uid == this.assetTypeUid)
