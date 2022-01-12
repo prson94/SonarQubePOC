@@ -492,9 +492,19 @@ namespace d360.core.entities
                 errors.Add("Both Minimum AND Maximum must contain values for MinMaxPresent to be used. Otherwise it must be removed.");
             }
 
+            if (string.IsNullOrEmpty((model.Name ?? "").Trim()))
+            {
+                errors.Add("Name must contain a value.");
+            }
+
             if (model.Priority < 1)
             {
                 errors.Add("Priority must contain a value of 1 or greater.");
+            }
+
+            if (string.IsNullOrEmpty((model.Qualifier ?? "").Trim()))
+            {
+                errors.Add("Qualifier must contain a value.");
             }
 
             if (model.Threshold < 0 || model.Threshold > 100)
