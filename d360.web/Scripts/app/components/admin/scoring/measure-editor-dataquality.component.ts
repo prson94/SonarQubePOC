@@ -356,7 +356,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             if (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == "")) {
                 this.hasModelChanged = true;
             }
-            if (this.displayThreshold && (this.originalModel.Threshold * 100) != this.displayThreshold) {
+            if (this.displayThreshold && (this.originalModel.Threshold * 100) !== this.displayThreshold) {
                 this.hasModelChanged = true;
             }
             if (this.displayWeight && (this.originalModel.Weight * 100) != this.displayWeight) {

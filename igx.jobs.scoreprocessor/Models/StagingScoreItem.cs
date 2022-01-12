@@ -16,7 +16,7 @@ namespace igx.jobs.scoreprocessor.Models
         public Guid? ConditionUid { get; set; }
         public bool IsRemoved { get; set; }
         public string Evidence { get; set; }
-        public bool HasThreshold { get; set; } = false;
+        public bool HasThreshold { get; set; }
         public string OtherConditions { get; set; }
     }
 
