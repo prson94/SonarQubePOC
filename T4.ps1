@@ -1,6 +1,6 @@
-"*************************************************
-" T4 Template converter
-"*************************************************
+"*************************************************"
+" T4 Template converter                           "
+"*************************************************"
 
 Get-ChildItem -Path .\ -Filter *.tt -Recurse -File -Name| ForEach-Object {
     $file = [System.IO.Path]::GetFileName($_);
