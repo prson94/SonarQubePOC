@@ -149,6 +149,18 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
+                    console.log("assetTypeUid: " + this.assetTypeUid);
+                    console.log(data);
+
+                    data = data.filter(r => {
+                        return (
+                            (r.Predicate.Type !== "InterTypeHierarchy" && r.Predicate.Type !== "IntraTypeHierarchy")
+                            || (r.Predicate.Type == "InterTypeHierarchy" && r.Subject.Uid == this.assetTypeUid)
+                            || (r.Predicate.Type == "IntraTypeHierarchy" && r.Subject.Uid == this.assetTypeUid)
+                        );
+                    });
+                    console.log(data);
+
                     this.screenReferences.relationships = [...data];
                     this.screenReferences.predicates = data.map(x => {
                         return x.Predicate;
