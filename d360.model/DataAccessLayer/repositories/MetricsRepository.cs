@@ -1641,7 +1641,7 @@ from	(
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC, SI.UpdatedOn desc) as RowNum,
 				case when MaxItemDt.ItemEndDate = getutcdate() then null else MaxItemDt.ItemEndDate end as EndDate,--V.EffectiveEndDate as EndDate,
 				V.[Weight],
-                V.Threshold,
+                coalesce(AVC.Threshold, V.Threshold) as Threshold,
 				iif(SI.AdjustedWeight > 1, 1, SI.AdjustedWeight) as AdjustedWeight,
 				iif(SI.AdjustedMaxWeight > 1, 1, SI.AdjustedMaxWeight) as AdjustedMaxWeight,
 				coalesce(SI.DisplayWeight, SI.AdjustedWeight) as DisplayWeight,
@@ -1659,6 +1659,7 @@ from	(
 				inner join metrics.ScoreItem SI on SI.Uid = SIL.ScoreItemUid
 				inner join metrics.AssetVersion V on V.Uid = SI.AssetVersionUid
 				inner join metrics.Asset Ma on Ma.Uid = V.AssetUid
+				left join metrics.AssetVersionCondition AVC on AVC.Uid = SI.ConditionUid
 				cross apply (
 					select	min(MinS.EffectiveDate) as ItemEffectiveDate
 					from	metrics.ScoreItemLink MinL

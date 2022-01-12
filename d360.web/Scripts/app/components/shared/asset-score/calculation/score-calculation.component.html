@@ -24,7 +24,8 @@
             </div>
             <div class="conditions">
                 <div>
-                    <div>Weight: {{formatWeight(matchedCondition.Weight)}} - Determined via match on Condition Group {{matchedCondition.Position}}</div>
+                    <div>Weight: {{formatWeight(matchedCondition.Weight)}}, <span *ngIf="matchedCondition.Threshold">Threshold: {{formatThreshold(matchedCondition.Threshold)}}</span> - Determined via match on Condition Group {{matchedCondition.Position}}</div>
+                    
                     <span *ngFor="let item of matchedCondition.ConditionItems;let i = index;">
                         <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | utcDate | date: shortdate) : item.Value}}
                     </span>

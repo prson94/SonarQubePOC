@@ -78,6 +78,7 @@ export class PointBreakdown {
 export class PointBreakDownConditionItem {
     Uid: string;
     Weight: number;
+    Threshold: number;
     MatchType: number;
     Position: number;
     ConditionItems: PointBreakdownCondition[]; 

@@ -97,6 +97,14 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         }
     }
 
+    formatThreshold(num: number) {
+        if (num) {
+            return (num * 100).toFixed(3).replace(/[.,]00$/, "") + "%";
+        } else {
+            return "(default)";
+        }
+    }
+
     formulaMultiplierLabel() {
         return (!this.selected.IsGroup && this.selected._groupDisplayMaxWeight) ? "group weight" : "100%";
     }

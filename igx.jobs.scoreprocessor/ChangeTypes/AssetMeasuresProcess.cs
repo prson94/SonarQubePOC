@@ -374,9 +374,9 @@ where   AssetTypeID in (
                                                                     break;
                                                             }
 
-                                                            if (r.Measure.Threshold.HasValue)
+                                                            if (conditionValidator.SelectedThreshold.HasValue)//(r.Measure.Threshold.HasValue)
                                                             {
-                                                                scoreItem.Value = (r.Measure.Threshold <= resultOperationValue);
+                                                                scoreItem.Value = (conditionValidator.SelectedThreshold.Value <= resultOperationValue);
                                                                 scoreItem.DecimalValue = resultOperationValue;
                                                                 scoreItem.HasThreshold = true;
                                                             }
