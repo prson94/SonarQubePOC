@@ -8,3 +8,5 @@ Get-ChildItem -Path .\ -Filter *.tt -Recurse -File -Name| ForEach-Object {
     "Conversion file : " + $file
     t4 "$directory\$file" -I="$directory"
 }
+
+"All t4 templates converted!"
