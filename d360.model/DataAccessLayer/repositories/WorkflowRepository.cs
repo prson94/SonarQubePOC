@@ -625,9 +625,13 @@ namespace d360.model.DataAccessLayer
                             }
 
                             if (fieldChange.AppendValue == "true")
+                            {
                                 fieldChange.Value = string.Join(",", vlist.Distinct().ToArray());
+                            }
                             else
+                            {
                                 fieldChange.Value = fieldValue;
+                            }
 
                         }
                         else

@@ -907,9 +907,13 @@ from	[Load] L
                     {
                         var level = AssetTypeLevels.Where(l => l.AssetTypeID == assetType.ID).FirstOrDefault(l => l.Level == i);
                         if (level != null)
+                        {
                             assetTypeLevels.Add(i, level.Name);
+                        }
                         else
+                        {
                             assetTypeLevels.Add(i, $"Level {i}");
+                        }
                     }
 
                     loadItems = (await QueryAsync<LoadItem>(@"

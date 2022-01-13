@@ -82,7 +82,10 @@ namespace d360.model.DataAccessLayer
                 {
                     if (pageSize < 1) pageSize = 1;
                 }
-                if (pageSize > 250) pageSize = 250; // max page size is 250 people.
+                if (pageSize > 250)
+                {
+                    pageSize = 250; // max page size is 250 people.
+                }
             }
 
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagenum"))
@@ -263,7 +266,10 @@ namespace d360.model.DataAccessLayer
                     case "sortorder":
                         int val = int.Parse(qitem.Value);
                         if (val >= 0) sortOrder = "ASC";
-                        else sortOrder = "DESC";
+                        else
+                        {
+                            sortOrder = "DESC";
+                        }
                         break;
                 }
             }

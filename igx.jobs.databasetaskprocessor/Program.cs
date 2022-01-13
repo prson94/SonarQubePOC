@@ -421,7 +421,9 @@ from    [queue].[Task] T
                                                             addAuditEntry(companyConnection, "Updated", q);
 
                                                             if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
+                                                            {
                                                                 resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
+                                                            }
                                                         
                                                             break;
                                                             #endregion

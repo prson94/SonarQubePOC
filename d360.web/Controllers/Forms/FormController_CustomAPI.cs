@@ -366,10 +366,14 @@ namespace d360.web.Controllers
                 var itemNode = parseTextField(form, "ItemNode");
 
                 if (string.IsNullOrEmpty(name))
+                {
                     return jsonException(FormControllerApiMessage.APIServiceEndpointNameNull, HttpStatusCode.NotFound);
+                }
 
                 if (string.IsNullOrEmpty(prefix))
+                {
                     return jsonException(FormControllerApiMessage.APIServiceEndpointPrefixNull, HttpStatusCode.NotFound);
+                }
 
                 var endpoint = new ApiEndpoint
                 {
