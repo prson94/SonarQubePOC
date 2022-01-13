@@ -275,9 +275,9 @@ namespace d360.core.entities
                 Minimum = model.Minimum,
                 MinimumSamples = model.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent,
-                Name = model.Name,
+                Name = (model.Name ?? "").Trim(),
                 Priority = model.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression,
                 Source = SemanticSource.UserDefined,
                 Status = model.Status,
@@ -318,9 +318,9 @@ namespace d360.core.entities
                 Minimum = model.Minimum,
                 MinimumSamples = model.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent,
-                Name = model.Name,
+                Name = (model.Name ?? "").Trim(),
                 Priority = model.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression,
                 Source = existing.Source,
                 Status = model.Status,
@@ -361,9 +361,9 @@ namespace d360.core.entities
                 Minimum = model.Minimum ?? existing.Minimum,
                 MinimumSamples = model.MinimumSamples ?? existing.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent ?? existing.MinMaxPresent,
-                Name = model.Name ?? existing.Name,
+                Name = (model.Name ?? existing.Name).Trim(),
                 Priority = model.Priority ?? existing.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression ?? existing.RegularExpression,
                 Source = existing.Source,
                 Status = model.Status ?? existing.Status,
@@ -492,7 +492,7 @@ namespace d360.core.entities
                 errors.Add("Both Minimum AND Maximum must contain values for MinMaxPresent to be used. Otherwise it must be removed.");
             }
 
-            if (string.IsNullOrEmpty((model.Name ?? "").Trim()))
+            if (string.IsNullOrEmpty(model.Name))
             {
                 errors.Add("Name must contain a value.");
             }
@@ -502,7 +502,7 @@ namespace d360.core.entities
                 errors.Add("Priority must contain a value of 1 or greater.");
             }
 
-            if (string.IsNullOrEmpty((model.Qualifier ?? "").Trim()))
+            if (string.IsNullOrEmpty(model.Qualifier))
             {
                 errors.Add("Qualifier must contain a value.");
             }
