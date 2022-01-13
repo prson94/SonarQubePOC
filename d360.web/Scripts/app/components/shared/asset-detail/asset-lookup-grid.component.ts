@@ -11,6 +11,7 @@ import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { AssetTypeClass, State } from "../../../models/asset.model";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ObjectIdService } from "../../../services/object-id.service";
+import { LinkClickInterceptor } from "../../../services/href-click-service";
 
 declare var CurrentResourceID;
 
@@ -30,6 +31,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     @Input() hideFilter = true;
     @Input() assetUid: string = '';
     @Input() isSidePanel: boolean = false;
+    @Input() interceptLinkClick: boolean = false;
 
     isReferenceListFromRelationship = false;
     showDescription = false;
@@ -57,7 +59,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         private assetService: AssetService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        public objectIdService: ObjectIdService
+        public objectIdService: ObjectIdService,
+        private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(settingsService);
 
@@ -136,7 +139,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
                         icon: '',
                         isExternallyCalculated: false,
                         state: State.Active,
-                        uid:''
+                        uid: ''
                     });
             });
         }
@@ -163,7 +166,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         return 'string';
     }
 
-    navigate(url: string, e: any) {
+    navigate(url: string, e: any, data: any) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent(e, data, SiteUrlHelpers.convertClassicUrl(url ?? ""));
+            return;
+        }
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
         if (e) {
             e.preventDefault();

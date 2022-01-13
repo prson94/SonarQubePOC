@@ -15,10 +15,12 @@ import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { DataProfileService } from '../../services/dataprofile.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
+import { AssetService } from '../../services/asset.service';
 
 declare var CurrentResourceID;
 
@@ -41,8 +43,12 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private dataProfile: any;
     private sidePanelOpen: boolean = false;
     private sidePanelStorageKey;
-    private synonymPermission: SynonymPermission;    
-   
+    private synonymPermission: SynonymPermission;
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+    selectedTag: any;
+
     constructor(
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
@@ -53,7 +59,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         private dataProfileService: DataProfileService,
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+        private linkClickInterceptor: LinkClickInterceptor,
+        private assetService: AssetService
     ) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
     }
@@ -71,6 +79,28 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.load(artifactId, this.artifactTypeId);
                 });
 
+            this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+                this.selectedAsset = null;
+                this.selectedReferenceItem = null;
+                this.selectedTag = null;
+
+                if (ev.type === AssetDetailClickType.Asset) {
+                    this.selectedAsset = { uid: ev.uid, type: ev.objectType };
+                }
+
+                if (ev.type === AssetDetailClickType.ReferenceItem) {
+                    this.selectedReferenceItem = { uid: ev.assetTypeUid, assetUid: ev.uid, type: ev.objectType, url: ev.url };
+                }
+
+                if (ev.type === AssetDetailClickType.User || ev.type === AssetDetailClickType.Group) {
+                    this.selectedAsset = { uid: ev.uid, type: ev.objectType };
+                }
+
+                if (ev.type === AssetDetailClickType.Tag) {
+                    this.selectedTag = { uid: ev.uid };
+                }
+            });
+
             this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
         });
     }
@@ -78,6 +108,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     ngOnDestroy() {
         if (this.sub) {
             this.sub.unsubscribe();
+        }
+        if (this.hrefSub) {
+            this.hrefSub.unsubscribe();
         }
     }
 
@@ -95,7 +128,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                 artifact => {
                     this.artifact = artifact;
                     this.synonymPermission = artifact.SynonymPermission;
-                     
+
                     this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
 
                     this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
@@ -133,7 +166,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         this.load(e.ID, this.artifactTypeId);
     }
 
-    private showDataProfilePanel() {
-        this.showDataProfile = !this.showDataProfile;
+
+    sidePanelTab: string = '';
+    get showSidePanel() {
+        return this.showDataProfile || true;
     }
 }

@@ -1,30 +1,24 @@
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
     <div class="row">
         <div>
             <div class="col s12" style="display:flex;">
                 <div class="tile tile-detail main-panel">
-                    <d3s-object-definition-tile [synonymPermission]="synonymPermission"
-                                                [objectPermissions]="permissions"
-                                                [objectID]="artifact?.ID"
+                    <d3s-object-definition-tile [objectType]="'Rule'"
                                                 [useV2Api]="true"
-                                                [objectType]="'Artifact'"
-                                                [nymTypes]="artifact?.NymTypes"
-                                                [interceptLinkClick]="true"
-                                                (onEditComplete)="editArtifact($event)">
+                                                [objectID]="rule?.ID"
+                                                [objectPermissions]="permissions"
+                                                (onEditComplete)="editRule($event)"
+                                                [interceptLinkClick]="true">
                     </d3s-object-definition-tile>
                 </div>
-                <div *ngIf="showSidePanel" class="tile tile-detail side-panel">
+                <div class="tile tile-detail side-panel">
                     <side-panel (expandedChange)="sidePanelOpen=$event"
-                                [hasProfiling]="showDataProfile"
+                                [hasProfiling]="false"
                                 [storageKey]="sidePanelStorageKey"
                                 (selectedPanelChange)="sidePanelTab=$event"
                                 [selectedPanel]="sidePanelTab"
                                 hasDetail="true">
-                        <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'dataprofile'">
-                            <data-profile [dataProfile]="dataProfile" [dataProfileList]="dataProfileList" (showTimeSeries)="showTimeSeriesPanel($event)"></data-profile>
-                        </ng-container>
-
                         <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
                             <div class="empty-overlay" *ngIf="!selectedAsset && !selectedReferenceItem && !selectedTag">
                                 <div class="content">

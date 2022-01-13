@@ -1,20 +1,38 @@
-<header *ngIf="!showEditor && !showDelete">
+<header *ngIf="!showEditor && !showDelete && !isForAssetDetailPage">
     {{title}}
-    <d3s-tile-actions [hasAdd]="hasAdd" 
-                      (addClick)="add()" 
+    <d3s-tile-actions [hasAdd]="hasAdd"
+                      (addClick)="add()"
                       hasFilterMode="true"
-                      [(filterMode)]="showSimpleFilter" 
+                      [(filterMode)]="showSimpleFilter"
                       [hasExport]="true"
                       (exportClick)="export()"
                       [isExportDisabled]="!canExportRecords()"
-                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
-                      ></d3s-tile-actions>
+                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"></d3s-tile-actions>
 </header>
 <d3s-loading [isLoading]="isLoading && showDelete && showEditor"></d3s-loading>
 <span *ngIf="!showDelete && !showEditor">
-    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
+    <input type="text" [hidden]="!showSimpleFilter || isForAssetDetailPage" pInputText size="100"
            (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
            class="grid-simple-filter">
+
+    <ng-container *ngIf="isForAssetDetailPage">
+        <div class="info-panel-table-grid">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="dt.filterGlobal($event, 'contains')">
+            </ig-search-field>
+            <div *ngIf="canExportRecords()" pTooltip="'Export to Excel'"
+                 tooltipPosition="left"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        icon="fa-download"
+                        [loading]="isExportInProgress"
+                        (click)="export()">
+                </button>
+            </div>
+        </div>
+    </ng-container>
+
     <p-table #dt [value]="items" selectionMode="single"
              [metaKeySelection]="true"
              [globalFilterFields]="globalFilterFields"
@@ -35,18 +53,18 @@
                     {{column.text}}
                     <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
                 </th>
-                <th style="width: 40px"></th>
-                <th style="width: 40px"></th>
-                <th style="width: 40px"></th>
+                <th style="width: 40px" *ngIf="!readOnly"></th>
+                <th style="width: 40px" *ngIf="!readOnly"></th>
+                <th style="width: 40px" *ngIf="!readOnly"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
                 <th *ngFor="let column of columns">
                     <d3s-column-filter [field]="column.datafield"
                                        [datatype]="'text'"></d3s-column-filter>
                 </th>
-                <th></th>
-                <th></th>
-                <th></th>
+                <th *ngIf="!readOnly"></th>
+                <th *ngIf="!readOnly"></th>
+                <th *ngIf="!readOnly"></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
@@ -55,7 +73,7 @@
                     <d3s-dynamic-field-value [column]="column" [fields]="fields"
                                              [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
                 </td>
-                <td>
+                <td *ngIf="!readOnly">
                     <div class="RowTools" *ngIf="item.AssetUid">
                         <a style="cursor:pointer;" (click)="selected=item;">
                             <i [copy-clipboard]="item.AssetUid"
@@ -64,14 +82,14 @@
                         </a>
                     </div>
                 </td>
-                <td>
+                <td *ngIf="!readOnly">
                     <div class="RowTools" *ngIf="showEditButton || item.Permissions.ModifyAsset">
                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;">
                             <i class="fa fa-pencil"></i>
                         </a>
                     </div>
                 </td>
-                <td>
+                <td *ngIf="!readOnly">
                     <div class="RowTools" *ngIf="showDeleteButton || item.Permissions.DeleteAsset">
                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;">
                             <i class="fa fa-trash-o"></i>

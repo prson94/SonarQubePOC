@@ -24,6 +24,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() useV2Api: boolean = false;
     @Input() synonymPermission: SynonymPermission;
+    @Input() interceptLinkClick: boolean = false;
 
     @Input() nymTypes: NymType[] = [];
 

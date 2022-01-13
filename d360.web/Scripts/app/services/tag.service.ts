@@ -97,7 +97,7 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
-    
+
     deleteAssetTag(tags: TagApiModel[]): Observable<any> {
 
         const httpHeaders = {
@@ -151,17 +151,33 @@ export class TagService extends BaseObservableService {
 
     exportTagsByUid(uid: string, sort: any, filters: any) {
         var params = "globalSearch=" + filters.globalSearch;
-        params += "&AssetType=" + filters.AssetType;
-        params += "&DisplayValue=" + filters.DisplayValue;
-        params += "&TagsAsString=" + filters.TagsAsString;
-        params += "&sortBy=" + sort.field;
-        params += "&sortOrder=" + sort.order;
+
+        if (filters.AssetType) {
+            params += "&AssetType=" + filters.AssetType;
+        }
+
+        if (filters.DisplayValue) {
+            params += "&DisplayValue=" + filters.DisplayValue;
+        }
+
+        if (filters.TagsAsString) {
+            params += "&TagsAsString=" + filters.TagsAsString;
+        }
+
+        if (sort.field) {
+            params += "&sortBy=" + sort.field;
+        }
+
+        if (sort.order) {
+            params += "&sortOrder=" + sort.order;
+        }
+
         params += "&_pagesize=1000000";
 
         this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Tags'));
     }
 
-    getTagByUid(uid: number): Observable<TagType> {
+    getTagByUid(uid: string): Observable<TagType> {
         let url = `api/v2/tags?uid=${uid}`;
 
         return this.http.get(url)

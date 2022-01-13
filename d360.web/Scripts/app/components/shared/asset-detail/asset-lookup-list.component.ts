@@ -18,7 +18,7 @@ class OwnershipResource {
     selector: "ig-asset-lookup-list",
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <d3s-ownership-list *ngIf="!isLoading" [list]="resources"></d3s-ownership-list>
+        <d3s-ownership-list *ngIf="!isLoading" [list]="resources" [interceptLinkClick]="interceptLinkClick"></d3s-ownership-list>
     `,
     providers: [AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -28,6 +28,7 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
     @Input() data: LookupGrid;
     @Input() field: DetailField;
     @Input() assetUid: string = '';
+    @Input() interceptLinkClick: boolean = false;
 
     lookupField: LookupGridField;
     loadSubscription: Subscription;
@@ -65,8 +66,8 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
     loadData() {
         this.isLoading = true;
         var params = {
-            '_pageSize' : 10000,
-            '_pageNum' : 1
+            '_pageSize': 10000,
+            '_pageNum': 1
         };
 
         if (this.loadSubscription) {

@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -13,19 +13,12 @@ import { Subscription } from 'rxjs';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
 
 @Component({
     selector: 'd3s-rule-item',
     providers: [RulesService, PermissionsService, WebAnalyticsService],
-    template: ` 
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-definition-tile [objectType]="'Rule'" [useV2Api]="true" [objectID]="rule?.ID" [objectPermissions]="permissions" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
-                        </div>
-                    </div>
-                </div>`
+    templateUrl: 'rule-item.component.html'
 })
 
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -35,9 +28,17 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private ruleSub: Subscription;
     private rule: RuleDetail;
     private messages: MessageBarItem[] = [];
-    private showSurvey: boolean = false;    
+    private showSurvey: boolean = false;
     private showSocialScoreBar: boolean = true;
     private ruleType: RuleType;
+
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+    selectedTag: any;
+
+    sidePanelOpen: boolean = false;
+    sidePanelStorageKey;
 
     constructor(private rulesService: RulesService,
         private route: ActivatedRoute,
@@ -47,7 +48,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         protected settingsService: CompanySettingsService,
-        webAnalyticsService: WebAnalyticsService
+        webAnalyticsService: WebAnalyticsService,
+        private linkClickInterceptor: LinkClickInterceptor,
     ) {
         super(settingsService);
 
@@ -65,6 +67,28 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             this.load(ruleId);
         });
 
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            this.selectedAsset = null;
+            this.selectedReferenceItem = null;
+            this.selectedTag = null;
+
+            if (ev.type === AssetDetailClickType.Asset) {
+                this.selectedAsset = { uid: ev.uid, type: ev.objectType };
+            }
+
+            if (ev.type === AssetDetailClickType.ReferenceItem) {
+                this.selectedReferenceItem = { uid: ev.assetTypeUid, assetUid: ev.uid, type: ev.objectType, url: ev.url };
+            }
+
+            if (ev.type === AssetDetailClickType.User || ev.type === AssetDetailClickType.Group) {
+                this.selectedAsset = { uid: ev.uid, type: ev.objectType };
+            }
+
+            if (ev.type === AssetDetailClickType.Tag) {
+                this.selectedTag = { uid: ev.uid };
+            }
+        });
+
         this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
     }
 
@@ -78,17 +102,17 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         this.ruleSub = this.rulesService.getRule(ruleId)
             .subscribe(result => {
                 this.rule = result;
-                
+
                 this.setBrowserTitle(this.titleService, this.rule.Name);
                 this.messages = []; //clear any messages for this rule
-          
+
                 this.rulesService.getRuleType(this.rule.TypeID).subscribe(r => { this.ruleType = r; });
                 this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
 
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
                     this.buildSecondaryNavigation(this.rule.UID, null, null, null, null, null, null, this.rule.Name);
-               });
+                });
                 this.isLoading = false;
             });
     }

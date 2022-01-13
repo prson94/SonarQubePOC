@@ -67,6 +67,14 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
+    getGroupMembers(groupUid: string): Observable<any> {
+        return this.http.get(`api/v2/membership/groups/${groupUid}/members?_pageSize=250`).pipe(
+            map((response) => <any[]>response),
+            catchError((err) => this.handleError(err))
+        );
+    }
+
+
     getGroup(id: number,uid:string): Observable<any> {
         return this.http.get(`form/Group?id=${id}&uid=${uid}`).pipe(
             map((response) => <any>response),

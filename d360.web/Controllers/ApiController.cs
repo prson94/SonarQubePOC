@@ -162,13 +162,20 @@ namespace d360.web.Controllers
                                     fieldValue = $"[{{\"name\":\"{item.DisplayText}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
                                 }
 
+                                if (url.ToLower().IndexOf("referencelistid") > -1)
+                                {
+                                    url += "," + (item.uid != null ? item.uid.Value.ToString() : Guid.Empty.ToString());
+                                }
+
                                 ro.Values.Add(new ReadOnlyFieldValue
                                 {
                                     TooltipContext = tooltipContext,
                                     TooltipID = item.Value,
                                     Value = fieldValue,
                                     TooltipType = ft.LookupObjectType,
-                                    TooltipUrl = url
+                                    TooltipUrl = url,
+                                    uid = (item.uid != null ? item.uid.Value : Guid.Empty),
+                                    assetTypeUid = (item.assetTypeUid != null ? item.assetTypeUid.Value : Guid.Empty)
                                 });
                             }
                         }
@@ -412,7 +419,15 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
-                var lookupDataSql = $@"select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText from asset a
+                var lookupDataSql = $@"  select ft.id as FieldTypeId, 
+                        trim(Val.Value) as Value, 
+                        od.AssetId, 
+                        od.Url, 
+                        Color.ColorJson, 
+                        flv.DisplayText, 
+                        refAsset.uid,
+                        refType.uid as assetTypeUid
+                    from asset a
                     inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
                     left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
                     cross apply (
@@ -422,6 +437,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         )Val
                     outer apply utility.ObjectDetail(ft.LookupObjectType, trim(Val.Value))OD
                     left join Asset refAsset on refAsset.ID = od.AssetID
+                    left join AssetType refType on refType.ID = od.AssetTypeId
                     outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
                     left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
                     where a.uid = @uid 
@@ -1585,7 +1601,18 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     url = null;
                 }
 
-                values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });
+                var relVal = new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url };
+
+                var assetUid = Company.Assets.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
+                if (assetUid != null)
+                {
+                    relVal.uid = assetUid;
+                    if (relVal.TooltipUrl.ToLower().IndexOf("referencelistid") > -1)
+                    {
+                        relVal.TooltipUrl += "," + assetUid.ToString();
+                    }
+                }
+                values.Add(relVal);
             }
 
             values = values.Distinct(new ReadOnlyFieldValueComparer()).OrderBy(x => x.Value).ToList();
@@ -2500,7 +2527,9 @@ from    (
                     return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
-                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+
+                    SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
+                    return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
             }
         }
 
@@ -2824,24 +2853,48 @@ from    (
                             }
                         });
 
-                        if (group.PrimaryOwnerResourceID.HasValue && group.SecondaryOwnerResourceID.HasValue)
+                        if (group.PrimaryOwnerResourceID.HasValue || group.SecondaryOwnerResourceID.HasValue)
                         {
                             var groupOwnerIDs = new List<int>();
-                            if (group.PrimaryOwnerResourceID.HasValue) groupOwnerIDs.Add(group.PrimaryOwnerResourceID.Value);
-                            if (group.SecondaryOwnerResourceID.HasValue) groupOwnerIDs.Add(group.SecondaryOwnerResourceID.Value);
+                            if (group.PrimaryOwnerResourceID.HasValue)
+                            {
+                                groupOwnerIDs.Add(group.PrimaryOwnerResourceID.Value);
+                            }
+                            if (group.SecondaryOwnerResourceID.HasValue)
+                            {
+                                groupOwnerIDs.Add(group.SecondaryOwnerResourceID.Value);
+                            }
 
                             var groupOwners = GetCompanyResources().Where(i => groupOwnerIDs.Contains(i.ID)).ToList();
-
-                            model.rows.Add(new DetailReadOnlyRowModel
+                            var row = new DetailReadOnlyRowModel
                             {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = group.GetName(i => i.PrimaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.PrimaryOwnerResourceID.Value).FormatDisplayName() }
-                                },
-                                SecondColumnFields = new List<ReadOnlyField>
+                                }
+                            };
+
+                            if (group.SecondaryOwnerResourceID.HasValue)
+                            {
+                                row.SecondColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = group.GetName(i => i.SecondaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.SecondaryOwnerResourceID.Value).FormatDisplayName() }
+                                };
+                            }
+
+
+                            model.rows.Add(row);
+                        }
+
+                        if (useAssetDetailColumnDefinition || useSingleColumn)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Is Active Directory Group", FieldName = "IsActiveDirectoryGroup", FieldDescription = group.GetDescription(i => i.IsActiveDirectoryGroup), DataType = "Bool", Value = group.IsActiveDirectoryGroup.ToString() }
                                 }
                             });
                         }
@@ -3642,7 +3695,7 @@ from    (
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = resource.GetName(i => i.Email), FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
+                                new ReadOnlyField { Name = "Email", FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
                             },
                         });
 

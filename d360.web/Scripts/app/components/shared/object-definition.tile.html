@@ -12,7 +12,8 @@
                      [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
                      [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions"
                      [useAssetDetailColumnDefinition]="true"
-                     [synonymPermission]="synonymPermission">
+                     [synonymPermission]="synonymPermission"
+                     [interceptLinkClick]="true">
     </ig-asset-detail>
 </div>
 <d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && !useV2Api"
