@@ -403,7 +403,8 @@ namespace d360.model.validators
                             SystemObjects.ArtifactType.ToString(),
                             SystemObjects.PolicyType.ToString(),
                             SystemObjects.RuleType.ToString(),
-                            SystemObjects.TaxonomyType.ToString()
+                            SystemObjects.TaxonomyType.ToString(),
+                            SystemObjects.GroupType.ToString()
                         };
                     if (assetTypeIdentifierInfoModel == null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                     {

@@ -22,6 +22,7 @@ using Resources;
 using System.Web.Http.Description;
 using d360.core.helpers;
 using System.Globalization;
+using System.Dynamic;
 
 namespace d360.web.Controllers.V2
 {
@@ -658,8 +659,20 @@ namespace d360.web.Controllers.V2
                 {
                     throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
                 }
+                var lists = new List<dynamic>();
 
-                var lists = await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList");
+                if (@class != AssetTypeClass.Group)
+                {
+                    lists = (await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList")).ToList();
+                }
+                else
+                {
+                    dynamic dyObj = new ExpandoObject();
+                    dyObj.type = "L";
+                    dyObj.title = "Reference List";
+                    dyObj.value = "ReferenceItemType";
+                    lists.Add(dyObj);
+                }
                 var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var attributes = lists.Where(i => i.type == "A").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var lookups = lists.Where(i => i.type == "L").Select(i => new { i.value, i.title }).OrderBy(i => i.title);

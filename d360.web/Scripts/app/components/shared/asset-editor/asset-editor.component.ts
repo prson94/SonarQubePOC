@@ -761,6 +761,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         this.savingInProgress = true;
         let values: any = {};
         let group: Group = new Group();
+        group.Fields = {};
 
         //takes the form and convert any array values to , separated string values
         for (var p in event.item) {
@@ -773,13 +774,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             }
         }
 
-        //convert artifact to an asset
+        let rootProperties: string[] = ['Name','Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
         for (var p in values) {
-            if (p.toUpperCase() === "UID") {
-                group.Uid = values[p];
+            if (rootProperties.some((prop) => prop.toUpperCase() === p.toUpperCase())) {
+                group[p] = values[p];
             }
             else {
-                group[p] = values[p];
+                group.Fields[p] = values[p];
             }
         }
 

@@ -54,6 +54,7 @@ export class Group {
     IsActiveDirectoryGroup: boolean;
     UpdatedOn: string;
     UpdatedBy: string;
+    Fields: any;
 }
 
 export class ResourceGroup {

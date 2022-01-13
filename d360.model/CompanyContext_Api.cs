@@ -868,7 +868,25 @@ where	ExecutionID = @executionID
                 return new List<AssetFieldTypeUpdate>();
             }
         }
-
+        public void UpdateGroupCounterFields(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
+        {
+            Connection.Execute(
+                      $@"insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])
+                        select distinct a.id as AssetId, ft.assettypeid, ft.id, ef.FieldValue 
+                            from api.executiongroup ea
+                        inner join FieldType ft on ft.Object = 'GroupType' and ft.ObjectID = 1 and ft.Type = @dataType
+                        inner join api.execution ex on ex.executionid = @executionid
+						inner join [group] g on g.uid = ea.groupuid
+						inner join [asset] a on a.Object = 'Group' and a.ObjectId = g.Id
+                        left join api.ExecutionField ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
+                        left join dbo.FieldCounterValue FCV on FCV.AssetId = a.id and FCV.FieldTypeId = ft.id
+                        where ea.ExecutionID = @executionID 
+                                and ea.Success is null 
+								and a.id is not null
+                                and ea.ItemNumber between @beginItemNumber and @endItemNumber
+                                and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.Method = 'BULK');"
+                      , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
+        }
 
         public void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true)
         {
@@ -10534,6 +10552,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
         {
             DynamicParameters dbArgs = new DynamicParameters();
             bool generalChecksCompleted = false;
+            bool hasCounterField = false;
             int itemNumber = 1;
             List<GroupResponseResult> results = new List<GroupResponseResult>();
             var importFields = new Dictionary<int, List<string>>();
@@ -10649,7 +10668,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                     // Get field types.
                     var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'GroupType' and ObjectID = 1").ToList();
                     var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
-                    var hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
+                    hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
 
                     int i = 1;
                     foreach (var group in groups.Where(x => x.Fields.Any()))
@@ -10675,7 +10694,6 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                         i++;
                     }
 
-                    #endregion
 
                     using (var bulkCopy = new SqlBulkCopy(Connection)
                     {
@@ -10694,6 +10712,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                         bulkCopy.WriteToServer(fieldTable);
                     }
 
+                    #endregion
                     var checkSQL = $@"update	[api].[ExecutionGroup]
                 set		Success = 0,
 		                [Message] = coalesce([Message], '') + 'Name field cannot be empty;'
@@ -10735,7 +10754,16 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 		                [Message] = coalesce([Message], '') + 'Secondary Owner Uid provided is not a resource uid;'
 	            from [api].[ExecutionGroup] EG 
 	            left join [Asset] A on A.[uid] = EG.[SecondaryOwnerUid] and A.Object = 'Resource'
-                where	ExecutionID = @ExecutionID and A.uid is null and EG.SecondaryOwnerUid is not null;";
+                where	ExecutionID = @ExecutionID and A.uid is null and EG.SecondaryOwnerUid is not null;
+
+                update	[api].[ExecutionGroup]
+                set		Success = 0,
+		                [Message] = coalesce([Message], '') + 'Lookup Field has invalid values;'
+	            from [api].[ExecutionGroup] EG 
+                inner join api.executionfield ef on ef.ExecutionID = eg.ExecutionID
+                inner join FieldType ft on ft.id = ef.fieldtypeid
+                left join FieldLookupValue flv on flv.FieldTypeID = ef.FieldTypeID and flv.Value = ef.FieldValue
+                where EG.ExecutionID = @ExecutionID  and ft.type = 'Lookup' and flv.Value is null and ef.FieldValue is not null";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID, emptyUid = Guid.Empty }, commandTimeout: timeout);
 
@@ -10918,20 +10946,24 @@ EG.GroupUid
                                     Connection.Execute(insertSQL,
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
-                                    if (isInsert)
+
+                                    if (hasCounterField)
                                     {
-                                        Connection.Execute(
-                                            $@"
-                        INSERT INTO 
-                        dbo.[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
-                        select 		     A.Object as [ObjectType]
+                                        UpdateGroupCounterFields(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout: timeout);
+                                    }
+
+                                    var fieldValuesSql = $@"select 		     
+                                         A.Object as [ObjectType]
                                         ,A.ObjectId as [ObjectID]
                                         ,F.FieldTypeID as [FieldTypeID]
                                         ,case 
-                                            when FT.Type = 'Link' then F.FieldValue
-                                            else F.LookupValue
+                                            when FT.Type = 'Lookup' then F.FieldValue
+                                            else null
                                         end as [Value]
-                                        ,F.FieldValue as [FormattedValue]
+                                        ,case 
+                                            when FT.Type = 'Lookup' then null
+                                            else F.FieldValue
+                                        end as [FormattedValue]
                                         ,getutcdate() as [UpdatedOn]
                                         ,@resourceId as [UpdatedBy]
                                         ,A.Id as [AssetID]                                        
@@ -10949,8 +10981,32 @@ EG.GroupUid
                                         and (F.Ignore = 0 or F.Ignore is null)
                                         and FT.Type != 'Relationship'
                                         and FT.Type != 'Counter'
-                                        and FieldValue is not null"
+                                        and FieldValue is not null";
+
+                                    if (isInsert)
+                                    {
+                                        Connection.Execute(
+                                            $@"
+                                        INSERT INTO 
+                                        dbo.[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
+                                        {fieldValuesSql}"
                                             , new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+                                    }
+                                    else
+                                    {
+                                        Connection.Execute($@"
+                    merge       Field as T
+                    using       (
+                                    {fieldValuesSql}
+                                ) as S 
+                    on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
+                    when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then
+                    update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
+                    when		not matched by target then
+                    insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
+                    values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
+                new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
                                     }
 
                                     Connection.Execute(
