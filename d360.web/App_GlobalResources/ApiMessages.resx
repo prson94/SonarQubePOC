@@ -741,4 +741,10 @@
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>Route {Route} is unknown or deprecated</value>
   </data>
+  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
+    <value>No asset type found with assetTypeUid provided.</value>
+  </data>
+  <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
+    <value>No intersect type found with intersectTypeUid provided.</value>
+  </data>
 </root>

@@ -961,6 +961,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No asset type found with assetTypeUid provided..
+        /// </summary>
+        public static string InvalidAssetTypeUidProvided {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUidProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AssetUid {0} is invalid.
         /// </summary>
         public static string InvalidAssetUid {
@@ -1119,6 +1128,15 @@ namespace Resources {
         public static string InvalidIntersecttypeid {
             get {
                 return ResourceManager.GetString("InvalidIntersecttypeid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No intersect type found with intersectTypeUid provided..
+        /// </summary>
+        public static string InvalidIntersectTypeUidProvided {
+            get {
+                return ResourceManager.GetString("InvalidIntersectTypeUidProvided", resourceCulture);
             }
         }
         
