@@ -55,7 +55,9 @@ namespace d360.web
             else
             {
                 if (resource.Companies == null)
+                {
                     resource.Companies = new ConcurrentBag<ContractValidationCacheModel.Company>();
+                }
 
                 var comp = new ConcurrentBag<ContractValidationCacheModel.Company>(resource.Companies ?? new ConcurrentBag<ContractValidationCacheModel.Company>());
                 var res = comp.FirstOrDefault(c => c.ID == companyId);
@@ -67,7 +69,9 @@ namespace d360.web
             }
 
             if (resource.Companies == null)
+            {
                 resource.Companies = new ConcurrentBag<ContractValidationCacheModel.Company>();
+            }
 
             var companies = new ConcurrentBag<ContractValidationCacheModel.Company>(resource.Companies ?? new ConcurrentBag<ContractValidationCacheModel.Company>());
             var resourceCompany = companies.FirstOrDefault(c => c.ID == companyId);

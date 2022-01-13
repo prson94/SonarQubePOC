@@ -163,7 +163,9 @@ namespace d360.web.Controllers
             }
             if (!Company.HasAssetPermission(relationship.Subject, relationship.SubjectID, Permission.EditRelationships) &&
                 !Company.HasAssetPermission(relationship.Object, relationship.ObjectID, Permission.EditRelationships))
+            {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
@@ -324,7 +326,9 @@ namespace d360.web.Controllers
             Predicate predicate = null;
 
             if (relationshipType.PredicateID.HasValue)
+            {
                 predicate = Company.GetById<Predicate>((int)relationshipType.PredicateID);
+            }
 
             int objectTypeID = -1;
             string parentType = string.Empty;

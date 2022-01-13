@@ -359,9 +359,13 @@ namespace igx.functions.databasetaskprocessor
                                                     try
                                                     {
                                                         if (q.NumberOfRetries >= 2)
+                                                        {
                                                             companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
+                                                        }
                                                         else
+                                                        {
                                                             companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
+                                                        }
                                                     }
                                                     catch (Exception iex)
                                                     {

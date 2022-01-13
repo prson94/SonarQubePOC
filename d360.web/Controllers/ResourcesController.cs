@@ -178,7 +178,10 @@ from	FollowDetail F
 
         private string getDynamicFieldSimpleFilter(string[] fixedColumns, SystemObjects type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs, List<FieldType> fields = null)
         {
-            if (string.IsNullOrEmpty(filterExp)) return "";
+            if (string.IsNullOrEmpty(filterExp))
+            {
+                return "";
+            }
 
             if (fields == null)
             {

@@ -35,10 +35,14 @@ namespace d360.core.validators
         public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeUpsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
         {
             if (!SupportedClasses.Contains(model.Class))
+            {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.UnsupportedAssetClass);
+            }
 
             if (string.IsNullOrWhiteSpace(model.Name))
+            {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsEmpty} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));
+            }
 
             var invalidChars = new[] { '\0' };
             if (model.Name.Any(invalidChars.Contains))
@@ -83,11 +87,17 @@ namespace d360.core.validators
             if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
             {
                 if (parentAssetType == null)
+                {
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+                }
                 else if (parentAssetType.Class != model.Class)
+                {
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+                }
                 else if (!ParentAssetTypeClass.Contains(model.Class) && !ForceParentToItself)
+                {
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+                }
 
                 if (ForceParentToItself)
                 {
@@ -111,7 +121,9 @@ namespace d360.core.validators
             else
             {
                 if (model.ParentUid.HasValue && model.ParentUid == model.Uid && !ForceParentToItself)
+                {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+                }
             }
 
             if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)

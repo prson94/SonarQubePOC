@@ -92,7 +92,9 @@ namespace d360.core
             {
                 var aReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute)));
                 if ((DataType)Enum.Parse(typeof(DataType), tm.Name) == DataType.None)
+                {
                     continue;
+                }
                 var info = new DataTypeInfo
                 {
                     ReadOnly = (aReadOnly != null) ? aReadOnly.IsReadOnly : false,
