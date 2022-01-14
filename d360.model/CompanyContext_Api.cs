@@ -657,6 +657,52 @@ where	ExecutionID = @executionID
             }
         }
 
+        private void MergeGroupAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600, bool isInsert = false)
+        {
+            var fieldsSelectSql = $@"
+                select  A.ID as ID,
+                            ADV.DisplayValue,
+                            CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
+                            SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
+                    from    api.ExecutionGroup EG
+                            inner join [Group] G on G.uid = EG.GroupUid
+                            inner join Asset A on A.Object = 'Group' and A.ObjectID = G.Id
+                            cross apply GetAssetDisplayValueByID(A.ID) ADV
+                    where   EG.ExecutionID = @executionID
+                            and EG.ItemNumber between @beginItemNumber and @endItemNumber 
+                            and EG.Success is null 
+                            and ADV.DisplayValue is not null
+            ";
+
+            if (isInsert)
+            {
+                Connection.Execute($@"
+                    insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash,DisplayValuePrefix) 
+                        {fieldsSelectSql}
+                ",
+                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+            }
+            else
+            {
+                Connection.Execute($@"
+    merge       AssetDisplayValue as T
+    using       (
+                    {fieldsSelectSql}
+                ) as S 
+    on          ( T.AssetID = S.ID )
+    when		matched then
+    update		set
+				    T.DisplayValue = S.DisplayValue,
+                    T.DisplayValueHash = S.DisplayValueHash,
+                    T.[DisplayValuePrefix] = S.DisplayValuePrefix,
+                    T.UpdatedOn = @dt
+    when		not matched by target then
+    insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+    values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
+                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+            }
+        }
+
         public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true)
         {
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
@@ -11008,6 +11054,8 @@ EG.GroupUid
                 new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                     }
+
+                                    MergeGroupAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout: timeout, isInsert);
 
                                     Connection.Execute(
                                                         $"update [api].[ExecutionGroup] set Success = 1, Message = 'Success' where	Success is null and ExecutionID = @ExecutionID;",

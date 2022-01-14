@@ -680,7 +680,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             return;
         }
 
-        if (this.objectType === "GroupType") {
+        if (this.objectType === "Group") {
             this.postToGroupsApiV2({ item: values, action: action, addAnother: addAnother });
         }
         else {

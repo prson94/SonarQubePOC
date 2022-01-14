@@ -47,6 +47,7 @@ namespace d360.core.entities
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
+        public Guid Uid { get; set; }
                 
         public virtual ICollection<ResourceGroup> ResourceGroups { get; set; }
 
