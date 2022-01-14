@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Table.metrics.Allocation-v6">
+  <changeSet author="Pappas" id="Table.metrics.Allocation-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -33,8 +33,13 @@ END
 
 if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'ID')
 begin
-	ALTER TABLE [metrics].[Allocation]
-	ADD ID INT IDENTITY(1,1)
+	ALTER TABLE [metrics].[Allocation] ADD ID INT IDENTITY(1,1)
+end
+
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'IsThresholdBased')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_IsThresholdBased];
+	ALTER TABLE [metrics].[Allocation] DROP COLUMN [IsThresholdBased];
 end
 		]]>
     </sql>

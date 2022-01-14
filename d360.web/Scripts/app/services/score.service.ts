@@ -97,4 +97,13 @@ export class ScoreService extends BaseObservableService {
                 catchError((err) => this.handleError(err))
             );
     }
+
+    recalculateMeasure(allocationUid: string, measureUid: string): Observable<boolean> {
+        return this.http.put(`/api/v2/scoring/${allocationUid}/measures/${measureUid}/recalculations`, {})
+            .pipe(
+                map(() => true),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
 }

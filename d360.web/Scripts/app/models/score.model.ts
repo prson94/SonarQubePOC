@@ -48,6 +48,7 @@ export class PointBreakdown {
     IsGroup: boolean;
     Name: string;
     Description: string;
+    Threshold: number;
     Weight: number;
     AdjustedWeight: number;
     AdjustedMaxWeight: number;
@@ -77,6 +78,7 @@ export class PointBreakdown {
 export class PointBreakDownConditionItem {
     Uid: string;
     Weight: number;
+    Threshold: number;
     MatchType: number;
     Position: number;
     ConditionItems: PointBreakdownCondition[]; 

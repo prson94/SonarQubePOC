@@ -27,6 +27,14 @@
             <div class="details-header">Grouping Measure</div>
             <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
         </div>
+        <div *ngIf="!isExternallyCalculated && selectedMetric?.Threshold" class="measure-details-item">
+            <div class="details-header">Use Pass Threshold</div>
+            <div class="details-content">Yes</div>
+        </div>
+        <div *ngIf="!isExternallyCalculated && selectedMetric?.Threshold" class="measure-details-item">
+            <div class="details-header">Threshold</div>
+            <div class="details-content">{{getAsRawPrecentage(selectedMetric?.Threshold, 3)}}</div>
+        </div>
         <div *ngIf="!data?.isExternallyCalculated && !selectedMetric.IsGroup" class="measure-details-item">
             <d3s-admin-metric-pass-test-details #passTestComponent [assetTypeUid]="assetTypeUid"
                                                 [definition]="selectedMetric?.Definition"
