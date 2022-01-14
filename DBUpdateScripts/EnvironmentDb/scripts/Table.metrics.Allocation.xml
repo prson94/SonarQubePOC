@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.Allocation-v7">
+  <changeSet author="Pappas" id="Table.metrics.Allocation-v7.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -26,35 +26,29 @@ BEGIN
 		[IsExternallyCalculated] [bit] NOT NULL,
 		[LowerThreshold] [int] NOT NULL,
 		[UpperThreshold] [int] NOT NULL,
-		[CalculationMethod] [int] NOT NULL,
-		[IsThresholdBased] [bit] NOT NULL
+		[CalculationMethod] [int] NOT NULL
 	)
 END
-
+GO
 if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'ID')
 begin
 	ALTER TABLE [metrics].[Allocation] ADD ID INT IDENTITY(1,1)
 end
-
+GO
 if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'IsThresholdBased')
 begin
 	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_IsThresholdBased];
 	ALTER TABLE [metrics].[Allocation] DROP COLUMN [IsThresholdBased];
 end
-		]]>
+]]>
     </sql>
     <rollback>
       <![CDATA[	
-if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'ID')
-begin
-	ALTER TABLE [metrics].[Allocation]
-	DROP COLUMN [ID]
-end
 		]]>
     </rollback>
   </changeSet>
-
-  <changeSet author="Pappas" id="Constraint.metrics.Allocation-v4">
+  
+  <changeSet author="Pappas" id="Constraint.metrics.Allocation-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -119,11 +113,6 @@ if not exists (select * from [sys].[default_constraints] where [type] = 'D' and 
 begin
 	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricsAllocation_CalculationMethod]  DEFAULT ((4)) FOR [CalculationMethod]
 end
-
-if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAllocation_IsThresholdBased')
-begin
-	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricsAllocation_IsThresholdBased]  DEFAULT ((0)) FOR [IsThresholdBased]
-end
 		]]>
     </sql>
 	<rollback>
@@ -176,11 +165,6 @@ end
 if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAllocation_CalculationMethod')
 begin
 	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_CalculationMethod]
-end
-
-if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAllocation_IsThresholdBased')
-begin
-	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_IsThresholdBased]
 end
 
 if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricsAllocation')
