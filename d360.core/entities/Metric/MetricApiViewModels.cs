@@ -55,7 +55,7 @@ namespace d360.core.entities.Metric
         public decimal Weight { get; set; }
 
         [DataMember, JsonProperty(Order = 11)]
-        public double? Threshold { get; set; }
+        public float? Threshold { get; set; }
 
         [DataMember, JsonProperty(Order = 13)]
         public bool MatchConditionsOnly { get; set; } = false;
@@ -582,7 +582,7 @@ namespace d360.core.entities.Metric
         public DateTime EffectiveDate { get; set; }
         public DateTime? EffectiveEndDate { get; set; }
         public double Weight { get; set; }
-        
+        public float? Threshold { get; set; }
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
         
         public bool HasResults { get; set; } = false;

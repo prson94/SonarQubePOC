@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.StagingScoreItem-v1.1">
+  <changeSet author="Pappas" id="Table.metrics.StagingScoreItem-v3.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -29,6 +29,11 @@ BEGIN
 		CONSTRAINT [PK_MetricsStagingScoreItem] PRIMARY KEY NONCLUSTERED ( [AssetUid] ASC, MeasureUid ASC, EffectiveDate DESC )
 	)
 END
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'StagingScoreItem' and COLUMN_NAME = 'HasThreshold')
+begin
+	ALTER TABLE [metrics].[StagingScoreItem] ADD HasThreshold bit constraint DF_MetricsStagingScoreItem_HasThreshold default(0) not null
+end
 		]]>
     </sql>
 	<rollback>

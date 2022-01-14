@@ -735,4 +735,16 @@
   <data name="InvalidParameterMessage" xml:space="preserve">
     <value>'{0}' is an invalid value for {1}</value>
   </data>
+  <data name="FavoriteUnknownObject" xml:space="preserve">
+    <value>Route {Route} points to unknown object</value>
+  </data>
+  <data name="FavoriteUnknownRoute" xml:space="preserve">
+    <value>Route {Route} is unknown or deprecated</value>
+  </data>
+  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
+    <value>No asset type found with assetTypeUid provided.</value>
+  </data>
+  <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
+    <value>No intersect type found with intersectTypeUid provided.</value>
+  </data>
 </root>

@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -31,7 +31,7 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
 
         AdminIssueTypesRoutingModule,
 
@@ -58,10 +58,6 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
         AdminIssueTypeAllocationEditorComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
     ]
 })
 export class AdminIssueTypesModule { }

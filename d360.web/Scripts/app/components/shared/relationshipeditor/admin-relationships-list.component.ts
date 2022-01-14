@@ -124,31 +124,35 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         }
     }
 
-    findRelationshipIndex(id: number) {
+    findRelationshipIndex(uid: string) {
         var index: number = -1;
         for (var relationship of this.relationships) {
             index++;
-            if (relationship.Id == id) return index;
+            if (relationship.Uid == uid) return index;
         }
     }
 
-    deleteRelationship(id: number) {
-        this.relationshipsService.deleteRelationship(id)
+    deleteRelationship(uid: string) {
+        this.relationshipsService.deleteRelationshipType(uid)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
+                result = result[0];
+                this.showMessageForApiResult(this.messagesService, result);
                 this.showDelete = false;
-                if (result.type != 'error') {
+                if (result.Success === true) {
                     this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
-                    this.relationships.splice(this.findRelationshipIndex(id), 1);
+                    this.relationships.splice(this.findRelationshipIndex(uid), 1);
                 }
             });
     }
 
     saveRelationship(event) {
-        this.relationshipsService.saveRelationship(event.relationship)
-            .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type == "confirm") {
+        this.relationshipsService.saveRelationshipType(event.relationship)
+            .subscribe((result) => {
+                
+                result = result[0];
+                this.showMessageForApiResult(this.messagesService, result);
+               
+                if (result.Success === true) {
                     this.getRelationships();
                     this.showEditor = false;
                 }

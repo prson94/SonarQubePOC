@@ -1447,7 +1447,7 @@ namespace d360.web.Controllers
                                         aadReturnDomain = $"https://{aadReturnDomain}/";
                                     }
 
-                                    var inviteResult = await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.LastName, model.Title, aadReturnDomain);
+                                    var inviteResult = await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.LastName, model.Title, aadReturnDomain).ConfigureAwait(false);
 
                                     if (inviteResult != null && !string.IsNullOrEmpty(inviteResult.inviteRedeemUrl))
                                     {

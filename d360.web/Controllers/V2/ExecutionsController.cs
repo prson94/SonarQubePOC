@@ -1196,6 +1196,22 @@ from	[Load] L
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
                 }
 
+                if (type == BulkLoadType.Promotion)
+                {
+                    if (assetTypeUid == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeUidProvided)).ConfigureAwait(false);
+                    }
+                }
+
+                if (type == BulkLoadType.Relation || type == BulkLoadType.Unrelation)
+                {
+                    if (intersectTypeUid == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidIntersectTypeUidProvided)).ConfigureAwait(false);
+                    }
+                }
+
                 Load load = null;
                 var errorMessages = new List<string>();
                 SLDocument xls;
@@ -1230,7 +1246,6 @@ from	[Load] L
                             objectType = assetType.Object;
                             objectID = assetType.ObjectID;
                         }
-                        
 
                         load = new Load
                         {

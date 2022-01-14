@@ -1,7 +1,7 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
+
+
 
 import { RouterModule } from '@angular/router';
 
@@ -30,7 +30,7 @@ import { IgColorPickerModule } from '../shared/controls/color-picker/color-picke
 @NgModule({
     imports: [
         CommonModule,
-        HttpClientModule,
+
         RouterModule,
 
         HomeRoutingModule,
@@ -60,10 +60,7 @@ import { IgColorPickerModule } from '../shared/controls/color-picker/color-picke
         HomeComponent,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class HomeModule { }

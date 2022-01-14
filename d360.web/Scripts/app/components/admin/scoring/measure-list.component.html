@@ -119,6 +119,22 @@
             </measure-history>
         </div>
     </d3s-modal>
+    <d3s-modal [title]="'Recalculate Measure'" additionalClasses="medium-dialog modal-measure" (onClose)="showRecalculate(false)" [isVisible]="isRecalculateModalVisible">
+        <div class="content">
+            <div>
+                This will recalculate the measure result for all assets of asset type {{assetType.Name}}.
+                Please allow time for recalculate before verifying results.
+                Time for recalculation varies based on number of assets being evaluated.
+            </div>
+            <div class="row" *ngIf="!isLoading">
+                <div class="action-bar" style="padding-top: 15px">
+                    <button igButton class="left" type="button" label="Cancel" (click)="cancelRecalculate()"></button>
+                    <span class="grow"></span>
+                    <button igButton [loading]="isCallingRecalculate" class="ig-button-primary" type="button" label="Recalculate" (click)="recalculate()"></button>
+                </div>
+            </div>
+        </div>
+    </d3s-modal>
     <d3s-delete-form *ngIf="selection"
                      [uri]="'api/v2/metrics/' + selection?.Uid"
                      [method]="'delete'"

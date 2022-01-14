@@ -5,7 +5,7 @@ import { ScoreCalculationComponent } from "./score-calculation.component";
 import { FormsModule } from "@angular/forms";
 import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { DirectivesModule } from "../../../../directives/directives.module";
-import { GovernRequestInterceptor } from "../../../../http-interceptors/govern-request.interceptor";
+
 import { MeasureRuleResultsComponent } from "./measure-rule-results.component";
 import { SiteModalModule } from "../../modal/gov-modal.module";
 import { CoreModule } from "../../core.module";
@@ -19,7 +19,7 @@ import { PipesModule } from "../../../../pipes/pipes.module";
         FormsModule,
         CommonModule,
         RouterModule,
-        HttpClientModule,
+
         DirectivesModule,
         CoreModule,
         PipesModule,
@@ -37,11 +37,7 @@ import { PipesModule } from "../../../../pipes/pipes.module";
         MeasureRuleResultsComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        }
+        
     ]
 })
 export class ScoreCalculationModule { }

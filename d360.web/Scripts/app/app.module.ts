@@ -1,6 +1,6 @@
 ﻿import { NgModule, LOCALE_ID, APP_INITIALIZER } from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app.routes';
@@ -29,7 +29,7 @@ import { SearchService } from './services/search.service';
 
 import { TooltipSingletonService } from './services/tooltip-singleton.service'
 import { PreviewpopupSingletonService } from './services/previewpopup-singleton.service'
-import { GovernRequestInterceptor } from "./http-interceptors/govern-request.interceptor";
+
 import { CookieService } from './services/cookie.service';
 import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
@@ -37,6 +37,7 @@ import { D3SModal } from './components/shared/modal/gov-modal.component';
 import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
 import { FeatureFlagsService } from './services/featureflags.service';
+import { governHttpInterceptorProviders } from './http-interceptors';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -107,11 +108,7 @@ export function localeInitializer(localeId: string) {
     bootstrap: [AppComponent],
     providers: [
         AdminUserGuard,
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        governHttpInterceptorProviders,
         RedirectGuard,
         AuthenticationService,
         Title,

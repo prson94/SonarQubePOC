@@ -8,6 +8,7 @@ import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { Observable, forkJoin } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
+import { Relation } from '../models/fieldtype-api.model';
 
 @Injectable({
     providedIn: 'root'
@@ -40,7 +41,6 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-
     getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
         return this.http.get(`api/v2/relationships/types/${id}/${type}`)
             .pipe(
@@ -55,6 +55,25 @@ export class RelationshipsService extends BaseObservableService {
                 map(response => <RelationshipType[]>response),
                 catchError(err => this.handleError(err))
             );
+    }
+
+    saveRelationshipType(relationshipType: RelationshipType): Observable<any> {
+        if (relationshipType) {
+            return this.http.request(relationshipType.Uid == null ? 'POST' : 'PUT', 'api/v2/relationships/types', {
+                body: [{
+                    Uid: relationshipType.Uid,
+                    PredicateUid: relationshipType.Predicate.Uid,
+                    SubjectUid: relationshipType.Subject.Uid,
+                    SubjectCardinality: relationshipType.Subject.Cardinality,
+                    ObjectUid: relationshipType.Object.Uid,
+                    ObjectCardinality: relationshipType.Object.Cardinality
+                }]
+            })
+                .pipe(
+                    map(response => <any>response),
+                    catchError(err => this.handleError(err))
+                );
+        }
     }
 
     saveRelationships(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
@@ -138,6 +157,22 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
+    getIntersectTypeById(id: number): Observable<any> {
+        return this.http.get(`api/v2/relationships/types/${id}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getRelationshipUids(relationshipTypeUid: string): Observable<any> {
+        return this.http.get(`api/v2/relationships/uids/${relationshipTypeUid}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getObjectRelations(objectType: string, objectId: number): Observable<ObjectRelationship[]> {
         return this.http.get(`/api/${objectType}/${objectId}/relationshipTypes`)
             .pipe(
@@ -158,6 +193,14 @@ export class RelationshipsService extends BaseObservableService {
         return this.deleteDynamicWithResult(this.http, 'intersecttype', id);
     }
 
+    deleteRelationshipType(uid: string): Observable<any> {
+        return this.http.delete('api/v2/relationships/types', { body: [{ uid }]})
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     saveRelationship(relationship: RelationshipDetail): Observable<JsonResult> {
         if (relationship.ID == undefined || !relationship.ID) {
             return this.postDynamic(this.http, 'intersecttype', relationship);
@@ -165,14 +208,14 @@ export class RelationshipsService extends BaseObservableService {
         return this.putDynamic(this.http, 'intersecttype', relationship);
     }
 
-    getRelationshipPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number): Observable<PredicateDropdown[]> {
-        let url = `form/IntersectType_PredicateOptions?subject=${subject}&subjectID=${subjectId}`;
-        if (object != undefined)
-            url = url += `&object=${object}`;
-        if (objectId != undefined)
-            url = url += `&objectID=${objectId}`;
-        if (predicateId != undefined)
-            url = url += `&predicateID=${predicateId}`;
+    getRelationshipPredicates(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<PredicateDropdown[]> {
+        let url = `form/IntersectType_PredicateOptions?subjectUid=${subjectUid}`;
+        if (objectUid != undefined) {
+            url = url += `&objectUid=${objectUid}`;
+        }
+        if (predicateUid != undefined) {
+            url = url += `&predicateUid=${predicateUid}`;
+        }
         return this.http.get(url)
             .pipe(
                 map(response => <PredicateDropdown[]>response),
@@ -196,14 +239,14 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    getObjectOptions(id: number, type: string, selectedId?: number, selectedType?: string, predicateId?: number): Observable<DropdownOption[]> {
-        let url = `form/IntersectType_ObjectOptions?id=${id}&type=${type}`;
-        if (selectedId != undefined)
-            url = url += `&side2ID=${selectedId}`;
-        if (selectedType != undefined)
-            url = url += `&side2Type=${selectedType}`;
-        if (predicateId != undefined)
-            url = url += `&predicateID=${predicateId}`;
+    getObjectOptions(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<DropdownOption[]> {
+        let url = `form/IntersectType_ObjectOptions?subjectUid=${subjectUid}`;
+        if (objectUid != undefined) {
+            url = url += `&objectUid=${objectUid}`;
+        }
+        if (predicateUid != undefined) {
+            url = url += `&predicateUid=${predicateUid}`;
+        }
 
         return this.http.get(url)
             .pipe(

@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
+
 import { RouterModule } from '@angular/router';
 
 import { AutoCompleteModule } from 'primeng/autocomplete';
@@ -38,7 +38,7 @@ import { HeaderBackButtonComponent } from './header-back-button.component';
     imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
 
         //d3s
@@ -76,10 +76,7 @@ import { HeaderBackButtonComponent } from './header-back-button.component';
         HeaderComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 export class HeaderModule { }

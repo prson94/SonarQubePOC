@@ -42,9 +42,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     restrictedPredicateTypes = [
         "Diagram",
         "DiagramUse",
-        "DiagramReference",
-        "InterTypeHierarchy",
-        "IntraTypeHierarchy"
+        "DiagramReference"
     ];
     restrictedTypes = [];
     updateFrequencyOptions: MetricUpdateFrequency[] = [];

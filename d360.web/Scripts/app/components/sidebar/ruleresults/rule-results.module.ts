@@ -35,11 +35,7 @@ import { RuleModule } from '../../rule/rule.module';
         RuleResultsComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS, 
-            useClass: GovernRequestInterceptor,
-            multi: true
-        },
+        
     ]
 })
 export class RuleResultsModule { }

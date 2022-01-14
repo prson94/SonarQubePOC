@@ -1,188 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B12A1078-5835-43B8-AFB2-C3D24C4AA098}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>d360.model</RootNamespace>
-    <AssemblyName>d360.model</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <TargetFrameworkProfile />
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFrameworks>netstandard2.1;net48</TargetFrameworks>
+	  <LangVersion>latest</LangVersion>
+
+	  <DefineConstants Condition=" '$(TargetFramework)' == 'net48' ">RUNNING_ON_NET48</DefineConstants>
+	  <DefineConstants Condition=" '$(TargetFramework)' != 'net48' ">RUNNING_ON_STANDARD</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <OutputPath>bin\Debug\</OutputPath>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Data.Entity.Design" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
+	  <Reference Include="System.Web" />
+	  <Reference Include="System.Data.Entity.Design" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BaseContext.cs" />
-    <Compile Include="CommunityContext.cs" />
-    <Compile Include="CompanyContext_Api.cs" />
-    <Compile Include="CompanyContext_Organization.cs" />
-    <Compile Include="CompanyContext_BulkLoad.cs" />
-    <Compile Include="CompanyContext_Asset.cs" />
-    <Compile Include="CompanyContext_Security.cs" />
-    <Compile Include="CompanyContext_Score.cs" />
-    <Compile Include="CompanyContext_Analytics.cs" />
-    <Compile Include="CompanyContext_Workflow.cs" />
-    <Compile Include="CompanyContext.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccessLayer\ICommentRepository.cs" />
-    <Compile Include="DataAccessLayer\IDataProfileRepository.cs" />
-    <Compile Include="DataAccessLayer\IGraphFilterRepository.cs" />
-    <Compile Include="DataAccessLayer\IIssueRepository.cs" />
-    <Compile Include="DataAccessLayer\IMembershipRepository.cs" />
-    <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
-    <Compile Include="DataAccessLayer\IResourceRepository.cs" />
-    <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
-    <Compile Include="DataAccessLayer\IResponsibilityTypeRepository.cs" />
-    <Compile Include="DataAccessLayer\ISemanticsRepository.cs" />
-    <Compile Include="DataAccessLayer\ISettingsRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\SemanticsRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\CompanyDbConnectionProvider.cs" />
-    <Compile Include="DataAccessLayer\repositories\DapperQueryComposer.cs" />
-    <Compile Include="DataAccessLayer\repositories\DapperRepositoryBase.cs" />
-    <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
-    <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
-    <Compile Include="DataAccessLayer\IScoringRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\FavoritesRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\GraphFilterRepository.cs" />
-    <Compile Include="DataAccessLayer\IProcessRepository.cs" />
-    <Compile Include="DataAccessLayer\IConnectorLabelRepository.cs" />
-    <Compile Include="DataAccessLayer\ICompanyDbConnectionProvider.cs" />
-    <Compile Include="DataAccessLayer\IDapperQueryComposer.cs" />
-    <Compile Include="DataAccessLayer\IDbConnectionProvider.cs" />
-    <Compile Include="DataAccessLayer\IResponsibilityDapperRepository.cs" />
-    <Compile Include="DataAccessLayer\IFavoritesRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
-    <Compile Include="DataAccessLayer\ITagRepository.cs" />
-    <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\CrossReferencesRepository.cs" />
-    <Compile Include="DataAccessLayer\ICrossReferencesRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\AssetRepository.cs" />
-    <Compile Include="DataAccessLayer\IAssetRepository.cs" />
-    <Compile Include="DataAccessLayer\ISurveyRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\MembershipRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\MetricsRepository.cs" />
-    <Compile Include="helpers\udt\ObjectsTableUDT.cs" />
-    <Compile Include="DataAccessLayer\repositories\ProcessRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\ResponsibilityDapperRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\ScoringRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\SettingsRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\SurveyRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\ConnectorLabelRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
-    <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
-    <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
-    <Compile Include="helpers\udt\UDTExtensions.cs" />
-    <Compile Include="helpers\udt\UDTNameAttribute.cs" />
-    <Compile Include="helpers\udt\UDTOrderAttribute.cs" />
-    <Compile Include="DataAccessLayer\repositories\WorkflowRepository.cs" />
-    <Compile Include="DependencyInjectionExtensions.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="helpers\complexFields\ComplexFieldsHelper.cs" />
-    <Compile Include="helpers\CustomJSONContract.cs" />
-    <Compile Include="helpers\filters\IFilterDataProvider.cs" />
-    <Compile Include="helpers\filters\program\FieldValueValidator.cs" />
-    <Compile Include="helpers\filters\program\FilterHelpers.cs" />
-    <Compile Include="helpers\filters\tokens\DefaultFieldToken.cs" />
-    <Compile Include="helpers\filters\tokens\FilterBaseToken.cs" />
-    <Compile Include="helpers\filters\FilterDataProvider.cs" />
-    <Compile Include="helpers\filters\FilterExpressionParser.cs" />
-    <Compile Include="helpers\filters\FilterExpressionParserException.cs" />
-    <Compile Include="helpers\filters\IFilterToken.cs" />
-    <Compile Include="helpers\filters\tokens\ComplexFieldToken.cs" />
-    <Compile Include="helpers\filters\tokens\FieldToken.cs" />
-    <Compile Include="helpers\filters\tokens\OperatorToken.cs" />
-    <Compile Include="helpers\filters\tokens\RelationshipComplexFieldToken.cs" />
-    <Compile Include="helpers\filters\tokens\RelationshipFieldToken.cs" />
-    <Compile Include="helpers\filters\tokens\RelationFieldToken.cs" />
-    <Compile Include="helpers\filters\tokens\OwnerFieldToken.cs" />
-    <Compile Include="IBaseContext.cs" />
-    <Compile Include="ICommunityContext.cs" />
-    <Compile Include="ICompanyContext.cs" />
-    <Compile Include="JobDbContextCreator.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueryConstants.cs" />
-    <Compile Include="DbConnectionExtensions.cs" />
-    <Compile Include="validators\AssetTypeValidator.cs" />
-    <Compile Include="validators\ConnectorLabelValidator.cs" />
-    <Compile Include="validators\FieldApiModelValidator.cs" />
-    <Compile Include="validators\ISurveyApiModelValidator.cs" />
-    <Compile Include="validators\IWorkflowApiModelValidator.cs" />
-    <Compile Include="validators\SurveyApiModelValidator.cs" />
-    <Compile Include="validators\TagValidator.cs" />
-    <Compile Include="validators\WorkflowApiModelValidator.cs" />
-    <Compile Include="validators\WorkHttpStatus.cs" />
-    <Compile Include="workflow\WorkflowCriteriaExpressionModel.cs" />
-    <Compile Include="workflow\WorkflowEventRegistrationSettingsModel.cs" />
-    <Compile Include="workflow\WorkflowFieldUpdateSettings.cs" />
-    <Compile Include="workflow\WorkflowFormFieldModel.cs" />
-    <Compile Include="workflow\WorkflowFormFormModel.cs" />
-    <Compile Include="workflow\WorkflowFormModel.cs" />
-    <Compile Include="workflow\WorkflowHttpRequestSettingsModel.cs" />
-    <Compile Include="workflow\WorkflowHttpResponseSettingsModel.cs" />
-    <Compile Include="workflow\WorkflowItemStepSettingsModel.cs" />
-    <Compile Include="workflow\WorkflowRegistrationCriteriaProcessor.cs" />
-    <Compile Include="workflow\WorkflowRegistrationSettingsModel.cs" />
-    <Compile Include="workflow\WorkflowRelationshipUpdateSettings.cs" />
-    <Compile Include="workflow\WorkflowStatusModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
+	
+  <ItemGroup>	  
     <ProjectReference Include="..\d360.core\d360.core.csproj">
       <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
       <Name>d360.core</Name>
@@ -196,83 +28,28 @@
       <Name>d360.utils.excel</Name>
     </ProjectReference>
   </ItemGroup>
+
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
+    <PackageReference Include="Autofac" Version="6.2.0" />
+    <PackageReference Include="Dapper" Version="2.0.90" />
+    <PackageReference Include="Dapper.ParameterExtensions" Version="2018.12.7.1" />
+    <PackageReference Include="DapperExtensionsReloaded" Version="5.0.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.14.0" />
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />
+    <PackageReference Include="HtmlSanitizer" Version="5.0.404" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.13.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SpreadsheetLight" Version="3.5.0" />
+    <PackageReference Include="System.ComponentModel.EventBasedAsync" Version="4.3.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.0" />
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Autofac">
-      <Version>6.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="Dapper">
-      <Version>2.0.90</Version>
-    </PackageReference>
-    <PackageReference Include="Dapper.ParameterExtensions">
-      <Version>2018.12.7.1</Version>
-    </PackageReference>
-    <PackageReference Include="DapperExtensionsReloaded">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="DocumentFormat.OpenXml">
-      <Version>2.14.0</Version>
-    </PackageReference>
-    <PackageReference Include="EntityFramework">
-      <Version>6.4.4</Version>
-    </PackageReference>
-    <PackageReference Include="HtmlAgilityPack">
-      <Version>1.11.24</Version>
-    </PackageReference>
-    <PackageReference Include="HtmlSanitizer">
-      <Version>5.0.404</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.ApplicationInsights">
-      <Version>2.13.1</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="SpreadsheetLight">
-      <Version>3.5.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.ComponentModel.EventBasedAsync">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>4.7.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Dynamic.Runtime">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Linq.Queryable">
-      <Version>4.3.0</Version>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="PluralizeService.Core">
+      <Version>1.2.21147.2</Version>
     </PackageReference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
 </Project>

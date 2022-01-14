@@ -1,8 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
+
+
 import { RouterModule } from '@angular/router';
 
 import { ButtonModule } from 'primeng/button';
@@ -65,7 +65,7 @@ import { AssetEditorModule } from './asset-editor/asset-editor.module';
     , imports: [
         CommonModule,
         FormsModule,
-        HttpClientModule,
+
         RouterModule,
         
         //primeng
@@ -100,10 +100,7 @@ import { AssetEditorModule } from './asset-editor/asset-editor.module';
         ResourceMultiSelectGridModule,
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
+
     ]
 })
 

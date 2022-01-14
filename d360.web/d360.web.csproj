@@ -625,6 +625,7 @@
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AssetService.cs" />
+    <Compile Include="Services\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Services\Favorites\FavoriteRouteMatcher.cs" />
     <Compile Include="Services\Favorites\FavoriteRouteMatcherService.cs" />
     <Compile Include="Services\Favorites\GetFavoritesQuery.cs" />

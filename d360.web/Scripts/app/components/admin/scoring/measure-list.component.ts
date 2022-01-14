@@ -11,6 +11,7 @@ import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AppSettingsEnum } from '../../../models/settings.model';
+import { ScoreService } from '../../../services/score.service';
 
 @Component({
     selector: 'measure-list',
@@ -60,6 +61,8 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     showDelete: boolean = false;
 
     private isHistoryModalVisible: boolean = false;
+    private isRecalculateModalVisible: boolean = false;
+    private isCallingRecalculate: boolean = false;
 
     todayAndEffectiveDateAreSame(item: MetricAssetViewModel): boolean {
         if (item) {
@@ -80,6 +83,8 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                 break;
             case 'Disable': this.delete();
                 break;
+            case 'Recalculate': this.showRecalculate(true);
+                break;
         }
 
         if ($event.value.toString().indexOf('Version History') != -1)
@@ -95,6 +100,9 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         },
         {
             "title": "Version History"
+        },
+        {
+            "title": "Recalculate"
         }
     ];
     private disabledMenu = [
@@ -107,7 +115,8 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         private metricsService: MetricsService,
         private allocationService: AllocationService,
         protected messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+        private scoreService: ScoreService    ) {
         super(settingsService);
 
         let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
@@ -272,6 +281,26 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     public showHistory(isHistoryVisible: boolean) {
         this.isHistoryModalVisible = isHistoryVisible;
     }
+
+    //#region Recalculate
+
+    public cancelRecalculate() {
+        this.showRecalculate(false);
+    }
+
+    public recalculate() {
+        this.isCallingRecalculate = true;
+        this.scoreService.recalculateMeasure(this.allocation.uid, this.selection.Uid).subscribe((returnValue) => {
+            this.isCallingRecalculate = false;
+            this.showRecalculate(false);
+        });
+    }
+
+    public showRecalculate(isRecalculateVisible: boolean) {
+        this.isRecalculateModalVisible = isRecalculateVisible;
+    }
+
+    //#endregion
 
     getAsPrecentage(val: number) {
         if (val == 0)

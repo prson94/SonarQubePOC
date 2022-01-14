@@ -107,6 +107,9 @@ namespace d360.core.entities
 
     public class GetSemantic : SemanticBase
     {
+        [JsonProperty("uid")]
+        public Guid Uid { get; set; }
+
         [JsonProperty("createdBy")]
         public SemanticUserModel CreatedBy { get; set; }
 
@@ -158,6 +161,8 @@ namespace d360.core.entities
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ID { get; set; }
+
+        public Guid Uid { get; set; }
 
         public int CreatedBy { get; set; }
 
@@ -238,6 +243,7 @@ namespace d360.core.entities
                 Source = model.Source,
                 Status = model.Status,
                 Threshold = model.Threshold,
+                Uid = model.Uid,
                 UpdatedBy = new SemanticUserModel
                 {
                     FullName = updatedBy.FullName,
@@ -269,13 +275,14 @@ namespace d360.core.entities
                 Minimum = model.Minimum,
                 MinimumSamples = model.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent,
-                Name = model.Name,
+                Name = (model.Name ?? "").Trim(),
                 Priority = model.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression,
                 Source = SemanticSource.UserDefined,
                 Status = model.Status,
                 Threshold = model.Threshold,
+                Uid = Guid.NewGuid(),
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
                 ValidLocalesStructured = model.ValidLocalesStructured,
@@ -311,13 +318,14 @@ namespace d360.core.entities
                 Minimum = model.Minimum,
                 MinimumSamples = model.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent,
-                Name = model.Name,
+                Name = (model.Name ?? "").Trim(),
                 Priority = model.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression,
                 Source = existing.Source,
                 Status = model.Status,
                 Threshold = model.Threshold,
+                Uid = existing.Uid,
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
                 ValidLocalesStructured = model.ValidLocalesStructured,
@@ -353,13 +361,14 @@ namespace d360.core.entities
                 Minimum = model.Minimum ?? existing.Minimum,
                 MinimumSamples = model.MinimumSamples ?? existing.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent ?? existing.MinMaxPresent,
-                Name = model.Name ?? existing.Name,
+                Name = (model.Name ?? existing.Name).Trim(),
                 Priority = model.Priority ?? existing.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression ?? existing.RegularExpression,
                 Source = existing.Source,
                 Status = model.Status ?? existing.Status,
                 Threshold = model.Threshold ?? existing.Threshold,
+                Uid = existing.Uid,
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
                 ValidLocalesStructured = (model.ValidLocalesStructured != null) ? model.ValidLocalesStructured : existing.ValidLocalesStructured,
@@ -483,9 +492,19 @@ namespace d360.core.entities
                 errors.Add("Both Minimum AND Maximum must contain values for MinMaxPresent to be used. Otherwise it must be removed.");
             }
 
+            if (string.IsNullOrEmpty(model.Name))
+            {
+                errors.Add("Name must contain a value.");
+            }
+
             if (model.Priority < 1)
             {
                 errors.Add("Priority must contain a value of 1 or greater.");
+            }
+
+            if (string.IsNullOrEmpty(model.Qualifier))
+            {
+                errors.Add("Qualifier must contain a value.");
             }
 
             if (model.Threshold < 0 || model.Threshold > 100)
