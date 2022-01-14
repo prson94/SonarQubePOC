@@ -1209,6 +1209,22 @@ export class BaseComponent {
         return +url.split("/")[url.split.length - 1];
     }
 
+    public getAsRawPrecentage(val: number, decimals: number): string {
+        if (val == undefined || val == null)
+            return 'undefined';
+
+        if (val == 0)
+            return '0%';
+        if (!val)
+            return;
+        if (val >= 1)
+            return '100%'
+
+        let s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+
+        return s;
+    }
+
     public getAsPrecentage(val: number): string {
         if (val == undefined || val == null)
             return 'undefined';

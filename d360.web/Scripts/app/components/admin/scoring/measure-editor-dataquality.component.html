@@ -13,6 +13,7 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="row">
                         <label for="description" class="ig-label">Description</label>
                         <textarea igTextArea
@@ -71,6 +72,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="row" *ngIf="!isExternallyCalculated">
                         <ng-container *ngIf="!parentUid && !model.ParentUid">
                             <label for="isGroup" class="ig-label">Grouping Measure  <ng-container *ngTemplateOutlet="groupTooltip"></ng-container></label>
@@ -80,7 +82,45 @@
                                        (onChange)="onGroupChange($event)"></ig-switch>
                         </ng-container>
                     </div>
-                </div><br />
+
+                    <div class="row" *ngIf="!isExternallyCalculated">
+                        <ng-container *ngIf="!model.IsGroup">
+                            <label for="hasThreshold" class="ig-label">
+                                Use Pass Threshold
+                                <ng-container *ngTemplateOutlet="thresholdTooltip"></ng-container>
+                            </label>
+                            <ig-switch tabindex="5"
+                                       formControlName="hasThreshold"
+                                       [(ngModel)]="model.HasThreshold"
+                                       (onChange)="onThresholdChange($event)"></ig-switch>
+                        </ng-container>
+                    </div>
+
+                    <div class="row" *ngIf="!isExternallyCalculated">
+                        <ng-container *ngIf="!model.IsGroup && model.HasThreshold">
+                            <label for="threshold" class="ig-label">
+                                Pass Threshold(%)
+                            </label>
+                            <ig-number-input [tabindex]="4"
+                                             [required]="true"
+                                             [min]="1"
+                                             [max]="100"
+                                             [step]="0.001"
+                                             formControlName="threshold"
+                                             [(ngModel)]="displayThreshold"></ig-number-input>
+                             
+                            <div *ngIf="metricForm.get('threshold').invalid && (metricForm.get('threshold').dirty || metricForm.get('threshold').touched)">
+                                <div *ngIf="metricForm.get('threshold').errors?.outOfRange" class="ig-text-required">
+                                    Please enter a value between 1 and 100.
+                                </div>
+                                <div *ngIf="metricForm.get('threshold').errors?.decimalLimit" class="ig-text-required">
+                                    Please enter a value with a maximum of 3 decimal places of accuracy.
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+                <br />
             </ig-property-group>
 
             <ig-property-group [igformGroup]="metricForm" [title]="'Rule Results'" [showMoreInfo]="true" [moreInfoHtml]="ruleResultsTooltip" *ngIf="!model.IsGroup && model.Definition && model.Definition.DataQuality">
@@ -145,6 +185,7 @@
                     </div>
                 </div>
             </ig-property-group>
+            
             <ig-property-group 
                                [igformGroup]="metricForm" 
                                [title]="'Asset Conditions and Weighting'" 
@@ -163,12 +204,44 @@
                                 Condition Group {{cg.DisplayOrder}}
                             </div>
                             <div class="input-actions">
-                                <div class="weight-container">
-                                    <div class="weight-row">
-                                        <label for="weight" class="ig-label right">
-                                            Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
-                                        </label>
+                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Condition Group Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                <ig-popup-menu (onSelect)="menuClicked($event, cg.DisplayOrder, cg.Position)" [items]="menuOptions(cg.DisplayOrder != 1, cg.DisplayOrder != conditionGroups.length)" #menu [tabIndex]="1"></ig-popup-menu>
+                            </div>
+                        </div>
+                        <div class="condition-overrides-row">
+                            <div>
+                                <div *ngIf="model.HasThreshold">
+                                    <label for="threshold" class="ig-label">
+                                        Pass Threshold(%) <ng-container *ngTemplateOutlet="conditionThresholdTooltip"></ng-container>
+                                    </label>
+
+                                    <div class="input">
                                         <ig-number-input [tabindex]="4"
+                                                            placeholder="{{displayThreshold}}"
+                                                            [min]="1"
+                                                            [max]="100"
+                                                            [step]="1"
+                                                            name="cg_{{cg.Position}}_threshold"
+                                                            formControlName="cg_{{cg.Position}}_threshold"
+                                                            [(ngModel)]="cg.DisplayThreshold"></ig-number-input>
+                                        <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').invalid && (metricForm.get('cg_'+ cg.Position + '_threshold').dirty || metricForm.get('cg_'+ cg.Position + '_threshold').touched)">
+                                            <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').errors?.outOfRange" class="ig-text-required">
+                                                Please enter a value between 1 and 100
+                                            </div>
+                                            <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').errors?.decimalLimit" class="ig-text-required">
+                                                Please enter a value with a maximum of 3 decimal places of accuracy.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div>
+                                    <label for="weight" class="ig-label right">
+                                        Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
+                                    </label>
+                                    <div class="input">
+                                        <ig-number-input [tabindex]="5"
                                                          placeholder="{{displayWeight}}"
                                                          [min]="1"
                                                          [max]="100"
@@ -176,15 +249,13 @@
                                                          name="cg_{{cg.Position}}_weight"
                                                          formControlName="cg_{{cg.Position}}_weight"
                                                          [(ngModel)]="cg.DisplayWeight"></ig-number-input>
-                                    </div>
-                                    <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').invalid && (metricForm.get('cg_'+ cg.Position + '_weight').dirty || metricForm.get('cg_'+ cg.Position + '_weight').touched)">
-                                        <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').errors?.outOfRange" class="ig-text-required">
-                                            Please enter a value between 1 and 100
+                                        <div class="override-validator" *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').invalid && (metricForm.get('cg_'+ cg.Position + '_weight').dirty || metricForm.get('cg_'+ cg.Position + '_weight').touched)">
+                                            <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').errors?.outOfRange" class="ig-text-required">
+                                                Please enter a value between 1 and 100
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Condition Group Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
-                                <ig-popup-menu (onSelect)="menuClicked($event, cg.DisplayOrder, cg.Position)" [items]="menuOptions(cg.DisplayOrder != 1, cg.DisplayOrder != conditionGroups.length)" #menu [tabIndex]="1"></ig-popup-menu>
                             </div>
                         </div>
                         <div class="cg-field-group-container">
@@ -231,5 +302,17 @@
 <ng-template #conditionWeightTooltip>
     <div class="info-tip">
         <i class="fa fa-question-circle" pTooltip="{{conditionWeightTootlip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+    </div>
+</ng-template>
+
+<ng-template #thresholdTooltip>
+    <div class="info-tip">
+        <i class="fa fa-question-circle" pTooltip="{{thresholdTooltipText}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+    </div>
+</ng-template>
+
+<ng-template #conditionThresholdTooltip>
+    <div class="info-tip">
+        <i class="fa fa-question-circle" pTooltip="{{thresholdOverrideTooltipText}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
     </div>
 </ng-template>

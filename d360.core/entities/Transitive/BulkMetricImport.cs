@@ -17,6 +17,8 @@ namespace d360.core.entities
         [DataMember]
         public string Weight { get; set; }
         [DataMember]
+        public float? Threshold { get; set; }
+        [DataMember]
         public string MatchType { get; set; }
         
         [DataMember]
@@ -58,6 +60,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string Description { get; set; }
+
+        [DataMember]
+        public float? Threshold { get; set; }
 
         [DataMember]
         public decimal Weight { get; set; }
