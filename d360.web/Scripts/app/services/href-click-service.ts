@@ -1,6 +1,8 @@
 ﻿import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
+import { AdminBaseComponent } from '../components/admin/admin-base.component';
+import { ArtifactItemComponent } from '../components/artifact/artifact-item.component';
 
 export enum AssetDetailClickType {
     Undefined = 'Undefined',
@@ -29,10 +31,11 @@ export class LinkClickInterceptor {
 
     constructor(private router: Router) { }
 
-    sendEvent(origEvent: any, data: any, url: string) {
+    sendEvent(origEvent: any, data: any, url: string, valueIndex = 0) {
         var adcEv = new AssetDetailClickEvent();
         adcEv.type = AssetDetailClickType.Undefined;
         adcEv.url = url;
+
         if (origEvent) {
             origEvent.preventDefault();
             origEvent.stopPropagation();
@@ -60,7 +63,7 @@ export class LinkClickInterceptor {
                     adcEv.type = AssetDetailClickType.User;
                     adcEv.objectType = "Resource";
                     adcEv.uid = data.item.ResourceUid;
-                    if (data.item.SecurityAssetUid) {
+                    if (data.item.SecurityAssetUid && !data.item.ResourceUid) {
                         adcEv.uid = data.item.SecurityAssetUid;
                     }
                 }
@@ -71,7 +74,7 @@ export class LinkClickInterceptor {
                 || data.DataType === "color"
             ) {
                 //list fields
-                var val = data.Values[0];
+                var val = data.Values[valueIndex];
                 adcEv.event = origEvent;
                 adcEv.type = data.FieldName !== "ReferenceList" ? AssetDetailClickType.Asset : AssetDetailClickType.ReferenceItem;
                 adcEv.data = data;
@@ -115,7 +118,7 @@ export class LinkClickInterceptor {
             }
 
             if (data.DataType === "Relationship") {
-                var valRel = data.Values[0];
+                var valRel = data.Values[valueIndex];
                 adcEv.event = origEvent;
                 adcEv.type = data.FieldName !== "ReferenceItem" ? AssetDetailClickType.Asset : AssetDetailClickType.ReferenceItem;
                 adcEv.data = data;
@@ -150,5 +153,32 @@ export class LinkClickInterceptor {
 
     getEvents(): Observable<AssetDetailClickEvent> {
         return this.subject.asObservable();
+    }
+
+
+    handleEvent(baseComponent: any, event: AssetDetailClickEvent) {
+        baseComponent.selectedAsset = null;
+        baseComponent.selectedReferenceItem = null;
+        baseComponent.selectedTag = null;
+
+        if (event.type === AssetDetailClickType.Asset) {
+            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };
+        }
+
+        if (event.type === AssetDetailClickType.ReferenceItem) {
+            baseComponent.selectedReferenceItem = { uid: event.assetTypeUid, assetUid: event.uid, type: event.objectType, url: event.url };
+        }
+
+        if (event.type === AssetDetailClickType.User || event.type === AssetDetailClickType.Group) {
+            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };
+        }
+
+        if (event.type === AssetDetailClickType.Tag) {
+            baseComponent.selectedTag = { uid: event.uid };
+        }
+
+        if (event.type !== AssetDetailClickType.Undefined) {
+            baseComponent.sidePanelOpen = true;
+        }
     }
 }
