@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
-import { LookupGrid, GridFilterColumn, LookupGridField, GridField } from "../../../models/grid-definition.model";
+import { LookupGrid, GridFilterColumn, LookupGridField } from "../../../models/grid-definition.model";
 import { NavigationEnd, Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";
@@ -242,7 +242,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
             .subscribe((result) => {
                 if (result) {
                     this.data = result;
-                    console.log(result);
                     this.loadInitialInfo();
                 }
                 this.isLoading = false;
