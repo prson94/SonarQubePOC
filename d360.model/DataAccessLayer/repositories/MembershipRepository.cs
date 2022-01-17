@@ -94,6 +94,44 @@ namespace d360.model.DataAccessLayer
             var fieldTypes = CompanyContext.FieldTypes.Where(f => f.Object == "GroupType" && f.ObjectID == 1).ToList();
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+                {
+                    var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+                    if (!string.IsNullOrEmpty(simpleFilter))
+                    {
+                        simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+
+                        dbArgs.Add("@simpleFilter", simpleFilter);
+
+                        List<string> simpleFilters = new List<string>();
+                        //There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
+                        foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
+                        {
+                            if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
+                            {
+                                string ftformatted = $@"F{ft.ID}.FormattedValue";
+                                simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
+                            }
+                            else if (ft.Type == DataType.Counter.ToString())
+                            {
+                                simpleFilters.Add($"('{ft.CounterPrefix}' + CAST(F{ft.ID}.FormattedValue as nvarchar(max))) like @simpleFilter");
+                            }
+                            else
+                            {
+                                simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                            }
+                        }
+
+                        simpleFilters.Add($"G.Name like @simpleFilter");
+
+                        condition.Add($"({string.Join(" or ", simpleFilters)})");
+                    }
+                }
+            }
+
+
             var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
             var sql = $@"
                    Select 

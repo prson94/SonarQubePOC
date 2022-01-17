@@ -769,7 +769,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false)
+            SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false)
         ]
         public async Task<IHttpActionResult> GetGroups()
         {

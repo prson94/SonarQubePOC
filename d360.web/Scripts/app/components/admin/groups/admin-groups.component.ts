@@ -92,7 +92,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
             this.loadSub.unsubscribe();
         }
 
-        this.loadSub = forkJoin(this.gridDefinitionService.getGridDefinition(1, "GroupType"), this.groupService.getGroups())
+        this.loadSub = forkJoin(this.gridDefinitionService.getGridDefinition(1, "GroupType"), this.groupService.getGroups(this.simpleTextFilter))
             .subscribe((res) => {
                 var result = res[0];
                 var d = res[1];
@@ -158,6 +158,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     }
 
     onSimpleSearch($event) {
-
+        console.log("here");
+        this.load();
     }
 }
