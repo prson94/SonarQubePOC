@@ -39,9 +39,9 @@ export class AssetDetailFieldComponent {
         }
     }
 
-    navigate(url: string, e: any) {
+    navigate(url: string, e: any, item = null) {
         if (this.interceptLinkClick) {
-            this.linkClickInterceptor.sendEvent(e, this.field, SiteUrlHelpers.convertClassicUrl(url));
+            this.linkClickInterceptor.sendEvent(e, this.field, SiteUrlHelpers.convertClassicUrl(url), item !== null ? this.field.Values.indexOf(item) : 0);
             return;
         }
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));

@@ -68,25 +68,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         });
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            this.selectedAsset = null;
-            this.selectedReferenceItem = null;
-            this.selectedTag = null;
-
-            if (ev.type === AssetDetailClickType.Asset) {
-                this.selectedAsset = { uid: ev.uid, type: ev.objectType };
-            }
-
-            if (ev.type === AssetDetailClickType.ReferenceItem) {
-                this.selectedReferenceItem = { uid: ev.assetTypeUid, assetUid: ev.uid, type: ev.objectType, url: ev.url };
-            }
-
-            if (ev.type === AssetDetailClickType.User || ev.type === AssetDetailClickType.Group) {
-                this.selectedAsset = { uid: ev.uid, type: ev.objectType };
-            }
-
-            if (ev.type === AssetDetailClickType.Tag) {
-                this.selectedTag = { uid: ev.uid };
-            }
+            this.linkClickInterceptor.handleEvent(this, ev);
         });
 
         this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;

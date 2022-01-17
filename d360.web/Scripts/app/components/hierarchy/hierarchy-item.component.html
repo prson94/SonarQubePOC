@@ -15,6 +15,7 @@
                 <div class="tile tile-detail side-panel">
                     <side-panel (expandedChange)="sidePanelOpen=$event"
                                 [hasProfiling]="false"
+                                [expanded]="sidePanelOpen"
                                 [storageKey]="sidePanelStorageKey"
                                 (selectedPanelChange)="sidePanelTab=$event"
                                 [selectedPanel]="sidePanelTab"

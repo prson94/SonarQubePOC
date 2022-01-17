@@ -16,6 +16,7 @@
                 </div>
                 <div *ngIf="showSidePanel" class="tile tile-detail side-panel">
                     <side-panel (expandedChange)="sidePanelOpen=$event"
+                                [expanded]="sidePanelOpen"
                                 [hasProfiling]="showDataProfile"
                                 [storageKey]="sidePanelStorageKey"
                                 (selectedPanelChange)="sidePanelTab=$event"
