@@ -2038,7 +2038,16 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             var list = new List<EditableField>();
 
-            var group = Company.Groups.FirstOrDefault(x => x.ID == groupId);
+            var group = Company.Query<Group>(@"select gr_prim.uid as 'PrimaryOwnerUid',
+                        gr_sec.uid as 'SecondaryOwnerUid',
+                        gr_prim.LastName + ', ' + gr_prim.FirstName as 'PrimaryOwnerName',
+                        gr_sec.LastName + ', ' + gr_sec.FirstName as 'SecondaryOwnerName'
+                        , g.* from
+                        [group] g
+                        left join reporting.global_resource gr_prim on gr_prim.resourceid = g.primaryownerresourceid
+                        left join reporting.global_resource gr_sec on gr_sec.resourceid = g.secondaryownerresourceid
+                        where g.id = @groupId
+                        ", new { groupId }).FirstOrDefault();
 
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = group.Uid.ToString() });
 

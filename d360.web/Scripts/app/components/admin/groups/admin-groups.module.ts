@@ -30,6 +30,7 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { AssetEditorModule } from '../../shared/asset-editor/asset-editor.module';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -61,7 +62,8 @@ import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.com
         SiteModalModule,
         AssetEditorModule,
         PropertyGroupModule,
-        PopupMenuModule
+        PopupMenuModule,
+        SearchFieldModule
     ],
     declarations: [
         AdminGroupsComponent

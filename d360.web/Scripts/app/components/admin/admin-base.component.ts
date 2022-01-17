@@ -23,7 +23,6 @@ export class AdminBaseComponent extends BaseComponent {
     @ViewChildren('treetableRows') treeTableElements: any;
     private isDefaultTreeValuesSet: boolean = false;
 
-
     constructor(
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected titleService: Title,
@@ -66,4 +65,5 @@ export class AdminBaseComponent extends BaseComponent {
             }
         }
     }
+
 }

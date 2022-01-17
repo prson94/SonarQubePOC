@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -21,7 +21,9 @@ declare var CurrentResourceID;
     selector: 'd3s-admin-groups',
     providers: [GroupService],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './admin-groups.component.html'
+    templateUrl: './admin-groups.component.html',
+    styleUrls: ['admin-groups.component.less'],
+    encapsulation: ViewEncapsulation.None
 })
 
 export class AdminGroupsComponent extends AdminBaseComponent implements OnDestroy {
@@ -38,6 +40,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     sidePanelLoading: boolean = false;
     sidePanelStorageKey: string;
     sidePanelTab: string = 'detail';
+
+    simpleTextFilter: string = '';
 
     columns: GridColumn[] = [];
     fields: GridField[] = [];
@@ -151,5 +155,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         } else if (key === 'delete') {
             this.deleteGroup(item);
         }
+    }
+
+    onSimpleSearch($event) {
+
     }
 }

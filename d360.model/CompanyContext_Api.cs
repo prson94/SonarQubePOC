@@ -11016,7 +11016,7 @@ EG.GroupUid
                                     }
 
                                     var fieldValuesSql = $@"select 		     
-                                         A.Object as [ObjectType]
+                                         A.Object as [Object]
                                         ,A.ObjectId as [ObjectID]
                                         ,F.FieldTypeID as [FieldTypeID]
                                         ,case 

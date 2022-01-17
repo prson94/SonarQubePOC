@@ -774,6 +774,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             }
         }
 
+        var upsertSub = this.groupsService.postGroup(group);
+
         let rootProperties: string[] = ['Name','Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
         for (var p in values) {
             if (rootProperties.some((prop) => prop.toUpperCase() === p.toUpperCase())) {
@@ -782,10 +784,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             else {
                 group.Fields[p] = values[p];
             }
+
+            if (p.toUpperCase() === "UID") {
+                upsertSub = this.groupsService.putGroup(group);
+            }
         }
 
-        this.groupsService.postGroup(group)
-            .subscribe((data) => {
+        upsertSub.subscribe((data) => {
                 var res = data[0];
                 event.Success = res.Success;
 

@@ -1,9 +1,29 @@
-﻿<div class="row">
+﻿<div class="row admin-group-list">
     <div class="col s12" style="display: flex">
-        <div class="tile tile-detail">
-            <header>Groups<d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
+        <div class="tile tile-detail admin-group-details">
+            <div class="actions-header">
+                <div class="simple-search">
+                    <ig-search-field mode="Keypress"
+                                     [debounce]="600"
+                                     (onSearch)="onSimpleSearch($event)"
+                                     [(ngModel)]="simpleTextFilter"
+                                     [infoTooltip]="simpleSearchTooltipHTML">
+                    </ig-search-field>
+                </div>
+                <div class="grid-action-buttons">
+                    <button igButton
+                            pTooltip="Create new asset"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            class="ig-button-primary"
+                            icon="fa-plus"
+                            (click)="add()">
+                    </button>
+                </div>
+            </div>
+
+
             <div id="List" *ngIf="formMode === FormMode.Default">
-                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                 <p-table #dt [value]="groupItems"
                          selectionMode="single"
                          [metaKeySelection]="true"
