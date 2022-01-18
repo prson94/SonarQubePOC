@@ -61,7 +61,7 @@ export class CodeArea implements ControlValueAccessor {
             switch (this.codeType.toLocaleLowerCase()) {
                 case "css":
                     this.editorConfig.mode = { name: "css", json: false };
-                    this.validationMessage = "CSS is not well formed. Please review and update."
+                    this.validationMessage = "CSS is not well formed. Please review and update.";
                     break;
                 default:
                     this.editorConfig.mode = { name: "javascript", json: true };
@@ -102,7 +102,7 @@ export class CodeArea implements ControlValueAccessor {
         if (this.codeType.toLocaleLowerCase() === "json") {
             let json = this.value;
             try {
-                if (json && json.trim() != "") {
+                if (json && json.trim() !== "") {
                     let j = JSON.parse(json);
                 }
                 this.valid = true;
