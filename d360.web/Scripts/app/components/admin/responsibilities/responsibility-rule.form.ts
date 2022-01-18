@@ -185,8 +185,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             .subscribe((d) => {
                 this.whenFieldTypes = d.FieldTypes;
                 this.whenIntersectTypes = d.IntersectTypes;
-                this.whenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
-                this.whenIntersectTypes.unshift({ label: "Choose...", value: null });
+                let excluded = this.whenFieldTypes.findIndex(a => a.label == "Choose...");
+                if (excluded < 0) {
+                    this.whenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
+                }
+                excluded = this.whenIntersectTypes.findIndex(a => a.label == "Choose...");
+                if (excluded < 0) {
+                    this.whenIntersectTypes.unshift({ label: "Choose...", value: null });
+                }
             });
 
         return Promise.all(promises).then(() => { });
@@ -218,7 +224,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 selectedFieldType = _.cloneDeep(selectedFieldType);
                 item.FieldTypeName = selectedFieldType.label;
                 if (selectedFieldType.isLookup) {
-                    selectedFieldType.values.unshift({ label: "Choose...", value: null });
+                    let excluded = selectedFieldType.values.findIndex(a => a.label == "Choose...");
+                    if (excluded < 0) {
+                        selectedFieldType.values.unshift({ label: "Choose...", value: null });
+                    }
+
                     item.ValueOptions = selectedFieldType.values;
                     item.IsLookup = selectedFieldType.isLookup;
                 }
@@ -375,11 +385,16 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     private loadValuesForIntersectType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
+        item.IsloadValuesForIntersectType = true;
         this.responsibilityTypeService.getRelationRuleFormDataRelationshipsForDropdown(this.model.Object, this.model.ObjectID, item.IntersectTypeID)
             .subscribe((d) => {
+                item.IsloadValuesForIntersectType = false;
                 item.IsBool = false;
                 item.ValueOptions = d;
-                item.ValueOptions.unshift({ label: "Choose...", value: null });
+                let excluded = item.ValueOptions.findIndex(a => a.label == "Choose...");
+                if (excluded < 0) {
+                    item.ValueOptions.unshift({ label: "Choose...", value: null });
+                }
             });
         return null;
     }
