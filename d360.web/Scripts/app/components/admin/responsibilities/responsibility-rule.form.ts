@@ -185,11 +185,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             .subscribe((d) => {
                 this.whenFieldTypes = d.FieldTypes;
                 this.whenIntersectTypes = d.IntersectTypes;
-                let excluded = this.whenFieldTypes.findIndex(a => a.label == "Choose...");
+                let excluded = this.whenFieldTypes.findIndex((a) => a.label === "Choose...");
                 if (excluded < 0) {
                     this.whenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
                 }
-                excluded = this.whenIntersectTypes.findIndex(a => a.label == "Choose...");
+                excluded = this.whenIntersectTypes.findIndex((a) => a.label === "Choose...");
                 if (excluded < 0) {
                     this.whenIntersectTypes.unshift({ label: "Choose...", value: null });
                 }
@@ -391,7 +391,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.IsloadValuesForIntersectType = false;
                 item.IsBool = false;
                 item.ValueOptions = d;
-                let excluded = item.ValueOptions.findIndex(a => a.label == "Choose...");
+                let excluded = item.ValueOptions.findIndex((a) => a.label === "Choose...");
                 if (excluded < 0) {
                     item.ValueOptions.unshift({ label: "Choose...", value: null });
                 }
