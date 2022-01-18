@@ -451,7 +451,7 @@ select	cast(0 as bit) as IsUsed,
 		end + P.[Path] as [Path]
 from	AssetType A
 		cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P  
-where	Class in (1, 2, 6, 7, 8, 9)
+where	Class in (1, 2, 6, 7, 8, 9) and ObjectID > 0
 order by case Object
 			when 'ArtifactType' then
 				case Class
