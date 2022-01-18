@@ -177,9 +177,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 this.dataProfile.topK.forEach((t) => {
                     let value = this.dataProfile.cardinalityDetail.find((cd) => cd.key === t);
                     if (value) {
-                        this.topSamples.push(value)
-                    }                    
-                })
+                        this.topSamples.push(value);
+                    }
+                });
                 if (this.numberTypes.indexOf(this.dataProfile.type?.toLowerCase()) >= 0) {
                     this.topSamples = this.topSamples.sort((a, b) => (b.key - a.key));
                 }
@@ -188,9 +188,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 this.dataProfile.bottomK.forEach((b) => {
                     let value = this.dataProfile.cardinalityDetail.find((cd) => cd.key === b);
                     if (value) {
-                        this.bottomSamples.push(value)
+                        this.bottomSamples.push(value);
                     }
-                })
+                });
                 if (this.numberTypes.indexOf(this.dataProfile.type?.toLowerCase()) >= 0) {
                     this.bottomSamples = this.bottomSamples.sort((a, b) => (a.key - b.key));
                 }
