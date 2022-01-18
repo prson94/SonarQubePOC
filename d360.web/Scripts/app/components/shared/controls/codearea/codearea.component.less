@@ -4,7 +4,7 @@
   font-family: 'Source Code Pro';
   font-style: normal;
   font-weight: 400;
-  src: url('/fonts/source-code-pro/SourceCodePro-Regular.ttf') format('truetype')
+  src: url('/fonts/source-code-pro/SourceCodePro-Regular.ttf') format('truetype');
 }
 
 .ig-codearea {
@@ -65,28 +65,26 @@
       }
     }
 
-    span.cm-string:not(.cm-property) {
-      color: @ig-green;
-
-      .backslash {
-        color: @ig-coral;
-      }
-    }
-
     span.cm-string {
       color: @ig-black;
 
       &:not(.cm-property) {
         color: @ig-green;
-
-        .backslash {
-          color: @ig-coral;
-        }
       }
     }
 
     span.cm-number {
       color: @ig-red;
+    }
+  }
+
+  &.disabled {
+    opacity: 33%;
+
+    .CodeMirror {
+      &.CodeMirror-focused {
+        box-shadow: none;
+      }
     }
   }
 
@@ -104,9 +102,8 @@
         box-shadow: none;
       }
 
-      .CodeMirror-sizer {
-        background: @ig-grey;
-        opacity: 4%;
+      .CodeMirror-scroll {
+        background-color: rgba(111, 116, 130, 0.04);
       }
     }
   }
@@ -115,16 +112,6 @@
     .CodeMirror:not(.CodeMirror-empty) {
       .CodeMirror-scroll {
         background: @ig-red-t5;
-      }
-    }
-  }
-
-  &.disabled {
-    opacity: 33%;
-
-    .CodeMirror {
-      &.CodeMirror-focused {
-        box-shadow: none;
       }
     }
   }
