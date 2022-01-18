@@ -136,7 +136,7 @@ namespace d360.model.DataAccessLayer
             var sql = $@"
                    Select 
                        A.Uid,
-                       {(fieldColumns.Count > 0 ? string.Join(",\n", fieldColumns) : "")}
+                       {(fieldColumns.Count > 0 ? string.Join(",\n", fieldColumns) + "," : "")}
                        G.Name,
                        G.Description,
                        gr1.uid as PrimaryOwnerUid,
