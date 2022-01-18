@@ -1,0 +1,97 @@
+﻿<div *ngIf="groupUid && !showDelete" class="group-members">
+    <div class="actions-header" *ngIf="!isLoading">
+        <div class="search-input">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="onSimpleSearch($event)"
+                             [(ngModel)]="simpleTextFilter"
+                             [infoTooltip]="simpleSearchTooltipHTML">
+            </ig-search-field>
+        </div>
+        <div class="grid-action-buttons" *ngIf="!groupIsActiveDirectory">
+            <button igButton
+                    pTooltip="Add new members"
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"
+                    class="ig-button-primary"
+                    icon="fa-plus"
+                    (click)="add()">
+            </button>
+        </div>
+    </div>
+    <p-table #dt
+             [value]="groupItems"
+             selectionMode="single"
+             [metaKeySelection]="true"
+             [globalFilterFields]="['Name','Owner']"
+             [paginator]="true"
+             [rows]="20"
+             [(selection)]="selectedRow"
+             [loading]="isLoading"
+             [loadingIcon]="'fa fa-spinner fa-spin'">
+        <ng-template pTemplate="header">
+            <tr>
+                <th [pSortableColumn]="'Name'">
+                    Name
+                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'Owner'" style="width: 25%">
+                    Owner
+                    <d3s-sortIcon [field]="'Owner'"></d3s-sortIcon>
+                </th>
+                <th style="width: 3%"></th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'Owner'" [datatype]="'text'"></d3s-column-filter></th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td>{{item.Name}}</td>
+                <td>{{item.Owner}}</td>
+                <td>
+                    <div class="RowTools">
+                        <a (click)="delete(item.ResourceID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage" let-columns>
+            <tr>
+                <td [attr.colspan]="3">
+                    No group members
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+</div>
+<div *ngIf="showDelete">
+    <d3s-delete-form [callback]="theDeleteCallback"
+                     [method]="'callback'"
+                     [prompt]="'Are you sure you want to remove ' + selectedRow.FirstName + ' ' + selectedRow.LastName + ' from ' + groupName + '?'"
+                     (onDeleteSuccess)="confirmDelete()"
+                     (onCancel)="cancel();">
+    </d3s-delete-form>
+</div>
+
+<d3s-modal *ngIf="loadedGroup" additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showAddMembers=false"
+           [subtitle]="loadedGroup.Name"
+           [title]="'Add New Members'"
+           [isVisible]="showAddMembers">
+    <div class="content">
+        <div class="row">
+            <d3s-resource-multiselect-grid [showToolTip]="false" [multiple]="field.MultiSelect" [(ngModel)]="field.Value" [showToolTip]="true" [showResourceType]="true" ngDefaultControl [field]="field"></d3s-resource-multiselect-grid>
+        </div>
+    </div>
+    <div class="action-bar">
+        <button label="Cancel" (click)="cancel();"></button>
+        <span class="grow"></span>
+        <button pButton label="Add" (click)="save();"></button>
+    </div>
+</d3s-modal>

@@ -88,6 +88,14 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
+    getGroupByUid(uid: string): Observable<any> {
+        return this.http.get('api/v2/membership/groups?Uid=' + uid)
+            .pipe(
+                map(x => <any>x),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     putGroup(group: Group): Observable<any> {
         return this.http.put('api/v2/membership/groups', [group]).pipe(
             map((response) => <any>response),

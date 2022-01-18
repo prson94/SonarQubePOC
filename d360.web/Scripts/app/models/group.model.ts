@@ -38,6 +38,7 @@ export class GroupResourceInfo {
     Email: string;
     Owner: string;
     uid: string;
+    Name: string;
 }
 
 export class Group {

@@ -136,12 +136,12 @@ namespace d360.model.DataAccessLayer
             var sql = $@"
                    Select 
                        A.Uid,
+                       {(fieldColumns.Count > 0 ? string.Join(",\n", fieldColumns) : "")}
                        G.Name,
                        G.Description,
                        gr1.uid as PrimaryOwnerUid,
                        gr2.uid as SecondaryOwnerUid,
-                       G.IsActiveDirectoryGroup,
-                       {(fieldColumns.Count > 0 ? string.Join(",\n", fieldColumns) : "")}
+                       G.IsActiveDirectoryGroup
                        from [Group] G
                            inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
                            left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID

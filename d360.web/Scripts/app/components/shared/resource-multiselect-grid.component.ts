@@ -30,6 +30,7 @@ import { SiteModalModule } from "./modal/gov-modal.module";
 import { SharedObjectDetailsModule } from "./objectdetails/shared-object-details.module";
 import { SimpleAccordionModule } from "./simple-accordion.part";
 import { CompanySettingsService } from "../../services/settings.service";
+import { SearchFieldModule } from "./controls/search-field/search-field.component";
 
 
 export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
@@ -42,7 +43,13 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     selector: 'd3s-resource-multiselect-grid',
     template: `                
                 <span>
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" (keypress)="handleKeyPress()" placeholder="Search..." class="grid-simple-filter">
+                    <ig-search-field *ngIf="showSimpleFilter"
+                                     mode="Keypress"
+                                     [debounce]="600"
+                                     (onSearch)="dt.filterGlobal($event, 'contains')"
+                                     [(ngModel)]="simpleTextFilter"
+                                     [infoTooltip]="simpleSearchTooltipHTML">
+                    </ig-search-field>
                     <p-table #dt [value]="items" [selectionMode]="multiple ? 'multiple' : 'single'" [scrollable]="true" scrollWidth="100%" [lazy]="true" [totalRecords]="totalRecords" [metaKeySelection]="!multiple" 
                         [globalFilterFields]="['Text','Type']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [loading]="isLoading" 
                         loadingIcon="fa fa-spinner" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);"  (onLazyLoad)="lazyLoad($event)">
@@ -51,7 +58,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                 <col style="width:38px">
                                 <col >
                                 <col >
-                                <col style="width:5%">
+                                <col style="width:5%" *ngIf="showToolTip">
                             </colgroup>
                         </ng-template>
                         <ng-template pTemplate="header">
@@ -65,7 +72,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                     Resource Type
                                     <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
                                 </th>
-                                <th style="width: 5%"></th>
+                                <th style="width: 5%" *ngIf="showToolTip"></th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
@@ -76,7 +83,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                 </td>
                                 <td>{{item.Text}}</td>
                                 <td>{{item.Type}}</td>
-                                <td>
+                                <td *ngIf="showToolTip">
                                     <div class="RowTools">
                                         <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]" icon="info"></d3s-preview-tooltip>
                                     </div>
@@ -223,7 +230,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
         TooltipModule,
         SharedModule,
         TableModule,
-
+        SearchFieldModule,
         //d3s
         CoreModule,
         PipesModule,

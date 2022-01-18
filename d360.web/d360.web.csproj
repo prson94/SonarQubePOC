@@ -1254,6 +1254,7 @@
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <Content Include="Scripts\app\components\rule\rule-item.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\group\group-members.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-type-detail\field-value.component.ts" />
@@ -1567,7 +1568,7 @@
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
-    <Content Include="Scripts\app\components\shared\group-members.component.html" />
+    <Content Include="Scripts\app\components\shared\group\group-members.component.html" />
     <Content Include="node-test.html" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
@@ -2141,7 +2142,6 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-responsibility.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group.component.ts" />
@@ -2205,7 +2205,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\group\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />

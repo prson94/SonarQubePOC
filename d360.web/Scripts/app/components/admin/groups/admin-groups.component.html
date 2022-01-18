@@ -29,6 +29,7 @@
                          [metaKeySelection]="true"
                          [globalFilterFields]="['Name']"
                          [paginator]="true"
+                         [(selection)]="selectedRow"
                          [rows]="20"
                          [style]="{'width':'100%'}"
                          [loading]="isLoading"
@@ -151,24 +152,3 @@
                   (closeClick)="showEditor=false"></asset-editor>
 
 </d3s-modal>
-
-
-<div class="row">
-    <div class="col l3 m4 s12">
-
-    </div>
-    <!--<div class="col l9 m8 s12" [ngSwitch]="formMode">
-        <div *ngSwitchDefault class="tile tile-detail">
-            <d3s-group-members [groupId]="0" [groupUid]="selectedRow?.Uid" [groupName]="selectedRow?.Name" [groupIsActiveDirectory]="selectedRow?.IsActiveDirectoryGroup"></d3s-group-members>
-        </div>
-        <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
-            <d3s-delete-form [callback]="theDeleteCallback"
-                             [method]="'callback'"
-                         [prompt]="'Are you sure you want to remove ' + selectedRow.Name + '?'"
-                         (onDeleteSuccess)="confirmDelete($event);"
-                         (onDeleteFail)="errorDelete($event)"
-                         (onCancel)="cancel();">
-            </d3s-delete-form>
-        </div>
-    </div>-->
-</div>
