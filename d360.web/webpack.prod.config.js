@@ -45,7 +45,7 @@ var webpackConfig = {
         ),
 
         new webpack.DefinePlugin({
-            __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
+            __BUILD_DATE: JSON.stringify(new Date().toUTCString()),
             PRODUCTION: JSON.stringify(true),
         }),
         new AngularWebpackPlugin({
