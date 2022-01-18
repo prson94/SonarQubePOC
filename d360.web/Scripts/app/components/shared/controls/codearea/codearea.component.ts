@@ -2,10 +2,10 @@
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { EditorModule } from 'primeng/editor';
-import { CodemirrorModule } from '@ctrl/ngx-codemirror'
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/css/css';
-import 'codemirror/addon/display/placeholder'
+import 'codemirror/addon/display/placeholder';
 
 export const CODE_EDITOR_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -57,7 +57,7 @@ export class CodeArea implements ControlValueAccessor {
         this.placeholder = this.placeholder == null ? (this.required ? 'Value required' : 'Optional') : this.placeholder;
         this.editorConfig.placeholder = this.placeholder;
 
-        if (this.codeType != 'json' && this.codeTypeList.indexOf(this.codeType.toLocaleLowerCase()) >= 0) {
+        if (this.codeType !== 'json' && this.codeTypeList.indexOf(this.codeType.toLocaleLowerCase()) >= 0) {
             switch (this.codeType.toLocaleLowerCase()) {
                 case "css":
                     this.editorConfig.mode = { name: "css", json: false };
