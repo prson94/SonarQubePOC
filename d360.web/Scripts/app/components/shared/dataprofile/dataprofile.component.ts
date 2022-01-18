@@ -43,8 +43,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private shapesToShow: number = 5;
     private topSamplesToShow: number = 5;
     private bottomSamplesToShow: number = 5;
-    private topSamples: any;
-    private bottomSamples: any;
+    private topSamples: any[] = [];
+    private bottomSamples: any[] = [];
     
     private sampleBarChart: any;
 
@@ -80,6 +80,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     public chartType: string;
     public timeSeriesProfileList: any[] = [];
     public dataProfileList: any[] = [];
+
+    private numberTypes: string[] = ["long", "double"];
 
     isMatchDetectionPopupVisible: boolean = false;
     matchType: string = "";
@@ -168,21 +170,33 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
         if (this.dataProfile.sampleDetail) {
             this.dataProfile.sampleDetail = this.dataProfile.sampleDetail.sort((a, b) => (b.count - a.count));
-        }
-
-        if (this.dataProfile.cardinalityDetail) {
-            this.dataProfile.cardinalityDetail = this.dataProfile.cardinalityDetail.sort((a, b) => (b.count - a.count));
-        }
+        }        
 
         if (this.dataProfile.cardinalityDetail) {
             if (this.dataProfile.topK) {
-                this.topSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.topK.some((x) => x === i.key));
+                this.dataProfile.topK.forEach((t) => {
+                    let value = this.dataProfile.cardinalityDetail.find((cd) => cd.key === t);
+                    if (value) {
+                        this.topSamples.push(value)
+                    }                    
+                })
+                if (this.numberTypes.indexOf(this.dataProfile.type?.toLowerCase()) >= 0) {
+                    this.topSamples = this.topSamples.sort((a, b) => (b.key - a.key));
+                }
             }
             if (this.dataProfile.bottomK) {
-                this.bottomSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.bottomK.some((x) => x === i.key));
+                this.dataProfile.bottomK.forEach((b) => {
+                    let value = this.dataProfile.cardinalityDetail.find((cd) => cd.key === b);
+                    if (value) {
+                        this.bottomSamples.push(value)
+                    }
+                })
+                if (this.numberTypes.indexOf(this.dataProfile.type?.toLowerCase()) >= 0) {
+                    this.bottomSamples = this.bottomSamples.sort((a, b) => (a.key - b.key));
+                }
             }
         }
-
+        
         if (this.dataProfile.shapesDetail) {
             this.dataProfile.shapesDetail = this.dataProfile.shapesDetail.sort((a, b) => (b.count - a.count));
         }      
