@@ -1,7 +1,8 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { cloneDeep } from "lodash";
 import { Observable } from "rxjs";
-import { shareReplay, tap } from "rxjs/operators";
+import { map, shareReplay, tap } from "rxjs/operators";
 
 const CacheEntryLifeTimeInMinutes = 10;
 
@@ -38,7 +39,8 @@ export class ReuseInterceptor implements HttpInterceptor {
                     this.cache.delete(cacheKey);
                 }
             }),
-            shareReplay(1)
+            shareReplay(1),
+            map(x => cloneDeep(x))
         );
 
         this.cache.set(cacheKey, {

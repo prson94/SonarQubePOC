@@ -115,7 +115,13 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
                 if (highlighted) {
                     this.selected = highlighted[0];
                 }
-                this.table.first = (+result.pageSize - 1) * +result.pageNum;
+
+                setTimeout(() => {
+                    if (this.table) {
+                        this.table.first = (+result.pageSize - 1) * +result.pageNum;
+                    }
+                }, 100);
+
                 this.highlightUid = null;
                 delete this.loadParams["_pageWithAsset"];
 

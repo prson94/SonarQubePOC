@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.23">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -443,7 +443,7 @@ begin
 				else 0 
 			end 
 	from	#ScoreItems T
-			inner join metrics.Asset A on A.Uid = T.MeasureUid and T.DecimalValue is null and T.IsRemoved = 0 and T.HasThreshold = 1;
+			inner join metrics.Asset A on A.Uid = T.MeasureUid and T.DecimalValue is null and T.IsRemoved = 0;
 
 	-- Update the hash for each score we are working with.
 	update	T
