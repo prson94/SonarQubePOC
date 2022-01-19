@@ -16,7 +16,7 @@ namespace d360.web
         {
             { "default-src", new List<string>{"*", "data:", "blob:", "filesystem:", "ws:", "wss:", "'unsafe-inline'", "'unsafe-eval'" } },
             { "script-src", new List<string>{ "*", "'unsafe-inline'", "'unsafe-eval'" } },
-            { "connect-src", new List<string>{ "*", "'unsafe-inline'", "https://*.browser-intake-datadoghq.com" } },
+            { "connect-src", new List<string>{ "*", "'unsafe-inline'" } },
             { "img-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
             { "style-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
             { "font-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
