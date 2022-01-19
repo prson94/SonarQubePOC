@@ -18,7 +18,7 @@ namespace igx.functions.consumption
         private CoreFunction CoreFunction;
 
         [FunctionName("DisplayValueUpdateProcessor")]
-        public async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ExecutionContext context)
+        public async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("AzureWebJobsStorage")] string myQueueItem, ExecutionContext context)
         {
             var config = new ConfigurationBuilder()
                    .SetBasePath(context.FunctionAppDirectory)
@@ -33,7 +33,7 @@ namespace igx.functions.consumption
             try
             {
                 var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
-                var community = JobDbContextCreator.CreateCommunityContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true);
+                var community = JobDbContextCreator.CreateCommunityContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true, CoreFunction.GetConnectionString("CommunityContext"));
 
                 using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID))
                 {
