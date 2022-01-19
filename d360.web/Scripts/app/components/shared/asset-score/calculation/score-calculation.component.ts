@@ -65,6 +65,10 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         this.isRuleResultsModalVisible = isVisible;
     }
 
+    ruleResultsVisible(): boolean {
+        return (this.scoreType === ScoreType.DataQuality && !this.selected.IsGroup);
+    }
+
     showPassTest(): boolean {
         let show = true;
 
