@@ -31,7 +31,7 @@ namespace d360.core.entities.Metric
         public string Description { get; set; }
 
         [DataMember]
-        public float? Threshold { get; set; }
+        public double? Threshold { get; set; }
 
         [DataMember]
         public decimal Weight { get; set; }

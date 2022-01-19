@@ -55,7 +55,7 @@ namespace d360.core.entities.Metric
         public decimal Weight { get; set; }
 
         [DataMember, JsonProperty(Order = 11)]
-        public float? Threshold { get; set; }
+        public double? Threshold { get; set; }
 
         [DataMember, JsonProperty(Order = 13)]
         public bool MatchConditionsOnly { get; set; } = false;
