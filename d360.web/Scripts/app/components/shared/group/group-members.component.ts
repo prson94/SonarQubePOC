@@ -27,8 +27,8 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     title: string = 'Members';
     groupIsActiveDirectory: boolean = false;
 
-    private groupItems = new Array<GroupResourceInfo>();
-    private selectedRow = new GroupResourceInfo();
+    groupItems = new Array<GroupResourceInfo>();
+    selectedRow = new GroupResourceInfo();
 
     private selectedResource: string;
     private members = new Array<AddUserToGroup>();
@@ -36,7 +36,8 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     showDelete: boolean = false;
     showAddMembers: boolean = false;
 
-
+    savingInProgress: boolean = false;
+    deleteInProgress: boolean = false;
     loadedGroup: Group;
     field: EditorField;
 
@@ -112,13 +113,14 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
         } catch (e) {
         }
+        this.savingInProgress = true;
         this.groupService.addUsersToGroup(this.groupUid, this.members).subscribe(
             (r) => {
                 this.load();
                 this.cancel();
 
                 this.members = [];
-                this.isLoading = false;
+                this.savingInProgress = false;
             }
         );
     }
@@ -133,9 +135,15 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
 
-    delete(id: number): void {
-        this.showDelete = true;
-        this.selectedRow = this.groupItems.find(f => f.ResourceID == id);
+    delete(): void {
+        this.deleteInProgress = true;
+        this.groupService.deleteUsersFromGroup(this.groupUid, this.selectedRow.uid)
+            .subscribe((res) => {
+                this.deleteInProgress = false;
+                this.showDelete = false;
+                this.load();
+                this.cdref.markForCheck();
+            });
     }
 
     error(e: any) {

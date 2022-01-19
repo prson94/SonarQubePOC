@@ -101,7 +101,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                 `,
     providers: [RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: ['.resource-grid { ig-search-field { width: 100%; padding: 8px 0;}}'],
+    styles: ['.resource-grid ig-search-field { width: 100%; padding: 8px 0;} .resource-grid ig-search-field .ig-search-field { width:100% !important; }'],
     encapsulation: ViewEncapsulation.None
 })
 

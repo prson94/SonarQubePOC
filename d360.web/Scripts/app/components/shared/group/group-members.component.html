@@ -1,17 +1,17 @@
-﻿<div *ngIf="groupUid && !showDelete" class="group-members">
+﻿<div *ngIf="groupUid" class="group-members">
     <div class="actions-header" *ngIf="!isLoading">
         <div class="search-input">
             <ig-search-field mode="Keypress"
                              [debounce]="600"
-                             (onSearch)="onSimpleSearch($event)"
+                             (onSearch)="dt.filterGlobal($event, 'contains')"
                              [(ngModel)]="simpleTextFilter"
                              [infoTooltip]="simpleSearchTooltipHTML">
             </ig-search-field>
         </div>
         <div class="grid-action-buttons" *ngIf="!groupIsActiveDirectory">
             <button igButton
-                    pTooltip="Add new members"
-                    tooltipPosition="top"
+                    pTooltip="Add New Members"
+                    tooltipPosition="left"
                     tooltipStyleClass="ig-tooltip"
                     class="ig-button-primary"
                     icon="fa-plus"
@@ -53,7 +53,10 @@
                 <td>{{item.Owner}}</td>
                 <td>
                     <div class="RowTools">
-                        <a (click)="delete(item.ResourceID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        <a (click)="selectedRow = item;showDelete=true"
+                           pTooltip="Remove Member"
+                           tooltipPosition="left"
+                           tooltipStyleClass="ig-tooltip" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                     </div>
                 </td>
             </tr>
@@ -70,14 +73,20 @@
         </ng-template>
     </p-table>
 </div>
-<div *ngIf="showDelete">
-    <d3s-delete-form [callback]="theDeleteCallback"
-                     [method]="'callback'"
-                     [prompt]="'Are you sure you want to remove ' + selectedRow.FirstName + ' ' + selectedRow.LastName + ' from ' + groupName + '?'"
-                     (onDeleteSuccess)="confirmDelete()"
-                     (onCancel)="cancel();">
-    </d3s-delete-form>
-</div>
+
+<d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="showDelete=false"
+           [title]="'Remove Member'"
+           [isVisible]="showDelete">
+    <div class="content">
+        Are you sure you want to remove {{selectedRow.FirstName + ' ' + selectedRow.LastName}} from {{groupName}}?
+    </div>
+    <div class="action-bar">
+        <button igButton label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+    </div>
+</d3s-modal>
 
 <d3s-modal *ngIf="loadedGroup" additionalClasses="modal-dyn-editor large-dialog asset-editor"
            (onClose)="showAddMembers=false"
@@ -86,12 +95,12 @@
            [isVisible]="showAddMembers">
     <div class="content">
         <div class="row">
-            <d3s-resource-multiselect-grid *ngIf="showAddMembers" [showToolTip]="false" [multiple]="field.MultiSelect" [(ngModel)]="field.Value" [showToolTip]="true" [showResourceType]="true" ngDefaultControl [field]="field"></d3s-resource-multiselect-grid>
+            <d3s-resource-multiselect-grid *ngIf="showAddMembers" [showToolTip]="false" [multiple]="field.MultiSelect" [(ngModel)]="field.Value" [showResourceType]="true" ngDefaultControl [field]="field"></d3s-resource-multiselect-grid>
         </div>
     </div>
     <div class="action-bar">
-        <button igButton  label="Cancel" (click)="cancel();"></button>
+        <button igButton label="Cancel" (click)="cancel();" [disabled]="savingInProgress"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" label="Add" (click)="save();"></button>
+        <button igButton class="ig-button-primary" label="Add" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !field.Value || field.Value.length === 0"></button>
     </div>
 </d3s-modal>

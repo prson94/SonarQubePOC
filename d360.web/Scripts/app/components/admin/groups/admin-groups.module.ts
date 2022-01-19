@@ -31,6 +31,8 @@ import { AssetEditorModule } from '../../shared/asset-editor/asset-editor.module
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+import { DirectivesModule } from '../../../directives/directives.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -47,7 +49,7 @@ import { SearchFieldModule } from '../../shared/controls/search-field/search-fie
         InputTextModule,
         SharedModule,
         TableModule,
-
+        TooltipModule,
         //d3s        
         CoreModule,  
         D3SSharedModule,  
@@ -63,7 +65,8 @@ import { SearchFieldModule } from '../../shared/controls/search-field/search-fie
         AssetEditorModule,
         PropertyGroupModule,
         PopupMenuModule,
-        SearchFieldModule
+        SearchFieldModule,
+        DirectivesModule
     ],
     declarations: [
         AdminGroupsComponent

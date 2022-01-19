@@ -18,6 +18,7 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
 import { ResourceMultiSelectGridModule } from '../resource-multiselect-grid.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { SharedDeleteFormModule } from '../delete.form';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @NgModule({
@@ -34,6 +35,7 @@ import { SharedDeleteFormModule } from '../delete.form';
         SearchFieldModule,
         ResourceMultiSelectGridModule,
         SharedDeleteFormModule,
+        TooltipModule,
         //prime
         DirectivesModule,
         ButtonModule,

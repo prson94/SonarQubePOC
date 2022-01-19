@@ -101,7 +101,6 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
                 this.fields = result.Fields;
 
                 this.groupItems = d.items;
-                this.selectedRow = this.groupItems[0];
 
                 this.isLoading = false;
                 this.cdRef.markForCheck();
