@@ -38,7 +38,7 @@ namespace d360.model
             return new CompanyContext(community, cache, queue, mail, sec, storage, true);
         }
 
-        public static CommunityContext CreateCommunityContext(int companyId, int resourceId, string urlPrefix, bool isAdmin)
+        public static CommunityContext CreateCommunityContext(int companyId, int resourceId, string urlPrefix, bool isAdmin, string connectionString = null)
         {
             var sec = new UriSecurityContextProvider()
             {
@@ -50,7 +50,10 @@ namespace d360.model
             var cache = new DummyCachingProvider();
             var queue = new AzureQueueSource();
 
-            return new CommunityContext(cache, queue, sec);
+            if (string.IsNullOrEmpty(connectionString))
+                return new CommunityContext(cache, queue, sec);
+
+            return new CommunityContext(connectionString, cache, queue, sec);
         }
     }
 }
