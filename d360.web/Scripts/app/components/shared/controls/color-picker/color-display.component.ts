@@ -9,7 +9,7 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
     selector: 'd3s-color-display',
     template: `
                 <div *ngIf="colorsObject && colorsObject.length > 0">
-                    <span *ngFor="let item of colorsObject">
+                    <span *ngFor="let item of colorsObject;">
                         <span [class]="'ig-colorfield-item ' + styleClass" style="display: inline-flex !important;">
                             <span class="ig-colorfield-swatch" [ngClass]="{'empty': (item.color == 'transparent' || item.color == null)}" [ngStyle]="{'background-color': item.color}"></span>
                             <span *ngIf="!url" class="ig-colorfield-item-label">
@@ -32,6 +32,7 @@ export class ColorDisplayComponent implements OnInit {
     @Input() styleClass: string = 'grid';
     @Input() interceptLinkClick: boolean = false;
     @Input() field: DetailField;
+    @Input() valueIndex: number = 0;
 
     public colorsObject: any;
 
@@ -82,9 +83,9 @@ export class ColorDisplayComponent implements OnInit {
         }
     }
 
-    navigate(url: string, e: any) {
+    navigate(url: string, e: any, data = null) {
         if (this.interceptLinkClick) {
-            this.linkClickInterceptor.sendEvent(e, this.field, url);
+            this.linkClickInterceptor.sendEvent(e, this.field, url, this.valueIndex);
             return;
         }
         this.router.navigateByUrl(url);
