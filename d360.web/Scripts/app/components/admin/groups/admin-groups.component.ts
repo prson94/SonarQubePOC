@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -15,6 +15,8 @@ import { GridDefinitionService } from '../../../services/grid-definition.service
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { ViewChildren } from '@angular/core';
+import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.component';
 
 declare var CurrentResourceID;
 @Component({
@@ -49,6 +51,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     loadSub: Subscription;
 
     deleteInProgress: boolean = false;
+
+    @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 
     menuItems = [
         { title: 'Edit' },
@@ -128,6 +132,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         this.load();
         if ($event.addAnother) {
             this.add();
+            if (this.dynamicEditor) {
+                this.dynamicEditor.load();
+            }
         }
     }
 
@@ -158,7 +165,6 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     }
 
     onSimpleSearch($event) {
-        console.log("here");
         this.load();
     }
 }

@@ -87,12 +87,12 @@ namespace d360.model.validators
                 {
                     if (field.Type.IsPartOfKey())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldPropertyError,FieldErrors.ReferenceItemIsPartOfKeyNotAllowedTrue);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ReferenceItemIsPartOfKeyNotAllowedTrue);
                     }
 
                     if (field.Type.Json != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ReferenceListNotSupportJson);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ReferenceListNotSupportJson);
                     }
                     else if (field.Type.Tag != null)
                     {
@@ -100,15 +100,31 @@ namespace d360.model.validators
                     }
                     else if (field.Type.JsonElement != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ReferenceItemNotSupportJsonElement);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ReferenceItemNotSupportJsonElement);
                     }
+                }
+
+                if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.GroupType.ToString())
+                {
+                    if (field.Type.IsPartOfKey())
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ReferenceItemIsPartOfKeyNotAllowedTrue);
+                    }
+
+                    List<string> allowedGroupFieldTypes = new List<string> { "Counter", "DateTime", "Date", "Decimal", "Text", "Boolean", "Lookup", "Number" };
+
+                    if (!allowedGroupFieldTypes.Contains(field.Type.GetFieldType()))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.GroupInvalidFieldType, field.Type.GetFieldType()));
+                    }
+
                 }
 
                 if (relationshipTypeIdentifierInfoModel != null)
                 {
                     if (field.Type.IsPartOfKey())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError ,FieldErrors.RelationNotAllowedIsPartyOFKeyTrue);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationNotAllowedIsPartyOFKeyTrue);
                     }
                 }
 
@@ -116,7 +132,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.IsPartOfKey())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ActionNotAllowedIsPartyOFKeyTrue);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ActionNotAllowedIsPartyOFKeyTrue);
                     }
                 }
 
@@ -124,11 +140,11 @@ namespace d360.model.validators
                 {
                     if (actionTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ActionNotSupportPath);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ActionNotSupportPath);
                     }
                     if (relationshipTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.RelationshipNotSupportPath);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationshipNotSupportPath);
                     }
                     if (assetTypeIdentifierInfoModel != null)
                     {
@@ -138,7 +154,7 @@ namespace d360.model.validators
                         };
                         if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ThisAssetTypeNotSupportPath);
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ThisAssetTypeNotSupportPath);
                         }
                     }
                 }
@@ -199,7 +215,7 @@ namespace d360.model.validators
                 {
                     if (actionTypeIdentifierInfoModel != null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError,FieldErrors.ActionNotAllowedScoreFieldType);
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ActionNotAllowedScoreFieldType);
                     }
                     if (relationshipTypeIdentifierInfoModel != null)
                     {
@@ -257,7 +273,7 @@ namespace d360.model.validators
                             var duplicateFieldIntersectTypeUid1 = ExistingIntersectID.Where(f => f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();
                             if (duplicateFieldIntersectTypeUid1.Count > 0)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, string.Format(FieldErrors.RelationshipIDUsedMoreThanOnce,field.Type.Relationship.IntersectTypeUid));
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, string.Format(FieldErrors.RelationshipIDUsedMoreThanOnce, field.Type.Relationship.IntersectTypeUid));
 
                             }
                         }
@@ -298,7 +314,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.Link.IsPartOfKey == true)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldPropertyError, string.Format(FieldErrors.LinkTypeNotSupportIsPartOfKeyTrue, field.FriendlyName));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(FieldErrors.LinkTypeNotSupportIsPartOfKeyTrue, field.FriendlyName));
                     }
                 }
 
@@ -565,7 +581,7 @@ namespace d360.model.validators
             }
             if (fieldsHaveErrors)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.FieldsContainErrors, string.Format(FieldErrors.OneThanOneTypeDefined, string.Join(", ", fieldsHaveErrorsList)));
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldsContainErrors, string.Format(FieldErrors.OneThanOneTypeDefined, string.Join(", ", fieldsHaveErrorsList)));
             }
             if (!actionIsReplaceAndKeySelected)
             {
@@ -651,7 +667,7 @@ namespace d360.model.validators
             var anyInvalidFields = fieldNamesToDelete.Any(f => !currentFieldTypes.Any(c => c.Name == f));
             if (anyInvalidFields)
             {
-                return (new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.InvalidFields, FieldErrors.FailRemoveFieldNotExistsType), null);
+                return (new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidFields, FieldErrors.FailRemoveFieldNotExistsType), null);
             }
 
             return (new WorkHttpStatus(HttpStatusCode.OK, "", ""),
@@ -675,7 +691,7 @@ namespace d360.model.validators
 
                 if (actionTypeIdentifierInfoModel == null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.NotFound,AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.ActionTypeUidNotFound,model.ActionTypeUid));
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.ActionTypeUidNotFound, model.ActionTypeUid));
                 }
             }
 
@@ -683,13 +699,13 @@ namespace d360.model.validators
             {
                 if (model.ActionTypeUid.HasValue)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest,FieldErrors.ParameterError, FieldErrors.AssetTypeUidNotRequiredIfActionTypeUidProvided);
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.AssetTypeUidNotRequiredIfActionTypeUidProvided);
                 }
                 else
                 {
                     if (assetTypeIdentifierInfoModel == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.AssetTypeUidNotFound,model.ActionTypeUid));
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.AssetTypeUidNotFound, model.ActionTypeUid));
                     }
                 }
             }
@@ -702,14 +718,14 @@ namespace d360.model.validators
                 }
                 else if (model.AssetTypeUid.HasValue)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError,FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
                 }
                 else
                 {
 
                     if (relationshipTypeIdentifierInfoModel == null)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound,string.Format(FieldErrors.RelationshipTypeUIdNotFound ,model.RelationshipTypeUid));
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, model.RelationshipTypeUid));
                     }
                 }
             }
@@ -799,7 +815,7 @@ namespace d360.model.validators
             {
                 if (validation?.MaximumValue > maxDecimalFieldValue)
                 {
-                    errMsg = String.Format(FieldErrors.LessThanError,FieldErrors.ConstantMaximumValue, FieldErrors.MaxDecimalFieldValue);
+                    errMsg = String.Format(FieldErrors.LessThanError, FieldErrors.ConstantMaximumValue, FieldErrors.MaxDecimalFieldValue);
                     return false;
                 }
                 else if (validation?.MaximumValue < -maxDecimalFieldValue)

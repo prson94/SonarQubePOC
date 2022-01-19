@@ -10825,7 +10825,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 	            from [api].[ExecutionGroup] EG 
                 inner join api.executionfield ef on ef.ExecutionID = eg.ExecutionID
                 inner join FieldType ft on ft.id = ef.fieldtypeid
-                left join FieldLookupValue flv on flv.FieldTypeID = ef.FieldTypeID and flv.Value = ef.FieldValue
+                left join FieldLookupValue flv on flv.FieldTypeID = ef.FieldTypeID and flv.Value = try_parse(ef.FieldValue as int)
                 where EG.ExecutionID = @ExecutionID  and ft.type = 'Lookup' and flv.Value is null and ef.FieldValue is not null";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID, emptyUid = Guid.Empty }, commandTimeout: timeout);
@@ -11057,6 +11057,25 @@ EG.GroupUid
                                     }
                                     else
                                     {
+
+                                        Connection.Execute($@"
+                    DELETE Field
+                    FROM Field F
+                        inner join api.ExecutionGroup EG on EG.ExecutionID = @executionID 
+						inner join [Group] G on g.uid = eg.GroupUid
+						inner join Asset A on a.Object = 'Group' and a.objectid = g.id
+                    	inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = EG.ExecutionId and EF.ItemNumber = EG.ItemNumber
+                    WHERE EF.ItemNumber between @beginItemNumber and @endItemNumber
+                     and EF.Ignore is null
+                     and EF.FieldTypeID is not null
+                     and F.ObjectID = A.ObjectId
+                     and F.ObjectType = A.Object
+                     and F.FieldTypeID = EF.FieldTypeID
+                     and EF.FieldValue is null 
+                     and EF.LookupValue is null;",
+new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+
                                         Connection.Execute($@"
                     merge       Field as T
                     using       (
