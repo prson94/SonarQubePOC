@@ -1625,6 +1625,10 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
             if (rowsImpacted > 0)
             {
                 sendScoreQueueMessage(execution);
+                Connection.Execute(
+                    "delete api.ExecutionItemDependentChange where ExecutionID = @apiExecutionUid and DependentChangeType = 1",
+                    new { apiExecutionUid }
+                    );
             }
             else
             {
