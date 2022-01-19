@@ -103,8 +103,6 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
     save() {
         if (!(this.field.Value != null && this.field.Value.length > 0)) return;
-
-        this.isLoading = true;
         try {
             this.field.Value.forEach(x => {
                 var user = new AddUserToGroup();
@@ -113,7 +111,6 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
             })
 
         } catch (e) {
-            this.isLoading = false;
         }
         this.groupService.addUsersToGroup(this.groupUid, this.members).subscribe(
             (r) => {
@@ -129,7 +126,6 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
     add(): void {
         this.showAddMembers = true;
-        this.isLoading = true;
         this.field = new EditorField();
         this.field.TypeaheadUri = `form/GetGroupUserList?uid=${this.groupUid}&id=0`;
         this.field.FieldName = "resources";

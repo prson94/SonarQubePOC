@@ -86,7 +86,7 @@
            [isVisible]="showAddMembers">
     <div class="content">
         <div class="row">
-            <d3s-resource-multiselect-grid [showToolTip]="false" [multiple]="field.MultiSelect" [(ngModel)]="field.Value" [showToolTip]="true" [showResourceType]="true" ngDefaultControl [field]="field"></d3s-resource-multiselect-grid>
+            <d3s-resource-multiselect-grid *ngIf="showAddMembers" [showToolTip]="false" [multiple]="field.MultiSelect" [(ngModel)]="field.Value" [showToolTip]="true" [showResourceType]="true" ngDefaultControl [field]="field"></d3s-resource-multiselect-grid>
         </div>
     </div>
     <div class="action-bar">
