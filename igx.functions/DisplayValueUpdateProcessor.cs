@@ -35,7 +35,7 @@ namespace igx.functions.consumption
                 var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
                 var community = JobDbContextCreator.CreateCommunityContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true, CoreFunction.GetConnectionString("CommunityContext"));
 
-                using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID))
+                using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, CoreFunction.GetConnectionString("CommunityContext")))
                 {
                     await companyConnection.OpenIfClosed();
 
