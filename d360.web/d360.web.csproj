@@ -1024,6 +1024,7 @@
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.codearea.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.modal-drawer.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.modal.component.html" />
@@ -1075,6 +1076,22 @@
     <Content Include="fonts\precisely\Precisely-Thin.ttf" />
     <Content Include="fonts\precisely\Precisely-ThinIt.ttf" />
     <Content Include="Scripts\app\components\admin\scoring\measure-editor.less" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-Black.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-BlackItalic.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-Bold.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-BoldItalic.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-ExtraBold.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-ExtraBoldItalic.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-ExtraLight.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-ExtraLightItalic.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-Italic.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-Light.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-LightItalic.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-Medium.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-MediumItalic.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-Regular.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-SemiBold.ttf" />
+    <Content Include="fonts\source-code-pro\SourceCodePro-SemiBoldItalic.ttf" />
     <None Include="Scripts\app\components\resource\api-key\resource-api.component.less" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
@@ -1102,6 +1119,7 @@
     <Content Include="Content\styles\infogix-ui\IgTooltip.less" />
     <Content Include="Content\styles\infogix-ui\IgAutocomplete.less" />
     <Content Include="Content\styles\infogix-ui\IgTextArea.less" />
+    <Content Include="Scripts\app\components\shared\controls\codearea\codearea.component.html" />
     <Content Include="Scripts\app\components\shared\controls\date\date.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\badge\badge.less" />
@@ -1128,6 +1146,7 @@
     <Content Include="Scripts\app\components\search\search.component.less" />
     <Content Include="Scripts\app\components\search\search-result-item.component.less" />
     <Content Include="Scripts\app\components\shared\asset-editor\asset-editor.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\codearea\codearea.component.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -1287,6 +1306,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.codearea.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.modal-drawer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.modal.component.ts" />
@@ -1348,6 +1368,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\codearea\codearea.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\date\date.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.component.ts" />

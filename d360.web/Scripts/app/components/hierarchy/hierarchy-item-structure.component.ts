@@ -25,6 +25,7 @@ import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
+import { LinkClickInterceptor } from '../../services/href-click-service';
 
 declare var CurrentResourceID;
 
@@ -103,6 +104,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     hasProfiling: boolean = false;
     dataProfile: any;
 
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+    selectedTag: any;
+
     readonly menuKey: string = '~menu';
     baseMenuItems: any[] = [
         { title: "Open" },
@@ -123,12 +129,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         webAnalyticsService: WebAnalyticsService,
         private route: ActivatedRoute,
         private router: Router,
-        private changeDetectorRef: ChangeDetectorRef
+        private changeDetectorRef: ChangeDetectorRef,
+        private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(settingsService);
 
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
+
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            this.linkClickInterceptor.handleEvent(this, ev);
+        });
     }
 
     ngOnInit() {
@@ -197,9 +208,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         if (this.loadNodesSub) {
             this.loadNodesSub.unsubscribe();
         }
+        if (this.hrefSub) {
+            this.hrefSub.unsubscribe();
+        }
     }
 
     selectAsset(event: any) {
+        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
         this.selected = event;
 
         if (this.selected && this.selected.data && this.selected.data.HasProfiling) {
