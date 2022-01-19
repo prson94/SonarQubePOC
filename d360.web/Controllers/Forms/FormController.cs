@@ -2010,7 +2010,21 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
+        /// <param name="id">SurveyTypeID</param>
+        [Route("Tag_EditFields"), NonNullableParameters]
+        public JsonResult Tag_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<Tag>(id);
 
+            list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Tag name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
+
+        #region Group
         [Route("Group_AddFields")]
         public JsonResult Group_AddFields()
         {
@@ -2085,19 +2099,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                    loadOnlySelectedLookupValue: true
                )
            );
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">SurveyTypeID</param>
-        [Route("Tag_EditFields"), NonNullableParameters]
-        public JsonResult Tag_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<Tag>(id);
-
-            list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Tag name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

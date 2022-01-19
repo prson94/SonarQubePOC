@@ -12,7 +12,7 @@
                 </div>
                 <div class="grid-action-buttons">
                     <button igButton
-                            pTooltip="Add New Group"
+                            pTooltip="Create New Group"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
                             class="ig-button-primary"
@@ -23,7 +23,7 @@
             </div>
 
 
-            <div id="List" *ngIf="formMode === FormMode.Default">
+            <div id="List">
                 <p-table #dt [value]="groupItems"
                          selectionMode="single"
                          [metaKeySelection]="true"
@@ -94,15 +94,6 @@
                     </ng-template>
                 </p-table>
             </div>
-            <div *ngIf="formMode === FormMode.Deleting">
-                <d3s-delete-form [callback]="theDeleteCallback"
-                                 [method]="'callback'"
-                                 [prompt]="'Are you sure you want to remove ' + selectedRow.Name + '?'"
-                                 (onDeleteSuccess)="confirmDelete($event);"
-                                 (onDeleteFail)="errorDelete($event)"
-                                 (onCancel)="formMode = FormMode.Default;">
-                </d3s-delete-form>
-            </div>
         </div>
         <div class="tile tile-detail side-panel">
             <side-panel (expandedChange)="sidePanelOpen=$event"
@@ -133,6 +124,20 @@
     </div>
 </div>
 
+<d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="showDelete=false"
+           [title]="'Delete Group'"
+           [isVisible]="showDelete">
+    <div class="content">
+        Please confirm that you wish to delete the group <strong>{{selectedRow.Name}}</strong>. Please note that this operation cannot be undone.
+    </div>
+    <div class="action-bar">
+        <button igButton label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+    </div>
+</d3s-modal>
+
 <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
            (onClose)="showEditor=false"
            [showTitle]="false"
@@ -141,7 +146,7 @@
                   *ngIf="showEditor"
                   [objectID]="selectedRow ? selectedRow.Uid : null"
                   [objectType]="'Group'"
-                  [title]="selectedRow ? 'Edit Group' : 'Create New Group'"
+                  [title]="selectedRow ? 'Edit '+selectedRow.Name : 'Create New Group'"
                   [selection]="selectedRow"
                   [rowID]="rowID"
                   [objectTypeUid]="'00000001-0000-0000-0000-B00000000012'"

@@ -79,7 +79,7 @@
            [title]="'Remove Member'"
            [isVisible]="showDelete">
     <div class="content">
-        Are you sure you want to remove {{selectedRow.FirstName + ' ' + selectedRow.LastName}} from {{groupName}}?
+        Are you sure you want to remove <strong>{{selectedRow.FirstName + ' ' + selectedRow.LastName}}</strong> from <strong>{{groupName}}</strong>?
     </div>
     <div class="action-bar">
         <button igButton label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>

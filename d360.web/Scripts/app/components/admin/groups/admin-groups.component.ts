@@ -29,8 +29,7 @@ declare var CurrentResourceID;
 export class AdminGroupsComponent extends AdminBaseComponent implements OnDestroy {
     selectedRow: GroupApiModel;
     groupItems: GroupApiModel[];
-    formMode: FormMode = FormMode.Default;
-    FormMode = FormMode;
+
     theDeleteCallback: Function;
     groupUid: string;
     public showDelete: boolean = false;
@@ -48,6 +47,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
     showEditor: boolean = false;
     loadSub: Subscription;
+
+    deleteInProgress: boolean = false;
 
     menuItems = [
         { title: 'Edit' },
@@ -72,7 +73,6 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         this.buildSecondaryNavigationForObject(0, 'GroupType');
 
         this.sidePanelStorageKey = 'list_' + AssetTypeClass.Group + '_' + CurrentResourceID;
-        this.theDeleteCallback = this.deleteService.bind(this);
     }
 
     ngOnInit() {
@@ -133,15 +133,16 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
     deleteGroup(item) {
         this.selectedRow = item;
-        this.formMode = FormMode.Deleting;
+        this.showDelete = true;
     }
 
-    deleteService() {
+    delete() {
+        this.deleteInProgress = true;
         this.groupService.deleteGroupWithUid(this.selectedRow.Uid).subscribe(
             result => {
                 this.showDelete = false;
-                this.formMode = FormMode.Default;
                 this.load();
+                this.deleteInProgress = false;
                 this.showMessageForResult(this.messagesService, result);
             }
         );
