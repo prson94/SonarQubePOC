@@ -1,8 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
-import { AdminBaseComponent } from '../components/admin/admin-base.component';
-import { ArtifactItemComponent } from '../components/artifact/artifact-item.component';
 
 export enum AssetDetailClickType {
     Undefined = 'Undefined',
