@@ -1,0 +1,87 @@
+﻿<div class="tile tile-detail">
+    <header>CodeArea Component</header>
+    <p>Angular component that can be used for code.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <codearea [(ngModel)]="exampleCode"></codearea>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Large (624px)</h4>
+        <div>
+            <codearea igSize="large"></codearea>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Required</h4>
+        <div>
+            <codearea required="true"></codearea>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div>
+            <codearea disabled="true"></codearea>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Read only</h4>
+        <div>
+            <codearea readonly="true"></codearea>
+        </div>
+    </div>    
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="tile tile-detail">
+    <header>Events</header>
+    <p-table [value]="events">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
