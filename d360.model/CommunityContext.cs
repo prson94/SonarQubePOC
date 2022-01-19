@@ -24,8 +24,8 @@ namespace d360.model
 
         public CompanySsoModel CurrentCompanySsoModel { get; set; }
 
-        public CommunityContext(ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
-            : base(constants.COMMUNITY_DATABASE_CONNECTION)
+        public CommunityContext(string connectionString, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
+            : base(connectionString)
         {
             Database.SetInitializer<CommunityContext>(null); //dont create any tables if they dont exist.
 
@@ -40,6 +40,9 @@ namespace d360.model
             CurrentCompanyDomain = context.CompanyPrefix;
             GetCompanySsoModel();
         }
+
+        public CommunityContext(ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
+            : this(constants.COMMUNITY_DATABASE_CONNECTION, caching, queueSource, context) { }
 
 
         #region DbSets
