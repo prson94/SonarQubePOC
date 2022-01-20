@@ -18,7 +18,7 @@ namespace igx.functions.consumption
         private CoreFunction CoreFunction;
 
         [FunctionName("DisplayValueUpdateProcessor")]
-        public async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("AzureWebJobsStorage")] string myQueueItem, ExecutionContext context)
+        public async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("AzureWebJobsQueueStorageAccount")] string myQueueItem, ExecutionContext context)
         {
             var config = new ConfigurationBuilder()
                    .SetBasePath(context.FunctionAppDirectory)
