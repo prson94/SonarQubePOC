@@ -58,7 +58,7 @@
               [innerHtml]="fieldValue | safeHtml"></span>
     </span>
     <span *ngSwitchCase="'tag'">
-        <d3s-tag-view [data]="fieldValue" [assetUID]="item?.AssetUid"></d3s-tag-view>
+        <d3s-tag-view [data]="fieldValue" [assetUID]="item?.AssetUid" [interceptLinkClick]="interceptLinkClick"></d3s-tag-view>
     </span>
     <span *ngSwitchCase="'Color'">
         <span class="ref-list-color" *ngIf="hasColor">

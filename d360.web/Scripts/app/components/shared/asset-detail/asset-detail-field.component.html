@@ -137,9 +137,9 @@
         </ng-container>
         <ng-container *ngIf="interceptLinkClick">
             <div style="padding-bottom: 9px">
-                <d3s-preview-tooltip *ngIf="field.TooltipContext == 'Preview'; else listTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID" [align]="tooltipAlign">
+                <div *ngIf="field.TooltipContext == 'Preview'; else listTooltip">
                     <a context-link (click)="navigate(field.TooltipUrl, $event)">{{field.Value}}</a>
-                </d3s-preview-tooltip>
+                </div>
                 <ng-template #listTooltip>
                     <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(field.TooltipUrl, $event)" [innerText]="field.Value"></a>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="field.TooltipUrl" [colorsJSON]="field.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
