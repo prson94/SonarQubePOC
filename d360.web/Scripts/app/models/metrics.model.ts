@@ -22,7 +22,7 @@ export class MetricAssetViewModel {
     HasResults: boolean;
 
     // Only used in UI.
-    HasThreshold: boolean;
+    HasThreshold: boolean = false;
 }
 
 export class MetricAssetHistoryViewModel {

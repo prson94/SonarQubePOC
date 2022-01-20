@@ -527,10 +527,6 @@ namespace d360.model.DataAccessLayer
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdRangeCheck);
                             }
                         }
-                        else
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdValidValue);
-                        }
 
                         if (dq.Filters != null)
                         {
