@@ -49,7 +49,6 @@ export class LinkClickInterceptor {
                 window.open(url, '_blank');
                 return;
             }
-            console.log(data);
 
             if (data.column && data.column.uidfield === "SecurityAssetUid") {
                 //clicked on ownership lookup
