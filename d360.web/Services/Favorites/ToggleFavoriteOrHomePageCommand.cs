@@ -49,6 +49,8 @@ namespace d360.web.Services.Favorites
                 throw new InvalidRequestException(Smart.Format(ApiMessages.FavoriteUnknownObject, new { request.Route }));
             }
 
+            request.Route = matcherService.GetNormalizedRoute(request.Route, routeMatch.Matcher, favoriteDetails);
+
             var isNewHomePage = await GetIsNewHomePage(request);
 
             await ToggleFavorite(
@@ -114,7 +116,8 @@ namespace d360.web.Services.Favorites
                 await companyContext.SaveChangesAsync();
             }
 
-            var existing = await companyContext.Favorites.FirstOrDefaultAsync(f => f.ResourceID == newFavorite.ResourceID && f.Route == newFavorite.Route);
+            var routes = matcherService.GetAllPossibleRoutes(request.Route, routeMatch.Matcher, @object);
+            var existing = await companyContext.Favorites.FirstOrDefaultAsync(f => f.ResourceID == newFavorite.ResourceID && routes.Contains(f.Route));
             if (existing == null)
             {
                 companyContext.Add(newFavorite);

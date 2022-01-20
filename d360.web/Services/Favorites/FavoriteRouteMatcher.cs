@@ -17,5 +17,8 @@ namespace d360.web.Services.Favorites
         public Func<string, Dictionary<string, string>, string> GetName { get; set; }
 
         public AssetTypeClass? ForcedAssetClass { get; set; }
+
+        public List<string> OtherRoutePatterns { get; set; }
+            = new List<string> { };
     }
 }

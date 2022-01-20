@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -41,6 +42,8 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 		[FavoriteId] [int] not null,
 		[ObjectType] [varchar](25) not null,
 		[ObjectId] [int] not null,
+		[Uid] [uniqueidentifier] not null,
+		[TypeObjectId] int null,
 		[Name] [varchar](max) not null,
 		[AssetTypeClass] [int] not null
 	)
@@ -49,6 +52,8 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 		[FavoriteId] [int] not null,
 		[ObjectType] [varchar](25) not null,
 		[ObjectId] [int] not null,
+		[Uid] [uniqueidentifier] not null,
+		[TypeObjectId] int null,
 		[Name] [varchar](max) not null,
 		[AssetTypeClass] [int] not null
 	)
@@ -60,6 +65,8 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 		favorite.FavoriteId,
 		asset.Object as ObjectType,
 		asset.ObjectID as ObjectId,
+		asset.uid as Uid,
+		assetType.ObjectID as TypeObjectId,
 		AssetName.DisplayValue,
 		assetType.Class
 	from @favorites favorite
@@ -88,6 +95,8 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 		favorite.FavoriteId,
 		assetType.Object as ObjectType,
 		assetType.ObjectID as ObjectId,
+		assetType.uid as Uid,
+		null as TypeObjectId,
 		assetType.Name,
 		assetType.Class
 	from @favorites favorite
@@ -141,7 +150,9 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
                                       Name = favorite.Name,
                                       ObjectType = favorite.ObjectType,
                                       ObjectId = favorite.ObjectId,
-                                      AssetTypeClass = favorite.AssetTypeClass,
+									  Uid = favorite.Uid,
+									  TypeObjectId = favorite.TypeObjectId,
+									  AssetTypeClass = favorite.AssetTypeClass,
                                       Breadcrumbs = breadcrumbsGroup.Select(b => new BreadcrumbsInfo
                                       {
                                           Level = b.Level,
@@ -160,7 +171,11 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 
             public int ObjectId { get; set; }
 
-            public string Name { get; set; }
+			public Guid Uid { get; set; }
+
+			public int? TypeObjectId { get; set; }
+
+			public string Name { get; set; }
 
             public AssetTypeClass AssetTypeClass { get; set; }
         }
