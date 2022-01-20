@@ -245,19 +245,19 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     updateSelectionMenuLabel() {
         if (this.groupMenuOptions && this.groupMenuOptions.length > 0) {
-            let versionMenuItem = this.groupMenuOptions.find(x => x.title.indexOf("Version History") != -1);
+            let versionMenuItem = this.groupMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
         if (this.itemMenuOptions && this.itemMenuOptions.length > 0) {
-            let versionMenuItem = this.itemMenuOptions.find(x => x.title.indexOf("Version History") != -1);
+            let versionMenuItem = this.itemMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
         if (this.disabledMenuOptions && this.disabledMenuOptions.length > 0) {
-            let versionMenuItem = this.disabledMenuOptions.find(x => x.title.indexOf("Version History") != -1);
+            let versionMenuItem = this.disabledMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
