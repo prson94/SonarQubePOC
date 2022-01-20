@@ -310,22 +310,11 @@ namespace d360.web.Services.Favorites
             // policy
             new FavoriteRouteMatcher
             {
-                RoutePattern = "policy/:parentId/id/:objectid",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.PolicyTab),
-                ObjectType = SystemObjects.Policy
-            },
-            new FavoriteRouteMatcher
-            {
-                // TODO: should support several route patterns as part of one matcher
-                RoutePattern = "policy/:parentId;hierarchyId=:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.PolicyTab),
-                ObjectType = SystemObjects.Policy
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "policy/:parentId/id/:objectId",
+                RoutePattern = "policy/:typeObjectId;hierarchyId=:objectId",
+                OtherRoutePatterns =
+                {
+                    "policy/:typeObjectId/id/:objectId"
+                },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.DefinitionTab),
                 ObjectType = SystemObjects.Policy
@@ -382,14 +371,10 @@ namespace d360.web.Services.Favorites
             // model
             new FavoriteRouteMatcher
             {
-                RoutePattern = "model/:parentId;hierarchyId=:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.DefinitionTab),
-                ObjectType = SystemObjects.Taxonomy
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "model/:parentId/id/:objectId",
+                RoutePattern = "model/:typeObjectId;hierarchyId=:objectId",
+                OtherRoutePatterns = {
+                    "model/:typeObjectId/id/:objectId"
+                },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.DefinitionTab),
                 ObjectType = SystemObjects.Taxonomy
@@ -423,15 +408,9 @@ namespace d360.web.Services.Favorites
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/comments/:uid",
+                OtherRoutePatterns = { "sidebar/comments/:uid/true" },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.CommentsTab),
-            },
-            new FavoriteRouteMatcher
-            { 
-                // TODO: should support several route patterns as part of one matcher
-                RoutePattern = "sidebar/comments/:uid/true",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.CommentsTab)
             },
             new FavoriteRouteMatcher
             {
@@ -442,13 +421,9 @@ namespace d360.web.Services.Favorites
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/visualization/browser/:uid",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.ImpactDiagramTab),
-            },
-            new FavoriteRouteMatcher
-            {
-                // TODO: should support several route patterns as part of one matcher
-                RoutePattern = "sidebar/visualization/browser/:uid/Impact",
+                OtherRoutePatterns = {
+                    "sidebar/visualization/browser/:uid/Impact"
+                },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ImpactDiagramTab),
             },
