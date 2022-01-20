@@ -49,6 +49,7 @@ export class LinkClickInterceptor {
                 window.open(url, '_blank');
                 return;
             }
+            console.log(data);
 
             if (data.column && data.column.uidfield === "SecurityAssetUid") {
                 //clicked on ownership lookup
@@ -70,6 +71,7 @@ export class LinkClickInterceptor {
             if (data.DataType === "Lookup"
                 || data.FieldName === "ReferenceList"
                 || data.DataType === "color"
+                || data.FieldName === "ArtifactParentName"
             ) {
                 //list fields
                 var val = data.Values[valueIndex];
@@ -158,6 +160,9 @@ export class LinkClickInterceptor {
         baseComponent.selectedAsset = null;
         baseComponent.selectedReferenceItem = null;
         baseComponent.selectedTag = null;
+
+        //if some other tab is opened in side panel, force opening detail panel
+        baseComponent.sidePanelTab = 'detail';
 
         if (event.type === AssetDetailClickType.Asset) {
             baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };
