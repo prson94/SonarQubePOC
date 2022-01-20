@@ -3,8 +3,8 @@
                     name="codeExample"
                     [options]="editorConfig"     
                     [required]="required ? 'true' : null"                         
-                    class="{{(isValid ? '' : 'ng-invalid')}} {{(readonly ? 'readonly' : '')}} {{(required && value.trim()==='' ? 'required' : '')}}"
+                    class="{{(isCodeValid ? '' : 'ng-invalid')}} {{(readonly ? 'readonly' : '')}} {{(required && value.trim()==='' ? 'required' : '')}}"
                     #codeComponent>
     </ngx-codemirror>
-    <div *ngIf="!isCodeValid" class="ig-text-required">{{validationMessage}}</div>
+    <div *ngIf="!isCodeValid && !(required && value.trim()==='')" class="ig-text-required">{{validationMessage}}</div>
 </div>
