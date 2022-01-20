@@ -8,7 +8,7 @@
                              [infoTooltip]="simpleSearchTooltipHTML">
             </ig-search-field>
         </div>
-        <div class="grid-action-buttons" *ngIf="!groupIsActiveDirectory">
+        <div class="grid-action-buttons" *ngIf="!groupIsActiveDirectory && !readOnly">
             <button igButton
                     pTooltip="Add New Members"
                     tooltipPosition="left"
@@ -39,19 +39,19 @@
                     Owner
                     <d3s-sortIcon [field]="'Owner'"></d3s-sortIcon>
                 </th>
-                <th style="width: 3%"></th>
+                <th style="width: 3%" *ngIf="!readOnly"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
                 <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                 <th><d3s-column-filter [field]="'Owner'" [datatype]="'text'"></d3s-column-filter></th>
-                <th></th>
+                <th *ngIf="!readOnly"></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
             <tr [pSelectableRow]="item">
                 <td>{{item.Name}}</td>
                 <td>{{item.Owner}}</td>
-                <td>
+                <td *ngIf="!readOnly">
                     <div class="RowTools">
                         <a (click)="selectedRow = item;showDelete=true"
                            pTooltip="Remove Member"

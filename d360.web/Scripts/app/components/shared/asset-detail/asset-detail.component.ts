@@ -45,6 +45,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() assetDetail: any;
     @Input() hideLinks: boolean = false;
     @Input() hideClassName: boolean = false;
+    @Input() groupMembersReadOnlyMode: boolean = true;
     @Output() onEditClick = new EventEmitter();
 
     assetUID: string;

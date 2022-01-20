@@ -3,7 +3,6 @@
 import * as _ from 'lodash';
 import { forkJoin } from 'rxjs';
 import { EditorField } from '../../../models/editor-field.model';
-import { FormMode } from '../../../models/form.model';
 import { AddUserToGroup, Group, GroupResourceInfo } from '../../../models/group.model';
 import { GroupService } from '../../../services/group.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -22,6 +21,7 @@ import { BaseComponent } from '../base.component';
 
 export class GroupMembersComponent extends BaseComponent implements OnChanges {
     @Input() groupUid: string;
+    @Input() readOnly: boolean = true;
 
     groupName: string;
     title: string = 'Members';

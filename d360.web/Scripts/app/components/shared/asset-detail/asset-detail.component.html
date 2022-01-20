@@ -176,7 +176,7 @@
 
                 <ng-container *ngSwitchCase="'members'">
                     <div class="groups-tab" *ngIf="objectType === 'Group'">
-                        <d3s-group-members [groupUid]="objectUID"></d3s-group-members>
+                        <d3s-group-members [groupUid]="objectUID" [readOnly]="groupMembersReadOnlyMode"></d3s-group-members>
                     </div>
                 </ng-container>
             </ng-container>
