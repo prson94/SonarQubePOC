@@ -70,7 +70,8 @@ export class AppComponent implements AfterContentInit, OnDestroy {
                 version: VersionNumber,
                 sampleRate: 100,
                 trackInteractions: true,
-                defaultPrivacyLevel: 'mask-user-input'
+                defaultPrivacyLevel: 'mask-user-input',
+                allowedTracingOrigins: [/https:\/\/.*\.data3sixty\.com/, /https:\/\/.*\.data3sixty\.local/]
             });
 
             datadogRum.setUser({
