@@ -52,7 +52,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'groupId' || p == 'groupUid') {
+            if (p === 'groupId' || p === 'groupUid') {
                 this.showAddMembers = false;
                 this.showDelete = false;
                 this.load();
@@ -81,7 +81,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
             var members = data[1];
 
-            if (members != undefined) {
+            if (typeof members !== "undefined") {
                 this.groupItems = members.items;
             }
 
@@ -103,15 +103,17 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
     save() {
-        if (!(this.field.Value != null && this.field.Value.length > 0)) return;
+        if (!(this.field.Value != null && this.field.Value.length > 0)) {
+            return;
+        }
         try {
-            this.field.Value.forEach(x => {
+            this.field.Value.forEach((x) => {
                 var user = new AddUserToGroup();
                 user.Uid = x.split('|')[3];
                 this.members.push(user);
-            })
-
+            });
         } catch (e) {
+            this.members = [];
         }
         this.savingInProgress = true;
         this.groupService.addUsersToGroup(this.groupUid, this.members).subscribe(

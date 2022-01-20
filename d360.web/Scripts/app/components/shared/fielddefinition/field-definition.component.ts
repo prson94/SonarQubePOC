@@ -86,10 +86,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 
     load(): void {
-        if (this.objectType == "IntersectType") {
+        if (this.objectType === "IntersectType") {
             this.showIsPartOfKey = false;
         }
-        if (this.objectType == "GroupType") {
+        if (this.objectType === "GroupType") {
             this.showIsPartOfKey = false;
             this.showShowInDetailTile = false;
             this.showAddToSearch = true;

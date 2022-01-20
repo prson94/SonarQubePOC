@@ -101,7 +101,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
                 var result = res[0];
                 var d = res[1];
 
-                this.columns = result.Columns.filter(x => x.datafield != 'Name');
+                this.columns = result.Columns.filter((x) => x.datafield !== 'Name');
                 this.fields = result.Fields;
 
                 this.groupItems = d.items;
