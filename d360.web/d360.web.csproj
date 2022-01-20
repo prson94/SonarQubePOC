@@ -628,6 +628,7 @@
     <Compile Include="Services\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Services\Favorites\FavoriteRouteMatcher.cs" />
     <Compile Include="Services\Favorites\FavoriteRouteMatcherService.cs" />
+    <Compile Include="Services\Favorites\GetFavoriteId.cs" />
     <Compile Include="Services\Favorites\GetFavoritesQuery.cs" />
     <Compile Include="Services\Favorites\FavoriteRouteMatchResult.cs" />
     <Compile Include="Services\Favorites\ToggleFavoriteOrHomePageCommand.cs" />
