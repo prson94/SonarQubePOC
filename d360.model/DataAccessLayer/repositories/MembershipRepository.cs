@@ -676,7 +676,7 @@ namespace d360.model.DataAccessLayer
                         set     U.ResourceID = G.ResourceID
                         from    api.ExecutionUser U
                                 inner join reporting.Global_Resource G on G.[uid] = U.[Uid] and G.[State] <> @deleted
-                        where   U.Success is null and U.IsNew = 0;
+                        where   U.ExecutionID = @executionID and U.Success is null and U.IsNew = 0;
 
                         update  U
                         set     U.FieldTypeID = F.ID
