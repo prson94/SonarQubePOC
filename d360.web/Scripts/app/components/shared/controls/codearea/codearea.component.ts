@@ -32,7 +32,7 @@ export class CodeArea implements ControlValueAccessor, OnInit {
 
     value = "";
     sizeClass: string = "ig-field-width-full";
-    validationMessage: string = "JSON is not well formed.Please review and update.";
+    validationMessage: string = "JSON is not well formed. Please review and update.";
 
     editorConfig = {
         lineNumbers: true,
