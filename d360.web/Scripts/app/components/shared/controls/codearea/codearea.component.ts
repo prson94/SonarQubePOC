@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output, ViewChild } from "@angular/core";
+﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output, ViewChild, OnInit } from "@angular/core";
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { EditorModule } from 'primeng/editor';
@@ -21,7 +21,7 @@ export const CODE_EDITOR_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ["./codearea.component.less"]
 })
-export class CodeArea implements ControlValueAccessor {   
+export class CodeArea implements ControlValueAccessor, OnInit {
     @Input() placeholder: string;
     @Input() codeType: string = "json";
     @Input() disabled: boolean = false;
@@ -31,8 +31,7 @@ export class CodeArea implements ControlValueAccessor {
     @Output() isValid = new EventEmitter();
 
     value = "";
-    valid: boolean = true;
-    sizeClass: string = "ig-input-full";
+    sizeClass: string = "ig-field-width-full";
     validationMessage: string = "JSON is not well formed.Please review and update.";
 
     editorConfig = {
@@ -57,6 +56,10 @@ export class CodeArea implements ControlValueAccessor {
         this.placeholder = this.placeholder == null ? (this.required ? 'Value required' : 'Optional') : this.placeholder;
         this.editorConfig.placeholder = this.placeholder;
 
+        if (this.igSize && this.igSize === "large") {
+            this.sizeClass = "ig-field-width-large";
+        }
+
         if (this.codeType !== 'json' && this.codeTypeList.indexOf(this.codeType.toLocaleLowerCase()) >= 0) {
             switch (this.codeType.toLocaleLowerCase()) {
                 case "css":
@@ -74,14 +77,10 @@ export class CodeArea implements ControlValueAccessor {
         }
     }
 
-    ngOnViewInit() {
+    ngAfterViewInit() {
         if (this.required) {
             this.codeComponent.nativeElement.setAttribute("required");            
-        }        
-
-        if (this.igSize && this.igSize === "large") {
-            this.sizeClass += "ig-input-large";
-        }
+        }                
     }
 
     writeValue(obj: any): void {
@@ -99,19 +98,21 @@ export class CodeArea implements ControlValueAccessor {
     }
 
     get isCodeValid() {
+        let valid = true;
         if (this.codeType.toLocaleLowerCase() === "json") {
-            let json = this.value;
+            let json = this.value;            
             try {
                 if (json && json.trim() !== "") {
                     let j = JSON.parse(json);
-                }
-                this.valid = true;
+                } else if (this.required) {
+                    valid = false;
+                }                
             } catch (e) {
-                this.valid = false;
+                valid = false;
             }               
         }
-        this.isValid.emit({ isvalid: this.valid });
-        return this.valid;
+        this.isValid.emit({ isvalid: valid });
+        return valid;
     }
 }
 
