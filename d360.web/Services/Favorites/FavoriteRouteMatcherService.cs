@@ -120,8 +120,7 @@ namespace d360.web.Services.Favorites
                 return new[] { route };
             }
 
-            var patterns = new[] { matcher.RoutePattern }.Concat(matcher.OtherRoutePatterns);
-            var routes = patterns.Select(pattern => Smart.Format(ToFormattableString(pattern), favoriteDetails));
+            var routes = matcher.RoutePatterns.Select(pattern => Smart.Format(ToFormattableString(pattern), favoriteDetails));
             return routes;
         }
 
@@ -155,9 +154,7 @@ namespace d360.web.Services.Favorites
 
         private Dictionary<string, string> TryMatchRoute(FavoriteRouteMatcher matcher, string route)
         {
-            var patterns = new[] { matcher.RoutePattern }.Concat(matcher.OtherRoutePatterns);
-
-            return patterns
+            return matcher.RoutePatterns
                 .Select(pattern => TryMatchRoute(pattern, route))
                 .Where(x => x != null)
                 .SingleOrDefault();

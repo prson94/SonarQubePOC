@@ -3,6 +3,7 @@ using d360.core.entities.Membership;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace d360.web.Services.Favorites
 {
@@ -20,5 +21,7 @@ namespace d360.web.Services.Favorites
 
         public List<string> OtherRoutePatterns { get; set; }
             = new List<string> { };
+
+        public IEnumerable<string> RoutePatterns => new[] { RoutePattern }.Concat(OtherRoutePatterns);
     }
 }
