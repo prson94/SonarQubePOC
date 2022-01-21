@@ -220,6 +220,7 @@ insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Ve
 
         List<Semantic> findLatestExistingSemantics(List<string> qualifiers, int expectedCount)
         {
+            qualifiers = qualifiers.Where(q => !string.IsNullOrEmpty(q)).ToList();
             var existingSemantics = CompanyContext.Query<Semantic>(
         "select * " +
         "from Semantic S " +
