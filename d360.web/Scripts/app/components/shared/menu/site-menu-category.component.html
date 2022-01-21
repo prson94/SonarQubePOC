@@ -1,6 +1,7 @@
 ﻿<li #item 
     [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}"
-    title="{{title}}" 
+    title="{{title}}"
+    [attr.data-cy]="title"
     (mouseenter)="show(item)" (click)="navigateToUrl(url)" 
     style="cursor: pointer;">
     <div class="menu-category-box">
