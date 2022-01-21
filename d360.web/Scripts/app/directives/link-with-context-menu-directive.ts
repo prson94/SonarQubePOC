@@ -60,7 +60,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         if (value) {
             html += value + "<span style='display:block; height:8px;'></span>";
             this.isTagTooltip = true;
-            var refElement = "tag";
+            refElement = "tag";
 
             if (value.indexOf('spinner') > -1) {
                 isInitialTag = true;
