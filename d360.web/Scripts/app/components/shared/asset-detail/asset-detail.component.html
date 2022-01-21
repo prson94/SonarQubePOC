@@ -4,6 +4,10 @@
     </div>
     <div *ngIf="!isLoading">
         <ng-container *ngIf="showHeader">
+            <div class="asset-detail-user-image" *ngIf="objectType === 'Resource'">
+                <img class="resource-image"
+                     [src]="'/api/v2/membership/users/' + objectUID + '/image?size=70'" />
+            </div>
             <div class="asset-detail-header">
                 <div class="right d3s-score-container" style="display: block">
                     <d3s-score-badge *ngFor="let score of model?.Scores" [score]="score" [precision]="1" [useMiniBadge]="true"></d3s-score-badge>
@@ -15,14 +19,9 @@
                     {{model?.AssetTypeName}}
                 </div>
                 <div>
-                    <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
+                    <a (click)="open();">Open</a> <span class="grey-delimiter">|</span> <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
                 </div>
             </div>
-
-            <img class="resource-image" *ngIf="objectType === 'Resource'" 
-                 [src]="'/api/v2/membership/users/' + objectUID + '/image?size=70'"
-                 style="border-radius: 50%; position: absolute; top: 70px; right: 16px;"/>
-
         </ng-container>
         <ng-container *ngIf="isSidePanel">
             <div class="windowtabs">
