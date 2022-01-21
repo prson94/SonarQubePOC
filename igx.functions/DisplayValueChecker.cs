@@ -44,7 +44,7 @@ namespace igx.functions.consumption
 
                 foreach (var c in companies)
                 {
-                    var community = JobDbContextCreator.CreateCommunityContext(c.CompanyID, 0, c.UrlPrefix, true);
+                    var community = JobDbContextCreator.CreateCommunityContext(c.CompanyID, 0, c.UrlPrefix, true, CoreFunction.GetConnectionString("CommunityContext"));
                     var rs = await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                     {
