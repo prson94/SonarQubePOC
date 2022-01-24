@@ -26,10 +26,6 @@
                 background: @ig-white;
             }
 
-            &.p-highlight {
-                background: @ig-white;
-                color: @ig-black;
-            }
 
             .pi {
                 font-weight: bold;
@@ -43,13 +39,35 @@
     }    
 }
 
-p-tristatecheckbox {
-    .ig-checkbox {
-        &:not(.p-highlight) span.pi-times {
+p-checkbox {
+    .ig-checkbox.p-checkbox-box {
+        background: @ig-white;
+        color: @ig-black;
+
+        &.p-highlight {
             background: @ig-purple-t1;
             color: @ig-white;
+        }
+    }
+}
+
+p-tristatecheckbox {
+    .ig-checkbox.p-checkbox-box {
+        &.p-highlight {
+            background: @ig-white;
+            color: @ig-black;
+        }
+
+        .pi-check {
+            border: 1px solid @ig-purple-t1;
+            border-radius: 4px;
+        }
+
+        &:not(.p-highlight) span.p-checkbox-icon {
             &:before {
-                content: "\e90f";
+                content: "-";
+                font-weight: bold;
+                font-size: 16px;
             }
         }
 
