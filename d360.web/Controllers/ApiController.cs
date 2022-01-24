@@ -2697,7 +2697,28 @@ from    (
                                     {
                                         columns = 1,
                                         FirstColumnFields = new List<ReadOnlyField> {
-                                        new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ObjectID}
+                                        new ReadOnlyField {
+                                            Name = Resources.FieldInfo.Parent_Name ,
+                                            FieldName = "ArtifactParentName",
+                                            FieldDescription = Resources.FieldInfo.Parent_Description,
+                                            Value = parentAsset.DisplayValue,
+                                            TooltipUrl = parentUrl,
+                                            TooltipType="Artifact",
+                                            TooltipContext="Preview",
+                                            TooltipID = parent.ObjectID,
+                                            Values = new List<ReadOnlyFieldValue>
+                                            {
+                                                new ReadOnlyFieldValue{
+                                                    Value = parentAsset.DisplayValue,
+                                                    uid = parentAsset.uid,
+                                                    TooltipUrl = parentUrl,
+                                                    TooltipType="Artifact",
+                                                    TooltipContext="Preview",
+                                                    TooltipID = parent.ObjectID,
+                                                    assetTypeUid = parentAsset.AssetTypeUid.HasValue ? parentAsset.AssetTypeUid.Value : Guid.Empty
+                                                }
+                                            }
+                                        }
                                     },
                                         Category = Resources.FieldInfo.SystemNoCategory
                                     });

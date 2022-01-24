@@ -264,7 +264,7 @@ namespace d360.model.DataAccessLayer
 
         public MetricAsset GetActiveMetric(Guid uid)
         {
-            return Company.Filter<MetricAsset>(i => i.Uid == uid && i.State == State.Active).SingleOrDefault();
+            return Company.Filter<MetricAsset>(i => i.Uid == uid && i.State == State.Active, i => i.Versions).SingleOrDefault();
         }
 
         public WorkHttpStatus AddOrUpdateMetrics(MetricAssetEditModel model)

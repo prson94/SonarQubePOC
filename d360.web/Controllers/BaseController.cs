@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using Resources;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -565,6 +566,15 @@ from	CompanyResource CR
             DataType.Score.ToString(),
             DataType.Counter.ToString()
         };
+
+        internal readonly ReadOnlyCollection<string> supportedDisplayFormats = new ReadOnlyCollection<string>(new List<string> {
+            DataType.Text.ToString(),
+            DataType.Date.ToString(),
+            DataType.DateTime.ToString(),
+            DataType.Number.ToString(),
+            DataType.Decimal.ToString(),
+            DataType.Lookup.ToString()
+        });
 
         public BaseController(ICoreComponentSet set)
         {

@@ -3563,7 +3563,8 @@ where	T.ExecutionID = @ExecutionID
                 delete	T
                 from	ResponsibilityTypeRelationOverrideItem T
                         inner join Asset A on A.ID = T.AssetID
-                        inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and A.ID in (select id from #deleteAssets);
+                        inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid
+                where   exists (select 1 from #deleteAssets d where d.id = A.ID);
 
                 delete	T
                 from	AssetCrossReference T

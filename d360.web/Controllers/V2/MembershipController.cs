@@ -1413,7 +1413,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             Route("users/me/favorites"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
-            SwaggerResponse(HttpStatusCode.Created, "Favorite status toggled."),
+            SwaggerResponse(HttpStatusCode.Created, "Favorite status toggled.", typeof(IdResponse<int?>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -1431,7 +1431,13 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 IsHomePage = false
             });
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
+            var favoriteId = await this.mediator.Send(new GetFavoriteId.Argument
+            {
+                ResourceId = Company.CurrentResourceID,
+                Route = favorite.Route,
+            });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new IdResponse<int?>(favoriteId)));
         }
 
         /// <summary>
@@ -1443,7 +1449,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             Route("users/me/homepage"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
-            SwaggerResponse(HttpStatusCode.Created, "Homepage status toggled."),
+            SwaggerResponse(HttpStatusCode.Created, "Homepage status toggled.", typeof(IdResponse<int?>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -1461,7 +1467,13 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 IsHomePage = true
             });
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
+            var favoriteId = await this.mediator.Send(new GetFavoriteId.Argument
+            {
+                ResourceId = Company.CurrentResourceID,
+                Route = favorite.Route,
+            });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new IdResponse<int?>(favoriteId)));
         }
 
         /// <summary>

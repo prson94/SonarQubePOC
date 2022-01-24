@@ -685,7 +685,9 @@ select	ID,
 		ObjectID,
 		TypeName as AssetTypeName,
 		Type,
-	    TypeID
+	    TypeID,
+        uid,
+        assetTypeUid
 from	AssetDetail
 where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new DbString { Value = objectType, IsFixedLength = true, Length = 20, IsAnsi = true } }).SingleOrDefault();
 

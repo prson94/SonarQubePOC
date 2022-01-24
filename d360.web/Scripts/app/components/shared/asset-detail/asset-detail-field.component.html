@@ -25,15 +25,15 @@
     </ng-container>
     <ng-container *ngIf="interceptLinkClick">
         <div *ngIf="fieldDataType != 'tag'" class="ig-value ig-item-list">
-            <ul *ngFor="let item of field.Values">
+            <ul *ngFor="let item of field.Values; index as i">
                 <li *ngIf="item.TooltipContext == 'Preview'" [class]="valueCount > 1 ? 'ig-item' : ''">
                     <a context-link *ngIf="item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event, item)"></a>
                     <span *ngIf="!item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="item.Value"></span>
-                    <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="item.TooltipUrl" [colorsJSON]="item.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
+                    <d3s-color-display *ngIf="fieldDataType == 'color'" [valueIndex]="i" [url]="item.TooltipUrl" [colorsJSON]="item.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
                 </li>
                 <li *ngIf="item.TooltipContext != 'Preview'">
                     <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(item.TooltipUrl, $event, item)" [innerText]="(valueCount > 1 ? '&bull; ' : '') + item.Value"></a>
-                    <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="item.Value" [url]="item.TooltipUrl" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
+                    <d3s-color-display *ngIf="fieldDataType == 'color'" [valueIndex]="i" [colorsJSON]="item.Value" [url]="item.TooltipUrl" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
                 </li>
             </ul>
         </div>
@@ -137,9 +137,9 @@
         </ng-container>
         <ng-container *ngIf="interceptLinkClick">
             <div style="padding-bottom: 9px">
-                <d3s-preview-tooltip *ngIf="field.TooltipContext == 'Preview'; else listTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID" [align]="tooltipAlign">
+                <div *ngIf="field.TooltipContext == 'Preview'; else listTooltip">
                     <a context-link (click)="navigate(field.TooltipUrl, $event)">{{field.Value}}</a>
-                </d3s-preview-tooltip>
+                </div>
                 <ng-template #listTooltip>
                     <a context-link *ngIf="fieldDataType != 'color'" (click)="navigate(field.TooltipUrl, $event)" [innerText]="field.Value"></a>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="field.TooltipUrl" [colorsJSON]="field.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>

@@ -40,6 +40,14 @@ namespace d360.model.DataAccessLayer.repositories
             return result as IReadOnlyList<TItem> ?? new List<TItem>(result);
         }
 
+        public Task<T> QuerySingleOrDefaultAsync<T>(
+            string sql,
+            object parameters,
+            int? commandTimeout = null)
+        {
+            return ConnectionProvider.Connection.QuerySingleOrDefaultAsync<T>(sql, parameters, null, commandTimeout);
+        }
+
         public Task<SqlMapper.GridReader> QueryMultipleAsync(
             string sql,
             object parameters,

@@ -1,0 +1,10 @@
+﻿<div class="ig-codearea {{sizeClass}} {{(disabled ? 'disabled' : '')}}">
+    <ngx-codemirror [(ngModel)]="value"
+                    name="codeExample"
+                    [options]="editorConfig"     
+                    [required]="required ? 'true' : null"                         
+                    class="{{(isCodeValid ? '' : 'ng-invalid')}} {{(readonly ? 'readonly' : '')}} {{(required && value.trim()==='' ? 'required' : '')}}"
+                    #codeComponent>
+    </ngx-codemirror>
+    <div *ngIf="!isCodeValid && !(required && value.trim()==='')" class="ig-text-required">{{validationMessage}}</div>
+</div>

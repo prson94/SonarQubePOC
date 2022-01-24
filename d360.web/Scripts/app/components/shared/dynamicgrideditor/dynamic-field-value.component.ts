@@ -20,6 +20,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     @Input() useApiName: boolean = false;
     @Input() isDateUTC: boolean = false;
     @Input() styleClass: string = null;
+    @Input() interceptLinkClick: boolean = false;
 
     public fieldType: string;
     private fieldValue: any;

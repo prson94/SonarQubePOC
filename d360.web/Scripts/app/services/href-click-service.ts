@@ -1,8 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
-import { AdminBaseComponent } from '../components/admin/admin-base.component';
-import { ArtifactItemComponent } from '../components/artifact/artifact-item.component';
 
 export enum AssetDetailClickType {
     Undefined = 'Undefined',
@@ -72,6 +70,7 @@ export class LinkClickInterceptor {
             if (data.DataType === "Lookup"
                 || data.FieldName === "ReferenceList"
                 || data.DataType === "color"
+                || data.FieldName === "ArtifactParentName"
             ) {
                 //list fields
                 var val = data.Values[valueIndex];
@@ -160,6 +159,9 @@ export class LinkClickInterceptor {
         baseComponent.selectedAsset = null;
         baseComponent.selectedReferenceItem = null;
         baseComponent.selectedTag = null;
+
+        //if some other tab is opened in side panel, force opening detail panel
+        baseComponent.sidePanelTab = 'detail';
 
         if (event.type === AssetDetailClickType.Asset) {
             baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };
