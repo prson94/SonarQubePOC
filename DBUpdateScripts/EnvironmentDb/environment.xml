@@ -219,6 +219,7 @@
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
 	<include file="scripts/Table.api.ExecutionGroup.xml"/>
+	<include file="scripts/Table.api.ExecutionItemDependentChange.xml"/>
 	<include file="scripts/Table.api.ExecutionScore.xml"/>
 	<include file="scripts/Table.api.ExecutionMeasure.xml"/>
 	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
