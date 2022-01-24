@@ -13,7 +13,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
     providers: [ObjectDetailService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`.p-datatable-wrapper { overflow:auto; } .p-datatable-wrapper table { table-layout: unset !important;  }
-        .tagged-assets { padding:16px; } .row-header { padding-bottom: 8px;}`],
+        .tagged-assets { padding:16px 0 16px 16px ; } .row-header { padding-bottom: 8px;}`],
     encapsulation: ViewEncapsulation.None
 })
 

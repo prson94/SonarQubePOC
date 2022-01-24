@@ -168,6 +168,9 @@
                                     </td>
                                 </tr>
                             </ng-template>
+                            <ng-template pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt1.first" [rows]="dt1.rows" [totalRecords]="dt1.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
                         </p-table>
                     </div>
 
@@ -210,6 +213,9 @@
                                         No results match your search criteria
                                     </td>
                                 </tr>
+                            </ng-template>
+                            <ng-template pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt2.first" [rows]="dt2.rows" [totalRecords]="dt2.totalRecords"></d3s-grid-paging-info>
                             </ng-template>
                         </p-table>
                     </div>
