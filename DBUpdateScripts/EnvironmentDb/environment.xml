@@ -64,6 +64,7 @@
 	<include file="scripts/Table.dbo.AssetTypeLevel.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeStyle.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplate.xml"/>
+	<include file="scripts/Table.dbo.FieldType.xml"/>					<!--FieldType Table use as Reference table in AssetTypeExportTemplateField-->
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateField.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateStyle.xml"/>
 	<include file="scripts/Table.dbo.Asset.xml"/>
@@ -81,7 +82,6 @@
 	<include file="scripts/Table.dbo.CommentRelation.xml"/>
 	<include file="scripts/Table.dbo.CommentVote.xml"/>
 	<include file="scripts/Table.dbo.Favorite.xml"/>
-	<include file="scripts/Table.dbo.FieldType.xml"/>
 	<include file="scripts/Table.dbo.FieldTypeFilteredLookupDefinition.xml"/>
 	<include file="scripts/Table.dbo.FieldTypeFilteredLookupDisplayField.xml"/>
 	<include file="scripts/Table.dbo.FieldTypeLookup.xml"/>
@@ -219,6 +219,7 @@
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
 	<include file="scripts/Table.api.ExecutionGroup.xml"/>
+	<include file="scripts/Table.api.ExecutionItemDependentChange.xml"/>
 	<include file="scripts/Table.api.ExecutionScore.xml"/>
 	<include file="scripts/Table.api.ExecutionMeasure.xml"/>
 	<include file="scripts/Table.api.ExecutionPredicate.xml"/>

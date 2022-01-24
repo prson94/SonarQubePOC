@@ -81,7 +81,7 @@ namespace d360.core.entities
         [JsonProperty("qualifier"), Column(TypeName = "nvarchar")]
         public string Qualifier { get; set; }
 
-        [JsonProperty("regExReturned"), Column(TypeName = "nvarchar")]
+        [JsonProperty("regExpReturned"), Column(TypeName = "nvarchar")]
         public string RegularExpression { get; set; }
 
         [JsonProperty("status")]

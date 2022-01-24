@@ -475,7 +475,7 @@ where   AssetTypeID in (
                                                         var predicateExistenceSql = "select cast(iif(sum(bit1) > 0, 1, 0) as bit) from (" +
                                                             "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where PredicateUid = @PredicateUid and SubjectUid = @assetUid  " +
                                                             "union all " +
-                                                            "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where PredicateUid = @PredicateUid and ObjectUid = @assetUid " +
+                                                            "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where PredicateUid = @PredicateUid and ObjectUid = @assetUid and PredicateType not in (3,4) " +
                                                             ") a";
 
                                                         switch (gDefinition.Predicate.Operator)
@@ -520,7 +520,7 @@ where   AssetTypeID in (
                                                                 operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid and ObjectUid = @ValueUid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @assetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @assetUid and PredicateType not in (3,4) ";
                                                                 break;
                                                             case Operator.In:
                                                                 parameters = new
@@ -533,7 +533,7 @@ where   AssetTypeID in (
                                                                 operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @assetUid and I.ObjectUid = U.Uid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @assetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @assetUid and PredicateType not in (3,4) ";
                                                                 break;
                                                             case Operator.NotEquals:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
@@ -541,7 +541,7 @@ where   AssetTypeID in (
                                                                 operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid and ObjectUid = @ValueUid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @assetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @assetUid and PredicateType not in (3,4) ";
                                                                 break;
                                                             case Operator.NotIn:
                                                                 parameters = new
@@ -554,7 +554,7 @@ where   AssetTypeID in (
                                                                 operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @assetUid and I.ObjectUid = U.Uid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @assetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @assetUid and PredicateType not in (3,4) ";
                                                                 break;
                                                             case Operator.NotPopulated:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid };
@@ -562,7 +562,7 @@ where   AssetTypeID in (
                                                                 operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid  " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @assetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @assetUid and PredicateType not in (3,4) ";
                                                                 break;
                                                             default: // case Operator.Populated:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid };
@@ -570,7 +570,7 @@ where   AssetTypeID in (
                                                                 operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid  " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @assetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @assetUid and PredicateType not in (3,4) ";
                                                                 break;
                                                         }
                                                         var relationSql = $"select cast({bitSql} as bit) from ({operatorSql}) a";

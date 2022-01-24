@@ -37,7 +37,7 @@ namespace d360.web.Services
                                   select new FavoriteApiViewModel
                                   {
                                       Id = favorite.Id,
-                                      Route = favorite.Route,
+                                      Route = matcherService.GetNormalizedRoute(favorite.Route, routeMatch.Matcher, favoriteDetails),
                                       PageType = routeMatch.Matcher.PageType,
                                       Breadcrumbs = (favoriteDetails?.Breadcrumbs ?? new List<BreadcrumbsInfo>())
                                           .OrderBy(p => p.Level)

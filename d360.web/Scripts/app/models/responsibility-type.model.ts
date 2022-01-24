@@ -154,6 +154,7 @@ export class ResponsibilityTypeRelationRuleDefinitionWhenItem {
     ValueOptions: SelectItem[] = [];
     IsLookup: boolean = false;
     IsBool: boolean = false;
+    IsloadValuesForIntersectType: boolean = false;
 }
 
 export class ResponsibilityTypeRelationRuleDefinitionWhenTestRow {
