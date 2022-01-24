@@ -97,6 +97,10 @@ namespace d360.model.DataAccessLayer
 
         public int ObjectId { get; set; }
 
+        public Guid Uid { get; set; }
+
+        public int? TypeObjectId { get; set; }
+
         public AssetTypeClass AssetTypeClass { get; set; }
     }
 
