@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1274,6 +1274,7 @@
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <Content Include="Scripts\app\components\rule\rule-item.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group\group-members.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.module.ts" />

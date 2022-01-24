@@ -15,6 +15,7 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { GroupRoutingModule } from './group.routes';
 
 import { GroupComponent } from './group.component';
+import { GroupItemComponent } from './group-item.component';
 import { GroupListComponent } from './group-list.component';
 import { GroupResponsibilityComponent } from './group-responsibility.component';
 
@@ -45,6 +46,7 @@ import { TableModule } from 'primeng/table';
     ],
     declarations: [
         GroupComponent,
+        GroupItemComponent,
         GroupListComponent,
         GroupResponsibilityComponent,
     ],
