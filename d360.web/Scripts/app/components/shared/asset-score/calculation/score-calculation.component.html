@@ -111,7 +111,7 @@
             </div>
         </ng-container>
 
-        <ng-container *ngIf="ruleResultsVisible()">
+        <ng-container *ngIf="!selected.Threshold && ruleResultsVisible()">
             <div class="indented-line" *ngIf="!selected._groupDisplayMaxWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
             <div class="indented-line" *ngIf="!selected._groupDisplayMaxWeight">
                 = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}}
@@ -125,7 +125,10 @@
             <div class="indented-line">
                 = {{getAsPrecentage(selected.DisplayWeight)}}
             </div>
+        </ng-container>
 
+
+        <ng-container *ngIf="ruleResultsVisible()">
             <div style="margin-top: 16px;">
                 <button class="link" (click)="showRuleResults(true)">Show rule results</button>
             </div>
