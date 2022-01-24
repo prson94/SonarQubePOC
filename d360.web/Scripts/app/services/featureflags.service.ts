@@ -40,7 +40,9 @@ export class FeatureFlagsService extends BaseObservableService {
     }
 
     createClientConnection() {
-        this.ldClient = initialize(this.clientId, this.currentUser);
+        this.ldClient = initialize(this.clientId, this.currentUser, {
+            fetchGoals: false
+        });
 
         this.ldClient.on('change', (flags) => {
             if (flags['GovernDistributedCachePerm'] !== undefined) {
