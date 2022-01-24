@@ -67,7 +67,16 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
             this.loadParams._listColorsAsJSON = true;
             delete this.loadParams['_simpleFilter'];
             delete this.loadParams['_filter'];
+        }
 
+        if (changes.highlightUid && changes.highlightUid.currentValue !== changes.highlightUid.previousValue) {
+            var highlightedAsset = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
+            if (highlightedAsset && highlightedAsset[0]) {
+                this.selected = highlightedAsset[0];
+            }
+            else {
+                this.load();
+            }
         }
     }
     ngOnDestroy() {
@@ -119,6 +128,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
                 setTimeout(() => {
                     if (this.table) {
                         this.table.first = (+result.pageSize - 1) * +result.pageNum;
+                        this.cdRef.markForCheck();
                     }
                 }, 100);
 

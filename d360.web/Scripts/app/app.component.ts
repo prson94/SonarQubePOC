@@ -7,8 +7,12 @@ import { MessagesObservableService } from './services/messages-observable.servic
 import { MessageService } from 'primeng/api';
 import { ApplicationInsightsService } from './services/application-insights.service';
 import { ActivatedRoute } from '@angular/router';
+import { datadogRum } from '@datadog/browser-rum';
 
 declare var CurrentResourceID;
+declare var VersionNumber: string;
+declare var ResourceName;
+declare var ResourceEmail;
 
 @Component({
     selector: 'd3s-app',
@@ -55,6 +59,32 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         private route: ActivatedRoute,
         private toastService: MessageService) {
         this.msgs = [];
+
+        try {
+            datadogRum.init({
+                applicationId: 'a6856a29-b0df-4399-9209-fab1529c798b',
+                clientToken: 'pubb2d8e686770c86a615449864b1b9e64b',
+                site: 'datadoghq.com',
+                service: 'govern',
+                env: location.hostname,
+                version: VersionNumber,
+                sampleRate: 100,
+                trackInteractions: true,
+                defaultPrivacyLevel: 'mask-user-input',
+                allowedTracingOrigins: [/https:\/\/.*\.data3sixty\.com/, /https:\/\/.*\.data3sixty\.local/]
+            });
+
+            datadogRum.setUser({
+                id: CurrentResourceID,
+                name: ResourceName,
+                email: ResourceEmail,
+            });
+
+            datadogRum.startSessionReplayRecording();
+        }
+        catch {
+            console.log("Datadog Real user monitoring cannot be initialized!")
+        }
         
         this.errorSub = messagesService.errorMessage$.subscribe(
             errorMsg => {

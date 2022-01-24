@@ -1,9 +1,6 @@
 ﻿using d360.core.enums;
-using d360.model;
-using d360.web.caching;
 using Microsoft.Owin;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -14,8 +11,7 @@ namespace d360.web
     public class ContentSecurityPolicyMiddleware : BaseMiddleware
     {
         readonly Func<IDictionary<string, object>, Task> _next;
-        const string FramesKey = "FrameAncestors";
-
+        
         private readonly Dictionary<string, List<string>> Permissive = new Dictionary<string, List<string>>
         {
             { "default-src", new List<string>{"*", "data:", "blob:", "filesystem:", "ws:", "wss:", "'unsafe-inline'", "'unsafe-eval'" } },
@@ -26,7 +22,8 @@ namespace d360.web
             { "font-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
             { "frame-src", new List<string>{ "*" } },
             { "frame-ancestors", new List<string>{ "'self'" } },
-        };
+            { "worker-src", new List<string>{ "blob:" } }            
+    };
 
         public ContentSecurityPolicyMiddleware(Func<IDictionary<string, object>, Task> next)
         {

@@ -43,21 +43,38 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.hoverElement.style.width = this.hoverTooltipWidth + "px";
 
         this.renderer.setAttribute(this.hoverElement, 'class', 'link-context-menu-p-tooltip p-tooltip p-component p-tooltip-top ig-tooltip');
+        var isTag = typeof this.el.nativeElement.dataset['tooltip'] !== "undefined";
 
+        this.setTooltipValue(isTag);
+        this.renderer.appendChild(this.document.body, this.hoverElement);
+    }
+
+    setTooltipValue(isInitialTag: boolean) {
+        this.hoverElement.innerHTML = "";
         var hoverItem = this.document.createElement('div');
         this.renderer.setAttribute(hoverItem, 'class', 'p-tooltip-text');
 
-        var value = this.el.nativeElement.dataset['tooltip'];
+        var value = this.el.nativeElement.dataset['tooltip'] as string;
+        var refElement = "link";
         var html = "";
         if (value) {
-            html += value + "</br>";
+            html += value + "<span style='display:block; height:8px;'></span>";
             this.isTagTooltip = true;
+            refElement = "tag";
+
+            if (value.indexOf('spinner') > -1) {
+                isInitialTag = true;
+            }
         }
-        html += "Click the link to view information in the side panel or right-click for more options";
+        html += "Click the " + refElement + " to view information in the side panel or right-click for more options";
+
+        if (isInitialTag) {
+            html = `<i style="margin-left: 44%;" class="fa fa-spinner fa-spin fa-2x"></i>`;
+            setTimeout(() => this.setTooltipValue(false), 500);
+        }
 
         hoverItem.innerHTML = html;
         this.hoverElement.appendChild(hoverItem);
-        this.renderer.appendChild(this.document.body, this.hoverElement);
     }
 
     @HostListener('contextmenu', ['$event.target'])
@@ -127,7 +144,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
             this.hoverElement.style.top = (box.top - 62) + "px";
 
             if (this.isTagTooltip) {
-                this.hoverElement.style.top = (box.top - 84) + "px";
+                this.hoverElement.style.top = (box.top - 86) + "px";
             }
 
             this.hoverElement.style.left = (box.left + (box.width / 2) - (this.hoverTooltipWidth / 2)) + "px";

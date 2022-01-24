@@ -152,6 +152,19 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
             return favoritesMapped.ToList();
         }
 
+        public async Task<int?> GetFavoriteIdByRoute(int resourceId, string route)
+        {
+            string sql = $@"
+select 
+	favorite.Id
+from dbo.Favorite favorite
+where favorite.ResourceId = @resourceId
+and favorite.Route = @route
+";
+
+            return await QueryComposer.QuerySingleOrDefaultAsync<int?>(sql, new { resourceId, route });
+        }
+
         public class FavoriteItem
         {
             public int FavoriteId { get; set; }

@@ -94,7 +94,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
             refListIdString = params['referenceListId'];
 
-            if ((params['referenceListId'] as string).indexOf(',') !== -1) {
+            if (params['referenceListId'] && (params['referenceListId'] as string).indexOf(',') !== -1) {
                 var items = refListIdString.split(',');
                 refListIdString = items[0];
                 this.highlightUid = items[1];
