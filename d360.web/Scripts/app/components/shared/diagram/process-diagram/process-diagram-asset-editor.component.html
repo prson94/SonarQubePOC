@@ -1,5 +1,5 @@
 <div class="editor" *ngIf="nodeData">
-    <div class="header">
+    <div class="header" *ngIf="!isReadOnly">
         <span class="elide-popup asset-name">
             <span class="popup">{{assetName}}</span>
             <span class="text">{{assetName}}</span>
@@ -20,7 +20,32 @@
                                [disallowedNames]="disallowedNames"
                                (modelChanged)="onModelChange($event)"></d3s-dynamic-editor-v2>
     </div>
-    <div class="process-item-object-detail" *ngIf="isReadOnly">
-        <object-detail [objectType]="'Task'" [objectID]="nodeData.objectId"></object-detail>
-    </div>
+    <ng-container *ngIf="isReadOnly">
+        <ng-container *ngIf="!selectedReferenceItem && !selectedTag">
+            <ig-asset-detail [objectUID]="selectedAsset ? selectedAsset.uid : nodeData.key"
+                             [objectType]="selectedAsset ? selectedAsset.type : 'Task'"
+                             [useAccordion]="true"
+                             [shouldBePadded]="false"
+                             [showHeader]="true"
+                             [showHeaderLine]="false"
+                             [spacerHeight]="'16px'"
+                             [tooltipAlign]="'left'"
+                             [isSidePanel]="true"
+                             [hideLinks]="true"
+                             [interceptLinkClick]="true"
+                             [hasAddRelationshipsPermissions]="false"
+                             [hasModifyRelationshipsPermissions]="false"
+                             [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+        </ng-container>
+
+        <ng-container *ngIf="selectedReferenceItem">
+            <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                  [highlightUid]="selectedReferenceItem.assetUid"
+                                  [baseUrl]="selectedReferenceItem.url">
+            </ig-asset-type-detail>
+        </ng-container>
+        <ng-container *ngIf="selectedTag">
+            <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+        </ng-container>
+    </ng-container>
 </div>

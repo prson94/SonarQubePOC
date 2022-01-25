@@ -75,6 +75,9 @@ import { SharedResponsibilitiesModule } from '../responsibilities/shared-respons
 import { AssetDetailModule } from '../asset-detail/asset-detail.module';
 import { SidePanelModule } from '../sidepanel/side-panel.module';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
 
 
 @NgModule({
@@ -104,6 +107,9 @@ import { AssetEditorModule } from '../asset-editor/asset-editor.module';
         AssetDetailModule,
         SidePanelModule,
         AssetEditorModule,
+        DirectivesModule,
+        AssetTypeDetailModule,
+        TaggedAssetDetailModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,

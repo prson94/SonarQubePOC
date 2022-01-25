@@ -88,6 +88,9 @@
             <div *ngIf="myDiagram">
                 <d3s-assetbrowser-overview [hidden]="viewType != 'diagram' || !isDiagramLoaded || isCanvasEmpty" #overview [diagram]="myDiagram"></d3s-assetbrowser-overview>
             </div>
+            <div *ngIf="viewType == 'diagram' && !isCanvasEmpty" class="asset-browser-controls-bottom">
+                <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="true"></d3s-assetbrowser-zoom>
+            </div>
         </div>
 
         <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
@@ -336,12 +339,6 @@
                          [objectID]="selectedNodeData.objectId"
                          [objectType]="'Task'">
 </d3s-relationships-modal>
-
-
-
-<div *ngIf="viewType == 'diagram' && !isCanvasEmpty" class="asset-browser-controls-bottom {{isInfoPanelOpened ? 'info-panel-opened' : ''}}">
-    <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="true"></d3s-assetbrowser-zoom>
-</div>
 
 <div #palleteTooltip id="toolTipDIV" class="gojs-pallete-tooltip">
     <p id="toolTipParagraph"></p>

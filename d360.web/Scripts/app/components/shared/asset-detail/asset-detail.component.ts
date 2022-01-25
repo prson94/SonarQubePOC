@@ -43,6 +43,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() interceptLinkClick: boolean = false;
     @Input() assetDetail: any;
 
+    @Input() hideLinks: boolean = false;
     @Output() onEditClick = new EventEmitter();
 
     assetUID: string;
@@ -406,7 +407,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     get showOwnershipTab(): boolean {
-        return this.objectType !== 'Resource' && this.objectType !== 'Group';
+        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task';
     }
 
     get showGroupTab(): boolean {

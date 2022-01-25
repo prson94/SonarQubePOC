@@ -239,7 +239,7 @@
 
                     <d3s-assetbrowser-overview [hidden]="isLoading" #overview></d3s-assetbrowser-overview>
 
-                    <div class="asset-browser-controls-bottom" [hidden]="isLoading" [style.right]="isWindowVisible() ? '455px' : '40px'">
+                    <div class="asset-browser-controls-bottom" [hidden]="isLoading" [style.right]="isWindowVisible() ? '455px' : '16px'">
                         <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="!isError"></d3s-assetbrowser-zoom>
                     </div>
 

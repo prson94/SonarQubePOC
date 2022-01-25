@@ -141,7 +141,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.isEditMode.currentValue != changes.isEditMode.previousValue) {
+        if (changes.isEditMode && changes.isEditMode.currentValue != changes.isEditMode.previousValue) {
             if (this.listView) {
                 this.listView.clearSearchValue();
             }
