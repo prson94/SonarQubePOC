@@ -44,6 +44,7 @@ namespace d360.core.entities
 
         [DataMember, NotMapped]
         public string SecondaryOwnerName { get; set; }
+        
         [DataMember, NotMapped]
         public string UpdatedByName { get; set; }
 
