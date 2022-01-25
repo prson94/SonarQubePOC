@@ -73,6 +73,9 @@ namespace igx.jobs.databasecleaner
                             //remove any old score execution data
                             await company.ExecuteAsync("metrics.CleanupExecutions", commandTimeout: 1800);
 
+                            //remove any old queue task data
+                            await company.ExecuteAsync("Queue.DeleteQueueTaskRecords", commandTimeout: 1800);
+
                             //update database statistics
                             await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);
                         }                          
