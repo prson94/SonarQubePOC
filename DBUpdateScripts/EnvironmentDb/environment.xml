@@ -406,6 +406,7 @@
 	<include file="scripts/Procedure.metrics.CleanupExecutions.xml"/>
 	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
 	<include file="scripts/Procedure.metrics.ProcessAssetScores.xml"/>
+	<include file="scripts/Procedure.Queue.DeleteQueueTaskRecords.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.utility.AddAuditEntry.xml"/>
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>
