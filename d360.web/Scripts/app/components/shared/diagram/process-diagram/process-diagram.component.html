@@ -5,7 +5,7 @@
             <button igButton icon="fa-chevron-circle-left" label="Exit Designer" (click)="doControlledAction('switchModes')"></button>
             <div class="button-spacer"></div>
 
-            <button pTooltip="Save changes" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save"[disabled]="isSaveDisabled" (click)="save()"></button>
+            <button pTooltip="Save changes" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save" [disabled]="isSaveDisabled" (click)="save()"></button>
             <div class="button-spacer"></div>
             <button pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
             <button pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-left" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
@@ -94,37 +94,18 @@
         </div>
 
         <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
-            <div class="asset-editor">
-
-                <div *ngIf="!selectedNodeData && (!selectedLinkData || !isEditMode)">
-                    <div class="empty-overlay">
-                        <div class="content">
-                            <div class="icon-holder">
-                                <i class="fa fa-info-circle"></i>
-                            </div>
-                            <span>Select a single item from the {{(viewType == 'diagram' ? 'diagram' : 'list')}} to view its properties</span>
-                        </div>
-                    </div>
-                </div>
-                <div *ngFor="let item of loadedEditors">
-                    <div class="{{(selectedNodeData && item.key == selectedNodeData.key ? 'display' : 'hide')}}">
-                        <d3s-process-diagram-asset-editor [isReadOnly]="!isEditMode"
-                                                          [nodeData]="item"
-                                                          (nodeDataChange)="updateNodeFromForm($event)"
-                                                          [disallowedNames]="nodeNames">
-                        </d3s-process-diagram-asset-editor>
-                    </div>
-                </div>
-                <div *ngIf="selectedLinkData && isEditMode">
-                    <d3s-process-diagram-label-editor (linkDataChange)="updateLinkFromForm($event)" [linkData]="selectedLinkData" [assetUid]="assetUid"></d3s-process-diagram-label-editor>
-                </div>
-            </div>
+            <d3s-process-diagram-side-panel [isReadOnly]="!isEditMode"
+                                            [assetUid]="assetUid"
+                                            [nodeData]="selectedNodeData"
+                                            [linkData]="selectedLinkData"
+                                            [viewType]="viewType"
+                                            (nodeDataChange)="updateNodeFromForm($event)"
+                                            (nodeDeselected)="deselect($event)"
+                                            (linkDataChange)="updateLinkFromForm($event)"
+                                            [disallowedNames]="nodeNames">
+            </d3s-process-diagram-side-panel>
         </div>
-
-
     </div>
-
-
 </div>
 
 <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="closeErrorModal()" [isVisible]="isErrorModalOpened">

@@ -69,7 +69,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     defaultStrokeColor: string = '#708EA6';
 
     public selectedNodeData: any;
-    loadedEditors: any[] = [];
 
     isErrorModalOpened: boolean = false;
     isSavingChangesModalOpened: boolean = false;
@@ -97,7 +96,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     public isInfoPanelOpened: boolean = false;
 
     selectedLinkData: any;
-    private nodeNames: string[] = [];
+    nodeNames: string[] = [];
 
     private initialActions = new HeaderActions();
 
@@ -673,7 +672,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.savedState = go.Model.fromJson(JSON.stringify(res));
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
-                this.loadedEditors = [];
                 this.isDiagramLoaded = true;
                 this.isSaving = false;
 
@@ -713,7 +711,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.focusKey = undefined;
     }
 
-    private updateLinkFromForm(formData) {
+    updateLinkFromForm(formData) {
         var link = this.myDiagram.findLinkForData(formData.data);
         try {
             this.myDiagram.model.commit(function (m) {
@@ -725,7 +723,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
     }
 
-    private updateNodeFromForm(formData) {
+    updateNodeFromForm(formData) {
         try {
             var self = this;
             this.myDiagram.model.commit(function (m) {
@@ -785,7 +783,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             if (item && item.Value)
                 return item.Value;
         }
-        catch{
+        catch {
             return this.defaultStrokeColor;
         }
         return this.defaultStrokeColor;
@@ -797,7 +795,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             if (item)
                 return item.DisplayValue;
         }
-        catch{
+        catch {
             return '';
         }
         return '';
@@ -806,9 +804,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private onSelectionChanged(node) {
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
 
-        if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
-            this.loadedEditors.push(this.selectedNodeData);
-        }
         if (this.listView) {
             this.listView.nodeSelectedTrigger(node.data);
         }
@@ -1201,5 +1196,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.importRejectedRelationships = res;
                 this.cdRef.markForCheck();
             });
+    }
+
+    deselect($event) {
+        this.selectedNodeData = null;
+        if (this.diagram) {
+            this.diagram.clearSelection();
+            this.diagram.select(null);
+        }
     }
 }

@@ -9,16 +9,23 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { Subscription } from 'rxjs';
 @Component({
-    selector: 'd3s-process-diagram-asset-editor',
-    templateUrl: './process-diagram-asset-editor.component.html',
+    selector: 'd3s-process-diagram-side-panel',
+    templateUrl: './process-diagram-side-panel.component.html',
     providers: [AssetTypeService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent implements OnChanges, OnDestroy {
+export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent implements OnChanges, OnDestroy {
     @Input() nodeData: any;
+    @Input() linkData: any;
     @Input() isReadOnly: boolean = true;
     @Input() disallowedNames: string[] = [];
+    @Input() viewType: string = 'diagram';
+    @Input() assetUid: string = '';
+
     @Output() nodeDataChange = new EventEmitter();
+    @Output() nodeDeselected = new EventEmitter();
+    @Output() linkDataChange = new EventEmitter();
+
     private assetName: string = '';
 
     hrefSub: Subscription;
@@ -39,8 +46,9 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
         this.breadcrumbsService = breadcrumbService;
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            this.linkClickInterceptor.handleEvent(this, ev);
             this.nodeData = null;
+            this.nodeDeselected.emit(null);
+            this.linkClickInterceptor.handleEvent(this, ev);
         });
 
     }
@@ -100,4 +108,8 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
 
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
+    showEmptyOverlay() {
+        var selectedNodeData = this.nodeData || this.selectedAsset || this.selectedReferenceItem || this.selectedTag;
+        return !selectedNodeData && (!this.linkData || this.isReadOnly);
+    }
 }
