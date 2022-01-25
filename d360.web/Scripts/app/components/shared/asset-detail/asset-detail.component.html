@@ -168,6 +168,9 @@
                                     </td>
                                 </tr>
                             </ng-template>
+                            <ng-template pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt1.first" [rows]="dt1.rows" [totalRecords]="dt1.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
                         </p-table>
                     </div>
 

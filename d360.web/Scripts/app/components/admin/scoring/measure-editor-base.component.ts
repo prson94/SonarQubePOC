@@ -70,6 +70,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     metricForm: FormGroup = null;
     matchType: string;
     maxHeight: number = window.innerHeight - 160;
+    measureHasThreshold: boolean = false;
     originalConditions: MetricAssetVersionConditionViewModel[];
     originalEffectiveDate: Date;
     originalModel: MetricAssetViewModel;
@@ -395,7 +396,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
                 this.displayEffectiveDate = date;
             }
-            this.model.HasThreshold = !this.model.Threshold;
+            if (this.model.HasThreshold) {
+                this.displayThreshold = this.model.Threshold * 100;
+            }
         }
         else {
             this.model = new MetricAssetViewModel();
@@ -515,7 +518,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 });
             });
 
-            if (this.model.HasThreshold) {
+            if (this.measureHasThreshold) { //(this.model.HasThreshold) {
                 let threshold = +this.displayThreshold;
                 this.model.Threshold = +(threshold / 100).toFixed(5);
             }

@@ -3,6 +3,7 @@ using d360.core.entities.Membership;
 using d360.core.enums;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
+using SmartFormat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,10 +103,67 @@ namespace d360.web.Services.Favorites
             };
         }
 
+        public string GetNormalizedRoute(string route, FavoriteRouteMatcher matcher, FavoritesObjectDetailsResponse favoriteDetails)
+        {
+            if (TryMatchRoute(matcher.RoutePattern, route) != null)
+            {
+                return route;
+            }
+
+            return Smart.Format(ToFormattableString(matcher.RoutePattern), favoriteDetails);
+        }
+
+        public IEnumerable<string> GetAllPossibleRoutes(string route, FavoriteRouteMatcher matcher, FavoritesObjectDetailsResponse favoriteDetails)
+        {
+            if (!matcher.OtherRoutePatterns.Any())
+            {
+                return new[] { route };
+            }
+
+            var routes = matcher.RoutePatterns.Select(pattern => Smart.Format(ToFormattableString(pattern), favoriteDetails));
+            return routes;
+        }
+
+        private static string ToFormattableString(string routePattern)
+        {
+            var parameterNames = new Regex(@":((?:\w)+)")
+                .Matches(routePattern)
+                .OfType<Match>()
+                .Select(x => x.Groups[1].Value)
+                .ToList();
+
+            foreach (var parameterName in parameterNames)
+            {
+                routePattern = routePattern.Replace(
+                    $":{parameterName}",
+                    $"{{{CapitalizeFirstLetter(parameterName)}}}");
+            }
+
+            return routePattern;
+
+            string CapitalizeFirstLetter(string str)
+            {
+                if (str == null && str.Length == 0)
+                {
+                    return str;
+                }
+
+                return str.Substring(0, 1).ToUpper() + str.Substring(1);
+            }
+        }
+
         private Dictionary<string, string> TryMatchRoute(FavoriteRouteMatcher matcher, string route)
         {
+            return matcher.RoutePatterns
+                .Select(pattern => TryMatchRoute(pattern, route))
+                .Where(x => x != null)
+                .SingleOrDefault();
+        }
+
+        private Dictionary<string, string> TryMatchRoute(string routePattern, string route)
+        {
             route = SanitizeRoute(route);
-            var routePatternRegex = RoutePatternToRegex(matcher.RoutePattern);
+            var routePatternRegex = RoutePatternToRegex(routePattern);
             var match = routePatternRegex.Match(route);
             if (!match.Success)
             {
@@ -173,6 +231,9 @@ namespace d360.web.Services.Favorites
             new FavoriteRouteMatcher
             {
                 RoutePattern = "artifact/:objectId",
+                OtherRoutePatterns = {
+                    "assettype/:uid"
+                },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.AssetsTab),
                 ObjectType = SystemObjects.ArtifactType
@@ -181,14 +242,17 @@ namespace d360.web.Services.Favorites
             {
                 RoutePattern = "dashboard/ArtifactType/:objectId",
                 PageType = FavoritePageType.Artifact,
-                GetName =WithTabName(PageNames.DashboardsTab),
+                GetName = WithTabName(PageNames.DashboardsTab),
                 ObjectType = SystemObjects.ArtifactType
             },
 
             // asset
             new FavoriteRouteMatcher
             {
-                RoutePattern = "artifact/:parentId/:objectId",
+                RoutePattern = "artifact/:typeObjectId/:objectId",
+                OtherRoutePatterns = {
+                    "asset/:uid"
+                },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.DefinitionTab),
                 ObjectType = SystemObjects.Artifact
@@ -243,22 +307,11 @@ namespace d360.web.Services.Favorites
             // policy
             new FavoriteRouteMatcher
             {
-                RoutePattern = "policy/:parentId/id/:objectid",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.PolicyTab),
-                ObjectType = SystemObjects.Policy
-            },
-            new FavoriteRouteMatcher
-            {
-                // TODO: should support several route patterns as part of one matcher
-                RoutePattern = "policy/:parentId;hierarchyId=:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.PolicyTab),
-                ObjectType = SystemObjects.Policy
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "policy/:parentId/id/:objectId",
+                RoutePattern = "policy/:typeObjectId;hierarchyId=:objectId",
+                OtherRoutePatterns =
+                {
+                    "policy/:typeObjectId/id/:objectId"
+                },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.DefinitionTab),
                 ObjectType = SystemObjects.Policy
@@ -315,14 +368,10 @@ namespace d360.web.Services.Favorites
             // model
             new FavoriteRouteMatcher
             {
-                RoutePattern = "model/:parentId;hierarchyId=:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.DefinitionTab),
-                ObjectType = SystemObjects.Taxonomy
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "model/:parentId/id/:objectId",
+                RoutePattern = "model/:typeObjectId;hierarchyId=:objectId",
+                OtherRoutePatterns = {
+                    "model/:typeObjectId/id/:objectId"
+                },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.DefinitionTab),
                 ObjectType = SystemObjects.Taxonomy
@@ -356,15 +405,9 @@ namespace d360.web.Services.Favorites
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/comments/:uid",
+                OtherRoutePatterns = { "sidebar/comments/:uid/true" },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.CommentsTab),
-            },
-            new FavoriteRouteMatcher
-            { 
-                // TODO: should support several route patterns as part of one matcher
-                RoutePattern = "sidebar/comments/:uid/true",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.CommentsTab)
             },
             new FavoriteRouteMatcher
             {
@@ -375,13 +418,9 @@ namespace d360.web.Services.Favorites
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/visualization/browser/:uid",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.ImpactDiagramTab),
-            },
-            new FavoriteRouteMatcher
-            {
-                // TODO: should support several route patterns as part of one matcher
-                RoutePattern = "sidebar/visualization/browser/:uid/Impact",
+                OtherRoutePatterns = {
+                    "sidebar/visualization/browser/:uid/Impact"
+                },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ImpactDiagramTab),
             },

@@ -1561,6 +1561,81 @@ where   J.Payload like '%Measures%';";
             }
         }
 
+        public void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid)
+        {
+            var sql = @"
+declare @ef date = cast(getutcdate() as date); 
+declare @assetTypeUid uniqueidentifier;
+
+select  @assetTypeUid = T.Uid
+from    api.ExecutionItemDependentChange E
+        inner join Asset A on A.Uid = JSON_VALUE(Payload, '$.ParentAssetUid')
+        inner join AssetType T on T.ID = A.AssetTypeID
+where   ExecutionID = @apiExecutionUid
+        and DependentChangeType = 1 --parent change
+
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select  distinct 
+            * 
+    from    (
+            select	@ID as ExecutionID,
+		            @changeType as ChangeType,
+		            EA.ItemNumber,
+		            (
+		            select	EA.AssetUid, 
+				            @ef as EffectiveDate,
+				            (
+				            select	A.Uid as AllocationUid,
+						            M.Uid as MetricAssetUid,
+						            V.Uid as MetricAssetVersionUid,
+						            cast(0 as bit) as Result
+				            from	metrics.Allocation A 
+						            inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+						            cross apply (
+							            select	Uid
+							            from	metrics.AssetVersion 
+							            where	AssetUid = M.Uid
+									            and EffectiveDate <= getutcdate()
+									            and EffectiveEndDate is null
+									            and JSON_VALUE(Definition, '$.Governance.Check') = 'Relation'
+									            and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') in (select T.Uid from IntersectType T inner join Predicate P on P.ID = T.PredicateID and P.[Type] in (3,4))
+									            and Definition <> '{}'
+						            ) V
+				            for json path
+				            ) as Measures
+		            for json path, WITHOUT_ARRAY_WRAPPER
+		            ) as Payload,
+		            0 as [State]
+            from	(
+                    select  ROW_NUMBER() OVER(order by JSON_VALUE(Payload, '$.ParentAssetUid')) ItemNumber,
+                            JSON_VALUE(Payload, '$.ParentAssetUid') as AssetUid 
+                    from    api.ExecutionItemDependentChange
+                    where   ExecutionID = @apiExecutionUid
+                            and DependentChangeType = 1 --parent change
+                    ) EA
+            ) J 
+    where   J.Payload like '%Measures%';";
+
+            var execution = createScoreExecution(apiExecutionUid);
+
+            Connection.OpenIfClosed().Wait();
+
+            int rowsImpacted = Connection.Execute(sql, new { apiExecutionUid, execution.ID, changeType = (int)ScoreQueueChangeType.AssetMeasures });
+
+            if (rowsImpacted > 0)
+            {
+                sendScoreQueueMessage(execution);
+                Connection.Execute(
+                    "delete api.ExecutionItemDependentChange where ExecutionID = @apiExecutionUid and DependentChangeType = 1",
+                    new { apiExecutionUid }
+                    );
+            }
+            else
+            {
+                endEmptyExecution(Connection, execution.ID);
+            }
+        }
+
         public void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null)
         {
             var count = Query<int>(@"

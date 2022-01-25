@@ -105,7 +105,7 @@
                                              [required]="true"
                                              [min]="1"
                                              [max]="100"
-                                             [step]="0.001"
+                                             [step]="0.01"
                                              formControlName="threshold"
                                              [(ngModel)]="displayThreshold"></ig-number-input>
                              
@@ -209,51 +209,47 @@
                             </div>
                         </div>
                         <div class="condition-overrides-row">
-                            <div>
-                                <div *ngIf="model.HasThreshold">
-                                    <label for="threshold" class="ig-label">
-                                        Pass Threshold(%) <ng-container *ngTemplateOutlet="conditionThresholdTooltip"></ng-container>
-                                    </label>
+                            <div class="tl ig-label" *ngIf="model.HasThreshold">
+                                Pass Threshold(%) <ng-container *ngTemplateOutlet="conditionThresholdTooltip"></ng-container>
+                            </div>
 
-                                    <div class="input">
-                                        <ig-number-input [tabindex]="4"
-                                                            placeholder="{{displayThreshold}}"
-                                                            [min]="1"
-                                                            [max]="100"
-                                                            [step]="1"
-                                                            name="cg_{{cg.Position}}_threshold"
-                                                            formControlName="cg_{{cg.Position}}_threshold"
-                                                            [(ngModel)]="cg.DisplayThreshold"></ig-number-input>
-                                        <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').invalid && (metricForm.get('cg_'+ cg.Position + '_threshold').dirty || metricForm.get('cg_'+ cg.Position + '_threshold').touched)">
-                                            <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').errors?.outOfRange" class="ig-text-required">
-                                                Please enter a value between 1 and 100
-                                            </div>
-                                            <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').errors?.decimalLimit" class="ig-text-required">
-                                                Please enter a value with a maximum of 3 decimal places of accuracy.
-                                            </div>
-                                        </div>
+                            <div class="tf" *ngIf="model.HasThreshold">
+                                <ig-number-input [tabindex]="4"
+                                                 placeholder="{{displayThreshold}}"
+                                                 [min]="1"
+                                                 [max]="100"
+                                                 [step]="0.01"
+                                                 igSize="full"
+                                                 name="cg_{{cg.Position}}_threshold"
+                                                 formControlName="cg_{{cg.Position}}_threshold"
+                                                 [(ngModel)]="cg.DisplayThreshold"></ig-number-input>
+                                <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').invalid && (metricForm.get('cg_'+ cg.Position + '_threshold').dirty || metricForm.get('cg_'+ cg.Position + '_threshold').touched)">
+                                    <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').errors?.outOfRange" class="ig-text-required">
+                                        Please enter a value between 1 and 100
+                                    </div>
+                                    <div *ngIf="metricForm.get('cg_'+ cg.Position + '_threshold').errors?.decimalLimit" class="ig-text-required">
+                                        Please enter a value with a maximum of 3 decimal places of accuracy.
                                     </div>
                                 </div>
                             </div>
-                            <div>
-                                <div>
-                                    <label for="weight" class="ig-label right">
-                                        Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
-                                    </label>
-                                    <div class="input">
-                                        <ig-number-input [tabindex]="5"
-                                                         placeholder="{{displayWeight}}"
-                                                         [min]="1"
-                                                         [max]="100"
-                                                         [step]="1"
-                                                         name="cg_{{cg.Position}}_weight"
-                                                         formControlName="cg_{{cg.Position}}_weight"
-                                                         [(ngModel)]="cg.DisplayWeight"></ig-number-input>
-                                        <div class="override-validator" *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').invalid && (metricForm.get('cg_'+ cg.Position + '_weight').dirty || metricForm.get('cg_'+ cg.Position + '_weight').touched)">
-                                            <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').errors?.outOfRange" class="ig-text-required">
-                                                Please enter a value between 1 and 100
-                                            </div>
-                                        </div>
+                            
+                            <div class="wl ig-label">
+                                Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
+                            </div>
+                            
+                            <div class="wf">
+                                <ig-number-input [tabindex]="5"
+                                                 placeholder="{{displayWeight}}"
+                                                 [min]="1"
+                                                 [max]="100"
+                                                 [step]="1"
+                                                 igSize="full"
+                                                 name="cg_{{cg.Position}}_weight"
+                                                 formControlName="cg_{{cg.Position}}_weight"
+                                                 [(ngModel)]="cg.DisplayWeight"></ig-number-input>
+                                <div class="override-validator" *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').invalid && (metricForm.get('cg_'+ cg.Position + '_weight').dirty || metricForm.get('cg_'+ cg.Position + '_weight').touched)">
+                                    <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').errors?.outOfRange" class="ig-text-required">
+                                        Please enter a value between 1 and 100
                                     </div>
                                 </div>
                             </div>

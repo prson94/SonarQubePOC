@@ -5114,12 +5114,29 @@ where	{executionAssetWhereSql};",
                                     }
 
                                     #region Parent/Child Relationship
+
                                     sw.Restart();
                                     if (intersectTypeID.HasValue)
                                     {
-                                        parentIntersectGuids = Connection.Query<Guid>($@"
+                                        parentIntersectGuids = Connection.Query<Guid>(@"
 drop table if exists #ParentChildRelationships;
-create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueidentifier);
+create table #ParentChildRelationships([operation] varchar(10), [uid] uniqueidentifier, ItemNumber int);
+
+-- Log the parent removals into Dependent Change table
+insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+    select  EA.ExecutionID, EA.ItemNumber, 1, 2, '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
+    from    api.ExecutionAsset EA 
+		    inner join [Intersect] I on I.IntersectTypeID = EA.IntersectTypeID and EA.Object = I.Object and EA.ObjectID = I.ObjectID 
+		    inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+    where    EA.ExecutionID = @ExecutionID 
+            and Success is null 
+            and EA.ItemNumber between @beginItemNumber and @endItemNumber
+            and EA.IntersectTypeID is not null
+            and EA.ParentObject is not null 
+            and EA.ParentObjectID is not null 
+            and EA.Object is not null 
+            and EA.ObjectID is not null 
+		    and EA.ParentObjectID <> I.SubjectID;
 
 merge       [Intersect] as T
 using		(
@@ -5143,30 +5160,37 @@ when matched then
 when not matched by target then
 	insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
 	values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R)
-output $action, inserted.[uid] into #ParentChildRelationships;
+output $action, inserted.[uid], S.ItemNumber into #ParentChildRelationships;
+
+-- Log the parent removals into Dependent Change table
+insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+    select  @ExecutionID, A.ItemNumber, 1, 1, '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
+    from    #ParentChildRelationships A
+		    inner join [Intersect] I on I.Uid = A.Uid
+		    inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID;
 
 insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
-select  SG.$node_id,
-        OG.$node_id,
-        I.ID,
-        I.[Uid],
-        T.ID as IntersectTypeID,
-        T.[Uid] as IntersectTypeUid,
-        P.ID as PredicateID,
-        P.Uid as PredicateUid,
-        P.Type as PredicateType,
-		'<props/>' as Properties,
-		I.[State],
-		coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
-from    [Intersect] I
-        inner join #ParentChildRelationships R on R.[Uid] = I.[Uid] and R.[Operation] = 'INSERT'
-        inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
-		inner join graph.AssetNode SG on SG.ID = SA.ID
-		inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
-		inner join graph.AssetNode OG on OG.ID = OA.ID
-		inner join IntersectType T on T.ID = I.IntersectTypeID
-		inner join [Predicate] P on P.ID = T.PredicateID
-where   not exists (select 1 from graph.AssetEdge where [uid] = I.[Uid]);
+    select  SG.$node_id,
+            OG.$node_id,
+            I.ID,
+            I.[Uid],
+            T.ID as IntersectTypeID,
+            T.[Uid] as IntersectTypeUid,
+            P.ID as PredicateID,
+            P.Uid as PredicateUid,
+            P.Type as PredicateType,
+		    '<props/>' as Properties,
+		    I.[State],
+		    coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
+    from    [Intersect] I
+            inner join #ParentChildRelationships R on R.[Uid] = I.[Uid] and R.[Operation] = 'INSERT'
+            inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
+		    inner join graph.AssetNode SG on SG.ID = SA.ID
+		    inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
+		    inner join graph.AssetNode OG on OG.ID = OA.ID
+		    inner join IntersectType T on T.ID = I.IntersectTypeID
+		    inner join [Predicate] P on P.ID = T.PredicateID
+    where   not exists (select 1 from graph.AssetEdge where [uid] = I.[Uid]);
 
 select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
@@ -5179,23 +5203,45 @@ select [uid] from #ParentChildRelationships",
                                         {
                                             sw.Restart();
 
-                                            Connection.Execute($@"
+                                            Connection.Execute(@"
 drop table if exists #DeletedRelationships;
-create table #DeletedRelationships([ID] int);
+create table #DeletedRelationships ([ID] int, ItemNumber int, Payload varchar(200));
 
-delete i output deleted.ID into #DeletedRelationships from [intersect] i inner join  api.ExecutionAsset  ea on (ea.IntersectTypeID = i.intersecttypeid and ea.object = i.object and ea.objectid = i.objectid and ea.ParentUid = '00000000-0000-0000-0000-000000000000')
-where ea.executionid = @executionid and ea.success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber and ea.IntersectTypeID is not null
+insert into #DeletedRelationships
+    select  I.ID,
+            EA.ItemNumber,
+            '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar) + '""}' 
+    from    [Intersect] I
+            inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+            inner join api.ExecutionAsset EA on
+                EA.IntersectTypeID = I.IntersectTypeID 
+                and EA.Object = I.Object 
+                and EA.ObjectID = I.ObjectID 
+                and EA.ParentUid = '00000000-0000-0000-0000-000000000000'
+                and EA.ExecutionID = @ExecutionID
+                and EA.Success is null 
+                and EA.ItemNumber between @beginItemNumber and @endItemNumber 
+                and EA.IntersectTypeID is not null;
 
-delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);
-",
+
+-- Log the parent removals into Dependent Change table
+insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+    select  @ExecutionID, ItemNumber, 1, 3, Payload
+    from    #DeletedRelationships;
+
+delete  i
+from    [intersect] i 
+        inner join #DeletedRelationships d on d.ID = i.ID;
+
+delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);",
 new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-
 
                                             AddMeasurement(metrics, $"Parent/Child Delete Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                         }
                                     }
 
                                     #endregion
+                                    
                                     sw.Restart();
                                     var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert, hasLookupFieldTypes);
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
@@ -5347,13 +5393,21 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
                     }
 
-                    // Send score recalculation notifications.
+                    #region Send score recalculation notifications.
+                    
+                    if (intersectTypeID.HasValue)
+                    {
+                        CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+                    }
+
                     if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
                     {
                         sw.Restart();
                         CreateImportAssetsExecution(execution.ExecutionID, at.uid);
                         AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                     }
+
+                    #endregion
                 }
             }
 

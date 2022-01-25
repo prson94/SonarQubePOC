@@ -29,26 +29,26 @@
   }
 
   .condition-overrides-row {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-areas: "tl tl tl tf tf tf . wl wl wf wf wf";
     margin-top: -10px;
     margin-bottom: 10px;
 
-    div {
-        display: inline-flex;
+    .tl {
+      grid-area: tl;
+    }
 
-        label {
-            margin-right: 5px;
-        }
+    .tf {
+      grid-area: tf;
+    }
 
-        div.input {
-            display: block;
-            
-            .ig-text-required {
-                width: 150px;
-                max-width: 150px;
-            }
-        }
+    .wl {
+      grid-area: wl;
+    }
+
+    .wf {
+      grid-area: wf;
     }
   }
 

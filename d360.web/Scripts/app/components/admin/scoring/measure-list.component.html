@@ -38,15 +38,19 @@
                         <button *ngIf="item.IsGroup" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" pTooltip="Add measure to group" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                     </td>
                     <td>
+                        <ng-container *ngIf="item.State == 1 && item.IsGroup">
+                            <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);groupActiveMenu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="groupMenuOptions" #groupActiveMenu [tabIndex]="1"></ig-popup-menu>
+                        </ng-container>
 
-                        <ng-container *ngIf="item.State == 1">
+                        <ng-container *ngIf="item.State == 1 && !item.IsGroup">
                             <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
-                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="menuOptions" #menu [tabIndex]="1"></ig-popup-menu>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="itemMenuOptions" #menu [tabIndex]="1"></ig-popup-menu>
                         </ng-container>
 
                         <ng-container *ngIf="item.State == 3">
                             <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);disabledMenuRef.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
-                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="disabledMenu" #disabledMenuRef [tabIndex]="1"></ig-popup-menu>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="disabledMenuOptions" #disabledMenuRef [tabIndex]="1"></ig-popup-menu>
                         </ng-container>
                     </td>
                 </tr>

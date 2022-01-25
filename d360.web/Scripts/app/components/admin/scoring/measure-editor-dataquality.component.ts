@@ -61,6 +61,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     ruleResultFilters: FieldCondition[] = [];
     ruleResultFiltersMatchType: string;
 
+
     delayedReload = _.debounce(() => {
         this.load();
         this.loadFieldData();
@@ -189,13 +190,11 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     load() {
         this.setFormPropertiesBasedOnMode();
+
         if (this.isEditBasedOnUid()) {
             this.onGroupChange(this.model.IsGroup);
             if (this.model) {
                 this.matchConditionsOnly = (this.model.MatchConditionsOnly ? "true" : "false");
-            }
-            if (this.model.Threshold) {
-                this.model.HasThreshold = true;
             }
         }
         else {
@@ -208,9 +207,11 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             this.isLoading = false;
         }
 
-        if (this.model.HasThreshold && this.model.Threshold) {
-            this.displayThreshold = this.model.Threshold * 100;
-        }
+        //this.measureHasThreshold = (this.model.Threshold && this.model.Threshold !== undefined && this.model.Threshold > 0);
+        //if (this.measureHasThreshold) {
+        //    this.displayThreshold = this.model.Threshold * 100;
+        //}
+
 
         if (this.model.Weight) {
             this.displayWeight = Math.round(this.model.Weight * 100);
@@ -241,13 +242,6 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     }
 
     onThresholdChange(event: boolean) {
-        if (this.metricForm) {
-            //if (this.model.HasThreshold) {
-            //    this.metricForm.addControl("threshold", new FormControl('', [this.isValidThreshold()]));
-            //} else {
-            //    this.metricForm.removeControl("threshold");
-            //}
-        }
         this.metricForm.updateValueAndValidity();
         this.cdRef.markForCheck();
     }
