@@ -115,6 +115,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Created By.
+        /// </summary>
+        public static string CreatedBy_Name {
+            get {
+                return ResourceManager.GetString("CreatedBy_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The date that this item was created in Data360..
         /// </summary>
         public static string CreatedOn_Description {
@@ -169,6 +178,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Is Active Directory Group.
+        /// </summary>
+        public static string IsActiveDirectoryGroup_Name {
+            get {
+                return ResourceManager.GetString("IsActiveDirectoryGroup_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         public static string Name_Name {
@@ -196,6 +214,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Primary Owner.
+        /// </summary>
+        public static string PrimaryOwner_Name {
+            get {
+                return ResourceManager.GetString("PrimaryOwner_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rule ID.
         /// </summary>
         public static string RuleID_Name {
@@ -219,6 +246,15 @@ namespace Resources {
         public static string RuleType_Name {
             get {
                 return ResourceManager.GetString("RuleType_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Secondary Owner.
+        /// </summary>
+        public static string SecondaryOwner_Name {
+            get {
+                return ResourceManager.GetString("SecondaryOwner_Name", resourceCulture);
             }
         }
         
@@ -255,6 +291,15 @@ namespace Resources {
         public static string UID_Name {
             get {
                 return ResourceManager.GetString("UID_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Modified By.
+        /// </summary>
+        public static string UpdatedBy_Name {
+            get {
+                return ResourceManager.GetString("UpdatedBy_Name", resourceCulture);
             }
         }
         

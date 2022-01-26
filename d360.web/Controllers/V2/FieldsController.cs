@@ -23,6 +23,7 @@ using System.Web.Http.Description;
 using d360.core.helpers;
 using System.Globalization;
 using System.Dynamic;
+using d360.core.resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -669,7 +670,7 @@ namespace d360.web.Controllers.V2
                 {
                     dynamic dyObj = new ExpandoObject();
                     dyObj.type = "L";
-                    dyObj.title = "Reference List";
+                    dyObj.title = Types.ReferenceList;
                     dyObj.value = "ReferenceItemType";
                     lists.Add(dyObj);
                 }

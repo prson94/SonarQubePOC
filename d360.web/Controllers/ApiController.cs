@@ -2953,7 +2953,7 @@ from    (
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = "Is Active Directory Group", FieldName = "IsActiveDirectoryGroup", FieldDescription = group.GetDescription(i => i.IsActiveDirectoryGroup), DataType = "Bool", Value = group.IsActiveDirectoryGroup.ToString() }
+                                    new ReadOnlyField { Name = FieldInfo.IsActiveDirectoryGroup_Name, FieldName = "IsActiveDirectoryGroup", FieldDescription = group.GetDescription(i => i.IsActiveDirectoryGroup), DataType = "Bool", Value = group.IsActiveDirectoryGroup.ToString() }
                                 }
                             });
                         }
@@ -2965,7 +2965,7 @@ from    (
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), DataType = "Html", Value = group.Description }
+                                    new ReadOnlyField { Name = FieldInfo.Name_Name, FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), DataType = "Html", Value = group.Description }
                                 }
                             });
                         }
@@ -2979,11 +2979,11 @@ from    (
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
                             },
                             Category = Resources.FieldInfo.SystemFieldCategory
                         });
@@ -3008,9 +3008,9 @@ from    (
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
                                 },
-                                Category = Resources.FieldInfo.SystemFieldCategory
+                                Category = FieldInfo.SystemFieldCategory
                             });
                         }
 
@@ -3021,8 +3021,8 @@ from    (
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField {
-                                        Name = "Created By",
-                                        FieldName = "Created By",
+                                        Name = FieldInfo.CreatedBy_Name,
+                                        FieldName = FieldInfo.CreatedBy_Name,
                                         Value = "values",
                                         Values = new List<ReadOnlyFieldValue>{
                                             new ReadOnlyFieldValue {
@@ -3032,10 +3032,10 @@ from    (
                                                 HideTooltip = true
                                             }
                                         },
-                                        DataType = "Lookup"
+                                        DataType = DataType.Lookup.ToString()
                                     }
                                 },
-                                Category = Resources.FieldInfo.SystemFieldCategory
+                                Category = FieldInfo.SystemFieldCategory
                             });
                         }
 
@@ -3046,8 +3046,8 @@ from    (
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField {
-                                        Name = "Last Modified By",
-                                        FieldName = "Last Modified By",
+                                        Name = FieldInfo.UpdatedBy_Name,
+                                        FieldName = FieldInfo.UpdatedBy_Name,
                                         Value = "values",
                                         Values = new List<ReadOnlyFieldValue>{
                                             new ReadOnlyFieldValue {
@@ -3057,10 +3057,10 @@ from    (
                                                 HideTooltip = true
                                             }
                                         },
-                                        DataType = "Lookup"
+                                        DataType = DataType.Lookup.ToString()
                                     }
                                 },
-                                Category = Resources.FieldInfo.SystemFieldCategory
+                                Category = FieldInfo.SystemFieldCategory
                             });
                         }
                     }
