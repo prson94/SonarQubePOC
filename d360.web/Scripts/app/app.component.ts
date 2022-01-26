@@ -8,11 +8,16 @@ import { MessageService } from 'primeng/api';
 import { ApplicationInsightsService } from './services/application-insights.service';
 import { ActivatedRoute } from '@angular/router';
 import { datadogRum } from '@datadog/browser-rum';
+import { environment } from '../environments/environment';
 
 declare var CurrentResourceID;
 declare var VersionNumber: string;
 declare var ResourceName;
 declare var ResourceEmail;
+declare var DataDogApplicationId;
+declare var DataDogClientToken;
+declare var DataDogService;
+declare var PRODUCTION;
 
 @Component({
     selector: 'd3s-app',
@@ -60,31 +65,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         private toastService: MessageService) {
         this.msgs = [];
 
-        try {
-            datadogRum.init({
-                applicationId: 'a6856a29-b0df-4399-9209-fab1529c798b',
-                clientToken: 'pubb2d8e686770c86a615449864b1b9e64b',
-                site: 'datadoghq.com',
-                service: 'govern',
-                env: location.hostname,
-                version: VersionNumber,
-                sampleRate: 100,
-                trackInteractions: true,
-                defaultPrivacyLevel: 'mask-user-input',
-                allowedTracingOrigins: [/https:\/\/.*\.data3sixty\.com/, /https:\/\/.*\.data3sixty\.local/]
-            });
-
-            datadogRum.setUser({
-                id: CurrentResourceID,
-                name: ResourceName,
-                email: ResourceEmail,
-            });
-
-            datadogRum.startSessionReplayRecording();
-        }
-        catch {
-            console.log("Datadog Real user monitoring cannot be initialized!")
-        }
+        this.enableDataDog();
         
         this.errorSub = messagesService.errorMessage$.subscribe(
             errorMsg => {
@@ -115,6 +96,37 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             this.handleMenuChange(menuState.toLocaleLowerCase() == "true");
         }
         this.setMaxHeight();
+    }
+
+    private enableDataDog() {
+        try {
+            // Only turn on datadog Real user monitoring when Govern is in prod mode we dont want errors from developers building govern reported.
+            if (PRODUCTION) {
+                datadogRum.init({
+                    applicationId: DataDogApplicationId,
+                    clientToken: DataDogClientToken,
+                    site: 'datadoghq.com',
+                    service: DataDogService,
+                    env: location.hostname,
+                    version: VersionNumber,
+                    sampleRate: 100,
+                    trackInteractions: true,
+                    defaultPrivacyLevel: 'mask-user-input',
+                    allowedTracingOrigins: [/https:\/\/.*\.data3sixty\.com/, /https:\/\/.*\.data3sixty\.local/]
+                });
+
+                datadogRum.setUser({
+                    id: CurrentResourceID,
+                    name: ResourceName,
+                    email: ResourceEmail,
+                });
+
+                datadogRum.startSessionReplayRecording();
+            }
+        }
+        catch {
+            console.log("Datadog Real user monitoring cannot be initialized!")
+        }
     }
 
     public handleMenuChange(v: boolean) {
