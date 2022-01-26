@@ -17,6 +17,7 @@ export class AssetDetailCategoryComponent {
     @Input() spacerHeight: string = '32px';
     @Input() isSidePanel: boolean = false;
     @Input() interceptLinkClick: boolean = false;
+
     constructor(
         protected settingsService: CompanySettingsService,
         public objectIdService: ObjectIdService

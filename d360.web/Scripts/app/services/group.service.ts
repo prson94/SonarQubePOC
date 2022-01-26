@@ -1,7 +1,7 @@
-﻿import {Injectable} from '@angular/core';
-import { HttpClient, HttpHeaders} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+﻿import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 import {
     IGroupService,
@@ -10,10 +10,10 @@ import {
     Group,
     AddUserToGroup
 } from '../models/group.model';
-import {JsonResult} from '../models/jsonresult.model';
-import {CountObject} from '../models/resource.model';
-import {MessagesObservableService} from './messages-observable.service';
-import {BaseObservableService} from "./baseObservable.service";
+import { JsonResult } from '../models/jsonresult.model';
+import { CountObject } from '../models/resource.model';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from "./baseObservable.service";
 
 @Injectable({
     providedIn: 'root'
@@ -33,11 +33,17 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    getGroups(): Observable<any> {
-        return this.http.get('api/v2/membership/groups')
+    getGroups(simpleFilter: string = ''): Observable<any> {
+        let url = 'api/v2/membership/groups';
+
+        if (simpleFilter) {
+            url += "?_simpleFilter=" + simpleFilter;
+        }
+
+        return this.http.get(url)
             .pipe(
-            map(x => <any>x),
-                catchError(err=>this.handleError(err))
+                map(x => <any>x),
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -54,10 +60,10 @@ export class GroupService extends BaseObservableService implements IGroupService
     }
 
     getGroupResourceList(uid: string, pageSize: number): Observable<any> {
-            return this.http.get(`api/v2/membership/groups/${uid}/members?_pageSize=${pageSize}`).pipe(
-                map((response) => <GroupResourceInfo[]>response),
-                catchError((err) => this.handleError(err))
-            );
+        return this.http.get(`api/v2/membership/groups/${uid}/members?_pageSize=${pageSize}`).pipe(
+            map((response) => <GroupResourceInfo[]>response),
+            catchError((err) => this.handleError(err))
+        );
     }
 
     getGroupUid(id: number): Observable<any> {
@@ -75,11 +81,19 @@ export class GroupService extends BaseObservableService implements IGroupService
     }
 
 
-    getGroup(id: number,uid:string): Observable<any> {
+    getGroup(id: number, uid: string): Observable<any> {
         return this.http.get(`form/Group?id=${id}&uid=${uid}`).pipe(
             map((response) => <any>response),
             catchError((err) => this.handleError(err))
         );
+    }
+
+    getGroupByUid(uid: string): Observable<any> {
+        return this.http.get('api/v2/membership/groups?Uid=' + uid)
+            .pipe(
+                map(x => <any>x),
+                catchError(err => this.handleError(err))
+            );
     }
 
     putGroup(group: Group): Observable<any> {
@@ -106,19 +120,6 @@ export class GroupService extends BaseObservableService implements IGroupService
     deleteUsersFromGroup(groupUid: string, userUid: string): Observable<any> {
         return this.http.delete(`api/v2/membership/groups/${groupUid}/${userUid}`).pipe(
             map((response) => <any>response),
-            catchError((err) => this.handleError(err))
-        );
-    }
-
-    getGroupUserList(
-        id: number,
-        pagenum: number,
-        pagesize: number,
-        sortDataField: string,
-        sortOrder: string
-    ): Observable<any> {
-        return this.http.get(`form/GetGroupUserList?id=${id}&pagenum=${pagenum}&pagesize=${pagesize}&sortdatafield=${sortDataField}&sortorder=${sortOrder}`).pipe(
-            map((response) => response),
             catchError((err) => this.handleError(err))
         );
     }

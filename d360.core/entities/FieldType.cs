@@ -95,7 +95,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string DefaultValue { get; set; }
-                
+
         public string DefaultFormattedValue { get; set; }
 
         [DataMember]
@@ -190,7 +190,7 @@ namespace d360.core.entities
         public string Display { get; set; }
     }
 
-    public class FieldTypeDescriptionApiViewModel_DisplayForm: FieldTypeDescriptionApiViewModel_Display
+    public class FieldTypeDescriptionApiViewModel_DisplayForm : FieldTypeDescriptionApiViewModel_Display
     {
         [DataMember]
         public string Form { get; set; }
@@ -215,7 +215,7 @@ namespace d360.core.entities
         [DataMember]
         public decimal? MaximumValue { get; set; }
     }
-    public class FieldTypeDescriptionApiViewModel_ValidationDecimal: FieldTypeDescriptionApiViewModel_ValidationMinMaxValue
+    public class FieldTypeDescriptionApiViewModel_ValidationDecimal : FieldTypeDescriptionApiViewModel_ValidationMinMaxValue
     {
         [DataMember]
         public short? Precision { get; set; }
@@ -263,7 +263,7 @@ namespace d360.core.entities
         public bool ShowIfEmpty { get; set; }
     }
 
-    public class FieldTypeDataTypeBooleanApiViewModel: FieldTypeEditableApiViewModel
+    public class FieldTypeDataTypeBooleanApiViewModel : FieldTypeEditableApiViewModel
     {
         [DataMember]
         public bool? DefaultValue { get; set; }
@@ -677,7 +677,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public FieldTypeDataTypeBooleanApiViewModel Boolean { get; set; }
-        [DataMember]                
+        [DataMember]
         public FieldTypeDataTypeComputedOwnershipLookupApiViewModel ComputedOwnershipLookup { get; set; }
         [DataMember]
         public FieldTypeDataTypeComputedRelationshipFieldApiViewModel ComputedRelationshipField { get; set; }
@@ -720,7 +720,7 @@ namespace d360.core.entities
         {
             int childPopulatedCount = 0;
 
-            childPopulatedCount += (Boolean != null) ? 1 : 0;            
+            childPopulatedCount += (Boolean != null) ? 1 : 0;
             childPopulatedCount += (ComputedOwnershipLookup != null) ? 1 : 0;
             childPopulatedCount += (ComputedRelationshipField != null) ? 1 : 0;
             childPopulatedCount += (ComputedRelationshipLookup != null) ? 1 : 0;
@@ -758,6 +758,31 @@ namespace d360.core.entities
             if (Text != null) partOfKey = Text.IsPartOfKey;
 
             return partOfKey;
+        }
+
+        public string GetFieldType()
+        {
+            if (Boolean != null) { return "Boolean"; }
+            if (ComputedOwnershipLookup != null) { return "ComputedOwnershipLookup"; }
+            if (ComputedRelationshipField != null) { return "ComputedRelationshipField"; }
+            if (ComputedRelationshipLookup != null) { return "ComputedRelationshipLookup"; }
+            if (ComputedRelationshipReferenceList != null) { return "ComputedRelationshipReferenceList"; }
+            if (Counter != null) { return "Counter"; }
+            if (Date != null) { return "Date"; }
+            if (DateTime != null) { return "DateTime"; }
+            if (Decimal != null) { return "Decimal"; }
+            if (Html != null) { return "Html"; }
+            if (Json != null) { return "Json"; }
+            if (JsonElement != null) { return "JsonElement"; }
+            if (Link != null) { return "Link"; }
+            if (Lookup != null) { return "Lookup"; }
+            if (Number != null) { return "Number"; }
+            if (Path != null) { return "Path"; }
+            if (Relationship != null) { return "Relationship"; }
+            if (Text != null) { return "Text"; }
+            if (Tag != null) { return "Tag"; }
+            if (Score != null) { return "Score"; }
+            return "Unknown";
         }
     }
 
@@ -806,7 +831,7 @@ namespace d360.core.entities
         [MaxLength(128, ErrorMessage = "{0} cannot exceed {1} characters.")]
         [RegularExpression("^[a-zA-Z][a-zA-Z0-9_]+$", ErrorMessage = "{0} can only have uppercase letters, lowercase letters, numbers, or underscore. It must also be greater than 1 character in length and start with a letter.")]
         public string Name { get; set; }
-        [DataMember]        
+        [DataMember]
         [Required(AllowEmptyStrings = false, ErrorMessage = "{0} is a required field")]
         [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string FriendlyName { get; set; }

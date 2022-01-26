@@ -12,7 +12,6 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 import { D3SSharedModule } from '../../shared/shared.module';
 
 import { AdminGroupsComponent } from './admin-groups.component';
-import { GroupForm } from './group.form';
 
 import { AdminGroupsRoutingModule } from './admin-groups.routes';
 
@@ -24,6 +23,16 @@ import { InputTextModule } from 'primeng/inputtext';
 
 import { TableModule } from 'primeng/table';
 import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
+import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
+import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
+import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { AssetEditorModule } from '../../shared/asset-editor/asset-editor.module';
+import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+import { DirectivesModule } from '../../../directives/directives.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -40,7 +49,7 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
         InputTextModule,
         SharedModule,
         TableModule,
-
+        TooltipModule,
         //d3s        
         CoreModule,  
         D3SSharedModule,  
@@ -48,11 +57,19 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
         SharedFieldDefinitionModule,
-        TilesModule,        
+        TilesModule,
+        SidePanelModule,
+        AssetDetailModule,
+        SharedDynamicGridEditorModule,
+        SiteModalModule,
+        AssetEditorModule,
+        PropertyGroupModule,
+        PopupMenuModule,
+        SearchFieldModule,
+        DirectivesModule
     ],
     declarations: [
-        AdminGroupsComponent,
-        GroupForm,
+        AdminGroupsComponent
     ],
     providers: [
     ]

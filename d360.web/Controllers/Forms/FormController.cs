@@ -364,6 +364,9 @@ namespace d360.web.Controllers
                 case "TAG":
                     res = Tag_EditFields(oid);
                     break;
+                case "GROUP":
+                    res = Group_EditFields(oid);
+                    break;
                 case "TASKTYPE":
                     res = Diagram_EditFields(oid);
                     break;
@@ -529,6 +532,9 @@ namespace d360.web.Controllers
                     break;
                 case "TAG":
                     res = Tag_AddFields();
+                    break;
+                case "GROUP":
+                    res = Group_AddFields();
                     break;
                 case "TASK":
                     res = Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
@@ -2004,7 +2010,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
         /// <param name="id">SurveyTypeID</param>
         [Route("Tag_EditFields"), NonNullableParameters]
         public JsonResult Tag_EditFields(int id)
@@ -2014,6 +2019,86 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Tag name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
+
+        #region Group
+        [Route("Group_AddFields")]
+        public JsonResult Group_AddFields()
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = FieldInfo.IsActiveDirectoryGroup_Name, FieldType = DataType.Boolean.ToString() });
+
+            list.Add(new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = FieldInfo.PrimaryOwner_Name, FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" });
+            list.Add(new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = FieldInfo.SecondaryOwner_Name, FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" });
+
+            list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = FieldInfo.Description_Name, FieldType = DataType.Html.ToString() });
+
+            var tempList = new List<EditableField>();
+            tempList = loadDynamicFields(tempList, Company.GetFieldTypesByObject(SystemObjects.GroupType, 1).ToList(), 1);
+            tempList.ForEach(x => x.Row += 3);
+
+            list.AddRange(tempList);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("Group_EditFields")]
+        public JsonResult Group_EditFields(int groupId)
+        {
+            var list = new List<EditableField>();
+
+            var group = Company.Query<Group>(@"select gr_prim.uid as 'PrimaryOwnerUid',
+                        gr_sec.uid as 'SecondaryOwnerUid',
+                        gr_prim.LastName + ', ' + gr_prim.FirstName as 'PrimaryOwnerName',
+                        gr_sec.LastName + ', ' + gr_sec.FirstName as 'SecondaryOwnerName'
+                        , g.* from
+                        [group] g
+                        left join reporting.global_resource gr_prim on gr_prim.resourceid = g.primaryownerresourceid
+                        left join reporting.global_resource gr_sec on gr_sec.resourceid = g.secondaryownerresourceid
+                        where g.id = @groupId
+                        ", new { groupId }).FirstOrDefault();
+
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = group.Uid.ToString() });
+
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, Value = group.Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
+            list.Add(new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = FieldInfo.IsActiveDirectoryGroup_Name, Value = group.IsActiveDirectoryGroup.ToString(), FieldType = DataType.Boolean.ToString() });
+
+            var primaryField = new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = FieldInfo.PrimaryOwner_Name, Value = group.PrimaryOwnerUid.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
+            var secondaryField = new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = FieldInfo.SecondaryOwner_Name, Value = group.SecondaryOwnerUid.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
+
+            if (group.PrimaryOwnerUid.HasValue)
+            {
+                primaryField.Value = group.PrimaryOwnerUid.ToString();
+                primaryField.Items = new List<SelectListItem> { new SelectListItem { Value = group.PrimaryOwnerUid.ToString(), Selected = true, Text = group.PrimaryOwnerName } };
+            }
+
+            if (group.SecondaryOwnerUid.HasValue)
+            {
+                secondaryField.Value = group.SecondaryOwnerUid.ToString();
+                secondaryField.Items = new List<SelectListItem> { new SelectListItem { Value = group.SecondaryOwnerUid.ToString(), Selected = true, Text = group.SecondaryOwnerName } };
+            }
+
+            list.Add(primaryField);
+            list.Add(secondaryField);
+
+            list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = FieldInfo.Description_Name, Value = group.Description, FieldType = DataType.Html.ToString() });
+
+            list = (
+               loadDynamicFields(
+                   SystemObjects.Group.ToString(),
+                   groupId,
+                   list,
+                   Company.GetFieldTypesByObject(SystemObjects.GroupType, 1).ToList(),
+                   Company.GetFieldRelationsByObject(SystemObjects.Group, groupId).ToList(),
+                   4,
+                   loadOnlySelectedLookupValue: true
+               )
+           );
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

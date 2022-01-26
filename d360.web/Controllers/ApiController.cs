@@ -1079,6 +1079,28 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     #endregion
             }
 
+            if (type == SystemObjects.GroupType)
+            {
+                totalItems = Company
+    .Filter<FieldType>(i => i.Object == SystemObjects.GroupType.ToString() && i.ObjectID == 1 && !skippedFieldTypes.Contains(i.Type))
+    .ToList();
+
+                items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+                items.Insert(0, new FieldType { FriendlyName = "Name", Name = "Name", Type = "Text" });
+                parseDynamicColumnsAndFields(items, columns, fields, 0, true);
+
+                filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
+
+                //clear the filtercolumns of the columns since they are not used and copied to the filtercolumns
+                foreach (var column in columns)
+                {
+                    column.filteritems = new List<string>();
+                }
+                var hiddenItems = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                parseDynamicFilterFields(hiddenItems, filterColumns, 0, true);
+            }
+
+
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
                 Title = (detail != null) ? detail.PluralizedName : "Child Items",
@@ -2862,9 +2884,25 @@ from    (
                 #endregion
                 case SystemObjects.Group:
                     #region Fields
-                    var group = Company.GetById<Group>(id);
+                    var group = Company.Query<Group>(@"select gr_prim.uid as 'PrimaryOwnerUid',
+                        gr_sec.uid as 'SecondaryOwnerUid',
+                        gr_prim.LastName + ', ' + gr_prim.FirstName as 'PrimaryOwnerName',
+                        gr_sec.LastName + ', ' + gr_sec.FirstName as 'SecondaryOwnerName',
+                        u.LastName+', '+u.FirstName as UpdatedByName,
+                        c.LastName+', '+c.FirstName as CreatedByName, 
+                        g.* from
+                        [group] g
+                        inner join asset a on a.object ='Group' and a.objectid = g.id
+                        left join reporting.global_resource gr_prim on gr_prim.resourceid = g.primaryownerresourceid
+                        left join reporting.global_resource gr_sec on gr_sec.resourceid = g.secondaryownerresourceid
+                        left join reporting.global_resource u on u.resourceid = a.updatedby
+                        left join reporting.global_resource c on c.resourceid = a.createdby
+                        where g.id = @groupId
+                        ", new { groupId = id }).FirstOrDefault();
                     if (group != null)
                     {
+                        var asset = Company.Assets.FirstOrDefault(x => x.Object == SystemObjects.Group.ToString() && x.ObjectID == group.ID);
+                        model.AssetName = group.Name;
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -2915,7 +2953,7 @@ from    (
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = "Is Active Directory Group", FieldName = "IsActiveDirectoryGroup", FieldDescription = group.GetDescription(i => i.IsActiveDirectoryGroup), DataType = "Bool", Value = group.IsActiveDirectoryGroup.ToString() }
+                                    new ReadOnlyField { Name = FieldInfo.IsActiveDirectoryGroup_Name, FieldName = "IsActiveDirectoryGroup", FieldDescription = group.GetDescription(i => i.IsActiveDirectoryGroup), DataType = "Bool", Value = group.IsActiveDirectoryGroup.ToString() }
                                 }
                             });
                         }
@@ -2927,8 +2965,102 @@ from    (
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), DataType = "Html", Value = group.Description }
+                                    new ReadOnlyField { Name = FieldInfo.Name_Name, FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), DataType = "Html", Value = group.Description }
                                 }
+                            });
+                        }
+
+
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+                        model.rows.AddRange(dynamicRows);
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+                            },
+                            Category = Resources.FieldInfo.SystemFieldCategory
+                        });
+
+                        if (asset.UpdatedOn.HasValue)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                },
+                                Category = Resources.FieldInfo.SystemFieldCategory
+                            });
+                        }
+                        else
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(group.CreatedByName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Name = FieldInfo.CreatedBy_Name,
+                                        FieldName = FieldInfo.CreatedBy_Name,
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value=group.CreatedByName,
+                                                TooltipType="Resource",
+                                                TooltipUrl="resource/"+asset.CreatedBy,
+                                                HideTooltip = true
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(group.UpdatedByName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Name = FieldInfo.UpdatedBy_Name,
+                                        FieldName = FieldInfo.UpdatedBy_Name,
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value=group.UpdatedByName,
+                                                TooltipType="Resource",
+                                                TooltipUrl="resource/"+asset.UpdatedBy,
+                                                HideTooltip = true
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
                             });
                         }
                     }

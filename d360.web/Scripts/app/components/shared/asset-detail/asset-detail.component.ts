@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
 import { GroupService } from '../../../services/group.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { ProcessService } from '../../../services/process.service';
+import { Group } from '../../../models/group.model';
 
 declare var CurrentResourceID;
 
@@ -42,7 +43,9 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() hasEditLink: boolean = false;
     @Input() interceptLinkClick: boolean = false;
     @Input() assetDetail: any;
-
+    @Input() hideLinks: boolean = false;
+    @Input() hideClassName: boolean = false;
+    @Input() groupMembersReadOnlyMode: boolean = true;
     @Output() onEditClick = new EventEmitter();
 
     assetUID: string;
@@ -62,9 +65,9 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 
     rows = new Array<DetailRow>();
     userGroups: any = [];
-    groupMemebers: any = [];
     loadGroupSub: Subscription;
-    loadGroupMembersSub: Subscription;
+
+    loadedGroup: Group;
 
     constructor(
         private router: Router,
@@ -97,9 +100,6 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         if (this.loadGroupSub) {
             this.loadGroupSub.unsubscribe();
         }
-        if (this.loadGroupMembersSub) {
-            this.loadGroupMembersSub.unsubscribe();
-        }
     }
 
     public load(): void {
@@ -130,14 +130,6 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 
         if (this.objectType === 'Group') {
             this.tab = 'detail';
-            this.useAccordion = false;
-            if (this.loadGroupMembersSub) {
-                this.loadGroupMembersSub.unsubscribe();
-            }
-            this.loadGroupMembersSub = this.groupService.getGroupMembers(this.objectUID)
-                .subscribe((res) => {
-                    this.groupMemebers = res.items;
-                });
         }
 
         if (detailSub) {
