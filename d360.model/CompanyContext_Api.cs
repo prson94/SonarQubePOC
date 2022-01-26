@@ -2400,6 +2400,12 @@ insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID
                         {
                             CreateRulesRemovedExecution(execution.ExecutionID, at.ID);
                         }
+                        
+                        // Rescore changes to parents based on the items removed here - possibly children.
+                        if (predicateType.HasValue)
+                        {
+                            CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+                        }
                     }
                 }
             }
@@ -2592,6 +2598,35 @@ from	dbo.FieldType T
 
 drop table if exists #tempassetobject;",
                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+            #endregion
+
+            #region Get parents to rescore
+
+            Connection.Execute(@"
+drop table if exists #DeletedRelationships;
+create table #DeletedRelationships ([ID] int, ItemNumber int, Payload varchar(200));
+
+insert into #DeletedRelationships
+    select  I.ID,
+            EA.ItemNumber,
+            '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
+    from    IntersectDetail I
+            inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID and I.[PredicateType] in (3,4) 
+            inner join api.ExecutionDeletedAsset EA on 
+                EA.Object = I.Object 
+                and EA.ObjectID = I.ObjectID 
+                and EA.ExecutionID = @ExecutionID
+                and EA.Success is null 
+                and EA.ItemNumber between @beginItemNumber and @endItemNumber 
+                and EA.FromHierarchy = 0;
+
+-- Log the parent removals into Dependent Change table
+insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+    select  @ExecutionID, ItemNumber, 1, 3, Payload
+    from    #DeletedRelationships;",
+new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+
 
             #endregion
 
