@@ -59,7 +59,6 @@ export class MetricsService extends BaseObservableService {
                             r.HasThreshold = true;
                         }
                     });
-                    //return res;
                 }),
                 catchError(err => this.handleError(err))
             );
