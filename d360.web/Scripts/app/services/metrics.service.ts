@@ -58,6 +58,7 @@ export class MetricsService extends BaseObservableService {
                         else {
                             r.HasThreshold = true;
                         }
+                        console.log(`${r.Name} (${r.Threshold}) - r.HasThreshold: ${r.HasThreshold}`);
                     });
                     //return res;
                 }),
