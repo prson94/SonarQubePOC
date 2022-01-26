@@ -122,8 +122,9 @@ export class ObjectDetailComponent implements OnChanges {
         if ((field.Value == null || field.Value == '') && field.ShowIfEmpty == false)
             field.Type = DetailFieldType.None;
         if (field.TooltipContext != null) {
-            if (field.Value != null && field.Value != '')
+            if (field.Value != null && field.Value != '') {
                 field.Type = DetailFieldType.Tooltip;
+            }
             else
                 field.Type = DetailFieldType.None;
         }
@@ -136,7 +137,7 @@ export class ObjectDetailComponent implements OnChanges {
     }
 
     private saveState() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.categories.map((c) => { return { name: c.name, active: c.active };})));
+        localStorage.setItem(this.storageKey, JSON.stringify(this.categories.map((c) => { return { name: c.name, active: c.active }; })));
     }
 
     private loadState() {
