@@ -113,6 +113,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     selectedTagID: number;
     hasUpdateFormChanged: boolean = false;
 
+    isProcessSidePanel: boolean = false;
+
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
     @ViewChildren(AssetEditorFieldComponent) dyFieldRef: QueryList<AssetEditorFieldComponent>;
@@ -139,6 +141,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
             }
         });
+
+        if (!this.showAsModal) {
+            this.modalFormMaxHeight = null;
+        }
     }
 
     @HostListener('window:resize', ['$event'])
@@ -248,6 +254,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             if (this.isV2API && this.selection.AssetUid) {
                 id = this.selection.AssetUid;
             }
+
+            //this comes from process side panel
+            if (this.selection.key) {
+                id = this.selection.key;
+                this.isProcessSidePanel = true;
+            }
+
             this.loadedAssetUid = id;
         }
         this.isLoading = true;
@@ -389,6 +402,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     }
                 });
             }, 500);
+
+            if (this.useModelBinding) {
+                this.form.valueChanges.subscribe(x => {
+                    this.onSubmit();
+                });
+            }
+
         }
 
         this.ref.markForCheck();
@@ -583,7 +603,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     onSubmit(addAnother: boolean = false) {
-        this.savingInProgress = true;
 
         if (addAnother) {
             this.savingInProgressWithAddNew = true;
@@ -673,7 +692,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.modelChanged.emit({ values: values, fields: this.fields });
             return;
         }
-
 
         this.postToApiV2({ item: values, action: action, addAnother: addAnother });
 

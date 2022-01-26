@@ -77,6 +77,7 @@ import { SidePanelModule } from '../sidepanel/side-panel.module';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 
 @NgModule({
@@ -99,6 +100,8 @@ import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.m
         ScoreBadgeModule,
         IgColorPickerModule,
         SharedDynamicGridEditorModuleV2,
+        SharedDynamicGridEditorModule,
+        AssetEditorModule,
         SiteModalModule,
         SharedRelationshipModule,
         SharedObjectDetailsModule,

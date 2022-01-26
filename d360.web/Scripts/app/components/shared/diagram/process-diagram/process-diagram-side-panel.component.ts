@@ -32,6 +32,7 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
+    loadedNodes: any[] = [];
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -46,7 +47,6 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
         this.breadcrumbsService = breadcrumbService;
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            this.nodeData = null;
             this.nodeDeselected.emit(null);
             this.linkClickInterceptor.handleEvent(this, ev);
         });
@@ -58,6 +58,11 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
             if (this.nodeData) {
                 this.assetName = this.nodeData['Name'];
                 this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+
+                var exists = this.loadedNodes.filter((node) => node.key === this.nodeData.key);
+                if (exists.length === 0) {
+                    this.loadedNodes.push(this.nodeData);
+                }
             }
         }
     }
@@ -75,6 +80,8 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
     //check for missing fields and set value to ''
     //ignore system fields (Uid/AssetTypeUid)
     private onModelChange($event) {
+        console.log($event);
+        console.log(this.nodeData.key);
         var data = $event['values'];
         data.key = this.nodeData.key;
 

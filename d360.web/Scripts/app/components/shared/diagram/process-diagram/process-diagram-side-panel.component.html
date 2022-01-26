@@ -11,35 +11,26 @@
             </div>
         </div>
 
-        <ng-container *ngIf="!isReadOnly">
-            <div *ngIf="nodeData">
-                <div class="header">
-                    <span class="elide-popup asset-name">
-                        <span class="popup">{{assetName}}</span>
-                        <span class="text">{{assetName}}</span>
-                    </span>
-                    <span class="asset-type-name">{{nodeData.assetTypeName}}</span>
-                </div>
-                <div class="gov-editor-v2">
-                    <d3s-dynamic-editor-v2 [title]="Name"
-                                           [selectedObject]="'TaskType'"
-                                           [objectTypeUid]="nodeData.assetTypeUid"
-                                           [assetUid]="nodeData.isNew ? null : nodeData.key"
-                                           [diagramNodeKey]="nodeData.isNew ? nodeData.key : null"
-                                           [isV2API]="true"
-                                           [useNonLegacyData]="true"
-                                           [useModelBinding]="true"
-                                           [hasHeader]="false"
-                                           [dataModel]="nodeData"
-                                           [disallowedNames]="disallowedNames"
-                                           (modelChanged)="onModelChange($event)"></d3s-dynamic-editor-v2>
-                </div>
+        <ng-container *ngFor="let data of loadedNodes">
+            <div [hidden]="data.key !== nodeData.key">
+                <asset-editor #dynamicEditor
+                              [assetUid]="data ? data.key : null"
+                              [objectType]="'TaskType'"
+                              [title]="data ? 'Edit Asset' : 'Create New Asset'"
+                              [selection]="nodeData"
+                              [rowID]="rowID"
+                              [objectTypeUid]="data?.assetTypeUid"
+                              [assetTypePath]="data.assetTypeName"
+                              [isV2API]="true"
+                              [showActions]="false"
+                              [useModelBinding]="true"
+                              (closeClick)="showEditor=false"
+                              (modelChanged)="onModelChange($event)"></asset-editor>
             </div>
+        </ng-container>
 
-
-            <div *ngIf="linkData">
+        <ng-container *ngIf="!isReadOnly && linkData">
                 <d3s-process-diagram-label-editor (linkDataChange)="linkDataChange.emit($event)" [linkData]="linkData" [assetUid]="assetUid"></d3s-process-diagram-label-editor>
-            </div>
         </ng-container>
 
         <ng-container *ngIf="isReadOnly">
