@@ -934,7 +934,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
 
         //number will pass as a json so need to handle that case
-        if (parseInt(str) !== NaN) {
+        if (!isNaN(parseInt(str))) {
             return false;
         }
 
