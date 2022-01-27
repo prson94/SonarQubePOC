@@ -41,6 +41,8 @@ namespace d360.web.Models
         public List<dynamic> Scores { get; set; }
         public int columns { get; set; }
         public List<DetailReadOnlyRowModel> rows { get; set; }
+        public string ResourceFirstName { get; set; }
+        public string ResourceEmail { get; set; }
     }
 
     public class LookupDataReadOnlyModel

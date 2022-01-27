@@ -102,7 +102,7 @@ export class LinkClickInterceptor {
             }
 
             //this is a group object
-            if (data.PrimaryOwnerUid) {
+            if (data.hasOwnProperty('PrimaryOwnerUid')) {
                 adcEv.type = AssetDetailClickType.Group;
                 adcEv.objectType = "Group";
                 adcEv.uid = data.Uid;
