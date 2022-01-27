@@ -83,7 +83,7 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     open(isNewTab: boolean = false) {
-        var url = 'tag/' + this.tag.uid;
+        let url : string = 'tag/' + this.tag.uid;
         if (!isNewTab) {
             this.router.navigateByUrl(url);
             return;
