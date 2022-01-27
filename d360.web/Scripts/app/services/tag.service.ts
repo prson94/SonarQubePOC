@@ -190,8 +190,15 @@ export class TagService extends BaseObservableService {
     getTagDetails(uid: string): Observable<any> {
         let url = `api/v2/tags/${uid}/details?_pagesize=1000000`;
         return this.http.get(url)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err)));
+            .pipe(map(response => {
+                var data = <any>response;
+                if (data.items) {
+                    data.items.forEach((tag) => {
+                        tag.DisplayPath = (tag.DisplayPath as string).split('/').join('>');
+                    });
+                }
+                return data;
+            }), catchError(err => this.handleError(err)));
     }
 
     private tagTooltipsCache: any[] = [];
