@@ -5282,7 +5282,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     sw.Restart();
 
-                                    if (isInsert && hasCounterField)
+                                    if (hasCounterField)
                                     {
                                         UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
