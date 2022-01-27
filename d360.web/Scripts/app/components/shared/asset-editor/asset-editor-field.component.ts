@@ -932,6 +932,12 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         } catch (e) {
             return false;
         }
+
+        //number will pass as a json so need to handle that case
+        if (parseInt(str) !== NaN) {
+            return false;
+        }
+
         return true;
     }
 }
