@@ -1204,10 +1204,7 @@ from	[Load] L
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidIntersectTypeUidProvided)).ConfigureAwait(false);
                     }
                 }
-
-                byte[] bytes = Array.Empty<byte>();
-                string extension = string.Empty;
-
+		
                 var response = new ConfirmResponse();
                 var c = await Request.Content.ReadAsMultipartAsync();
                 var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
@@ -1217,8 +1214,8 @@ from	[Load] L
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "file"))).ConfigureAwait(false);
                 }
 
-                bytes = await file.ReadAsByteArrayAsync();
-                extension = Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
+                byte[] bytes = await file.ReadAsByteArrayAsync();
+                string extension = Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
 
                 Load load = null;
                 var errorMessages = new List<string>();
