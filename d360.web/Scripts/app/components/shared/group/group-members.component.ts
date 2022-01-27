@@ -175,7 +175,6 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
     memberClicked($event, data) {
-        console.log(data);
         if (this.interceptLinkClick) {
             this.linkClickInterceptor.sendEvent($event, data, "asset/" + data.uid);
             return;
