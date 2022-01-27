@@ -3834,6 +3834,9 @@ from    (
                     {
                         model.columns = 1;
 
+                        model.ResourceFirstName = resource.FirstName;
+                        model.ResourceEmail = resource.Email;
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,

@@ -47,6 +47,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
 
         this.setTooltipValue(isTag);
         this.renderer.appendChild(this.document.body, this.hoverElement);
+        this.updatePosition();
     }
 
     setTooltipValue(isInitialTag: boolean) {

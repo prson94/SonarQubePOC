@@ -16,7 +16,7 @@
                     {{model?.AssetName}}
                 </div>
                 <div class="class-name" *ngIf="!hideClassName">
-                    {{model?.AssetTypeName}}
+                    {{subtitle}}
                 </div>
                 <div *ngIf="!hideLinks">
                     <a (click)="open();">Open</a> <span class="grey-delimiter">|</span> <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
@@ -107,7 +107,7 @@
 
                     <div class="user-assignments" *ngIf="objectType === 'Resource'">
                         <label nclass="ig-label">
-                            <span>{{model.AssetName}}'s Assignments</span>
+                            <span>{{model?.ResourceFirstName}}'s Assignments</span>
                         </label>
                         <d3s-assignments [resourceId]="objectID" [isSidePanel]="true"></d3s-assignments>
                     </div>
@@ -178,7 +178,7 @@
 
                 <ng-container *ngSwitchCase="'members'">
                     <div class="groups-tab" *ngIf="objectType === 'Group'">
-                        <d3s-group-members [groupUid]="objectUID" [readOnly]="groupMembersReadOnlyMode"></d3s-group-members>
+                        <d3s-group-members [groupUid]="objectUID" [readOnly]="groupMembersReadOnlyMode" [interceptLinkClick]="interceptLinkClick"></d3s-group-members>
                     </div>
                 </ng-container>
             </ng-container>

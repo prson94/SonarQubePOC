@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { EditorField } from '../../../models/editor-field.model';
 import { AddUserToGroup, Group, GroupResourceInfo } from '../../../models/group.model';
 import { GroupService } from '../../../services/group.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -22,6 +23,7 @@ import { BaseComponent } from '../base.component';
 export class GroupMembersComponent extends BaseComponent implements OnChanges {
     @Input() groupUid: string;
     @Input() readOnly: boolean = true;
+    @Input() interceptLinkClick: boolean = false;
 
     groupName: string;
     title: string = 'Members';
@@ -45,6 +47,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         private groupService: GroupService,
         private messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
+        private linkClickInterceptor: LinkClickInterceptor,
         private cdref: ChangeDetectorRef) {
         super(settingsService);
         this.theDeleteCallback = this.deleteService.bind(this);
@@ -169,5 +172,12 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
                 this.showMessageForResult(this.messagesService, result);
             }
         );
+    }
+
+    memberClicked($event, data) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent($event, data, "asset/" + data.uid);
+            return;
+        }
     }
 }

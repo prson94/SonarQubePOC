@@ -12,6 +12,7 @@ import { GroupService } from '../../../services/group.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { ProcessService } from '../../../services/process.service';
 import { Group } from '../../../models/group.model';
+import { StringConstants } from '../../../static/string-constants';
 
 declare var CurrentResourceID;
 
@@ -58,6 +59,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     readonly noCategory: string = "None";
     readonly defaultCategory: string = "General";
 
+    subtitle: string = "";
+
     model: any;
     tab: string = 'detail';
     categories: Category[] = new Array<Category>();
@@ -68,6 +71,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     loadGroupSub: Subscription;
 
     loadedGroup: Group;
+    simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
 
     constructor(
         private router: Router,
@@ -198,6 +202,12 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.loadCategory();
                     this.loadState();
                     this.loadUrl();
+
+                    this.subtitle = this.model?.AssetTypeName;
+
+                    if (this.objectType === 'Resource') {
+                        this.subtitle = this.model.ResourceEmail;
+                    }
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });

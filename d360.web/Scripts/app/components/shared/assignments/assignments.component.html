@@ -9,6 +9,7 @@
             <ig-search-field mode="Keypress"
                              [debounce]="600"
                              [IsFlexApply]="true"
+                             [infoTooltip]="simpleSearchTooltipHTML"
                              (onSearch)="dt.filterGlobal($event, 'contains')">
             </ig-search-field>
         </div>
