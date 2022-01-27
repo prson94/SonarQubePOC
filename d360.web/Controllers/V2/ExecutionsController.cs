@@ -1218,8 +1218,7 @@ from	[Load] L
                 }
 
                 bytes = await file.ReadAsByteArrayAsync();
-                var contentType = file.Headers.ContentType;
-                extension = MimeTypeExtensionsMap.GetExtension(contentType.ToString());
+                extension = Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
 
                 Load load = null;
                 var errorMessages = new List<string>();
