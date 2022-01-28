@@ -276,6 +276,7 @@ namespace d360.extensions.search
                 var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
 
                 SearchServerUrl = db.SearchServer ?? DEFAULT_SEARCH_SERVER;
+                SearchServerUrl = "192.168.33.16:9200";
             }
 
             if (string.IsNullOrEmpty(SearchServerUrl))
