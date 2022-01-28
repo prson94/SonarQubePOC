@@ -54,7 +54,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
     }
 
     private positionMenu() {
-        if (!this.menu && this.menu.NavigationItems) {
+        if (!this.menu || !this.menu.NavigationItems) {
             return;
         }
 
