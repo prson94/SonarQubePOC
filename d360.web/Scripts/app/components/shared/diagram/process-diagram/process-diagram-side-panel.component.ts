@@ -80,8 +80,10 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
     //check for missing fields and set value to ''
     //ignore system fields (Uid/AssetTypeUid)
     private onModelChange($event) {
-        console.log($event);
-        console.log(this.nodeData.key);
+        if (this.isReadOnly) {
+            return;
+        }
+
         var data = $event['values'];
         data.key = this.nodeData.key;
 

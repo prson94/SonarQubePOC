@@ -12,7 +12,7 @@
         </div>
 
         <ng-container *ngFor="let data of loadedNodes">
-            <div [hidden]="data.key !== nodeData.key">
+            <div [hidden]="!nodeData || data.key !== nodeData.key || isReadOnly">
                 <asset-editor #dynamicEditor
                               [assetUid]="data ? data.key : null"
                               [objectType]="'TaskType'"
