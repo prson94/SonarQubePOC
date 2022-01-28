@@ -899,7 +899,7 @@ where	ExecutionID = @executionID
                         where ea.ExecutionID = @executionID 
                                 and ea.Success is null and ea.assetid is not null
                                 and ea.ItemNumber between @beginItemNumber and @endItemNumber
-                                and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.Method = 'BULK');"
+                                and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or (ex.Method = 'BULK' and ea.IsNew = 1));"
                       , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
             if (sendWorkflowEvents)
             {
@@ -5282,7 +5282,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     sw.Restart();
 
-                                    if (isInsert && hasCounterField)
+                                    if (hasCounterField)
                                     {
                                         UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
