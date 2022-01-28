@@ -1,6 +1,6 @@
 ﻿<div *ngIf="expanded === false">
     <div class="side-panel-container">
-        <button *ngFor="let b of visibleButtons" igButton [disabled]="b.disabled" [icon]="b.icon" (click)="clickButton(b)" [tooltip]="getButtonTooltip(b)" class="side-panel-button"></button>
+        <button *ngFor="let b of visibleButtons" igButton [attr.data-cy]="'Sidebar_' + b.key" [disabled]="b.disabled" [icon]="b.icon" (click)="clickButton(b)" [tooltip]="getButtonTooltip(b)" class="side-panel-button"></button>
     </div>
 </div>
 <div *ngIf="expanded === true" [style.min-width]="minWidth" [style.max-width]="maxWidth">
