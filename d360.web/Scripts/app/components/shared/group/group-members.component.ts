@@ -37,6 +37,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     theDeleteCallback: Function;
     showDelete: boolean = false;
     showAddMembers: boolean = false;
+    simpleTextFilter: string = '';
 
     savingInProgress: boolean = false;
     deleteInProgress: boolean = false;
@@ -73,17 +74,17 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.groupIsActiveDirectory = false;
         this.isLoading = true;
 
-        var subs = forkJoin(this.groupService.getGroupByUid(this.groupUid),
-            this.groupService.getGroupResourceList(this.groupUid, this.maxExportRows));
-
-        subs.subscribe((data) => {
-            this.loadedGroup = data[0].items[0];
-
+        this.groupService.getGroupByUid(this.groupUid).subscribe((data) => {
+            this.loadedGroup = data.items[0];
             this.groupName = this.loadedGroup.Name;
             this.groupIsActiveDirectory = this.loadedGroup.IsActiveDirectoryGroup;
+            this.loadGroupMembers();
+        });
+    }
 
-            var members = data[1];
-
+    loadGroupMembers() {
+        this.isLoading = true;
+        this.groupService.getGroupResourceList(this.groupUid, this.maxExportRows, this.simpleTextFilter).subscribe((members) => {
             if (typeof members !== "undefined") {
                 this.groupItems = members.items;
             }

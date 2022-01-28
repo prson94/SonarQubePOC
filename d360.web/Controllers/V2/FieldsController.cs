@@ -662,17 +662,16 @@ namespace d360.web.Controllers.V2
                 }
                 var lists = new List<dynamic>();
 
-                if (@class != AssetTypeClass.Group)
+                if (@class == AssetTypeClass.Group)
                 {
-                    lists = (await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList")).ToList();
+                    var items = Company.AssetTypes.Where(x => x.Class == AssetTypeClass.Reference)
+                        .Select(x => new { type = "L", title = x.Name, value = x.uid }).ToList();
+                    lists.AddRange(items);
                 }
                 else
                 {
-                    dynamic dyObj = new ExpandoObject();
-                    dyObj.type = "L";
-                    dyObj.title = Types.ReferenceList;
-                    dyObj.value = "ReferenceItemType";
-                    lists.Add(dyObj);
+                    lists = (await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList")).ToList();
+
                 }
                 var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var attributes = lists.Where(i => i.type == "A").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
@@ -2221,23 +2220,30 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     && (fieldName == "SecondaryOwnerUid" || fieldName == "PrimaryOwnerUid"))
                 {
 
-                    var baseSql = $@" from reporting.Global_Resource r where r.state = 1";
+                    var baseSql = $@" from reporting.Global_Resource r ";
 
+                    List<string> wheres = new List<string>();
+                    wheres.Add("r.state = 1");
                     if (HideData3SixtyUsers())
                     {
-                        baseSql += " and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
+                        wheres.Add("(R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com')");
                     }
 
                     if (!string.IsNullOrEmpty(filter))
                     {
                         filter = "%" + filter + "%";
-                        whereQuery += " and r.LastName + ', ' + r.FirstName like @filter ";
+                        wheres.Add("(concat(r.LastName,', ',r.FirstName) like @filter)");
+                    }
+
+                    if (wheres.Count > 0)
+                    {
+                        baseSql += " where " + string.Join(" and ", wheres);
                     }
 
                     var dataSelect = "select r.LastName + ', ' + r.FirstName as text, uid as value ";
                     var countSelect = "select count(*) ";
 
-                    var sql = $"{dataSelect} {baseSql} order by r.LastName + ', ' + r.FirstName {pagingQuery};{countSelect} {baseSql}; ";
+                    var sql = $"{dataSelect} {baseSql} order by r.LastName + ', ' + r.FirstName {pagingQuery};{countSelect}  {baseSql}; ";
                     var resultsAssets = Company.Connection.QueryMultiple(sql, new { skip, take, filter });
                     var data = new
                     {

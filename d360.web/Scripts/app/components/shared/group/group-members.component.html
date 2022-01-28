@@ -1,9 +1,9 @@
 ﻿<div *ngIf="groupUid" class="group-members">
-    <div class="actions-header" *ngIf="!isLoading">
+    <div class="actions-header">
         <div class="search-input">
             <ig-search-field mode="Keypress"
                              [debounce]="600"
-                             (onSearch)="dt.filterGlobal($event, 'contains')"
+                             (onSearch)="loadGroupMembers()"
                              [(ngModel)]="simpleTextFilter"
                              [infoTooltip]="simpleSearchTooltipHTML">
             </ig-search-field>
@@ -27,7 +27,7 @@
              [paginator]="true"
              [rows]="20"
              [(selection)]="selectedRow"
-             [tableStyleClass]="'side-panel-max-width'"
+             [tableStyleClass]="readOnly ? 'side-panel-max-width' : ''"
              [loading]="isLoading"
              [loadingIcon]="'fa fa-spinner fa-spin'">
         <ng-template pTemplate="header">
@@ -36,11 +36,11 @@
                     Name
                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                 </th>
-                <th [pSortableColumn]="'Owner'" style="width: 25%">
+                <th [pSortableColumn]="'Owner'">
                     Owner
                     <d3s-sortIcon [field]="'Owner'"></d3s-sortIcon>
                 </th>
-                <th style="width: 3%" *ngIf="!readOnly"></th>
+                <th style="width: 35px;" *ngIf="!readOnly"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
                 <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
@@ -90,7 +90,7 @@
         Are you sure you want to remove <strong>{{selectedRow.FirstName + ' ' + selectedRow.LastName}}</strong> from <strong>{{groupName}}</strong>?
     </div>
     <div class="action-bar">
-        <button igButton label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
         <span class="grow"></span>
         <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
     </div>

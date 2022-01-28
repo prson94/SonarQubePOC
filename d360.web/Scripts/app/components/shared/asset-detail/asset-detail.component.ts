@@ -133,7 +133,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         }
 
         if (this.objectType === 'Group') {
-            this.tab = 'detail';
+            this.tab = 'members';
         }
 
         if (detailSub) {
