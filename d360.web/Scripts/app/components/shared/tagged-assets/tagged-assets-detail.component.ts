@@ -7,6 +7,7 @@ import { TagService } from '../../../services/tag.service';
 import { TagDetail, TagType } from '../../../models/tag.model';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { Router } from '@angular/router';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'ig-tagged-assets-detail',
@@ -28,6 +29,8 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
     tag: TagType;
     tagUsage: TagDetail[];
     filters: any = { globalSearch: '', DisplayValue: '', AssetType: '', TagsAsString: '' };
+
+    simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
 
     constructor(
         protected messagesService: MessagesObservableService,

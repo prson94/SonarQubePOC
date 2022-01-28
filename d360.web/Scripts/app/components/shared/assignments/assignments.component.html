@@ -14,7 +14,18 @@
             </ig-search-field>
         </div>
         <p-table #dt
-                 [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Version','Step','Total']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                 [value]="counts"
+                 selectionMode="single"
+                 [metaKeySelection]="true"
+                 [globalFilterFields]="['Name','Version','Step','Total']"
+                 sortField="Name"
+                 [sortOrder]="1"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="defaultInitialItemsPerPage"
+                 [rowsPerPageOptions]="defaultPagingOptions"
+                 [tableStyleClass]="'side-panel-max-width'"
+                 [(selection)]="selected">
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'Name'">
