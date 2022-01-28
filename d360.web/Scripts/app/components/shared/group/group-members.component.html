@@ -89,7 +89,7 @@
         Are you sure you want to remove <strong>{{selectedRow.FirstName + ' ' + selectedRow.LastName}}</strong> from <strong>{{groupName}}</strong>?
     </div>
     <div class="action-bar">
-        <button igButton label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
         <span class="grow"></span>
         <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
     </div>

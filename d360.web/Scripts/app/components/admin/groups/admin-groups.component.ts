@@ -17,6 +17,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { ViewChildren } from '@angular/core';
 import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.component';
+import { Table } from 'primeng/table';
 
 declare var CurrentResourceID;
 @Component({
@@ -53,6 +54,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     deleteInProgress: boolean = false;
 
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
+    @ViewChild('dt', { static: false }) table: Table;
 
     menuItems = [
         { title: 'Edit' },
@@ -148,6 +150,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         this.groupService.deleteGroupWithUid(this.selectedRow.Uid).subscribe(
             result => {
                 this.showDelete = false;
+                this.selectedRow = null;
                 this.load();
                 this.deleteInProgress = false;
                 this.showMessageForResult(this.messagesService, result);
@@ -166,5 +169,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
     onSimpleSearch($event) {
         this.load();
+
+        if (this.table) {
+            this.table.first = 0;
+        }
     }
 }

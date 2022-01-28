@@ -133,7 +133,7 @@
         Please confirm that you wish to delete the group <strong>{{selectedRow.Name}}</strong>. Please note that this operation cannot be undone.
     </div>
     <div class="action-bar">
-        <button igButton label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
         <span class="grow"></span>
         <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
     </div>
