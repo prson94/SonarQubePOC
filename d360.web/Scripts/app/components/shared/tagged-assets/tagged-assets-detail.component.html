@@ -29,6 +29,7 @@
                                  [debounce]="600"
                                  [IsFlexApply]="true"
                                  [(ngModel)]="filters.globalSearch"
+                                 [infoTooltip]="simpleSearchTooltipHTML"
                                  (onSearch)="dt.filterGlobal($event, 'contains')">
                 </ig-search-field>
                 <div pTooltip="'Export to Excel'"
@@ -50,6 +51,7 @@
                      [pageLinks]="3"
                      [paginator]="true"
                      [rowsPerPageOptions]="[10,20,50,100,200,500]"
+                     [tableStyleClass]="'side-panel-max-width'"
                      [rows]="10" [(selection)]="selected">
                 <ng-template pTemplate="header">
                     <tr>
