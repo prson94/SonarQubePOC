@@ -320,7 +320,7 @@ export class SearchStateService extends BaseObservableService {
         let q = this.MainQuery$.value;
         q.Size = limit;
 
-        return this.searchService.downloadSearchExcel(q)
+        return this.searchService.downloadSearchExcel(q);
     }
 
     public downloadFile(data: Blob, name: string) {

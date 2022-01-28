@@ -133,7 +133,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
 
         this.PageNumberSub = this.searchStateService.resultCount.subscribe((pageCount) => {
             this.canExport = pageCount > 0 && pageCount <= this.exportLimit;
-            this.searchExportTooltip = (pageCount <= this.exportLimit) ? "Export to Excel" : `Number of items is greater than ${this.exportLimit}.`;;
+            this.searchExportTooltip = (pageCount <= this.exportLimit) ? "Export to Excel" : `Number of items is greater than ${this.exportLimit}.`;
         });
     }
 
@@ -206,6 +206,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
                 this.searchStateService.downloadFile(data, fileName);
                 this.isExportInProgress = false;
             }, (err) => {
+                // eslint-disable-next-line no-console
                 console.log("Export Error", err);
                 this.isExportInProgress = false;
             });

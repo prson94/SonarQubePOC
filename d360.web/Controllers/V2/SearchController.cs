@@ -113,7 +113,7 @@ namespace d360.web.Controllers.V2
 
                     o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
 
-                    await AugmentResults(o.Result.Results);
+                    await AugmentResults(o.Result.Results).ConfigureAwait(false);
                 }
 
                 HttpResponseMessage response;
@@ -134,7 +134,7 @@ namespace d360.web.Controllers.V2
                 {
                     response = Request.CreateResponse(HttpStatusCode.OK, o);
                 }
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -166,15 +166,15 @@ namespace d360.web.Controllers.V2
                 if (!string.IsNullOrEmpty(q))
                 {
                     res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, GetQueryLimitation(), num.GetValueOrDefault(7), t).ToList();
-                    await AugmentResults(res);
+                    await AugmentResults(res).ConfigureAwait(false);
                 }
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -206,7 +206,7 @@ namespace d360.web.Controllers.V2
             {
                 visibleCategories.Add("Synonym");
             }
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, visibleCategories)));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, visibleCategories))).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -259,7 +259,7 @@ namespace d360.web.Controllers.V2
             //Reclassify Reference/ReferenceItemType
             classes.Where((c) => c.Class == 9).ToList().ForEach((c) => c.Class = 14);
 
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, classes)));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, classes))).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -304,7 +304,7 @@ namespace d360.web.Controllers.V2
                 }
             });
 
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, status)));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, status))).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -324,7 +324,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
             }
             var response = new ConfirmResponse();
 
@@ -333,7 +333,7 @@ namespace d360.web.Controllers.V2
 
             response.message = "Rebuild queued";
 
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
         }
 
         #region Enrich elastic results with DB data
@@ -351,7 +351,7 @@ namespace d360.web.Controllers.V2
         };
 
         //Icons set based on Category/Class directly
-        private static readonly Dictionary<string, string> categoryMap = new Dictionary<string, string>() {
+        private static readonly Dictionary<string, string> categoryMap = new Dictionary<string, string> {
             { "User", "fa-user" },
             { "Group", "fa-users" },
             { "Grammatic Type", "fa-comments" },
@@ -360,7 +360,7 @@ namespace d360.web.Controllers.V2
         };
 
         //Icons set based on main Nav item for category
-        private static readonly Dictionary<string, string> siteNavMap = new Dictionary<string, string>() {
+        private static readonly Dictionary<string, string> siteNavMap = new Dictionary<string, string> {
             { "Business Asset", "#Business" },
             { "Technical Asset", "#Technical" },
             { "Model", "#Models" },
@@ -497,8 +497,8 @@ namespace d360.web.Controllers.V2
 
         private async Task AugmentResults(IEnumerable<TypeaheadResult> results)
         {
-            await AppendIcons(results);
-            await AppendPaths(results);
+            await AppendIcons(results).ConfigureAwait(false);
+            await AppendPaths(results).ConfigureAwait(false);
         }
 
         private List<Guid> GetAssetTypeUidWithField(IEnumerable<IndexResult> results)
@@ -511,14 +511,14 @@ namespace d360.web.Controllers.V2
                 {
                     uids = results.Where(r => r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
                         "dbo.UidTable",
-                        new List<string>() { "Uid" })
+                        new List<string> { "Uid" })
                 })
                 .ToList();
         }
 
         private async Task AugmentResults(IEnumerable<IndexResult> results)
         {
-            await AugmentResults(results as IEnumerable<TypeaheadResult>);
+            await AugmentResults(results as IEnumerable<TypeaheadResult>).ConfigureAwait(false);
 
             if (!results.Any())
             {
@@ -666,7 +666,9 @@ namespace d360.web.Controllers.V2
                     status = JsonConvert.DeserializeObject<dynamic>(res.Status)?[0].name;
                 }
                 catch
-                { }
+                {
+                    //On error, status=null will be the results
+                }
                 document.SetCellValue(rownum, index++, status);
                 document.SetCellValue(rownum, index++, res.Scores.Exists(s => s.ScoreType == "DataQuality") ? res.Scores.Where(s => s.ScoreType == "DataQuality").Select(s => s.Value).FirstOrDefault().ToString() : null);
                 document.SetCellValue(rownum, index++, res.Scores.Exists(s => s.ScoreType == "Governance") ? res.Scores.Where(s => s.ScoreType == "Governance").Select(s => s.Value).FirstOrDefault().ToString() : null);
