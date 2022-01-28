@@ -1,0 +1,33 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Client-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[Client]') and type in (N'U'))
+begin
+	create table [dbo].[Client](
+		[ID] [int] identity(1,1) NOT NULL,
+		[Name] [nvarchar](500) NOT NULL,
+		[PublicID] [uniqueidentifier] CONSTRAINT [DF_Client_PublicID]  DEFAULT (newid()) NOT NULL,
+		[State] [smallint] CONSTRAINT [DF_Client_State] DEFAULT (1) NOT NULL,
+		constraint [PK_Client] primary key clustered ( [ID] asc )
+	)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

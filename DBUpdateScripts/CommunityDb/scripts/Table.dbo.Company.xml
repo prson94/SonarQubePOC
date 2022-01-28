@@ -1,0 +1,92 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Company-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[Company]') and type in (N'U'))
+begin
+	create table [dbo].[Company](
+		[ID] [int] identity(1,1) NOT NULL,
+		[Status] [varchar](50) NULL,
+		[DatabaseServerID] [int] NULL,
+		[ClientID] [int] NULL,
+		[EnvironmentLevel] [int] CONSTRAINT [DF_Company_EnvironmentLevel] DEFAULT (1) NOT NULL,
+		[Notes] [nvarchar](500) NULL,
+		[Name] [varchar](250) NULL,
+		[Priority] [int] CONSTRAINT [DF_Company_Priority] DEFAULT (1) NOT NULL,
+		[LifecycleEndDate] [datetime] NULL,
+		[EnvironmentNotificationEmail] [nvarchar](500) NULL,
+		constraint [PK_Company] primary key clustered ( [ID] asc )
+	)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Company-FK-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Company_Client]') AND parent_object_id = OBJECT_ID(N'[dbo].[Company]'))
+begin
+	ALTER TABLE [dbo].[Company] WITH CHECK ADD CONSTRAINT [FK_Company_Client] FOREIGN KEY([ClientID]) REFERENCES [dbo].[Client] ([ID]);
+	ALTER TABLE [dbo].[Company] CHECK CONSTRAINT [FK_Company_Client];
+end
+
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Company_DatabaseServer]') AND parent_object_id = OBJECT_ID(N'[dbo].[Company]'))
+begin
+	ALTER TABLE [dbo].[Company]  WITH CHECK ADD  CONSTRAINT [FK_Company_DatabaseServer] FOREIGN KEY([DatabaseServerID]) REFERENCES [dbo].[DatabaseServer] ([ID]);
+	ALTER TABLE [dbo].[Company] CHECK CONSTRAINT [FK_Company_DatabaseServer];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Puneet Gupta" id="GOV-16702-Add-Column-Company-EnvironmentNotificationEmail">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] 
+					   where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'company' 
+					   and COLUMN_NAME = 'EnvironmentNotificationEmail'
+					   )
+		begin
+			alter table [dbo].[company] add [EnvironmentNotificationEmail] [nvarchar](500)
+		end
+	]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+		if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] 
+					   where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'company' 
+					   and COLUMN_NAME = 'EnvironmentNotificationEmail'
+					   )
+		begin
+			alter table [dbo].[company] drop column [EnvironmentNotificationEmail]
+		end
+	]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

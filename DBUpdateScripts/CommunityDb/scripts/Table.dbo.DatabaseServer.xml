@@ -1,0 +1,70 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.DatabaseServer-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[DatabaseServer]') and type in (N'U'))
+begin
+	create table [dbo].[DatabaseServer] (
+		[ID] [int] identity(1,1) NOT NULL,
+		[Server] [varchar](250) NOT NULL,
+		[Username] [varchar](25) NOT NULL,
+		[Password] [varchar](50) MASKED WITH (FUNCTION = 'default()') NOT NULL,
+		[SearchServer] [varchar](250) NULL,
+		[EventTopic] [varchar](250) CONSTRAINT [DF_DatabaseServer_EventTopic] DEFAULT ('events') NOT NULL,
+		[IsDevelopment] [bit] CONSTRAINT [DF_DatabaseServer_IsDevelopment] DEFAULT (0) NOT NULL,
+		[EnvironmentLevel] [int] CONSTRAINT [DF_DatabaseServer_EnvironmentLevel] DEFAULT (-1) NOT NULL,
+		[Notes] [nvarchar](500) NULL,
+		[Region] [varchar](250) CONSTRAINT [DF_DatabaseServer_Region] DEFAULT ('<unknown>') NOT NULL,
+		constraint [PK_DatabaseServer] primary key clustered ( [ID] asc )
+	)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.DatabaseServer-Columns-v1.21">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DatabaseServer' and COLUMN_NAME = 'ResourceGroup')
+begin
+	alter table [dbo].[DatabaseServer] add [ResourceGroup] [varchar](250) NULL
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DatabaseServer' and COLUMN_NAME = 'ElasticPools')
+begin
+	alter table [dbo].[DatabaseServer] add [ElasticPools] [varchar](2500) NULL
+end
+	]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DatabaseServer' and COLUMN_NAME = 'ResourceGroup')
+begin
+	alter table [dbo].[DatabaseServer] drop column [ResourceGroup]
+end
+
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DatabaseServer' and COLUMN_NAME = 'ElasticPools')
+begin
+	alter table [dbo].[DatabaseServer] drop column [ElasticPools]
+end
+	]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
