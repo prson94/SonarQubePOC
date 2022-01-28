@@ -184,7 +184,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     checkSize() {
         if (this.fieldScroller) {
             let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
-            let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastChild);
+            let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
             this.showScrollButtons = lastTab > maxWidth;
         }
         this.checkScrollPos();
@@ -196,7 +196,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             this.disableScrollLeft = currentPosition == 0;
 
             let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
-            let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastChild);
+            let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
             this.disableScrollRight = lastTab <= maxWidth;
 
             this.ref.markForCheck();

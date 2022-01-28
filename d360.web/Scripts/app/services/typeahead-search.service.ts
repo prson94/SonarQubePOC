@@ -21,7 +21,7 @@ export class TypeaheadSearchService extends BaseObservableService {
                 if (term === "") {
                     return of(<SearchResult[]>[]);
                 }
-                let uri = `search/typeahead?q=${encodeURIComponent(term.substring(0, 255))}&num=${size}&t=${types != undefined ? types.join(',') : ''}`;
+                let uri = `api/v2/search/typeahead?q=${encodeURIComponent(term.substring(0, 255))}&num=${size}&t=${types != undefined ? types.join(',') : ''}`;
                 return this.http.get(uri).pipe(
                     map(response => <SearchResult[]>response),
                     catchError(err => this.handleError(err))
