@@ -86,8 +86,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetResultsAsync(QueryRequest queryRequest)
         {
-            var prefix = "Search.GetResultsAsync => ";
-
             try
             {
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -139,7 +137,7 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -278,7 +276,7 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
             }
             List<IndexableStatus> status = Company.Query<IndexableStatus>("SELECT Class, AssetTypeUid, Status, TargetCount, Start, LastUpdate FROM [queue].[Search] WHERE Active = 1").ToList();
             status.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
@@ -383,7 +381,7 @@ namespace d360.web.Controllers.V2
                 {
                     uids = results.Where(r => r.MissingIcon() && r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
                             "dbo.UidTable",
-                            new List<string>() { "Uid" })
+                            new List<string> { "Uid" })
                 });
                 foreach (var s in styles)
                 {
@@ -395,7 +393,7 @@ namespace d360.web.Controllers.V2
             }
 
             //Assign icons by lower level navmenu
-            if (results.Where(r => r.MissingIcon() && r.AssetTypeUid != null).Any())
+            if (results.Where(r => r.AssetTypeUid != null && r.MissingIcon()).Any())
             {
                 var sql = $@"WITH cteParents(AssetTypeUid, Object, ObjectID, Subject, SubjectID, Level)
                     AS (SELECT at.Uid as AssetTypeUid, it.Object, it.ObjectID, it.Subject, it.SubjectID, 1
@@ -423,7 +421,7 @@ namespace d360.web.Controllers.V2
                 {
                     uids = results.Where(r => r.AssetTypeUid != null && r.MissingIcon()).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
                             "dbo.UidTable",
-                            new List<string>() { "Uid" })
+                            new List<string> { "Uid" })
                 });
 
                 foreach (var m in menuItems)
