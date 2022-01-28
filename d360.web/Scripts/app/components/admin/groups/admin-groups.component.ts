@@ -3,8 +3,7 @@ import { Router } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { GroupService } from '../../../services/group.service';
-import { GroupApiModel, AddUserToGroup } from '../../../models/group.model';
-import { FormMode } from '../../../models/form.model';
+import { GroupApiModel } from '../../../models/group.model';
 import { Title } from '@angular/platform-browser';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
@@ -15,7 +14,6 @@ import { GridDefinitionService } from '../../../services/grid-definition.service
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../../models/asset.model';
-import { ViewChildren } from '@angular/core';
 import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.component';
 import { Table } from 'primeng/table';
 

@@ -31,10 +31,11 @@
                      [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isEditing && !isDeleting">
+        {{objectType}}
         <div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt [value]="fieldDisplayModel" selectionMode="single" [loading]="isLoading" loadingIcon="fa fa-spinner" [metaKeySelection]="true" [globalFilterFields]="['FriendlyName','FieldType','Category','IsListable','IsRequired','IsPartOfKey','SortOrder']"
-                 [(selection)]="selectedRow" [scrollable]="true" scrollHeight="200px">
+                 [(selection)]="selectedRow" [scrollable]="objectType == 'GroupType' ? false : true" scrollHeight="200px">
             <ng-template pTemplate="colgroup" let-columns>
                 <colgroup>
                     <col style="width: 20%">
