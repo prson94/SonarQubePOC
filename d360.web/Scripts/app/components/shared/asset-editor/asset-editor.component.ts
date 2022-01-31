@@ -407,7 +407,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             }, 500);
 
             if (this.useModelBinding) {
-                this.form.valueChanges.subscribe(x => {
+                this.form.valueChanges.subscribe((x) => {
                     this.onSubmit();
                 });
             }
