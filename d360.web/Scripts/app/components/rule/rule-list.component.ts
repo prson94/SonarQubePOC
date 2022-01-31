@@ -112,7 +112,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                         this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe((icon) => {
                             this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true, null, this.ruleType.AssetTypeUID));
-                            this.setCommonSecondaryNavTabs(false, false, this.ruleType.HasDashboards);
+                            this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.ruleType.HasDashboards });
                         });
                         this.secondaryNavService.showHeader(true);
                     });

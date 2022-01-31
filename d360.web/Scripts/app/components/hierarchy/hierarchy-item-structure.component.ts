@@ -256,7 +256,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     load() {
         this.setObjectInfo(this.objectType, this.objectTypeId);
-        this.setCommonSecondaryNavTabs(true);
+        this.setCommonSecondaryNavTabs({ hasAudit: true });
         this.currentAreaNameSub = this.headerBreadcrumbService
             .getAreaName(this.objectType, this.objectTypeId)
             .subscribe((result) => { this.currentAreaName = result });
@@ -280,7 +280,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 .subscribe((icon) => {
                     this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
                     this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
-                    this.setCommonSecondaryNavTabs(true, false, this.assetType.HasDashboards);
+                    this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership:false, hasDashboard: this.assetType.HasDashboards });
 
                     if (this.showDiagram) {
                         this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
