@@ -101,7 +101,7 @@ namespace d360.web
             builder.RegisterAssemblyTypes(typeof(HomeController).Assembly).InNamespaceOf<HomeController>().AsSelf();
 
             #endregion
-            
+
             return builder.Build();
         }
     }

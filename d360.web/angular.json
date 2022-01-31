@@ -2,7 +2,7 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
-  "projects": {    
+  "projects": {
     "govern": {
       "projectType": "application",
       "schematics": {
@@ -13,9 +13,23 @@
       "root": "",
       "sourceRoot": "Scripts",
       "prefix": "d3s",
+      "i18n": {
+        "sourceLocale": "en-US",
+        "locales": {
+          "fr": {
+            "translation": "src/locale/messages.fr.xlf",
+            "baseHref": ""
+          },
+          "de": {
+            "translation": "src/locale/messages.de.xlf",
+            "baseHref": ""
+          }
+        }
+      },
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
+          "localize": true,
           "options": {
             "deployUrl": "/scripts/dist/",
             "outputPath": "scripts/dist",
@@ -54,7 +68,17 @@
                   "maximumWarning": "2mb",
                   "maximumError": "5mb"
                 }
-              ]
+              ],
+              "fr": {
+                "localize": [
+                  "fr"
+                ]
+              },
+              "de": {
+                "localize": [
+                  "de"
+                ]
+              }
             }
           },
           "defaultConfiguration": ""
@@ -75,18 +99,18 @@
           "options": {
             "browserTarget": "govern:build"
           }
-        },       
+        },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "scripts/tsconfig.aot.json"              
+              "scripts/tsconfig.aot.json"
             ],
             "exclude": [
               "**/node_modules/**"
             ]
           }
-        }      
+        }
       }
     }
   },

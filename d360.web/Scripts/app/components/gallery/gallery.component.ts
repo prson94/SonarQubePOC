@@ -54,6 +54,7 @@ export class GalleryComponent implements OnInit {
         { label: "Modal", key: "modal", type: "Overlay" },
         { label: "Modal Drawer", key: "modal-drawer", type: "Overlay" },
         { label: "Code Area", key: "codearea", type: "Form" },
+        { label: "Localization", key: "locale", type: "Misc" }
     ];
 
     categories: any[] = [];
