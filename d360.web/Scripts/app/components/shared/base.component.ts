@@ -224,7 +224,6 @@ export class BaseComponent {
         }
     }
 
-
     setCommonSecondaryNavTabs(opts: {
         hasAudit?: boolean,
         hasOwnership?: boolean,
@@ -315,6 +314,39 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.dashboardSidebar);
             }
 
+            if (opts.hasGroups) {
+                this.groupsSidebar = new SecondaryNavItem(
+                    'Groups',
+                    'memberGroup',
+                    ['fa-user-circle'],
+                    `/sidebar/membergroup/${this.uid}`, null, 5
+                );
+
+                this.secondaryNavService.showItem(this.groupsSidebar);
+            }
+
+            if (opts.hasItemOwn) {
+                this.itemOwnSidebar = new SecondaryNavItem(
+                    'Responsibilities', 'itemOwn', ['fa-tasks'],
+                    `/sidebar/itemown/${this.objectID}`, 
+                    null, 
+                    25
+                );
+
+                this.secondaryNavService.showItem(this.itemOwnSidebar);
+            }
+
+            if (opts.hasFollowing) {
+                this.followingSidebar = new SecondaryNavItem(
+                    'Following',
+                    'itemFollow',
+                    ['fa-user-plus'],
+                    `/sidebar/itemfollow/${this.objectID}`, null, 30
+                );
+
+                this.secondaryNavService.showItem(this.followingSidebar);
+            }
+
             if (opts.hasRelationships) {
                 this.relationsSidebar = new SecondaryNavItem(
                     'Relationships',
@@ -376,15 +408,6 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.scoreSidebar);
 
-                if (this.getBooleanSetting(CompanySettingEnum.ShowCommentsTab)) {
-                    this.commentsSidebar = new SecondaryNavItem(
-                        'Comments', 'Comments', ['fa-comments'],
-                        `/sidebar/comments/${this.uid}`, null, 33
-                    );
-
-                    this.secondaryNavService.showItem(this.commentsSidebar);
-                }
-
                 if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement)) {
                     this.actionsSidebar = new SecondaryNavItem(
                         'Actions', 'Actions', null,
@@ -392,6 +415,16 @@ export class BaseComponent {
                     );
                     this.secondaryNavService.showItem(this.actionsSidebar);
                 }
+            }
+
+            const goodAssetTypeForComments = isCommonAsset || this.objectType === 'Resource';
+            if (goodAssetTypeForComments && this.getBooleanSetting(CompanySettingEnum.ShowCommentsTab)) {
+                this.commentsSidebar = new SecondaryNavItem(
+                    'Comments', 'Comments', ['fa-comments'],
+                    `/sidebar/comments/${this.uid}`, null, 33
+                );
+
+                this.secondaryNavService.showItem(this.commentsSidebar);
             }
 
             if (this.objectType == 'TaskType') {
@@ -844,6 +877,9 @@ export class BaseComponent {
                     this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
                     this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
                 }
+                else if (this.objectType.toLowerCase() == 'resource') {
+                    this.setResourceBreadcrumbs(r);
+                }
                 else {
                     this.SetCommonBreadcrumbs(r, area, homeUrl);
                 }
@@ -873,7 +909,10 @@ export class BaseComponent {
                 hasChild: r.Items.HasChild,
                 hasRuleResult: this.objectType == 'Rule',
                 hasGovernanceRoleSet: r.Items.HasGovernanceRoleUidSet,
-                hasProcessDiagram: r.Items.HasProcessDiagram
+                hasProcessDiagram: r.Items.HasProcessDiagram,
+                hasGroups: r.Items.HasGroups,
+                hasFollowing: r.Items.HasFollowing,
+                hasItemOwn: r.Items.HasItemOwn
             });
             
             var isType = this.IsType(r.Object);
@@ -941,6 +980,13 @@ export class BaseComponent {
         this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
     }
 
+    private setResourceBreadcrumbs(data) {
+        this.breadcrumbsService.clearBreadcrumbs();
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Resource', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT));
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue));
+        this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
+    }
+
     private activateComponent() {
         var currentComponentUrl = '';
         if (this.breadcrumbsService) {
@@ -963,6 +1009,9 @@ export class BaseComponent {
         components.push(this.ruleResultSidebar);
         components.push(this.governanceRolesSidebar);
         components.push(this.connectorLabels);
+        components.push(this.groupsSidebar);
+        components.push(this.itemOwnSidebar);
+        components.push(this.followingSidebar);
 
         components.forEach((cmp) => {
             if (cmp && currentComponentUrl.startsWith(cmp.url)) {

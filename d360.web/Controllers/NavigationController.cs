@@ -1069,8 +1069,13 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Predicates";
                     responseModel.Items.HasAudit = true;
                 }
-            }
 
+                if (model.ObjectType == SystemObjects.Resource.ToString())
+                {
+                    var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
+                    FillResponseModelForResource(assetDetail);
+                }
+            }
 
             if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
             {
@@ -1087,15 +1092,21 @@ namespace d360.web.Controllers
             if (model.AssetUid != null)
             {
                 var asset = Company.Assets.FirstOrDefault(x => x.uid == model.AssetUid);
-                if (asset != null && (asset.Object == "Resource" || asset.Object == "Group"))
+                if (asset != null && (asset.Object == "Group"))
                 {
                     execProcedure = false;
                     responseModel.Object = asset.Object;
                     responseModel.ObjectID = asset.ObjectID;
-                    responseModel.DisplayValue = asset.Object == "Resource" ? "Users" : "Groups";
-                    responseModel.MainTabTitle = asset.Object == "Resource" ? "Users" : "Groups";
+                    responseModel.DisplayValue = "Groups";
+                    responseModel.MainTabTitle = "Groups";
                     responseModel.Items.HasAudit = true;
                     responseModel.Uid = asset.uid;
+                }
+
+                if (asset != null && (asset.Object == "Resource"))
+                {
+                    var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.uid == model.AssetUid);
+                    FillResponseModelForResource(assetDetail);
                 }
             }
 
@@ -1210,6 +1221,20 @@ namespace d360.web.Controllers
                 Data = responseModel,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+
+            void FillResponseModelForResource(AssetDetail assetDetail)
+            {
+                execProcedure = false;
+                responseModel.Object = assetDetail.Object;
+                responseModel.ObjectID = assetDetail.ObjectID;
+                responseModel.DisplayValue = assetDetail.DisplayValue;
+                responseModel.MainTabTitle = "Profile";
+                responseModel.Items.HasItemOwn = true;
+                responseModel.Items.HasRelationship = true;
+                responseModel.Items.HasGroups = true;
+                responseModel.Items.HasFollowing = true;
+                responseModel.Uid = assetDetail.uid;
+            }
         }
     }
 }
