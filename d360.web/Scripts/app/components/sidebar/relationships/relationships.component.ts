@@ -54,12 +54,7 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
                 }
             );
             this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
-            if (this.objectType && this.objectType.toUpperCase()== 'RESOURCE') {
-                this.checkSecondaryNavLocalStorage();
-            }
-            else {
-                this.buildSecondaryNavigation(null, this.objectID, this.objectType);
-            }
+            this.buildSecondaryNavigation(null, this.objectID, this.objectType);
         });
     }
 

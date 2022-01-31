@@ -16,7 +16,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { ScoreType, ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
+import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
@@ -63,6 +63,9 @@ export class BaseComponent {
     commentsSidebar: SecondaryNavItem;
     actionsSidebar: SecondaryNavItem;
     ruleResultSidebar: SecondaryNavItem;
+    groupsSidebar: SecondaryNavItem;
+    itemOwnSidebar: SecondaryNavItem;
+    followingSidebar: SecondaryNavItem;
 
     governanceRolesSidebar: SecondaryNavItem;
     connectorLabels: SecondaryNavItem;
@@ -198,52 +201,6 @@ export class BaseComponent {
     }
 
     //#endregion permissions functionality
-
-    checkSecondaryNavLocalStorage(checkLocal?: boolean) {
-        if (this.secondaryNavService) {
-            this.buildLocalStorage();
-            this.secondaryNavService.rebuildHeader$.subscribe((res) => {
-                if (res) {
-                    window.setTimeout(() => {
-                        this.buildLocalStorage();
-                    }, 250);
-
-                }
-            });
-        }
-    }
-
-    buildLocalStorage() {
-        let currentObject = this.secondaryNavService.getLocalCurrentObject();
-        let currentArea = this.secondaryNavService.getLocalCurrentArea();
-        let tabs: SecondaryNavItem[] = this.secondaryNavService.getLocalCurrentTabs();
-        let currentTab = this.secondaryNavService.getLocalActiveItem();
-        let homeUrl = this.secondaryNavService.getLocalHomeUrl();
-        let crumbs = this.breadcrumbsService.getBreadcrumbsFromStorage();
-
-        let isValidNav: boolean = tabs.some(x => x.url.toLowerCase() == this.secondaryNavService.getCurrentUrl().toLowerCase());
-
-        if (isValidNav && currentArea && tabs.length > 0 && currentTab && homeUrl) {
-            this.secondaryNavService.clearItems();
-            if (currentObject)
-                this.secondaryNavService.setCurrentObject(currentObject);
-            this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
-            this.secondaryNavService.setLocalHomeUrl(homeUrl);
-
-            tabs.forEach((tab) => {
-                if (tab.title == currentTab.title) {
-                    tab.active = true;
-                    this.secondaryNavService.setLocalActiveItem(tab);
-                }
-                else
-                    tab.active = false;
-                this.secondaryNavService.showItem(tab);
-            });
-            this.secondaryNavService.showHeader(true);
-        }
-        if (isValidNav && crumbs.length > 0)
-            this.breadcrumbsService.buildFromStorage();
-    }
 
     setScoringSecondaryNavTabs(assetTypeUid: string, selectedAllocationUid: string, allocations: ScoreTypeAllocation[]) {
         var baseUrl = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${assetTypeUid}/`;
@@ -918,7 +875,7 @@ export class BaseComponent {
                 hasGovernanceRoleSet: r.Items.HasGovernanceRoleUidSet,
                 hasProcessDiagram: r.Items.HasProcessDiagram
             });
-
+            
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid, r.Items.HasRequestCertificationWorkflow));
             this.secondaryNavService.showHeader(true);

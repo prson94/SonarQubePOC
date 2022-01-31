@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -26,7 +26,6 @@ export class MemberGroupComponent extends BaseComponent implements OnInit, OnDes
     
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService) {
@@ -38,8 +37,7 @@ export class MemberGroupComponent extends BaseComponent implements OnInit, OnDes
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.resourceUid = params['resourceUid'];
-            
-            this.checkSecondaryNavLocalStorage();
+            this.buildSecondaryNavigation(this.resourceUid);
         });
     }
 
