@@ -217,7 +217,7 @@ namespace d360.web.Controllers
                 var fi = Company.GetById<SiteNav>(id);
                 if (fi == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
                 }
                 Company.Delete(fi);
                 Company.SaveChanges();
@@ -251,7 +251,7 @@ namespace d360.web.Controllers
                 var folder = Company.GetById<SiteNav>(id);
                 if (folder == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
                 }
                 string originalImage = folder.ImageIconUrl;
                 if (!string.IsNullOrEmpty(originalImage))
@@ -267,7 +267,7 @@ namespace d360.web.Controllers
                 Company.SiteNav.RemoveRange(subNavs);
                 Company.Delete(folder);
                 Company.SaveChanges();
-                message =FormControllerApiMessage.FolderRemoved;
+                message = FormControllerApiMessage.FolderRemoved;
             }
             catch (Exception ex)
             {
@@ -362,7 +362,7 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
                 }
                 if (siteNavAbove == null)
                 {
@@ -372,7 +372,7 @@ namespace d360.web.Controllers
                 siteNavAbove.SortOrder++;
                 siteNav.SortOrder--;
                 Company.SaveChanges();
-                message = string.Format(FormControllerApiMessage.FolderMovedUp,siteNav.Name);
+                message = string.Format(FormControllerApiMessage.FolderMovedUp, siteNav.Name);
             }
             catch (Exception ex)
             {
@@ -402,7 +402,7 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
                 }
 
                 if (siteNavBelow == null)
@@ -413,7 +413,7 @@ namespace d360.web.Controllers
                 siteNavBelow.SortOrder--;
                 siteNav.SortOrder++;
                 Company.SaveChanges();
-                message = string.Format(FormControllerApiMessage.FolderMovedDown,siteNav.Name);
+                message = string.Format(FormControllerApiMessage.FolderMovedDown, siteNav.Name);
             }
             catch (Exception ex)
             {
@@ -515,7 +515,7 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,targetFolderId.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, targetFolderId.ToString()));
                 }
                 if (siteNavBelow == null)
                 {
@@ -526,7 +526,7 @@ namespace d360.web.Controllers
                 siteNav.SortOrder = siteNavBelow.SortOrder;
                 siteNavBelow.SortOrder = tmpSortOrder;
                 Company.SaveChanges();
-                message = string.Format(FormControllerApiMessage.FolderMoved,siteNav.Name);
+                message = string.Format(FormControllerApiMessage.FolderMoved, siteNav.Name);
             }
             catch (Exception ex)
             {
