@@ -63,7 +63,6 @@ import { DragDropModule } from 'primeng/dragdrop';
 import { IgColorPickerModule } from '../controls/color-picker/color-picker.module';
 import { ProcessDiagramSidePanelComponent } from './process-diagram/process-diagram-side-panel.component';
 import { SharedRelationshipModule } from '../relationship/shared-relationship.module';
-import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module';
 import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-diagram-label-editor.component';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { ProcessDiagramListViewComponent } from './process-diagram/process-diagram-list-view.component';
@@ -99,7 +98,6 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         SiteModalModule,
         ScoreBadgeModule,
         IgColorPickerModule,
-        SharedDynamicGridEditorModuleV2,
         SharedDynamicGridEditorModule,
         AssetEditorModule,
         SiteModalModule,
