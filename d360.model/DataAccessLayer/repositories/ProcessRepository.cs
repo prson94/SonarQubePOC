@@ -660,21 +660,21 @@ new
                 });
             }
 
-            //try
-            //{
-            //    if (assetResults.Any())
-            //    {
-            //        Company.SendAssetGraphEvents(assetResults);
-            //    }
-            //    if (intersectResults.Any())
-            //    {
-            //        Company.SendAssetGraphEvents(intersectResults, null, true);
-            //    }
-            //}
-            //catch
-            //{
+            try
+            {
+                if (assetResults.Any())
+                {
+                    Company.SendAssetGraphEvents(assetResults);
+                }
+                if (intersectResults.Any())
+                {
+                    Company.SendAssetGraphEvents(intersectResults, null, true);
+                }
+            }
+            catch
+            {
 
-            //}
+            }
 
             return validationRes;
         }

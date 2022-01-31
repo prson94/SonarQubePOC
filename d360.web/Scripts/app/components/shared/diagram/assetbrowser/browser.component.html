@@ -163,24 +163,39 @@
 
                                 <section *ngIf="panelModel.InformationVisible" class="detail">
                                     <ng-container *ngIf="panel_TabIndex == 0">
-                                        <ng-container *ngIf="selectedDiagramAsset != null">
+                                        <ng-container *ngIf="hasAnySidePanelAsset">
                                             <ng-container *ngIf="panel_InformationHasReadAccess == true">
                                                 <div #infoDetailPanel class="scroll-panel">
                                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                                    <ig-asset-detail #assetDetailComponent
-                                                                     *ngIf="!panel_Loading && selectedDiagramAsset && selectedDiagramAsset.Object"
-                                                                     [objectType]="selectedDiagramAsset.Object"
-                                                                     [objectID]="selectedDiagramAsset.ObjectId"
-                                                                     [useAccordion]="true"
-                                                                     [shouldBePadded]="false"
-                                                                     [tooltipAlign]="'left'"
-                                                                     [isSidePanel]="true"
-                                                                     [showHeader]="true"
-                                                                     [hasEditLink]="true"
-                                                                     [hasAddRelationshipsPermissions]="false"
-                                                                     [hasModifyRelationshipsPermissions]="false"
-                                                                     [hasDeleteRelationshipsPermissions]="false"
-                                                                     (onEditClick)="onEditClick($event)"></ig-asset-detail>
+                                                    <ng-container *ngIf="!selectedReferenceItem && !selectedTag">
+                                                        <ig-asset-detail #assetDetailComponent 
+                                                                         *ngIf="selectedAsset || selectedDiagramAsset"
+                                                                         [objectUID]="selectedAsset ? selectedAsset.uid : selectedDiagramAsset.ObjectId"
+                                                                         [objectType]="selectedAsset ? selectedAsset.type : selectedDiagramAsset.Object"
+                                                                         [useAccordion]="true"
+                                                                         [shouldBePadded]="false"
+                                                                         [showHeader]="true"
+                                                                         [showHeaderLine]="false"
+                                                                         [spacerHeight]="'16px'"
+                                                                         [tooltipAlign]="'left'"
+                                                                         [isSidePanel]="true"
+                                                                         [hideLinks]="true"
+                                                                         [interceptLinkClick]="true"
+                                                                         [hasAddRelationshipsPermissions]="false"
+                                                                         [hasModifyRelationshipsPermissions]="false"
+                                                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                                    </ng-container>
+
+                                                    <ng-container *ngIf="selectedReferenceItem">
+                                                        <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                                              [highlightUid]="selectedReferenceItem.assetUid"
+                                                                              [baseUrl]="selectedReferenceItem.url">
+                                                        </ig-asset-type-detail>
+                                                    </ng-container>
+                                                    <ng-container *ngIf="selectedTag">
+                                                        <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+                                                    </ng-container>
+
                                                 </div>
 
                                                 <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
@@ -213,7 +228,7 @@
                                                 </div>
                                             </ng-container>
                                         </ng-container>
-                                        <ng-container *ngIf="selectedDiagramAsset == null">
+                                        <ng-container *ngIf="!hasAnySidePanelAsset">
                                             <div #infoDetailPanel class="empty-overlay">
                                                 <div class="content">
                                                     <div class="icon-holder">
