@@ -16,6 +16,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.component';
 import { Table } from 'primeng/table';
+import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
 
 declare var CurrentResourceID;
 @Component({
@@ -53,6 +54,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
     @ViewChild('dt', { static: false }) table: Table;
+    @ViewChild('assetDetail', { static: false }) assetDetail: AssetDetailComponent;
 
     menuItems = [
         { title: 'Edit' },
@@ -106,6 +108,16 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
                 this.groupItems = d.items;
 
+                if (this.selectedRow) {
+                    var sItem = this.groupItems.filter((item) => item.Uid === this.selectedRow.Uid);
+                    if (sItem.length > 0) {
+                        this.selectedRow = sItem[0];
+                    }
+                    else {
+                        this.selectedRow = null;
+                    }
+                }
+
                 this.isLoading = false;
                 this.cdRef.markForCheck();
             });
@@ -135,6 +147,11 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
             if (this.dynamicEditor) {
                 this.dynamicEditor.load();
             }
+        }
+
+        //reload group detail component
+        if (this.assetDetail) {
+            this.assetDetail.load(false);
         }
     }
 

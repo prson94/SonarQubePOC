@@ -106,7 +106,7 @@
                         [selectedPanel]="sidePanelTab">
                 <ng-container *ngIf="sidePanelOpen && selectedRow != null">
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail [objectUID]="selectedRow.Uid"
+                        <ig-asset-detail #assetDetail [objectUID]="selectedRow.Uid"
                                          objectType="Group"
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"

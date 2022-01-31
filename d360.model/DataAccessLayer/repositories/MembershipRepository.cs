@@ -42,6 +42,7 @@ namespace d360.model.DataAccessLayer
         public async Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var dbArgs = new DynamicParameters();
+            bool listColorsAsJSON = false;
             List<string> condition = new List<string>();
             string resourceString = "";
 
@@ -91,8 +92,13 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_listcolorsasjson"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
+            }
+
             var fieldTypes = CompanyContext.FieldTypes.Where(f => f.Object == "GroupType" && f.ObjectID == 1).ToList();
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, listColorsAsJSON: listColorsAsJSON);
 
             if (queryParams != null)
             {

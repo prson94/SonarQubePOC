@@ -106,7 +106,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         }
     }
 
-    public load(): void {
+    public load(updateTab: boolean = true): void {
         let detailSub = null;
         if (this.assetDetail) {
             detailSub = this.assetDetail;
@@ -132,7 +132,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                 });
         }
 
-        if (this.objectType === 'Group') {
+        if (this.objectType === 'Group' && updateTab) {
             this.tab = 'members';
         }
 
