@@ -41,6 +41,8 @@ namespace d360.web.Models
         public List<dynamic> Scores { get; set; }
         public int columns { get; set; }
         public List<DetailReadOnlyRowModel> rows { get; set; }
+        public string ResourceFirstName { get; set; }
+        public string ResourceEmail { get; set; }
     }
 
     public class LookupDataReadOnlyModel
@@ -189,9 +191,11 @@ namespace d360.web.Models
         public string TooltipUrl { get; set; }
 
         [DataMember]
-        public Guid uid { get; set; } 
+        public Guid uid { get; set; }
         [DataMember]
         public Guid assetTypeUid { get; set; }
+        [DataMember]
+        public bool? HideTooltip { get; set; }
     }
 
     public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>

@@ -27,6 +27,7 @@ import { PeopleResponsibilitiesModule } from "../responsibilities/people-respons
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
 import { SharedAssignmentsModule } from "../assignments/shared-assignments.module";
+import { GroupMembersModule } from '../group/group-members.module';
 
 
 @NgModule({
@@ -51,7 +52,8 @@ import { SharedAssignmentsModule } from "../assignments/shared-assignments.modul
         PeopleResponsibilitiesModule,
         DynamicFieldNameModule,
         PortalsModule,
-        SharedAssignmentsModule
+        SharedAssignmentsModule,
+        GroupMembersModule
     ],
     declarations: [
         AssetDetailFieldComponent,

@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.dbo.GenerateAllAssetTypeDisplayValues-v2">
-    <comment>GOV-12263</comment>
+  <changeSet author="tduric" id="Procedure.dbo.GenerateAllAssetTypeDisplayValues-v3">
+    <comment>GOV-16775</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,8 +24,60 @@ BEGIN
       ELSE
         SAVE TRANSACTION usp_my_procedure_name;
 
+			--drop schemabound views that blocks truncating AssetDisplayValue
+			drop view  if exists workflow.ItemIssue
+			drop view  if exists workflow.ItemAsset
+
 			--delete by the asset type
 			truncate table AssetDisplayValue;
+
+			--!IMPORTANT : make sure that this views match ones in [workflow].[ItemIssue] and [workflow].[ItemAsset] xml files in Environment scripts
+			--rebuild [workflow].[ItemIssue] view
+			exec ('create or alter view [workflow].[ItemIssue] WITH SCHEMABINDING
+					as
+						select 
+						wi.id as WorkFlowItemId,
+						cast(substring(issue_dv.displayvalue,0,850) as nvarchar(850)) as AssetName 
+							from [workflow].[type] wt 
+							inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+							inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+							inner join [dbo].[issue] iss on wi.[objectid] = iss.id and wi.[object] = ''Issue''
+							inner join [dbo].[asset] cod on iss.objectid = cod.objectid and cod.[object] = iss.[object]
+							inner join dbo.AssetDisplayValue issue_dv on issue_dv.assetid = cod.id;')
+
+			exec ('IF NOT EXISTS (select * from sys.indexes where name = ''CIX_WorkflowItemIssue'')
+						BEGIN
+							CREATE UNIQUE CLUSTERED INDEX CIX_WorkflowItemIssue ON [workflow].[ItemIssue](WorkFlowItemId);
+						END
+
+						IF NOT EXISTS (select * from sys.indexes where name = ''IX_CIX_WorkflowItemIssue_AssetName'')
+						BEGIN
+							CREATE NONCLUSTERED INDEX IX_CIX_WorkflowItemIssue_AssetName ON [workflow].[ItemIssue](AssetName);
+						END')
+			--end rebuild [workflow].[ItemIssue] view
+
+			--rebuild [workflow].[ItemAsset] view
+			exec ('create view [workflow].[ItemAsset] WITH SCHEMABINDING
+					as
+						select 
+						wi.id as WorkFlowItemId,
+						cast(coalesce(substring(adv.displayvalue,0,850),''(unknown)'') as nvarchar(850)) as AssetName 
+							from [workflow].[type] wt 
+							inner join [workflow].[version] wv on (wt.id = wv.typeid) 
+							inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+							inner join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]) 
+							inner join dbo.AssetDisplayValue adv on assetid = ass.id')
+
+			exec ('IF NOT EXISTS (select * from sys.indexes where name = ''CIX_WorkflowItemAsset'')
+				BEGIN
+					CREATE UNIQUE CLUSTERED INDEX CIX_WorkflowItemAsset ON [workflow].[ItemAsset](WorkFlowItemId);
+				END
+
+				IF NOT EXISTS (select * from sys.indexes where name = ''IX_CIX_WorkflowItemAsset_AssetName'')
+				BEGIN
+					CREATE NONCLUSTERED INDEX IX_CIX_WorkflowItemAsset_AssetName ON [workflow].[ItemAsset](AssetName);
+				END')
+			--end rebuild [workflow].[ItemAsset] view
 
 			insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 				select

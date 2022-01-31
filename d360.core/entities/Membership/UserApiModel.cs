@@ -48,6 +48,7 @@ namespace d360.core.entities.Membership
         public Guid PrimaryOwnerUid { get; set; }
         public Nullable<Guid> SecondaryOwnerUid { get; set; }
         public bool IsActiveDirectoryGroup { get; set; } = false;
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
     public class UserApiInsertModel : IUserApiUpsertModel

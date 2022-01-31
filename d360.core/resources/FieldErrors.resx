@@ -266,6 +266,9 @@
   <data name="GreaterThanError" xml:space="preserve">
     <value>{0} must be greater than {1}</value>
   </data>
+  <data name="GroupInvalidFieldType" xml:space="preserve">
+    <value>Groups cannot have {0} field type!</value>
+  </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
     <value>Invalid Asset Type Uid provided [{0}].</value>
   </data>

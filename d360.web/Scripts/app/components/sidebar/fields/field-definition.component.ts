@@ -57,21 +57,29 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
                 this.objectID = +params['objectId']; // (+) converts string 'id' to a number
                 this.objectType = params['objectType'];
 
-                this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
-                    res => {
-                        if (res) {
-                            this.objectName = 'Field Definitions for ' + (res.Name ? res.Name : res.DisplayValue);
-                            if (this.objectType.toLowerCase() === 'intersecttype') {
-                                this.relationshipTypeUid = res.UID;
-                            }
-                            else {
-                                this.assetTypeUid = res.AssetTypeUid;
+                if (this.objectType === "GroupType") {
+                    this.assetTypeUid = this.groupTypeUid;
+                    this.isLoading = false;
+                }
+
+                else {
+                    this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
+                        res => {
+                            if (res) {
+                                this.objectName = 'Field Definitions for ' + (res.Name ? res.Name : res.DisplayValue);
+                                if (this.objectType.toLowerCase() === 'intersecttype') {
+                                    this.relationshipTypeUid = res.UID;
+                                }
+                                else {
+                                    this.assetTypeUid = res.AssetTypeUid;
+                                }
+                                this.isLoading = false;
                             }
                             this.isLoading = false;
                         }
-                        this.isLoading = false;
-                    }
-                );
+                    );
+                }
+
 
                 this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
             }

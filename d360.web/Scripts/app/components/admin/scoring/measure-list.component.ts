@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, ScoreTypeAllocation, ScoreType } from '../../../models/metrics.model';
+import { MetricAssetViewModel, ScoreTypeAllocation, ScoreType, MetricGovernanceCheckType } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
@@ -91,7 +91,19 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
             this.showHistory(true);
     }
 
-    private menuOptions = [
+    private groupMenuOptions = [
+        {
+            "title": "Edit"
+        },
+        {
+            "title": "Disable"
+        },
+        {
+            "title": "Version History"
+        }
+    ];
+
+    private itemMenuOptions = [
         {
             "title": "Edit"
         },
@@ -105,7 +117,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
             "title": "Recalculate"
         }
     ];
-    private disabledMenu = [
+    private disabledMenuOptions = [
         {
             "title": "Version History"
         }
@@ -232,14 +244,20 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     updateSelectionMenuLabel() {
-        if (this.menuOptions && this.menuOptions.length > 0) {
-            let versionMenuItem = this.menuOptions.find(x => x.title.indexOf("Version History") != -1);
+        if (this.groupMenuOptions && this.groupMenuOptions.length > 0) {
+            let versionMenuItem = this.groupMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
-        if (this.disabledMenu && this.disabledMenu.length > 0) {
-            let versionMenuItem = this.disabledMenu.find(x => x.title.indexOf("Version History") != -1);
+        if (this.itemMenuOptions && this.itemMenuOptions.length > 0) {
+            let versionMenuItem = this.itemMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
+            if (versionMenuItem) {
+                versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
+            }
+        }
+        if (this.disabledMenuOptions && this.disabledMenuOptions.length > 0) {
+            let versionMenuItem = this.disabledMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }

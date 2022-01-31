@@ -4,11 +4,10 @@ import { Observable } from "rxjs";
 
 export interface IGroupService {
     getGroupList(): Observable<GroupSearchResultModel[]>;
-    getGroupResourceList(id: string, pageSize: number): Observable<any>;
+    getGroupResourceList(id: string, pageSize: number, simpleTextFilter: string): Observable<any>;
     getGroup(id: number, uid: string): Observable<GroupEditorModel>;
     putGroup(group: Group): Observable<JsonResult>;
     postGroup(group: Group): Observable<JsonResult>;
-    getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Observable<JsonResult>;
 }
 
 
@@ -39,6 +38,7 @@ export class GroupResourceInfo {
     Email: string;
     Owner: string;
     uid: string;
+    Name: string;
 }
 
 export class Group {
@@ -55,6 +55,7 @@ export class Group {
     IsActiveDirectoryGroup: boolean;
     UpdatedOn: string;
     UpdatedBy: string;
+    Fields: any;
 }
 
 export class ResourceGroup {

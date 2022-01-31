@@ -97,6 +97,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reference List.
+        /// </summary>
+        public static string ReferenceList {
+            get {
+                return ResourceManager.GetString("ReferenceList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User.
         /// </summary>
         public static string Resource {

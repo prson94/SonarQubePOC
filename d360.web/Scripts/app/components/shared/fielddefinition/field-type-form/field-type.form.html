@@ -118,7 +118,8 @@
                                     [disabled]="isSettingDisabled('SearchAddToResult')"></p-checkbox>
                     </div>
                     <div>
-                        <p-checkbox binary="true"
+                        <p-checkbox *ngIf="showShowInDetailTile" 
+                                    binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].IsDisplayable"
                                     label="Show In Detail Tile?"
                                     [ngModelOptions]="{standalone: true}"
@@ -172,7 +173,7 @@
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
                     </div>
-                    <div>
+                    <div *ngIf="showPersistInFilters">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].IsPrimaryFilter"
                                     label="Persist in filters?"

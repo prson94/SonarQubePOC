@@ -5,7 +5,7 @@ import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, MetricAssetH
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root'
@@ -48,7 +48,20 @@ export class MetricsService extends BaseObservableService {
 
         return this.http
             .get<MetricAssetViewModel[]>(`/api/v2/scoring/allocations/${allocationUid}/structure?_includeDisabled=${includeDisabled}`)
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(
+                tap((res: MetricAssetViewModel[]) => {
+                    res.forEach((r) => {
+                        //r.HasThreshold = (r.Threshold && r.Threshold !== undefined && r.Threshold > 0)
+                        if (!r.Threshold || r.Threshold === undefined || r.Threshold <= 0) {
+                            r.HasThreshold = false;
+                        }
+                        else {
+                            r.HasThreshold = true;
+                        }
+                    });
+                }),
+                catchError(err => this.handleError(err))
+            );
     }
 
     public getRuleResultPathOptions(assetTypeUid: string, type: ScoreType): Observable<MetricPathOptionViewModel[]> {

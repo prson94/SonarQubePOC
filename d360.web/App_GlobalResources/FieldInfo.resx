@@ -189,4 +189,19 @@
   <data name="RuleID_Name" xml:space="preserve">
     <value>Rule ID</value>
   </data>
+  <data name="CreatedBy_Name" xml:space="preserve">
+    <value>Created By</value>
+  </data>
+  <data name="IsActiveDirectoryGroup_Name" xml:space="preserve">
+    <value>Is Active Directory Group</value>
+  </data>
+  <data name="PrimaryOwner_Name" xml:space="preserve">
+    <value>Primary Owner</value>
+  </data>
+  <data name="SecondaryOwner_Name" xml:space="preserve">
+    <value>Secondary Owner</value>
+  </data>
+  <data name="UpdatedBy_Name" xml:space="preserve">
+    <value>Last Modified By</value>
+  </data>
 </root>

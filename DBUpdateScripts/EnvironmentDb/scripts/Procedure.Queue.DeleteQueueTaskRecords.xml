@@ -1,0 +1,50 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Procedure.Queue.DeleteQueueTaskRecords-v1">
+  <comment>GOV-16839</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+Create or alter procedure Queue.DeleteQueueTaskRecords
+as
+begin
+	declare @RetentionDate datetime = convert(date,dateadd(dd, -14, getutcdate()))
+	
+	If exists (select 1 from [Queue].[Task] Where [Date] < @RetentionDate)
+	begin	
+		-- Removing record less then retention date
+		BEGIN TRANSACTION;
+		SAVE TRANSACTION QueueDeleteSavePoint;
+
+		BEGIN TRY
+			delete 
+			from [Queue].[Task] 
+			Where [Date] < @RetentionDate
+
+			COMMIT TRANSACTION 
+		END TRY
+		BEGIN CATCH
+			IF @@TRANCOUNT > 0
+			BEGIN
+					ROLLBACK TRANSACTION QueueDeleteSavePoint; -- rollback to MySavePoint
+			END
+		END CATCH
+	End
+End
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		drop procedure if exists Queue.DeleteQueueTaskRecords
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

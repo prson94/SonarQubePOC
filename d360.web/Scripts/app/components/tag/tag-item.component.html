@@ -12,12 +12,12 @@
                 </d3s-tile-actions>
                 <div class="clearfix"></div>
             </header>
-            <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue','AssetType','TagsAsString']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rowsPerPageOptions]="[10,20,50,100,200,500]" [rows]="10" [(selection)]="selected">
+            <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayPath','AssetType','TagsAsString']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rowsPerPageOptions]="[10,20,50,100,200,500]" [rows]="10" [(selection)]="selected">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th [pSortableColumn]="'DisplayValue'" style="width: 20%">
+                        <th [pSortableColumn]="'DisplayPath'" style="width: 20%">
                             Asset
-                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'DisplayValue'"></d3s-sortIcon>
+                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'DisplayPath'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'AssetType'" style="width: 20%">
                             Asset Type
@@ -40,7 +40,7 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr [pSelectableRow]="item">
-                        <td>{{item.DisplayValue}}</td>
+                        <td>{{item.DisplayPath}}</td>
                         <td [innerHTML]="formatValue(item)"></td>
                         <td>
                             <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid" ></d3s-tag-view>

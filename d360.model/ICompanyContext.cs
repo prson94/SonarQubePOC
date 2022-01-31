@@ -384,6 +384,11 @@ namespace d360.model
         void CreateMeasureRemovedResultExecution(Guid metricAssetVersionUid);
 
         /// <summary>
+        /// A Score Engine method that is called when a parent asset is (un)assigned a child.
+        /// </summary>
+        void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid);
+
+        /// <summary>
         /// A Score Engine method that is called when an asset type or intersect type are added or removed from Govern.
         /// </summary>
         void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null);

@@ -583,15 +583,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Because the score definition is threshold-based, you must provide a valid Threshold between 0 and 1..
-        /// </summary>
-        public static string ThresholdValidValue {
-            get {
-                return ResourceManager.GetString("ThresholdValidValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The Uid Governance Owner Check does not correspond to a known responsibility type..
         /// </summary>
         public static string UidGovernanceOwnerCheck {

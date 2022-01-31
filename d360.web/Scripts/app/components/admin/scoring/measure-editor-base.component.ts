@@ -395,7 +395,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
                 this.displayEffectiveDate = date;
             }
-            this.model.HasThreshold = !this.model.Threshold;
+            if (this.model.HasThreshold) {
+                this.displayThreshold = this.model.Threshold * 100;
+            }
         }
         else {
             this.model = new MetricAssetViewModel();
@@ -670,6 +672,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                         || x.Threshold !== originalMatch.Threshold
                         || +(x.Weight ?? 0) !== +(originalMatch.Weight ?? 0) 
                         || +(x.DisplayWeight ?? 0) !== +(originalMatch.DisplayWeight ?? 0)
+                        || +(x.DisplayThreshold ?? 0) !== +(originalMatch.DisplayThreshold ?? 0)
                         || x.DisplayOrder !== originalMatch.DisplayOrder
                         || x.Position !== originalMatch.Position
                         || x.conditionItemFields.filter(x => x.field).length !== originalMatch.conditionItemFields.filter(x => x.field).length) {
