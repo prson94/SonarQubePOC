@@ -316,6 +316,17 @@ export class SearchStateService extends BaseObservableService {
         });
     }
 
+    public getExcel(limit: number): Observable<any> {
+        let q = this.MainQuery$.value;
+        q.Size = limit;
+
+        return this.searchService.downloadSearchExcel(q);
+    }
+
+    public downloadFile(data: Blob, name: string) {
+        super.downloadFile(data, name);
+    }
+
     /******* Utility functions*****************************/
 
     /**

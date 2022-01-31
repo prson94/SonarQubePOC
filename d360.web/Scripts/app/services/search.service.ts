@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { SearchResultsObject, SearchQuery, SearchResultInfo } from '../models/search-result.model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, takeUntil, shareReplay, delay } from 'rxjs/operators';
 import { Observable, Subject, of } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
@@ -32,7 +32,7 @@ export class SearchService extends BaseObservableService  {
         }
 
         return this.http
-            .post('search/results', query)
+            .post('api/v2/search/results', query)
             .pipe(
                 map((res) => <SearchResultsObject>res),
                 catchError((err) => {
@@ -47,6 +47,12 @@ export class SearchService extends BaseObservableService  {
                     return of(this.getEmptyResult());
                 })
             );
+    }
+
+    public downloadSearchExcel(query: SearchQuery): Observable<any> {
+        return this.
+            http
+            .post("api/v2/search/results", query, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });
     }
 
     public getSearchCategories(showUsers: boolean = true, keepNotVisible: boolean = false): Observable<SearchType[]> {
@@ -80,7 +86,7 @@ export class SearchService extends BaseObservableService  {
 
     //Private method that calls and pipes it into a shareReplay Observable
     private requestVisibleCategories(): Observable<string[]> {
-        return this.http.get('search/categories').pipe(
+        return this.http.get('api/v2/search/categories').pipe(
             map((res) => <string[]>res),
             catchError((err) => this.handleError(err)),
             shareReplay(1)
@@ -95,7 +101,7 @@ export class SearchService extends BaseObservableService  {
 
     public GetIndexableTypes(): Observable<IndexableType[]> {
         return this.http
-            .get("search/IndexableTypes")
+            .get("api/v2/search/indexableTypes")
             .pipe(
                 map((res) => <IndexableType[]>res),
                 catchError((err) => {
@@ -114,7 +120,7 @@ export class SearchService extends BaseObservableService  {
 
     public GetIndexbleStatus(): Observable<IndexableStatus[]> {
         return this.http
-            .get("search/IndexableStatus")
+            .get("api/v2/search/indexableStatus")
             .pipe(
                 map((res) => <IndexableStatus[]>res),
                 catchError((err) => {
@@ -132,7 +138,7 @@ export class SearchService extends BaseObservableService  {
     }
 
     public SendRebildRequest(Class: number, assettypeuid: string) {
-        let url = `search/rebuild/${Class}/${assettypeuid}`;
+        let url = `api/v2/search/rebuild/${Class}/${assettypeuid}`;
         return this.http
             .post(url, "")
             .pipe(

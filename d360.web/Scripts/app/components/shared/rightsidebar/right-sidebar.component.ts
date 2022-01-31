@@ -162,7 +162,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     checkSize() {
         if (this.tabScroller && this.tabScroller.length > 0) {
             let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
-            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastChild);
+            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
             this.showScrollButtons = lastTab > maxWidth;
         }
         this.checkScrollPos();
@@ -174,7 +174,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.disableScrollLeft = currentPosition == 0;
 
             let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
-            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastChild);
+            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
             this.disableScrollRight = lastTab <= maxWidth;
 
             this.ref.markForCheck();
