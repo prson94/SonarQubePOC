@@ -1405,10 +1405,11 @@ SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
 		<sql dbms="mssql" splitStatements="false" stripComments="false">
 			<comment>Setup SubjectCardinality to ONE and ObjectCardinality to MANY for all IntersectTypes with Predicates</comment>
 			<![CDATA[
-				update IT SET SubjectCardinality = 1, ObjectCardinality = 2
-				FROM [dbo].[IntersectType] as IT 
-						inner join [dbo].[Predicate] as P
-							on IT.PredicateID = P.ID and (P.[Type] in (3 /*Inter-type Hierarchy*/, 4/*Intra-type Hierarchy*/))
+				update IT 
+				set SubjectCardinality = 1, ObjectCardinality = 2
+				from [dbo].[IntersectType] as IT 
+					inner join [dbo].[Predicate] as P
+						on IT.PredicateID = P.ID and (P.[Type] in (3 /*Inter-type Hierarchy*/, 4/*Intra-type Hierarchy*/))
 			]]>
 		</sql>
 	</changeSet>
