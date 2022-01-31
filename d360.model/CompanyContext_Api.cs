@@ -10913,9 +10913,10 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                 set		Success = 0,
 		                [Message] = coalesce([Message], '') + 'Lookup Field has invalid values;'
 	            from [api].[ExecutionGroup] EG 
-                inner join api.executionfield ef on ef.ExecutionID = eg.ExecutionID
+                inner join api.executionfield ef on ef.ExecutionID = eg.ExecutionID and ef.FieldValue is not null
                 inner join FieldType ft on ft.id = ef.fieldtypeid
-                left join FieldLookupValue flv on flv.FieldTypeID = ef.FieldTypeID and flv.Value = try_parse(ef.FieldValue as int)
+                cross apply (select Value from string_split(ef.FieldValue, ','))Val(Value)
+                left join FieldLookupValue flv on flv.FieldTypeID = ef.FieldTypeID and flv.Value = try_parse(Val.Value as int)
                 where EG.ExecutionID = @ExecutionID  and ft.type = 'Lookup' and flv.Value is null and ef.FieldValue is not null";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID, emptyUid = Guid.Empty }, commandTimeout: timeout);

@@ -45,7 +45,7 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th *ngFor="let col of columns"
-                                [pSortableColumn]="col.sortable ? col.datafield : null"
+                                [pSortableColumn]="col.sortable ? col.apiName : null"
                                 [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
                                 {{ col.text }}
                                 <d3s-sortIcon *ngIf="col.sortable"
@@ -106,7 +106,7 @@
                         [selectedPanel]="sidePanelTab">
                 <ng-container *ngIf="sidePanelOpen && selectedRow != null">
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail [objectUID]="selectedRow.Uid"
+                        <ig-asset-detail #assetDetail [objectUID]="selectedRow.Uid"
                                          objectType="Group"
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"

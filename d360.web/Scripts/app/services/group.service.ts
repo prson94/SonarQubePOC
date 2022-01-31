@@ -34,10 +34,10 @@ export class GroupService extends BaseObservableService implements IGroupService
     }
 
     getGroups(simpleFilter: string = ''): Observable<any> {
-        let url = 'api/v2/membership/groups';
+        let url = 'api/v2/membership/groups?_listColorsAsJSON=true';
 
         if (simpleFilter) {
-            url += "?_simpleFilter=" + simpleFilter;
+            url += "&_simpleFilter=" + simpleFilter;
         }
 
         return this.http.get(url)
