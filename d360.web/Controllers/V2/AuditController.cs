@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using Microsoft.Web.Http;
 using d360.core.entities;
-using d360.model;
 using d360.web.Models.Attributes;
 using Dapper;
 using SpreadsheetLight;
@@ -19,10 +18,10 @@ using Swashbuckle.Swagger.Annotations;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.core.entities.Metric;
-using d360.model.helpers.filters;
 using d360.model.DataAccessLayer;
+using d360.model.helpers.filters;
+using d360.web.Utilities;
 using Resources;
 
 namespace d360.web.Controllers.V2
@@ -37,9 +36,16 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController : BaseV2ApiController
     {
-        public AuditController(CoreComponentSet set): base(set)
-        {
+        private IRequestValidator RequestValidator { get; }
+        private IAuditDapperRepository AuditDapperRepository { get; }
 
+        public AuditController(CoreComponentSet set,
+            IRequestValidator requestValidator,
+            IAuditDapperRepository auditDapperRepository
+        ) : base(set)
+        {
+            RequestValidator = requestValidator;
+            AuditDapperRepository = auditDapperRepository;
         }
 
         /// A dictionary of Action Object with the DB value as key, and the display value as value
@@ -52,11 +58,78 @@ namespace d360.web.Controllers.V2
             { "ResponsibilityTypeRelationOverrideItem" , "Responsibility Type Relation Override Item" },
         };
 
+
         /// <summary>
         /// Retrieves audit data for the given asset unique identifier.
         /// </summary>
         /// <remarks>
-        /// Results can be filted using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// Results can be filtered using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        /// 
+        /// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset audit data.
+        /// </remarks>
+        /// <param name="assetUid">The unique identifier of the asset.</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+        /// <param name="action">The action text.</param>
+        /// <param name="startDate">Filter results more or equal to date.</param>
+        /// <param name="endDate">Filter results less or equal to date.</param>
+        /// <param name="pageSize">The number of results to return per page. The default value is 200. Maximum is 250.</param>
+        /// <param name="pageNum">The page number to return results for.</param>
+        /// <param name="orderByColumnName">The name of the field to order results by, ascending. By default the results are ordered by Date.</param>
+        /// <param name="orderByDirection">Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.</param>
+        /// <param name="filter">The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [HttpGet]
+        [Route("")]
+        [SwaggerProduces("application/json", "application/octet-stream")]
+        [SwaggerResponse(HttpStatusCode.OK, "", typeof(PagedApiBaseViewModel<AssetsAuditApiViewModel>))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid.", typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse))]
+        public async Task<IHttpActionResult> GetAuditAsync(
+            [FromUri(Name = "_pageSize")] int? pageSize = null,
+            [FromUri(Name = "_pageNum")] int? pageNum = null,
+            [FromUri(Name = "_order")] string orderByColumnName = null,
+            [FromUri(Name = "_direction")] string orderByDirection = null,
+            [FromUri(Name = "_filter")] string filter = null,
+            [FromUri(Name = "_startDate")] DateTime? startDate = null,
+            [FromUri(Name = "_endDate")] DateTime? endDate = null,
+            [FromUri(Name = "_action")] string action = null,
+            [FromUri(Name = "_assetTypeUid")] Guid? assetTypeUid = null,
+            [FromUri(Name = "_assetUid")] Guid? assetUid = null
+        )
+        {
+            ValidateParameters();
+
+            bool isStreamResponse = RequestValidator.IsStreamResponse(Request);
+            pageSize = isStreamResponse ? RequestValidator.ValidateStreamPageSize(pageSize) : RequestValidator.ValidateJsonPageSize(pageSize);
+            pageNum = RequestValidator.ValidatePageNumber(pageNum);
+
+            var orderBy = Array.Empty<OrderByModel>();
+            if (string.IsNullOrEmpty(orderByColumnName) == false)
+            {
+                orderBy = new[] { OrderByModel.Create(orderByColumnName, orderByDirection) };
+            }
+
+            if (isStreamResponse)
+            {
+                var result = await AuditDapperRepository.AuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy);
+                return Excel(result, $"Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+            }
+            else
+            {
+                var result = await AuditDapperRepository.PagedAuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy, pageNum.Value, pageSize.Value);
+                return Ok(result);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves audit data for the given asset unique identifier.
+        /// </summary>
+        /// <remarks>
+        /// Results can be filtered using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
         /// 
@@ -243,15 +316,7 @@ namespace d360.web.Controllers.V2
 
                 if (isStreamResponse)
                 {
-                    string fileName = assetUid.ToString() + " Audit Data";
-                    SLDocument document = GetExcelDocumentFromQuery(query);
-
-                    var stream = new MemoryStream();
-                    document.SaveAs(stream);
-                    byte[] bytes = stream.ToArray();
-
-                    var response = createFileResponseMessage(HttpStatusCode.OK, $"{fileName} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+                    return Excel(query, $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
                 }
                 else
                 {
@@ -486,7 +551,18 @@ namespace d360.web.Controllers.V2
 
 
             var query = Company.Query<dynamic>(sql, dbArgs, ApiTimeout);
-            var document = GetExcelDocumentFromQuery(query);
+
+            return Excel(query, "audit.xlsx");
+        }
+
+        protected IHttpActionResult Excel(IEnumerable<dynamic> data, string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                fileName = $"{Guid.NewGuid():N}.xlsx";
+            }
+
+            var document = GetExcelDocumentFromQuery(data);
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
@@ -498,7 +574,7 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentLength = stream.Length;
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = "audit.xlsx"
+                FileName = fileName
             };
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 

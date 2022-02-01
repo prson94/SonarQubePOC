@@ -661,6 +661,8 @@
     <Compile Include="Utilities\ApplicationUriProvider.cs" />
     <Compile Include="Utilities\IApplicationUriProvider.cs" />
     <Compile Include="Utilities\InternationalizationUtilities.cs" />
+    <Compile Include="Utilities\IRequestValidator.cs" />
+    <Compile Include="Utilities\RequestValidator.cs" />
     <Compile Include="Utilities\TracePrefixAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1247,7 +1249,7 @@
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
-    <TypeScriptCompile Include="Scripts\polyfills.ts" />    
+    <TypeScriptCompile Include="Scripts\polyfills.ts" />
     <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
