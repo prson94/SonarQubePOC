@@ -1,0 +1,88 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Oleh Hochachko" id="View.dbo.AuditView.v1">
+  <comment></comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [dbo].[AuditView]
+AS
+SELECT ad.uid AS [Uid],
+       ad.DisplayValue as [Name],
+       r.uid as [ResourceUid],
+       CAST(IIF ( R.State = 3, 1, 0 ) AS BIT) AS [ResourceIsDeleted],
+       R.FirstName + ' ' + R.LastName AS [ResourceName],
+       ga.Date as [Date],
+       ga.action as [Action],
+       ActionA.uid as [ActionAssetUid],
+       ActionAT.uid as [ActionAssetTypeUid],
+       CASE WHEN ga.ActionObject = 'Intersect' then 'Relationship'
+            WHEN ga.ActionObject = 'IntersectType' then 'RelationshipType'
+            ELSE ga.ActionObject
+       END AS [ActionObject],
+       CASE WHEN ga.ActionObjectTypeName = 'Intersect Type'
+            THEN 'Relationship Type'
+            ELSE ga.ActionObjectTypeName
+       END AS [ActionObjectTypeName],
+       ga.actionObjectName AS [ActionObjectName],
+       ga.actionDescription AS [ActionDescription],
+       fa.FieldName as [Field],
+       CASE WHEN ga.Action = 'Tag Consolidate' THEN
+         ga.ObjectName
+       ELSE
+         fa.Value
+       END AS [NewValue],
+       COALESCE(AT.Class, AD.AssetTypeClass) AS [Class],
+       ISNULL(fa.[Version], 0) AS [Version],
+       CASE WHEN ga.Action  = 'Tag Consolidate' THEN
+         ga.ActionObjectName
+       ELSE
+         (select top 1 fa_sub.value as [value]
+                    from reporting.global_fieldaudit fa_sub
+                    inner join reporting.global_audit ga_sub on (fa_sub.auditid = ga_sub.id)
+                    where ga_sub.[object] = ga.[object]
+                    and ga_sub.[objectid] = ga.[objectid]
+                    and fa_sub.version = (fa.Version - 1)
+                    and fa_sub.fieldname = fa.FieldName
+                    and fa_sub.fieldtypeid = fa.FieldTypeId
+                    and ga_sub.actionObjectId=ga.actionObjectId)
+       END AS [PreviousValue],
+       ft.[Type] as [FieldType]
+  FROM reporting.global_audit ga
+  LEFT JOIN reporting.global_fieldaudit fa on ( fa.auditid = ga.id)
+ INNER JOIN [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+  LEFT JOIN AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+  LEFT JOIN Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
+  LEFT JOIN AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
+  LEFT JOIN FieldType FT on FT.ID = fa.FieldTypeID
+ INNER JOIN (
+        select uid, DisplayValue, Object, objectid, AssetTypeClass from AssetDetail where uid = uid
+        union
+        select uid, value as DisplayName, 'Tag' as Object, id as ObjectID, 11 as AssetTypeClass from Tag where uid = uid
+        union
+        select uid, name as DisplayName, 'IssueType' as Object, id as ObjectID, null as AssetTypeClass from dbo.IssueType where uid =uid
+        union
+        select uid, itn.name as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass from dbo.[IntersectType] IT
+            CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN  where uid = uid
+        union
+        select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass from dbo.ResponsibilityType where uid = uid
+        union
+        select uid, name as DisplayName, 'Report' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Report] where uid = uid
+        union
+        select MA.uid, AT.Name as DisplayName, 'MetricAllocation' as Object, MA.ID as ObjectID, null as AssetTypeClass from metrics.Allocation MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.uid = MA.uid
+        union
+        select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Predicate] where uid =uid
+     ) AS AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = AD.uid
+		]]>
+    </sql>
+	<rollback></rollback>
+  </changeSet>
+
+</databaseChangeLog>
