@@ -2,7 +2,8 @@
     [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}"
     title="{{title}}" 
     (mouseenter)="show(item)" (click)="navigateToUrl(url)" 
-    style="cursor: pointer;">
+    style="cursor: pointer;"
+    [attr.data-cy]="'PrimaryNav_' + title">
     <div class="menu-category-box">
         <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
         <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
