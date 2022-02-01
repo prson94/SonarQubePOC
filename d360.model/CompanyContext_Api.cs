@@ -5187,7 +5187,7 @@ using		(
                     and ObjectID is not null 
             ) as S
 on          ( T.IntersectTypeID = S.IntersectTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID )
-when matched then
+when matched and (T.Subject <> S.ParentObject or T.SubjectID <> S.ParentObjectID) then
     update 
     set     T.Subject = S.ParentObject,
             T.SubjectID = S.ParentObjectID,
