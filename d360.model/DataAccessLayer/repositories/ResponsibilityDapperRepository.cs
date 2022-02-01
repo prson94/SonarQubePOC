@@ -12,7 +12,6 @@ namespace d360.model.DataAccessLayer.repositories
     {
         public ResponsibilityDapperRepository(IDapperQueryComposer<ICompanyDbConnectionProvider> queryComposer) : base(queryComposer)
         {
-            
         }
 
         public async Task<IReadOnlyList<ResponsibilityBreakdownResponse>> GetResponsibilityTypeBreakdownAsync(Guid? responsibilityTypeUid)
@@ -41,30 +40,6 @@ namespace d360.model.DataAccessLayer.repositories
             }
 
             return result;
-        }
-    }
-
-    public class ResponsibilityBreakdownByResourceAggregate
-    {
-        public Guid AssetTypeUid { get; set; }
-
-        public Guid ResponsibilityTypeUid { get; set; }
-
-        public int AssetCount { get; set; }
-
-        // nested entities 
-
-        public AssetType AssetType { get; set; }
-
-        public ResponsibilityType ResponsibilityType { get; set; }
-    }
-
-    internal static class GridReaderExtensions
-    {
-        public static async Task<IReadOnlyList<T>> ReadListAsync<T>(this SqlMapper.GridReader gridReader)
-        {
-            var enumerable = await gridReader.ReadAsync<T>().ConfigureAwait(false);
-            return enumerable.ToArray();
         }
     }
 }
