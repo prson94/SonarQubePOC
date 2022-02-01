@@ -9,10 +9,10 @@ namespace d360.model.helpers.filters
     {
         private IReadOnlyList<FieldType> FieldTypes { get; }
 
-        public RelationshipComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, IEnumerable<FieldType> types)
+        public RelationshipComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, IReadOnlyList<FieldType> types)
         {
             this.dataProvider = fdp;
-            this.FieldTypes = types.ToArray();
+            this.FieldTypes = types;
             this.field = field;
             @operator = op;
             this.value = value.ToString().Replace("'", "");
