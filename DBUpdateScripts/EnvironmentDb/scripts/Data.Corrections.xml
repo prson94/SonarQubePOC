@@ -1409,7 +1409,9 @@ SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
 				set SubjectCardinality = 1, ObjectCardinality = 2
 				from [dbo].[IntersectType] as IT 
 					inner join [dbo].[Predicate] as P
-						on IT.PredicateID = P.ID and (P.[Type] in (3 /*Inter-type Hierarchy*/, 4/*Intra-type Hierarchy*/))
+						on IT.PredicateID = P.ID 
+							and (P.[Type] in (3 /*Inter-type Hierarchy*/, 4/*Intra-type Hierarchy*/))
+							and (IT.SubjectCardinality <> 1 or IT.ObjectCardinality <> 2)
 			]]>
 		</sql>
 	</changeSet>
