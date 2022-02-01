@@ -79,7 +79,7 @@ namespace d360.web.Controllers
         LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
     }
 
-    public class CoreComponentSet: ICoreComponentSet
+    public class CoreComponentSet : ICoreComponentSet
     {
         public ICompanyContext Company { get; set; }
         public ICommunityContext Community { get; set; }
@@ -1085,8 +1085,14 @@ from	CompanyResource CR
                                 {
                                     var parent = Company.FieldTypes.Where(x => x.ID == ft.ParentFieldTypeID).FirstOrDefault();
 
-                                    if (parent != null) fld.ParentFieldTypeName = parent.FriendlyName;
+                                    if (parent != null)
+                                    {
+                                        fld.ParentFieldTypeName = parent.Name;
+                                    }
+                                }
 
+                                if (ft.ParentFieldTypeID > 0 && !loadOnlySelectedLookupValue)
+                                {
                                     if (ft.AllowMultipleValues)
                                     {
                                         if (f != null && !string.IsNullOrWhiteSpace(f.Value))
