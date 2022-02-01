@@ -35,7 +35,6 @@
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
 	<include file="scripts/Function.graph.GetKeyPath.xml"/>
 	<include file="scripts/Function.graph.GetPath.xml"/>
-	<include file="scripts/Function.graph.GetPathAsJson.xml"/>
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
 	<include file="scripts/Function.graph.ReformatSegments.xml"/>
 	<include file="scripts/Function.queue.WriteIndexXml.xml"/>
@@ -287,6 +286,7 @@
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->
 	<include file="scripts/Function.dbo.GetAssetTextPathById.xml"/> <!--dependency-->
+	<include file="scripts/Function.graph.GetPathAsJson.xml"/>		<!--dependency-->
 	
 	<!-- Views: REPORTING -->
 	<include file="scripts/View.reporting.Asset_All.xml"/>
