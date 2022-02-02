@@ -127,7 +127,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
 
                 setTimeout(() => {
                     if (this.table) {
-                        this.table.first = (+result.pageSize - 1) * +result.pageNum;
+                        this.table.first = (+result.pageSize) * (+result.pageNum - 1);
                         this.cdRef.markForCheck();
                     }
                 }, 100);

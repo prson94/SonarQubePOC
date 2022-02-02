@@ -10824,9 +10824,8 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                     hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
 
                     int i = 1;
-                    foreach (var group in groups.Where(x => x.Fields.Any()))
+                    foreach (var group in groups)
                     {
-
                         bool success;
                         string errorMessage;
                         var fieldRows = ValidateFields("Group", 1, isInsert, fieldTypes, requiredFieldTypeNames, group.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);

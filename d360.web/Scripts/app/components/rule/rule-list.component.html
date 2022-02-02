@@ -27,20 +27,32 @@
                         <data-profile [dataProfile]="dataProfile"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail [objectUID]="selection.AssetUid"
-                                         objectType="rule"
+                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
+                                         [objectUID]="selectedAsset ? selectedAsset.uid : selection.AssetUid"
+                                         [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"
-                                         [tooltipAlign]="'left'"
-                                         [showHeaderLine]="false"
                                          [showHeader]="true"
+                                         [showHeaderLine]="false"
                                          [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
                                          [isSidePanel]="true"
                                          [hasEditLink]="true"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
                                          [hasDeleteRelationshipsPermissions]="false"
+                                         [interceptLinkClick]="true"
                                          (onEditClick)="assetGrid.triggerEdit()"></ig-asset-detail>
+
+                        <ng-container *ngIf="selectedReferenceItem">
+                            <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                  [highlightUid]="selectedReferenceItem.assetUid"
+                                                  [baseUrl]="selectedReferenceItem.url">
+                            </ig-asset-type-detail>
+                        </ng-container>
+                        <ng-container *ngIf="selectedTag">
+                            <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+                        </ng-container>
                     </ng-container>
                 </ng-container>
             </side-panel>

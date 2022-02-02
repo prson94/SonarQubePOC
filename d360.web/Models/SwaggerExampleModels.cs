@@ -89,38 +89,19 @@ namespace d360.web.Models
         }
     }
 
-    public class UpdateGroupExample : IExamplesProvider
+    public class UpdateGroupModelExample : IExamplesProvider
     {
         public object GetExamples()
         {
             return
-                new UpdateGroup
+                new UpdateGroupModel
                 {
                     Uid = Guid.Empty,
                     Name = "Name",
                     Description = "Description",
                     PrimaryOwnerUid = Guid.Empty,
                     SecondaryOwnerUid = Guid.Empty,
-                    Fields = new Dictionary<string, string>() {
-                        { "MyApiFieldName1", "My Field value" },
-                        { "MyApiFieldName2", "My Field value" }
-                    }
-                };
-        }
-    }
-
-
-    public class AddGroupExample : IExamplesProvider
-    {
-        public object GetExamples()
-        {
-            return
-                new AddGroup
-                {
-                    Name = "Name",
-                    Description = "Description",
-                    PrimaryOwnerUid = Guid.Empty,
-                    SecondaryOwnerUid = Guid.Empty,
+                    IsActiveDirectoryGroup = false,
                     Fields = new Dictionary<string, string>() {
                         { "MyApiFieldName1", "My Field value" },
                         { "MyApiFieldName2", "My Field value" }

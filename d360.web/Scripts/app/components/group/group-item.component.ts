@@ -26,7 +26,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                     </div>
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-group-members [groupId]="groupId" [groupName]="model?.group?.Name"></d3s-group-members>
+                            <d3s-group-members [groupUid]="model?.group?.Uid" [readOnly]="!model?.CurrentResourceIsAdmin"></d3s-group-members>
                         </div>
                     </div>
                 </div>
@@ -37,10 +37,10 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 export class GroupItemComponent extends BaseComponent implements OnInit {
 
-    private sub: any;
-    private model: GroupEditorModel;
-    private groupId: number;
-    private groupUid: string;
+    sub: any;
+    model: GroupEditorModel;
+    groupId: number;
+    groupUid: string;
 
     constructor(
         private groupService: GroupService,
