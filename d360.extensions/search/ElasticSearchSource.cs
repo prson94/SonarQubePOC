@@ -414,16 +414,13 @@ namespace d360.extensions.search
         {
             if (!string.IsNullOrEmpty(input))
             {
+                //Replace control characters including \t, r\ and \n with space to preserve word boundry
+                input = Regex.Replace(input, "[\u0000-\u001F]", " ");
+
                 input = input
-                    .Replace("\a", "")
-                    .Replace("\b", "")
-                    .Replace("\r", "")
-                    .Replace("\n", "")
-                    .Replace("\f", "")
-                    .Replace("\v", "")
-                    .Replace("\t", "")
                     .Replace("\\", "\\\\")
                     .Replace("\"", "\\\"");
+
                 if (removeTags && input.Contains("<") && input.Contains(">"))
                 {
                     input = core.helpers.HtmlHelper.RemoveTags(input);

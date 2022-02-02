@@ -670,9 +670,9 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rownum, index++, status);
                 document.SetCellValue(rownum, index++, res.Scores.Exists(s => s.ScoreType == "DataQuality") ? res.Scores.Where(s => s.ScoreType == "DataQuality").Select(s => s.Value).FirstOrDefault().ToString() : null);
                 document.SetCellValue(rownum, index++, res.Scores.Exists(s => s.ScoreType == "Governance") ? res.Scores.Where(s => s.ScoreType == "Governance").Select(s => s.Value).FirstOrDefault().ToString() : null);
-                document.SetCellValue(rownum, index++, string.Join(" > ", res.AssetPath.Select(p => string.Join(" / ", p.Key))));
-                document.SetCellValue(rownum, index++, string.Join(" > ", res.AssetPath.Select(p => p.AssetType)));
-                document.SetCellValue(rownum, index++, string.Join("|", res.Tags.Select(t => t.Value)));
+                document.SetCellValue(rownum, index++, res.AssetPath == null ? "" : string.Join(" > ", res.AssetPath.Select(p => string.Join(" / ", p.Key))));
+                document.SetCellValue(rownum, index++, res.AssetPath == null ? "" : string.Join(" > ", res.AssetPath.Select(p => p.AssetType)));
+                document.SetCellValue(rownum, index++, res.Tags == null ? "" : string.Join("|", res.Tags?.Select(t => t.Value)));
 
                 fieldTypes?.ToList().ForEach(ft => {
                     var field = res.Fields.Where(f => f.Name == ft.Name).FirstOrDefault();
