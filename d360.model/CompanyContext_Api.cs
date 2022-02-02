@@ -10824,9 +10824,8 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                     hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
 
                     int i = 1;
-                    foreach (var group in groups.Where(x => x.Fields.Any()))
+                    foreach (var group in groups)
                     {
-
                         bool success;
                         string errorMessage;
                         var fieldRows = ValidateFields("Group", 1, isInsert, fieldTypes, requiredFieldTypeNames, group.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);
@@ -11228,22 +11227,22 @@ new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = Curren
             }
 
             //Convert GroupResponseResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
-            IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r =>
-            {
-                return new DatabaseBulkAssetResult
-                {
-                    ExecutionItemUid = r.ExecutionItemUid,
-                    ItemNumber = r.ItemNumber,
-                    uid = r.uid ?? Guid.Empty,
-                    Message = r.Message,
-                    Success = r.Success,
-                    Object = SystemObjects.Group.ToString()
-                };
-            }).AsEnumerable();
-            if (graphResults.Any())
-            {
-                SendAssetGraphEvents(graphResults);
-            }
+            //IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r =>
+            //{
+            //    return new DatabaseBulkAssetResult
+            //    {
+            //        ExecutionItemUid = r.ExecutionItemUid,
+            //        ItemNumber = r.ItemNumber,
+            //        uid = r.uid ?? Guid.Empty,
+            //        Message = r.Message,
+            //        Success = r.Success,
+            //        Object = SystemObjects.Group.ToString()
+            //    };
+            //}).AsEnumerable();
+            //if (graphResults.Any())
+            //{
+            //    SendAssetGraphEvents(graphResults);
+            //}
 
             return results;
         }

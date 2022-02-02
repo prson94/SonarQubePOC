@@ -613,6 +613,7 @@ namespace d360.web.Models
         public string Description { get; set; }
         public Guid PrimaryOwnerUid { get; set; }
         public Guid SecondaryOwnerUid { get; set; }
+        [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
@@ -623,6 +624,7 @@ namespace d360.web.Models
         public string Description { get; set; }
         public Guid PrimaryOwnerUid { get; set; }
         public Guid SecondaryOwnerUid { get; set; }
+        [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
 
     }
