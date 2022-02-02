@@ -1,12 +1,13 @@
 import { catchError, map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData, ResourceApiModel } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable, throwError } from "rxjs";
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { ApiResult } from '../models/apiresult.model';
+import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 
 
 @Injectable({
@@ -17,7 +18,10 @@ export class ResourcesService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getHelpResources(): Observable<HelpResource[]> {
-        return this.http.get('/resources/HelpResources')
+        return this.http.get(
+            '/resources/HelpResources',
+            { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
+        )
             .pipe(
                 map((response) => <HelpResource[]>response),
                 catchError((err) => this.handleError(err))
@@ -203,7 +207,11 @@ export class ResourcesService extends BaseObservableService {
     }
 
     getApiKeys(): Observable<ResourceAPICredentials> {
-        return this.http.get('/api/v2/membership/users/me/apikey')
+        return this.http
+            .get(
+                '/api/v2/membership/users/me/apikey',
+                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
+            )
             .pipe(
                 map((response) => <ResourceAPICredentials>response),
                 catchError((err) => this.handleError(err))
