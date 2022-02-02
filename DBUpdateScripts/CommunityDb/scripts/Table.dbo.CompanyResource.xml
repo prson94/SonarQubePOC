@@ -1,0 +1,35 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyResource-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyResource')
+BEGIN
+	create table [dbo].[CompanyResource](
+		[CompanyID] [int] NOT NULL,
+		[ResourceID] [int] NOT NULL,
+		[IsAdministrator] [bit] NOT NULL,
+		[LastLoggedInOn] [datetime] NULL,
+		[State] [int] CONSTRAINT [DF_CompanyResource_State] DEFAULT (1) NOT NULL,
+		constraint [PK_CompanyResource] primary key clustered ( [CompanyID] asc, [ResourceID] asc )
+	)
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+drop table if exists [dbo].[CompanyResource]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

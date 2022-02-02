@@ -1,0 +1,28 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.DomainCertificate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'DomainCertificate')
+BEGIN
+	create table [dbo].[DomainCertificate](
+		[ID] [int] identity(1,1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[File] [varbinary](max) NOT NULL,
+		[Password] [nvarchar](250) MASKED WITH (FUNCTION = 'default()') NULL,
+		constraint [PK_DomainCertificate] primary key clustered ( [ID] asc )
+	)
+END
+		]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

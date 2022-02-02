@@ -1,0 +1,72 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.dbo.SetCompanyResource-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER PROCEDURE [dbo].[SetCompanyResource]
+ @CompanyID INT
+,@ResourceID INT
+,@IsAdministrator BIT
+AS 
+BEGIN
+DECLARE
+     @mCount INT = 0
+    ,@ErrorSeverity_Default INT = 16
+    ,@ErrorState_Default INT = 1;
+
+    IF(NOT EXISTS(SELECT 1 FROM [dbo].[Company] WHERE ID = @CompanyID))
+	BEGIN
+		RAISERROR('Parameter @CompanyID does not exists.', @ErrorSeverity_Default, @ErrorSeverity_Default);
+	END;
+	IF(NOT EXISTS(SELECT 1 FROM [dbo].[Resource] WHERE ID = @ResourceID))
+	BEGIN
+		RAISERROR('Parameter @ResourceID does not exists.', @ErrorSeverity_Default, @ErrorSeverity_Default);
+	END;
+
+	SELECT @mCount = COUNT(1) FROM [dbo].[CompanyResource] WHERE [CompanyID] = @CompanyID AND [ResourceID] = @ResourceID;
+	
+	IF(@mCount = 0)
+	BEGIN
+		INSERT INTO [dbo].[CompanyResource](
+		     [CompanyID] 
+			,[ResourceID] 
+			,[IsAdministrator]
+			)
+		VALUES(
+		     @CompanyID
+		    ,@ResourceID
+			,@IsAdministrator
+			);
+	END
+	ELSE IF(@mCount = 1)
+	BEGIN
+		UPDATE [dbo].[CompanyResource] 
+		SET IsAdministrator = @IsAdministrator 
+		WHERE  [CompanyID] = @CompanyID AND 
+		       [ResourceID] = @ResourceID;
+	END
+	ELSE
+	BEGIN
+		RAISERROR('Error, try to update more than one record in table  [dbo].[CompanyResource]!', @ErrorSeverity_Default, @ErrorSeverity_Default);
+	END;
+
+	SELECT CompanyID, ResourceID, IsAdministrator FROM [dbo].[CompanyResource] WHERE [CompanyID] = @CompanyID AND [ResourceID] = @ResourceID;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
