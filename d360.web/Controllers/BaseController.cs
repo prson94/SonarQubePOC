@@ -1199,6 +1199,13 @@ from	CompanyResource CR
                                                     .ToList();
 
                                             items.ForEach(x => x.Selected = true);
+                                            //Handle value is not exists in refernce list items
+                                            if (items.Count == 0 && ft.LookupObjectType == "ReferenceItem")
+                                            {
+                                                f.Value = null;
+                                                f.FormattedValue = null;
+                                            }
+
                                         }
                                         else
                                         {
