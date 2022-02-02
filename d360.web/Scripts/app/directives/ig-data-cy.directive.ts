@@ -1,34 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Directive, ElementRef, NgModule, Renderer2 } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, Input, NgModule, Renderer2 } from '@angular/core';
+
+enum PrimeComponent {
+    Dropdown = 'P-DROPDOWN',
+}
 
 @Directive({
     selector: '[igDataCy]'
 })
-export class DataCyDirective implements AfterViewInit{
-    constructor(private el: ElementRef, private renderer: Renderer2) {
-        
-    }
+export class DataCyDirective implements AfterViewInit {
+    @Input() igDataCy = '';
+    readonly attr = 'data-cy';
+
+    constructor(private el: ElementRef, private renderer: Renderer2) { }
 
     ngAfterViewInit(): void {
-        const tagName = this.el.nativeElement.tagName;
+        const tagName: string = this.el.nativeElement.tagName;
         switch (tagName) {
-            case 'P-DROPDOWN':
+            case PrimeComponent.Dropdown:
                 const dropdown = this.el.nativeElement.querySelector('.p-dropdown');
-                setTimeout(() => {
-                    this.renderer.setAttribute(dropdown, 'data-cy', 'wip');
-                }, 0)
-                
-                break;
-            case 'Papayas':
-                console.log('Mangoes and papayas are $2.79 a pound.');
+                this.setDataCyAttr(dropdown, this.igDataCy);
                 break;
             default:
-                this.el.nativeElement.style.backgroundColor = 'yellow';
+                this.setDataCyAttr(this.el.nativeElement, this.igDataCy);
         }
-        // this.el.nativeElement.style.backgroundColor = 'red';
-        console.log(this.el);
-        console.log(this.el.nativeElement.tagName);
-        // P-DROPDOWN
+    }
+
+    private setDataCyAttr(el: HTMLElement, attrValue: string): void {
+        this.renderer.setAttribute(el, this.attr, attrValue);
     }
 }
 

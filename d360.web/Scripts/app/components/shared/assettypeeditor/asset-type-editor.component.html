@@ -19,7 +19,7 @@
                                [(ngModel)]="model.AssetType.Name"
                                maxlength="250" 
                                style="height:25px;width:100%;display:block;"
-                               [attr.data-cy]="'AssetType_Field_Name'"
+                               [igDataCy]="'AssetType_Field_Name'"
                                required/>
                         <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                     </div>
@@ -55,17 +55,16 @@
                                style="height:25px;width:100%;display:block;"
                                type="text"
                                [(ngModel)]="model.AssetType.DisplayFormat"
-                               [attr.data-cy]="'AssetType_Field_DisplayFormat'"
+                               [igDataCy]="'AssetType_Field_DisplayFormat'"
                                required/>
                         <div [hidden]="displayformat.valid || displayformat.pristine" class="validation-text">Display format is required</div>
                     </div>
                     <div class="col l6 m6 s12">
                         <div class="FieldName">Available Field Tokens</div>
-                        <p-dropdown igDataCy
+                        <p-dropdown [igDataCy]="'AssetType_Field_Tokens'"
                                     [options]="model.Tokens"
                                     (onChange)="selectToken($event)"
-                                    [style]="{'width':'100%'}"
-                                    [attr.data-cy]="'AssetType_Field_Tokens'">
+                                    [style]="{'width':'100%'}">
                         </p-dropdown>
                     </div>
                 </div>
