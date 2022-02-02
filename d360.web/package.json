@@ -11,6 +11,7 @@
     "typings": "typings",
     "ngcAot": "node_modules\\.bin\\ngc -p scripts/tsconfig.aot.json",
     "lint": "node_modules\\.bin\\tslint  -p scripts/tsconfig.json -c tslint.json",
+    "build-dev-ops-prod": "node_modules\\.bin\\webpack --config webpack.prod.config.js",
     "build": "node_modules\\.bin\\ng build",
     "buildProd": "node_modules\\.bin\\ng build --configuration=production",
     "webpackGlobal": "webpack --watch --progress",
