@@ -641,6 +641,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         this.form.value[p] = null;
                     }
                 }
+                else if (field.FieldType === 'Lookup') {
+                    var value = this.form.value[p];
+
+                    if (Array.isArray(value) && value.length === 0) {
+                        this.form.value[p] = null;
+                    }
+                }
 
             }
         }
@@ -776,7 +783,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         var upsertSub = this.groupsService.postGroup(group);
 
-        let rootProperties: string[] = ['Name','Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
+        let rootProperties: string[] = ['Name', 'Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
         for (var p in values) {
             if (rootProperties.some((prop) => prop.toUpperCase() === p.toUpperCase())) {
                 group[p] = values[p];
@@ -791,29 +798,29 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         }
 
         upsertSub.subscribe((data) => {
-                var res = data[0];
-                event.Success = res.Success;
+            var res = data[0];
+            event.Success = res.Success;
 
-                if (res.Success) {
-                    let msg = group.Uid ? 'Successfully updated' : 'Successfully added';
-                    this.showMessageForApiResult(this.messagesService, res, msg);
-                    if (res.uid) {
-                        event.assetUid = res.uid;
-                        event.assetTypeUid = this.objectTypeUid;
-                    }
-                    this.savingInProgress = false;
-                    this.savingInProgressWithAddNew = false;
-                    this.saveClick.emit(event);
+            if (res.Success) {
+                let msg = group.Uid ? 'Successfully updated' : 'Successfully added';
+                this.showMessageForApiResult(this.messagesService, res, msg);
+                if (res.uid) {
+                    event.assetUid = res.uid;
+                    event.assetTypeUid = this.objectTypeUid;
                 }
-                else {
-                    this.savingInProgress = false;
-                    this.savingInProgressWithAddNew = false;
+                this.savingInProgress = false;
+                this.savingInProgressWithAddNew = false;
+                this.saveClick.emit(event);
+            }
+            else {
+                this.savingInProgress = false;
+                this.savingInProgressWithAddNew = false;
 
-                    this.ref.markForCheck();
-                    this.showMessageForApiResult(this.messagesService, res);
-                }
+                this.ref.markForCheck();
+                this.showMessageForApiResult(this.messagesService, res);
+            }
 
-            });
+        });
     }
 
     getUTCDate(date: Date): Date {
