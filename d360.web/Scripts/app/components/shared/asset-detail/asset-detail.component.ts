@@ -408,7 +408,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     get showOwnershipTab(): boolean {
-        return this.objectType !== 'Resource' && this.objectType !== 'Group';
+        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task';
     }
 
     get showGroupTab(): boolean {
