@@ -1,11 +1,9 @@
 ﻿import { Component, OnInit, Input, OnDestroy } from "@angular/core";
-import { Router, ActivatedRoute } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import { BaseComponent } from "../../shared/base.component";
 import { SecondaryNavService } from "../../../services/right-sidebar.service";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-
-declare var CurrentResourceID;
 
 @Component({
     selector: "d3s-comments",
@@ -31,7 +29,6 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
     showBoard: boolean = false;
 
     constructor(private route: ActivatedRoute,
-        private router: Router,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService) {
@@ -47,16 +44,10 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
 
         this.sub = this.route.params.subscribe(params => {
             this.assetUid = params["assetUid"];
-            this.localStorage = params["localStorage"];
             this.isLoading = false;
             this.showBoard = true;
 
-            if (this.localStorage) {
-                this.checkSecondaryNavLocalStorage();
-            }
-            else {
-                this.buildSecondaryNavigation(this.assetUid);
-            }
+            this.buildSecondaryNavigation(this.assetUid);
         });
     }
 

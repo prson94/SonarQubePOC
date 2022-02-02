@@ -242,8 +242,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.originalAssetUid = this.assetUid;
 
-        this.checkSecondaryNavLocalStorage();
-
         // Do this only on initial load.
         this.browserService
             .getFilterOptions()

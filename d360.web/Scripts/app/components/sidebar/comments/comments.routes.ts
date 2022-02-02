@@ -4,7 +4,7 @@ import { CommentsComponent } from './comments.component';
 
 const routes: Routes = [
     { path: ':assetUid', component: CommentsComponent },
-    { path: ':assetUid/:localStorage', component: CommentsComponent },
+    { path: ':assetUid/:localStorage', redirectTo: ':assetUid' },
 ];
 
 @NgModule({

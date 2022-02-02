@@ -16,7 +16,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { ScoreType, ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
+import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
@@ -61,6 +61,9 @@ export class BaseComponent {
     commentsSidebar: SecondaryNavItem;
     actionsSidebar: SecondaryNavItem;
     ruleResultSidebar: SecondaryNavItem;
+    groupsSidebar: SecondaryNavItem;
+    itemOwnSidebar: SecondaryNavItem;
+    followingSidebar: SecondaryNavItem;
 
     governanceRolesSidebar: SecondaryNavItem;
     connectorLabels: SecondaryNavItem;
@@ -197,52 +200,6 @@ export class BaseComponent {
 
     //#endregion permissions functionality
 
-    checkSecondaryNavLocalStorage(checkLocal?: boolean) {
-        if (this.secondaryNavService) {
-            this.buildLocalStorage();
-            this.secondaryNavService.rebuildHeader$.subscribe((res) => {
-                if (res) {
-                    window.setTimeout(() => {
-                        this.buildLocalStorage();
-                    }, 250);
-
-                }
-            });
-        }
-    }
-
-    buildLocalStorage() {
-        let currentObject = this.secondaryNavService.getLocalCurrentObject();
-        let currentArea = this.secondaryNavService.getLocalCurrentArea();
-        let tabs: SecondaryNavItem[] = this.secondaryNavService.getLocalCurrentTabs();
-        let currentTab = this.secondaryNavService.getLocalActiveItem();
-        let homeUrl = this.secondaryNavService.getLocalHomeUrl();
-        let crumbs = this.breadcrumbsService.getBreadcrumbsFromStorage();
-
-        let isValidNav: boolean = tabs.some(x => x.url.toLowerCase() == this.secondaryNavService.getCurrentUrl().toLowerCase());
-
-        if (isValidNav && currentArea && tabs.length > 0 && currentTab && homeUrl) {
-            this.secondaryNavService.clearItems();
-            if (currentObject)
-                this.secondaryNavService.setCurrentObject(currentObject);
-            this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
-            this.secondaryNavService.setLocalHomeUrl(homeUrl);
-
-            tabs.forEach((tab) => {
-                if (tab.title == currentTab.title) {
-                    tab.active = true;
-                    this.secondaryNavService.setLocalActiveItem(tab);
-                }
-                else
-                    tab.active = false;
-                this.secondaryNavService.showItem(tab);
-            });
-            this.secondaryNavService.showHeader(true);
-        }
-        if (isValidNav && crumbs.length > 0)
-            this.breadcrumbsService.buildFromStorage();
-    }
-
     setScoringSecondaryNavTabs(assetTypeUid: string, selectedAllocationUid: string, allocations: ScoreTypeAllocation[]) {
         var baseUrl = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${assetTypeUid}/`;
 
@@ -265,7 +222,7 @@ export class BaseComponent {
         }
     }
 
-    setCommonSecondaryNavTabs(
+    setCommonSecondaryNavTabs(opts: {
         hasAudit?: boolean,
         hasOwnership?: boolean,
         hasDashboard?: boolean,
@@ -278,16 +235,19 @@ export class BaseComponent {
         hasChild?: boolean,
         hasRuleResult?: boolean,
         hasGovernanceRoleSet?: boolean,
-        hasProcessDiagram?: boolean
-    ) {
+        hasProcessDiagram?: boolean,
+        hasGroups?: boolean,
+        hasFollowing?: boolean,
+        hasItemOwn?: boolean
+    }) {
         if (this.secondaryNavService && this.objectType) {
             this.clearSidebar();
             var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
 
-            let showLineage = hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
-            let showImpact = hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
+            let showLineage = opts.hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
+            let showImpact = opts.hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
 
-            if (showLineage || showImpact || hasProcessDiagram) {
+            if (showLineage || showImpact || opts.hasProcessDiagram) {
                 this.lineageSidebar = new SecondaryNavItem(
                     'Diagrams',
                     'lineage',
@@ -302,7 +262,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.lineageSidebar);
             }
 
-            if ((hasAudit || hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
+            if ((opts.hasAudit || opts.hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
                 this.auditSidebar = new SecondaryNavItem(
                     'Change Log',
                     'Change Log',
@@ -312,7 +272,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.auditSidebar);
             }
 
-            if (hasField) {
+            if (opts.hasField) {
                 this.fieldNav = new SecondaryNavItem(
                     'Field Definitions',
                     'fields',
@@ -321,7 +281,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.fieldNav);
             }
 
-            if (hasOwnership && this.getBooleanSetting(CompanySettingEnum.ShowOwnersSidebar)) {
+            if (opts.hasOwnership && this.getBooleanSetting(CompanySettingEnum.ShowOwnersSidebar)) {
                 if (this.objectType == 'ReferenceItemType') {
                     this.ownershipSidebar = new SecondaryNavItem(
                         'Responsibilities',
@@ -341,7 +301,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
-            if (hasDashboard) {
+            if (opts.hasDashboard) {
                 this.dashboardSidebar = new SecondaryNavItem(
                     'Dashboards',
                     'dashboards',
@@ -352,7 +312,40 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.dashboardSidebar);
             }
 
-            if (hasRelationships) {
+            if (opts.hasGroups) {
+                this.groupsSidebar = new SecondaryNavItem(
+                    'Groups',
+                    'memberGroup',
+                    ['fa-user-circle'],
+                    `/sidebar/membergroup/${this.uid}`, null, 5
+                );
+
+                this.secondaryNavService.showItem(this.groupsSidebar);
+            }
+
+            if (opts.hasItemOwn) {
+                this.itemOwnSidebar = new SecondaryNavItem(
+                    'Responsibilities', 'itemOwn', ['fa-tasks'],
+                    `/sidebar/itemown/${this.objectID}`, 
+                    null, 
+                    25
+                );
+
+                this.secondaryNavService.showItem(this.itemOwnSidebar);
+            }
+
+            if (opts.hasFollowing) {
+                this.followingSidebar = new SecondaryNavItem(
+                    'Following',
+                    'itemFollow',
+                    ['fa-user-plus'],
+                    `/sidebar/itemfollow/${this.objectID}`, null, 30
+                );
+
+                this.secondaryNavService.showItem(this.followingSidebar);
+            }
+
+            if (opts.hasRelationships) {
                 this.relationsSidebar = new SecondaryNavItem(
                     'Relationships',
                     'relationship',
@@ -362,7 +355,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.relationsSidebar);
             }
 
-            if (hasFollowers && this.getBooleanSetting(CompanySettingEnum.ShowFollowersSidebar)) {
+            if (opts.hasFollowers && this.getBooleanSetting(CompanySettingEnum.ShowFollowersSidebar)) {
                 this.followersSidebar = new SecondaryNavItem(
                     'Followers',
                     'followers',
@@ -372,7 +365,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.followersSidebar);
             }
 
-            if (hasMonitor) {
+            if (opts.hasMonitor) {
                 this.monitorSidebar = new SecondaryNavItem(
                     'Workflow',
                     'monitor',
@@ -382,7 +375,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.monitorSidebar);
             }
 
-            if (hasChild) {
+            if (opts.hasChild) {
                 this.childSidebar = new SecondaryNavItem(
                     'Children',
                     'children',
@@ -393,7 +386,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.childSidebar);
             }
 
-            if (hasRuleResult) {
+            if (opts.hasRuleResult) {
                 this.ruleResultSidebar = new SecondaryNavItem(
                     'Rule Results',
                     'Rule Results',
@@ -413,15 +406,6 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.scoreSidebar);
 
-                if (this.getBooleanSetting(CompanySettingEnum.ShowCommentsTab)) {
-                    this.commentsSidebar = new SecondaryNavItem(
-                        'Comments', 'Comments', ['fa-comments'],
-                        `/sidebar/comments/${this.uid}`, null, 33
-                    );
-
-                    this.secondaryNavService.showItem(this.commentsSidebar);
-                }
-
                 if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement)) {
                     this.actionsSidebar = new SecondaryNavItem(
                         'Actions', 'Actions', null,
@@ -431,11 +415,21 @@ export class BaseComponent {
                 }
             }
 
+            const goodAssetTypeForComments = isCommonAsset || this.objectType === 'Resource';
+            if (goodAssetTypeForComments && this.getBooleanSetting(CompanySettingEnum.ShowCommentsTab)) {
+                this.commentsSidebar = new SecondaryNavItem(
+                    'Comments', 'Comments', ['fa-comments'],
+                    `/sidebar/comments/${this.uid}`, null, 33
+                );
+
+                this.secondaryNavService.showItem(this.commentsSidebar);
+            }
+
             if (this.objectType == 'TaskType') {
                 this.governanceRolesSidebar = new SecondaryNavItem(
                     'Governance Roles', 'GovernanceRoles', null,
                     '/sidebar/governanceRoles', null, 3);
-                if (!hasGovernanceRoleSet) {
+                if (!opts.hasGovernanceRoleSet) {
                     this.governanceRolesSidebar.warningMessage = 'GovRoleWarning';
                 }
                 this.secondaryNavService.showItem(this.governanceRolesSidebar);
@@ -444,8 +438,6 @@ export class BaseComponent {
                     'Connector Labels', 'ConnectorLabels', null,
                     '/sidebar/connectorLabels', null, 4);
                 this.secondaryNavService.showItem(this.connectorLabels);
-
-
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -883,6 +875,9 @@ export class BaseComponent {
                     this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
                     this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
                 }
+                else if (this.objectType.toLowerCase() == 'resource') {
+                    this.setResourceBreadcrumbs(r);
+                }
                 else {
                     this.SetCommonBreadcrumbs(r, area, homeUrl);
                 }
@@ -899,7 +894,25 @@ export class BaseComponent {
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
-            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram);
+            this.setCommonSecondaryNavTabs({
+                hasAudit: r.Items.HasAudit,
+                hasOwnership: r.Items.HasOwnership,
+                hasDashboard: r.Items.HasDashboard,
+                hasLineage: r.Items.HasLineage,
+                hasImpact: r.Items.HasImpact, 
+                hasRelationships: r.Items.HasRelationship, 
+                hasFollowers: r.Items.HasFollowers, 
+                hasMonitor: r.Items.HasWorkflow,
+                hasField: r.Items.HasField, 
+                hasChild: r.Items.HasChild,
+                hasRuleResult: this.objectType == 'Rule',
+                hasGovernanceRoleSet: r.Items.HasGovernanceRoleUidSet,
+                hasProcessDiagram: r.Items.HasProcessDiagram,
+                hasGroups: r.Items.HasGroups,
+                hasFollowing: r.Items.HasFollowing,
+                hasItemOwn: r.Items.HasItemOwn
+            });
+            
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid, r.Items.HasRequestCertificationWorkflow));
             this.secondaryNavService.showHeader(true);
@@ -965,6 +978,13 @@ export class BaseComponent {
         this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
     }
 
+    private setResourceBreadcrumbs(data) {
+        this.breadcrumbsService.clearBreadcrumbs();
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Resource', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT));
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue));
+        this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
+    }
+
     private activateComponent() {
         var currentComponentUrl = '';
         if (this.breadcrumbsService) {
@@ -987,6 +1007,9 @@ export class BaseComponent {
         components.push(this.ruleResultSidebar);
         components.push(this.governanceRolesSidebar);
         components.push(this.connectorLabels);
+        components.push(this.groupsSidebar);
+        components.push(this.itemOwnSidebar);
+        components.push(this.followingSidebar);
 
         components.forEach((cmp) => {
             if (cmp && currentComponentUrl.startsWith(cmp.url)) {
