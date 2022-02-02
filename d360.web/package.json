@@ -17,7 +17,7 @@
     "webpackGlobal": "webpack --watch --progress",
     "webpackLocal": "node_modules\\.bin\\webpack --watch --progress",
     "webpackLocalDevelopmentMode": "node_modules\\.bin\\webpack --watch --progress --debug --devtool cheap-module-eval-source-map --config webpack.aot.config.js",
-    "webpackLocalProductionMode": "node_modules\\.bin\\webpack --config webpack.prod.config.js",
+    "webpackLocalProductionMode": "node_modules\\.bin\\ng build --configuration=production",
     "postinstall": "node .\\Scripts\\environments\\workaround.js"
   },
   "license": "ISC",
@@ -32,7 +32,6 @@
     "@angular/platform-server": "12.2.14",
     "@angular/router": "12.2.14",
     "@ctrl/ngx-codemirror": "5.1.1",
-    "@datadog/browser-rum": "4.2.0",
     "codemirror": "5.64.0",
     "core-js": "2.6.12",
     "gojs": "2.1.22",
