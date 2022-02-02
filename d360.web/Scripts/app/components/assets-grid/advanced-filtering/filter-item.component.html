@@ -108,6 +108,7 @@
                         <div class="lookup-selection">
                             <p-table #dataTable
                                      tableStyleClass="ig-filter-table"
+                                     selectionMode="multiple"
                                      [metaKeySelection]="true"
                                      [value]="currentField.Values"
                                      (onRowSelect)="onItemSelected($event)"
@@ -134,7 +135,7 @@
                                         </th>
                                     </tr>
                                 </ng-template>
-                                <ng-template pTemplate="body" let-item>
+                                <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                                     <ng-container *ngIf="item.styleClass === 'group-name'; else elseBlock">
                                         <tr class="{{item.styleClass}}">
                                             <td class="first-col" colspan="2">
@@ -143,7 +144,7 @@
                                         </tr>
                                     </ng-container>
                                     <ng-template #elseBlock>
-                                        <tr [pSelectableRow]="item">
+                                        <tr [pSelectableRow]="item" [pSelectableRowIndex]="rowIndex">
                                             <td class="first-col">
                                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                             </td>

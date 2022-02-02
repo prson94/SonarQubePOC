@@ -81,7 +81,7 @@ namespace d360.core.entities
         [JsonProperty("qualifier"), Column(TypeName = "nvarchar")]
         public string Qualifier { get; set; }
 
-        [JsonProperty("regExReturned"), Column(TypeName = "nvarchar")]
+        [JsonProperty("regExpReturned"), Column(TypeName = "nvarchar")]
         public string RegularExpression { get; set; }
 
         [JsonProperty("status")]
@@ -214,6 +214,20 @@ namespace d360.core.entities
 
     public static class SemanticExtensions
     {
+        private static string ResolveIncomingProperty(this string incomingValue, string defaultValue)
+        {
+            if (string.IsNullOrEmpty(incomingValue))
+            {
+                incomingValue = (defaultValue ?? "").Trim();
+            }
+            else
+            {
+                incomingValue = incomingValue.Trim();
+            }
+
+            return incomingValue;
+        }
+
         public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource createdBy, GlobalReportingResource updatedBy)
         {
             return new GetSemantic
@@ -275,9 +289,9 @@ namespace d360.core.entities
                 Minimum = model.Minimum,
                 MinimumSamples = model.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent,
-                Name = model.Name,
+                Name = model.Name.ResolveIncomingProperty(model.Qualifier),
                 Priority = model.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression,
                 Source = SemanticSource.UserDefined,
                 Status = model.Status,
@@ -318,9 +332,9 @@ namespace d360.core.entities
                 Minimum = model.Minimum,
                 MinimumSamples = model.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent,
-                Name = model.Name,
+                Name = model.Name.ResolveIncomingProperty(model.Qualifier),
                 Priority = model.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression,
                 Source = existing.Source,
                 Status = model.Status,
@@ -361,9 +375,9 @@ namespace d360.core.entities
                 Minimum = model.Minimum ?? existing.Minimum,
                 MinimumSamples = model.MinimumSamples ?? existing.MinimumSamples,
                 MinMaxPresent = model.MinMaxPresent ?? existing.MinMaxPresent,
-                Name = model.Name ?? existing.Name,
+                Name = model.Name.ResolveIncomingProperty(existing.Name),
                 Priority = model.Priority ?? existing.Priority,
-                Qualifier = model.Qualifier,
+                Qualifier = (model.Qualifier ?? "").Trim(),
                 RegularExpression = model.RegularExpression ?? existing.RegularExpression,
                 Source = existing.Source,
                 Status = model.Status ?? existing.Status,
@@ -492,9 +506,19 @@ namespace d360.core.entities
                 errors.Add("Both Minimum AND Maximum must contain values for MinMaxPresent to be used. Otherwise it must be removed.");
             }
 
+            if (string.IsNullOrEmpty(model.Name))
+            {
+                errors.Add("Name must contain a value.");
+            }
+
             if (model.Priority < 1)
             {
                 errors.Add("Priority must contain a value of 1 or greater.");
+            }
+
+            if (string.IsNullOrEmpty(model.Qualifier))
+            {
+                errors.Add("Qualifier must contain a value.");
             }
 
             if (model.Threshold < 0 || model.Threshold > 100)

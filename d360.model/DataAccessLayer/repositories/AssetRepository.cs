@@ -1214,6 +1214,49 @@ namespace d360.model.DataAccessLayer
 
             bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("kp.keypath");
 
+            if (queryParams.Any(x => x.Key.ToLowerInvariant() == "_pagewithasset"))
+            {
+                //if we are looking for a specific asset, run query to find index of an asset than update paging to return only that page
+                Guid findAssetUid = Guid.Parse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagewithasset").Value);
+                dbArgs.Add("findAssetUid", findAssetUid);
+                var orderQuery = pagingSql.Count > 0 ? pagingSql[0] : "a.id";
+                var getElementIndexSql = $@"
+                 ;with results_map as (
+                        select 
+				            ROW_NUMBER() OVER({orderQuery}) as row_number,
+                            A.UID AS assetuid
+                        from Asset A
+                        left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
+				        left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
+                        {string.Join("\n", fieldJoins)}
+                        {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
+                        left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+                        {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
+                        {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
+                        {(includePermissionDetails ? permissionDetailSQL : "")}
+                        {(includeProfilingCheck ? profilingCheckSql : "")}
+                        {hierarchyParentUidSelect}
+                        {(includeParent ? parentApplySQL : "")}
+                        {whereSql})
+		            select top 1 row_number from results_map where assetuid = @findAssetUid";
+
+                try
+                {
+                    var assetIndex = (await CompanyContext.QueryAsync<int>(getElementIndexSql, dbArgs, timeout: ApiTimeout)).FirstOrDefault();
+                    model.pageNum = ((assetIndex-1) / model.pageSize) + 1;
+                    pagingSql[1] = $"offset {(model.pageNum - 1) * model.pageSize} rows fetch next {model.pageSize} rows only";
+
+                }
+                catch (Exception ex)
+                {
+                    model.pageNum = 1;
+                }
+
+
+            }
+
+
+
             var countSql = $@"
                 select  count(*)
                 from    Asset A 
@@ -3252,72 +3295,21 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
         public async Task<Dictionary<Guid, List<PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids)
         {
-            Dictionary<Guid, List<PathComponent>> paths = new Dictionary<Guid, List<PathComponent>>();
+            var sql = $@"SELECT an.Uid, graph.GetPathAsJson(an.Segments) as JsonPath
+            FROM  graph.AssetNode an
+            inner join @uids U on U.Uid = an.Uid";
 
-            var sql = @"SELECT an.Uid, an.Segments
-                FROM  graph.AssetNode an
-                inner join @uids U on U.Uid = an.Uid";
-
-            var nodes = await CompanyContext.QueryAsync<(Guid Uid, string Segments)>(sql, new
+            var results = await CompanyContext.QueryAsync<(Guid Uid, string JsonPath)>(sql, new
             {
                 uids = assetUids.Distinct().AsTableValuedParameter(
-                        "dbo.UidTable",
-                        new List<string>() { "Uid" })
+                                   "dbo.UidTable",
+                                   new List<string>() { "Uid" })
             });
 
-            foreach (var node in nodes)
-            {
-                List<PathComponent> returnlist = new List<PathComponent>();
-
-                if (!string.IsNullOrWhiteSpace(node.Segments) && node.Segments.IndexOf('<') >= 0)
-                {
-                    XElement segmentXML = XElement.Parse(node.Segments);
-                    List<XElement> segmentList = segmentXML
-                        .Descendants("segment")
-                        .OrderBy(s => { int.TryParse(s.Attribute("level")?.Value, out int l); return l; })
-                        .ThenBy(s => { int.TryParse(s.Attribute("position")?.Value, out int p); return p; })
-                        .ToList();
-                    int currentlevel = 1;
-                    int level = 0;
-                    int position = 0;
-                    int assetTypeId = -1;
-                    List<string> elementPath = new List<string>();
-
-                    foreach (XElement element in segmentList)
-                    {
-                        if (int.TryParse(element.Attribute("level")?.Value, out level))
-                        {
-                            if (int.TryParse(element.Attribute("position")?.Value, out position))
-                            {
-                                if (level != currentlevel)
-                                {
-                                    returnlist.Add(new PathComponent
-                                    {
-                                        Key = elementPath.ToArray(),
-                                        AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault()?.Name
-                                    });
-                                    currentlevel = level;
-                                    elementPath = new List<string>();
-                                }
-                                elementPath.Add(element.Value);
-                                int.TryParse(element.Attribute("assetTypeId")?.Value, out assetTypeId);
-                            }
-                        }
-                    }
-                    //capture the last element path
-                    if (elementPath.Any())
-                    {
-                        returnlist.Add(new PathComponent
-                        {
-                            Key = elementPath.ToArray(),
-                            AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault()?.Name
-                        });
-                    }
-                }
-
-                paths.Add(node.Uid, returnlist);
-            }
-            return paths;
+            return results.Where(r => r.JsonPath != "[ERROR: KEY_FIELDS_NULL]").ToDictionary(r => r.Uid, r => {
+                var x = JsonConvert.DeserializeObject<List<PathComponent>>(r.JsonPath);
+                return x;
+            });
         }
 
         public async Task<List<PathComponent>> GetAssetPath(Guid assetUid)
@@ -4315,9 +4307,9 @@ where   A.[uid] = @assetUid";
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_onlytotal").Value, out onlyTotal);
             }
 
-            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentassetuid") )
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentassetuid"))
             {
-                if(Guid.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_parentassetuid").Value, out Guid parentUid))
+                if (Guid.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_parentassetuid").Value, out Guid parentUid))
                 {
                     if (parentUid != Guid.Empty)
                     {
@@ -4343,7 +4335,7 @@ where   A.[uid] = @assetUid";
                                     into #descendants 
                                     from descendants";
 
-            var countSQL = $"Select count(*) from #descendants d {(whereSQL != "" ? $"inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0 {whereSQL}": "where d.ParentAssetID > 0")}";
+            var countSQL = $"Select count(*) from #descendants d {(whereSQL != "" ? $"inner join Asset p on p.id = d.ParentAssetID and d.ParentAssetID>0 {whereSQL}" : "where d.ParentAssetID > 0")}";
 
             var itemsSQL = $@"select                                         
                                   a.uid as AssetUid, 
@@ -4358,9 +4350,9 @@ where   A.[uid] = @assetUid";
 
             var sql = $@"{descendantsSQL}
                         
-                        {(!onlyTotal ? itemsSQL: "")}
+                        {(!onlyTotal ? itemsSQL : "")}
 
-                        {(includeTotal || onlyTotal ? countSQL: "")}
+                        {(includeTotal || onlyTotal ? countSQL : "")}
 						";
 
             var multiQuery = await CompanyContext.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
@@ -4368,7 +4360,7 @@ where   A.[uid] = @assetUid";
             if (!onlyTotal)
             {
                 results.items = multiQuery.Read<AssetDescendants>();
-            }            
+            }
 
             if (includeTotal || onlyTotal)
             {

@@ -37,7 +37,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-reference-item-list [hasAdd]="canAddReferenceItem" [assetTypeUid]="selectedReferenceItemType?.uid" [typeName]="selectedReferenceItemType?.Name"></d3s-reference-item-list>                                                                       
+                                    <d3s-reference-item-list [hasAdd]="canAddReferenceItem" [assetTypeUid]="selectedReferenceItemType?.uid" [typeName]="selectedReferenceItemType?.Name" [highlightUid]="highlightUid"></d3s-reference-item-list>
                                 </div>
                             </div>
                         </div>
@@ -63,7 +63,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     private loadPermissionSub: Subscription;
     private loadObjectDataSub: Subscription;
     private replaceUrl: boolean = true;
-
+    highlightUid: string = '';
     constructor(
         private assetTypeService: AssetTypeService,
         protected authenticationService: AuthenticationService,
@@ -89,19 +89,28 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
         this.sub = this.route.params.subscribe((params) => {
             this.canReadSelectedType = false;
-
+            var refListIdString = "";
             //load default perms
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
+            refListIdString = params['referenceListId'];
 
-            this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
-            if (params['referenceListId']) {
-                
-                if (params['referenceListId'].toString().length == 36) {                    
-                    this.selectedReferenceListUid = params['referenceListId'];
+            if (params['referenceListId'] && (params['referenceListId'] as string).indexOf(',') !== -1) {
+                var items = refListIdString.split(',');
+                refListIdString = items[0];
+                this.highlightUid = items[1];
+            }
+            else {
+                this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
+            }
+
+            if (refListIdString) {
+
+                if (refListIdString.toString().length == 36) {
+                    this.selectedReferenceListUid = refListIdString;
                     if (this.loadObjectDataSub) {
                         this.loadObjectDataSub.unsubscribe();
                     }
-                    this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe((res) => {
+                    this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(refListIdString).subscribe((res) => {
                         this.selectedReferenceListId = +res.ObjectID;
                         this.load();
                         if (this.selectedReferenceItemType && this.selectedReferenceItemType.ID != this.selectedReferenceListId) {
@@ -109,11 +118,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                             referenceItemType.ID = this.selectedReferenceListId;
                             referenceItemType.uid = this.selectedReferenceListUid;
                             this.changeType(referenceItemType, true)
-                        }                        
+                        }
                         this.replaceUrl = false;
                     })
                 }
-                else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {                    
+                else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
                     this.load();
                     this.replaceUrl = true;
                 }
@@ -130,7 +139,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.loadPermissionSub = this.referenceService.canReadReferenceType(this.selectedReferenceListId)
             .subscribe((r) => {
                 this.canReadSelectedType = r;
-                if (this.selectedReferenceListId && !isNaN( this.selectedReferenceListId)) {
+                if (this.selectedReferenceListId && !isNaN(this.selectedReferenceListId)) {
                     this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then((perms) => {
                         this.canAddReferenceItem = this.hasAddAssetPermissions();
                         this.canEditReferenceItem = this.hasModifyAssetPermissions();
@@ -169,7 +178,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.showDefault = false;
     }
 
-    changeType(e: any, replaceUrl: boolean) {        
+    changeType(e: any, replaceUrl: boolean) {
         const requiresRedirect = this.selectedReferenceListId !== e.ID;
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;

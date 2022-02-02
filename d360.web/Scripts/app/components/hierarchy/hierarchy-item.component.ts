@@ -16,6 +16,8 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-hierarchy-item',
@@ -45,6 +47,14 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
     crumbs: Breadcrumb[] = [];
     messages: MessageBarItem[] = [];
 
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedTag: any;
+    selectedReferenceItem: any;
+
+    sidePanelOpen: boolean = false;
+    sidePanelStorageKey;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -55,8 +65,9 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         protected settingsService: CompanySettingsService,
-        webAnalyticsService: WebAnalyticsService
-        ) {
+        webAnalyticsService: WebAnalyticsService,
+        private linkClickInterceptor: LinkClickInterceptor,
+    ) {
         super(settingsService);
 
         this.webAnalyticsService = webAnalyticsService;
@@ -94,8 +105,8 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
             this.currentAreaNameSub =
                 this.headerBreadcrumbService
-                .getAreaName(this.objectType, newObjectTypeId)
-                .subscribe(result => { this.currentAreaName = result; if (this.assetType) this.buildBreadcrumb(); });
+                    .getAreaName(this.objectType, newObjectTypeId)
+                    .subscribe(result => { this.currentAreaName = result; if (this.assetType) this.buildBreadcrumb(); });
 
             if (!hierarchyId)
                 hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
@@ -108,6 +119,10 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
                 this.isLoading = false;
             }
+        });
+
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            this.linkClickInterceptor.handleEvent(this, ev);
         });
 
         this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
@@ -130,9 +145,9 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             case AssetTypeClass.Policy:
                 this.policiesService.getPolicyType(this.objectTypeId)
                     .subscribe(result => {
-                            this.assetType = result;
-                            this.loadHierarchy(this.objectTypeId, hierarchyId);
-                            this.buildBreadcrumb();
+                        this.assetType = result;
+                        this.loadHierarchy(this.objectTypeId, hierarchyId);
+                        this.buildBreadcrumb();
                     });
                 break;
         }

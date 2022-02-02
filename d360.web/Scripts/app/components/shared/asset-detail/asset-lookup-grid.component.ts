@@ -11,6 +11,8 @@ import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { AssetTypeClass, State } from "../../../models/asset.model";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ObjectIdService } from "../../../services/object-id.service";
+import { LinkClickInterceptor } from "../../../services/href-click-service";
+import { StringConstants } from "../../../static/string-constants";
 
 declare var CurrentResourceID;
 
@@ -30,6 +32,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     @Input() hideFilter = true;
     @Input() assetUid: string = '';
     @Input() isSidePanel: boolean = false;
+    @Input() interceptLinkClick: boolean = false;
 
     isReferenceListFromRelationship = false;
     showDescription = false;
@@ -44,8 +47,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     currentFilters: any;
 
     showAdvancedFilterField: boolean = true;
-    simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
-*account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
+    simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
 
     simpleTextFilter: string;
 
@@ -57,7 +59,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         private assetService: AssetService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        public objectIdService: ObjectIdService
+        public objectIdService: ObjectIdService,
+        private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(settingsService);
 
@@ -136,7 +139,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
                         icon: '',
                         isExternallyCalculated: false,
                         state: State.Active,
-                        uid:''
+                        uid: ''
                     });
             });
         }
@@ -163,7 +166,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         return 'string';
     }
 
-    navigate(url: string, e: any) {
+    navigate(url: string, e: any, data: any) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent(e, data, SiteUrlHelpers.convertClassicUrl(url ?? ""));
+            return;
+        }
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
         if (e) {
             e.preventDefault();

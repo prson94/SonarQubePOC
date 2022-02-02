@@ -31,7 +31,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
     documentClick(event: MouseEvent) {
         if (this.menu && this.menu.isActiveItem) {
             this.activeItemChanged.emit(undefined);
-        }    
+        }
     }
 
     constructor(
@@ -40,64 +40,57 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         super(settingsService);
     }
 
-    @ViewChild('item', { static: false }) item: ElementRef;
-    
-    navigateToUrl(url) {        
+    @ViewChild('item', { static: false }) item: ElementRef<HTMLLIElement>;
+
+    getDataCyAttribute() {
+        return `PrimaryNav_${this.title}`;
+    }
+
+    navigateToUrl(url) {
         if (url) {
             this.router.navigateByUrl(url);
         }
     }
-    
+
     show(item) {
-        this.activeItemChanged.emit({ item: this });        
-        this.positionMenu(null);
+        this.activeItemChanged.emit({ item: this });
+        this.positionMenu();
     }
 
-    private positionMenu(event: any) {
-        if (event != null && (event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 38)) {
+    private positionMenu() {
+        if (!this.menu || !this.menu.NavigationItems) {
             return;
         }
-        if (this.menu && this.menu.NavigationItems) {
-            let submenu = this.item.nativeElement.children[0].nextElementSibling;
-            if (submenu) {
-                var dims = this.item.nativeElement.getBoundingClientRect();
-                this.menu.isActiveItem = true;                
-                submenu.style.zIndex = ++SiteNav.zindex;
-                submenu.style.top = dims.top + 'px';
-                submenu.style.left = this.item.nativeElement.offsetWidth + 'px';
 
-                window.setTimeout(() => {
-                    this.repositionMenuToFit(submenu);
-                }, 150);
-            }
+        const submenu = this.item.nativeElement.children[0].nextElementSibling as HTMLDivElement;
+        if (!submenu) {
+            return
         }
+
+        this.menu.isActiveItem = true;
+        submenu.style.zIndex = (SiteNav.zindex + 1).toString();
+        submenu.style.left = this.item.nativeElement.offsetWidth + 'px';
+
+        this.repositionMenuToFit();
+        window.setTimeout(() => {
+            this.repositionMenuToFit();
+        }, 150);
     }
 
     stopNavigation(event) {
         event.stopPropagation();
     }
 
-    repositionMenuToFit(element) {
-        var dims = element.getBoundingClientRect();
-        let windowHeight = window.innerHeight;
-        if (dims) {
-            var maxHeight = dims.top + dims.height;
+    repositionMenuToFit() {
+        const wantedPanelTop = this.item.nativeElement.getBoundingClientRect().top;
 
-            //case where menu is bigger than height of page
-            if (dims.height > windowHeight) {
-                dims = element.getBoundingClientRect();
-                element.style.top = 40 + 'px';
-                maxHeight = dims.top + dims.height;
-                if (maxHeight > windowHeight) { //case where bottom is below page after resizing
-                    var topOffset = dims.top + (windowHeight - maxHeight);
-                    element.style.top = topOffset + 'px';
-                }
-            }
-            else if (maxHeight > windowHeight) { //case where bottom is below page
-                var topOffset = dims.top + (windowHeight - maxHeight);
+        const panel = this.item.nativeElement.children[0].nextElementSibling as HTMLDivElement;
+        const panelRect = panel.getBoundingClientRect();
 
-                element.style.top = topOffset + 'px';
-            }
-        }
+        const panelBottomEstimate = wantedPanelTop + panelRect.height;
+        const overflow = Math.max(0, panelBottomEstimate - window.innerHeight);
+        const newPanelTop = Math.max(0, wantedPanelTop - overflow);
+
+        panel.style.top = newPanelTop + 'px';
     }
 }

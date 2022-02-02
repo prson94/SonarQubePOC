@@ -6,6 +6,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 	<changeSet author="TDuric" id="View.workflow.ItemAsset-v1">
+		<comment>If this view is changed, this also needs to be updated in procedure [dbo].[GenerateAllAssetTypeDisplayValues]	</comment>
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 			<![CDATA[
 create view [workflow].[ItemAsset] WITH SCHEMABINDING

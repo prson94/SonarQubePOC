@@ -4,6 +4,8 @@
         <div class="calculation-group">
             <div class="title">Pass Test</div>
             <div class="pass-test">{{formattedCheck}}</div>
+            <div *ngIf="selected.Threshold" class="pass-test">Rule results score >= Pass Threshold</div>
+            <div *ngIf="selected.Threshold" class="pass-test">{{getAsRawPrecentage(selected.DecimalValue, 3)}} >= {{getAsRawPrecentage(selected.Threshold, 3)}}</div>
             <ng-container *ngIf="selected.Value">
                 <i class="fa fa-check-circle good"></i> Succeeded
             </ng-container>
@@ -22,7 +24,8 @@
             </div>
             <div class="conditions">
                 <div>
-                    <div>Weight: {{formatWeight(matchedCondition.Weight)}} - Determined via match on Condition Group {{matchedCondition.Position}}</div>
+                    <div>Weight: {{formatWeight(matchedCondition.Weight)}}, <span *ngIf="matchedCondition.Threshold">Threshold: {{formatThreshold(matchedCondition.Threshold)}}</span> - Determined via match on Condition Group {{matchedCondition.Position}}</div>
+                    
                     <span *ngFor="let item of matchedCondition.ConditionItems;let i = index;">
                         <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | utcDate | date: shortdate) : item.Value}}
                     </span>
@@ -108,7 +111,7 @@
             </div>
         </ng-container>
 
-        <ng-container *ngIf="!showPassTest() && !selected.IsGroup">
+        <ng-container *ngIf="!selected.Threshold && ruleResultsVisible()">
             <div class="indented-line" *ngIf="!selected._groupDisplayMaxWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
             <div class="indented-line" *ngIf="!selected._groupDisplayMaxWeight">
                 = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}}
@@ -122,12 +125,14 @@
             <div class="indented-line">
                 = {{getAsPrecentage(selected.DisplayWeight)}}
             </div>
+        </ng-container>
 
+
+        <ng-container *ngIf="ruleResultsVisible()">
             <div style="margin-top: 16px;">
                 <button class="link" (click)="showRuleResults(true)">Show rule results</button>
             </div>
         </ng-container>
-
     </div>
 
 </div>

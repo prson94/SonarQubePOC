@@ -143,7 +143,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
             var countSql = baseTableSql;
 
-            List<FieldType> fieldTypes = null;
+            List<FieldType> fieldTypes = new List<FieldType>();
             bool filteringByFields = false;
             int pageNumber = 1;
             int pageSize = 250;

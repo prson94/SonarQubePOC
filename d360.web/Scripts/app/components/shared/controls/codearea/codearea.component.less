@@ -1,0 +1,118 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/source-code-pro/SourceCodePro-Regular.ttf') format('truetype');
+}
+
+.ig-codearea {
+  font-size: 14px;
+  color: @ig-black;
+  background: @ig-white;
+  padding: 6px 8px;
+  resize: none;
+  vertical-align: top;
+  min-height: 150px;
+  max-height: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  &.ig-field-width-large {
+    width: @ig-field-width-large;
+    max-width: 100%;
+  }
+
+  &.ig-field-width-full {
+    width: 100%;
+  }
+
+  .CodeMirror {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    line-height: 18px;
+    border-radius: @ig-field-border-radius;
+    max-height: 100%;
+    height: calc(100%);
+
+    &.CodeMirror-focused {
+      box-shadow: 0 0 0 2px @ig-midblue-t3;
+    }
+
+    .CodeMirror-vscrollbar {
+      overflow-y: hidden;
+    }
+
+    .CodeMirror-code {
+      min-height: 150px;
+    }
+
+    .CodeMirror-gutters {
+      background: @ig-grey-t5;
+      border-right: 1px solid rgba(0, 0, 0, 0.2);
+    }
+
+    .CodeMirror-lines {
+      font-family: 'Source Code Pro', monospace;
+
+      .CodeMirror-linenumber {
+        color: @ig-grey;
+      }
+
+      pre.CodeMirror-placeholder {
+        opacity: 0.6;
+        color: @ig-grey;
+      }
+    }
+
+    span.cm-string {
+      color: @ig-black;
+
+      &:not(.cm-property) {
+        color: @ig-green;
+      }
+    }
+
+    span.cm-number {
+      color: @ig-red;
+    }
+  }
+
+  &.disabled {
+    opacity: 33%;
+
+    .CodeMirror {
+      &.CodeMirror-focused {
+        box-shadow: none;
+      }
+    }
+  }
+
+  .required {
+    .CodeMirror {
+      .CodeMirror-scroll {
+        background: @ig-lightblue-t4;
+      }
+    }
+  }
+
+  .readonly {
+    .CodeMirror {
+      &.CodeMirror-focused {
+        box-shadow: none;
+      }
+
+      .CodeMirror-scroll {
+        background-color: rgba(111, 116, 130, 0.04);
+      }
+    }
+  }
+
+  .ng-invalid {
+    .CodeMirror:not(.CodeMirror-empty) {
+      .CodeMirror-scroll {
+        background: @ig-red-t5;
+      }
+    }
+  }
+}

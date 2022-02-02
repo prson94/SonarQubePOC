@@ -582,7 +582,7 @@ namespace d360.core.entities.Metric
         public DateTime EffectiveDate { get; set; }
         public DateTime? EffectiveEndDate { get; set; }
         public double Weight { get; set; }
-        
+        public float? Threshold { get; set; }
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
         
         public bool HasResults { get; set; } = false;

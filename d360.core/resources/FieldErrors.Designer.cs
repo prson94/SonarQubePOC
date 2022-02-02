@@ -484,6 +484,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Groups cannot have {0} field type!.
+        /// </summary>
+        public static string GroupInvalidFieldType {
+            get {
+                return ResourceManager.GetString("GroupInvalidFieldType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Asset Type Uid provided [{0}]..
         /// </summary>
         public static string InvalidAssetTypeUid {

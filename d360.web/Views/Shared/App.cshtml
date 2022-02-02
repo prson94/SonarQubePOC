@@ -10,6 +10,10 @@
     var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");
     var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
 
+    var DataDogApplicationId = (System.Configuration.ConfigurationManager.AppSettings["DD_RUM_APPLICATIONID"] ?? "a6856a29-b0df-4399-9209-fab1529c798b");
+    var DataDogClientToken = (System.Configuration.ConfigurationManager.AppSettings["DD_RUM_CLIENTTOKEN"] ?? "pubb2d8e686770c86a615449864b1b9e64b");
+    var DataDogService = (System.Configuration.ConfigurationManager.AppSettings["DD_RUM_SERVICE"] ?? "Govern");
+
     var baseUrl = "";
     if ((useCdn ?? "").ToLower() == "true")
     {
@@ -56,7 +60,7 @@
             ); window[aiName] = aisdk;
         </script>
     }
-    <script type="text/javascript">
+<script type="text/javascript">
         var CurrentResourceID = @(CurrentResourceID);
         var ResourceHomePage = '@(ResourceHomePage)';
         var SingleSignOn = @(ViewData["SingleSignOn"].ToString().ToLower());
@@ -64,7 +68,10 @@
         var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
         var CurrentResourceUid = '@(ViewData["ResourceUid"].ToString())';
         var VersionNumber = '@(VersionNumber)';
-    </script>
+        var DataDogApplicationId = '@(DataDogApplicationId)';
+        var DataDogClientToken = '@(DataDogClientToken)';
+        var DataDogService = '@(DataDogService)';
+</script>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v11.1.0/primeng.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/2.0.0/primeicons.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v11.1.0/default.min.css", baseUrl)" />

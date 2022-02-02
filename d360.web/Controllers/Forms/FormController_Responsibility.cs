@@ -451,7 +451,7 @@ select	cast(0 as bit) as IsUsed,
 		end + P.[Path] as [Path]
 from	AssetType A
 		cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P  
-where	Class in (1, 2, 6, 7, 8, 9)
+where	Class in (1, 2, 6, 7, 8, 9) and ObjectID > 0
 order by case Object
 			when 'ArtifactType' then
 				case Class
@@ -707,12 +707,18 @@ order by	case
                 return new JsonNetResult
                 {
                     Data = Company.Query<dynamic>($@"
+                        drop table if exists #tempdata;
                         select D.Object + '|' + cast(D.ObjectID as varchar(30)) as value,
-		                    DN.DisplayValue as label
-                        from Asset D
+                               D.ID AssetID
+                        into #tempdata
+                       from Asset D
                             inner join AssetType DT on DT.ID = D.AssetTypeID
                             inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
-                            inner join AssetDisplayValue DN on DN.AssetID = D.ID
+
+                    select D.[value],
+		                    DN.DisplayValue as label
+                        from #tempdata D
+                            inner join AssetDisplayValue DN on DN.AssetID = D.AssetID
                             order by DN.DisplayValuePrefix"),
                     Formatting = Newtonsoft.Json.Formatting.None
                 };

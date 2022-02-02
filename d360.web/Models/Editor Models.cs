@@ -613,6 +613,7 @@ namespace d360.web.Models
         public string Description { get; set; }
         public Guid PrimaryOwnerUid { get; set; }
         public Guid SecondaryOwnerUid { get; set; }
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
     public class UpdateGroup
@@ -622,6 +623,8 @@ namespace d360.web.Models
         public string Description { get; set; }
         public Guid PrimaryOwnerUid { get; set; }
         public Guid SecondaryOwnerUid { get; set; }
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+
     }
 
     #region Asset Browser

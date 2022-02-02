@@ -53,6 +53,14 @@
                         <div class="details-header">Weight</div>
                         <div class="details-content">{{getAsPrecentage(selection?.Weight)}}</div>
                     </div>
+                    <div *ngIf="!isExternallyCalculated && selection?.Threshold" class="measure-details-item">
+                        <div class="details-header">Use Pass Threshold</div>
+                        <div class="details-content">Yes</div>
+                    </div>
+                    <div *ngIf="!isExternallyCalculated && selection?.Threshold" class="measure-details-item">
+                        <div class="details-header">Pass Threshold</div>
+                        <div class="details-content">{{getAsPrecentage(selection?.Threshold)}}</div>
+                    </div>
                     <div *ngIf="!isExternallyCalculated && showPassTest" class="measure-details-item">
                         <d3s-admin-metric-pass-test-details [assetTypeUid]="AssetType.Uid" [definition]="selection?.Definition" [screenReferences]="screenReferences">
                         </d3s-admin-metric-pass-test-details>

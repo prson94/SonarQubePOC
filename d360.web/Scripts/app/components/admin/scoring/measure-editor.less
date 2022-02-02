@@ -28,6 +28,30 @@
     margin-top: 8px;
   }
 
+  .condition-overrides-row {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-areas: "tl tl tl tf tf tf . wl wl wf wf wf";
+    margin-top: -10px;
+    margin-bottom: 10px;
+
+    .tl {
+      grid-area: tl;
+    }
+
+    .tf {
+      grid-area: tf;
+    }
+
+    .wl {
+      grid-area: wl;
+    }
+
+    .wf {
+      grid-area: wf;
+    }
+  }
+
   .weight-container {
     display: flex;
     margin-right: 4px;

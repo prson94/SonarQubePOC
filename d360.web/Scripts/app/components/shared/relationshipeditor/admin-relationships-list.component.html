@@ -23,7 +23,6 @@
                  [selection]="selected"
                  [stateStorage]="gridStateStorage"
                  stateKey="{{gridStorageKey}}"
-                 (selectionChange)="selected=$event;selectedChange.emit(selected)"
                  (onFilter)="onFilter($event)">
             <ng-template pTemplate="header">
                 <tr>
@@ -60,7 +59,7 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
-                <tr (dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;" [pSelectableRow]="item">
+                <tr (click)="selected=item;selectedChange.emit(selected);" (dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;" [pSelectableRow]="item">
                     <td>{{item.Id}}</td>
                     <td>
                         <span>{{item?.Subject.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Subject.Class}})</span></span>

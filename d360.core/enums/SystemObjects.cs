@@ -83,7 +83,7 @@ namespace d360.core
         WorkflowTypeRelation = 38,
         [Description("Predicate"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
         Predicate = 39,
-        [Description("Group Type"), AllowSurvey(false), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
+        [Description("Group Type"), AllowSurvey(false), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.Score | DataType.Html | DataType.Link)]
         GroupType = 40,
         [Description("Rule Dimension"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
         RuleDimension = 41,        

@@ -42,9 +42,7 @@ export class BaseComponent {
     public baseCrumbs: Breadcrumb[] = [];
     public baseTreeNodeArray: any[] = [];
 
-    public simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any field starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
-*term* : Match on values which contain 'term'</p><p>All matches are case insensitive.</p>`;
-
+    public simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
     // sidebar
     sidebarSubscription: Subscription;
     isVisitingSidebar = false;
@@ -1207,6 +1205,22 @@ export class BaseComponent {
 
     private GetIDFromUrl(url: string) {
         return +url.split("/")[url.split.length - 1];
+    }
+
+    public getAsRawPrecentage(val: number, decimals: number): string {
+        if (val == undefined || val == null)
+            return 'undefined';
+
+        if (val == 0)
+            return '0%';
+        if (!val)
+            return;
+        if (val >= 1)
+            return '100%'
+
+        let s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+
+        return s;
     }
 
     public getAsPrecentage(val: number): string {

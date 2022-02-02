@@ -62,9 +62,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
+    @Input() showShowInDetailTile: boolean = true;
     @Input() showIsEditable: boolean = true;
     @Input() showIsRequired: boolean = true;
     @Input() showDescription: boolean = true;
+    @Input() showPersistInFilters: boolean = true;
     @Input() enableAllowMultipleValues: boolean = true;
     @Input() showAddToSearch: boolean = false;
 

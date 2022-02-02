@@ -38,15 +38,17 @@
                         <button *ngIf="item.IsGroup" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" pTooltip="Add measure to group" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                     </td>
                     <td>
-
-                        <ng-container *ngIf="item.State == 1">
-                            <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
-                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="menuOptions" #menu [tabIndex]="1"></ig-popup-menu>
+                        <ng-container *ngIf="item.State == 1 && (item.IsGroup || allocation.isExternallyCalculated || (item.Definition.Governance && item.Definition.Governance.Check == 'External'))">
+                            <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);groupActiveMenu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="groupMenuOptions" #groupActiveMenu [tabIndex]="1"></ig-popup-menu>
                         </ng-container>
-
+                        <ng-container *ngIf="item.State == 1 && !item.IsGroup && !allocation.isExternallyCalculated && !(item.Definition.Governance && item.Definition.Governance.Check == 'External')">
+                            <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="itemMenuOptions" #menu [tabIndex]="1"></ig-popup-menu>
+                        </ng-container>
                         <ng-container *ngIf="item.State == 3">
                             <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);disabledMenuRef.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
-                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="disabledMenu" #disabledMenuRef [tabIndex]="1"></ig-popup-menu>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="disabledMenuOptions" #disabledMenuRef [tabIndex]="1"></ig-popup-menu>
                         </ng-container>
                     </td>
                 </tr>
@@ -117,6 +119,22 @@
                              [screenReferences]="screenReferences"
                              (onClose)="showHistory(false);load(selection?.Name);">
             </measure-history>
+        </div>
+    </d3s-modal>
+    <d3s-modal [title]="'Recalculate Measure'" additionalClasses="medium-dialog modal-measure" (onClose)="showRecalculate(false)" [isVisible]="isRecalculateModalVisible">
+        <div class="content">
+            <div>
+                This will recalculate the measure result for all assets of asset type {{assetType.Name}}.
+                Please allow time for recalculate before verifying results.
+                Time for recalculation varies based on number of assets being evaluated.
+            </div>
+            <div class="row" *ngIf="!isLoading">
+                <div class="action-bar" style="padding-top: 15px">
+                    <button igButton class="left" type="button" label="Cancel" (click)="cancelRecalculate()"></button>
+                    <span class="grow"></span>
+                    <button igButton [loading]="isCallingRecalculate" class="ig-button-primary" type="button" label="Recalculate" (click)="recalculate()"></button>
+                </div>
+            </div>
         </div>
     </d3s-modal>
     <d3s-delete-form *ngIf="selection"

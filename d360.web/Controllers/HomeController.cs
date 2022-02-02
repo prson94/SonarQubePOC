@@ -112,7 +112,9 @@ namespace d360.web.Controllers
                 if (!string.IsNullOrEmpty(redirectUri) && !redirectUri.StartsWith("//") && Uri.IsWellFormedUriString(redirectUri, UriKind.Relative))
                     return Redirect(redirectUri);
                 else
+                {
                     return RedirectToAction("App");
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
 import { ResourcesService } from '../../../services/resources.service';
@@ -9,55 +9,14 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-assignments',
     providers: [WorkflowService, ResourcesService],
-    template: `
-                <div class="tile tile-detail">
-                   <header>Assignments
-                    <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
-                   </header>
-                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-table #dt *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Version','Step','Total']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th [pSortableColumn]="'Name'">
-                                    Name
-                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Version'" style="text-align:center">
-                                    Version
-                                    <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Step'" style="text-align:left">
-                                    Step
-                                    <d3s-sortIcon [field]="'Step'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Total'" style="text-align:center">
-                                    Count
-                                    <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
-                                </th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr (dblclick)="selected=item;doSelect(selected)" [pSelectableRow]="item">
-                                <td>
-                                    <a (click)="doSelect(item)">{{item.Name}}</a>
-                                </td>
-                                <td style="text-align:center">{{item.Version}}</td>
-                                <td>{{item.Step}}</td>
-                                <td style="text-align:center">{{item.Total}}</td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                        </ng-template>
-                    </p-table>                                    
-                    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">You currently have no assignments</div>
-                </div>
-                `
+    templateUrl: `assignments.component.html`
 })
 
 export class AssignmentsComponent extends BaseComponent implements OnInit {
     @Input() resourceId = -1;
     @Output() showItemDetail = new EventEmitter();
+    @Input() isSidePanel: boolean = false;
+
     counts: Count[] = [];
     private selected: Count;
     private daysToLookBack: number = 7;
@@ -108,11 +67,11 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
             resourceID: this.resourceId,
             workflowId: item.Id,
             version: item.Version,
-            stepId:item.StepId
+            stepId: item.StepId
         });
     }
 
-    private getWorkflowType(item): WorkflowType{
+    private getWorkflowType(item): WorkflowType {
         if (!item) return null;
 
         switch (item.Name.toUpperCase()) {
@@ -123,7 +82,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
             case "PROPOSE NEW ARTIFACT":
                 return WorkflowType.SuggestNewArtifact;
             case "ACTIONS":
-                return WorkflowType.WorkIssue;                          
+                return WorkflowType.WorkIssue;
         }
         return WorkflowType.None;
     }

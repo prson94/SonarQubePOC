@@ -1,66 +1,160 @@
-﻿<div class="row">
-    <div class="col l3 m4 s12">
-        <div class="tile tile-detail">
-            <header>Groups<d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
+﻿<div class="row admin-group-list">
+    <div class="col s12" style="display: flex">
+        <div class="tile tile-detail admin-group-details">
+            <div class="actions-header">
+                <div class="simple-search">
+                    <ig-search-field mode="Keypress"
+                                     [debounce]="600"
+                                     (onSearch)="onSimpleSearch($event)"
+                                     [(ngModel)]="simpleTextFilter"
+                                     [infoTooltip]="simpleSearchTooltipHTML">
+                    </ig-search-field>
+                </div>
+                <div class="grid-action-buttons">
+                    <button igButton
+                            pTooltip="Create New Group"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            class="ig-button-primary"
+                            icon="fa-plus"
+                            (click)="add()">
+                    </button>
+                </div>
+            </div>
+
+
             <div id="List">
-                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                <p-table #dt [value]="groupItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [paginator]="true" [rows]="20" [style]="{'width':'100%'}" (onRowSelect)="select($event)">
+                <p-table #dt [value]="groupItems"
+                         selectionMode="single"
+                         [metaKeySelection]="true"
+                         [globalFilterFields]="['Name']"
+                         [paginator]="true"
+                         [(selection)]="selectedRow"
+                         [rows]="20"
+                         [style]="{'width':'100%'}"
+                         [loading]="isLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'">
+                    <ng-template pTemplate="colgroup">
+                        <colgroup>
+                            <col *ngFor="let col of columns"
+                                 [style.width]="col.columnWidth ? col.columnWidth + 'px' : null" />
+
+                            <col style="width: 48px" />
+                        </colgroup>
+                    </ng-template>
                     <ng-template pTemplate="header">
                         <tr>
-                            <th [pSortableColumn]="'Name'" style="width: 100px">
-                                Name
-                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                            <th *ngFor="let col of columns"
+                                [pSortableColumn]="col.sortable ? col.apiName : null"
+                                [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                                {{ col.text }}
+                                <d3s-sortIcon *ngIf="col.sortable"
+                                              [field]="col.datafield"></d3s-sortIcon>
                             </th>
-                            <th style="width: 20px"></th>
-                            <th style="width: 20px"></th>
-                            <th style="width: 20px"></th>
+                            <th style="width: 48px"></th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
-                        <tr [pSelectableRow]="item" #treetableRows>
-                            <td>{{item.Name}}</td>
-                            <td>
-                                <div class="RowTools">
-                                    <d3s-preview-tooltip [uid]="item.Uid" icon="info"></d3s-preview-tooltip>
-                                </div>
+                        <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
+                            <td *ngFor="let col of columns; let i=index">
+                                <ng-container *ngIf="i != linkColumnIndex; else linked">
+                                    <div style="display:block; word-wrap:break-word">
+                                        <d3s-dynamic-field-value [column]="col"
+                                                                 [fields]="fields"
+                                                                 [item]="item"
+                                                                 [useApiName]="true"
+                                                                 [isDateUTC]="true"></d3s-dynamic-field-value>
+                                    </div>
+                                </ng-container>
+                                <ng-template #linked>
+                                    <a (click)="selectRow(item)"
+                                       style="word-wrap:break-word;">
+                                        <d3s-dynamic-field-value [column]="col"
+                                                                 [fields]="fields"
+                                                                 [item]="item"
+                                                                 [useApiName]="true"
+                                                                 styleClass="cell-link"
+                                                                 [isDateUTC]="true"></d3s-dynamic-field-value>
+                                    </a>
+                                </ng-template>
+
                             </td>
-                            <td>
-                                <div class="RowTools">
-                                    <a (click)="edit(item.Uid)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="RowTools">
-                                    <a (click)="delete(item.Uid)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <td class="asset-grid-tools" (click)="selectRow(item)">
+                                <div style="display:inline-block">
+                                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #linkMenu [tabIndex]="1"></ig-popup-menu>
                                 </div>
                             </td>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="summary">
-                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <d3s-grid-paging-info [first]="dt.first"
+                                              [rows]="dt.rows"
+                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
             </div>
         </div>
-    </div>
-    <div class="col l9 m8 s12" [ngSwitch]="formMode">
-        <div *ngSwitchDefault class="tile tile-detail">
-            <d3s-group-members [groupId]="0" [groupUid]="selectedRow?.Uid" [groupName]="selectedRow?.Name" [groupIsActiveDirectory]="selectedRow?.IsActiveDirectoryGroup"></d3s-group-members>
-        </div>
-        <div *ngSwitchCase="FormMode.Adding" class="tile tile-detail">
-            <d3s-group-form [id]="0" [title]="'Add Group'" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>
-        </div>
-        <div *ngSwitchCase="FormMode.Editing" class="tile tile-detail">
-            <d3s-group-form [id]="0" [uid]="selectedRow?.Uid" [title]="'Edit ' + selectedRow.Name" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>
-        </div>
-        <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
-            <d3s-delete-form [callback]="theDeleteCallback"
-                             [method]="'callback'"
-                         [prompt]="'Are you sure you want to remove ' + selectedRow.Name + '?'"
-                         (onDeleteSuccess)="confirmDelete($event);"
-                         (onDeleteFail)="errorDelete($event)"
-                         (onCancel)="cancel();">
-            </d3s-delete-form>
+        <div class="tile tile-detail side-panel">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selectedRow"
+                        [panelApplies]="true"
+                        [hasProfiling]="false"
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey"
+                        [selectedPanel]="sidePanelTab">
+                <ng-container *ngIf="sidePanelOpen && selectedRow != null">
+                    <ng-container *ngIf="sidePanelTab === 'detail'">
+                        <ig-asset-detail #assetDetail [objectUID]="selectedRow.Uid"
+                                         objectType="Group"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [hideLinks]="true"
+                                         [hideClassName]="true"
+                                         [groupMembersReadOnlyMode]="false"></ig-asset-detail>
+                    </ng-container>
+                </ng-container>
+            </side-panel>
         </div>
     </div>
 </div>
+
+<d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="showDelete=false"
+           [title]="'Delete Group'"
+           [isVisible]="showDelete">
+    <div class="content">
+        Please confirm that you wish to delete the group <strong>{{selectedRow.Name}}</strong>. Please note that this operation cannot be undone.
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+    </div>
+</d3s-modal>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <asset-editor #dynamicEditor
+                  *ngIf="showEditor"
+                  [objectID]="selectedRow ? selectedRow.Uid : null"
+                  [objectType]="'Group'"
+                  [title]="selectedRow ? 'Edit '+selectedRow.Name : 'Create New Group'"
+                  [selection]="selectedRow"
+                  [rowID]="rowID"
+                  [objectTypeUid]="'00000001-0000-0000-0000-B00000000012'"
+                  [hidePath]="true"
+                  (saveClick)="saveItem($event)"
+                  [showAsModal]="true"
+                  [isV2API]="true"
+                  (closeClick)="showEditor=false"></asset-editor>
+
+</d3s-modal>

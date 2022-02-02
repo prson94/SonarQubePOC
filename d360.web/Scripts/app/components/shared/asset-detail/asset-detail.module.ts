@@ -26,6 +26,8 @@ import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.modul
 import { PeopleResponsibilitiesModule } from "../responsibilities/people-responsibilities.tile";
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
+import { SharedAssignmentsModule } from "../assignments/shared-assignments.module";
+import { GroupMembersModule } from '../group/group-members.module';
 
 
 @NgModule({
@@ -49,7 +51,9 @@ import { PortalsModule } from "../portals/portals.module";
         ScoreBadgeModule,
         PeopleResponsibilitiesModule,
         DynamicFieldNameModule,
-        PortalsModule
+        PortalsModule,
+        SharedAssignmentsModule,
+        GroupMembersModule
     ],
     declarations: [
         AssetDetailFieldComponent,

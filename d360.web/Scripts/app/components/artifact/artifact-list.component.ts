@@ -18,6 +18,7 @@ import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { LinkClickInterceptor } from '../../services/href-click-service';
 
 declare var CurrentResourceID;
 
@@ -47,7 +48,11 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     gridLoading: boolean = true;
     definitionLoaded: boolean = false;
     dataProfile: any;
-    
+
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+    selectedTag: any;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -57,8 +62,13 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
+        private linkClickInterceptor: LinkClickInterceptor,
         protected settingsService: CompanySettingsService) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            this.linkClickInterceptor.handleEvent(this, ev);
+        });
     }
 
     ngOnInit() {
@@ -161,6 +171,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     }
 
     selectAsset(event: any) {
+        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
         this.selection = event;
 
         if (this.selection && this.selection.HasProfiling) {
@@ -207,6 +218,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
             this.navigationItemsSubs.forEach((s) => {
                 s.unsubscribe();
             });
+        }
+
+        if (this.hrefSub) {
+            this.hrefSub.unsubscribe();
         }
 
         this.clearSidebar();

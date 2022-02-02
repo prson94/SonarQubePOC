@@ -7,31 +7,10 @@ using System.Threading.Tasks;
 
 namespace d360.core.entities.Membership
 {
-    public class GroupApiModel
-    {
-        [DataMember]
-        public Guid Uid { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-        [DataMember]
-        public string Description { get; set; }
-
-        [DataMember]
-        public Guid PrimaryOwnerUid { get; set; }
-
-        [DataMember]
-        public Guid SecondaryOwnerUid { get; set; }
-
-        [DataMember]
-        public bool IsActiveDirectoryGroup { get; set; } = false;
-    }
-
-
     public class GroupApiModels 
     {
         [DataMember]
-        public IEnumerable<GroupApiModel> items { get; set; }
+        public IEnumerable<dynamic> items { get; set; }
 
         [DataMember]
         public int Total { get; set; }

@@ -31,7 +31,6 @@ import { SharedObjectDetailsModule } from './objectdetails/shared-object-details
 import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 
-import { GroupMembersComponent } from './group-members.component';
 import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectFollowersComponent } from './object-followers.component';
@@ -45,7 +44,6 @@ import { AssetEditorModule } from './asset-editor/asset-editor.module';
 
 @NgModule({
     declarations: [                           
-        GroupMembersComponent,                            
         MessagesBarComponent,                                        
         ObjectDefinitionTile,
         ObjectFollowersComponent,                          
@@ -54,7 +52,6 @@ import { AssetEditorModule } from './asset-editor/asset-editor.module';
         UserListComponent
     ],
     exports: [                                                                                                                                        
-        GroupMembersComponent,                             
         MessagesBarComponent,                                                  
         ObjectDefinitionTile,
         ObjectFollowersComponent,                                 

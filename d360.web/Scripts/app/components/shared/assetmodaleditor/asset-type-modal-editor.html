@@ -30,12 +30,14 @@
         <button class="left button"
                 type="button"
                 (click)="cancel()"
+                [attr.data-cy]="'AssetType_Button_Cancel'"
                 label="Close">
             Close
         </button>
         <span class="grow"></span>
         <button class="right button primary {{savingInProgress ? 'loading' : ''}}"
                 (click)="confirm()"
+                [attr.data-cy]="'AssetType_Button_Save'"
                 [disabled]="!isValid"
                 label="Confirm">
             Confirm

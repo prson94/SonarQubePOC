@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { DetailRow, DetailField, DetailFieldType, NymType, Category, ComplexLookupType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -6,7 +6,13 @@ import { AssetService } from '../../../services/asset.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { SynonymPermission } from '../../../models/artifacts.model';
+import { ResourcesService } from '../../../services/resources.service';
+import { Subscription } from 'rxjs';
+import { GroupService } from '../../../services/group.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { ProcessService } from '../../../services/process.service';
+import { Group } from '../../../models/group.model';
+import { StringConstants } from '../../../static/string-constants';
 
 declare var CurrentResourceID;
 
@@ -17,7 +23,7 @@ declare var CurrentResourceID;
 })
 
 
-export class AssetDetailComponent implements OnChanges {
+export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() nymTypes: NymType[] = [];
@@ -32,14 +38,15 @@ export class AssetDetailComponent implements OnChanges {
     @Input() showTabs: boolean = false;
     @Input() showHeaderLine: boolean = true;
     @Input() spacerHeight: string = '32px';
-    @Input() paddingLeft: string;
     @Input() isSidePanel: boolean = false;
     @Input() useAssetDetailColumnDefinition: boolean = false;
     @Input() synonymPermission: SynonymPermission;
     @Input() hasEditLink: boolean = false;
-
+    @Input() interceptLinkClick: boolean = false;
     @Input() assetDetail: any;
-
+    @Input() hideLinks: boolean = false;
+    @Input() hideClassName: boolean = false;
+    @Input() groupMembersReadOnlyMode: boolean = true;
     @Output() onEditClick = new EventEmitter();
 
     assetUID: string;
@@ -52,18 +59,29 @@ export class AssetDetailComponent implements OnChanges {
     readonly noCategory: string = "None";
     readonly defaultCategory: string = "General";
 
+    subtitle: string = "";
+
     model: any;
     tab: string = 'detail';
     categories: Category[] = new Array<Category>();
     systemPropertiesCategory: Category = new Category(this.systemProperties);
 
     rows = new Array<DetailRow>();
+    userGroups: any = [];
+    loadGroupSub: Subscription;
+
+    loadedGroup: Group;
+    simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
+
     constructor(
         private router: Router,
         private objectDetailService: ObjectDetailService,
         protected messagesService: MessagesObservableService,
         private processService: ProcessService,
         private assetService: AssetService,
+        private resourceService: ResourcesService,
+        private groupService: GroupService,
+        private linkClickInterceptor: LinkClickInterceptor,
         private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -82,7 +100,13 @@ export class AssetDetailComponent implements OnChanges {
         this.load();
     }
 
-    public load(): void {
+    ngOnDestroy() {
+        if (this.loadGroupSub) {
+            this.loadGroupSub.unsubscribe();
+        }
+    }
+
+    public load(updateTab: boolean = true): void {
         let detailSub = null;
         if (this.assetDetail) {
             detailSub = this.assetDetail;
@@ -94,6 +118,22 @@ export class AssetDetailComponent implements OnChanges {
             if (this.objectType && this.objectUID) {
                 detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
             }
+        }
+
+        if (this.objectType === 'Resource') {
+            this.tab = 'detail';
+            this.useAccordion = false;
+            if (this.loadGroupSub) {
+                this.loadGroupSub.unsubscribe();
+            }
+            this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
+                .subscribe((res) => {
+                    this.userGroups = res.items;
+                });
+        }
+
+        if (this.objectType === 'Group' && updateTab) {
+            this.tab = 'members';
         }
 
         if (detailSub) {
@@ -162,6 +202,12 @@ export class AssetDetailComponent implements OnChanges {
                     this.loadCategory();
                     this.loadState();
                     this.loadUrl();
+
+                    this.subtitle = this.model?.AssetTypeName;
+
+                    if (this.objectType === 'Resource') {
+                        this.subtitle = this.model.ResourceEmail;
+                    }
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });
@@ -359,5 +405,31 @@ export class AssetDetailComponent implements OnChanges {
             isAllowedObject = allowedObjects.indexOf(this.objectType) !== -1;
         }
         return this.hasEditLink && isAllowedObject && this.model?.CanEdit;
+    }
+
+    get showOwnershipTab(): boolean {
+        return this.objectType !== 'Resource' && this.objectType !== 'Group';
+    }
+
+    get showGroupTab(): boolean {
+        return this.objectType === 'Resource';
+    }
+
+    get showMemberTab(): boolean {
+        return this.objectType === 'Group';
+    }
+
+    memberClicked($event, data) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent($event, data, "asset/" + data.uid);
+            return;
+        }
+    }
+
+    groupClicked($event, data) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent($event, data, "asset/" + data.Uid);
+            return;
+        }
     }
 }

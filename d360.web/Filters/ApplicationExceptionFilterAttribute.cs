@@ -51,6 +51,12 @@ namespace d360.web.Filters
                         new ErrorResponse { title = ApiMessages.NotFound, message = notFoundException.Message }
                     );
                     break;
+                case InvalidRequestException invalidRequestException:
+                    context.Response = context.Request.CreateResponse(
+                        HttpStatusCode.BadRequest,
+                        new ErrorResponse { title = ApiMessages.InvalidRequest, message = invalidRequestException.Message }
+                    );
+                    break;
                 default:
                     // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                     if (SuppressNotHandledErrorDetails)

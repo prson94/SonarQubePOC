@@ -5,12 +5,404 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.UpdateGraphTableHierarchyBy-v16">
-  <comment>GOV-16524</comment>
+  <changeSet author="TKlok" id="Procedure.graph.UpdateGraphTableHierarchyBy-v18">
+  <comment>GOV-16660</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
+		<![CDATA[
+create or alter procedure [graph].[UpdateGraphTableHierarchyBy]
+	@executionId uniqueidentifier = null,
+	@assetTypeId int = null,
+	@assetId bigint = null
+as
+begin
+	set nocount on;
+
+	drop table if exists #hierarchy
+	drop table if exists #tbl
+	drop table if exists #incoming
+	drop table if exists #ids
+	drop table if exists #tblgrp
+	drop table if exists #illegalxml
+
+	create table #hierarchy (
+		GroupID bigint,
+		AssetTypeID int,
+		ID bigint,
+		[Level] int,
+		ParentID bigint,
+		Code nvarchar(250)
+	)
+
+	create table #tbl (
+		GroupID bigint,
+		AssetTypeID int,
+
+		ID bigint,
+		[Level] int,
+		[Position] decimal(5,3),
+
+		ParentID bigint,
+		ParentLevel int,
+		ParentPosition decimal(5,3),
+
+		ColumnOrder int,
+		FormattedValue nvarchar(max)
+	)
+
+	create table #incoming (ID bigint)
+
+	create table #ids (GroupID bigint, ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
+
+	if @executionId is not null
+	begin
+		declare @assetTypeUid uniqueidentifier
+		select	top 1
+				@assetTypeUid = F.AssetTypeUid
+		from	api.Execution E
+				cross apply openjson(E.Fields, N'lax $') with (AssetTypeUid uniqueidentifier) F
+		where	E.ExecutionID = @executionId
+
+		if @assetTypeUid is not null
+		begin
+			insert into #incoming 
+				select	AssetID
+				from	api.ExecutionAsset
+				where	ExecutionID = @executionId
+						and UpdateGraph = 1;
+		end
+	end
+	else if @assetTypeId is not null
+	begin
+		insert into #incoming 
+			select ID from Asset where AssetTypeID = @assetTypeId;
+	end
+	else if @assetId is not null
+	begin
+		insert into #incoming values (@assetId);
+	end
+
+	if exists (select top 1 * from #incoming)
+	begin
+		with descendants as (
+			select	I.Subject,
+					I.SubjectID,
+					I.Object,
+					I.ObjectID,
+					C.ID
+			from	#incoming O
+					inner join Asset A on O.ID = A.ID
+					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+			union all
+			select	I.Subject,
+					I.SubjectID,
+					I.Object,
+					I.ObjectID,
+					A.ID
+			from	descendants c
+					inner join PredicateIntersect I on  I.PredicateType in (3,4) and I.Subject = c.Object and I.SubjectID = c.ObjectID
+					inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+		)
+		insert into #incoming
+			select ID from descendants;
+
+		select top 1 @assetId = ID from #incoming
+
+		create clustered index CIX_TempIncoming on #incoming (ID)
+
+		declare @class int
+		select	top 1
+				@class = T.Class
+		from	Asset A 
+				inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @assetId;
+
+		if @class = 15 --diagram asset, we need to go through a different relationship.
+		begin
+			with hierarchy as (
+				select	DA.ID as GroupID,
+						DA.AssetTypeID,
+						DA.ID,
+						DA.Object,
+						DA.ObjectID,
+						A.Object as ParentObject,
+						A.ObjectID as ParentObjectID,
+						DA.Code,
+						0 as [Level]
+				from	Asset A
+						inner join AssetProcessDiagram D on D.AssetID = A.ID
+						cross apply openjson(D.Diagram, '$.nodeDataArray') with (assetUid uniqueidentifier N'$.key') N 
+						inner join Asset DA on DA.Uid = N.assetUid
+						inner join #incoming O on O.ID = DA.ID
+				union all
+				select	c.GroupID,
+						A.AssetTypeID,
+						A.ID,
+						A.Object,
+						A.ObjectID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID,
+						A.Code,
+						c.[Level]-1 as [Level]
+				from	hierarchy c
+						inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
+						outer apply (
+							select	I.Subject,
+									I.SubjectID
+							from	PredicateIntersect I 
+							where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+						) I
+			)
+
+			insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
+				select	A.GroupID,
+						A.AssetTypeID,
+						A.ID,
+						A.[Level],
+						P.ID,
+						A.Code
+				from	hierarchy A
+						left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
+		end
+		else
+		begin
+			with hierarchy as (
+				select	A.ID as GroupID,
+						A.AssetTypeID,
+						A.ID,
+						I.Object,
+						I.ObjectID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID,
+						A.Code,
+						0 as [Level]
+				from	Asset A
+						left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+						inner join #incoming O on O.ID = A.ID
+				union all
+				select	c.GroupID,
+						A.AssetTypeID,
+						A.ID,
+						A.Object,
+						A.ObjectID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID,
+						A.Code,
+						c.[Level]-1 as [Level]
+				from	hierarchy c
+						inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
+						outer apply (
+							select	I.Subject,
+									I.SubjectID
+							from	PredicateIntersect I 
+							where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+						) I
+			)
+
+			insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
+				select	A.GroupID,
+						A.AssetTypeID,
+						A.ID,
+						A.[Level],
+						P.ID,
+						A.Code
+				from	hierarchy A
+						left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
+		end
+
+
+		if @class = 9
+		begin
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	GroupID, 
+						AssetTypeID,
+						ID,
+						[Level],
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
+						ParentID,
+						[Level] - 1,
+						1,
+						Code
+				from	#hierarchy
+		end
+		else if @class = 11
+		begin
+			create nonclustered index CIX_TempHierarchy on #hierarchy (ID)
+
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	GroupID, 
+						H.AssetTypeID,
+						H.ID,
+						[Level],
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
+						H.ParentID,
+						[Level] - 1,
+						1,
+						F.FirstName + ' ' + F.LastName
+				from	#hierarchy H
+						inner join Asset A on A.ID = H.ID and A.Object = 'Resource'
+						inner join reporting.Global_Resource F on F.ResourceID = A.ObjectID
+		end
+		else if @class = 12
+		begin
+			create nonclustered index CIX_TempHierarchy on #hierarchy (ID)
+
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	GroupID, 
+						H.AssetTypeID,
+						H.ID,
+						[Level],
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
+						H.ParentID,
+						[Level] - 1,
+						1,
+						F.Name
+				from	#hierarchy H
+						inner join Asset A on A.ID = H.ID and A.Object = 'Group'
+						inner join dbo.[Group] F on F.ID = A.ObjectID
+		end
+    else
+		begin
+			create nonclustered index CIX_TempHierarchy on #hierarchy (AssetTypeID)
+
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	distinct
+						A.GroupID, 
+						A.AssetTypeID,
+						A.ID,
+						A.[Level],
+						cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(5,3)) as Position,
+						A.ParentID,
+						A.[Level] - 1,
+						FT.ColumnOrder,
+						F.FormattedValue
+				from	#hierarchy A
+						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+						inner join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+						
+			--handle counter fields
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	distinct
+						A.GroupID, 
+						A.AssetTypeID,
+						A.ID,
+						A.[Level],
+						cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(5,3)) as Position,
+						A.ParentID,
+						A.[Level] - 1,
+						FT.ColumnOrder,
+						coalesce(FT.CounterPrefix,'')+ cast(FCV.Value as nvarchar(20)) as FormattedValue
+				from	#hierarchy A
+						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1 and FT.Type = 'Counter'
+						inner join FieldCounterValue FCV on FCV.AssetId = A.Id and FCV.FieldTypeId = FT.Id
+		end
+
+		create clustered index CIX_TempTbl on #tbl (GroupID)
+		
+		if exists (select 1 from #tbl where [Level] < 1)
+		begin
+			update	T
+			set		[Level] = [Level] + S.[LevelUp],
+					[ParentLevel] = [ParentLevel] + S.[LevelUp]
+			from	#tbl T
+					cross apply (
+						select abs(min([Level]))+1 as [LevelUp] from #tbl where GroupID = T.GroupID
+					) S 
+		end
+
+		insert into #ids (GroupID, ID, ParentID)
+			select GroupID, ID, ParentID from #tbl group by GroupID, ID, ParentID;
+
+		create nonclustered index CIX_TempIds on #ids (ID,GroupID)
+
+		select s.groupid,(select	t.[Level] as '@level',
+							t.ColumnOrder as '@position',
+							t.AssetTypeID as '@assetTypeId',
+							t.ID as '@assetId',
+							t.FormattedValue as 'data()'
+					from	#tbl t
+					where	t.GroupID = S.GroupID
+					order by t.Position
+					for xml path('segment'), root('path')) XMLData
+		into #tblgrp
+		from #tbl s
+		group by s.groupid;
+
+		create nonclustered index CIX_tblgrp on #tblgrp (GroupID)
+		
+		--The XML parser throws an 'illegal xml character' error when converting #tblgrp.XMLData to AssetNode.Segments
+		--if XMLData contains escaped ASCII control characters such as Bell(x07), Device Control 3(x13) or File Seperator (x1C)
+		--These characters should be rare, so only execute if the XMLData contains an encoded two digit hex value
+		if exists (select 1 from #tblgrp where patindex('%&#x__;%', XMLData) > 0)
+		begin
+			create table #illegalxml (
+				Escaped NVARCHAR(6)
+			);
+
+			WITH controlRange(V) AS (
+			  SELECT 0
+			  UNION ALL
+			  SELECT V + 1FROM controlRange
+			  WHERE V < 31
+			)
+			INSERT into #illegalxml (Escaped)
+			SELECT '&#x'+RIGHT('00'+FORMAT(V, 'X'), 2)+';' FROM controlRange
+			WHERE V NOT IN (9, 10, 13) --TAB, LF, CR
+
+			declare @replacePattern nvarchar(6) = null
+
+			set @replacePattern = (
+				select top 1 x.Escaped
+				from #tblgrp t
+				cross join #illegalxml x
+				where charindex(x.Escaped, t.XMLData) > 0
+			)
+
+			while @replacePattern is not null
+			begin
+				update #tblgrp
+				set XMLData = REPLACE(XMLData, @replacePattern, '')
+				where patindex('%&#x__;%', XMLData) > 0;
+
+				set @replacePattern = (
+					select top 1 x.Escaped
+					from #tblgrp t
+					cross join #illegalxml x
+					where charindex(x.Escaped, t.XMLData) > 0
+				);
+			end
+		end
+
+		--Update the graph table.
+		update	T
+		set		T.Segments =	
+							(
+								select	g.XMLData
+								from	#tblgrp g
+								where	g.GroupID = S.GroupID
+							)
+		from	graph.AssetNode T
+				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
+				
+		--Queue Search index updates to path, except when this procedure is called for an entire asset type
+		if @assetTypeId is null
+		begin
+			insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+			select 'ObjectIndex', 'Path', a.Object, a.ObjectID, S.ID
+			FROM [dbo].[asset] a
+			inner join #ids S on S.ID = a.ID and S.GroupID = S.ID;
+		end
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<sql dbms="mssql"
+				endDelimiter="\nGO"
+				splitStatements="true"
+				stripComments="false">
 		<![CDATA[
 create or alter procedure [graph].[UpdateGraphTableHierarchyBy]
 	@executionId uniqueidentifier = null,
@@ -342,339 +734,18 @@ begin
 		from	graph.AssetNode T
 				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
 				
-		--Queue Search index updates to path
-		insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		select 'ObjectIndex', 'Path', a.Object, a.ObjectID, S.ID
-		FROM [dbo].[asset] a
-		inner join #ids S on S.ID = a.ID and S.GroupID = S.ID;
+		--Queue Search index updates to path, except when this procedure is called for an entire asset type
+		if @assetTypeId is null
+		begin
+			insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+			select 'ObjectIndex', 'Path', a.Object, a.ObjectID, S.ID
+			FROM [dbo].[asset] a
+			inner join #ids S on S.ID = a.ID and S.GroupID = S.ID;
+		end
 	end
 end
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-create or alter procedure [graph].[UpdateGraphTableHierarchyBy]
-	@executionId uniqueidentifier = null,
-	@assetTypeId int = null,
-	@assetId bigint = null
-as
-begin
-	set nocount on;
-
-	drop table if exists #hierarchy
-	drop table if exists #tbl
-	drop table if exists #incoming
-	drop table if exists #ids
-	drop table if exists #tblgrp
-
-	create table #hierarchy (
-		GroupID bigint,
-		AssetTypeID int,
-		ID bigint,
-		[Level] int,
-		ParentID bigint,
-		Code nvarchar(250)
-	)
-
-	create table #tbl (
-		GroupID bigint,
-		AssetTypeID int,
-
-		ID bigint,
-		[Level] int,
-		[Position] decimal(5,3),
-
-		ParentID bigint,
-		ParentLevel int,
-		ParentPosition decimal(5,3),
-
-		ColumnOrder int,
-		FormattedValue nvarchar(max)
-	)
-
-	create table #incoming (ID bigint)
-
-	create table #ids (GroupID bigint, ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
-
-	if @executionId is not null
-	begin
-		declare @assetTypeUid uniqueidentifier
-		select	top 1
-				@assetTypeUid = F.AssetTypeUid
-		from	api.Execution E
-				cross apply openjson(E.Fields, N'lax $') with (AssetTypeUid uniqueidentifier) F
-		where	E.ExecutionID = @executionId
-
-		if @assetTypeUid is not null
-		begin
-			insert into #incoming 
-				select	AssetID
-				from	api.ExecutionAsset
-				where	ExecutionID = @executionId
-						and UpdateGraph = 1;
-		end
-	end
-	else if @assetTypeId is not null
-	begin
-		insert into #incoming 
-			select ID from Asset where AssetTypeID = @assetTypeId;
-	end
-	else if @assetId is not null
-	begin
-		insert into #incoming values (@assetId);
-	end
-
-	if exists (select top 1 * from #incoming)
-	begin
-		with descendants as (
-			select	I.Subject,
-					I.SubjectID,
-					I.Object,
-					I.ObjectID,
-					C.ID
-			from	#incoming O
-					inner join Asset A on O.ID = A.ID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-			union all
-			select	I.Subject,
-					I.SubjectID,
-					I.Object,
-					I.ObjectID,
-					A.ID
-			from	descendants c
-					inner join PredicateIntersect I on  I.PredicateType in (3,4) and I.Subject = c.Object and I.SubjectID = c.ObjectID
-					inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-		)
-		insert into #incoming
-			select ID from descendants;
-
-		select top 1 @assetId = ID from #incoming
-
-		create clustered index CIX_TempIncoming on #incoming (ID)
-
-		declare @class int
-		select	top 1
-				@class = T.Class
-		from	Asset A 
-				inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @assetId;
-
-		if @class = 15 --diagram asset, we need to go through a different relationship.
-		begin
-			with hierarchy as (
-				select	DA.ID as GroupID,
-						DA.AssetTypeID,
-						DA.ID,
-						DA.Object,
-						DA.ObjectID,
-						A.Object as ParentObject,
-						A.ObjectID as ParentObjectID,
-						DA.Code,
-						0 as [Level]
-				from	Asset A
-						inner join AssetProcessDiagram D on D.AssetID = A.ID
-						cross apply openjson(D.Diagram, '$.nodeDataArray') with (assetUid uniqueidentifier N'$.key') N 
-						inner join Asset DA on DA.Uid = N.assetUid
-						inner join #incoming O on O.ID = DA.ID
-				union all
-				select	c.GroupID,
-						A.AssetTypeID,
-						A.ID,
-						A.Object,
-						A.ObjectID,
-						I.Subject as ParentObject,
-						I.SubjectID as ParentObjectID,
-						A.Code,
-						c.[Level]-1 as [Level]
-				from	hierarchy c
-						inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
-						outer apply (
-							select	I.Subject,
-									I.SubjectID
-							from	PredicateIntersect I 
-							where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-						) I
-			)
-
-			insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
-				select	A.GroupID,
-						A.AssetTypeID,
-						A.ID,
-						A.[Level],
-						P.ID,
-						A.Code
-				from	hierarchy A
-						left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
-		end
-		else
-		begin
-			with hierarchy as (
-				select	A.ID as GroupID,
-						A.AssetTypeID,
-						A.ID,
-						I.Object,
-						I.ObjectID,
-						I.Subject as ParentObject,
-						I.SubjectID as ParentObjectID,
-						A.Code,
-						0 as [Level]
-				from	Asset A
-						left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-						inner join #incoming O on O.ID = A.ID
-				union all
-				select	c.GroupID,
-						A.AssetTypeID,
-						A.ID,
-						A.Object,
-						A.ObjectID,
-						I.Subject as ParentObject,
-						I.SubjectID as ParentObjectID,
-						A.Code,
-						c.[Level]-1 as [Level]
-				from	hierarchy c
-						inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
-						outer apply (
-							select	I.Subject,
-									I.SubjectID
-							from	PredicateIntersect I 
-							where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-						) I
-			)
-
-			insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
-				select	A.GroupID,
-						A.AssetTypeID,
-						A.ID,
-						A.[Level],
-						P.ID,
-						A.Code
-				from	hierarchy A
-						left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
-		end
-
-
-		if @class = 9
-		begin
-			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
-				select	GroupID, 
-						AssetTypeID,
-						ID,
-						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
-						ParentID,
-						[Level] - 1,
-						1,
-						Code
-				from	#hierarchy
-		end
-		else if @class = 11
-		begin
-			create nonclustered index CIX_TempHierarchy on #hierarchy (ID)
-
-			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
-				select	GroupID, 
-						H.AssetTypeID,
-						H.ID,
-						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
-						H.ParentID,
-						[Level] - 1,
-						1,
-						F.FirstName + ' ' + F.LastName
-				from	#hierarchy H
-						inner join Asset A on A.ID = H.ID and A.Object = 'Resource'
-						inner join reporting.Global_Resource F on F.ResourceID = A.ObjectID
-		end
-		else if @class = 12
-		begin
-			create nonclustered index CIX_TempHierarchy on #hierarchy (ID)
-
-			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
-				select	GroupID, 
-						H.AssetTypeID,
-						H.ID,
-						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
-						H.ParentID,
-						[Level] - 1,
-						1,
-						F.Name
-				from	#hierarchy H
-						inner join Asset A on A.ID = H.ID and A.Object = 'Group'
-						inner join dbo.[Group] F on F.ID = A.ObjectID
-		end
-    else
-		begin
-			create nonclustered index CIX_TempHierarchy on #hierarchy (AssetTypeID)
-
-			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
-				select	distinct
-						A.GroupID, 
-						A.AssetTypeID,
-						A.ID,
-						A.[Level],
-						cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(5,3)) as Position,
-						A.ParentID,
-						A.[Level] - 1,
-						FT.ColumnOrder,
-						F.FormattedValue
-				from	#hierarchy A
-						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-						inner join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
-		end
-
-		create clustered index CIX_TempTbl on #tbl (GroupID)
-		
-		if exists (select 1 from #tbl where [Level] < 1)
-		begin
-			update	T
-			set		[Level] = [Level] + S.[LevelUp],
-					[ParentLevel] = [ParentLevel] + S.[LevelUp]
-			from	#tbl T
-					cross apply (
-						select abs(min([Level]))+1 as [LevelUp] from #tbl where GroupID = T.GroupID
-					) S 
-		end
-
-		insert into #ids (GroupID, ID, ParentID)
-			select GroupID, ID, ParentID from #tbl group by GroupID, ID, ParentID;
-
-		create nonclustered index CIX_TempIds on #ids (ID,GroupID)
-
-		select s.groupid,(select	t.[Level] as '@level',
-							t.ColumnOrder as '@position',
-							t.AssetTypeID as '@assetTypeId',
-							t.ID as '@assetId',
-							t.FormattedValue as 'data()'
-					from	#tbl t
-					where	t.GroupID = S.GroupID
-					order by t.Position
-					for xml path('segment'), root('path')) XMLData
-		into #tblgrp
-		from #tbl s
-		group by s.groupid;
-
-		create nonclustered index CIX_tblgrp on #tblgrp (GroupID)
-
-		--Update the graph table.
-		update	T
-		set		T.Segments =	
-							(
-								select	g.XMLData
-								from	#tblgrp g
-								where	g.GroupID = S.GroupID
-							)
-		from	graph.AssetNode T
-				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
-				
-		--Queue Search index updates to path
-		insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		select 'ObjectIndex', 'Path', a.Object, a.ObjectID, S.ID
-		FROM [dbo].[asset] a
-		inner join #ids S on S.ID = a.ID and S.GroupID = S.ID;
-	end
-end
-		]]>
+		</sql>
 	</rollback>
   </changeSet>
 

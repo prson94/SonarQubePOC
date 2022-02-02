@@ -12,6 +12,8 @@ namespace d360.model.DataAccessLayer
         Task<IReadOnlyList<FavoriteShortModel>> GetFavorites(int resourceID, bool homePageOnly);
 
         Task<IReadOnlyList<FavoritesObjectDetailsResponse>> GetFavoriteDetails(IEnumerable<FavoritesObjectDetailsRequest> items);
+
+        Task<int?> GetFavoriteIdByRoute(int resourceID, string route);
     }
 
     public class FavoriteShortModel
@@ -94,6 +96,10 @@ namespace d360.model.DataAccessLayer
         public SystemObjects ObjectType { get; set; }
 
         public int ObjectId { get; set; }
+
+        public Guid Uid { get; set; }
+
+        public int? TypeObjectId { get; set; }
 
         public AssetTypeClass AssetTypeClass { get; set; }
     }

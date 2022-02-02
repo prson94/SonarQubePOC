@@ -1,9 +1,13 @@
-﻿<div *ngIf="(objectType && objectID) || (objectType && objectUID)" [style.padding-left]="paddingLeft" class="asset-detail">
+﻿<div *ngIf="(objectType && objectID) || (objectType && objectUID)" class="asset-detail">
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading">
         <ng-container *ngIf="showHeader">
+            <div class="asset-detail-user-image" *ngIf="objectType === 'Resource'">
+                <img class="resource-image"
+                     [src]="'/api/v2/membership/users/' + objectUID + '/image?size=70'" />
+            </div>
             <div class="asset-detail-header">
                 <div class="right d3s-score-container" style="display: block">
                     <d3s-score-badge *ngFor="let score of model?.Scores" [score]="score" [precision]="1" [useMiniBadge]="true"></d3s-score-badge>
@@ -11,100 +15,175 @@
                 <div class="asset-name">
                     {{model?.AssetName}}
                 </div>
-                <div class="class-name">
-                    {{model?.AssetTypeName}}
+                <div class="class-name" *ngIf="!hideClassName">
+                    {{subtitle}}
                 </div>
-                <div>
-                    <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
+                <div *ngIf="!hideLinks">
+                    <a (click)="open();">Open</a> <span class="grey-delimiter">|</span> <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
                 </div>
             </div>
         </ng-container>
         <ng-container *ngIf="isSidePanel">
             <div class="windowtabs">
                 <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">Details</button>
-                <button [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading">Ownership</button>
+                <button *ngIf="showOwnershipTab" [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading">Ownership</button>
+                <button *ngIf="showGroupTab" [class]="(tab == 'groups') ? 'tab-selected' : 'tab'" (click)="clickTab('groups')">Groups</button>
+                <button *ngIf="showMemberTab" [class]="(tab == 'members') ? 'tab-selected' : 'tab'" (click)="clickTab('members')">Members</button>
             </div>
         </ng-container>
-        <ng-container [ngSwitch]="tab">
-            <ng-container *ngSwitchCase="'detail'">
-                <div *ngFor="let category of categories; let first=first">
-                    <ng-container *ngIf="useAccordion; else noAccordion">
-                        <ig-property-group *ngIf="category.loaded && category.hasData"
-                                           [expanded]="category.active"
-                                           (expandedChange)="category.active = $event; saveState()"
-                                           [title]="category.name"
+        <div class="asset-detail-tabs">
+
+            <ng-container [ngSwitch]="tab">
+                <ng-container *ngSwitchCase="'detail'">
+                    <div *ngFor="let category of categories; let first=first">
+                        <ng-container *ngIf="useAccordion; else noAccordion">
+                            <ig-property-group *ngIf="category.loaded && category.hasData"
+                                               [expanded]="category.active"
+                                               (expandedChange)="category.active = $event; saveState()"
+                                               [title]="category.name"
+                                               [showHeaderLine]="!first && showHeaderLine"
+                                               [shouldBePadded]="shouldBePadded">
+                                <div readonly>
+                                    <ig-asset-detail-category [category]="category"
+                                                              [assetUID]="assetUID"
+                                                              [tooltipAlign]="tooltipAlign"
+                                                              [spacerHeight]="spacerHeight"
+                                                              [isSidePanel]="isSidePanel"
+                                                              [interceptLinkClick]="interceptLinkClick">
+                                    </ig-asset-detail-category>
+                                </div>
+                            </ig-property-group>
+                        </ng-container>
+                        <ng-template #noAccordion>
+                            <div style="line-height: 10px">&nbsp;</div>
+                            <ig-asset-detail-category [category]="category"
+                                                      [assetUID]="assetUID"
+                                                      [tooltipAlign]="tooltipAlign"
+                                                      [isSidePanel]="isSidePanel"
+                                                      [spacerHeight]="spacerHeight"
+                                                      [interceptLinkClick]="interceptLinkClick">
+                            </ig-asset-detail-category>
+                        </ng-template>
+                    </div>
+                    <div>
+                        <ig-property-group *ngFor="let nym of nymTypes"
+                                           [expanded]="false"
+                                           title="{{ nym.Name }} ({{ synonyms.itemCount }})"
                                            [showHeaderLine]="!first && showHeaderLine"
                                            [shouldBePadded]="shouldBePadded">
                             <div readonly>
-                                <ig-asset-detail-category [category]="category" [assetUID]="assetUID" [tooltipAlign]="tooltipAlign" [spacerHeight]="spacerHeight" [isSidePanel]="isSidePanel"></ig-asset-detail-category>
+                                <d3s-synonyms-tile #synonyms
+                                                   [predicateId]="nym.ID"
+                                                   [predicateName]="nym.Name"
+                                                   [objectID]="objectID"
+                                                   [objectType]="objectType"
+                                                   [assetUid]="objectUID"
+                                                   [readonly]="false"
+                                                   [hasAdd]="hasAddRelationshipsPermissions"
+                                                   [hasDelete]="hasDeleteRelationshipsPermissions"
+                                                   [synonymPermission]="synonymPermission"></d3s-synonyms-tile>
+                                <div style="height: 32px">
+                                    &nbsp;
+                                </div>
                             </div>
                         </ig-property-group>
+                        <ig-property-group *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData"
+                                           [title]="systemPropertiesCategory.name"
+                                           [showHeaderLine]="!first && showHeaderLine"
+                                           [expanded]="systemPropertiesCategory.active"
+                                           (expandedChange)="systemPropertiesCategory.active = $event; saveState()"
+                                           [shouldBePadded]="shouldBePadded">
+                            <div readonly>
+                                <ig-asset-detail-category [category]="systemPropertiesCategory"
+                                                          [assetUID]="assetUID"
+                                                          [tooltipAlign]="tooltipAlign"
+                                                          [spacerHeight]="spacerHeight"
+                                                          [isSidePanel]="isSidePanel"
+                                                          [interceptLinkClick]="interceptLinkClick">
+                                </ig-asset-detail-category>
+                            </div>
+                        </ig-property-group>
+                    </div>
+
+                    <div class="user-assignments" *ngIf="objectType === 'Resource'">
+                        <label nclass="ig-label">
+                            <span>{{model?.ResourceFirstName}}'s Assignments</span>
+                        </label>
+                        <d3s-assignments [resourceId]="objectID" [isSidePanel]="true"></d3s-assignments>
+                    </div>
+                </ng-container>
+                <ng-container *ngSwitchCase="'ownership'">
+                    <ng-container *ngIf="model?.HasResponsibilityReadAccess === true">
+                        <div *ngIf="model?.AssetUid">
+                            <d3s-people-responsibilities-tile [assetUid]="model.AssetUid"
+                                                              [assetID]="model.AssetID"
+                                                              [showTitle]="false"
+                                                              [showRowTools]="false">
+                            </d3s-people-responsibilities-tile>
+                        </div>
                     </ng-container>
-                    <ng-template #noAccordion>
-                        <div style="line-height: 10px">&nbsp;</div>
-                        <ig-asset-detail-category [category]="category"
-                                                  [assetUID]="assetUID"
-                                                  [tooltipAlign]="tooltipAlign"
-                                                  [isSidePanel]="isSidePanel"
-                                                  [spacerHeight]="spacerHeight"></ig-asset-detail-category>
-                    </ng-template>
-                </div>
-                <div>
-                    <ig-property-group *ngFor="let nym of nymTypes"
-                                       [expanded]="false"
-                                       title="{{ nym.Name }} ({{ synonyms.itemCount }})"
-                                       [showHeaderLine]="!first && showHeaderLine"
-                                       [shouldBePadded]="shouldBePadded">
-                        <div readonly>
-                            <d3s-synonyms-tile #synonyms
-                                               [predicateId]="nym.ID"
-                                               [predicateName]="nym.Name"
-                                               [objectID]="objectID"
-                                               [objectType]="objectType"
-                                               [assetUid]="objectUID"
-                                               [readonly]="false"
-                                               [hasAdd]="hasAddRelationshipsPermissions"
-                                               [hasDelete]="hasDeleteRelationshipsPermissions"
-                                               [synonymPermission]="synonymPermission"></d3s-synonyms-tile>
-                            <div style="height: 32px">
-                                &nbsp;
+                    <ng-container *ngIf="model?.HasResponsibilityReadAccess === false">
+                        <div class="empty-overlay">
+                            <div class="content">
+                                <div class="icon-holder">
+                                    <i class="fa fa-ban"></i>
+                                </div>
+                                <span>You do not have permission to view ownership information for the selected item</span>
                             </div>
                         </div>
-                    </ig-property-group>
-                    <ig-property-group *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData"
-                                       [title]="systemPropertiesCategory.name"
-                                       [showHeaderLine]="!first && showHeaderLine"
-                                       [expanded]="systemPropertiesCategory.active"
-                                       (expandedChange)="systemPropertiesCategory.active = $event; saveState()"
-                                       [shouldBePadded]="shouldBePadded">
-                        <div readonly>
-                            <ig-asset-detail-category [category]="systemPropertiesCategory" [assetUID]="assetUID" [tooltipAlign]="tooltipAlign" [spacerHeight]="spacerHeight" [isSidePanel]="isSidePanel"></ig-asset-detail-category>
-                        </div>
-                    </ig-property-group>
-                </div>
-            </ng-container>
-            <ng-container *ngSwitchCase="'ownership'">
-                <ng-container *ngIf="model?.HasResponsibilityReadAccess === true">
-                    <div *ngIf="model?.AssetUid">
-                        <d3s-people-responsibilities-tile [assetUid]="model.AssetUid"
-                                                          [assetID]="model.AssetID"
-                                                          [showTitle]="false"
-                                                          [showRowTools]="false">
-                        </d3s-people-responsibilities-tile>
-                    </div>
+                    </ng-container>
                 </ng-container>
-                <ng-container *ngIf="model?.HasResponsibilityReadAccess === false">
-                    <div class="empty-overlay">
-                        <div class="content">
-                            <div class="icon-holder">
-                                <i class="fa fa-ban"></i>
-                            </div>
-                            <span>You do not have permission to view ownership information for the selected item</span>
+
+                <ng-container *ngSwitchCase="'groups'">
+                    <div class="groups-tab" *ngIf="objectType === 'Resource'">
+                        <div class="search-input">
+                            <ig-search-field mode="Keypress"
+                                             [debounce]="600"
+                                             [IsFlexApply]="true"
+                                             (onSearch)="dt1.filterGlobal($event, 'contains')"
+                                             [infoTooltip]="simpleSearchTooltipHTML">
+                            </ig-search-field>
                         </div>
+                        <p-table #dt1
+                                 [value]="userGroups"
+                                 [pageLinks]="3"
+                                 [paginator]="true"
+                                 paginatorDropdownAppendTo="body"
+                                 [tableStyleClass]="'side-panel-max-width'"
+                                 [rows]="10"
+                                 [globalFilterFields]="['Name']">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Name</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-group>
+                                <tr>
+                                    <td><a context-link (click)="groupClicked($event, group);">{{group.Name}}</a></td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage" let-columns>
+                                <tr>
+                                    <td [attr.colspan]="1">
+                                        No results match your search criteria
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt1.first" [rows]="dt1.rows" [totalRecords]="dt1.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
+                    </div>
+
+                </ng-container>
+
+                <ng-container *ngSwitchCase="'members'">
+                    <div class="groups-tab" *ngIf="objectType === 'Group'">
+                        <d3s-group-members [groupUid]="objectUID" [readOnly]="groupMembersReadOnlyMode" [interceptLinkClick]="interceptLinkClick"></d3s-group-members>
                     </div>
                 </ng-container>
             </ng-container>
-        </ng-container>
+        </div>
 
     </div>
 </div>

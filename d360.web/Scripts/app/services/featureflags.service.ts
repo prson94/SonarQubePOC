@@ -7,7 +7,7 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 
 export enum FeatureFlags {
-    DistributedCacheFlag = "govern-distributed-cache-perm"
+    DistributedCacheFlag = "GovernDistributedCachePerm"
 }
 
 @Injectable({
@@ -23,7 +23,7 @@ export class FeatureFlagsService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) {
         super(messagesService);
         this.flags = {
-            "govern-distributed-cache-perm": false
+            "GovernDistributedCachePerm": false
         };
     }
 
@@ -31,7 +31,7 @@ export class FeatureFlagsService extends BaseObservableService {
         return this.http.get('api/v2/environment/featureflaginfo')
             .pipe(
                 map((response: any) => {
-                    this.clientId = response.clientId;//;"6165a52a7fcabc0c120d82c2";
+                    this.clientId = response.clientId;
                     response.user.anonymous = false;
                     this.currentUser = response.user;
                 }),
@@ -40,11 +40,13 @@ export class FeatureFlagsService extends BaseObservableService {
     }
 
     createClientConnection() {
-        this.ldClient = initialize(this.clientId, this.currentUser);
+        this.ldClient = initialize(this.clientId, this.currentUser, {
+            fetchGoals: false
+        });
 
         this.ldClient.on('change', (flags) => {
-            if (flags['govern-distributed-cache-perm'] !== undefined) {
-                this.flags['govern-distributed-cache-perm'] = flags['govern-distributed-cache-perm'];
+            if (flags['GovernDistributedCachePerm'] !== undefined) {
+                this.flags['GovernDistributedCachePerm'] = flags['GovernDistributedCachePerm'];
             }
             this.flagChange.next(this.flags);
         });

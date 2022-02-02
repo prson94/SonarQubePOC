@@ -1822,6 +1822,21 @@ from	IntersectType I
                     break;
                 }
             }
+
+            if (typeIdentifierInfoModel.Object == "GroupType")
+            {
+                var usageInThenCondition = Company.Query<int>(@"select count(*) from ResponsibilityTypeRelationRule rtrr
+                     cross apply (select * from OpenJson(rtrr.Definition,'$.Then.Conditions'))Data
+                     where rtrr.Definition is not null
+                     and JSON_VALUE(rtrr.Definition,'$.Then.Object') = 'GroupType' 
+                     and json_value(data.[value],'$.FieldTypeID') in @fieldTypeIds", new { fieldTypeIds = fieldTypes.Select(x => x.ID).ToList() }).FirstOrDefault();
+
+                if (usageInThenCondition > 0)
+                {
+                    return true;
+                }
+            }
+
             return anyResponsibilityUsingField;
         }
 
@@ -2175,7 +2190,18 @@ from	IntersectType I
             {
                 foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
                 {
-                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
+                    var value = HttpUtility.UrlEncode(simpleFilter);
+
+                    if (f.type == "bool")
+                    {
+                        bool parsedResult;
+                        if (bool.TryParse(value, out parsedResult))
+                        {
+                            value = parsedResult ? "1" : "0";
+                        }
+
+                    }
+                    simpleFilters.Add($"({f.apiName} ct '{value}')");
                 }
             }
 

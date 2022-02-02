@@ -286,16 +286,10 @@
     <value>ResultPathUid with the specified identifier {0} does not exist or does not correspond to the asset type you are scoring.</value>
   </data>
   <data name="ScoreDefinitionNotThresholdBased" xml:space="preserve">
-    <value>Condition group in position {0} must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based score definition.</value>
-  </data>
-  <data name="ScoreDefinitionThresholdBased" xml:space="preserve">
-    <value>Because the score definition is threshold-based, Condition group in position {0} must contain a valid Threshold between 0 and 1.</value>
+    <value>Condition group in position {0} must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based measure.</value>
   </data>
   <data name="ThresholdRangeCheck" xml:space="preserve">
     <value>Threshold must be a value between 0 and 1</value>
-  </data>
-  <data name="ThresholdValidValue" xml:space="preserve">
-    <value>Because the score definition is threshold-based, you must provide a valid Threshold between 0 and 1.</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
     <value>The Uid Governance Owner Check does not correspond to a known responsibility type.</value>

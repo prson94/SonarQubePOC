@@ -2,18 +2,20 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
+import { DetailField } from '../../../../models/object-detail.model';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
     selector: 'd3s-color-display',
     template: `
                 <div *ngIf="colorsObject && colorsObject.length > 0">
-                    <span *ngFor="let item of colorsObject">
+                    <span *ngFor="let item of colorsObject;">
                         <span [class]="'ig-colorfield-item ' + styleClass" style="display: inline-flex !important;">
                             <span class="ig-colorfield-swatch" [ngClass]="{'empty': (item.color == 'transparent' || item.color == null)}" [ngStyle]="{'background-color': item.color}"></span>
                             <span *ngIf="!url" class="ig-colorfield-item-label">
                                 {{item.name}}
                             </span>
-                            <a *ngIf="url" class="ig-colorfield-item-label" [href]="url" (click)="navigate(url, $event)">
+                            <a context-link *ngIf="url" class="ig-colorfield-item-label" (click)="navigate(url, $event)">
                                 {{item.name}}
                             </a>
                         </span>
@@ -28,10 +30,14 @@ export class ColorDisplayComponent implements OnInit {
     @Input() colorsJSON: string;
     @Input() url: string;
     @Input() styleClass: string = 'grid';
+    @Input() interceptLinkClick: boolean = false;
+    @Input() field: DetailField;
+    @Input() valueIndex: number = 0;
 
     public colorsObject: any;
 
-    constructor(private router: Router) {
+    constructor(private router: Router,
+        private linkClickInterceptor: LinkClickInterceptor) {
     }
     ngOnInit() {
         if (this.colorsJSON) {
@@ -77,7 +83,11 @@ export class ColorDisplayComponent implements OnInit {
         }
     }
 
-    navigate(url: string, e: any) {
+    navigate(url: string, e: any, data = null) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent(e, this.field, url, this.valueIndex);
+            return;
+        }
         this.router.navigateByUrl(url);
         e.preventDefault();
     }

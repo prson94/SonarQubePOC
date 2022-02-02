@@ -60,6 +60,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     matchConditionsOnly: string = "true";
     currentEffectiveDate: Date;
     displayWeight: number;
+    displayThreshold: number;
     displayEffectiveDate: Date;
     fields: any[] = [];
     FormMode = FormMode;
@@ -155,6 +156,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             this.addNewGroup();
         this.orderConditionGroups();
     }
+
     moveTotop(pos) {
         this.moveGroupItems(pos, 1);
     }
@@ -240,7 +242,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     addConditionGroupFormControls(index: number) {
         const prefix = `cg_${index}_`;
         this.metricForm.addControl(prefix + 'matchType', new FormControl());
+        this.metricForm.addControl(prefix + 'threshold', new FormControl('', [this.isValidThresholdOptional()]));
         this.metricForm.addControl(prefix + 'weight', new FormControl('', [this.isValidWeightOptional()]));
+
     }
 
     removeConditionGroupFormControls(index: number) {
@@ -277,6 +281,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 newGroup.Weight = x.Weight;
                 if (newGroup.Weight) {
                     newGroup.DisplayWeight = +((x.Weight * 100).toFixed(2)) ?? this.model.Weight;
+                }
+                if (newGroup.Threshold) {
+                    newGroup.DisplayThreshold = +((x.Threshold * 100).toFixed(5)) ?? this.model.Threshold;
                 }
                 //get all condition items and convert them into FieldCoditions for the conditiongroup
                 const conditions = x.ConditionItems;
@@ -388,9 +395,13 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
                 this.displayEffectiveDate = date;
             }
+            if (this.model.HasThreshold) {
+                this.displayThreshold = this.model.Threshold * 100;
+            }
         }
         else {
             this.model = new MetricAssetViewModel();
+            this.model.HasThreshold = false;
             this.model.Weight = null;
             this.model.IsGroup = false;
             this.verb = "Add";
@@ -475,6 +486,11 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 } else {
                     x.Weight = null;
                 }
+                if (x.DisplayThreshold) {
+                    x.Threshold = +(x.DisplayThreshold / 100).toFixed(5);
+                } else {
+                    x.Threshold = null;
+                }
                 conditions.forEach(c => {
                     let fieldCondition = new MetricAssetVersionConditionItemViewModel();
                     fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
@@ -500,6 +516,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     x.ConditionItems.push(fieldCondition);
                 });
             });
+
+            if (this.model.HasThreshold) {
+                let threshold = +this.displayThreshold;
+                this.model.Threshold = +(threshold / 100).toFixed(5);
+            }
+            else {
+                this.model.Threshold = null;
+            }
 
             let weight = +this.displayWeight;
             this.model.Weight = +(weight / 100).toFixed(2);
@@ -555,6 +579,50 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         };
     }
 
+    isThresholdGreaterThanDecimalLimit(threshold: any): boolean {
+        let thresholdGreater: boolean = false;
+        let sThreshold: string = (threshold) ? threshold.toString() : "";
+        if (sThreshold.indexOf(".") > -1) {
+            thresholdGreater = (sThreshold.split(".")[1].length || 0) > 3;
+        }
+
+        return thresholdGreater;
+    }
+
+    isValidThreshold(): ValidatorFn {
+        type NewType = AbstractControl;
+        return (control: NewType): { [key: string]: any } | null => {
+            if (control.value == null || control.value == undefined)
+                return {};
+            if (this.isThresholdGreaterThanDecimalLimit(control.value))
+                return {
+                    decimalLimit: { value: control.value }
+                };
+            if ((control.value as number) < 1 || (control.value as number) > 100)
+                return {
+                    outOfRange: { value: control.value }
+                };
+            return null;
+        };
+    }
+
+    isValidThresholdOptional(): ValidatorFn {
+        type NewType = AbstractControl;
+        return (control: NewType): { [key: string]: any } | null => {
+            if (control.value == null || control.value == undefined || control.value == "")
+                return {};
+            if (this.isThresholdGreaterThanDecimalLimit(control.value))
+                return {
+                    decimalLimit: { value: control.value }
+                };
+            if ((control.value as number) < 1 || (control.value as number) > 100)
+                return {
+                    outOfRange: { value: control.value }
+                };
+            return null;
+        };
+    }
+
     isValidWeight(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
@@ -604,6 +672,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                         || x.Threshold !== originalMatch.Threshold
                         || +(x.Weight ?? 0) !== +(originalMatch.Weight ?? 0) 
                         || +(x.DisplayWeight ?? 0) !== +(originalMatch.DisplayWeight ?? 0)
+                        || +(x.DisplayThreshold ?? 0) !== +(originalMatch.DisplayThreshold ?? 0)
                         || x.DisplayOrder !== originalMatch.DisplayOrder
                         || x.Position !== originalMatch.Position
                         || x.conditionItemFields.filter(x => x.field).length !== originalMatch.conditionItemFields.filter(x => x.field).length) {

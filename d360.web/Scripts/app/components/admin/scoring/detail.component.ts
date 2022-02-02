@@ -86,6 +86,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
             this.metricsService.getAllocationByUid(this.allocationUid).subscribe(res => {
                 this.allocation = res;
+                this.formatScoreCalc();
                 this.allocation.scoreType = ScoreType[this.allocation.scoreType.toString()];
                 if (this.allocation.scoreType == 2 || res.scoreType.toString() == "DataQuality") {
                     this.metricsService.getRuleResultPathOptions(this.assetTypeUid, res.scoreType).subscribe(options => {
@@ -149,6 +150,15 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
+
+                    data = data.filter((r) => {
+                        return (
+                            (r.Predicate.Type !== "InterTypeHierarchy" && r.Predicate.Type !== "IntraTypeHierarchy")
+                            || (r.Predicate.Type == "InterTypeHierarchy" && r.Subject.Uid == this.assetTypeUid)
+                            || (r.Predicate.Type == "IntraTypeHierarchy" && r.Subject.Uid == this.assetTypeUid)
+                        );
+                    });
+
                     this.screenReferences.relationships = [...data];
                     this.screenReferences.predicates = data.map(x => {
                         return x.Predicate;

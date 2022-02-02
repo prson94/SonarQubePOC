@@ -5,12 +5,671 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.22">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v3.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [metrics].[ProcessAssetScores]
+	@allocationUid uniqueidentifier,
+	@assets AssetEffectiveDate readonly
+as
+begin
+	--Gov
+	--declare	
+	--	@allocationUid uniqueidentifier = '631713D7-0D8D-44A8-9A68-FECFB7F7682E',
+	--	@assets AssetEffectiveDate
+	--insert into @assets values ('4acd41a4-dab7-4fef-89a5-6be4836d1ae0', '2021-05-13')
+	--select * from metrics.StagingScoreItem where assetuid = '4acd41a4-dab7-4fef-89a5-6be4836d1ae0'
+	
+	--DQ
+	--declare	
+	--	@allocationUid uniqueidentifier = '0A1388EA-921B-4A32-B497-C24C6C8A4EC9',
+	--	@assets AssetEffectiveDate
+	--insert into @assets values ('21a033d7-9626-4f43-918d-dd0f7675feba', '2021-04-01')
+
+	set nocount on;
+
+	declare @scoreType int = 1
+	select @scoreType = ScoreType from metrics.Allocation where Uid = @allocationUid;
+
+	drop table if exists #assets;
+	create table #assets (
+		AssetUid uniqueidentifier not null,
+		EffectiveDate date not null,
+		PRIMARY KEY CLUSTERED ( [AssetUid] ASC, EffectiveDate DESC )
+	);
+
+	insert into #assets
+		select * from @assets;
+
+	-- Create the temp tables.
+	drop table if exists #Scores;
+	create table #Scores (
+		AssetUid uniqueidentifier not null,
+		EffectiveDate date not null,
+		Value decimal(8,6) null,
+		ActiveMeasureCount int null,
+		RunDate datetime not null,
+		EndDate date null,
+		Uid uniqueidentifier null,
+		VersionValueHash varchar(50) null,
+		PRIMARY KEY CLUSTERED ( [AssetUid] ASC, EffectiveDate DESC )
+	);
+	
+	drop table if exists #ScoreItems;
+	create table #ScoreItems (
+		RowId int identity not null,
+		AssetUid uniqueidentifier NOT NULL,
+		MeasureUid uniqueidentifier NOT NULL,
+		ParentMeasureUid uniqueidentifier  NULL,
+		MeasureVersionUid uniqueidentifier NOT NULL,
+		EffectiveDate datetime NOT NULL,
+
+		[Value] bit NULL,
+		DecimalValue float NULL,
+		RawWeight decimal(8, 6) NULL,
+		AdjustedWeight decimal(8, 6) NULL,
+		AdjustedMaxWeight decimal(8, 6) NULL,
+		DisplayWeight decimal(8, 6) NULL,
+		DisplayMaxWeight decimal(8, 6) NULL,
+
+		ConditionUid uniqueidentifier NULL,
+		Evidence nvarchar(max) NOT NULL,
+		EvidenceHash varchar(max) NULL,
+		OtherConditions nvarchar(max) NOT NULL,
+
+		ScoreUid uniqueidentifier NULL,
+		ScoreItemUid uniqueidentifier NULL,
+
+		PriorScoreItemUid uniqueidentifier NULL,
+		PriorMeasureVersionUid uniqueidentifier NULL,
+		PriorValue bit null,
+		PriorDecimalValue float NULL,
+		PriorAdjustedWeight decimal(8, 6) NULL,
+		PriorAdjustedMaxWeight decimal(8, 6) NULL,
+		PriorConditionUid uniqueidentifier NULL,
+		PriorEvidence nvarchar(max) NULL,
+		PriorEvidenceHash varchar(max) NULL,
+
+		IsRemoved bit default(0) not null,
+
+		HasThreshold bit,
+
+		PRIMARY KEY NONCLUSTERED ( RowId )
+	);
+
+	CREATE CLUSTERED INDEX CIX_TempScoreItems on #ScoreItems ([AssetUid] ASC, MeasureUid ASC, EffectiveDate DESC);
+
+	-- Insert the scores we are working with.
+	insert into #Scores (AssetUid, EffectiveDate, RunDate)
+		select	AssetUid, EffectiveDate, RunDate
+		from	(
+				select	I.AssetUid,
+						I.EffectiveDate,
+						getutcdate() as RunDate
+				from	metrics.StagingScoreItem I
+						inner join #assets A on I.AllocationUid = @allocationUid and A.AssetUid = I.AssetUid and A.EffectiveDate = I.EffectiveDate
+				group by I.AssetUid, I.EffectiveDate
+				) I;
+
+	-- Insert the score items we are working with.
+	insert into #ScoreItems (AssetUid, MeasureUid, MeasureVersionUid, EffectiveDate, [Value], DecimalValue, RawWeight, ConditionUid, Evidence, OtherConditions, IsRemoved, HasThreshold)
+		select	I.AssetUid, 
+				I.MeasureUid, 
+				I.MeasureVersionUid, 
+				I.EffectiveDate, 
+				I.[Value], 
+				I.DecimalValue, 
+				I.RawWeight, 
+				I.ConditionUid, 
+				coalesce(I.Evidence,'{}') as Evidence, 
+				I.OtherConditions, 
+				I.IsRemoved,
+				I.HasThreshold
+		from	metrics.StagingScoreItem I
+				inner join metrics.AssetVersion V on V.Uid = I.MeasureVersionUid
+				inner join #assets A on I.AllocationUid = @allocationUid and A.AssetUid = I.AssetUid and A.EffectiveDate = I.EffectiveDate;
+
+	-- Update these new score results with any prior score results.
+	update	C
+	set		C.PriorAdjustedMaxWeight = P.PriorAdjustedMaxWeight,
+			C.PriorAdjustedWeight = P.PriorAdjustedWeight,
+			C.PriorConditionUid = P.PriorConditionUid,
+			C.PriorDecimalValue = P.PriorDecimalValue,
+			C.PriorMeasureVersionUid = P.PriorMeasureVersionUid,
+			C.PriorScoreItemUid = P.PriorScoreItemUid,
+			C.PriorValue = P.PriorValue,
+			C.PriorEvidence = coalesce(P.PriorEvidence, '{}')
+	from	#ScoreItems C
+			outer apply (
+				select	*
+				from	(
+						select	ROW_NUMBER() over (partition by S.AllocationUid, S.AssetUid, V.AssetUid order by S.EffectiveDate desc) as RowNumber,
+								I.Uid as PriorScoreItemUid,
+								I.AssetVersionUid as PriorMeasureVersionUid,
+								I.Value as PriorValue,
+								I.DecimalValue as PriorDecimalValue, 
+								I.AdjustedWeight as PriorAdjustedWeight,
+								I.AdjustedMaxWeight as PriorAdjustedMaxWeight,
+								I.ConditionUid as PriorConditionUid,
+								I.Evidence as PriorEvidence
+						from	metrics.Score S
+								inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
+								inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
+								inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = C.MeasureUid
+						where	S.AllocationUid = @allocationUid
+								and S.AssetUid = C.AssetUid 
+								and S.EffectiveDate <= C.EffectiveDate
+						) Ims
+				where Ims.RowNumber = 1				
+			) P;
+
+	-- Get all other score items (no groups) that are relevant to calculate the score.
+	insert into #ScoreItems	(
+			AssetUid, MeasureUid, MeasureVersionUid, EffectiveDate, [Value], RawWeight, ConditionUid, Evidence, OtherConditions, 
+			PriorScoreItemUid, PriorMeasureVersionUid, PriorValue, PriorDecimalValue, PriorAdjustedWeight, PriorAdjustedMaxWeight, PriorConditionUid, PriorEvidence,
+			HasThreshold
+		)
+		select	distinct		
+				St.AssetUid,
+				Ei.MeasureUid,
+				Ei.AssetVersionUid as MeasureVersionUid,
+				St.EffectiveDate,
+				Ei.[Value],
+				Ei.RawWeight,
+				Ei.ConditionUid,
+				coalesce(Ei.Evidence, '{}'),
+				Ei.OtherConditions,
+				
+				Ei.Uid as PriorScoreItemUid,
+				Ei.AssetVersionUid as PriorMeasureVersionUid,
+				Ei.Value as PriorValue,
+				Ei.DecimalValue as PriorDecimalValue,
+				Ei.AdjustedWeight as PriorAdjustedWeight,
+				Ei.AdjustedMaxWeight as PriorAdjustedMaxWeight,
+				Ei.ConditionUid as PriorConditionUid,
+				coalesce(Ei.Evidence, '{}') as PriorEvidence,
+				Ei.HasThreshold
+		from	#assets St
+				cross apply	(
+							select	*
+							from	(
+									select	ROW_NUMBER() over (partition by S.AssetUid, A.Uid order by S.EffectiveDate desc) as RowNumber,
+											S.AssetUid,
+											A.Uid as MeasureUid,
+											S.EffectiveDate, 
+											V.Weight as RawWeight,
+											I.*,
+											case 
+												when V.Threshold is not null then cast(1 as bit)
+												else cast(0 as bit)
+											end as HasThreshold
+									from	metrics.Score S
+											inner join metrics.ScoreItemLink L on S.AllocationUid = @allocationUid and L.ScoreUid = S.Uid and S.AssetUid = St.AssetUid 
+											inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
+											inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+											inner join metrics.Asset A on A.Uid = V.AssetUid and A.IsGroup = 0 
+											left join  #ScoreItems E on E.AssetUid = S.AssetUid and E.MeasureUid = A.Uid
+									where	S.EffectiveDate <= St.EffectiveDate
+											and (V.EffectiveEndDate >= St.EffectiveDate or V.EffectiveEndDate is null)
+											and E.AssetUid is null
+									) Ims
+							where	Ims.RowNumber = 1
+							) Ei
+				left join #ScoreItems E on E.AssetUid = St.AssetUid and E.MEasureUid = Ei.MeasureUid and E.EffectiveDate = St.EffectiveDate
+		where	E.AssetUid is null;
+
+	-- Load parent Uids.
+	update	T
+	set		T.ParentMeasureUid = S.ParentUid
+	from	#ScoreItems T
+			inner join metrics.Asset S on S.Uid = T.MeasureUid;
+
+	-- Get all measure groups that are relevant to calculate the score.
+	-- Auto-generate the measure groups needed, based off the parent Uids pulled in above query.
+	insert into #ScoreItems	(
+			AssetUid, MeasureUid, MeasureVersionUid, EffectiveDate, [Value], RawWeight, ConditionUid, Evidence, OtherConditions, 
+			PriorScoreItemUid, PriorMeasureVersionUid, PriorValue, PriorDecimalValue, PriorAdjustedWeight, PriorAdjustedMaxWeight, PriorConditionUid, PriorEvidence,
+			HasThreshold
+		)
+		select	distinct		
+				St.AssetUid,
+				Ei.MeasureUid,
+				Ei.MeasureVersionUid,
+				St.EffectiveDate,
+				Ei.[Value],
+				Ei.RawWeight,
+				Ei.ConditionUid,
+				coalesce(Ei.Evidence, '{}'),
+				coalesce(Ei.OtherConditions, '[]'),
+				
+				Ei.Uid as PriorScoreItemUid,
+				Ei.AssetVersionUid as PriorMeasureVersionUid,
+				Ei.Value as PriorValue,
+				Ei.DecimalValue as PriorDecimalValue,
+				Ei.AdjustedWeight as PriorAdjustedWeight,
+				Ei.AdjustedMaxWeight as PriorAdjustedMaxWeight,
+				Ei.ConditionUid as PriorConditionUid,
+				coalesce(Ei.Evidence, '{}') as PriorEvidence,
+				0 as HasThreshold
+		from	#ScoreItems St
+				cross apply	(
+							select	*
+							from	(
+									select	ROW_NUMBER() over (partition by V.AssetUid order by St.EffectiveDate desc) as RowNumber,
+											St.EffectiveDate, 
+											V.AssetUid as MeasureUid,
+											V.Uid as MeasureVersionUid,
+											V.Weight as RawWeight,
+											Sc.*
+									from	metrics.AssetVersion V
+											inner join metrics.Asset A on	A.Uid = V.AssetUid 
+																			and A.IsGroup = 1
+																			and A.AllocationUid = @allocationUid 
+																			and A.Uid = St.ParentMeasureUid 
+																			and V.EffectiveDate <= St.EffectiveDate and (V.EffectiveEndDate >= St.EffectiveDate or V.EffectiveEndDate is null)
+											outer apply (
+												select	ROW_NUMBER() over (partition by St.AssetUid, V.AssetUid order by St.EffectiveDate desc) as ScoreRowNumber,
+														I.*
+												from	metrics.Score S
+														inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid and S.AssetUid = St.AssetUid and S.EffectiveDate <= St.EffectiveDate
+														inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid and I.AssetVersionUid = V.Uid
+											) Sc
+									where	Sc.ScoreRowNumber = 1 or Sc.ScoreRowNumber is null
+									) Ims
+							where Ims.RowNumber = 1
+				) Ei;
+
+	-- Now remove any score item dupes.
+	delete	I
+	from	#ScoreItems I
+			inner join (
+				select	max(RowId) as RowId
+				from	#ScoreItems
+				group by AssetUid, MeasureUid, EffectiveDate
+				having count(1) > 1
+			) S on S.RowId = I.RowId;
+
+	-- Determine if there are any empty groups, or if any groups have all child measures that are marked as IsRemoved=1.
+	update	T
+	set		T.IsRemoved = 1
+	from	#ScoreItems T
+			inner join metrics.Asset A on A.Uid = T.MeasureUid and A.IsGroup = 1
+			cross apply (
+				select	count(1) as ActiveChildCount
+				from	#ScoreItems 
+				where	ParentMeasureUid = T.MeasureUid
+						and AssetUid = T.AssetUid
+						and IsRemoved = 0
+				-- TODO: Do we need to consider EffectiveDate matching here as well?
+			) C
+	where	C.ActiveChildCount = 0;
+
+	-- Update and compare the evidence with prior evidence to see if it changed at all.
+	update  #ScoreItems set Evidence = '' where Evidence is null;
+	update  #ScoreItems set PriorEvidence = '' where PriorEvidence is null;
+	
+	if @scoreType = 2 -- DQ
+	begin
+		begin try
+			update  T
+			set		T.EvidenceHash = coalesce((
+						select	string_agg(cast(ResultUid as nvarchar(max)), '|') as Results 
+						from	(
+								select	top 100 percent 
+										R.value as ResultUid
+								from	openjson(T.Evidence) E
+										cross apply openjson(E.value) with (Uids nvarchar(max) '$.ResultResultUids' as json) I
+										cross apply openjson(I.Uids) R
+								order by R.value
+								) RR
+					),'{}')
+			from	#ScoreItems T
+			where	T.Evidence is not null;
+
+			update	#ScoreItems 
+			set		EvidenceHash = [utility].GetHash(EvidenceHash);
+		end try
+		begin catch
+			update  #ScoreItems
+			set		EvidenceHash = ''
+			where	EvidenceHash is null;
+		end catch
+
+		begin try
+			update  T
+			set		T.PriorEvidenceHash = coalesce((
+						select	string_agg(cast(ResultUid as nvarchar(max)), '|') as Results 
+						from	(
+								select	top 100 percent 
+										R.value as ResultUid
+								from	openjson(T.PriorEvidence) E
+										cross apply openjson(E.value) with (Uids nvarchar(max) '$.ResultResultUids' as json) I
+										cross apply openjson(I.Uids) R
+								order by R.value
+								) RR
+					),'')
+			from	#ScoreItems T;
+
+			update	#ScoreItems 
+			set		PriorEvidenceHash = [utility].GetHash(PriorEvidenceHash);
+		end try
+		begin catch
+			update  #ScoreItems
+			set		PriorEvidenceHash = ''
+			where	PriorEvidenceHash is null;
+		end catch
+	end
+	else
+	begin
+		update  T
+		set		T.EvidenceHash = '',
+				T.PriorEvidenceHash = ''
+		from	#ScoreItems T;
+	end
+
+	-- select * from #ScoreItems
+
+	--Update the weights where measure are under a group.
+	update	I
+	set		I.AdjustedMaxWeight = (I.RawWeight / G.TotalWeight),
+			I.AdjustedWeight = case 
+									when I.DecimalValue is not null then
+										case 
+											when I.HasThreshold = 1 then iif(I.Value = 1, (I.RawWeight / G.TotalWeight), 0) 
+											else (I.DecimalValue * ((I.RawWeight / G.TotalWeight))) 
+										end
+									else 
+										case 
+											when I.Value = 1 then (I.RawWeight / G.TotalWeight) 
+											else 0 
+										end
+								end
+	from	#ScoreItems I	
+			inner join (
+				select	AssetUid, ParentMeasureUid as GroupMeasureUid,
+						EffectiveDate,
+						sum(RawWeight) as TotalWeight
+				from	#ScoreItems
+				where	ParentMeasureUid is not null
+						and IsRemoved = 0
+				group by AssetUid, ParentMeasureUid, EffectiveDate		
+			) G on G.AssetUid = I.AssetUid and G.EffectiveDate = I.EffectiveDate and G.GroupMeasureUid = I.ParentMeasureUid;
+
+	--Update the weights where measures are at root
+	update	I
+	set		I.AdjustedMaxWeight = (I.RawWeight / G.TotalWeight),
+			I.AdjustedWeight = case 
+									when I.DecimalValue is not null then
+										case 
+											when I.HasThreshold = 1 then iif(I.Value = 1, (I.RawWeight / G.TotalWeight), 0) 
+											else (I.DecimalValue * ((I.RawWeight / G.TotalWeight))) 
+										end
+									else 
+										case 
+											when I.Value = 1 then (I.RawWeight / G.TotalWeight) 
+											else 0 
+										end
+								end
+	from	#ScoreItems I
+			inner join (
+				select	AssetUid, EffectiveDate,
+						sum(RawWeight) as TotalWeight
+				from	#ScoreItems
+				where	ParentMeasureUid is null
+						and IsRemoved = 0
+				group by AssetUid, ParentMeasureUid, EffectiveDate
+			) G on G.AssetUid = I.AssetUid and G.EffectiveDate = I.EffectiveDate and I.ParentMeasureUid is null and I.IsRemoved = 0;
+
+	--Update the weights for groups, summing up the children.
+	update	I
+	set		I.AdjustedWeight = C.TotalWeight * I.AdjustedMaxWeight
+	from	#ScoreItems I
+			cross apply (
+				select	sum(AdjustedWeight) as TotalWeight
+				from	#ScoreItems
+				where	AssetUid = I.AssetUid and EffectiveDate = I.EffectiveDate and ParentMeasureUid = I.MeasureUid and IsRemoved = 0
+			) C
+			inner join metrics.Asset A on A.Uid = I.MeasureUid and A.IsGroup = 1 and I.IsRemoved = 0;
+
+	-- Set DecimalValue where it is null
+	update	T
+	set		T.DecimalValue = case 
+				when A.IsGroup = 0 and T.ParentMeasureUid is not null and T.Value = 1 then (T.AdjustedWeight / T.AdjustedMaxWeight)
+				when A.IsGroup = 0 and T.ParentMeasureUid is null and T.Value = 1 then T.AdjustedWeight
+				when A.IsGroup = 1 then T.AdjustedWeight
+				else 0 
+			end 
+	from	#ScoreItems T
+			inner join metrics.Asset A on A.Uid = T.MeasureUid and T.DecimalValue is null and T.IsRemoved = 0;
+
+	update	#ScoreItems
+	set		AdjustedWeight = case 
+								when AdjustedWeight between 0.499 and 0.5 then 0.5
+								when AdjustedWeight > 0.999 then 1
+								else AdjustedWeight
+							 end,
+			DecimalValue =	case 
+								when DecimalValue between 0.499 and 0.5 then 0.5
+								when DecimalValue > 0.999 then 1
+								else DecimalValue
+							 end;
+
+	-- Update the hash for each score we are working with.
+	update	T
+	set		T.VersionValueHash = [utility].GetHash(H.VersionValueHash)
+	from	#Scores T
+			cross apply (
+					select	string_agg(
+								cast( 
+									cast(MeasureVersionUid as nvarchar(50)) + '|' 
+									+ cast([Value] as nvarchar) + '|' 
+									+ cast(DecimalValue as nvarchar) + '|' 
+									+ cast(AdjustedWeight as nvarchar) + '|' 
+									+ cast(AdjustedMaxWeight as nvarchar) 
+									+ case EvidenceHash 
+										when '' then '' 
+										else '|' + cast(EvidenceHash as nvarchar) 
+									  end								
+								as nvarchar(max)), ';') as VersionValueHash
+					from	#ScoreItems
+					where	AssetUid = T.AssetUid
+							and EffectiveDate = T.EffectiveDate
+							and IsRemoved = 0
+				) H;
+
+	-- Set the Uid for these scores.
+	update	T
+	set		T.Uid = case 
+						when T.EffectiveDate = S.EffectiveDate then S.Uid
+						when T.EffectiveDate > S.EffectiveDate and T.VersionValueHash = S.VersionValueHash then S.Uid
+						else newid()
+					end
+	from	#Scores T
+			cross apply	(
+						select	ROW_NUMBER() over (partition by AllocationUid, AssetUid order by EffectiveDate desc) as RowNumber,
+								AllocationUid, AssetUid, EffectiveDate, Uid, VersionValueHash
+						from	metrics.Score
+						where	AllocationUid = @allocationUid
+								and AssetUid = T.AssetUid 
+								and EffectiveDate <= T.EffectiveDate
+						) S
+	where	S.RowNumber = 1;
+
+	update	#Scores set Uid = newid() where Uid is null;
+
+	-- Determine if these scores are most recent.
+	update	T
+	set		T.EndDate = V.EndDate
+	from    metrics.Score T
+			inner join (
+				select	T.Uid, DATEADD(dd, -1, S.EffectiveDate) as EndDate
+				from    metrics.Score T
+						inner join #Scores S on T.AllocationUid = @allocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null and T.VersionValueHash <> S.VersionValueHash			
+			) V on V.Uid = T.Uid;
+
+	-- Determine if these scores are NOT most recent.
+	update	T
+	set		T.EndDate = DATEADD(dd, -1, S.EffectiveDate)
+	from	#Scores T 
+			cross apply (
+				select	min(EffectiveDate) as EffectiveDate
+				from	metrics.Score 
+				where	AllocationUid = @allocationUid and AssetUid = T.AssetUid and EffectiveDate > T.EffectiveDate
+			) M
+			inner join metrics.Score S on S.AllocationUid = @allocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and S.EffectiveDate = M.EffectiveDate
+
+	-- Now set the Score.Uid values on the staging table.
+	update	T
+	set		T.ScoreUid = S.Uid
+	from	#ScoreItems T
+			inner join #Scores S on S.AssetUid = T.AssetUid and S.EffectiveDate = T.EffectiveDate;
+
+	-- Now figure out the Uids to re-use, the actions to perform, etc.
+	update	#ScoreItems 
+	set		ScoreItemUid = case	
+				when AdjustedMaxWeight <> PriorAdjustedMaxWeight then newid()
+				when AdjustedWeight <> PriorAdjustedWeight then newid()
+				when DecimalValue <> PriorDecimalValue then newid()
+				when Value <> PriorValue then newid()
+				when MeasureVersionUid <> PriorMeasureVersionUid then newid()
+				when (EvidenceHash <> PriorEvidenceHash) then newid()
+				else coalesce(PriorScoreItemUid, newid())
+			end;
+	------------------------------------------------------------------
+
+	-- Update the active measure count.
+	update	T
+	set		T.ActiveMeasureCount = Sm.[Count]
+	from	#Scores T
+			cross apply (
+				select	count(1) as [Count]
+				from	#ScoreItems
+				where	ScoreUid = T.Uid
+						and ParentMeasureUid is null
+						and IsRemoved = 0
+			) Sm
+
+	-- End-date scores where the ActiveMeasureCount is 0.
+	delete	T
+	from	metrics.Score T
+			inner join #Scores S on S.Uid = T.Uid and S.ActiveMeasureCount = 0;
+
+	delete	T
+	from	#ScoreItems T 
+			inner join #Scores S on S.Uid = T.ScoreUid and S.ActiveMeasureCount = 0;
+
+	delete	#Scores where ActiveMeasureCount = 0;
+
+	-- Finally, set the dispaly weights on the score items. 
+	if @scoreType = 1	--Governance
+	begin
+		update	#ScoreItems
+		set		DisplayWeight = DecimalValue,
+				DisplayMaxWeight = AdjustedMaxWeight
+		where	ParentMeasureUid is null 
+
+		update	C
+		set		C.DisplayWeight = cast((C.AdjustedWeight*P.AdjustedMaxWeight) as decimal(8,6)),
+				C.DisplayMaxWeight = cast((C.AdjustedMaxWeight*P.AdjustedMaxWeight) as decimal(8,6))
+		from	#ScoreItems C
+				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid
+	end
+
+	if @scoreType = 2	-- Data Quality
+	begin
+		update	#ScoreItems
+		set		DisplayWeight = AdjustedWeight,
+				DisplayMaxWeight = AdjustedMaxWeight
+		where	ParentMeasureUid is null 
+
+		update	C
+		set		C.DisplayWeight = cast((C.AdjustedWeight*P.AdjustedMaxWeight) as decimal(8,6)), 
+				C.DisplayMaxWeight = cast((C.AdjustedMaxWeight*P.AdjustedMaxWeight) as decimal(8,6))
+		from	#ScoreItems C
+				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid
+	end
+
+	-- Update the score value by summing up the root measures' decimal values.
+	update	T
+	set		T.Value = Sv.Total
+	from	#Scores T
+			cross apply (
+				select	sum(DisplayWeight) as Total
+				from	#ScoreItems
+				where	ScoreUid = T.Uid
+						and ParentMeasureUid is null
+						and IsRemoved = 0
+			) Sv
+
+	-- Deal with cases where the score is to close to 100% or 0% that it is effectively that value.
+	update #Scores set Value = 1 where Value >= 0.999;
+	update #Scores set Value = 0 where Value <= 0.001;
+
+	/*
+	select * from #Scores
+	select * from #ScoreItems
+	 */
+	
+	-- Merge these new scores with the real score table.
+	merge	metrics.Score as T
+	using	#Scores as S
+	on		(S.Uid = T.Uid)
+	when	matched and S.ActiveMeasureCount > 0 then
+	update	set
+			T.Value = S.Value,
+			T.VersionValueHash = S.VersionValueHash,
+			T.RunDate = S.RunDate
+	when	not matched then
+	insert	(AssetUid, EffectiveDate, Value, RunDate, EndDate, Uid, AllocationUid, VersionValueHash)
+	values	(S.AssetUid, S.EffectiveDate, S.Value, S.RunDate, S.EndDate, S.Uid, @allocationUid, S.VersionValueHash);
+
+	-- Merge score items.
+	merge	metrics.ScoreItem as T
+	using	(select * from #ScoreItems where IsRemoved = 0) as S
+	on		(S.ScoreItemUid = T.Uid)
+	when	matched then
+	update	set
+			T.Value = S.Value,
+			T.UpdatedOn = getutcdate(),
+			T.AdjustedWeight = S.AdjustedWeight,
+			T.DisplayWeight = S.DisplayWeight,
+			T.RunDate = getutcdate(),
+			T.AssetVersionUid = S.MeasureVersionUid,
+			T.Evidence = S.Evidence,
+			T.ConditionUid = S.ConditionUid,
+			T.AdjustedMaxWeight = S.AdjustedMaxWeight,
+			T.DisplayMaxWeight = S.DisplayMaxWeight,
+			T.DecimalValue = S.DecimalValue,
+			T.OtherConditions = S.OtherConditions
+	when	not matched then
+	insert (UpdatedOn, [Value], AdjustedWeight, RunDate, [Uid], AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight, DecimalValue, OtherConditions, DisplayWeight, DisplayMaxWeight)
+	values (getutcdate(), S.[Value], S.AdjustedWeight, getutcdate(), S.ScoreItemUid, S.MeasureVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight, S.DecimalValue, S.OtherConditions, S.DisplayWeight, S.DisplayMaxWeight);
+
+	-- Clear out the score / score item links before re-merging.
+	delete	T
+	from	metrics.ScoreItemLink T
+			inner join #Scores S on S.Uid = T.ScoreUid;
+
+	-- Merge score item links.
+	merge	metrics.ScoreItemLink as T
+	using	(
+			select	ScoreUid,
+					ScoreItemUid
+			from	#ScoreItems
+			where	IsRemoved = 0
+			) as S
+	on		(S.ScoreUid = T.ScoreUid and S.ScoreItemUid = T.ScoreItemUid)
+	when	not matched then
+	insert (ScoreUid, ScoreItemUid)
+	values (S.ScoreUid, S.ScoreItemUid);
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [metrics].[ProcessAssetScores]
 	@allocationUid uniqueidentifier,
 	@assets AssetEffectiveDate readonly
@@ -634,11 +1293,6 @@ begin
 	insert (ScoreUid, ScoreItemUid)
 	values (S.ScoreUid, S.ScoreItemUid);
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-drop procedure if exists metrics.ProcessAssetScores
 		]]>
 	</rollback>
   </changeSet>

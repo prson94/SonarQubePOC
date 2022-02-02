@@ -3,6 +3,7 @@ import { DetailField, DetailFieldType } from '../../../models/object-detail.mode
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 @Component({
     selector: 'ig-asset-detail-field',
@@ -16,6 +17,7 @@ export class AssetDetailFieldComponent {
     @Input() assetUid: string;
     @Input() tooltipAlign: string;
     @Input() isSidePanel: boolean = false;
+    @Input() interceptLinkClick: boolean = false;
 
     readonly emptyValue: string = "---";
     readonly dateFormat: string = "d MMM yyyy";
@@ -27,7 +29,9 @@ export class AssetDetailFieldComponent {
 
     constructor(private router: Router,
         private assetService: AssetService,
-        private ref: ChangeDetectorRef) { }
+        private ref: ChangeDetectorRef,
+        private linkClickInterceptor: LinkClickInterceptor
+    ) { }
 
     ngOnInit() {
         if ((this.field.DataType === 'date' || this.field.DataType === 'datetime') && isNaN(Date.parse(this.field.Value))) {
@@ -35,7 +39,11 @@ export class AssetDetailFieldComponent {
         }
     }
 
-    navigate(url: string, e: any) {
+    navigate(url: string, e: any, item = null) {
+        if (this.interceptLinkClick) {
+            this.linkClickInterceptor.sendEvent(e, this.field, SiteUrlHelpers.convertClassicUrl(url), item !== null ? this.field.Values.indexOf(item) : 0);
+            return;
+        }
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
         if (e) {
             e.preventDefault();

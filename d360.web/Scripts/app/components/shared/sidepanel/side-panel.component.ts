@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, SimpleChanges } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
@@ -8,7 +8,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'side-panel',
     templateUrl: './side-panel.component.html',
-    styleUrls: ['./side-panel.component.less']
+    styleUrls: ['./side-panel.component.less'],
+    encapsulation: ViewEncapsulation.None
 })
 
 export class SidePanelComponent extends BaseComponent {
@@ -78,7 +79,7 @@ export class SidePanelComponent extends BaseComponent {
 
         if (changes['storageKey'] && changes['storageKey'].isFirstChange() && changes['storageKey'].currentValue !== changes['storageKey'].previousValue) {
             loadState = true;
-            
+
         }
 
         if (changes['expanded'] && changes['expanded'].isFirstChange() && changes['expanded'].currentValue !== changes['expanded'].previousValue) {
@@ -117,7 +118,6 @@ export class SidePanelComponent extends BaseComponent {
 
                         if (b) {
                             this.selectedPanel = state.selectedPanel;
-
                         }
                     }
                 }

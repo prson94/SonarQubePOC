@@ -35,6 +35,13 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         + 'wish to collect more specifically, by filtering on the fields '
         + 'supplied by rules and any intermediate asset types used to relate rules to your scoring asset type.';// </br> <a href="' + this.helpUri + '" target="help"><i class="fa fa-external-link"></i> Read more about Rule Result Filters.</a>';
 
+    thresholdTooltipText: string = "You can use a pass threshold to change the measure result to a pass or fail, rather than a calculated "
+        + "percentage of the maximum possible contribution of the measure.For example, consider a measure with a weight of 50 % and the rule "
+        + "results score of 88 %.Without a pass threshold the measure will score 88 % of 50 %, or 44%. With a pass threshold of 80%, the  "
+        + "measure will pass and score 50 % - the full possible score.With a pass threshold of 90 %, the measure will fail and score 0 %.";
+
+    thresholdOverrideTooltipText: string = "";
+
     //#endregion
 
     //#region Local reference lists
@@ -54,6 +61,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     ruleResultFilters: FieldCondition[] = [];
     ruleResultFiltersMatchType: string;
 
+
     delayedReload = _.debounce(() => {
         this.load();
         this.loadFieldData();
@@ -70,6 +78,8 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         super(fieldsService, metricsService, messagesService, settingsService, cdRef);
         let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
+        let conditionHelpLink: string = helpBaseUri + "/Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
+        this.thresholdOverrideTooltipText = "You can override the <b>Pass Threshold</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.<br/><a target='help' href='" + conditionHelpLink + "'><i class='fa fa-external-link'></i>&#160;Read more about Asset Conditions and Weighting.</a>";
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -94,6 +104,8 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             description: null,
             effectiveDate: null,
             weight: ['', [this.isValidWeight()]],
+            hasThreshold: null,
+            threshold: ['', [this.isValidThreshold()]],
             isGroup: null,
             ruleResultPath: ['', [Validators.required]],
             ruleResultOperation: ['', [Validators.required]],
@@ -178,6 +190,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     load() {
         this.setFormPropertiesBasedOnMode();
+
         if (this.isEditBasedOnUid()) {
             this.onGroupChange(this.model.IsGroup);
             if (this.model) {
@@ -193,6 +206,12 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             }
             this.isLoading = false;
         }
+
+        //this.measureHasThreshold = (this.model.Threshold && this.model.Threshold !== undefined && this.model.Threshold > 0);
+        //if (this.measureHasThreshold) {
+        //    this.displayThreshold = this.model.Threshold * 100;
+        //}
+
 
         if (this.model.Weight) {
             this.displayWeight = Math.round(this.model.Weight * 100);
@@ -218,6 +237,11 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                 this.loadConditions();
             }
         }
+        this.metricForm.updateValueAndValidity();
+        this.cdRef.markForCheck();
+    }
+
+    onThresholdChange(event: boolean) {
         this.metricForm.updateValueAndValidity();
         this.cdRef.markForCheck();
     }
@@ -324,6 +348,9 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                 this.hasModelChanged = true;
             }
             if (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == "")) {
+                this.hasModelChanged = true;
+            }
+            if (this.displayThreshold && (this.originalModel.Threshold * 100) !== this.displayThreshold) {
                 this.hasModelChanged = true;
             }
             if (this.displayWeight && (this.originalModel.Weight * 100) != this.displayWeight) {

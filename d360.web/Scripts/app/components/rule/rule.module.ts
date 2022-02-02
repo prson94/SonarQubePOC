@@ -46,6 +46,8 @@ import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advance
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
+import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 
 
 @NgModule({
@@ -90,7 +92,9 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
         SharedAssetEditorsModule,
         AssetGridModule,
         SearchFieldModule,
-        AdvancedFiltersModule
+        AdvancedFiltersModule,
+        AssetTypeDetailModule,
+        TaggedAssetDetailModule
     ],
     declarations: [
         RuleComponent,

@@ -60,7 +60,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     @Output() isDefinitionLoadedChange = new EventEmitter();
 
     @Input() titlePostfix: string = ''; // added to end of header title.
-    @Input() rowsPerPage: number = 10;
+    @Input() rowsPerPage: number = 25;
     @ViewChild('dt', { static: false }) dt: Table;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 

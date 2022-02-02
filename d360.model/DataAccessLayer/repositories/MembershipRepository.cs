@@ -42,8 +42,13 @@ namespace d360.model.DataAccessLayer
         public async Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var dbArgs = new DynamicParameters();
+            bool listColorsAsJSON = false;
             List<string> condition = new List<string>();
             string resourceString = "";
+
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+
             if (queryParams != null)
             {
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "uid"))
@@ -85,22 +90,69 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("user", user);
                     }
                 }
-
             }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_listcolorsasjson"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
+            }
+
+            var fieldTypes = CompanyContext.FieldTypes.Where(f => f.Object == "GroupType" && f.ObjectID == 1).ToList();
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, listColorsAsJSON: listColorsAsJSON);
+
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+                {
+                    var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+                    if (!string.IsNullOrEmpty(simpleFilter))
+                    {
+                        simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+
+                        dbArgs.Add("@simpleFilter", simpleFilter);
+
+                        List<string> simpleFilters = new List<string>();
+                        //There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
+                        foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
+                        {
+                            if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
+                            {
+                                string ftformatted = $@"F{ft.ID}.FormattedValue";
+                                simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
+                            }
+                            else if (ft.Type == DataType.Counter.ToString())
+                            {
+                                simpleFilters.Add($"('{ft.CounterPrefix}' + CAST(F{ft.ID}.FormattedValue as nvarchar(max))) like @simpleFilter");
+                            }
+                            else
+                            {
+                                simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                            }
+                        }
+
+                        simpleFilters.Add($"G.Name like @simpleFilter");
+
+                        condition.Add($"({string.Join(" or ", simpleFilters)})");
+                    }
+                }
+            }
+
 
             var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
             var sql = $@"
                    Select 
                        A.Uid,
+                       {(fieldColumns.Count > 0 ? string.Join(",\n", fieldColumns) + "," : "")}
                        G.Name,
                        G.Description,
                        gr1.uid as PrimaryOwnerUid,
                        gr2.uid as SecondaryOwnerUid,
-                       G.IsActiveDirectoryGroup 
+                       G.IsActiveDirectoryGroup
                        from [Group] G
                            inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
                            left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
                            left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
+                           {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins) : "")}
                            {resourceString} 
                            {whereStatements}  
                            order by G.Name  ";
@@ -109,13 +161,14 @@ namespace d360.model.DataAccessLayer
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
+               {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins) : "")}
                 {resourceString} 
                 {whereStatements}  ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             var count = countResults.First();
 
-            var results = await this.CompanyContext.QueryAsync<GroupApiModel>(sql, dbArgs, ApiTimeout);
+            var results = await this.CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
 
             return new GroupApiModels() { items = results, Total = count };
 
@@ -676,7 +729,7 @@ namespace d360.model.DataAccessLayer
                         set     U.ResourceID = G.ResourceID
                         from    api.ExecutionUser U
                                 inner join reporting.Global_Resource G on G.[uid] = U.[Uid] and G.[State] <> @deleted
-                        where   U.Success is null and U.IsNew = 0;
+                        where   U.ExecutionID = @executionID and U.Success is null and U.IsNew = 0;
 
                         update  U
                         set     U.FieldTypeID = F.ID

@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { GroupComponent } from './group.component';
-import { GroupItemComponent } from './group-item.component';
 import { GroupListComponent } from './group-list.component';
+import { GroupItemComponent } from './group-item.component';
 
 const routes: Routes = [
     {

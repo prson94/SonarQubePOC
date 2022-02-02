@@ -26,6 +26,19 @@
                                     (onLoad)="onFiltersLoaded()"
                                     (onChange)="advancedFiltersChanged($event)">
                 </advanced-filtering>
+                <div class="grid-action-buttons">
+                    <div [pTooltip]="searchExportTooltip"
+                         tooltipPosition="left"
+                         tooltipStyleClass="ig-tooltip">
+                        <button igButton
+                                icon="fa-download"
+                                [disabled]="!isExportEnabled()"
+                                [loading]="isExportInProgress"
+                                (click)="doExport()">
+                        </button>
+                    </div>
+                </div>
+
             </div>
             <div class="cardlist">
                 <div *ngIf="!(searchStateService.loading | async) && (searchStateService.resultCount | async) == 0">
@@ -85,7 +98,6 @@
                                          [showHeader]="true"
                                          [showHeaderLine]="false"
                                          [spacerHeight]="'16px'"
-                                         [paddingLeft]="'11px'"
                                          [tooltipAlign]="'left'"
                                          [isSidePanel]="true"
                                          [hasEditLink]="false"

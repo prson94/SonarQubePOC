@@ -69,6 +69,9 @@ import { GalleryModalComponent } from "./gallery.modal.component";
 import { GalleryModalDrawerComponent } from './gallery.modal-drawer.component';
 import { ModalDrawerModule } from '../shared/modal-drawer/gov-modal-drawer.module';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
+import { GalleryCodeAreaComponent } from './gallery.codearea.component';
+import { CodeAreaModule } from '../shared/controls/codearea/codearea.component';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 @NgModule({
     imports: [
@@ -108,7 +111,9 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
         FieldConditionGridModule,
         MultiInputFieldModule,
         ModalDrawerModule,
-        SidePanelModule
+        SidePanelModule,
+        CodeAreaModule,
+        CodemirrorModule
     ],
     declarations: [
         GalleryComponent,
@@ -142,7 +147,8 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
         GalleryMultiInputFieldComponent,
         GalleryInputGroupComponent,
         GalleryModalComponent,
-        GalleryModalDrawerComponent
+        GalleryModalDrawerComponent,
+        GalleryCodeAreaComponent
     ],
     providers: [
         GalleryGuard,

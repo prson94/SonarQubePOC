@@ -91,7 +91,7 @@ namespace d360.web.Controllers.V2
                 IsGroup = false,
                 MatchConditionsOnly = true,
                 Weight = 0.25M,
-                Threshold = 0.999,
+                Threshold = (float?)0.999,
                 ConditionGroups = new List<MetricAssetVersionConditionViewModel>() {
                     new MetricAssetVersionConditionViewModel {
                      MatchType = MetricMatchType.Any,

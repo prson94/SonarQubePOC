@@ -149,19 +149,27 @@ namespace d360.model.validators
                 {
                     case "assettypeuid":
                         if (!Guid.TryParse(param.Value, out Guid _))
-                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest,OthersError.InvalidAssetTypeUid);
+                        {
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, OthersError.InvalidAssetTypeUid);
+                        }
                         break;
                     case "surveytypeuid":
                         if (!Guid.TryParse(param.Value, out Guid _))
-                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest, OthersError.InvalidSurveyTypeUid);
+                        {
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, OthersError.InvalidSurveyTypeUid);
+                        }
                         break;
                     case "_pagesize":
                         if (!int.TryParse(param.Value, out int _))
-                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest, OthersError.InvalidPageSize);
+                        {
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, OthersError.InvalidPageSize);
+                        }
                         break;
                     case "_pagenum":
                         if (!int.TryParse(param.Value, out _))
-                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest,OthersError.InvalidPageNum);
+                        {
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, OthersError.InvalidPageNum);
+                        }
                         break;
                     case "_order":
                         switch (param.Value.ToLower())

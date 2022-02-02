@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, ScoreTypeAllocation, ScoreType } from '../../../models/metrics.model';
+import { MetricAssetViewModel, ScoreTypeAllocation, ScoreType, MetricGovernanceCheckType } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
@@ -11,6 +11,7 @@ import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AppSettingsEnum } from '../../../models/settings.model';
+import { ScoreService } from '../../../services/score.service';
 
 @Component({
     selector: 'measure-list',
@@ -60,6 +61,8 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     showDelete: boolean = false;
 
     private isHistoryModalVisible: boolean = false;
+    private isRecalculateModalVisible: boolean = false;
+    private isCallingRecalculate: boolean = false;
 
     todayAndEffectiveDateAreSame(item: MetricAssetViewModel): boolean {
         if (item) {
@@ -80,13 +83,15 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                 break;
             case 'Disable': this.delete();
                 break;
+            case 'Recalculate': this.showRecalculate(true);
+                break;
         }
 
         if ($event.value.toString().indexOf('Version History') != -1)
             this.showHistory(true);
     }
 
-    private menuOptions = [
+    private groupMenuOptions = [
         {
             "title": "Edit"
         },
@@ -97,7 +102,22 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
             "title": "Version History"
         }
     ];
-    private disabledMenu = [
+
+    private itemMenuOptions = [
+        {
+            "title": "Edit"
+        },
+        {
+            "title": "Disable"
+        },
+        {
+            "title": "Version History"
+        },
+        {
+            "title": "Recalculate"
+        }
+    ];
+    private disabledMenuOptions = [
         {
             "title": "Version History"
         }
@@ -107,7 +127,8 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         private metricsService: MetricsService,
         private allocationService: AllocationService,
         protected messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+        private scoreService: ScoreService    ) {
         super(settingsService);
 
         let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
@@ -223,14 +244,20 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     updateSelectionMenuLabel() {
-        if (this.menuOptions && this.menuOptions.length > 0) {
-            let versionMenuItem = this.menuOptions.find(x => x.title.indexOf("Version History") != -1);
+        if (this.groupMenuOptions && this.groupMenuOptions.length > 0) {
+            let versionMenuItem = this.groupMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
-        if (this.disabledMenu && this.disabledMenu.length > 0) {
-            let versionMenuItem = this.disabledMenu.find(x => x.title.indexOf("Version History") != -1);
+        if (this.itemMenuOptions && this.itemMenuOptions.length > 0) {
+            let versionMenuItem = this.itemMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
+            if (versionMenuItem) {
+                versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
+            }
+        }
+        if (this.disabledMenuOptions && this.disabledMenuOptions.length > 0) {
+            let versionMenuItem = this.disabledMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
@@ -272,6 +299,26 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     public showHistory(isHistoryVisible: boolean) {
         this.isHistoryModalVisible = isHistoryVisible;
     }
+
+    //#region Recalculate
+
+    public cancelRecalculate() {
+        this.showRecalculate(false);
+    }
+
+    public recalculate() {
+        this.isCallingRecalculate = true;
+        this.scoreService.recalculateMeasure(this.allocation.uid, this.selection.Uid).subscribe((returnValue) => {
+            this.isCallingRecalculate = false;
+            this.showRecalculate(false);
+        });
+    }
+
+    public showRecalculate(isRecalculateVisible: boolean) {
+        this.isRecalculateModalVisible = isRecalculateVisible;
+    }
+
+    //#endregion
 
     getAsPrecentage(val: number) {
         if (val == 0)

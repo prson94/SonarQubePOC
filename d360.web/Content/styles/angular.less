@@ -19,6 +19,17 @@
 
 @import "./infogix-ui/infogix-ui.less";
 
+.link-context-menu {
+  background-color: white;
+  padding: 4px 0;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  min-width: 128px;
+  position: fixed;
+  min-height: 50px;
+  z-index: 1000;
+}
+
 .ng-loading {
   position: fixed;
   height: 100%;
@@ -127,6 +138,11 @@
 
 a {
   color: @ig-purple;
+}
+
+.grey-delimiter {
+  color: @ig-grey-t2;
+  padding: 4px;
 }
 
 .card-box {
@@ -6704,6 +6720,7 @@ table {
     background-color: @ig-white;
     margin-bottom: 8px;
     line-height: 1;
+    border-bottom: 1px solid #ebebeb;
 
     button.tab {
       box-sizing: border-box;
@@ -6786,7 +6803,7 @@ table {
 .score-badge-container {
   display: inline-block;
   margin-right: 8px;
-  float:right;
+  float: right;
 
   .score-badge {
     border-radius: 10px;
@@ -6839,5 +6856,56 @@ table {
     display: flex;
     margin-top: 20px;
     margin-left: 5px;
+  }
+}
+
+.empty-overlay {
+  position: absolute;
+  width: 97%;
+  height: 91%;
+
+  .content {
+    text-align: center;
+    top: 100px;
+    position: relative;
+    max-width: 163px;
+    margin: 0 auto;
+    color: @ig-slate;
+
+    span {
+      font-size: 14px;
+      line-height: 18px;
+    }
+
+    .icon-holder {
+      background-color: @ig-grey-t5;
+      height: 128px;
+      width: 128px;
+      text-align: center;
+      margin: 0 auto;
+      border-radius: 50%;
+      margin-bottom: 16px;
+
+      .fa {
+        font-size: 56px;
+        line-height: 128px;
+      }
+    }
+  }
+}
+
+
+.info-panel-table-grid {
+  display: flex;
+  padding-bottom: 8px;
+
+  .ig-search-field {
+    width: 97% !important;
+  }
+}
+
+.ig-filter-table {
+  td.first-col {
+    width: 16px;
   }
 }

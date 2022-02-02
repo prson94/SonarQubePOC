@@ -65,11 +65,22 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         this.isRuleResultsModalVisible = isVisible;
     }
 
+    ruleResultsVisible(): boolean {
+        return (this.scoreType === ScoreType.DataQuality && !this.selected.IsGroup);
+    }
+
     showPassTest(): boolean {
         let show = true;
 
-        show = (!this.selected.IsGroup && this.scoreType !== ScoreType.DataQuality);
-
+        if (this.selected.IsGroup) {
+            show = false;
+        }
+        else {
+            if (this.scoreType === ScoreType.DataQuality && !this.selected.Threshold) {
+                show = false;
+            }
+        }
+        
         return show;
     }
 
@@ -85,6 +96,14 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
     formatWeight(num: number) {
         if (num) {
             return (num * 100).toFixed(2).replace(/[.,]00$/, "") + "%";
+        } else {
+            return "(default)";
+        }
+    }
+
+    formatThreshold(num: number) {
+        if (num) {
+            return (num * 100).toFixed(3).replace(/[.,]00$/, "") + "%";
         } else {
             return "(default)";
         }

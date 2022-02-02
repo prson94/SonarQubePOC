@@ -72,6 +72,16 @@ namespace d360.web.Models
         public string Message { get; set; }
     }
 
+    public class IdResponse<T>
+    {
+        public T Id { get; set; }
+
+        public IdResponse(T id)
+        {
+            this.Id = id;
+        }
+    }
+
     [DataContract(Namespace = constants.NAMESPACE)]
     public class ErrorResponse
     {

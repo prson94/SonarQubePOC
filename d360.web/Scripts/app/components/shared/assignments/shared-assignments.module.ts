@@ -11,6 +11,7 @@ import { TilesModule  } from '../tiles/tiles.module';
 
 import { AssignmentsComponent } from './assignments.component';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+import { SearchFieldModule } from '../controls/search-field/search-field.component';
 
 
 @NgModule({
@@ -26,6 +27,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
         //prime        
         SharedModule,
         TableModule,
+        SearchFieldModule
     ],
     declarations: [
         AssignmentsComponent

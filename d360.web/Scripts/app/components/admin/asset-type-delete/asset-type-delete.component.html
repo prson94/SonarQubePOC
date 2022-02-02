@@ -21,9 +21,11 @@
 <div class="row">
     <button pButton
         (click)="delete()"
+        [attr.data-cy]="'AssetType_Button_Delete'"
         label="Delete"
         [disabled]="isLoading || (count > 0 && !signoff)"></button>
     <button pButton
         (click)="cancel()"
+        [attr.data-cy]="'AssetType_Button_Cancel'"
         label="Cancel"></button>
 </div>

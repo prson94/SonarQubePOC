@@ -31,9 +31,6 @@ namespace d360.core.entities.Metric
         public bool IsExternallyCalculated { get; set; }
 
         [DataMember]
-        public bool IsThresholdBased { get; set; } = false;
-
-        [DataMember]
         public int LowerThreshold { get; set; }
 
         [DataMember]
