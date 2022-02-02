@@ -25,7 +25,8 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>443</IISExpressSSLPort>
+    <IISExpressSSLPort>
+    </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -1039,6 +1040,7 @@
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
     <Content Include="angular.json" />
     <Content Include="fonts\fontawesome-webfont.svg" />
+    <Content Include="Scripts\dist\readme.txt" />
     <Content Include="Scripts\environments\workaround.js" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
