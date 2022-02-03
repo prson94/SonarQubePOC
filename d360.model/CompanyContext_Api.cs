@@ -5245,7 +5245,7 @@ create table #DeletedRelationships ([ID] int, ItemNumber int, Payload varchar(20
 insert into #DeletedRelationships
     select  I.ID,
             EA.ItemNumber,
-            '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar) + '""}' 
+            '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
     from    [Intersect] I
             inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
             inner join api.ExecutionAsset EA on
