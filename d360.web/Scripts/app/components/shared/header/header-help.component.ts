@@ -4,10 +4,7 @@ import { ResourcesService } from "../../../services/resources.service";
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 import { HelpResource } from "../../../models/resource.model";
 import { Observable } from "rxjs";
-import { HelpMenu } from "../../../models/helpmenu.model";
-import { AuthenticationService } from "../../../services/authentication.service";
-declare var __BUILD_DATE: string;
-declare var VersionNumber: string;
+import { environment } from '../../../../environments/environment';
 
 @Component({
     selector: 'd3s-header-help',
@@ -38,8 +35,13 @@ export class HeaderHelpComponent implements OnInit {
     customHelpResources: HelpResource[] = null;
     customHelpResources$: Observable<any>;
 
-    buildDate: string = __BUILD_DATE;
-    versionNumber: string = VersionNumber;
+    environment= environment;
+    
+    public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
+    public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
+    public whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
+    public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
+    
     isModalVisible: boolean = false;
     @ViewChild("popupBox", { static: false }) popupBox: ElementRef;
 
@@ -86,7 +88,6 @@ export class HeaderHelpComponent implements OnInit {
         });
     }
 
-
     show(item) {
         let panel = item.children[0].nextElementSibling;
         if (panel) {
@@ -128,4 +129,4 @@ export class HeaderHelpComponent implements OnInit {
                 this.closeAbout();
         }
     }
-}
+} 
