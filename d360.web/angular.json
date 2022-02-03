@@ -29,14 +29,14 @@
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
-          "localize": true,
           "options": {
-            "deployUrl": "/scripts/dist/",
+            "deployUrl": "/scripts/dist/en-US",
             "outputPath": "scripts/dist",
             "index": "index.html",
             "main": "Scripts/main.ts",
             "polyfills": "Scripts/polyfills.ts",
             "tsConfig": "Scripts/tsconfig.aot.json",
+            "localize": true,
             "assets": [],
             "styles": [
               "Content/styles/angular.less"

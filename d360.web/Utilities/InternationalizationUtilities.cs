@@ -124,5 +124,10 @@ namespace d360.web.Utilities
                 //surpress exception
             }
         }
+
+        public static string GetUserLocale()
+        {
+            return "en-US";
+        }
     }
 }
