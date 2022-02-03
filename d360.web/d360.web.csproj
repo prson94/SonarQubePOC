@@ -848,20 +848,20 @@
     <Content Include="Content\primeicons\2.0.0\raw-svg\wifi.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-maximize.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-minimize.svg" />
-    <Content Include="Content\primeng\v11.1.0\default.css" />
-    <Content Include="Content\primeng\v11.1.0\default.min.css">
+    <Content Include="Content\primeng\v12.0.2\default.css" />
+    <Content Include="Content\primeng\v12.0.2\default.min.css">
       <DependentUpon>default.css</DependentUpon>
     </Content>
-    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.svg" />
-    <Content Include="Content\primeng\v11.1.0\images\color.png" />
-    <Content Include="Content\primeng\v11.1.0\images\hue.png" />
-    <Content Include="Content\primeng\v11.1.0\images\line.gif" />
-    <Content Include="Content\primeng\v11.1.0\images\loading.gif" />
-    <Content Include="Content\primeng\v11.1.0\images\password-meter.png" />
-    <Content Include="Content\primeng\v11.1.0\primeng.css" />
-    <Content Include="Content\primeng\v11.1.0\primeng.min.css" />
-    <Content Include="Content\primeng\v11.1.0\theme.css" />
-    <Content Include="Content\primeng\v11.1.0\theme.min.css">
+    <Content Include="Content\primeng\v12.0.2\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\v12.0.2\images\color.png" />
+    <Content Include="Content\primeng\v12.0.2\images\hue.png" />
+    <Content Include="Content\primeng\v12.0.2\images\line.gif" />
+    <Content Include="Content\primeng\v12.0.2\images\loading.gif" />
+    <Content Include="Content\primeng\v12.0.2\images\password-meter.png" />
+    <Content Include="Content\primeng\v12.0.2\primeng.css" />
+    <Content Include="Content\primeng\v12.0.2\primeng.min.css" />
+    <Content Include="Content\primeng\v12.0.2\theme.css" />
+    <Content Include="Content\primeng\v12.0.2\theme.min.css">
       <DependentUpon>theme.css</DependentUpon>
     </Content>
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
@@ -1029,12 +1029,12 @@
     <Content Include="Content\styles\infogix-ui\IgDropdown.less" />
     <Content Include="Content\styles\infogix-ui\IgRadioButton.less" />
     <Content Include="Content\json\governanceIcons.json" />
-    <Content Include="Content\primeng\v11.1.0\default.less" />
-    <Content Include="Content\primeng\v11.1.0\theme.less" />
-    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.eot" />
-    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.ttf" />
-    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
-    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\primeng\v12.0.2\default.less" />
+    <Content Include="Content\primeng\v12.0.2\theme.less" />
+    <Content Include="Content\primeng\v12.0.2\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\v12.0.2\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\v12.0.2\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\v12.0.2\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
     <Content Include="angular.json" />
     <Content Include="fonts\fontawesome-webfont.svg" />
