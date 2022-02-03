@@ -56,7 +56,7 @@ namespace igx.functions.consumption
 
             // Create EF connection
             companyId = info.CompanyID;
-            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true);
+            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true, null, null, CoreFunction.GetConnectionString("CommunityContext"));
 
             try
             {
