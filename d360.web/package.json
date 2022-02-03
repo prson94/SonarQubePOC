@@ -32,6 +32,7 @@
     "@angular/platform-server": "12.2.16",
     "@angular/router": "12.2.16",
     "@ctrl/ngx-codemirror": "5.1.1",
+    "@datadog/browser-rum": "4.2.0",
     "codemirror": "5.64.0",
     "core-js": "2.6.12",
     "gojs": "2.1.22",
