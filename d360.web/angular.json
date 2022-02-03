@@ -17,11 +17,11 @@
         "sourceLocale": "en-US",
         "locales": {
           "fr": {
-            "translation": "src/locale/messages.fr.xlf",
+            "translation": "locale/messages.fr.xlf",
             "baseHref": ""
           },
           "de": {
-            "translation": "src/locale/messages.de.xlf",
+            "translation": "locale/messages.de.xlf",
             "baseHref": ""
           }
         }
@@ -68,17 +68,17 @@
                   "maximumWarning": "2mb",
                   "maximumError": "5mb"
                 }
-              ],
-              "fr": {
-                "localize": [
-                  "fr"
-                ]
-              },
-              "de": {
-                "localize": [
-                  "de"
-                ]
-              }
+              ]
+            },
+            "fr": {
+              "localize": [
+                "fr"
+              ]
+            },
+            "de": {
+              "localize": [
+                "de"
+              ]
             }
           },
           "defaultConfiguration": ""

@@ -11,7 +11,7 @@
                     <div class="ig-value" [innerHTML]="value"></div>
                 </div>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [`p {padding:0, margin:0}`],
+    styles: [`p {padding:0; margin:0}`],
     encapsulation: ViewEncapsulation.None
 })
 

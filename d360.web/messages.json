@@ -1,0 +1,17 @@
+{
+  "locale": "en-US",
+  "translations": {
+    "4316033994660294100": "This text comes from .TS file.",
+    "5489128594802953194": "Localized tooltip text which must be set in ts file before binding to components attribute",
+    "5866254605255506989": "English",
+    "1858110241312746425": "German",
+    "7633754075223722162": "French",
+    "6725937315779838521": "Locale Section",
+    "9114650208523918807": "Angular setup for multi locale support.",
+    "1210069423269934042": "Change language",
+    "6021390982282215975": "Html template example!",
+    "8937363785824158002": "This text comes from HTML template.",
+    "8828659727232623791": "Translation coming from .ts!",
+    "8418424373134200173": "Usage as components attributes"
+  }
+}

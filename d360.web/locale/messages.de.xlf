@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="4316033994660294100" datatype="html">
+        <source>This text comes from .TS file.</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5489128594802953194" datatype="html">
+        <source>Localized tooltip text which must be set in ts file before binding to components attribute</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">24,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5866254605255506989" datatype="html">
+        <source>English</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1858110241312746425" datatype="html">
+        <source>German</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">27,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7633754075223722162" datatype="html">
+        <source>French</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">28,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="77dc3ee557de2154c6a2d338998f09d7d9ed6bf3" datatype="html">
+        <source>Locale Section</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">35,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="01ab5a73e6ef562db2df71ec5d2ab67bbc388881" datatype="html">
+        <source>Angular setup for multi locale support.</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="60a3620e64219321c8b50da502a404e9cef901ef" datatype="html">
+        <source>Change language</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="11484c0fa1cab5ced51bcba7959ee833f21f16d9" datatype="html">
+        <source>Html template example!</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="06873ab78d134f39bf9db6a58c616b6f3249cbe8" datatype="html">
+        <source>This text comes from HTML template.</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ba1bd18b0a9e7e61a0109e48dad94b15336c5e98" datatype="html">
+        <source>Translation coming from .ts!</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="eed1bf9a3fed83b70868f3b9369e630dc41536a5" datatype="html">
+        <source>Usage as components attributes</source>
+        <target>de de de de</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
