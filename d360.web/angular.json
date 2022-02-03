@@ -30,7 +30,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "deployUrl": "/scripts/dist/en-US",
+            "deployUrl": "/scripts/dist/chunks/",
             "outputPath": "scripts/dist",
             "index": "index.html",
             "main": "Scripts/main.ts",

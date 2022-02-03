@@ -5,6 +5,8 @@ import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 import { HelpResource } from "../../../models/resource.model";
 import { Observable } from "rxjs";
 import { environment } from '../../../../environments/environment';
+import { AuthenticationService } from "../../../services/authentication.service";
+import { HelpMenu } from "../../../models/helpmenu.model";
 
 @Component({
     selector: 'd3s-header-help',
@@ -36,12 +38,7 @@ export class HeaderHelpComponent implements OnInit {
     customHelpResources$: Observable<any>;
 
     environment= environment;
-    
-    public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
-    public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
-    public whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
-    public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
-    
+  
     isModalVisible: boolean = false;
     @ViewChild("popupBox", { static: false }) popupBox: ElementRef;
 

@@ -23,28 +23,11 @@ export class GalleryLocaleComponent implements OnInit {
     translatedText: string = $localize`This text comes from .TS file.`;
     tooltipText: string = $localize`Localized tooltip text which must be set in ts file before binding to components attribute`;
 
-    txtEn: string = $localize`English`;
-    txtDe: string = $localize`German`;
-    txtFr: string = $localize`French`;
+    constructor(private langService: LanguageService) {
+
+    }
 
     ngOnInit(): void {
 
-    }
-
-    changeLang(newLocale) {
-        var newLang = this.getLang(newLocale);
-        let langConsts: string[] = ['/fr/', '/de/', '/en-us/'];
-        langConsts.forEach((lang) => {
-            if (window.location.href.indexOf(lang) !== -1) {
-                var length = lang.length;
-                var idx = window.location.href.indexOf(lang);
-                var newUrl = window.location.href.substring(0, idx) + newLang + window.location.href.substring(idx + length, window.location.href.length);
-                window.location.href = newUrl;
-            }
-        })
-    }
-
-    getLang(value: string) {
-        return `\\${value}\\`;
     }
 }

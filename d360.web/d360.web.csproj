@@ -592,6 +592,7 @@
     <Compile Include="Filters\SwaggerDescriptionAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
     <Compile Include="Filters\ApplicationExceptionFilterAttribute.cs" />
+    <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
