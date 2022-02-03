@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
@@ -17,5 +18,11 @@ namespace d360.core.entities
         public int pageNum { get; set; } = 1;
         [DataMember]
         public int? total { get; set; } = 0;
+    }
+
+    public class PagedApiBaseViewModel<T> : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IReadOnlyList<T> items { get; set; }
     }
 }
