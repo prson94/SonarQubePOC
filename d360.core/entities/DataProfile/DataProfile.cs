@@ -364,7 +364,11 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid uid { get; set; }
+        [DataMember]
         public string path { get; set; }
+        [DataMember]
+        public string assetTypePath { get; set; }
+        [DataMember]
         public Decimal confidence { get; set; }
     }
 
