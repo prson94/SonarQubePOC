@@ -31,6 +31,7 @@
                                     (ngModelChange)="model.AssetType.Hierarchy.PredicateUid=$event;updateParent(model.AssetType.Hierarchy.PredicateUid);"
                                     [style]="{'width':'100%'}"
                                     name="predicate"
+                                    [igDataCy]="'AssetType_Field_Predicate'"
                                     [required]="isPredicateRequired">
                         </p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
@@ -72,7 +73,11 @@
                 <div class="row">
                     <div class="col s12">
                         <div class="FieldName">Description</div>
-                        <p-editor name="Description" [(ngModel)]="model.AssetType.Description" [style]="{'height':'150px'}"></p-editor>
+                        <p-editor name="Description"
+                                  [igDataCy]="'AssetType_Field_Description'"
+                                  [(ngModel)]="model.AssetType.Description"
+                                  [style]="{'height':'150px'}">
+                        </p-editor>
                     </div>
                 </div>
 
@@ -188,8 +193,18 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px;">
-                    <button pButton label="Save" type="submit" (click)="save()" [disabled]="!form.form.valid || isSaving || (model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor)"></button>
-                    <button pButton label="Cancel" (click)="cancel()"></button>
+                    <button pButton
+                            label="Save"
+                            type="submit"
+                            (click)="save()"
+                            [igDataCy]="'AssetType_Button_Save'"
+                            [disabled]="!form.form.valid || isSaving || (model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor)">
+                    </button>
+                    <button pButton
+                            label="Cancel"
+                            (click)="cancel()"
+                            [igDataCy]="'AssetType_Button_Cancel'">
+                    </button>
                 </div>
             </div>
         </div>
