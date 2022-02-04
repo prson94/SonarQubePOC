@@ -13,11 +13,12 @@
     "lint": "node_modules\\.bin\\tslint  -p scripts/tsconfig.json -c tslint.json",
     "build": "node_modules\\.bin\\ng build",
     "buildProd": "node_modules\\.bin\\ng build --configuration=production",
+    "build-dev-ops-prod": "node ./replace.timestamp.js && node_modules\\.bin\\ng build --configuration=production",
     "updateBuild": "node ./replace.timestamp.js",
     "webpackGlobal": "webpack --watch --progress",
     "webpackLocal": "node_modules\\.bin\\webpack --watch --progress",
     "webpackLocalDevelopmentMode": "node_modules\\.bin\\webpack --watch --progress --debug --devtool cheap-module-eval-source-map --config webpack.aot.config.js",
-    "webpackLocalProductionMode": "node_modules\\.bin\\ng build --configuration=production",
+    "webpackLocalProductionMode": "node_modules\\.bin\\webpack --config webpack.prod.config.js",
     "postinstall": "node .\\Scripts\\environments\\workaround.js"
   },
   "license": "ISC",
