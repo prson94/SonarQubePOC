@@ -21,7 +21,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "modal-drawer";
+    activeControl: string = "locale";
     controls = [
         { label: "Switch Input", key: "switch", type: "Form" },
         { label: "Button Directive", key: "button", type: "Form" },

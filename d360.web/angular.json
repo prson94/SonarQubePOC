@@ -14,7 +14,7 @@
       "sourceRoot": "Scripts",
       "prefix": "d3s",
       "i18n": {
-        "sourceLocale": "en-US",
+        "sourceLocale": "en",
         "locales": {
           "fr": {
             "translation": "locale/messages.fr.xlf",

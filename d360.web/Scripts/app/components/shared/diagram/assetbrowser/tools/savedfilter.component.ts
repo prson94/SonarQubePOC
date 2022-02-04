@@ -11,7 +11,7 @@ import { MenuItem } from 'primeng/api';
     providers: [BrowserService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
-.ig-dropdown{ padding-right: 4px };
+.ig-dropdown{ padding-right: 4px; }
         `]
 })
 export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, OnChanges {

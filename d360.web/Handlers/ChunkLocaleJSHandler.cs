@@ -14,7 +14,8 @@ namespace WebApp
 
             if (fileToServe.Contains("chunks"))
             {
-                fileToServe = fileToServe.Replace("chunks", "fr");
+                var localeCode = InternationalizationUtilities.GetUserLocaleCode();
+                fileToServe = fileToServe.Replace("chunks", localeCode);
             }
             FileInfo jsFile = new FileInfo(context.Server.MapPath(fileToServe));
             context.Response.ClearContent();
