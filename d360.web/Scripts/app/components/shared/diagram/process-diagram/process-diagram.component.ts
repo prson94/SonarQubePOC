@@ -1200,9 +1200,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     deselect($event) {
         this.selectedNodeData = null;
-        if (this.diagram) {
-            this.diagram.clearSelection();
-            this.diagram.select(null);
+        if (this.myDiagram) {
+            this.myDiagram.clearSelection();
         }
     }
 }
