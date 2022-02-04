@@ -25,6 +25,7 @@ export class LookupTooltipComponent implements OnDestroy  {
     @Input() icon: string;
     @Input() class: string;
     @Input() contentAnchor: string = 'left';
+    @Input() field: any;
     @HostBinding('style.color') @Input() iconColor: string;
     @HostBinding('style.background') @Input() foreColor: string;
 
@@ -56,6 +57,9 @@ export class LookupTooltipComponent implements OnDestroy  {
     }
     
     private load(item, tip) {
+        if (this.field && this.field.HideTooltip) {
+            return;
+        }
         this.tooltipSingletonService.tooltipShow(this.objectType, this.objectId);
         if (!this.data) {
             //get object properties for the tooltip

@@ -5,109 +5,36 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <include file="scripts/d3s-schema.xml"/>
-	<include file="scripts/GOV-5832.xml"/>
-	<include file="scripts/GOV-7783.xml"/>
-	<include file="scripts/GOV-6152-FusionTypeDefinitions.xml"/>
-	<include file="scripts/GOV-6180.xml"/>
-	<include file="scripts/GOV-6186-FusionTypeFieldDefinitions.xml"/>
-	<include file="scripts/GOV-6169.xml"/>
-	<include file="scripts/GOV-6194.xml"/>      <!-- Missing intersect type between Markit view / Markit Table-->
-	<include file="scripts/GOV-5759.xml"/>
-	<include file="scripts/GOV-6326.xml"/>      <!-- Create resource id 0 system if not present -->
-	<include file="scripts/GOV-6207-D3S-User.xml"/>
-	<include file="scripts/GOV-6228.xml"/>
-	<include file="scripts/GOV-6447.xml"/>
-  <include file="scripts/GOV-6445.xml"/>    <!-- Create the priority for company items for index rebuild webjob-->
-  <include file="scripts/GOV-4770-2.xml"/>
-  <include file="scripts/GOV-6733.xml"/>
-  <include file="scripts/GOV-6723.xml"/>
-  <include file="scripts/GOV-6629.xml"/>
-  <include file="scripts/GOV-7061.xml"/>
-  <include file="scripts/GOV-7113.xml"/>
-  <include file="scripts/GOV-7198.xml"/> <!--system setting for draft statuses-->
-  <include file="scripts/GOV-7032.xml"/> <!--system setting for FieldJsonPropertyLoadLimitToTopLevel-->
-  <include file="scripts/GOV-7217.xml"/>
-  <include file="scripts/GOV-7316.xml"/> <!--add environmentlevel to databaseserver table and comments column-->
-  <include file="scripts/GOV-7381.xml"/> <!--system setting for verbose v1 lineage-->
-  <include file="scripts/GOV-7437.xml"/>
-  <include file="scripts/GOV-7493.xml"/> <!--remove Foreign Key FK_CompanySetting_CompanySetting-->
-  <include file="scripts/GOV-7371.xml"/>
-  <include file="scripts/GOV-7540.xml"/>
-  <include file="scripts/GOV-7706.xml"/>
-  <include file="scripts/GOV-7897.xml"/> <!--system setting for LineageVersion-->
-  <include file="scripts/GOV-7943.xml"/> <!--system setting for UseAsTransformationLimit-->
-  <include file="scripts/GOV-8130.xml"/> <!--rename search type in system settings--> 
-  <include file="scripts/GOV-8159.xml"/> <!--change default types for search to none (all)--> 
-  <include file="scripts/GOV-8308.xml"/> <!--added setting for FusionEnabled--> 
-  <include file="scripts/GOV-8104.xml"/>  <!--change default homepage title size -->
-  <include file="scripts/GOV-8396.xml"/> <!--rename Artifact search type in system settings to BusinessAsset -->
-  <include file="scripts/GOV-8641.xml"/> <!-- Community Package schema and tables -->
-  <include file="scripts/GOV-8900.xml"/> <!-- Updating system setting to Data360 Workflow -->
-  <include file="scripts/GOV-9109.xml"/> <!-- set UseAsTransformationLimit default to 6 -->
-  <include file="scripts/GOV-9260.xml"/> <!-- changing company logo to .svg -->
-  <include file="scripts/GOV-7930.xml"/> <!-- remove UseLegacyLineage setting -->
-  <include file="scripts/GOV-9226.xml"/> <!-- script to add the setting for max number of excel rows-->
-  <include file="scripts/GOV-8871.xml"/> <!-- Removing unused Govern Settings-->
-  <include file="scripts/GOV-9473.xml"/> <!-- Change default value for fusion to false-->
-  <include file="scripts/GOV-9405.xml"/> <!-- Add LifecycleEndDate column to Company table-->
-  <include file="scripts/GOV-9413.xml"/> <!-- Add ShowNavigationChildren Config to setting and CompanySetting table-->
-  <include file="scripts/GOV-9470.xml"/> <!-- Change the default version of lineage to v3-->
-  <include file="scripts/GOV-10013.xml"/> <!-- Remove ArtifactType_TaxonomyTypeID, ArtifactType_TaxonomyTypeIDNodes settings-->
-  <include file="scripts/GOV-10314.xml"/> <!-- Add settings to support Process Composer (Governance Role)-->
-  <include file="scripts/GOV-8884.xml"/> <!-- Add column for locking settings so they cannot be changed by customers -->
-  <include file="scripts/GOV-8885.xml"/>  <!-- Add column for Setting Type so they can be validated-->
-  <include file="scripts/GOV-11063.xml"/>  <!-- Change Setting Type on settings 60,71 to number-->
-  <include file="scripts/GOV-11173.xml"/>  <!-- Change Setting Type on settings 68 to not locked-->  
-  <include file="scripts/Table.dbo.CompanyRebuildJobStatus.xml"/>
-  <include file="scripts/GOV-11295.xml"/>  <!-- Rename table CompanyFeature-->  
-  <include file="scripts/GOV-11296.xml"/>  <!-- Remove table CompanyFeature_bak-->  
-  <include file="scripts/GOV-11826.xml"/>  <!-- Rename table plugin.ClientFusionType-->  
-  <include file="scripts/GOV-11573.xml"/>  <!-- Remove settings GovernanceRoleLabel and GovernanceRoleDescription-->  
-  <include file="scripts/GOV-11795.xml"/>  <!-- Add ApiTimeout setting -->  
-  <include file="scripts/GOV-11988.xml"/>  <!-- Default value set 1 for Resource table and resourcetypeid column-->
-  <include file="scripts/GOV-12603.xml"/>  <!-- Add JSON Attribute enable disable setting -->
-  <include file="scripts/GOV-11888.xml"/>  <!-- Add CORS allowed origins company setting -->
-  <include file="scripts/GOV-12607.xml"/>  <!-- Rename fusion and event tables in plugin-->
-  <include file="scripts/GOV-6448.xml"/>  <!-- Drop ResourceType Table and ResourceTypeId column from Resource.-->
-  <include file="scripts/GOV-12608.xml"/>  <!-- Drop fusion and event tables in plugin rename in GOV-12607-->
-  <include file="scripts/GOV-12600.xml"/>  <!-- Remove FieldJsonPropertyLoadLimitToTopLevel settings-->
-  <include file="scripts/GOV-8477.xml"/>  <!-- Drop DateLastLoggedIn column from Resource.-->
-  <include file="scripts/GOV-11255.xml"/>  <!-- service account name update with less confusing name-->
-  <include file="scripts/GOV-13225.xml"/>  <!--Change setting type from string to GUID of Governance Role Reference List Uid(73).-->
-  <include file="scripts/GOV-11835.xml"/>  <!-- Removing table plugin.ClientFusionType_backup-->
-  <include file="scripts/GOV-13550.xml"/>  <!-- Rename tables plugin.CompanyPackage and plugin.FieldType-->
-  <include file="scripts/GOV-13415.xml"/>  <!-- Add CSP allowed frameing ancestors company setting -->
-  <include file="scripts/GOV-13927.xml"/>  <!-- remove DisableQuestionPosting Config to setting and CompanySetting table -->
-  <include file="scripts/GOV-13551.xml"/>  <!-- Drop backup tables plugin.CompanyPackage and plugin.FieldType-->
-  <include file="scripts/GOV-13928.xml"/>  <!-- Removing unused settings from setting and companySettings tables-->
-  <include file="scripts/GOV-13875.xml"/>  <!-- Rename Community schema tables-->
-  <include file="scripts/GOV-5317.xml"/>  <!-- Add WorkflowDigestEmailDays company setting -->
-  <include file="scripts/GOV-14441.xml"/>  <!-- Add ShowChangeLogTab setting -->
-  <include file="scripts/GOV-14442.xml"/>  <!-- Add ShowCommentsTab setting -->
-  <include file="scripts/GOV-14503.xml"/>  <!-- Add Data Profile lifespan setting-->
-  <include file="scripts/GOV-11730.xml"/>  <!-- Rename Fusion definitions tables-->
-  <include file="scripts/GOV-14552.xml"/>  <!-- Removing dbo.resource ApiReadOnlyAccessToken column-->
-  <include file="scripts/GOV-14830.xml"/>  <!-- Rename CommonQuery table-->
-  <include file="scripts/GOV-14553.xml"/>  <!-- Removing dbo.resource Status column-->
-  <include file="scripts/GOV-14980.xml"/>  <!-- Community set database compatibility level 150-->
-  <include file="scripts/GOV-14666.xml"/>  <!-- Remove setting WorkflowDigestEmailEnabled (59) -->
-  <include file="scripts/GOV-14831.xml"/>  <!-- Drop backup table [dbo].[CommonQuery_backup]-->
-  <include file="scripts/GOV-14838.xml"/>  <!-- Rename tables dbo.CompanyHelpResource and dbo.HelpResource-->
-  <include file="scripts/GOV-14640.xml"/>  <!-- Removing dbo.Company synchagentlog column-->
-  <include file="scripts/GOV-11731.xml"/>  <!-- Removing Rename Fusion definitions tables in previous sprint-->
-  <include file="scripts/GOV-15329.xml"/>  <!-- Drop tables dbo.CompanyHelpResource and dbo.HelpResource-->
-  <include file="scripts/GOV-13879.xml"/>  <!-- Drop tables rename in Community schema-->
-  <include file="scripts/GOV-15479.xml"/>  <!-- Create Index On table Resource-->
-  <include file="scripts/GOV-15441.xml"/>  <!-- Rename tables dbo.GenericCommand-->
-	<!-- Tables -->
-  <include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
-  <include file="scripts/Table.dbo.DomainSetting.xml"/>
-  <include file="scripts/Table.dbo.OpenIdRequest.xml"/>
-  <include file="scripts/GOV-15436.xml"/>  <!-- Rename tables dbo.Setting and dbo.CompanySetting-->
-  <include file="scripts/GOV-15830.xml"/>  <!-- Removing dbo.DatabaseServer FusionQueue column-->
-  <include file="scripts/GOV-15442.xml"/>  <!-- Drop tables dbo.GenericCommand_backup-->
-  <include file="scripts/GOV-16089.xml"/>  <!-- Add column region in tables dbo.DatabaseServer-->
-  <include file="scripts/GOV-15437.xml"/>  <!-- Drop renamed tables dbo.Setting and dbo.CompanySetting-->
-  <include file="scripts/GOV-16702.xml"/>  <!-- Add column EnvironmentNotificationEmail in tables dbo.company-->
+	<!-- Views (object-based naming) -->
+	<include file="scripts/View.dbo.RandomNumber.xml"/> 				<!-- Must be here to support functions below -->
+
+	<!-- Functions (object-based naming) -->
+	<include file="scripts/Function.dbo.GenerateAPIKey.xml"/> 			<!-- Must be here to support Resource table below -->
+	<include file="scripts/Function.dbo.GenerateAPIKeyWrapper.xml"/> 	<!-- Must be here to support Resource table below -->
+
+	<!-- Tables (object-based naming) ORDERING IS VERY SPECIFIC -->
+	<include file="scripts/Table.dbo.Client.xml"/>
+	<include file="scripts/Table.dbo.DatabaseServer.xml"/>
+	<include file="scripts/Table.dbo.Company.xml"/>
+	<include file="scripts/Table.dbo.DomainCertificate.xml"/>
+	<include file="scripts/Table.dbo.DomainSetting.xml"/>
+	<include file="scripts/Table.dbo.CompanyDomainSetting.xml"/>
+	<include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
+	<include file="scripts/Table.dbo.CompanyRebuildJobStatus.xml"/>
+	<include file="scripts/Table.dbo.Resource.xml"/>
+	<include file="scripts/Table.dbo.CompanyResource.xml"/>
+	<include file="scripts/Table.dbo.EnvironmentTemplate.xml"/>
+	<include file="scripts/Table.dbo.OpenIdRequest.xml"/>
+
+	<!-- Functions (object-based naming) -->
+
+	<!-- Views (object-based naming) -->
+	<include file="scripts/View.dbo.ClientEnvironment.xml"/>
+
+	<!-- Procedures (object-based naming) -->
+	<include file="scripts/Procedure.dbo.SetCompanyResource.xml"/>
+	
+	<!-- Cleanup -->
+	<include file="scripts/Function.Deletions.xml"/>
+
 </databaseChangeLog>

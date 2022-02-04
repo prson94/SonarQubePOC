@@ -1597,8 +1597,15 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 							            where	AssetUid = M.Uid
 									            and EffectiveDate <= getutcdate()
 									            and EffectiveEndDate is null
-									            and JSON_VALUE(Definition, '$.Governance.Check') = 'Relation'
-									            and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') in (select T.Uid from IntersectType T inner join Predicate P on P.ID = T.PredicateID and P.[Type] in (3,4))
+									            and (
+                                                    (
+                                                    JSON_VALUE(Definition, '$.Governance.Check') = 'Relation'
+									                and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') in (select T.Uid from IntersectType T inner join Predicate P on P.ID = T.PredicateID and P.[Type] in (3,4))
+                                                    ) or (
+									                JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate'
+									                and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') in (select Uid from Predicate where [Type] in (3,4))
+                                                    )
+                                                )
 									            and Definition <> '{}'
 						            ) V
 				            for json path

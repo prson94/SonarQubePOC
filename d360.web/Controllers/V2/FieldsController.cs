@@ -22,6 +22,8 @@ using Resources;
 using System.Web.Http.Description;
 using d360.core.helpers;
 using System.Globalization;
+using System.Dynamic;
+using d360.core.resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -658,8 +660,19 @@ namespace d360.web.Controllers.V2
                 {
                     throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
                 }
+                var lists = new List<dynamic>();
 
-                var lists = await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList");
+                if (@class == AssetTypeClass.Group)
+                {
+                    var items = Company.AssetTypes.Where(x => x.Class == AssetTypeClass.Reference)
+                        .Select(x => new { type = "L", title = x.Name, value = x.uid }).ToList();
+                    lists.AddRange(items);
+                }
+                else
+                {
+                    lists = (await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList")).ToList();
+
+                }
                 var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var attributes = lists.Where(i => i.type == "A").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
                 var lookups = lists.Where(i => i.type == "L").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
@@ -2167,11 +2180,14 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
             ]
-        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, bool isForAssetForm = false, Guid? assetUid = null)
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, string lookupParentValue = null, bool isForAssetForm = false, Guid? assetUid = null)
         {
             var prefix = "Fields.GetFilterVales => ";
             try
             {
+                string pagingQuery = "";
+                string whereQuery = "";
+
                 if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")
                 {
                     var classInfos = AssetTypeClass.BusinessAsset.GetAsList().Where(x => x.ID == AssetTypeClass.BusinessAsset || x.ID == AssetTypeClass.TechnicalAsset);
@@ -2194,15 +2210,51 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                 var assetType = Company.AssetTypes
                     .FirstOrDefault(x => x.uid == assetTypeUid);
-                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
 
-
-                string pagingQuery = "";
-                string whereQuery = "";
                 if (skip != null && take != null)
                 {
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
                 }
+
+                if (assetType.Class == AssetTypeClass.Group
+                    && (fieldName == "SecondaryOwnerUid" || fieldName == "PrimaryOwnerUid"))
+                {
+
+                    var baseSql = $@" from reporting.Global_Resource r ";
+
+                    List<string> wheres = new List<string>();
+                    wheres.Add("r.state = 1");
+                    if (HideData3SixtyUsers())
+                    {
+                        wheres.Add("(R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com')");
+                    }
+
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        filter = "%" + filter + "%";
+                        wheres.Add("(concat(r.LastName,', ',r.FirstName) like @filter)");
+                    }
+
+                    if (wheres.Count > 0)
+                    {
+                        baseSql += " where " + string.Join(" and ", wheres);
+                    }
+
+                    var dataSelect = "select r.LastName + ', ' + r.FirstName as text, uid as value ";
+                    var countSelect = "select count(*) ";
+
+                    var sql = $"{dataSelect} {baseSql} order by r.LastName + ', ' + r.FirstName {pagingQuery};{countSelect}  {baseSql}; ";
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { skip, take, filter });
+                    var data = new
+                    {
+                        items = resultsAssets.Read<dynamic>().ToList(),
+                        count = resultsAssets.Read<int>().FirstOrDefault()
+                    };
+
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
 
                 //list items for parent field
                 if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
@@ -2406,9 +2458,23 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         colorjoin = "";
                     }
                 }
+
+                string parentFieldJoins = "";
+                List<string> parentValues = new List<string>();
+                if (fieldType.ParentFieldTypeID > 0 && !string.IsNullOrEmpty(lookupParentValue))
+                {
+                    parentValues = lookupParentValue.Split(',').ToList();
+                    parentFieldJoins = $@"inner join Asset A on a.uid = V.AssetUid
+                    cross apply GetParentByAssetID(A.ID)Parent
+					inner join [Intersect] I on I.Id = Parent.IntersectID";
+
+                    whereQuery += " and I.SubjectID in @parentValues ";
+                }
+
                 string query = $@"
                     select {selectStatement} 
                     from FieldLookupValue V
+                    {parentFieldJoins}
                     {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
                     where @fieldTypeId = v.FieldTypeID
                     {whereQuery}
@@ -2416,6 +2482,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 					{pagingQuery};
 
                     select count(1) from FieldLookupValue V
+                        {parentFieldJoins}
                         {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
                         where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
@@ -2438,7 +2505,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     ";
                 }
 
-                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel });
+                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel, parentValues });
 
                 if (!isForAssetForm)
                 {

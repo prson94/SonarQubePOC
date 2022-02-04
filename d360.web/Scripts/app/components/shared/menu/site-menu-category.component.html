@@ -1,6 +1,7 @@
 ﻿<li #item 
     [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}"
     title="{{title}}" 
+    [attr.data-cy]="getDataCyAttribute()"
     (mouseenter)="show(item)" (click)="navigateToUrl(url)" 
     style="cursor: pointer;"
     [igDataCy]="'PrimaryNav_' + title">

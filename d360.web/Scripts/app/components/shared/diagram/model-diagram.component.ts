@@ -233,7 +233,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     }
 
     buildNav() {
-        this.setCommonSecondaryNavTabs(true);
+        this.setCommonSecondaryNavTabs({ hasAudit: true });
         this.breadcrumbsService
             .getAreaName(this.objectType, this.id)
             .subscribe(result => {
@@ -247,7 +247,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                         .subscribe(icon => {
                             this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, "Model");
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
-                            this.setCommonSecondaryNavTabs(true, false, this.assetType.HasDashboards);
+                            this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
                             let diagramTab = new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.id}`, null, 7)
                             this.secondaryNavService.showItem(diagramTab);
                             diagramTab.active = true;

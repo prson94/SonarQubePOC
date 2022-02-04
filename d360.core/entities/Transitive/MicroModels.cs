@@ -150,7 +150,7 @@ namespace d360.core.entities
         public string Action { get; set; }
         [DataMember]
         public DateTime? DateCompleted { get; set; }
-        [DataMember]       
+        [DataMember]
         public DateTime? DateStarted { get; set; }
         [DataMember]
         public Guid AssetTypeUid { get; set; }
@@ -168,7 +168,7 @@ namespace d360.core.entities
         public Guid LoadUid { get; set; }
     }
 
-    
+
 
     public class TopNavigationItem
     {
@@ -364,6 +364,9 @@ namespace d360.core.entities
         public bool HasGovernanceRoleUidSet { get; set; }
         public bool HasProcessDiagram { get; set; }
         public bool HasRequestCertificationWorkflow { get; set; }
+        public bool HasGroups { get; set; }
+        public bool HasFollowing { get; set; }
+        public bool HasItemOwn { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]

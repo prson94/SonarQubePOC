@@ -94,6 +94,7 @@ namespace d360.core.entities
     public class TagDetail
     {
         public string DisplayValue { get; set; }
+        public string DisplayPath { get; set; }
         public int AssetID { get; set; }
         public Guid AssetUid { get; set; }
         public Guid AssetTypeUid { get; set; }

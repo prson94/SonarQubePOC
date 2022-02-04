@@ -1,0 +1,67 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Resource-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[Resource]') and type in (N'U'))
+begin
+	create table [dbo].[Resource](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Username] [nvarchar](250) NOT NULL,
+		[Password] [nvarchar](50) MASKED WITH (FUNCTION = 'default()') NOT NULL,
+		[LastName] [nvarchar](250) NOT NULL,
+		[FirstName] [nvarchar](250) NOT NULL,
+		[Email] [nvarchar](500) NOT NULL,
+		[APIPublicKey] [varchar](25) CONSTRAINT [DF_Resource_APIPublicKey] DEFAULT ([dbo].[GenerateAPIKeyWrapper](25)) NOT NULL,
+		[APIPrivateKey] [varchar](50) CONSTRAINT [DF_Resource_APIPrivateKey] DEFAULT ([dbo].[GenerateAPIKeyWrapper](50)) NOT NULL,
+		[uid] [uniqueidentifier] CONSTRAINT [DF_Resource_Uid] DEFAULT (newid()) NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_Resource_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
+		constraint [PK_Resource] primary key clustered ( [ID] asc )
+	)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Resource-Indexes-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_APIPublicKey_APIPrivateKey')
+begin
+	CREATE NONCLUSTERED INDEX [IX_Resource_APIPublicKey_APIPrivateKey] ON [dbo].[Resource]
+	(
+		[APIPublicKey] ASC,
+		[APIPrivateKey] ASC
+	)
+end
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_UID')
+begin
+	CREATE NONCLUSTERED INDEX [IX_Resource_UID] ON [dbo].[Resource] ( [uid] ASC )
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

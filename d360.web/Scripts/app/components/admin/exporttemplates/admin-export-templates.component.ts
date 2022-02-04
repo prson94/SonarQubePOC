@@ -144,7 +144,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.areaName = StringConstants.Section_ExportTemplates;
         this.setCommonItems();
                 
-        this.setCommonSecondaryNavTabs(false);
+        this.setCommonSecondaryNavTabs({ hasAudit: false });
         this.theDeleteCallback = this.deleteExportTemplate.bind(this);
     }
     

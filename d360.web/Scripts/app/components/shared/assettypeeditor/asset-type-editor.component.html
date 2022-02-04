@@ -12,15 +12,16 @@
                 <div class="row">
                     <div class="col l6 m6 s12">
                         <div class="FieldNameRequired no-margin">Name</div>
-                        <input pInputText
-                               type="text"
-                               #name="ngModel"
+                        <input maxlength="250"
+                               pInputText
                                name="name"
-                               [(ngModel)]="model.AssetType.Name"
-                               maxlength="250" 
+                               [attr.data-cy]="'AssetType_Field_Name'"
+                               #name="ngModel"
                                style="height:25px;width:100%;display:block;"
+                               type="text"
+                               [(ngModel)]="model.AssetType.Name"
                                [igDataCy]="'AssetType_Field_Name'"
-                               required/>
+                               required />
                         <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                     </div>
                     <div class="col l6 m6 s12" *ngIf="showParentPredicates">
@@ -28,6 +29,7 @@
                         <p-dropdown [options]="model.Predicates"
                                     #predicate="ngModel"
                                     [(ngModel)]="model.AssetType.Hierarchy.PredicateUid"
+                                    [attr.data-cy]="'AssetType_Field_ParentPredicate'"
                                     (ngModelChange)="model.AssetType.Hierarchy.PredicateUid=$event;updateParent(model.AssetType.Hierarchy.PredicateUid);"
                                     [style]="{'width':'100%'}"
                                     name="predicate"
@@ -41,7 +43,7 @@
                 <div class="row" *ngIf="model.Parents && model.Parents.length > 0 && model.AssetType.Hierarchy.PredicateUid != null && model.AssetType.Hierarchy.PredicateUid.length > 0">
                     <div class="col s12">
                         <div class="FieldNameRequired">Parent</div>
-                        <p-dropdown filter="true" [options]="model.Parents" #parent="ngModel" [(ngModel)]="model.AssetType.ParentUid" [style]="{'width':'100%'}" name="parent" required></p-dropdown>
+                        <p-dropdown filter="true" [options]="model.Parents" [attr.data-cy]="'AssetType_Field_Parent'" #parent="ngModel" [(ngModel)]="model.AssetType.ParentUid" [style]="{'width':'100%'}" name="parent" required></p-dropdown>
                         <div [hidden]="parent.valid || parent.pristine" class="validation-text">Parent is required</div>
                     </div>
                 </div>
@@ -62,11 +64,10 @@
                     </div>
                     <div class="col l6 m6 s12">
                         <div class="FieldName">Available Field Tokens</div>
-                        <p-dropdown [igDataCy]="'AssetType_Field_Tokens'"
-                                    [options]="model.Tokens"
+                        <p-dropdown [options]="model.Tokens"
+                                    [igDataCy]="'AssetType_Field_Tokens'"
                                     (onChange)="selectToken($event)"
-                                    [style]="{'width':'100%'}">
-                        </p-dropdown>
+                                    [style]="{'width':'100%'}"></p-dropdown>
                     </div>
                 </div>
 
@@ -93,14 +94,14 @@
                                 <strong>Gateways</strong> - A gateway is represented by the diamond shape and is used to control the divergence and convergence of connections. It will determine traditional decisions, as well as the forking, merging, and joining of paths.<br /><br />
                             </d3s-info-tooltip>
                         </div>
-                        <p-dropdown name="FlowObjectType" [(ngModel)]="model.AssetType.FlowObjectType" [options]="flowObjectDDL" [style]="{'width':'100%'}"></p-dropdown>
+                        <p-dropdown name="FlowObjectType" [(ngModel)]="model.AssetType.FlowObjectType" [attr.data-cy]="'AssetType_Field_FlowObjectType'" [options]="flowObjectDDL" [style]="{'width':'100%'}"></p-dropdown>
                     </div>
                 </div>
 
                 <div class="row" *ngIf="showNotesField">
                     <div class="col s12">
                         <div class="FieldName">Source Notes</div>
-                        <p-editor name="Source Notes" [(ngModel)]="model.AssetType.Notes" [style]="{'height':'150px'}"></p-editor>
+                        <p-editor name="Source Notes" [attr.data-cy]="'AssetType_Field_SourceNotes'" [(ngModel)]="model.AssetType.Notes" [style]="{'height':'150px'}"></p-editor>
                     </div>
                 </div>
             </div>
@@ -109,7 +110,7 @@
                     <div class="FieldName">Auto Display Description?</div>
                     <div class="row">
                         <div class="col l1 m2 s12">
-                            <p-checkbox name="AutoDisplayDescription" [(ngModel)]="model.AssetType.AutoDisplayDescription" binary="true"></p-checkbox>
+                            <p-checkbox name="AutoDisplayDescription" [attr.data-cy]="'AssetType_Field_AutoDisplayDescription'" [(ngModel)]="model.AssetType.AutoDisplayDescription" binary="true"></p-checkbox>
                         </div>
                         <div class="col l11 m10 s12">
                             <div class="FieldInstructions">If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</div>
@@ -120,7 +121,7 @@
                         <div class="FieldName">Auto Display Owner/Parent?</div>
                         <div class="row">
                             <div class="col l1 m2 s12">
-                                <p-checkbox name="AutoDisplayParent" [(ngModel)]="model.AssetType.AutoDisplayParent" binary="true"></p-checkbox>
+                                <p-checkbox name="AutoDisplayParent" [attr.data-cy]="'AssetType_Field_AutoDisplayParent'" [(ngModel)]="model.AssetType.AutoDisplayParent" binary="true"></p-checkbox>
                             </div>
                             <div class="col l11 m10 s12">
                                 <div class="FieldInstructions">If enabled, the Owner/Parent asset type display format will be included on the list page for this asset type if the asset type has a Predicate to Parent of "child type of".</div>
@@ -131,7 +132,7 @@
                         <div class="FieldName">Edit Parent?</div>
                         <div class="row">
                             <div class="col l1 m2 s12">
-                                <p-checkbox name="CanEditParent" [(ngModel)]="model.AssetType.CanEditParent" binary="true"></p-checkbox>
+                                <p-checkbox name="CanEditParent" [attr.data-cy]="'AssetType_Field_CanEditParent'" [(ngModel)]="model.AssetType.CanEditParent" binary="true"></p-checkbox>
                             </div>
                             <div class="col l11 m10 s12">
                                 <div class="FieldInstructions">If enabled, the Parent can be edited on the asset definition page.</div>
@@ -143,7 +144,7 @@
                     <div class="FieldName">Maximum Depth</div>
                     <div class="row">
                         <div class="col s12">
-                            <p-spinner name="MaximumDepth" required [(ngModel)]="model.AssetType.Hierarchy.MaximumDepth" [min]="1" [max]="10" maxlength="2" style="height:25px;width:100%;"></p-spinner>
+                            <p-spinner name="MaximumDepth" required [(ngModel)]="model.AssetType.Hierarchy.MaximumDepth" [attr.data-cy]="'AssetType_Field_MaximumDepth'" [min]="1" [max]="10" maxlength="2" style="height:25px;width:100%;"></p-spinner>
                         </div>
                         <div class="col s12">
                             <div class="FieldInstructions">The maximum depth to which a tree can contain nodes at.</div>
@@ -155,8 +156,8 @@
                         <div class="FieldName">Background Color</div>
                         <div class="row">
                             <div class="col s12">
-                                <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolor"></p-colorPicker>
-                                <input type="text" [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolortext" style="padding:2px;width:65px" />
+                                <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolor" [attr.data-cy]="'AssetType_Field_IconBackColor'"></p-colorPicker>
+                                <input type="text" [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolortext" [attr.data-cy]="'AssetType_Field_IconBackColorText'" style="padding:2px;width:65px" />
                             </div>
                             <div class="col s12">
                                 <div class="FieldInstructions">Sets the background color of icons representing items of this type within diagrams.</div>
@@ -166,8 +167,8 @@
                         <div class="FieldName">Text Color</div>
                         <div class="row">
                             <div class="col s12">
-                                <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolor"></p-colorPicker>
-                                <input type="text" [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolortext" style="padding:2px;width:65px" />
+                                <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolor" [attr.data-cy]="'AssetType_Field_IconForeColor'"></p-colorPicker>
+                                <input type="text" [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolortext" [attr.data-cy]="'AssetType_Field_IconForeColorText'" style="padding:2px;width:65px" />
                             </div>
                             <div class="col s12">
                                 <div class="FieldInstructions">Sets the text color of icons representing items of this type within diagrams.</div>
@@ -180,7 +181,7 @@
                     <div class="FieldName">Icon</div>
                     <div class="row">
                         <div class="col s12">
-                            <ig-icon-picker [(ngModel)]="model.AssetType.IconStyle.Icon" [ngModelOptions]="{standalone: true}" ngDefaultControl></ig-icon-picker>
+                            <ig-icon-picker [(ngModel)]="model.AssetType.IconStyle.Icon" [ngModelOptions]="{standalone: true}" [attr.data-cy]="'AssetType_Field_Icon'" ngDefaultControl></ig-icon-picker>
                         </div>
                         <div class="col s12">
                             <div class="FieldInstructions" *ngIf="assetTypeClass != 15">Sets the icon representing items of this type within summary page / search results.</div>

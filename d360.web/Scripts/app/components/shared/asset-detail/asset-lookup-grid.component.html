@@ -2,7 +2,12 @@
     <div class="row" style="margin-bottom: 10px">
         <div>
             <div class="FieldDisplayContent">
-                <div>Reference List: <d3s-preview-tooltip objectType="ReferenceItemType" [objectId]="data.objectId"><a [href]="data?.url" (click)="navigate(data?.url, $event)">{{data?.name}}</a></d3s-preview-tooltip></div>
+                <ng-container *ngIf="!interceptLinkClick">
+                    <div>Reference List: <d3s-preview-tooltip objectType="ReferenceItemType" [objectId]="data.objectId"><a [href]="data?.url" (click)="navigate(data?.url, $event)">{{data?.name}}</a></d3s-preview-tooltip></div>
+                </ng-container>
+                <ng-container *ngIf="interceptLinkClick">
+                    <div>Reference List: <a context-link (click)="navigate(data?.url, $event, data)">{{data?.name}}</a></div>
+                </ng-container>
             </div>
             <div *ngIf="data?.description" class="FieldDisplayContent">
                 <div *ngIf="showDescription" [innerHtml]="data.description | safeHtml"></div>

@@ -42,6 +42,10 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 
     @ViewChild('item', { static: false }) item: ElementRef<HTMLLIElement>;
 
+    getDataCyAttribute() {
+        return `PrimaryNav_${this.title}`;
+    }
+
     navigateToUrl(url) {
         if (url) {
             this.router.navigateByUrl(url);
@@ -54,7 +58,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
     }
 
     private positionMenu() {
-        if (!this.menu && this.menu.NavigationItems) {
+        if (!this.menu || !this.menu.NavigationItems) {
             return;
         }
 

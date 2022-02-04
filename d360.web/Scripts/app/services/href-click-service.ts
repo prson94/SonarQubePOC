@@ -37,7 +37,6 @@ export class LinkClickInterceptor {
         if (origEvent) {
             origEvent.preventDefault();
             origEvent.stopPropagation();
-
             var event = origEvent["from-context-method"] ?? "";
 
             if (event === "open") {
@@ -103,7 +102,7 @@ export class LinkClickInterceptor {
             }
 
             //this is a group object
-            if (data.PrimaryOwnerUid) {
+            if (data.hasOwnProperty('PrimaryOwnerUid')) {
                 adcEv.type = AssetDetailClickType.Group;
                 adcEv.objectType = "Group";
                 adcEv.uid = data.Uid;
@@ -142,6 +141,12 @@ export class LinkClickInterceptor {
                 adcEv.objectType = data.Object;
                 adcEv.uid = data.AssetUid;
                 adcEv.assetTypeUid = data.AssetTypeUid;
+            }
+
+            //if click comes from Reference List type link
+            if (data.referenceListTypeUid) {
+                adcEv.type = AssetDetailClickType.ReferenceItem;
+                adcEv.assetTypeUid = data.referenceListTypeUid;
             }
 
         } else {

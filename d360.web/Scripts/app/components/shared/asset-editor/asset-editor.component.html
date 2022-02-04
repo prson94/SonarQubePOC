@@ -1,12 +1,11 @@
 ﻿<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
     <div class="form-header" *ngIf="hasHeader">
         {{title}}
-        <div class="sub-header" *ngIf="!isLoading">
+        <div class="sub-header" *ngIf="!isLoading && !hidePath">
             <span *ngIf="!assetTypePath" class="fa fa-spinner fa-spin"></span>
             {{assetTypePath}}
         </div>
     </div>
-
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div class="row" *ngIf="isInError">
         <div class="err-message">{{isInErrorMessage}}</div>

@@ -22,6 +22,7 @@ import { GroupResponsibilityComponent } from './group-responsibility.component';
 import { ToastModule } from 'primeng/toast';
 import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
+import { GroupMembersModule } from '../shared/group/group-members.module';
 
 @NgModule({
     imports: [
@@ -43,6 +44,7 @@ import { TableModule } from 'primeng/table';
         PipesModule,
         TilesModule,
         SharedGridPagingInfoModule,
+        GroupMembersModule
     ],
     declarations: [
         GroupComponent,

@@ -65,6 +65,26 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Core" id="Table.dbo.CompanyDomainGroup-FK-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_CompanyDomainGroup_CompanyDomainSetting]') AND parent_object_id = OBJECT_ID(N'[dbo].[CompanyDomainGroup]'))
+begin
+	ALTER TABLE [dbo].[CompanyDomainGroup]  WITH CHECK ADD  CONSTRAINT [FK_CompanyDomainGroup_CompanyDomainSetting] FOREIGN KEY([CompanyID], [DomainSettingID]) REFERENCES  [dbo].[CompanyDomainSetting] ([CompanyID], [DomainSettingID]) ON DELETE CASCADE;
+	ALTER TABLE [dbo].[CompanyDomainGroup] CHECK CONSTRAINT [FK_CompanyDomainGroup_CompanyDomainSetting];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
   <changeSet author="Pappas" id="Table.dbo.CompanyDomainGroup-Indices-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

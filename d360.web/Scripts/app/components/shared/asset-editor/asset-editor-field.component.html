@@ -47,7 +47,7 @@
                 <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
                 <p-editor *ngSwitchCase="'Html'"
                           [formControlName]="field.FieldName"
-                          [igDataCy]="'Asset_Modal_Field_Editor'"
+                          [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                           [attr.name]="field.FieldName"
                           [style]="{'height':'150px'}"
                           placeholder="{{(isRequired() ? 'Value required' : '')}}"
@@ -117,7 +117,7 @@
 
                 <div *ngSwitchCase="'LazyLookup'">
                     <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
-                        <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="overlayPanel.toggle($event)">
+                        <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="lookupFieldClicked($event)">
                             <p-multiSelect #dropdown
                                            [maxSelectedLabels]="5"
                                            igSize="full"
@@ -125,11 +125,13 @@
                                            [inputId]="field.FieldName + '_input_' + componentUid"
                                            [formControlName]="field.FieldName"
                                            [attr.name]="field.FieldName"
+                                           [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                                            [options]="field.Items"
                                            (onChange)="onChangeMultiselect($event)"
                                            [required]="field.Required"
                                            [readonly]="true"
-                                           placeholder="{{field.Required ? 'Value Required' : 'Optional'}}"
+                                           placeholder="{{lookupSelectPlaceholder}}"
+                                           [disabled]="isLookupFieldDisabled"
                                            [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                                            display="chip">
                             </p-multiSelect>
@@ -142,11 +144,13 @@
                                     [inputId]="field.FieldName + '_input_' + componentUid"
                                     [formControlName]="field.FieldName"
                                     [attr.name]="field.FieldName"
+                                    [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                                     [options]="field.Items"
                                     (onSelect)="onSelect($event)"
+                                    [disabled]="isLookupFieldDisabled"
                                     [required]="field.Required"
                                     [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
-                                    (click)="overlayPanel.toggle($event)">
+                                    (click)="lookupFieldClicked($event)">
                             <ng-template let-item pTemplate="selectedItem">
                                 <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
                                     <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>

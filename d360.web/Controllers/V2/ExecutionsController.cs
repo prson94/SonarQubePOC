@@ -213,7 +213,7 @@ namespace d360.web.Controllers.V2
                 var res = await AssetRepository.GetExecutionStatusModel(executionID, !summaryOnly);
                 if (res == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound,ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
                 }
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -297,7 +297,7 @@ namespace d360.web.Controllers.V2
         {
             if (model == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest,ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
             }
 
             if (!Company.CurrentResourceIsAdmin)
@@ -310,13 +310,13 @@ namespace d360.web.Controllers.V2
             }
             if (model.Component?.Length > 250)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,ApiMessages.ComponentMaxSize250)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.ComponentMaxSize250)).ConfigureAwait(false);
             }
 
 
             if (!Enum.IsDefined(typeof(ExecutionExternalStatus), model.Status))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,ApiMessages.StatusInvalid));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.StatusInvalid));
             }
 
             try
@@ -387,7 +387,7 @@ namespace d360.web.Controllers.V2
                 status = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "status").Value;
                 if (!Enum.IsDefined(typeof(ExecutionExternalStatus), status))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,ApiMessages.StatusInvalid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.StatusInvalid)).ConfigureAwait(false);
                 }
             }
 
@@ -396,7 +396,7 @@ namespace d360.web.Controllers.V2
                 DateTime _tempstartDate;
                 if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_startDate").Value, out _tempstartDate))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidStartDate );
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidStartDate);
                 }
                 _startDate = _tempstartDate;
 
@@ -554,7 +554,7 @@ namespace d360.web.Controllers.V2
             }
             if (queryParams.Any(x => x.Key == "_direction"))
             {
-                var allowedDirections = new [] { "asc", "desc" };
+                var allowedDirections = new[] { "asc", "desc" };
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                 if (!allowedDirections.Contains(order.Trim().ToLower()))
                 {
@@ -575,7 +575,7 @@ namespace d360.web.Controllers.V2
                                                 "requestedbyname" };
                 if (!validOrderByFields.Contains(orderByCol.ToLower()))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter,ActionApiMessages.InvalidOrder);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ActionApiMessages.InvalidOrder);
                 }
                 orderBySql = $" order by {orderByCol} {_direction} ";
             }
@@ -1181,13 +1181,6 @@ from	[Load] L
         {
             try
             {
-                var response = new ConfirmResponse();
-                var c = await Request.Content.ReadAsMultipartAsync();
-                var bytes = await c.Contents[0].ReadAsByteArrayAsync();
-
-                var contentType = c.Contents[0].Headers.ContentType;
-                var extension = MimeTypeExtensionsMap.GetExtension(contentType.ToString());
-
                 var assetType = Company.AssetTypes.Where(r => r.uid == assetTypeUid).FirstOrDefault();
                 var intersectType = Company.IntersectTypes.Where(i => i.uid == intersectTypeUid).FirstOrDefault();
 
@@ -1211,6 +1204,18 @@ from	[Load] L
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidIntersectTypeUidProvided)).ConfigureAwait(false);
                     }
                 }
+		
+                var response = new ConfirmResponse();
+                var c = await Request.Content.ReadAsMultipartAsync();
+                var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
+
+                if (file == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "file"))).ConfigureAwait(false);
+                }
+
+                byte[] bytes = await file.ReadAsByteArrayAsync();
+                string extension = Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
 
                 Load load = null;
                 var errorMessages = new List<string>();
@@ -1221,12 +1226,12 @@ from	[Load] L
                 {
                     if (extension == ".xlsx")
                     {
-                        if(type == BulkLoadType.Users)
+                        if (type == BulkLoadType.Users)
                         {
                             objectType = "Membership";
                             objectID = 1;
                         }
-                        else if(type == BulkLoadType.Groups)
+                        else if (type == BulkLoadType.Groups)
                         {
                             objectType = "Membership";
                             objectID = 0;
@@ -1236,7 +1241,7 @@ from	[Load] L
                             objectType = "ArtifactType";
                             objectID = 0;
                         }
-                        else if(intersectType != null)
+                        else if (intersectType != null)
                         {
                             objectType = "IntersectType";
                             objectID = intersectType.ID;
@@ -1462,7 +1467,7 @@ from	[Load] L
                     await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(bytes));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
                     response.message = FormControllerApiMessage.FileUploadedAndQueueProcessing;
-                    return  await Task.FromResult<IHttpActionResult>(
+                    return await Task.FromResult<IHttpActionResult>(
                             ResponseMessage(
                                 Request.CreateResponse(
                                     HttpStatusCode.OK, response

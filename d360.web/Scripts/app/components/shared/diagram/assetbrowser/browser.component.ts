@@ -31,7 +31,7 @@ import { MessagesObservableService } from '../../../../services/messages-observa
 
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { TreeNode } from 'primeng/api';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, Subscription } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -48,6 +48,7 @@ import { ObjectStatisticsService } from '../../../../services/object-statistics.
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { CompanySettingEnum } from '../../../../models/settings.model';
 import { AssetDetailComponent } from '../../asset-detail/asset-detail.component';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 declare var window: any;
 @Component({
@@ -200,6 +201,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+    selectedTag: any;
+
     //#region Component Base Methods
 
     constructor(
@@ -217,11 +223,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         private assetService: AssetService,
         private responsibilityService: ResponsibilityService,
         private objectStatisticsService: ObjectStatisticsService,
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+        private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
+
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            this.selectedDiagramAsset = null;
+            this.linkClickInterceptor.handleEvent(this, ev);
+        });
 
         this.maxLinkCountToAvoidNodesTemplate = settingsService.getSettingById(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount).NumberSetting.Value;
     }
@@ -229,8 +241,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     public ngOnInit() {
 
         this.originalAssetUid = this.assetUid;
-
-        this.checkSecondaryNavLocalStorage();
 
         // Do this only on initial load.
         this.browserService
@@ -871,6 +881,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#endregion
 
     private event_DiagramSelectionChanged(e: go.DiagramEvent) {
+        this.selectedAsset = this.selectedTag = this.selectedReferenceItem = null;
         if (e != null && e.subject != null) {
             if (e.subject instanceof go.Set) {
                 let parts = (e.subject as go.Set<go.Part>);
@@ -4134,5 +4145,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             });
         }
+    }
+
+    get hasAnySidePanelAsset(): boolean {
+        return this.selectedDiagramAsset || this.selectedAsset || this.selectedReferenceItem || this.selectedTag;
     }
 }

@@ -147,4 +147,7 @@
   <data name="Artifact" xml:space="preserve">
     <value>Artifact</value>
   </data>
+  <data name="ReferenceList" xml:space="preserve">
+    <value>Reference List</value>
+  </data>
 </root>

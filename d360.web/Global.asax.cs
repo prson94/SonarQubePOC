@@ -32,11 +32,12 @@ namespace d360.web
             builder.RegisterType<DateTimeService>().As<IDateTimeService>().SingleInstance();
             builder.RegisterType<DecimalService>().As<IDecimalService>().SingleInstance();
             builder.RegisterType<Int64Service>().As<IInt64Service>().SingleInstance();
+            builder.RegisterType<Int32TypeService>().As<IInt32TypeService>().SingleInstance();
             builder.RegisterType<DependencyInjectionTypeServiceProvider>().As<ITypeServiceProvider>().SingleInstance();
             builder.RegisterType<AssetService>().As<IAssetService>().SingleInstance();
             builder.RegisterType<FavoriteRouteMatcherService>().SingleInstance();
-
-            builder.RegisterType<ApplicationUriProvider>().As<IApplicationUriProvider>().SingleInstance();
+            builder.RegisterType<RequestValidator>().As<IRequestValidator>().InstancePerRequest();
+            builder.RegisterType<ApplicationUriProvider>().As<IApplicationUriProvider>().InstancePerRequest();
 
             builder.RegisterControllers(typeof(MvcApplication).Assembly);
             builder.RegisterMediatR(typeof(MvcApplication).Assembly);

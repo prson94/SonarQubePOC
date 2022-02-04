@@ -1,5 +1,4 @@
-﻿
-import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
+﻿import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';

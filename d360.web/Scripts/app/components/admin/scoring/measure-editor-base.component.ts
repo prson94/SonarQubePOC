@@ -70,7 +70,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     metricForm: FormGroup = null;
     matchType: string;
     maxHeight: number = window.innerHeight - 160;
-    measureHasThreshold: boolean = false;
     originalConditions: MetricAssetVersionConditionViewModel[];
     originalEffectiveDate: Date;
     originalModel: MetricAssetViewModel;
@@ -518,7 +517,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 });
             });
 
-            if (this.measureHasThreshold) { //(this.model.HasThreshold) {
+            if (this.model.HasThreshold) {
                 let threshold = +this.displayThreshold;
                 this.model.Threshold = +(threshold / 100).toFixed(5);
             }
@@ -673,6 +672,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                         || x.Threshold !== originalMatch.Threshold
                         || +(x.Weight ?? 0) !== +(originalMatch.Weight ?? 0) 
                         || +(x.DisplayWeight ?? 0) !== +(originalMatch.DisplayWeight ?? 0)
+                        || +(x.DisplayThreshold ?? 0) !== +(originalMatch.DisplayThreshold ?? 0)
                         || x.DisplayOrder !== originalMatch.DisplayOrder
                         || x.Position !== originalMatch.Position
                         || x.conditionItemFields.filter(x => x.field).length !== originalMatch.conditionItemFields.filter(x => x.field).length) {

@@ -39,11 +39,13 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { AfterViewChecked } from '@angular/core';
 import { PropertyGroupComponent } from '../controls/property-group/property-group.component';
 import { AssetEditorFieldComponent } from './asset-editor-field.component';
+import { GroupService } from '../../../services/group.service';
+import { Group } from '../../../models/group.model';
 
 @Component({
     selector: 'asset-editor',
     templateUrl: './asset-editor.component.html',
-    providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService],
+    providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService, GroupService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['asset-editor.component.less']
@@ -73,7 +75,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() adding: boolean = false;
     @Input() isV2API: boolean = false;
     @Input() useV2ApiLink: boolean = false;
-
+    @Input() hidePath: boolean = false;
     @Input() showActions: boolean = true;
 
     @Input() useModelBinding: boolean = false;
@@ -113,6 +115,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     selectedTagID: number;
     hasUpdateFormChanged: boolean = false;
 
+    isProcessSidePanel: boolean = false;
+
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
     @ViewChildren(AssetEditorFieldComponent) dyFieldRef: QueryList<AssetEditorFieldComponent>;
@@ -126,6 +130,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         private uriBasedService: UriBasedService,
         private cascadeService: CascadeService,
         private assetService: AssetService,
+        private groupsService: GroupService,
         private dynEditorService: DynEditorService,
         protected settingsService: CompanySettingsService,
         private elRef: ElementRef
@@ -139,6 +144,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
             }
         });
+
+        if (!this.showAsModal) {
+            this.modalFormMaxHeight = null;
+        }
     }
 
     @HostListener('window:resize', ['$event'])
@@ -248,6 +257,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             if (this.isV2API && this.selection.AssetUid) {
                 id = this.selection.AssetUid;
             }
+
+            //this comes from process side panel
+            if (this.selection.key) {
+                id = this.selection.key;
+                this.isProcessSidePanel = true;
+            }
+
             this.loadedAssetUid = id;
         }
         this.isLoading = true;
@@ -389,6 +405,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     }
                 });
             }, 500);
+
+            if (this.useModelBinding) {
+                this.form.valueChanges.subscribe((x) => {
+                    this.onSubmit();
+                });
+            }
+
         }
 
         this.ref.markForCheck();
@@ -396,7 +419,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.focusToFirst();
             if (this.propertyGroups && this.propertyGroups.length > 0) {
                 this.propertyGroups.forEach((pg) => pg.refreshBadgeCounts());
-                this.propertyGroups.filter((pg) => pg.title.length > 0)[0].showHeaderLine = false;
+                var first = this.propertyGroups.filter((pg) => pg.title.length > 0)[0];
+                if (first) {
+                    first.showHeaderLine = false;
+                }
             }
             this.ref.markForCheck();
         }, 20);
@@ -583,7 +609,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     onSubmit(addAnother: boolean = false) {
-        this.savingInProgress = true;
 
         if (addAnother) {
             this.savingInProgressWithAddNew = true;
@@ -635,6 +660,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         this.form.value[p] = null;
                     }
                 }
+                else if (field.FieldType === 'Lookup') {
+                    var value = this.form.value[p];
+
+                    if (Array.isArray(value) && value.length === 0) {
+                        this.form.value[p] = null;
+                    }
+                }
 
             }
         }
@@ -674,8 +706,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             return;
         }
 
-
-        this.postToApiV2({ item: values, action: action, addAnother: addAnother });
+        if (this.objectType === "Group") {
+            this.postToGroupsApiV2({ item: values, action: action, addAnother: addAnother });
+        }
+        else {
+            this.postToApiV2({ item: values, action: action, addAnother: addAnother });
+        }
 
     }
 
@@ -745,6 +781,65 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
 
             });
+    }
+
+    postToGroupsApiV2(event) {
+        this.savingInProgress = true;
+        let values: any = {};
+        let group: Group = new Group();
+        group.Fields = {};
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in event.item) {
+            if (event.item.hasOwnProperty(p)) {
+                if (Array.isArray(event.item[p])) {
+                    values[p] = event.item[p].join();
+                } else {
+                    values[p] = event.item[p];
+                }
+            }
+        }
+
+        var upsertSub = this.groupsService.postGroup(group);
+
+        let rootProperties: string[] = ['Name', 'Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
+        for (var p in values) {
+            if (rootProperties.some((prop) => prop.toUpperCase() === p.toUpperCase())) {
+                group[p] = values[p];
+            }
+            else {
+                group.Fields[p] = values[p];
+            }
+
+            if (p.toUpperCase() === "UID") {
+                upsertSub = this.groupsService.putGroup(group);
+            }
+        }
+
+        upsertSub.subscribe((data) => {
+            var res = data[0];
+            event.Success = res.Success;
+
+            if (res.Success) {
+                let msg = group.Uid ? 'Successfully updated' : 'Successfully added';
+                this.showMessageForApiResult(this.messagesService, res, msg);
+                if (res.uid) {
+                    event.assetUid = res.uid;
+                    event.assetTypeUid = this.objectTypeUid;
+                }
+                this.savingInProgress = false;
+                this.savingInProgressWithAddNew = false;
+                this.saveClick.emit(event);
+            }
+            else {
+                this.savingInProgress = false;
+                this.savingInProgressWithAddNew = false;
+
+                this.ref.markForCheck();
+                this.showMessageForApiResult(this.messagesService, res);
+            }
+
+        });
     }
 
     getUTCDate(date: Date): Date {

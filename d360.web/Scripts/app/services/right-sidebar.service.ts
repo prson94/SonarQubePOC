@@ -170,31 +170,22 @@ export class SecondaryNavService {
         this.secondaryNavState.currentState.currentTab = item;
         this.saveSecondaryNavState(this.secondaryNavState);
     }
-    getLocalActiveItem(): SecondaryNavItem {
-        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentTab;
-    }
+    
     setLocalCurrentTabs(items: SecondaryNavItem[]) {
         this.secondaryNavState.currentState.shownTabs = items;
         this.saveSecondaryNavState(this.secondaryNavState);
     }
-    getLocalCurrentTabs(): SecondaryNavItem[] {
-        let state: SecondaryNavState = JSON.parse(localStorage.getItem('SecondaryNavState'));
-        return state.currentState.shownTabs;
-    }
-    getLocalCurrentObject() {
-        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentObject;
-    }
-    getLocalCurrentArea() {
-        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentArea;
-    }
+    
     setLocalHomeUrl(url: string): any {
         this.homeUrlChangeSource.next(url);
         this.secondaryNavState.currentState.currentHome = url;
         this.saveSecondaryNavState(this.secondaryNavState);
     }
+
     getLocalHomeUrl(): string {
-        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentHome;
+        return this.secondaryNavState.currentState.currentHome;
     }
+
     clearSecondaryNavLocalStorage() {
         localStorage.removeItem('SecondaryNavState');
     }
@@ -204,10 +195,12 @@ export class SecondaryNavService {
             this.saveSecondaryNavState(this.secondaryNavState);
         }
     }
+
     getItemState(url: string): NavState {
         let current = this.getCurrentState();
         return current.previousStates.find(state => state.currentTab && state.currentTab.url == url);
     }
+    
     getCurrentState(): SecondaryNavState {
         return JSON.parse(localStorage.getItem('SecondaryNavState'));
     }

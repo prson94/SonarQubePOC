@@ -29,6 +29,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
+    @Input() showShowInDetailTile: boolean = true;
+    @Input() showPersistInFilters: boolean = true;
     @Input() showAddToSearch: boolean = false;
 
     @Input() showDisplayInColumn: boolean = false;
@@ -85,8 +87,15 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 
     load(): void {
-        if (this.objectType == "IntersectType")
+        if (this.objectType === "IntersectType") {
             this.showIsPartOfKey = false;
+        }
+        if (this.objectType === "GroupType") {
+            this.showIsPartOfKey = false;
+            this.showShowInDetailTile = false;
+            this.showAddToSearch = true;
+            this.showPersistInFilters = false;
+        }
         this.isLoading = true;
         this.hasKeyFields = false;
         this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
@@ -153,7 +162,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             case "ComputedRelationshipField":
                 return "Field from Relationship";
             case "ComputedRelationshipReferenceList":
-                return "Reference Item List from Relationship";            
+                return "Reference Item List from Relationship";
             case "DateTime":
                 return "Date Time";
             case "ComputedOwnershipLookup":
@@ -257,7 +266,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     let index = this.fieldDisplayModel.indexOf(items[0]);
                     if (index >= 0 && index < this.fieldDisplayModel.length - 1)
                         [this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];
-                }                
+                }
             }
         );
     }

@@ -1,0 +1,114 @@
+﻿<div *ngIf="groupUid" class="group-members">
+    <div class="actions-header">
+        <div class="search-input">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="loadGroupMembers()"
+                             [(ngModel)]="simpleTextFilter"
+                             [infoTooltip]="simpleSearchTooltipHTML">
+            </ig-search-field>
+        </div>
+        <div class="grid-action-buttons" *ngIf="!groupIsActiveDirectory && !readOnly">
+            <button igButton
+                    pTooltip="Add New Members"
+                    tooltipPosition="left"
+                    tooltipStyleClass="ig-tooltip"
+                    class="ig-button-primary"
+                    icon="fa-plus"
+                    (click)="add()">
+            </button>
+        </div>
+    </div>
+    <p-table #dt
+             [value]="groupItems"
+             selectionMode="single"
+             [metaKeySelection]="true"
+             [globalFilterFields]="['Name','Owner']"
+             [paginator]="true"
+             [rows]="20"
+             [(selection)]="selectedRow"
+             [tableStyleClass]="readOnly ? 'side-panel-max-width' : ''"
+             [loading]="isLoading"
+             [loadingIcon]="'fa fa-spinner fa-spin'">
+        <ng-template pTemplate="header">
+            <tr>
+                <th [pSortableColumn]="'Name'">
+                    Name
+                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'Owner'">
+                    Owner
+                    <d3s-sortIcon [field]="'Owner'"></d3s-sortIcon>
+                </th>
+                <th style="width: 35px;" *ngIf="!readOnly"></th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'Owner'" [datatype]="'text'"></d3s-column-filter></th>
+                <th *ngIf="!readOnly"></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td>
+                    <ng-container *ngIf="interceptLinkClick">
+                        <a context-link (click)="memberClicked($event,item)">{{item.Name}}</a>
+                    </ng-container>
+                    <ng-container *ngIf="!interceptLinkClick">
+                        {{item.Name}}
+                    </ng-container>
+                </td>
+                <td>{{item.Owner}}</td>
+                <td *ngIf="!readOnly">
+                    <div class="RowTools">
+                        <a (click)="selectedRow = item;showDelete=true"
+                           pTooltip="Remove Member"
+                           tooltipPosition="left"
+                           tooltipStyleClass="ig-tooltip" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage" let-columns>
+            <tr>
+                <td [attr.colspan]="3">
+                    No group members
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+</div>
+
+<d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="showDelete=false"
+           [title]="'Remove Member'"
+           [isVisible]="showDelete">
+    <div class="content">
+        Are you sure you want to remove <strong>{{selectedRow.FirstName + ' ' + selectedRow.LastName}}</strong> from <strong>{{groupName}}</strong>?
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+    </div>
+</d3s-modal>
+
+<d3s-modal *ngIf="loadedGroup" additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showAddMembers=false"
+           [subtitle]="loadedGroup.Name"
+           [title]="'Add New Members'"
+           [isVisible]="showAddMembers">
+    <div class="content">
+        <div class="row">
+            <d3s-resource-multiselect-grid *ngIf="showAddMembers" [showToolTip]="false" [multiple]="field.MultiSelect" [(ngModel)]="field.Value" [showSelectedSummary]="false" [showResourceType]="true" ngDefaultControl [field]="field"></d3s-resource-multiselect-grid>
+        </div>
+    </div>
+    <div class="action-bar">
+        <button igButton label="Cancel" (click)="cancel();" [disabled]="savingInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Add" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !field.Value || field.Value.length === 0"></button>
+    </div>
+</d3s-modal>

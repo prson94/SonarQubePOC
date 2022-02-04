@@ -56,7 +56,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     ngOnInit() {
-        this.setCommonSecondaryNavTabs(true);
+        this.setCommonSecondaryNavTabs({ hasAudit: true });
 
         if (this.auditSidebar) {
             this.auditSidebar.url = `/sidebar/audit/Tag/0`;

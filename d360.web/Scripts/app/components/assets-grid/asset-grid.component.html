@@ -27,6 +27,7 @@
     <div class="grid-action-buttons">
         <button *ngIf="showAddButton && hasAddAssetPermissions()"
                 igButton
+                [attr.data-cy]="'Assets_Add'"
                 pTooltip="Create new asset"
                 tooltipPosition="top"
                 tooltipStyleClass="ig-tooltip"
