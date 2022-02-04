@@ -30,6 +30,7 @@
                                    [(ngModel)]="model.FieldType.FriendlyName"
                                    style="width: 98%; display: block;"
                                    (keyup)="syncApiNameWithName && updateApiName($event)"
+                                   [igDataCy]="'FieldType_Field_Name'"
                                    #friendlyName="ngModel" />
                             <div [hidden]="friendlyName.valid || friendlyName.pristine">Friendly name is required</div>
                         </div>
@@ -47,6 +48,7 @@
                                         (onChange)="loadDataType($event.value)"
                                         #dataType="ngModel"
                                         [disabled]="disableFieldTypeSelection"
+                                        [igDataCy]="'FieldType_Field_Type'"
                                         ngDefaultControl></p-dropdown>
                             <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
                         </div>
@@ -56,6 +58,7 @@
                                    pInputText
                                    type="number"
                                    [(ngModel)]="model.FieldType.Type[currentType].ColumnWidth"
+                                   [igDataCy]="'FieldType_Field_Width'"
                                    style="width: 25%; display: block;" />
                         </div>
                     </div>
@@ -75,6 +78,7 @@
                                    (keyup)="syncApiNameWithName=false;updateApiName($event);"
                                    #apiName="ngModel"
                                    [ngStyle]="{'background':( actionName=='Edit' ? '#EFEFEF': '')}"
+                                   [igDataCy]="'FieldType_Field_API Name'"
                                    [disabled]="actionName=='Edit'" />
                             <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
                         </div>
@@ -88,6 +92,7 @@
                                    type="text"
                                    maxlength="250"
                                    [(ngModel)]="model.FieldType.Category"
+                                   [igDataCy]="'FieldType_Field_Category'"
                                    style="width: 98%; display: block;" />
                         </div>
                         <div>
@@ -99,6 +104,7 @@
                                        [(ngModel)]="model.FieldType.Type[currentType].SortOrder"
                                        [disabled]="!model.FieldType.Type[currentType].IsListable"
                                        [ngStyle]="{'background':(!model.FieldType.Type[currentType].IsListable ? '#EFEFEF': '')}"
+                                       [igDataCy]="'FieldType_Field_Order'"
                                        style="width: 25%; display: block;" />
                             </div>
                         </div>
@@ -112,6 +118,7 @@
                     <div *ngIf="showAddToSearch">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].Search.AddToResult"
+                                    [igDataCy]="'FieldType_Field_AddToResult'"
                                     label="Add To Search Results"
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="onAddToSearchChange($event);"
@@ -120,6 +127,7 @@
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].IsDisplayable"
+                                    [igDataCy]="'FieldType_Field_IsDisplayable'"
                                     label="Show In Detail Tile?"
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="model.FieldType.Type[currentType].IsDisplayable=$event;onShowDetailChange($event);"
@@ -144,6 +152,7 @@
                     <div *ngIf="showIsEditable">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].IsEditable"
+                                    [igDataCy]="'FieldType_Field_IsEditable'"
                                     label="Is Editable?"
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="model.FieldType.Type[currentType].IsEditable=$event;onShowEditableChange($event);"
@@ -152,6 +161,7 @@
                     <div *ngIf="showIsListable">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].IsListable"
+                                    [igDataCy]="'FieldType_Field_IsListable'"
                                     label="Is Listable?"
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="!$event ? model.FieldType.Type[currentType].SortOrder=0:model.FieldType.Type[currentType].SortOrder=model.FieldType.Type[currentType].SortOrder"
@@ -160,6 +170,7 @@
                     <div *ngIf="showIsRequired">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].Validation.IsRequired"
+                                    [igDataCy]="'FieldType_Field_IsRequired'"
                                     label="Is Required?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsRequired')"
@@ -168,6 +179,7 @@
                     <div *ngIf="showIsPartOfKey">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].IsPartOfKey"
+                                    [igDataCy]="'FieldType_Field_IsPartOfKey'"
                                     label="Part Of Key?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
@@ -175,6 +187,7 @@
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].IsPrimaryFilter"
+                                    [igDataCy]="'FieldType_Field_IsPrimaryFilter'"
                                     label="Persist in filters?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
@@ -182,6 +195,7 @@
                     <div *ngIf="enableAllowMultipleValues">
                         <p-checkbox binary="true"
                                     [ngModel]="model.FieldType.Type[currentType].AllowMultipleValues"
+                                    [igDataCy]="'FieldType_Field_AllowMultipleValues'"
                                     (ngModelChange)="model.FieldType.Type[currentType].AllowMultipleValues=$event;model.FieldType.Type[currentType].IsPartOfKey=false;"
                                     label="Allow Multiple Items?"
                                     [ngModelOptions]="{standalone: true}"
@@ -190,6 +204,7 @@
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].ShowIfEmpty"
+                                    [igDataCy]="'FieldType_Field_ShowIfEmpty'"
                                     label="Show if Empty?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
@@ -1079,10 +1094,12 @@
                 <div style="padding-top:10px">
                     <button pButton
                             type="submit"
+                            [igDataCy]="'FieldType_Button_Save'"
                             [disabled]="!fieldEditor.form.valid || !displayFieldSelected ||  !valid() || errorMessage != ''"
                             label="Save"></button>
                     <button pButton
                             type="button"
+                            [igDataCy]="'FieldType_Button_Cancel'"
                             label="Cancel"
                             (click)="cancel()"></button>
                 </div>

@@ -5,7 +5,11 @@
     <p-menubar *ngIf="hasMenu" [model]="menuItems"></p-menubar>
     <div *ngIf="!hasDate && !hasMenu">
         <ul>
-            <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" [pTooltip]="hideTooltip ? null : addTooltip"><i class="fa fa-plus fa-fw"></i></a></li>
+            <li class="left" *ngIf="hasAdd">
+                <a class="Action" (click)="addClick.emit(null)" [pTooltip]="hideTooltip ? null : addTooltip" [igDataCy]="dataCyPrefix + 'Button_Add'">
+                    <i class="fa fa-plus fa-fw"></i>
+                </a>
+            </li>
             <li class="left" *ngIf="hasSuggest"><a class="Action" (click)="suggestClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Suggest'"><i class="fa fa-commenting fa-fw"></i></a></li>
             <li class="left" [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="hasExport"><a class="Action" (click)="isExportDisabled ? return : exportClick.emit(null)" [pTooltip]="hideTooltip ? null : isExportDisabled ? exportDisabledMessage : 'Export to Excel'"><i [class]="IsExportInProgress ? 'fa fa-spinner fa-spin fa' : 'fa fa-download fa-fw'"></i></a></li>
             <li class="left" [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="hasCustomExport"><a class="Action" (click)="isExportDisabled ? return : customExportClick.emit(null)" pTooltip="Choose export to Excel format"><i class="fa fa-download fa-fw"></i></a></li>
@@ -14,7 +18,7 @@
             <li class="left" *ngIf="hasEdit"><a class="Action" (click)="editClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Edit'"><i class="fa fa-pencil fa-fw"></i></a></li>
             <li class="left" *ngIf="hasSave"><a class="Action" (click)="saveClick.emit(null)" [pTooltip]="hideTooltip ? null : 'Save'"><i class="fa fa-floppy-o fa-fw"></i></a></li>
             <li class="left" *ngIf="hasFilterMode">
-                <a class="Action" (click)="filterClick()" [pTooltip]="hideTooltip ? null : 'Filter Mode'">
+                <a class="Action" (click)="filterClick()" [pTooltip]="hideTooltip ? null : 'Filter Mode'" [igDataCy]="dataCyPrefix + 'Button_Filter'">
                     <i class="fa fa-filter fa-fw" [ngClass]="{'red-text darken-2':!filterMode}"></i>
                 </a>
             </li>

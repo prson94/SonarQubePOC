@@ -5,6 +5,7 @@ enum PrimeComponent {
     Dropdown = 'P-DROPDOWN',
     Editor = 'P-EDITOR',
     Table = 'P-TABLE',
+    Checkbox = 'P-CHECKBOX',
 }
 
 @Directive({
@@ -32,8 +33,11 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
             case PrimeComponent.Table:
                 this.setDataCyAttrToPaginator(nativeElement);
                 break;
+            case PrimeComponent.Checkbox:
+                const checkboxLabel = nativeElement.querySelector('.p-checkbox-label');
+                this.setDataCyAttr(checkboxLabel, this.igDataCy);
+                break;
             default:
-                console.log('tagName: ' + tagName);
                 this.setDataCyAttr(nativeElement, this.igDataCy);
         }
     }
@@ -77,7 +81,7 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.paginatorMutationObserver.disconnect();
+        this.paginatorMutationObserver?.disconnect();
     }
 }
 
