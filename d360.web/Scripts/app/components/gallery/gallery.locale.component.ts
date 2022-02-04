@@ -23,10 +23,6 @@ export class GalleryLocaleComponent implements OnInit {
     translatedText: string = $localize`This text comes from .TS file.`;
     tooltipText: string = $localize`Localized tooltip text which must be set in ts file before binding to components attribute`;
 
-    constructor(private langService: LanguageService) {
-
-    }
-
     ngOnInit(): void {
 
     }

@@ -1041,8 +1041,6 @@
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
     <Content Include="angular.json" />
     <Content Include="fonts\fontawesome-webfont.svg" />
-    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.locale.component.ts" />
-    <Content Include="Scripts\app\components\gallery\gallery.locale.component.html" />
     <Content Include="Scripts\environments\workaround.js" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
