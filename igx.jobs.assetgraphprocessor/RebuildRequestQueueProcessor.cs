@@ -20,8 +20,8 @@ namespace igx.jobs.assetgraphprocessor
         const string functionName = "AssetGraphProcessor_RebuildQueueRequest";
 
 #if DEBUG
-[Disable] 
-public static async Task RunRebuildProcessor([TimerTrigger("0 0 1 * * *", RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
+[Disable]
+        public static async Task RunRebuildProcessor([TimerTrigger("0 0 1 * * *", RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
 #else
         public static async Task RunRebuildProcessor([QueueTrigger("%AssetGraphQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
 #endif
@@ -38,17 +38,8 @@ public static async Task RunRebuildProcessor([TimerTrigger("0 0 1 * * *", RunOnS
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == queueInfo.CompanyID);
 
-            var sec = new UriSecurityContextProvider()
-            {
-                CompanyID = queueInfo.CompanyID,
-                ResourceID = 0,
-                CompanyPrefix = _c.UrlPrefix,
-                IsAdministrator = true
-            };
-            var cache = new DummyCachingProvider();
-            var queue = new AzureQueueSource();
-            var community = new CommunityContext(cache, queue, sec);
-
+            var company = JobDbContextCreator.CreateCompanyContext(_c.CompanyID, 0, _c.UrlPrefix, true);
+            
             #endregion
 
             CoreFunction.AITrackEvent(functionName, $"RebuildQueueRequest triggered for CompanyID {queueInfo.CompanyID}", null, queueInfo.CompanyID);
@@ -69,7 +60,7 @@ public static async Task RunRebuildProcessor([TimerTrigger("0 0 1 * * *", RunOnS
                 }
                 finally 
                 {
-                    await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
+                    await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
                 }
             }
 

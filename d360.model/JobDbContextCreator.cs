@@ -11,7 +11,8 @@ namespace d360.model
     {
         public static CompanyContext CreateCompanyContext(int companyId, int resourceId, string urlPrefix, bool isAdmin, 
             AzureQueueSource queue = null,
-            AzureStorageProvider storage = null)
+            AzureStorageProvider storage = null, 
+            string connectionString = null)
         {
             var sec = new UriSecurityContextProvider()
             {
@@ -29,11 +30,13 @@ namespace d360.model
             {
                 queue = new AzureQueueSource();
             }
-            var community = new CommunityContext(cache, queue, sec);
+
             if (storage == null)
             {
                 storage = new AzureStorageProvider();
             }
+
+            var community = CreateCommunityContext(companyId, resourceId, urlPrefix, isAdmin, connectionString);
 
             return new CompanyContext(community, cache, queue, mail, sec, storage, true);
         }

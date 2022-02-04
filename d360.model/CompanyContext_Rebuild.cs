@@ -1,0 +1,83 @@
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Threading.Tasks;
+
+namespace d360.model
+{
+    partial class CompanyContext : BaseContext
+    {
+        public DbSet<RebuildJobStatus> RebuildJobStatuses { get; set; }
+
+        public async Task<List<RebuildJobStatus>> GetRebuildJobStatuses()
+        {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
+            var list = await RebuildJobStatuses.ToListAsync();
+            list.ForEach(i =>
+            {
+                if (i.State == CompanyRebuildJobStatusState.Active && i.LastStartedOn <= DateTime.UtcNow.AddHours(-timeoutInHours))
+                {
+                    i.State = CompanyRebuildJobStatusState.Inactive;
+                }
+            });
+            return list;
+        }
+
+        public async Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state)
+        {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
+            var status = await RebuildJobStatuses.FirstOrDefaultAsync(j => j.JobToken == jobToken);
+            WorkHttpStatus returnValue = null;
+
+            if (status != null)
+            {
+                if (status.State == CompanyRebuildJobStatusState.Active && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours) && state == CompanyRebuildJobStatusState.Active)
+                {
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, OthersError.JobIsRunning, OthersError.JobinActiveState);
+                }
+                else
+                {
+                    status.State = state;
+                    if (state == CompanyRebuildJobStatusState.Active)
+                    {
+                        status.LastStartedOn = DateTime.UtcNow;
+                        status.LastCompletedOn = null;
+                    }
+                    else
+                    {
+                        status.LastCompletedOn = DateTime.UtcNow;
+                    }
+                    Update(status);
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
+                }
+            }
+            else
+            {
+                if (state == CompanyRebuildJobStatusState.Inactive)
+                {
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, OthersError.JobIsNotRunning, OthersError.JobIsNotRunning);
+                }
+                else
+                {
+                    status = new RebuildJobStatus { JobToken = jobToken, LastStartedBy = CurrentResourceID, LastStartedOn = DateTime.UtcNow, State = state };
+                    Add(status);
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
+                }
+            }
+
+            return returnValue;
+        }
+    }
+}

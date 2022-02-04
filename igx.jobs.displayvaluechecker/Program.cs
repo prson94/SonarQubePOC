@@ -40,7 +40,7 @@ namespace igx.jobs.displayvaluechecker
     public class DisplayValueChecker
     {
         const string functionName = "DisplayValueChecker";
-        
+
 #if DEBUG
         const string timerSettings = "*/10 * * * * *";
 #else
@@ -55,32 +55,35 @@ namespace igx.jobs.displayvaluechecker
 
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-#if DEBUG
-                companies = companies.Where(x => x.CompanyID == 2).ToList();
-#endif
-
-                foreach(var c in companies)
+                foreach (var c in companies)
                 {
-                    var community = JobDbContextCreator.CreateCommunityContext(c.CompanyID, 0, c.UrlPrefix, true);
-                    var rs = await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
-                    if (rs.StatusCode == System.Net.HttpStatusCode.OK)
+                    var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
+                    try
                     {
-                        try
+                        var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
+                        if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+                            try
                             {
-                                company.Open();
-                                await company.ExecuteAsync("CheckDisplayValues", commandTimeout: 600);
+                                using (var companyConn = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+                                {
+                                    companyConn.Open();
+                                    await companyConn.ExecuteAsync("CheckDisplayValues", commandTimeout: 600);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            }
+                            finally
+                            {
+                                await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
-                        finally
-                        {
-                            await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                     }
                 }
 
@@ -88,7 +91,7 @@ namespace igx.jobs.displayvaluechecker
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex);                
+                CoreFunction.AITrackException(functionName, ex);
             }
 
             CoreFunction.AIFlush();

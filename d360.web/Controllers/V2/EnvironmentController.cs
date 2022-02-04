@@ -49,7 +49,7 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
                 }
 
-                var currentStatusList = await Community.GetRebuildJobStatuses();
+                var currentStatusList = await Company.GetRebuildJobStatuses();
                 var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
                 currentStatusList.ForEach(i =>
                 {
@@ -79,7 +79,7 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
                 }
 
-                var readyToActivate = await Community.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active);
+                var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active);
                 if (readyToActivate.StatusCode == HttpStatusCode.OK)
                 {
                     switch (model.Job)

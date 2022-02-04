@@ -50,14 +50,13 @@ namespace d360.model
         public DbSet<Client> Clients { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyDomainGroup> CompanyDomainGroups { get; set; }
-        public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
-        public DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
+        public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }
         public DbSet<CompanyResource> CompanyResources { get; set; }
         public DbSet<DatabaseServer> DatabaseServers { get; set; }
         public DbSet<DomainCertificate> DomainCertificates { get; set; }
-        public DbSet<DomainSetting> DomainSettings { get; set; }        
+        public DbSet<DomainSetting> DomainSettings { get; set; }
         public DbSet<Resource> Resources { get; set; }
-        
+
         #endregion
 
         #region Generic methods
@@ -98,7 +97,7 @@ namespace d360.model
             if (clearCache)
             {
                 Caching.RemoveItem("Users");
-                Caching.RemoveItem("RESOURCES");  
+                Caching.RemoveItem("RESOURCES");
             }
 
             return allDeleted;
@@ -121,7 +120,7 @@ namespace d360.model
             }
             catch (Exception ex)
             {
-                throw ex;                
+                throw ex;
             }
         }
 
@@ -138,7 +137,7 @@ namespace d360.model
         public override int SaveChanges()
         {
             int returnValue = 0;
-         
+
             try
             {
                 returnValue = base.SaveChanges();
@@ -146,7 +145,7 @@ namespace d360.model
             catch (OptimisticConcurrencyException)
             {
             }
-     
+
             return returnValue;
         }
 
@@ -159,7 +158,7 @@ namespace d360.model
             }
 
             this.ChangeTracker.DetectChanges();
-            return  (SaveChanges() > 0);            
+            return (SaveChanges() > 0);
         }
 
         #endregion
@@ -251,88 +250,6 @@ namespace d360.model
             }
         }
 
-        public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses()
-        {
-            int timeoutInHours = 18;
-            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
-            {
-                timeoutInHours = timeout;
-            }
-            var list = await CompanyRebuildJobStatuses.Where(j => j.CompanyID == this.CurrentCompanyID).ToListAsync();
-            list.ForEach(i => {
-                if (i.State == CompanyRebuildJobStatusState.Active && i.LastStartedOn <= DateTime.UtcNow.AddHours(-timeoutInHours))
-                {
-                    i.State = CompanyRebuildJobStatusState.Inactive;
-                }
-            });
-            return list;
-        }
-
-        public async Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken)
-        {
-            int timeoutInHours = 18;
-            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
-            {
-                timeoutInHours = timeout;
-            }
-            var status = await CompanyRebuildJobStatuses.FirstOrDefaultAsync(j => j.CompanyID == this.CurrentCompanyID && j.JobToken == jobToken);
-            CompanyRebuildJobStatusState state = CompanyRebuildJobStatusState.Inactive;
-            if (status != null && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours))
-            {
-                state = status.State;
-            }
-            return state;
-        }
-
-        public async Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state)
-        {
-            int timeoutInHours = 18;
-            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
-            {
-                timeoutInHours = timeout;
-            }
-            var status = await CompanyRebuildJobStatuses.FirstOrDefaultAsync(j => j.CompanyID == this.CurrentCompanyID && j.JobToken == jobToken);
-            WorkHttpStatus returnValue = null;
-
-            if (status != null)
-            {
-                if (status.State == CompanyRebuildJobStatusState.Active && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours) && state == CompanyRebuildJobStatusState.Active)
-                {
-                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, OthersError.JobIsRunning, OthersError.JobinActiveState);
-                }
-                else
-                {
-                    status.State = state;
-                    if (state == CompanyRebuildJobStatusState.Active)
-                    {
-                        status.LastStartedOn = DateTime.UtcNow;
-                        status.LastCompletedOn = null;
-                    }
-                    else 
-                    {
-                        status.LastCompletedOn = DateTime.UtcNow;
-                    }
-                    Update(status);
-                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
-                }
-            }
-            else 
-            {
-                if (state == CompanyRebuildJobStatusState.Inactive)
-                {
-                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict,OthersError.JobIsNotRunning, OthersError.JobIsNotRunning);
-                }
-                else 
-                {
-                    status = new CompanyRebuildJobStatus { CompanyID = CurrentCompanyID, JobToken = jobToken, LastStartedBy = CurrentResourceID, LastStartedOn = DateTime.UtcNow, State = state };
-                    Add(status);
-                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
-                }
-            }
-            
-            return returnValue;
-        }
-
         void GetCompanySsoModel()
         {
             if (Caching.ListItemExists<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain))
@@ -400,13 +317,13 @@ namespace d360.model
                 return cs;
             }
             else
-            {                
+            {
                 var res = Database.Connection.QuerySingle(@"select s.Server, s.Username, s.Password from Company c
                                 inner join DatabaseServer s on s.ID = c.DatabaseServerID 
                                 where c.ID = @companyId", new { companyId = CurrentCompanyID });
 
                 cs = CompanyConnectionStringHelper.ConnectionString(CurrentCompanyID, res.Server, res.Username, res.Password);
-                
+
                 if (!skipCacheCheck)
                 {
                     Caching.SetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);

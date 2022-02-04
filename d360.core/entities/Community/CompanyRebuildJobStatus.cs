@@ -9,11 +9,8 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class CompanyRebuildJobStatus : BaseObject
+    public class RebuildJobStatus : BaseObject
     {
-        [IgnoreDataMember, Key, Column(Order = 1)]
-        public int CompanyID { get; set; }
-
         [DataMember, Key, Column(Order = 2)]
         public CompanyRebuildJobToken JobToken { get; set; }
 
@@ -28,32 +25,30 @@ namespace d360.core.entities
 
         [DataMember]
         public CompanyRebuildJobStatusState State { get; set; }
-
-        [IgnoreDataMember, ForeignKey("CompanyID")]
-        public Company Company { get; set; }
     }
 
     [DataContract]
-    public class CompanyRebuildJobStatusApiModel 
+    public class CompanyRebuildJobStatusApiModel
     {
-        [DataMember(Name ="jobToken")]
+        [DataMember(Name = "jobToken")]
         public CompanyRebuildJobToken JobToken { get; set; }
-        [DataMember(Name = "jobTokenName")] 
+        [DataMember(Name = "jobTokenName")]
         public string JobTokenName { get; set; }
-        [DataMember(Name = "jobTokenDescription")] 
+        [DataMember(Name = "jobTokenDescription")]
         public string JobTokenDescription { get; set; }
-        [DataMember(Name = "state")] 
+        [DataMember(Name = "state")]
         public CompanyRebuildJobStatusState State { get; set; }
-        [DataMember(Name = "lastStartedOn")] 
+        [DataMember(Name = "lastStartedOn")]
         public DateTime? LastStartedOn { get; set; }
-        [DataMember(Name = "lastCompletedOn")] 
+        [DataMember(Name = "lastCompletedOn")]
         public DateTime? LastCompletedOn { get; set; }
 
         public static List<CompanyRebuildJobStatusApiModel> GetDefaultList()
         {
             return CompanyRebuildJobToken.AssetGraph
                 .GetAsList()
-                .Select(i => new CompanyRebuildJobStatusApiModel { 
+                .Select(i => new CompanyRebuildJobStatusApiModel
+                {
                     JobTokenDescription = i.Description,
                     JobTokenName = i.Name,
                     JobToken = i.ID,
@@ -61,7 +56,7 @@ namespace d360.core.entities
                 }).ToList();
         }
 
-        public void SetCurrentJobStatusProperties(CompanyRebuildJobStatus current)
+        public void SetCurrentJobStatusProperties(RebuildJobStatus current)
         {
             this.LastCompletedOn = current.LastCompletedOn;
             this.LastStartedOn = current.LastStartedOn;
