@@ -12,6 +12,7 @@ else {
 }
 
 console.log("Govern Assembly Version: " + environment.version);
+console.log("Govern Build Date: " + environment.timeStamp);  // remove for ng build
 console.log("Browser Language: " + navigator.language);
 
 
