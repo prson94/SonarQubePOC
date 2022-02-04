@@ -13,6 +13,7 @@
     "lint": "node_modules\\.bin\\tslint  -p scripts/tsconfig.json -c tslint.json",
     "build": "node_modules\\.bin\\ng build --localize",
     "buildProd": "node_modules\\.bin\\ng build --configuration=production",
+    "build-dev-ops-prod": "node ./replace.timestamp.js && node_modules\\.bin\\ng build --configuration=production",
     "updateBuild": "node ./replace.timestamp.js",
     "webpackGlobal": "webpack --watch --progress",
     "webpackLocal": "node_modules\\.bin\\webpack --watch --progress",

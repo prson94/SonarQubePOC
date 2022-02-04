@@ -60,7 +60,7 @@
 
                 <div *ngSwitchCase="'LazyLookup'">
                     <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
-                        <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="overlayPanel.toggle($event)">
+                        <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="lookupFieldClicked($event)">
                             <p-multiSelect #dropdown
                                            [maxSelectedLabels]="5"
                                            igSize="full"
@@ -73,7 +73,8 @@
                                            (onChange)="onChangeMultiselect($event)"
                                            [required]="field.Required"
                                            [readonly]="true"
-                                           placeholder="{{field.Required ? 'Value Required' : 'Optional'}}"
+                                           placeholder="{{lookupSelectPlaceholder}}"
+                                           [disabled]="isLookupFieldDisabled"
                                            display="chip">
                             </p-multiSelect>
                         </div>
@@ -88,8 +89,9 @@
                                     [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                                     [options]="field.Items"
                                     (onSelect)="onSelect($event)"
+                                    [disabled]="isLookupFieldDisabled"
                                     [required]="field.Required"
-                                    (click)="overlayPanel.toggle($event)">
+                                    (click)="lookupFieldClicked($event)">
                             <ng-template let-item pTemplate="selectedItem">
                                 <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
                                     <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>

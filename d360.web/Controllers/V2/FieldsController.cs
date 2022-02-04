@@ -2180,7 +2180,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
             ]
-        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, bool isForAssetForm = false, Guid? assetUid = null)
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, string lookupParentValue = null, bool isForAssetForm = false, Guid? assetUid = null)
         {
             var prefix = "Fields.GetFilterVales => ";
             try
@@ -2458,9 +2458,23 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         colorjoin = "";
                     }
                 }
+
+                string parentFieldJoins = "";
+                List<string> parentValues = new List<string>();
+                if (fieldType.ParentFieldTypeID > 0 && !string.IsNullOrEmpty(lookupParentValue))
+                {
+                    parentValues = lookupParentValue.Split(',').ToList();
+                    parentFieldJoins = $@"inner join Asset A on a.uid = V.AssetUid
+                    cross apply GetParentByAssetID(A.ID)Parent
+					inner join [Intersect] I on I.Id = Parent.IntersectID";
+
+                    whereQuery += " and I.SubjectID in @parentValues ";
+                }
+
                 string query = $@"
                     select {selectStatement} 
                     from FieldLookupValue V
+                    {parentFieldJoins}
                     {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
                     where @fieldTypeId = v.FieldTypeID
                     {whereQuery}
@@ -2468,6 +2482,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 					{pagingQuery};
 
                     select count(1) from FieldLookupValue V
+                        {parentFieldJoins}
                         {(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
                         where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
@@ -2490,7 +2505,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     ";
                 }
 
-                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel });
+                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel, parentValues });
 
                 if (!isForAssetForm)
                 {

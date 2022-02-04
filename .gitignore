@@ -95,7 +95,8 @@
 /d360.web/Content/styles/selectlistinfoitem.min.css
 /d360.web/Content/styles/selectlistinfoitem.css
 /d360.web/Content/styles/materialize.css
-/d360.web/Scripts/dist
+/d360.web/Scripts/dist/*.js
+/d360.web/Scripts/dist/*.map
 /d360.web/App_Data
 /d360.web/Content/quill/v1.3.7/quill.snow.min.css
 /d360.web/Content/primeng/v11.1.0/theme.min.css
@@ -109,3 +110,8 @@
 #Mac Users
 .DS_Store
 /MigrationBackup
+/d360.web/Scripts/dist/styles.css
+/d360.web/Scripts/dist/related-assets-icon.svg
+/d360.web/Scripts/dist/index.html
+/d360.web/Scripts/dist/HomeBG.png
+/d360.web/Scripts/dist/3rdpartylicenses.txt

@@ -1,0 +1,66 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+	<changeSet author="TKlok" id="Function.graph.GetPathAsJson-v1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<![CDATA[
+create or alter function [graph].[GetPathAsJson] 
+(
+	@segments xml
+)
+returns nvarchar(850) WITH SCHEMABINDING
+as
+begin
+	declare @path nvarchar(850)
+	
+	if @segments is null
+	begin
+		set @path = ''
+	end
+	else
+	begin
+		set	@path = (
+			select
+				JSON_QUERY('["' + V + '"]') as [Key],
+				Name as AssetType
+			from (
+				select
+					STRING_AGG(STRING_ESCAPE(Val, 'json'), '","') within group(order by P) as V,
+					L,
+					Name
+				from (
+					select
+						X.p.value('./@level', 'int') as L,
+						X.p.value('./@position', 'int') as P,
+						X.p.value('./@assetTypeId', 'int') as AT,
+						at.name,
+						X.p.value('.', 'nvarchar(250)') as Val
+					from @segments.nodes('path/segment') as X(p)
+					inner join [dbo].[assettype] at on at.id = X.p.value('./@assetTypeId', 'int')
+				) O
+				group by L, Name
+			) OO
+			order by L
+			FOR JSON PATH
+		)
+		
+		if @path is null
+		begin
+			set @path = '[ERROR:KEY_FIELDS_NULL]'
+		end
+	end
+	
+	return @path
+end
+		]]>
+		</sql>
+		<rollback>
+			<![CDATA[
+				drop function if exists [graph].[GetPathAsJson]
+			]]>
+		</rollback>
+	</changeSet>
+</databaseChangeLog>

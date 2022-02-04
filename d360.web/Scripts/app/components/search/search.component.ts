@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Observable, forkJoin, ReplaySubject } from "rxjs";
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
@@ -29,7 +29,7 @@ import { CompanySettingEnum } from '../../models/settings.model';
     styleUrls: ["search.component.less"],
 })
 
-export class SearchComponent extends BaseComponent implements OnInit {
+export class SearchComponent extends BaseComponent implements OnInit, OnDestroy {
     public searchResults: SearchResultsObject;
     public categories: SearchCategories[] = [];
     public searchText: string;
@@ -38,6 +38,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public resultsPerPage: number = 25;
     public fromNumber: number = 0;
     public sub: any;
+    public PageNumberSub: any;
     public selection: SearchSelecton;
 
     public sidePanelOpen: boolean = true;
@@ -47,6 +48,11 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public hasProfiling: boolean = false;
     public dataProfile: any;
     public advancedFiltersLoaded: boolean = false;
+
+    public exportLimit: number = 0;
+    public searchExportTooltip: string = "Export to Excel";
+    public isExportInProgress: boolean = false;
+    public canExport: boolean = false;
 
     showEditor: boolean = false;
 
@@ -111,6 +117,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.searchStateService.advancedFilters = [];
 
         this.searchTypes = this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).StringSetting.Value.split(',');
+        this.exportLimit = <number>this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows).ScalarValue;
 
         this.sub = this.route.queryParams.subscribe((params) => {
             this.searchText = params['query'] ? params['query'] : '';
@@ -123,6 +130,20 @@ export class SearchComponent extends BaseComponent implements OnInit {
                 this.searchStateService.setExplain(params['explain'] == 'please');
             }
         });
+
+        this.PageNumberSub = this.searchStateService.resultCount.subscribe((pageCount) => {
+            this.canExport = pageCount > 0 && pageCount <= this.exportLimit;
+            this.searchExportTooltip = (pageCount <= this.exportLimit) ? "Export to Excel" : `Number of items is greater than ${this.exportLimit}.`;
+        });
+    }
+
+    ngOnDestroy() {
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
+        if (this.PageNumberSub) {
+            this.PageNumberSub.unsubscribe();
+        }
     }
 
     resultSelected($event) {
@@ -170,6 +191,25 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public doSearch(resetPage: boolean = false) {
         this.resultSelected(null);
         this.searchStateService.search(this.searchText, resetPage);
+    }
+
+    public isExportEnabled(): boolean {
+        return !this.isExportInProgress && this.canExport;
+    }
+
+    public doExport() {
+        var fileName = "SearchResults";
+        this.isExportInProgress = true;
+
+        this.searchStateService.getExcel(this.exportLimit)
+            .subscribe((data) => {
+                this.searchStateService.downloadFile(data, fileName);
+                this.isExportInProgress = false;
+            }, (err) => {
+                // eslint-disable-next-line no-console
+                console.log("Export Error", err);
+                this.isExportInProgress = false;
+            });
     }
 
     paginate(data) {
