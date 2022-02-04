@@ -13,10 +13,8 @@ using d360.core;
 using System.Linq;
 using d360.core.types;
 using Autofac.Integration.Mvc;
-
 using d360.web.Utilities;
 using d360.extensions.caching;
-using d360.web.Controllers.V2;
 using d360.web.Services;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using d360.web.Services.Favorites;
