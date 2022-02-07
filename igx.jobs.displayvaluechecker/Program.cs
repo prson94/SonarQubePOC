@@ -52,8 +52,11 @@ namespace igx.jobs.displayvaluechecker
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
-
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+
+#if DEBUG
+                companies = companies.Where(x => x.CompanyID == 2).ToList();
+#endif
 
                 foreach (var c in companies)
                 {
