@@ -62,8 +62,8 @@ namespace igx.jobs.displayvaluechecker
                 {
                     try
                     {
-                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
-                        var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
+                        var companyContext = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
+                        var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
                         if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                         {
                             try
@@ -80,7 +80,7 @@ namespace igx.jobs.displayvaluechecker
                             }
                             finally
                             {
-                                await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
                             }
                         }
                     }

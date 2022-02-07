@@ -38,7 +38,7 @@ namespace igx.jobs.assetgraphprocessor
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == queueInfo.CompanyID);
 
-            var company = JobDbContextCreator.CreateCompanyContext(_c.CompanyID, 0, _c.UrlPrefix, true);
+            var companyContext = JobDbContextCreator.CreateCompanyContext(_c.CompanyID, 0, _c.UrlPrefix, true);
             
             #endregion
 
@@ -60,7 +60,7 @@ namespace igx.jobs.assetgraphprocessor
                 }
                 finally 
                 {
-                    await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
+                    await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
                 }
             }
 

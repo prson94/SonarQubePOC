@@ -39,7 +39,7 @@ namespace igx.jobs.displayvalueupdateprocessor
             try
             {
                 var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
-                var company = JobDbContextCreator.CreateCompanyContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true);
+                var companyContext = JobDbContextCreator.CreateCompanyContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true);
 
                 using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID))
                 {
@@ -73,7 +73,7 @@ namespace igx.jobs.displayvalueupdateprocessor
                         }
                         finally 
                         {
-                            await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                            await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
                         }
                     }
                 }

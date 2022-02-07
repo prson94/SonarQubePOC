@@ -45,10 +45,10 @@ namespace igx.functions.consumption
                 {
                     try
                     {
-                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true,
+                        var companyContext = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true,
                         connectionString: CoreFunction.GetConnectionString("CommunityContext"));
 
-                        var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
+                        var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
                         if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                         {
                             try
@@ -65,7 +65,7 @@ namespace igx.functions.consumption
                             }
                             finally
                             {
-                                await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
                             }
                         }
                     }

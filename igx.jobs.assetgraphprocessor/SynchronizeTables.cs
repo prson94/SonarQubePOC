@@ -41,9 +41,9 @@ namespace igx.jobs.assetgraphprocessor
                     CoreFunction.AITrackEvent(functionName, "Graph Rebuild", new Dictionary<string, string>() { { "PopulatePaths", populatePaths.ToString() } }, company.CompanyID);
                     CoreFunction.AIFlush();
 
-                    var companyCtx = JobDbContextCreator.CreateCompanyContext(company.CompanyID, 0, company.UrlPrefix, true);
+                    var companyContext = JobDbContextCreator.CreateCompanyContext(company.CompanyID, 0, company.UrlPrefix, true);
 
-                    var rs = await companyCtx.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
+                    var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var conn = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, company.Server, company.Username, company.Password);
@@ -63,12 +63,12 @@ namespace igx.jobs.assetgraphprocessor
                             }
                             finally
                             {
-                                await companyCtx.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
+                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
                             }
                         }
                     }
 
-                    companyCtx.Dispose();
+                    companyContext.Dispose();
                 }
                 catch (Exception ex)
                 {
