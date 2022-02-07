@@ -43,11 +43,11 @@ namespace igx.functions.consumption
 #endif
                 foreach (var c in companies)
                 {
-                    var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true,
-                        connectionString: CoreFunction.GetConnectionString("CommunityContext"));
-
                     try
                     {
+                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true,
+                        connectionString: CoreFunction.GetConnectionString("CommunityContext"));
+
                         var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
                         if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                         {

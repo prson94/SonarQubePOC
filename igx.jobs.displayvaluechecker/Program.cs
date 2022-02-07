@@ -57,9 +57,9 @@ namespace igx.jobs.displayvaluechecker
 
                 foreach (var c in companies)
                 {
-                    var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
                     try
                     {
+                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
                         var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
                         if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                         {
