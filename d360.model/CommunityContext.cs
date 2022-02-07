@@ -120,7 +120,7 @@ namespace d360.model
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw ex;                
             }
         }
 
