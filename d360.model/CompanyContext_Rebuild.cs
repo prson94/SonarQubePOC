@@ -31,6 +31,22 @@ namespace d360.model
             return list;
         }
 
+        public async Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken)
+        {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
+            var status = await RebuildJobStatuses.FirstOrDefaultAsync(j => j.JobToken == jobToken);
+            CompanyRebuildJobStatusState state = CompanyRebuildJobStatusState.Inactive;
+            if (status != null && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours))
+            {
+                state = status.State;
+            }
+            return state;
+        }
+
         public async Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state)
         {
             int timeoutInHours = 18;

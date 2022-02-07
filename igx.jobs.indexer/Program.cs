@@ -228,28 +228,15 @@ namespace igx.jobs.indexer
 
         private static async Task UpdateRebuildJobStatus(int companyID, CompanyRebuildJobStatusState status)
         {
-            #region Create EF connection
-
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == companyID);
 
-            var sec = new UriSecurityContextProvider()
-            {
-                CompanyID = companyID,
-                ResourceID = 0,
-                CompanyPrefix = _c.UrlPrefix,
-                IsAdministrator = true
-            };
-            var cache = new DummyCachingProvider();
-            var queue = new AzureQueueSource();
-            var community = new CommunityContext(cache, queue, sec);
+            var companyContext = JobDbContextCreator.CreateCompanyContext(companyID, 0, _c.UrlPrefix, true);
 
-            #endregion
-
-            CompanyRebuildJobStatusState currentStatue = await community.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
+            CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
 
             if(currentStatue != status)
-                await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status);
+                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status);
 
         }
 
