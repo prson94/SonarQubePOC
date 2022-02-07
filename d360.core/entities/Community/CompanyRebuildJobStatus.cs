@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class RebuildJobStatus : BaseObject
+    public class CompanyRebuildJobStatus : BaseObject
     {
         [DataMember, Key, Column(Order = 2)]
         public CompanyRebuildJobToken JobToken { get; set; }
@@ -56,7 +56,7 @@ namespace d360.core.entities
                 }).ToList();
         }
 
-        public void SetCurrentJobStatusProperties(RebuildJobStatus current)
+        public void SetCurrentJobStatusProperties(CompanyRebuildJobStatus current)
         {
             this.LastCompletedOn = current.LastCompletedOn;
             this.LastStartedOn = current.LastStartedOn;

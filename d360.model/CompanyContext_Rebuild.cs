@@ -11,9 +11,9 @@ namespace d360.model
 {
     partial class CompanyContext : BaseContext
     {
-        public DbSet<RebuildJobStatus> RebuildJobStatuses { get; set; }
+        public DbSet<CompanyRebuildJobStatus> RebuildJobStatuses { get; set; }
 
-        public async Task<List<RebuildJobStatus>> GetRebuildJobStatuses()
+        public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses()
         {
             int timeoutInHours = 18;
             if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
@@ -71,7 +71,7 @@ namespace d360.model
                 }
                 else
                 {
-                    status = new RebuildJobStatus { JobToken = jobToken, LastStartedBy = CurrentResourceID, LastStartedOn = DateTime.UtcNow, State = state };
+                    status = new CompanyRebuildJobStatus { JobToken = jobToken, LastStartedBy = CurrentResourceID, LastStartedOn = DateTime.UtcNow, State = state };
                     Add(status);
                     returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
                 }
