@@ -2491,16 +2491,17 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 {
                     query = $@"
                     drop table if exists #tempResults
-			            select *
+			            select V.*
 				        into #tempResults
                         from FieldLookupValue V
+                        {parentFieldJoins}
                         where @fieldTypeId = FieldTypeID {whereQuery}
                         order by text asc
 					    {pagingQuery};
 
 					 select {selectStatement} from #tempResults V {colorjoin};
 
-                    select count(1) from FieldLookupValue V
+                    select count(1) from FieldLookupValue V {parentFieldJoins}
                         where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
                 }
