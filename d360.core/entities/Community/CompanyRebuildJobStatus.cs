@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
+    [Table("RebuildJobStatus")]
     public class CompanyRebuildJobStatus : BaseObject
     {
         [DataMember, Key, Column(Order = 2)]
