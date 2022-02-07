@@ -389,7 +389,10 @@ namespace igx.functions.databasetaskprocessor
 
         private static string resolveIndexItem(CompanyWithDatabaseServerSettings company, ObjectIndexCollectionModel indexCollectionModel, SqlConnection companyConnection, string @object, int objectId, string action, long assetId)
         {
-            if (!SearchIndexer.IsIndexable(@object)) return string.Empty;
+            if (!SearchIndexer.IsIndexable(@object)) 
+            { 
+                return string.Empty;
+            }
 
             if (action == "Path")
             {
