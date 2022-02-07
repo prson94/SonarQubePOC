@@ -4614,8 +4614,66 @@ where   ExecutionID = @ExecutionID
 
                     sw.Restart();
 
+                    // DefaultValue and DefaultFormatted value are not used but can get large we only need to know if they are populated or not.
+                    var fieldTypeSql = @"
+                        SELECT [ID]
+      ,[Name]
+      ,[FriendlyName]
+      ,[Description]
+      ,[DisplayDescription]
+      ,[FormDescription]
+      ,[Type]
+      ,[LookupObjectType]
+      ,[LookupObjectID]
+      ,[LookupDisplayFormat]
+      ,[MinimumLength]
+      ,[MaximumLength]
+      ,[Length]
+      ,[Pattern]
+      ,[Object]
+      ,[ObjectID]
+      ,[SortOrder]
+      ,[IsRequired]
+      ,[IsListable]
+      ,[ValidationDescription]
+      ,[Category]
+      ,[IsDisplayable]
+      ,[IsEditable]
+      ,CASE WHEN [DefaultValue] IS NULL THEN NULL ELSE 1 END as [DefaultValue]
+	  ,CASE WHEN [DefaultFormattedValue] IS NULL THEN NULL ELSE 1 END as [DefaultFormattedValue]      
+      ,[AllowAllValue]
+      ,[AllowAllLabel]
+      ,[IsPrimaryFilter]
+      ,[LookupEditFormat]
+      ,[IsPartOfKey]
+      ,[ColumnOrder]
+      ,[ColumnWidth]
+      ,[LookupObjectFieldTypeID]
+      ,[AllowMultipleValues]
+      ,[AssetTypeID]
+      ,[ParentFieldTypeID]
+      ,[UpdatedBy]
+      ,[Increment]
+      ,[Precision]
+      ,[FilterPredicateID]
+      ,[FilterPredicateDirection]
+      ,[FilterFieldTypeID]
+      ,[ShowIfEmpty]
+      ,[Definition]
+      ,[ScoreType]
+      ,[SearchAddToResult]
+      ,[SearchPrefix]
+      ,[SearchSuffix]
+      ,[SearchDisplayOrder]
+      ,[CounterPrefix]
+      ,[CounterInitialIndex]
+      ,[DisplayInColumn]
+  FROM [dbo].[FieldType]
+   where Object = @Object and ObjectID = @ObjectID
+                    ";
+
                     // Get field types.
-                    fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { @Object = new DbString { Value = at.Object, IsFixedLength = true, Length = 50, IsAnsi = true }, at.ObjectID }).ToList();
+                    fieldTypes = Query<FieldType>(fieldTypeSql, new { @Object = new DbString { Value = at.Object, IsFixedLength = true, Length = 50, IsAnsi = true }, at.ObjectID }).ToList();
                     jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                     requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
                     hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
