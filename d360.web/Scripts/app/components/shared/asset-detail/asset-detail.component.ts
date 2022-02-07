@@ -12,6 +12,7 @@ import { GroupService } from '../../../services/group.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { ProcessService } from '../../../services/process.service';
 import { Group } from '../../../models/group.model';
+import { StringConstants } from '../../../static/string-constants';
 
 declare var CurrentResourceID;
 
@@ -34,7 +35,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() shouldBePadded: boolean = true;
     @Input() tooltipAlign: string;
     @Input() showHeader: boolean = false;
-    @Input() showTabs: boolean = false;
+    @Input() showTabs: boolean = true;
     @Input() showHeaderLine: boolean = true;
     @Input() spacerHeight: string = '32px';
     @Input() isSidePanel: boolean = false;
@@ -58,6 +59,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     readonly noCategory: string = "None";
     readonly defaultCategory: string = "General";
 
+    subtitle: string = "";
+
     model: any;
     tab: string = 'detail';
     categories: Category[] = new Array<Category>();
@@ -68,6 +71,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     loadGroupSub: Subscription;
 
     loadedGroup: Group;
+    simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
 
     constructor(
         private router: Router,
@@ -102,7 +106,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         }
     }
 
-    public load(): void {
+    public load(updateTab: boolean = true): void {
         let detailSub = null;
         if (this.assetDetail) {
             detailSub = this.assetDetail;
@@ -128,8 +132,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                 });
         }
 
-        if (this.objectType === 'Group') {
-            this.tab = 'detail';
+        if (this.objectType === 'Group' && updateTab) {
+            this.tab = 'members';
         }
 
         if (detailSub) {
@@ -198,6 +202,12 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.loadCategory();
                     this.loadState();
                     this.loadUrl();
+
+                    this.subtitle = this.model?.AssetTypeName;
+
+                    if (this.objectType === 'Resource') {
+                        this.subtitle = this.model.ResourceEmail;
+                    }
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });
@@ -398,7 +408,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     get showOwnershipTab(): boolean {
-        return this.objectType !== 'Resource' && this.objectType !== 'Group';
+        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task';
     }
 
     get showGroupTab(): boolean {

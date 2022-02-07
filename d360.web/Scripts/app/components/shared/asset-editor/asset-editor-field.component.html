@@ -8,19 +8,19 @@
             <div class="input-wrapper">
                 <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
                 <div *ngSwitchCase="'Text'" style="width:100%;">
-                    <input igInput igSize="full" [formControlName]="field.FieldName" name="{{field.FieldName}}" (blur)="OnBlurTrim()" type="text" [required]="isRequired()">
+                    <input igInput igSize="full" [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName" [formControlName]="field.FieldName" name="{{field.FieldName}}" (blur)="OnBlurTrim()" type="text" [required]="isRequired()">
                 </div>
                 <div *ngSwitchCase="'Link'">
                     <div class="flex-grid-link">
                         <div class="label">Name</div>
                         <div class="link-input">
-                            <input igInput igSize="full" name="{{field.FieldName + '_Name'}}" [formControlName]="field.FieldName + '_Name'" type="text">
+                            <input igInput igSize="full" [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName + '_Name'" name="{{field.FieldName + '_Name'}}" [formControlName]="field.FieldName + '_Name'" type="text">
                         </div>
                     </div>
                     <div class="flex-grid-link">
                         <div class="label">URL</div>
                         <div class="link-input">
-                            <input igInput igSize="full" name="{{field.FieldName + '_Url'}}" [formControlName]="field.FieldName + '_Url'" type="text" placeholder="{{(isRequired() ? linkFieldRequiredPlaceholder : linkFieldOptionalPlaceholder)}}" [required]="isRequired()">
+                            <input igInput igSize="full" [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName + '_Url'" name="{{field.FieldName + '_Url'}}" [formControlName]="field.FieldName + '_Url'" type="text" placeholder="{{(isRequired() ? linkFieldRequiredPlaceholder : linkFieldOptionalPlaceholder)}}" [required]="isRequired()">
                         </div>
                     </div>
                 </div>
@@ -28,6 +28,7 @@
                 <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
                 <p-editor *ngSwitchCase="'Html'"
                           [formControlName]="field.FieldName"
+                          [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                           [attr.name]="field.FieldName"
                           [style]="{'height':'150px'}"
                           placeholder="{{(isRequired() ? 'Value required' : '')}}"
@@ -47,19 +48,19 @@
                         </span>
                     </p-header>
                 </p-editor>
-                <ig-switch *ngSwitchCase="'Boolean'" [attr.name]="field.FieldName" [trueLabel]="'True'" [falseLabel]="'False'" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
-                <ig-number-input *ngSwitchCase="'Number'" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" [required]="isRequired()"></ig-number-input>
-                <ig-number-input *ngSwitchCase="'Decimal'" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" (keyup)="toDecimalPlaces($event,Precision)" [required]="isRequired()"></ig-number-input>
+                <ig-switch *ngSwitchCase="'Boolean'" [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName" [attr.name]="field.FieldName" [trueLabel]="'True'" [falseLabel]="'False'" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
+                <ig-number-input *ngSwitchCase="'Number'" [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" [required]="isRequired()"></ig-number-input>
+                <ig-number-input *ngSwitchCase="'Decimal'" [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName" [attr.name]="field.FieldName" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" (keyup)="toDecimalPlaces($event,Precision)" [required]="isRequired()"></ig-number-input>
                 <div *ngSwitchCase="'Date'">
-                    <ig-date [formControlName]="field.FieldName" [attr.name]="field.FieldName" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
+                    <ig-date [formControlName]="field.FieldName" [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName" [attr.name]="field.FieldName" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
                 </div>
                 <div *ngSwitchCase="'DateTime'">
-                    <ig-date [formControlName]="field.FieldName" [attr.name]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
+                    <ig-date [formControlName]="field.FieldName" [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName" [attr.name]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
                 </div>
 
                 <div *ngSwitchCase="'LazyLookup'">
                     <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
-                        <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="overlayPanel.toggle($event)">
+                        <div *ngIf="field?.MultiSelect" class="overlay-trigger" (click)="lookupFieldClicked($event)">
                             <p-multiSelect #dropdown
                                            [maxSelectedLabels]="5"
                                            igSize="full"
@@ -67,11 +68,13 @@
                                            [inputId]="field.FieldName + '_input_' + componentUid"
                                            [formControlName]="field.FieldName"
                                            [attr.name]="field.FieldName"
+                                           [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                                            [options]="field.Items"
                                            (onChange)="onChangeMultiselect($event)"
                                            [required]="field.Required"
                                            [readonly]="true"
-                                           placeholder="{{field.Required ? 'Value Required' : 'Optional'}}"
+                                           placeholder="{{lookupSelectPlaceholder}}"
+                                           [disabled]="isLookupFieldDisabled"
                                            display="chip">
                             </p-multiSelect>
                         </div>
@@ -83,10 +86,12 @@
                                     [inputId]="field.FieldName + '_input_' + componentUid"
                                     [formControlName]="field.FieldName"
                                     [attr.name]="field.FieldName"
+                                    [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                                     [options]="field.Items"
                                     (onSelect)="onSelect($event)"
+                                    [disabled]="isLookupFieldDisabled"
                                     [required]="field.Required"
-                                    (click)="overlayPanel.toggle($event)">
+                                    (click)="lookupFieldClicked($event)">
                             <ng-template let-item pTemplate="selectedItem">
                                 <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
                                     <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>

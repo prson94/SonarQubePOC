@@ -636,15 +636,18 @@ namespace d360.web.Controllers.V2
             List<string> fieldJoins = new List<string>();
 
             var selectBuilder = new StringBuilder();
+
+            joinBuilder.Append($@" outer apply (select case 
+                                    when g.PrimaryOwnerResourceID = gr.ResourceID then 'Primary' 
+                                    when g.SecondaryOwnerResourceID = gr.ResourceID then 'Secondary' 
+                                    else null end 
+                                as [Owner])Ownership(Owner) ");
+
             selectBuilder.Append($@"
                             select gr.uid, 
                                 gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, 
                                 gr.IsAdministrator, gr.LastLoggedInOn, 
-                                case 
-                                    when g.PrimaryOwnerResourceID = gr.ResourceID then 'Primary' 
-                                    when g.SecondaryOwnerResourceID = gr.ResourceID then 'Secondary' 
-                                    else null end 
-                                as [Owner],
+                                Ownership.Owner,
                                 case gr.State 
                                     when 1 then 'Active' 
                                     when 2 then 'Inactive'
@@ -723,6 +726,21 @@ namespace d360.web.Controllers.V2
                     dbArgs.Add($"@field{customField.ID}", paramval);
                 }
             }
+
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+            {
+                var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+                if (!string.IsNullOrEmpty(simpleFilter))
+                {
+                    simpleFilter = Company.GetEscapedFilterString(simpleFilter);
+
+                    dbArgs.Add("@simpleFilter", simpleFilter);
+
+                    whereBuilder.Append($" and (concat(gr.LastName,', ',gr.FirstName) like @simpleFilter or Ownership.Owner like @simpleFilter)");
+                }
+            }
+
 
             long.TryParse(pageSize, out _pageSize);
             long.TryParse(pageNum, out _pageNum);
@@ -1537,7 +1555,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             HttpPut,
             Route("groups"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerRequestExample(typeof(UpdateGroup), typeof(UpdateGroupExample)),
+            SwaggerRequestExample(typeof(UpdateGroupModel), typeof(UpdateGroupModelExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
@@ -1578,7 +1596,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             HttpPost,
             Route("groups"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerRequestExample(typeof(AddGroup), typeof(AddGroupExample)),
+            SwaggerRequestExample(typeof(UpdateGroupModel), typeof(UpdateGroupModelExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),

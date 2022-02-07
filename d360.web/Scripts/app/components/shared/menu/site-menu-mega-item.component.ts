@@ -9,7 +9,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 @Component({
     selector: 'd3s-site-menu-mega-item',
     template: ` 
-                <a (click)="itemClick()" [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null}">
+                <a [attr.data-cy]="getDataCyAttribute()" (click)="itemClick()" [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null}">
                     <div class="mega-item-container" [ngStyle]="{'text-indent': getMainIndent()}">
                         <div class="caret" (click)="handleArrowClick($event)">
                             <i *ngIf="item.Items" [class]="!item.ShowChildren ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
@@ -44,6 +44,10 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         protected settingsService: CompanySettingsService,
         private router: Router) {
         super(settingsService);
+    }
+
+    getDataCyAttribute() {
+        return `PrimaryNav_${this.item.Name}`;
     }
 
     getSubIndent() {

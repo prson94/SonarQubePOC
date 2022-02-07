@@ -34,10 +34,10 @@ export class GroupService extends BaseObservableService implements IGroupService
     }
 
     getGroups(simpleFilter: string = ''): Observable<any> {
-        let url = 'api/v2/membership/groups';
+        let url = 'api/v2/membership/groups?_listColorsAsJSON=true';
 
         if (simpleFilter) {
-            url += "?_simpleFilter=" + simpleFilter;
+            url += "&_simpleFilter=" + simpleFilter;
         }
 
         return this.http.get(url)
@@ -59,8 +59,13 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    getGroupResourceList(uid: string, pageSize: number): Observable<any> {
-        return this.http.get(`api/v2/membership/groups/${uid}/members?_pageSize=${pageSize}`).pipe(
+    getGroupResourceList(uid: string, pageSize: number, simpleTextFilter: string): Observable<any> {
+        let url = `api/v2/membership/groups/${uid}/members?_pageSize=${pageSize}`;
+        if (simpleTextFilter) {
+            url += "&_simpleFilter=" + simpleTextFilter;
+        }
+
+        return this.http.get(url).pipe(
             map((response) => <GroupResourceInfo[]>response),
             catchError((err) => this.handleError(err))
         );

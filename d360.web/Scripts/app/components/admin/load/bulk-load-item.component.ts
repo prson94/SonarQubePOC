@@ -27,10 +27,10 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     totalRecords: number = 0;
     simpleTextFilter: string;
     pageNum: number = 1;
+    firstPage: number = 0;
     sortOrder: number = SortOrder.None;
     sortField: string = "";
     itemsLoading: boolean = false;
-
     private itemsSearchSub: Subscription;
 
     get globalFilterFields(): string[] {
@@ -84,6 +84,9 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
             (columnData) => {
                 this.columns = columnData;
                 this.isLoading = false;
+                this.firstPage = 0;
+                this.pageNum = 0;
+                this.getData();
             }
         );
     }
@@ -109,6 +112,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
 
 
     loadItemsLazy(event: LazyLoadEvent) {
+        this.firstPage = event.first;
         this.pageNum = event.first / event.rows;
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField;

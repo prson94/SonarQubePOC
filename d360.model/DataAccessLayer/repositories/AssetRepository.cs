@@ -3295,72 +3295,21 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
         public async Task<Dictionary<Guid, List<PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids)
         {
-            Dictionary<Guid, List<PathComponent>> paths = new Dictionary<Guid, List<PathComponent>>();
+            var sql = $@"SELECT an.Uid, graph.GetPathAsJson(an.Segments) as JsonPath
+            FROM  graph.AssetNode an
+            inner join @uids U on U.Uid = an.Uid";
 
-            var sql = @"SELECT an.Uid, an.Segments
-                FROM  graph.AssetNode an
-                inner join @uids U on U.Uid = an.Uid";
-
-            var nodes = await CompanyContext.QueryAsync<(Guid Uid, string Segments)>(sql, new
+            var results = await CompanyContext.QueryAsync<(Guid Uid, string JsonPath)>(sql, new
             {
                 uids = assetUids.Distinct().AsTableValuedParameter(
-                        "dbo.UidTable",
-                        new List<string>() { "Uid" })
+                                   "dbo.UidTable",
+                                   new List<string>() { "Uid" })
             });
 
-            foreach (var node in nodes)
-            {
-                List<PathComponent> returnlist = new List<PathComponent>();
-
-                if (!string.IsNullOrWhiteSpace(node.Segments) && node.Segments.IndexOf('<') >= 0)
-                {
-                    XElement segmentXML = XElement.Parse(node.Segments);
-                    List<XElement> segmentList = segmentXML
-                        .Descendants("segment")
-                        .OrderBy(s => { int.TryParse(s.Attribute("level")?.Value, out int l); return l; })
-                        .ThenBy(s => { int.TryParse(s.Attribute("position")?.Value, out int p); return p; })
-                        .ToList();
-                    int currentlevel = 1;
-                    int level = 0;
-                    int position = 0;
-                    int assetTypeId = -1;
-                    List<string> elementPath = new List<string>();
-
-                    foreach (XElement element in segmentList)
-                    {
-                        if (int.TryParse(element.Attribute("level")?.Value, out level))
-                        {
-                            if (int.TryParse(element.Attribute("position")?.Value, out position))
-                            {
-                                if (level != currentlevel)
-                                {
-                                    returnlist.Add(new PathComponent
-                                    {
-                                        Key = elementPath.ToArray(),
-                                        AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault()?.Name
-                                    });
-                                    currentlevel = level;
-                                    elementPath = new List<string>();
-                                }
-                                elementPath.Add(element.Value);
-                                int.TryParse(element.Attribute("assetTypeId")?.Value, out assetTypeId);
-                            }
-                        }
-                    }
-                    //capture the last element path
-                    if (elementPath.Any())
-                    {
-                        returnlist.Add(new PathComponent
-                        {
-                            Key = elementPath.ToArray(),
-                            AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault()?.Name
-                        });
-                    }
-                }
-
-                paths.Add(node.Uid, returnlist);
-            }
-            return paths;
+            return results.Where(r => r.JsonPath != "[ERROR: KEY_FIELDS_NULL]").ToDictionary(r => r.Uid, r => {
+                var x = JsonConvert.DeserializeObject<List<PathComponent>>(r.JsonPath);
+                return x;
+            });
         }
 
         public async Task<List<PathComponent>> GetAssetPath(Guid assetUid)

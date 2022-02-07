@@ -1822,6 +1822,21 @@ from	IntersectType I
                     break;
                 }
             }
+
+            if (typeIdentifierInfoModel.Object == "GroupType")
+            {
+                var usageInThenCondition = Company.Query<int>(@"select count(*) from ResponsibilityTypeRelationRule rtrr
+                     cross apply (select * from OpenJson(rtrr.Definition,'$.Then.Conditions'))Data
+                     where rtrr.Definition is not null
+                     and JSON_VALUE(rtrr.Definition,'$.Then.Object') = 'GroupType' 
+                     and json_value(data.[value],'$.FieldTypeID') in @fieldTypeIds", new { fieldTypeIds = fieldTypes.Select(x => x.ID).ToList() }).FirstOrDefault();
+
+                if (usageInThenCondition > 0)
+                {
+                    return true;
+                }
+            }
+
             return anyResponsibilityUsingField;
         }
 

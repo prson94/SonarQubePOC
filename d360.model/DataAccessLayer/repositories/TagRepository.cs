@@ -783,7 +783,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         if (!hasGlobalSearch)
                         {
                             dbArgs.Add("displayvalue", $"%{param.Value.ToLower()}%");
-                            whereClauses.Add("LOWER(ADV.DisplayValue) like @displayvalue");
+                            whereClauses.Add("(ADV.DisplayValue like @displayvalue or node.DisplayPath like @displayValue)");
                         }
                         else
                         {
@@ -794,7 +794,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         if (!hasGlobalSearch)
                         {
                             dbArgs.Add("assetname", $"%{param.Value.ToLower()}%");
-                            whereClauses.Add("LOWER(AST.Name) like @assetname");
+                            whereClauses.Add("AST.Name like @assetname");
                             AddAssetTypeParam(dbArgs, whereClauses, param.Value);
                         }
                         else
@@ -807,7 +807,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         {
                             addtagasstingfilter = true;
                             dbArgs.Add("tagsasstring", $"%{param.Value.ToLower()}%");
-                            whereClauses.Add("LOWER(AssetTags.Tags) like @tagsasstring");
+                            whereClauses.Add("AssetTags.Tags like @tagsasstring");
                         }
                         else
                         {
@@ -817,9 +817,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                     case "globalsearch":
                         addtagasstingfilter = true;
                         dbArgs.Add("globalsearch", $"%{param.Value.ToLower()}%");
-                        whereClauses.Add(@"(LOWER(AssetTags.Tags) like @globalsearch OR
-                                            LOWER(ADV.DisplayValue) like @globalsearch OR
-                                            LOWER(AST.Name) like @globalsearch)");
+                        whereClauses.Add(@"(AssetTags.Tags like @globalsearch OR
+                                            ADV.DisplayValue like @globalsearch OR
+                                            node.DisplayPath like @globalsearch OR
+                                            AST.Name like @globalsearch)");
 
                         AddAssetTypeParam(dbArgs, whereClauses, param.Value);
 
@@ -939,6 +940,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         from Tag T
 	                        inner join AssetTag AT on AT.TagID = T.ID
 	                        inner join Asset A ON A.ID = AT.AssetID
+                            inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
 	                        inner join AssetType AST ON AST.Id = A.AssetTypeId
 	                        cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
 							{(addtagasstingfilter ? " cross apply (select Value,TagUid as uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags) " : "")}
@@ -953,6 +955,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             var sql = $@"{ctestring}  
                         select 
                         ADV.*, 
+                        node.DisplayPath,
                         A.Id as AssetID,
                         A.[Uid] as AssetUid,
                         AST.[Uid] as AssetTypeUid,
@@ -971,6 +974,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         from Tag T
 	                        inner join AssetTag AT on AT.TagID = T.ID
 	                        inner join Asset A ON A.ID = AT.AssetID
+                            inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
 	                        inner join AssetType AST ON AST.Id = A.AssetTypeId
 	                        cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
 							cross apply (select Value,TagUid as uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags)

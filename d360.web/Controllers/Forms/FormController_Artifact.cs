@@ -48,7 +48,8 @@ namespace d360.web.Controllers
                     list,
                     Company.GetFieldTypesByObject(SystemObjects.TaskType, a.AssetType.ObjectID).ToList(),
                     Company.GetFieldRelationsByObject(SystemObjects.Task, id).ToList(),
-                    2
+                    2,
+                    loadOnlySelectedLookupValue: true
                 )
             );
 
@@ -223,7 +224,7 @@ namespace d360.web.Controllers
 
                     if (assetType == null)
                     {
-                        return jsonNetException(string.Format (FormControllerApiMessage.NoAssetTypeFound,id.Value.ToString()), HttpStatusCode.NotFound);
+                        return jsonNetException(string.Format(FormControllerApiMessage.NoAssetTypeFound, id.Value.ToString()), HttpStatusCode.NotFound);
                     }
 
                     var style = assetType.AssetTypeStyle;
@@ -256,8 +257,8 @@ namespace d360.web.Controllers
                             CanEditParent = assetType.CanEditParent
                         },
                         Tokens = Company.Filter<FieldType>(
-                            i => i.Object == assetType.Object 
-                                && i.ObjectID == assetType.ObjectID 
+                            i => i.Object == assetType.Object
+                                && i.ObjectID == assetType.ObjectID
                                 && supportedDisplayFormats.Contains(i.Type))
                             .OrderBy(i => i.FriendlyName)
                             .Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()

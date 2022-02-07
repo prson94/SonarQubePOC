@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.graph.AssetBrowser_OwnershipCounts-v4">
-    <comment>GOV-14427</comment>
+  <changeSet author="MDonato" id="Procedure.graph.AssetBrowser_OwnershipCounts-v5">
+    <comment>GOV-16798</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -595,7 +595,7 @@ begin
 	create table #results (predictableId varchar(50) not null, owners nvarchar(max));
 
 	-- Get hierarchy (or root node) collection.
-	insert into #results with(tablock)	select utility.GetHash(STRING_AGG ( cast(H.ID as nvarchar(max)), ',' )) as predictableId,
+	insert into #results with(tablock)	select utility.GetHash(STRING_AGG ( cast(H.ID as nvarchar(max)), ',' ) within group (order by H.ID)) as predictableId,
 			(
 			select	
 					ResponsibilityTypeName as responsibilityType, 
@@ -866,6 +866,7 @@ begin
 	create clustered index ix_TempHierarchies_ID on #hierarchies (ID);
 	create nonclustered index ix_TempHierarchies_ID_Hop on #hierarchies (ID, Hop);
 	create nonclustered index ix_TempHierarchies_ParentID_Hop on #hierarchies (ParentID, Hop);
+	create nonclustered index ix_TempHierarchies_ParentKey on #hierarchies (ParentKey);
 
 	if @ancestry = 1		-- full-ancestry lineage
 	begin

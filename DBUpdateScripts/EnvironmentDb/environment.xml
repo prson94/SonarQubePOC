@@ -282,10 +282,12 @@
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
 	<include file="scripts/View.workflow.ItemAsset.xml"/>
 	<include file="scripts/View.workflow.ItemIssue.xml"/>
+        <include file="scripts/View.dbo.AuditView.xml"/>
 
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->
 	<include file="scripts/Function.dbo.GetAssetTextPathById.xml"/> <!--dependency-->
+	<include file="scripts/Function.graph.GetPathAsJson.xml"/>		<!--dependency-->
 	
 	<!-- Views: REPORTING -->
 	<include file="scripts/View.reporting.Asset_All.xml"/>

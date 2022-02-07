@@ -97,7 +97,9 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                             this.selected = this.referenceTypes[index];
 
                             var page = Math.floor(index / 10);
-                            this.table.first = page * 10;
+                            if (this.table) {
+                                this.table.first = page * 10;
+                            }
                         }
                         else {
                             this.selected = this.referenceTypes[0];

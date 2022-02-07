@@ -6,6 +6,8 @@ import { forkJoin, Subscription } from 'rxjs';
 import { TagService } from '../../../services/tag.service';
 import { TagDetail, TagType } from '../../../models/tag.model';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { Router } from '@angular/router';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'ig-tagged-assets-detail',
@@ -28,9 +30,12 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
     tagUsage: TagDetail[];
     filters: any = { globalSearch: '', DisplayValue: '', AssetType: '', TagsAsString: '' };
 
+    simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
+
     constructor(
         protected messagesService: MessagesObservableService,
         private tagService: TagService,
+        private router: Router,
         private linkClickInterceptor: LinkClickInterceptor,
         private cdRef: ChangeDetectorRef) { }
 
@@ -78,5 +83,16 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
 
     export() {
         this.tagService.exportTagsByUid(this.tag.uid, "", this.filters);
+    }
+
+    open(isNewTab: boolean = false) {
+        let url : string = 'tag/' + this.tag.uid;
+        if (!isNewTab) {
+            this.router.navigateByUrl(url);
+            return;
+        } else {
+            window.open(url, '_blank');
+            return;
+        }
     }
 }

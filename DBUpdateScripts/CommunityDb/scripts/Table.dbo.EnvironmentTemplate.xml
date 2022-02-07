@@ -1,0 +1,55 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.EnvironmentTemplate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'EnvironmentTemplate')
+begin
+	create table [dbo].[EnvironmentTemplate](
+		[ID] [int] identity(1,1) NOT NULL,
+		[EnvironmentLevel] [int] NOT NULL,
+		[DatabaseServerID] [int] NULL,
+		[DatabaseName] [varchar](250) NOT NULL,
+		[Name] [nvarchar](250) NULL,
+		[Notes] [nvarchar](500) NULL,
+		constraint [PK_EnvironmentTemplate] primary key clustered ( [ID] asc )
+	)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+    <changeSet author="Core" id="Table.dbo.EnvironmentTemplate-FK-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_EnvironmentTemplate_DatabaseServer]') AND parent_object_id = OBJECT_ID(N'[dbo].[EnvironmentTemplate]'))
+begin
+	ALTER TABLE [dbo].[EnvironmentTemplate]  WITH CHECK ADD  CONSTRAINT [FK_EnvironmentTemplate_DatabaseServer] FOREIGN KEY([DatabaseServerID]) REFERENCES [dbo].[DatabaseServer] ([ID]);
+	ALTER TABLE [dbo].[EnvironmentTemplate] CHECK CONSTRAINT [FK_EnvironmentTemplate_DatabaseServer];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

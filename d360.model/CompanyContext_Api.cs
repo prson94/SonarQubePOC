@@ -899,7 +899,7 @@ where	ExecutionID = @executionID
                         where ea.ExecutionID = @executionID 
                                 and ea.Success is null and ea.assetid is not null
                                 and ea.ItemNumber between @beginItemNumber and @endItemNumber
-                                and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.Method = 'BULK');"
+                                and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or (ex.Method = 'BULK' and ea.IsNew = 1));"
                       , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
             if (sendWorkflowEvents)
             {
@@ -5187,7 +5187,7 @@ using		(
                     and ObjectID is not null 
             ) as S
 on          ( T.IntersectTypeID = S.IntersectTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID )
-when matched then
+when matched and (T.Subject <> S.ParentObject or T.SubjectID <> S.ParentObjectID) then
     update 
     set     T.Subject = S.ParentObject,
             T.SubjectID = S.ParentObjectID,
@@ -5245,7 +5245,7 @@ create table #DeletedRelationships ([ID] int, ItemNumber int, Payload varchar(20
 insert into #DeletedRelationships
     select  I.ID,
             EA.ItemNumber,
-            '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar) + '""}' 
+            '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
     from    [Intersect] I
             inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
             inner join api.ExecutionAsset EA on
@@ -10824,9 +10824,8 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                     hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
 
                     int i = 1;
-                    foreach (var group in groups.Where(x => x.Fields.Any()))
+                    foreach (var group in groups)
                     {
-
                         bool success;
                         string errorMessage;
                         var fieldRows = ValidateFields("Group", 1, isInsert, fieldTypes, requiredFieldTypeNames, group.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);
@@ -10913,9 +10912,10 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                 set		Success = 0,
 		                [Message] = coalesce([Message], '') + 'Lookup Field has invalid values;'
 	            from [api].[ExecutionGroup] EG 
-                inner join api.executionfield ef on ef.ExecutionID = eg.ExecutionID
+                inner join api.executionfield ef on ef.ExecutionID = eg.ExecutionID and ef.FieldValue is not null
                 inner join FieldType ft on ft.id = ef.fieldtypeid
-                left join FieldLookupValue flv on flv.FieldTypeID = ef.FieldTypeID and flv.Value = try_parse(ef.FieldValue as int)
+                cross apply (select Value from string_split(ef.FieldValue, ','))Val(Value)
+                left join FieldLookupValue flv on flv.FieldTypeID = ef.FieldTypeID and flv.Value = try_parse(Val.Value as int)
                 where EG.ExecutionID = @ExecutionID  and ft.type = 'Lookup' and flv.Value is null and ef.FieldValue is not null";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID, emptyUid = Guid.Empty }, commandTimeout: timeout);

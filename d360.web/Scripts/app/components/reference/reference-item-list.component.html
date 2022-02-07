@@ -19,6 +19,7 @@
         <div class="info-panel-table-grid">
             <ig-search-field mode="Keypress"
                              [debounce]="600"
+                             [infoTooltip]="simpleSearchTooltipHTML"
                              (onSearch)="dt.filterGlobal($event, 'contains')">
             </ig-search-field>
             <div *ngIf="canExportRecords()" pTooltip="'Export to Excel'"
@@ -45,6 +46,7 @@
              (onLazyLoad)="loadAssets($event)"
              [(selection)]="selected"
              [loading]="isLoading"
+             [tableStyleClass]="'side-panel-max-width'"
              [loadingIcon]="'fa fa-spinner fa-spin'">
         <ng-template pTemplate="header">
             <tr>

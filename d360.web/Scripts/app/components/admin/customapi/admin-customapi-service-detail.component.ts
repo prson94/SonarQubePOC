@@ -58,7 +58,7 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
                         this.areaName ='Custom API';
                         this.areaLink = '/admin/customapi';
                         this.tabTitle = 'Service';
-                        this.setCommonSecondaryNavTabs(false);
+                        this.setCommonSecondaryNavTabs({ hasAudit: false });
                         this.setCommonItems();
                         this.secondaryNavService.setCurrentArea(this.service.Name, 'fa-cog', this.tabTitle);
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`));

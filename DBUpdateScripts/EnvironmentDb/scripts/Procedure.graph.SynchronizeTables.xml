@@ -5,12 +5,216 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Procedure.graph.SynchronizeTables-v9">
+  <changeSet author="kmcnamee" id="Procedure.graph.SynchronizeTables-v10">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [graph].[SynchronizeTables]	
+	  @populatePaths bit = 0
+AS
+begin
+	set nocount on;
+
+	delete	graph.AssetEdge
+    where	ID not in (select ID from [Intersect]);
+
+	drop table if exists #DeleteNodes;
+	create table #DeleteNodes (ID bigint);
+	create clustered index CIX_DeleteNodes ON #DeleteNodes (ID)
+	
+	insert into #DeleteNodes
+		select	N.ID
+		from	graph.AssetNode N
+		where	N.ID not in (select ID from Asset where State <> 3)
+				or N.Class in (3,5,10,13);
+
+	delete	E
+	from	graph.AssetEdge E
+			inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
+			inner join #DeleteNodes D on D.ID = N.ID
+
+	-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
+	drop table if exists #Uids
+	create table #Uids (Uid uniqueidentifier)
+	create clustered index CIX_TempUids on #Uids (Uid)
+
+	-- Get all Result Uids where the asset is the result owner. 
+	insert into #Uids
+		select	R.Uid
+		from	graph.AssetNode A,
+				dbo.AssetResultEdge E,
+				dbo.AssetResult R,
+				#DeleteNodes D
+		where	MATCH(A-(E)->R)
+				and E.Class = 1
+				and A.ID = D.ID;
+
+	--Delete all edge records including those linking the result to the evaluated asset.
+	delete	E
+	from    dbo.AssetResultEdge E
+			inner join AssetResult AR on E.$to_id = AR.$node_id
+			inner join #Uids S on S.Uid = AR.Uid
+	
+	--Delete all remaining edge records linked to the Asset, e.g. Where asset is not owner. 
+	delete	E
+	from    dbo.AssetResultEdge E
+			inner join graph.AssetNode N on E.$from_id = N.$node_id
+			inner join #DeleteNodes D on D.ID = N.ID;
+
+	delete	T
+	from	dbo.AssetResult T
+			inner join #Uids S on S.Uid = T.Uid;
+
+	delete	N
+	from	graph.AssetNode N
+			inner join #DeleteNodes D on D.ID = N.ID;
+
+	merge	graph.AssetNode T
+	using	(
+			select	A.ID,
+					A.[Uid],
+					A.AssetTypeID,
+					T.[UID] as AssetTypeUid,
+					A.[State],
+					coalesce(A.UpdatedOn, A.CreatedOn, getutcdate()) as UpdatedOn,
+					T.[Class]
+			from	Asset A
+					inner join AssetType T on T.ID = A.AssetTypeID and T.Class not in (3,5,10,13)
+					where A.State <> 3
+			) S on (S.ID = T.ID)
+	when	matched and (T.UpdatedOn < S.UpdatedOn OR T.[Class] <> S.[Class]) then 
+	update 
+	set		T.[State] = S.[State],
+			T.[UpdatedOn] = S.[UpdatedOn],
+			T.AssetTypeID = S.AssetTypeID,
+			T.AssetTypeUid = S.AssetTypeUid,
+			T.[Class] = S.[Class]
+	when	not matched by target then 
+	insert	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn, [Class]) 
+	values	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn, S.[Class]);
+
+
+	merge	graph.AssetEdge T
+	using	(
+			select	SG.$node_id as from_id,
+					OG.$node_id as to_id,
+					I.ID,
+					I.[Uid],
+					I.IntersectTypeID,
+					T.[Uid] as IntersectTypeUid,
+					T.PredicateID,
+					P.[Uid] as PredicateUid,
+					P.[Type] as PredicateType,
+					'<props/>' as Properties,
+					I.[State],
+					coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
+			from	[Intersect] I
+					inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
+					inner join graph.AssetNode SG on SG.ID = SA.ID
+					inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
+					inner join graph.AssetNode OG on OG.ID = OA.ID
+					inner join IntersectType T on T.ID = I.IntersectTypeID
+					inner join [Predicate] P on P.ID = T.PredicateID
+			) S on (S.ID = T.ID and S.from_id = T.$from_id and S.to_id = T.$to_id)
+	when	matched and (T.UpdatedOn < S.UpdatedOn) then 
+	update	
+	set		T.IntersectTypeID = S.IntersectTypeID,
+			T.IntersectTypeUid = S.IntersectTypeUid,
+			T.PredicateID = S.PredicateID,
+			T.PredicateUid = S.PredicateUid,
+			T.PredicateType = S.PredicateType,
+			T.[State] = S.[State]
+	when	not matched by target then 
+	insert	($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn) 
+	values	(from_id, to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
+	when	not matched by source then delete;
+	
+	if @populatePaths = 1
+	begin
+	
+		drop table if exists #assetTypes;
+		create table #assetTypes (ID int, [Level] int);
+
+		with h as (
+			select	A.Object,
+					A.ObjectID,
+					A.ID,
+					null as ParentID,
+					1 as [Level]
+			from	AssetType A
+					left join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
+			where	I.ID is null
+					and A.Class not in (3,5,10,13)
+			union all
+			select	A.Object,
+					A.ObjectID,
+					A.ID,
+					P.ID as ParentID,
+					P.[Level]+1 as [Level]
+			from	AssetType A
+					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3 and A.Class not in (3,5,10,13)
+					inner join h as P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+		)
+		
+		insert into #assetTypes
+			select ID, [Level] from h order by [Level];
+
+		insert into #assetTypes
+			select ID, 1 from AssetType where Class in (2,6);
+	
+		while ((select count(*) from #assetTypes) > 0)
+		begin
+			declare @id int;
+			select top 1 @id = ID from #assetTypes order by [Level];
+			
+			--print @id
+			
+			begin try
+				exec [graph].[UpdateGraphTableHierarchyBy] null, @id, null
+			end try
+			BEGIN CATCH  
+				print 'Asset Type ID' + cast(@id as varchar) + ' is causing errors'
+			END CATCH;   
+		
+			delete from #assetTypes where id = @id;
+		end
+	end
+	else
+	begin
+        drop table if exists #assets;
+		create table #assets (AssetTypeID int, ID bigint);
+        insert into #assets
+            select  AssetTypeID,
+                    ID
+            from    graph.AssetNode
+            where   Class not in (3,5,10,13)
+					and Segments is null;
+
+		while ((select count(*) from #assets) > 0)
+		begin
+			declare @assetTypeId int,
+                    @assetId bigint;
+			select top 1 @assetTypeId = AssetTypeID, @assetId = ID from #assets;
+
+			exec [graph].[UpdateGraphTableHierarchyBy] null, null, @assetId
+
+			delete from #assets where ID = @assetId;
+		end 
+
+		-- Catch-all
+		update	graph.AssetNode
+		set		Segments = '<path><segment level="1" assetTypeId="' + cast(AssetTypeID as varchar) + '" assetId="' + cast(ID as varchar) + '">{INVALID}</segment></path>'
+		where   Class not in (3,5,10,13)
+				and Segments is null;
+	end
+
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [graph].[SynchronizeTables]	
 	  @populatePaths bit = 0
 AS
@@ -206,205 +410,7 @@ begin
 	end
 
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-create or alter procedure [graph].[SynchronizeTables]	
-	  @populatePaths bit = 0
-AS
-begin
-	set nocount on;
-
-	delete	graph.AssetEdge
-    where	ID not in (select ID from [Intersect]);
-
-	drop table if exists #DeleteNodes;
-	create table #DeleteNodes (ID bigint);
-	create clustered index CIX_DeleteNodes ON #DeleteNodes (ID)
-	
-	insert into #DeleteNodes
-		select	N.ID
-		from	graph.AssetNode N
-		where	N.ID not in (select ID from Asset where State <> 3)
-				or N.Class in (3,5,10,13);
-
-	delete	E
-	from	graph.AssetEdge E
-			inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
-			inner join #DeleteNodes D on D.ID = N.ID
-
-	-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
-	drop table if exists #Uids
-	create table #Uids (Uid uniqueidentifier)
-	create clustered index CIX_TempUids on #Uids (Uid)
-
-	-- Get all Result Uids where the asset is the result owner. 
-	insert into #Uids
-		select	R.Uid
-		from	graph.AssetNode A,
-				dbo.AssetResultEdge E,
-				dbo.AssetResult R,
-				#DeleteNodes D
-		where	MATCH(A-(E)->R)
-				and E.Class = 1
-				and A.ID = D.ID;
-
-	--Delete all edge records including those linking the result to the evaluated asset.
-	delete	E
-	from    dbo.AssetResultEdge E
-			inner join AssetResult AR on E.$to_id = AR.$node_id
-			inner join #Uids S on S.Uid = AR.Uid
-	
-	--Delete all remaining edge records linked to the Asset, e.g. Where asset is not owner. 
-	delete	E
-	from    dbo.AssetResultEdge E
-			inner join graph.AssetNode N on E.$from_id = N.$node_id
-			inner join #DeleteNodes D on D.ID = N.ID;
-
-	delete	T
-	from	dbo.AssetResult T
-			inner join #Uids S on S.Uid = T.Uid;
-
-	delete	N
-	from	graph.AssetNode N
-			inner join #DeleteNodes D on D.ID = N.ID;
-
-	merge	graph.AssetNode T
-	using	(
-			select	A.ID,
-					A.[Uid],
-					A.AssetTypeID,
-					T.[UID] as AssetTypeUid,
-					A.[State],
-					coalesce(A.UpdatedOn, A.CreatedOn, getutcdate()) as UpdatedOn,
-					T.[Class]
-			from	Asset A
-					inner join AssetType T on T.ID = A.AssetTypeID and T.Class not in (3,5,10,13)
-					where A.State <> 3
-			) S on (S.ID = T.ID)
-	when	matched and (T.UpdatedOn < S.UpdatedOn OR T.[Class] <> S.[Class]) then 
-	update 
-	set		T.[State] = S.[State],
-			T.[UpdatedOn] = S.[UpdatedOn],
-			T.AssetTypeID = S.AssetTypeID,
-			T.AssetTypeUid = S.AssetTypeUid,
-			T.[Class] = S.[Class]
-	when	not matched by target then 
-	insert	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn, [Class]) 
-	values	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn, S.[Class]);
-
-
-	merge	graph.AssetEdge T
-	using	(
-			select	SG.$node_id as from_id,
-					OG.$node_id as to_id,
-					I.ID,
-					I.[Uid],
-					I.IntersectTypeID,
-					T.[Uid] as IntersectTypeUid,
-					T.PredicateID,
-					P.[Uid] as PredicateUid,
-					P.[Type] as PredicateType,
-					'<props/>' as Properties,
-					I.[State],
-					coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
-			from	[Intersect] I
-					inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
-					inner join graph.AssetNode SG on SG.ID = SA.ID
-					inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
-					inner join graph.AssetNode OG on OG.ID = OA.ID
-					inner join IntersectType T on T.ID = I.IntersectTypeID
-					inner join [Predicate] P on P.ID = T.PredicateID
-			) S on (S.ID = T.ID and S.from_id = T.$from_id and S.to_id = T.$to_id)
-	when	matched and (T.UpdatedOn < S.UpdatedOn) then 
-	update	
-	set		T.IntersectTypeID = S.IntersectTypeID,
-			T.IntersectTypeUid = S.IntersectTypeUid,
-			T.PredicateID = S.PredicateID,
-			T.PredicateUid = S.PredicateUid,
-			T.PredicateType = S.PredicateType,
-			T.[State] = S.[State]
-	when	not matched by target then 
-	insert	($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn) 
-	values	(from_id, to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn);
-	
-	if @populatePaths = 1
-	begin
-	
-		drop table if exists #assetTypes;
-		create table #assetTypes (ID int, [Level] int);
-
-		with h as (
-			select	A.Object,
-					A.ObjectID,
-					A.ID,
-					null as ParentID,
-					1 as [Level]
-			from	AssetType A
-					left join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
-			where	I.ID is null
-					and A.Class not in (3,5,10,13)
-			union all
-			select	A.Object,
-					A.ObjectID,
-					A.ID,
-					P.ID as ParentID,
-					P.[Level]+1 as [Level]
-			from	AssetType A
-					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3 and A.Class not in (3,5,10,13)
-					inner join h as P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-		)
-		
-		insert into #assetTypes
-			select ID, [Level] from h order by [Level];
-
-		insert into #assetTypes
-			select ID, 1 from AssetType where Class in (2,6);
-	
-		while ((select count(*) from #assetTypes) > 0)
-		begin
-			declare @id int;
-			select top 1 @id = ID from #assetTypes order by [Level];
-			
-			--print @id
-			
-			exec [graph].[UpdateGraphTableHierarchyBy] null, @id, null
-		
-			delete from #assetTypes where id = @id;
-		end
-	end
-	else
-	begin
-        drop table if exists #assets;
-		create table #assets (AssetTypeID int, ID bigint);
-        insert into #assets
-            select  AssetTypeID,
-                    ID
-            from    graph.AssetNode
-            where   Class not in (3,5,10,13)
-					and Segments is null;
-
-		while ((select count(*) from #assets) > 0)
-		begin
-			declare @assetTypeId int,
-                    @assetId bigint;
-			select top 1 @assetTypeId = AssetTypeID, @assetId = ID from #assets;
-
-			exec [graph].[UpdateGraphTableHierarchyBy] null, null, @assetId
-
-			delete from #assets where ID = @assetId;
-		end 
-
-		-- Catch-all
-		update	graph.AssetNode
-		set		Segments = '<path><segment level="1" assetTypeId="' + cast(AssetTypeID as varchar) + '" assetId="' + cast(ID as varchar) + '">{INVALID}</segment></path>'
-		where   Class not in (3,5,10,13)
-				and Segments is null;
-	end
-
-end
-		]]>
+]]>
 	</rollback>
   </changeSet>
 

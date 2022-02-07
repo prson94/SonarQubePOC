@@ -64,7 +64,7 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
         }
 
         this.setObjectInfo(this.objectType, -1);
-        this.setCommonSecondaryNavTabs(false);
+        this.setCommonSecondaryNavTabs({ hasAudit: false });
 
         this.load();
 

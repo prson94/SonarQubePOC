@@ -44,9 +44,9 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
             this.assetTypeUId = params['assetTypeUId'];
-   
+            this.buildSecondaryNavigation(null, null, null, null, this.assetTypeUId);
         });
-        this.checkSecondaryNavLocalStorage();
+        
         this.authenticationService.checkCurrentUserAdmin().subscribe((isAdmin) => {
             this.showControls = isAdmin;
         });

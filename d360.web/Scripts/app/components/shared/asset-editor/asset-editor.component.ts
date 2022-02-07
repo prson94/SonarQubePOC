@@ -115,6 +115,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     selectedTagID: number;
     hasUpdateFormChanged: boolean = false;
 
+    isProcessSidePanel: boolean = false;
+
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
     @ViewChildren(AssetEditorFieldComponent) dyFieldRef: QueryList<AssetEditorFieldComponent>;
@@ -142,6 +144,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
             }
         });
+
+        if (!this.showAsModal) {
+            this.modalFormMaxHeight = null;
+        }
     }
 
     @HostListener('window:resize', ['$event'])
@@ -251,6 +257,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             if (this.isV2API && this.selection.AssetUid) {
                 id = this.selection.AssetUid;
             }
+
+            //this comes from process side panel
+            if (this.selection.key) {
+                id = this.selection.key;
+                this.isProcessSidePanel = true;
+            }
+
             this.loadedAssetUid = id;
         }
         this.isLoading = true;
@@ -392,6 +405,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     }
                 });
             }, 500);
+
+            if (this.useModelBinding) {
+                this.form.valueChanges.subscribe((x) => {
+                    this.onSubmit();
+                });
+            }
+
         }
 
         this.ref.markForCheck();
@@ -589,7 +609,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     onSubmit(addAnother: boolean = false) {
-        this.savingInProgress = true;
 
         if (addAnother) {
             this.savingInProgressWithAddNew = true;
@@ -638,6 +657,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         this.form.value[p] = +this.form.value[p];
                     }
                     else {
+                        this.form.value[p] = null;
+                    }
+                }
+                else if (field.FieldType === 'Lookup') {
+                    var value = this.form.value[p];
+
+                    if (Array.isArray(value) && value.length === 0) {
                         this.form.value[p] = null;
                     }
                 }
@@ -776,7 +802,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         var upsertSub = this.groupsService.postGroup(group);
 
-        let rootProperties: string[] = ['Name','Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
+        let rootProperties: string[] = ['Name', 'Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
         for (var p in values) {
             if (rootProperties.some((prop) => prop.toUpperCase() === p.toUpperCase())) {
                 group[p] = values[p];
@@ -791,29 +817,29 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         }
 
         upsertSub.subscribe((data) => {
-                var res = data[0];
-                event.Success = res.Success;
+            var res = data[0];
+            event.Success = res.Success;
 
-                if (res.Success) {
-                    let msg = group.Uid ? 'Successfully updated' : 'Successfully added';
-                    this.showMessageForApiResult(this.messagesService, res, msg);
-                    if (res.uid) {
-                        event.assetUid = res.uid;
-                        event.assetTypeUid = this.objectTypeUid;
-                    }
-                    this.savingInProgress = false;
-                    this.savingInProgressWithAddNew = false;
-                    this.saveClick.emit(event);
+            if (res.Success) {
+                let msg = group.Uid ? 'Successfully updated' : 'Successfully added';
+                this.showMessageForApiResult(this.messagesService, res, msg);
+                if (res.uid) {
+                    event.assetUid = res.uid;
+                    event.assetTypeUid = this.objectTypeUid;
                 }
-                else {
-                    this.savingInProgress = false;
-                    this.savingInProgressWithAddNew = false;
+                this.savingInProgress = false;
+                this.savingInProgressWithAddNew = false;
+                this.saveClick.emit(event);
+            }
+            else {
+                this.savingInProgress = false;
+                this.savingInProgressWithAddNew = false;
 
-                    this.ref.markForCheck();
-                    this.showMessageForApiResult(this.messagesService, res);
-                }
+                this.ref.markForCheck();
+                this.showMessageForApiResult(this.messagesService, res);
+            }
 
-            });
+        });
     }
 
     getUTCDate(date: Date): Date {

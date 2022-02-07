@@ -1,0 +1,1309 @@
+[{
+	"locale": "af-NA",
+	"Name": "Afrikaans (Namibia)"
+}, {
+	"locale": "af-ZA",
+	"Name": "Afrikaans (South Africa)"
+}, {
+	"locale": "af",
+	"Name": "Afrikaans"
+}, {
+	"locale": "ak-GH",
+	"Name": "Akan (Ghana)"
+}, {
+	"locale": "ak",
+	"Name": "Akan"
+}, {
+	"locale": "sq-AL",
+	"Name": "Albanian (Albania)"
+}, {
+	"locale": "sq",
+	"Name": "Albanian"
+}, {
+	"locale": "am-ET",
+	"Name": "Amharic (Ethiopia)"
+}, {
+	"locale": "am",
+	"Name": "Amharic"
+}, {
+	"locale": "ar-DZ",
+	"Name": "Arabic (Algeria)"
+}, {
+	"locale": "ar-BH",
+	"Name": "Arabic (Bahrain)"
+}, {
+	"locale": "ar-EG",
+	"Name": "Arabic (Egypt)"
+}, {
+	"locale": "ar-IQ",
+	"Name": "Arabic (Iraq)"
+}, {
+	"locale": "ar-JO",
+	"Name": "Arabic (Jordan)"
+}, {
+	"locale": "ar-KW",
+	"Name": "Arabic (Kuwait)"
+}, {
+	"locale": "ar-LB",
+	"Name": "Arabic (Lebanon)"
+}, {
+	"locale": "ar-LY",
+	"Name": "Arabic (Libya)"
+}, {
+	"locale": "ar-MA",
+	"Name": "Arabic (Morocco)"
+}, {
+	"locale": "ar-OM",
+	"Name": "Arabic (Oman)"
+}, {
+	"locale": "ar-QA",
+	"Name": "Arabic (Qatar)"
+}, {
+	"locale": "ar-SA",
+	"Name": "Arabic (Saudi Arabia)"
+}, {
+	"locale": "ar-SD",
+	"Name": "Arabic (Sudan)"
+}, {
+	"locale": "ar-SY",
+	"Name": "Arabic (Syria)"
+}, {
+	"locale": "ar-TN",
+	"Name": "Arabic (Tunisia)"
+}, {
+	"locale": "ar-AE",
+	"Name": "Arabic (United Arab Emirates)"
+}, {
+	"locale": "ar-YE",
+	"Name": "Arabic (Yemen)"
+}, {
+	"locale": "ar",
+	"Name": "Arabic"
+}, {
+	"locale": "hy-AM",
+	"Name": "Armenian (Armenia)"
+}, {
+	"locale": "hy",
+	"Name": "Armenian"
+}, {
+	"locale": "as-IN",
+	"Name": "Assamese (India)"
+}, {
+	"locale": "as",
+	"Name": "Assamese"
+}, {
+	"locale": "asa-TZ",
+	"Name": "Asu (Tanzania)"
+}, {
+	"locale": "asa",
+	"Name": "Asu"
+}, {
+	"locale": "az-Cyrl",
+	"Name": "Azerbaijani (Cyrillic)"
+}, {
+	"locale": "az-Cyrl-AZ",
+	"Name": "Azerbaijani (Cyrillic, Azerbaijan)"
+}, {
+	"locale": "az-Latn",
+	"Name": "Azerbaijani (Latin)"
+}, {
+	"locale": "az-Latn-AZ",
+	"Name": "Azerbaijani (Latin, Azerbaijan)"
+}, {
+	"locale": "az",
+	"Name": "Azerbaijani"
+}, {
+	"locale": "bm-ML",
+	"Name": "Bambara (Mali)"
+}, {
+	"locale": "bm",
+	"Name": "Bambara"
+}, {
+	"locale": "eu-ES",
+	"Name": "Basque (Spain)"
+}, {
+	"locale": "eu",
+	"Name": "Basque"
+}, {
+	"locale": "be-BY",
+	"Name": "Belarusian (Belarus)"
+}, {
+	"locale": "be",
+	"Name": "Belarusian"
+}, {
+	"locale": "bem-ZM",
+	"Name": "Bemba (Zambia)"
+}, {
+	"locale": "bem",
+	"Name": "Bemba"
+}, {
+	"locale": "bez-TZ",
+	"Name": "Bena (Tanzania)"
+}, {
+	"locale": "bez",
+	"Name": "Bena"
+}, {
+	"locale": "bn-BD",
+	"Name": "Bengali (Bangladesh)"
+}, {
+	"locale": "bn-IN",
+	"Name": "Bengali (India)"
+}, {
+	"locale": "bn",
+	"Name": "Bengali"
+}, {
+	"locale": "bs-BA",
+	"Name": "Bosnian (Bosnia and Herzegovina)"
+}, {
+	"locale": "bs",
+	"Name": "Bosnian"
+}, {
+	"locale": "bg-BG",
+	"Name": "Bulgarian (Bulgaria)"
+}, {
+	"locale": "bg",
+	"Name": "Bulgarian"
+}, {
+	"locale": "my-MM",
+	"Name": "Burmese (Myanmar [Burma])"
+}, {
+	"locale": "my",
+	"Name": "Burmese"
+}, {
+	"locale": "yue-Hant-HK",
+	"Name": "Cantonese (Traditional, Hong Kong SAR China)"
+}, {
+	"locale": "ca-ES",
+	"Name": "Catalan (Spain)"
+}, {
+	"locale": "ca",
+	"Name": "Catalan"
+}, {
+	"locale": "tzm-Latn",
+	"Name": "Central Morocco Tamazight (Latin)"
+}, {
+	"locale": "tzm-Latn-MA",
+	"Name": "Central Morocco Tamazight (Latin, Morocco)"
+}, {
+	"locale": "tzm",
+	"Name": "Central Morocco Tamazight"
+}, {
+	"locale": "chr-US",
+	"Name": "Cherokee (United States)"
+}, {
+	"locale": "chr",
+	"Name": "Cherokee"
+}, {
+	"locale": "cgg-UG",
+	"Name": "Chiga (Uganda)"
+}, {
+	"locale": "cgg",
+	"Name": "Chiga"
+}, {
+	"locale": "zh-Hans",
+	"Name": "Chinese (Simplified Han)"
+}, {
+	"locale": "zh-Hans-CN",
+	"Name": "Chinese (Simplified Han, China)"
+}, {
+	"locale": "zh-Hans-HK",
+	"Name": "Chinese (Simplified Han, Hong Kong SAR China)"
+}, {
+	"locale": "zh-Hans-MO",
+	"Name": "Chinese (Simplified Han, Macau SAR China)"
+}, {
+	"locale": "zh-Hans-SG",
+	"Name": "Chinese (Simplified Han, Singapore)"
+}, {
+	"locale": "zh-Hant",
+	"Name": "Chinese (Traditional Han)"
+}, {
+	"locale": "zh-Hant-HK",
+	"Name": "Chinese (Traditional Han, Hong Kong SAR China)"
+}, {
+	"locale": "zh-Hant-MO",
+	"Name": "Chinese (Traditional Han, Macau SAR China)"
+}, {
+	"locale": "zh-Hant-TW",
+	"Name": "Chinese (Traditional Han, Taiwan)"
+}, {
+	"locale": "zh",
+	"Name": "Chinese"
+}, {
+	"locale": "kw-GB",
+	"Name": "Cornish (United Kingdom)"
+}, {
+	"locale": "kw",
+	"Name": "Cornish"
+}, {
+	"locale": "hr-HR",
+	"Name": "Croatian (Croatia)"
+}, {
+	"locale": "hr",
+	"Name": "Croatian"
+}, {
+	"locale": "cs-CZ",
+	"Name": "Czech (Czech Republic)"
+}, {
+	"locale": "cs",
+	"Name": "Czech"
+}, {
+	"locale": "da-DK",
+	"Name": "Danish (Denmark)"
+}, {
+	"locale": "da",
+	"Name": "Danish"
+}, {
+	"locale": "nl-BE",
+	"Name": "Dutch (Belgium)"
+}, {
+	"locale": "nl-NL",
+	"Name": "Dutch (Netherlands)"
+}, {
+	"locale": "nl",
+	"Name": "Dutch"
+}, {
+	"locale": "ebu-KE",
+	"Name": "Embu (Kenya)"
+}, {
+	"locale": "ebu",
+	"Name": "Embu"
+}, {
+	"locale": "en-AS",
+	"Name": "English (American Samoa)"
+}, {
+	"locale": "en-AU",
+	"Name": "English (Australia)"
+}, {
+	"locale": "en-BE",
+	"Name": "English (Belgium)"
+}, {
+	"locale": "en-BZ",
+	"Name": "English (Belize)"
+}, {
+	"locale": "en-BW",
+	"Name": "English (Botswana)"
+}, {
+	"locale": "en-CA",
+	"Name": "English (Canada)"
+}, {
+	"locale": "en-GU",
+	"Name": "English (Guam)"
+}, {
+	"locale": "en-HK",
+	"Name": "English (Hong Kong SAR China)"
+}, {
+	"locale": "en-IN",
+	"Name": "English (India)"
+}, {
+	"locale": "en-IE",
+	"Name": "English (Ireland)"
+}, {
+	"locale": "en-IL",
+	"Name": "English (Israel)"
+}, {
+	"locale": "en-JM",
+	"Name": "English (Jamaica)"
+}, {
+	"locale": "en-MT",
+	"Name": "English (Malta)"
+}, {
+	"locale": "en-MH",
+	"Name": "English (Marshall Islands)"
+}, {
+	"locale": "en-MU",
+	"Name": "English (Mauritius)"
+}, {
+	"locale": "en-NA",
+	"Name": "English (Namibia)"
+}, {
+	"locale": "en-NZ",
+	"Name": "English (New Zealand)"
+}, {
+	"locale": "en-MP",
+	"Name": "English (Northern Mariana Islands)"
+}, {
+	"locale": "en-PK",
+	"Name": "English (Pakistan)"
+}, {
+	"locale": "en-PH",
+	"Name": "English (Philippines)"
+}, {
+	"locale": "en-SG",
+	"Name": "English (Singapore)"
+}, {
+	"locale": "en-ZA",
+	"Name": "English (South Africa)"
+}, {
+	"locale": "en-TT",
+	"Name": "English (Trinidad and Tobago)"
+}, {
+	"locale": "en-UM",
+	"Name": "English (U.S. Minor Outlying Islands)"
+}, {
+	"locale": "en-VI",
+	"Name": "English (U.S. Virgin Islands)"
+}, {
+	"locale": "en-GB",
+	"Name": "English (United Kingdom)"
+}, {
+	"locale": "en-US",
+	"Name": "English (United States)"
+}, {
+	"locale": "en-ZW",
+	"Name": "English (Zimbabwe)"
+}, {
+	"locale": "en",
+	"Name": "English"
+}, {
+	"locale": "eo",
+	"Name": "Esperanto"
+}, {
+	"locale": "et-EE",
+	"Name": "Estonian (Estonia)"
+}, {
+	"locale": "et",
+	"Name": "Estonian"
+}, {
+	"locale": "ee-GH",
+	"Name": "Ewe (Ghana)"
+}, {
+	"locale": "ee-TG",
+	"Name": "Ewe (Togo)"
+}, {
+	"locale": "ee",
+	"Name": "Ewe"
+}, {
+	"locale": "fo-FO",
+	"Name": "Faroese (Faroe Islands)"
+}, {
+	"locale": "fo",
+	"Name": "Faroese"
+}, {
+	"locale": "fil-PH",
+	"Name": "Filipino (Philippines)"
+}, {
+	"locale": "fil",
+	"Name": "Filipino"
+}, {
+	"locale": "fi-FI",
+	"Name": "Finnish (Finland)"
+}, {
+	"locale": "fi",
+	"Name": "Finnish"
+}, {
+	"locale": "fr-BE",
+	"Name": "French (Belgium)"
+}, {
+	"locale": "fr-BJ",
+	"Name": "French (Benin)"
+}, {
+	"locale": "fr-BF",
+	"Name": "French (Burkina Faso)"
+}, {
+	"locale": "fr-BI",
+	"Name": "French (Burundi)"
+}, {
+	"locale": "fr-CM",
+	"Name": "French (Cameroon)"
+}, {
+	"locale": "fr-CA",
+	"Name": "French (Canada)"
+}, {
+	"locale": "fr-CF",
+	"Name": "French (Central African Republic)"
+}, {
+	"locale": "fr-TD",
+	"Name": "French (Chad)"
+}, {
+	"locale": "fr-KM",
+	"Name": "French (Comoros)"
+}, {
+	"locale": "fr-CG",
+	"Name": "French (Congo - Brazzaville)"
+}, {
+	"locale": "fr-CD",
+	"Name": "French (Congo - Kinshasa)"
+}, {
+	"locale": "fr-CI",
+	"Name": "French (Côte d’Ivoire)"
+}, {
+	"locale": "fr-DJ",
+	"Name": "French (Djibouti)"
+}, {
+	"locale": "fr-GQ",
+	"Name": "French (Equatorial Guinea)"
+}, {
+	"locale": "fr-FR",
+	"Name": "French (France)"
+}, {
+	"locale": "fr-GA",
+	"Name": "French (Gabon)"
+}, {
+	"locale": "fr-GP",
+	"Name": "French (Guadeloupe)"
+}, {
+	"locale": "fr-GN",
+	"Name": "French (Guinea)"
+}, {
+	"locale": "fr-LU",
+	"Name": "French (Luxembourg)"
+}, {
+	"locale": "fr-MG",
+	"Name": "French (Madagascar)"
+}, {
+	"locale": "fr-ML",
+	"Name": "French (Mali)"
+}, {
+	"locale": "fr-MQ",
+	"Name": "French (Martinique)"
+}, {
+	"locale": "fr-MC",
+	"Name": "French (Monaco)"
+}, {
+	"locale": "fr-NE",
+	"Name": "French (Niger)"
+}, {
+	"locale": "fr-RW",
+	"Name": "French (Rwanda)"
+}, {
+	"locale": "fr-RE",
+	"Name": "French (Réunion)"
+}, {
+	"locale": "fr-BL",
+	"Name": "French (Saint Barthélemy)"
+}, {
+	"locale": "fr-MF",
+	"Name": "French (Saint Martin)"
+}, {
+	"locale": "fr-SN",
+	"Name": "French (Senegal)"
+}, {
+	"locale": "fr-CH",
+	"Name": "French (Switzerland)"
+}, {
+	"locale": "fr-TG",
+	"Name": "French (Togo)"
+}, {
+	"locale": "fr",
+	"Name": "French"
+}, {
+	"locale": "ff-SN",
+	"Name": "Fulah (Senegal)"
+}, {
+	"locale": "ff",
+	"Name": "Fulah"
+}, {
+	"locale": "gl-ES",
+	"Name": "Galician (Spain)"
+}, {
+	"locale": "gl",
+	"Name": "Galician"
+}, {
+	"locale": "lg-UG",
+	"Name": "Ganda (Uganda)"
+}, {
+	"locale": "lg",
+	"Name": "Ganda"
+}, {
+	"locale": "ka-GE",
+	"Name": "Georgian (Georgia)"
+}, {
+	"locale": "ka",
+	"Name": "Georgian"
+}, {
+	"locale": "de-AT",
+	"Name": "German (Austria)"
+}, {
+	"locale": "de-BE",
+	"Name": "German (Belgium)"
+}, {
+	"locale": "de-DE",
+	"Name": "German (Germany)"
+}, {
+	"locale": "de-LI",
+	"Name": "German (Liechtenstein)"
+}, {
+	"locale": "de-LU",
+	"Name": "German (Luxembourg)"
+}, {
+	"locale": "de-CH",
+	"Name": "German (Switzerland)"
+}, {
+	"locale": "de",
+	"Name": "German"
+}, {
+	"locale": "el-CY",
+	"Name": "Greek (Cyprus)"
+}, {
+	"locale": "el-GR",
+	"Name": "Greek (Greece)"
+}, {
+	"locale": "el",
+	"Name": "Greek"
+}, {
+	"locale": "gu-IN",
+	"Name": "Gujarati (India)"
+}, {
+	"locale": "gu",
+	"Name": "Gujarati"
+}, {
+	"locale": "guz-KE",
+	"Name": "Gusii (Kenya)"
+}, {
+	"locale": "guz",
+	"Name": "Gusii"
+}, {
+	"locale": "ha-Latn",
+	"Name": "Hausa (Latin)"
+}, {
+	"locale": "ha-Latn-GH",
+	"Name": "Hausa (Latin, Ghana)"
+}, {
+	"locale": "ha-Latn-NE",
+	"Name": "Hausa (Latin, Niger)"
+}, {
+	"locale": "ha-Latn-NG",
+	"Name": "Hausa (Latin, Nigeria)"
+}, {
+	"locale": "ha",
+	"Name": "Hausa"
+}, {
+	"locale": "haw-US",
+	"Name": "Hawaiian (United States)"
+}, {
+	"locale": "haw",
+	"Name": "Hawaiian"
+}, {
+	"locale": "he-IL",
+	"Name": "Hebrew (Israel)"
+}, {
+	"locale": "he",
+	"Name": "Hebrew"
+}, {
+	"locale": "hi-IN",
+	"Name": "Hindi (India)"
+}, {
+	"locale": "hi",
+	"Name": "Hindi"
+}, {
+	"locale": "hu-HU",
+	"Name": "Hungarian (Hungary)"
+}, {
+	"locale": "hu",
+	"Name": "Hungarian"
+}, {
+	"locale": "is-IS",
+	"Name": "Icelandic (Iceland)"
+}, {
+	"locale": "is",
+	"Name": "Icelandic"
+}, {
+	"locale": "ig-NG",
+	"Name": "Igbo (Nigeria)"
+}, {
+	"locale": "ig",
+	"Name": "Igbo"
+}, {
+	"locale": "id-ID",
+	"Name": "Indonesian (Indonesia)"
+}, {
+	"locale": "id",
+	"Name": "Indonesian"
+}, {
+	"locale": "ga-IE",
+	"Name": "Irish (Ireland)"
+}, {
+	"locale": "ga",
+	"Name": "Irish"
+}, {
+	"locale": "it-IT",
+	"Name": "Italian (Italy)"
+}, {
+	"locale": "it-CH",
+	"Name": "Italian (Switzerland)"
+}, {
+	"locale": "it",
+	"Name": "Italian"
+}, {
+	"locale": "ja-JP",
+	"Name": "Japanese (Japan)"
+}, {
+	"locale": "ja",
+	"Name": "Japanese"
+}, {
+	"locale": "kea-CV",
+	"Name": "Kabuverdianu (Cape Verde)"
+}, {
+	"locale": "kea",
+	"Name": "Kabuverdianu"
+}, {
+	"locale": "kab-DZ",
+	"Name": "Kabyle (Algeria)"
+}, {
+	"locale": "kab",
+	"Name": "Kabyle"
+}, {
+	"locale": "kl-GL",
+	"Name": "Kalaallisut (Greenland)"
+}, {
+	"locale": "kl",
+	"Name": "Kalaallisut"
+}, {
+	"locale": "kln-KE",
+	"Name": "Kalenjin (Kenya)"
+}, {
+	"locale": "kln",
+	"Name": "Kalenjin"
+}, {
+	"locale": "kam-KE",
+	"Name": "Kamba (Kenya)"
+}, {
+	"locale": "kam",
+	"Name": "Kamba"
+}, {
+	"locale": "kn-IN",
+	"Name": "Kannada (India)"
+}, {
+	"locale": "kn",
+	"Name": "Kannada"
+}, {
+	"locale": "kk-Cyrl",
+	"Name": "Kazakh (Cyrillic)"
+}, {
+	"locale": "kk-Cyrl-KZ",
+	"Name": "Kazakh (Cyrillic, Kazakhstan)"
+}, {
+	"locale": "kk",
+	"Name": "Kazakh"
+}, {
+	"locale": "km-KH",
+	"Name": "Khmer (Cambodia)"
+}, {
+	"locale": "km",
+	"Name": "Khmer"
+}, {
+	"locale": "ki-KE",
+	"Name": "Kikuyu (Kenya)"
+}, {
+	"locale": "ki",
+	"Name": "Kikuyu"
+}, {
+	"locale": "rw-RW",
+	"Name": "Kinyarwanda (Rwanda)"
+}, {
+	"locale": "rw",
+	"Name": "Kinyarwanda"
+}, {
+	"locale": "kok-IN",
+	"Name": "Konkani (India)"
+}, {
+	"locale": "kok",
+	"Name": "Konkani"
+}, {
+	"locale": "ko-KR",
+	"Name": "Korean (South Korea)"
+}, {
+	"locale": "ko",
+	"Name": "Korean"
+}, {
+	"locale": "khq-ML",
+	"Name": "Koyra Chiini (Mali)"
+}, {
+	"locale": "khq",
+	"Name": "Koyra Chiini"
+}, {
+	"locale": "ses-ML",
+	"Name": "Koyraboro Senni (Mali)"
+}, {
+	"locale": "ses",
+	"Name": "Koyraboro Senni"
+}, {
+	"locale": "lag-TZ",
+	"Name": "Langi (Tanzania)"
+}, {
+	"locale": "lag",
+	"Name": "Langi"
+}, {
+	"locale": "lv-LV",
+	"Name": "Latvian (Latvia)"
+}, {
+	"locale": "lv",
+	"Name": "Latvian"
+}, {
+	"locale": "lt-LT",
+	"Name": "Lithuanian (Lithuania)"
+}, {
+	"locale": "lt",
+	"Name": "Lithuanian"
+}, {
+	"locale": "luo-KE",
+	"Name": "Luo (Kenya)"
+}, {
+	"locale": "luo",
+	"Name": "Luo"
+}, {
+	"locale": "luy-KE",
+	"Name": "Luyia (Kenya)"
+}, {
+	"locale": "luy",
+	"Name": "Luyia"
+}, {
+	"locale": "mk-MK",
+	"Name": "Macedonian (Macedonia)"
+}, {
+	"locale": "mk",
+	"Name": "Macedonian"
+}, {
+	"locale": "jmc-TZ",
+	"Name": "Machame (Tanzania)"
+}, {
+	"locale": "jmc",
+	"Name": "Machame"
+}, {
+	"locale": "kde-TZ",
+	"Name": "Makonde (Tanzania)"
+}, {
+	"locale": "kde",
+	"Name": "Makonde"
+}, {
+	"locale": "mg-MG",
+	"Name": "Malagasy (Madagascar)"
+}, {
+	"locale": "mg",
+	"Name": "Malagasy"
+}, {
+	"locale": "ms-BN",
+	"Name": "Malay (Brunei)"
+}, {
+	"locale": "ms-MY",
+	"Name": "Malay (Malaysia)"
+}, {
+	"locale": "ms",
+	"Name": "Malay"
+}, {
+	"locale": "ml-IN",
+	"Name": "Malayalam (India)"
+}, {
+	"locale": "ml",
+	"Name": "Malayalam"
+}, {
+	"locale": "mt-MT",
+	"Name": "Maltese (Malta)"
+}, {
+	"locale": "mt",
+	"Name": "Maltese"
+}, {
+	"locale": "gv-GB",
+	"Name": "Manx (United Kingdom)"
+}, {
+	"locale": "gv",
+	"Name": "Manx"
+}, {
+	"locale": "mr-IN",
+	"Name": "Marathi (India)"
+}, {
+	"locale": "mr",
+	"Name": "Marathi"
+}, {
+	"locale": "mas-KE",
+	"Name": "Masai (Kenya)"
+}, {
+	"locale": "mas-TZ",
+	"Name": "Masai (Tanzania)"
+}, {
+	"locale": "mas",
+	"Name": "Masai"
+}, {
+	"locale": "mer-KE",
+	"Name": "Meru (Kenya)"
+}, {
+	"locale": "mer",
+	"Name": "Meru"
+}, {
+	"locale": "mfe-MU",
+	"Name": "Morisyen (Mauritius)"
+}, {
+	"locale": "mfe",
+	"Name": "Morisyen"
+}, {
+	"locale": "naq-NA",
+	"Name": "Nama (Namibia)"
+}, {
+	"locale": "naq",
+	"Name": "Nama"
+}, {
+	"locale": "ne-IN",
+	"Name": "Nepali (India)"
+}, {
+	"locale": "ne-NP",
+	"Name": "Nepali (Nepal)"
+}, {
+	"locale": "ne",
+	"Name": "Nepali"
+}, {
+	"locale": "nd-ZW",
+	"Name": "North Ndebele (Zimbabwe)"
+}, {
+	"locale": "nd",
+	"Name": "North Ndebele"
+}, {
+	"locale": "nb-NO",
+	"Name": "Norwegian Bokmål (Norway)"
+}, {
+	"locale": "nb",
+	"Name": "Norwegian Bokmål"
+}, {
+	"locale": "nn-NO",
+	"Name": "Norwegian Nynorsk (Norway)"
+}, {
+	"locale": "nn",
+	"Name": "Norwegian Nynorsk"
+}, {
+	"locale": "nyn-UG",
+	"Name": "Nyankole (Uganda)"
+}, {
+	"locale": "nyn",
+	"Name": "Nyankole"
+}, {
+	"locale": "or-IN",
+	"Name": "Oriya (India)"
+}, {
+	"locale": "or",
+	"Name": "Oriya"
+}, {
+	"locale": "om-ET",
+	"Name": "Oromo (Ethiopia)"
+}, {
+	"locale": "om-KE",
+	"Name": "Oromo (Kenya)"
+}, {
+	"locale": "om",
+	"Name": "Oromo"
+}, {
+	"locale": "ps-AF",
+	"Name": "Pashto (Afghanistan)"
+}, {
+	"locale": "ps",
+	"Name": "Pashto"
+}, {
+	"locale": "fa-AF",
+	"Name": "Persian (Afghanistan)"
+}, {
+	"locale": "fa-IR",
+	"Name": "Persian (Iran)"
+}, {
+	"locale": "fa",
+	"Name": "Persian"
+}, {
+	"locale": "pl-PL",
+	"Name": "Polish (Poland)"
+}, {
+	"locale": "pl",
+	"Name": "Polish"
+}, {
+	"locale": "pt-BR",
+	"Name": "Portuguese (Brazil)"
+}, {
+	"locale": "pt-GW",
+	"Name": "Portuguese (Guinea-Bissau)"
+}, {
+	"locale": "pt-MZ",
+	"Name": "Portuguese (Mozambique)"
+}, {
+	"locale": "pt-PT",
+	"Name": "Portuguese (Portugal)"
+}, {
+	"locale": "pt",
+	"Name": "Portuguese"
+}, {
+	"locale": "pa-Arab",
+	"Name": "Punjabi (Arabic)"
+}, {
+	"locale": "pa-Arab-PK",
+	"Name": "Punjabi (Arabic, Pakistan)"
+}, {
+	"locale": "pa-Guru",
+	"Name": "Punjabi (Gurmukhi)"
+}, {
+	"locale": "pa-Guru-IN",
+	"Name": "Punjabi (Gurmukhi, India)"
+}, {
+	"locale": "pa",
+	"Name": "Punjabi"
+}, {
+	"locale": "ro-MD",
+	"Name": "Romanian (Moldova)"
+}, {
+	"locale": "ro-RO",
+	"Name": "Romanian (Romania)"
+}, {
+	"locale": "ro",
+	"Name": "Romanian"
+}, {
+	"locale": "rm-CH",
+	"Name": "Romansh (Switzerland)"
+}, {
+	"locale": "rm",
+	"Name": "Romansh"
+}, {
+	"locale": "rof-TZ",
+	"Name": "Rombo (Tanzania)"
+}, {
+	"locale": "rof",
+	"Name": "Rombo"
+}, {
+	"locale": "ru-MD",
+	"Name": "Russian (Moldova)"
+}, {
+	"locale": "ru-RU",
+	"Name": "Russian (Russia)"
+}, {
+	"locale": "ru-UA",
+	"Name": "Russian (Ukraine)"
+}, {
+	"locale": "ru",
+	"Name": "Russian"
+}, {
+	"locale": "rwk-TZ",
+	"Name": "Rwa (Tanzania)"
+}, {
+	"locale": "rwk",
+	"Name": "Rwa"
+}, {
+	"locale": "saq-KE",
+	"Name": "Samburu (Kenya)"
+}, {
+	"locale": "saq",
+	"Name": "Samburu"
+}, {
+	"locale": "sg-CF",
+	"Name": "Sango (Central African Republic)"
+}, {
+	"locale": "sg",
+	"Name": "Sango"
+}, {
+	"locale": "seh-MZ",
+	"Name": "Sena (Mozambique)"
+}, {
+	"locale": "seh",
+	"Name": "Sena"
+}, {
+	"locale": "sr-Cyrl",
+	"Name": "Serbian (Cyrillic)"
+}, {
+	"locale": "sr-Cyrl-BA",
+	"Name": "Serbian (Cyrillic, Bosnia and Herzegovina)"
+}, {
+	"locale": "sr-Cyrl-ME",
+	"Name": "Serbian (Cyrillic, Montenegro)"
+}, {
+	"locale": "sr-Cyrl-RS",
+	"Name": "Serbian (Cyrillic, Serbia)"
+}, {
+	"locale": "sr-Latn",
+	"Name": "Serbian (Latin)"
+}, {
+	"locale": "sr-Latn-BA",
+	"Name": "Serbian (Latin, Bosnia and Herzegovina)"
+}, {
+	"locale": "sr-Latn-ME",
+	"Name": "Serbian (Latin, Montenegro)"
+}, {
+	"locale": "sr-Latn-RS",
+	"Name": "Serbian (Latin, Serbia)"
+}, {
+	"locale": "sr",
+	"Name": "Serbian"
+}, {
+	"locale": "sn-ZW",
+	"Name": "Shona (Zimbabwe)"
+}, {
+	"locale": "sn",
+	"Name": "Shona"
+}, {
+	"locale": "ii-CN",
+	"Name": "Sichuan Yi (China)"
+}, {
+	"locale": "ii",
+	"Name": "Sichuan Yi"
+}, {
+	"locale": "si-LK",
+	"Name": "Sinhala (Sri Lanka)"
+}, {
+	"locale": "si",
+	"Name": "Sinhala"
+}, {
+	"locale": "sk-SK",
+	"Name": "Slovak (Slovakia)"
+}, {
+	"locale": "sk",
+	"Name": "Slovak"
+}, {
+	"locale": "sl-SI",
+	"Name": "Slovenian (Slovenia)"
+}, {
+	"locale": "sl",
+	"Name": "Slovenian"
+}, {
+	"locale": "xog-UG",
+	"Name": "Soga (Uganda)"
+}, {
+	"locale": "xog",
+	"Name": "Soga"
+}, {
+	"locale": "so-DJ",
+	"Name": "Somali (Djibouti)"
+}, {
+	"locale": "so-ET",
+	"Name": "Somali (Ethiopia)"
+}, {
+	"locale": "so-KE",
+	"Name": "Somali (Kenya)"
+}, {
+	"locale": "so-SO",
+	"Name": "Somali (Somalia)"
+}, {
+	"locale": "so",
+	"Name": "Somali"
+}, {
+	"locale": "es-AR",
+	"Name": "Spanish (Argentina)"
+}, {
+	"locale": "es-BO",
+	"Name": "Spanish (Bolivia)"
+}, {
+	"locale": "es-CL",
+	"Name": "Spanish (Chile)"
+}, {
+	"locale": "es-CO",
+	"Name": "Spanish (Colombia)"
+}, {
+	"locale": "es-CR",
+	"Name": "Spanish (Costa Rica)"
+}, {
+	"locale": "es-DO",
+	"Name": "Spanish (Dominican Republic)"
+}, {
+	"locale": "es-EC",
+	"Name": "Spanish (Ecuador)"
+}, {
+	"locale": "es-SV",
+	"Name": "Spanish (El Salvador)"
+}, {
+	"locale": "es-GQ",
+	"Name": "Spanish (Equatorial Guinea)"
+}, {
+	"locale": "es-GT",
+	"Name": "Spanish (Guatemala)"
+}, {
+	"locale": "es-HN",
+	"Name": "Spanish (Honduras)"
+}, {
+	"locale": "es-419",
+	"Name": "Spanish (Latin America)"
+}, {
+	"locale": "es-MX",
+	"Name": "Spanish (Mexico)"
+}, {
+	"locale": "es-NI",
+	"Name": "Spanish (Nicaragua)"
+}, {
+	"locale": "es-PA",
+	"Name": "Spanish (Panama)"
+}, {
+	"locale": "es-PY",
+	"Name": "Spanish (Paraguay)"
+}, {
+	"locale": "es-PE",
+	"Name": "Spanish (Peru)"
+}, {
+	"locale": "es-PR",
+	"Name": "Spanish (Puerto Rico)"
+}, {
+	"locale": "es-ES",
+	"Name": "Spanish (Spain)"
+}, {
+	"locale": "es-US",
+	"Name": "Spanish (United States)"
+}, {
+	"locale": "es-UY",
+	"Name": "Spanish (Uruguay)"
+}, {
+	"locale": "es-VE",
+	"Name": "Spanish (Venezuela)"
+}, {
+	"locale": "es",
+	"Name": "Spanish"
+}, {
+	"locale": "sw-KE",
+	"Name": "Swahili (Kenya)"
+}, {
+	"locale": "sw-TZ",
+	"Name": "Swahili (Tanzania)"
+}, {
+	"locale": "sw",
+	"Name": "Swahili"
+}, {
+	"locale": "sv-FI",
+	"Name": "Swedish (Finland)"
+}, {
+	"locale": "sv-SE",
+	"Name": "Swedish (Sweden)"
+}, {
+	"locale": "sv",
+	"Name": "Swedish"
+}, {
+	"locale": "gsw-CH",
+	"Name": "Swiss German (Switzerland)"
+}, {
+	"locale": "gsw",
+	"Name": "Swiss German"
+}, {
+	"locale": "shi-Latn",
+	"Name": "Tachelhit (Latin)"
+}, {
+	"locale": "shi-Latn-MA",
+	"Name": "Tachelhit (Latin, Morocco)"
+}, {
+	"locale": "shi-Tfng",
+	"Name": "Tachelhit (Tifinagh)"
+}, {
+	"locale": "shi-Tfng-MA",
+	"Name": "Tachelhit (Tifinagh, Morocco)"
+}, {
+	"locale": "shi",
+	"Name": "Tachelhit"
+}, {
+	"locale": "dav-KE",
+	"Name": "Taita (Kenya)"
+}, {
+	"locale": "dav",
+	"Name": "Taita"
+}, {
+	"locale": "ta-IN",
+	"Name": "Tamil (India)"
+}, {
+	"locale": "ta-LK",
+	"Name": "Tamil (Sri Lanka)"
+}, {
+	"locale": "ta",
+	"Name": "Tamil"
+}, {
+	"locale": "te-IN",
+	"Name": "Telugu (India)"
+}, {
+	"locale": "te",
+	"Name": "Telugu"
+}, {
+	"locale": "teo-KE",
+	"Name": "Teso (Kenya)"
+}, {
+	"locale": "teo-UG",
+	"Name": "Teso (Uganda)"
+}, {
+	"locale": "teo",
+	"Name": "Teso"
+}, {
+	"locale": "th-TH",
+	"Name": "Thai (Thailand)"
+}, {
+	"locale": "th",
+	"Name": "Thai"
+}, {
+	"locale": "bo-CN",
+	"Name": "Tibetan (China)"
+}, {
+	"locale": "bo-IN",
+	"Name": "Tibetan (India)"
+}, {
+	"locale": "bo",
+	"Name": "Tibetan"
+}, {
+	"locale": "ti-ER",
+	"Name": "Tigrinya (Eritrea)"
+}, {
+	"locale": "ti-ET",
+	"Name": "Tigrinya (Ethiopia)"
+}, {
+	"locale": "ti",
+	"Name": "Tigrinya"
+}, {
+	"locale": "to-TO",
+	"Name": "Tonga (Tonga)"
+}, {
+	"locale": "to",
+	"Name": "Tonga"
+}, {
+	"locale": "tr-TR",
+	"Name": "Turkish (Turkey)"
+}, {
+	"locale": "tr",
+	"Name": "Turkish"
+}, {
+	"locale": "uk-UA",
+	"Name": "Ukrainian (Ukraine)"
+}, {
+	"locale": "uk",
+	"Name": "Ukrainian"
+}, {
+	"locale": "ur-IN",
+	"Name": "Urdu (India)"
+}, {
+	"locale": "ur-PK",
+	"Name": "Urdu (Pakistan)"
+}, {
+	"locale": "ur",
+	"Name": "Urdu"
+}, {
+	"locale": "uz-Arab",
+	"Name": "Uzbek (Arabic)"
+}, {
+	"locale": "uz-Arab-AF",
+	"Name": "Uzbek (Arabic, Afghanistan)"
+}, {
+	"locale": "uz-Cyrl",
+	"Name": "Uzbek (Cyrillic)"
+}, {
+	"locale": "uz-Cyrl-UZ",
+	"Name": "Uzbek (Cyrillic, Uzbekistan)"
+}, {
+	"locale": "uz-Latn",
+	"Name": "Uzbek (Latin)"
+}, {
+	"locale": "uz-Latn-UZ",
+	"Name": "Uzbek (Latin, Uzbekistan)"
+}, {
+	"locale": "uz",
+	"Name": "Uzbek"
+}, {
+	"locale": "vi-VN",
+	"Name": "Vietnamese (Vietnam)"
+}, {
+	"locale": "vi",
+	"Name": "Vietnamese"
+}, {
+	"locale": "vun-TZ",
+	"Name": "Vunjo (Tanzania)"
+}, {
+	"locale": "vun",
+	"Name": "Vunjo"
+}, {
+	"locale": "cy-GB",
+	"Name": "Welsh (United Kingdom)"
+}, {
+	"locale": "cy",
+	"Name": "Welsh"
+}, {
+	"locale": "yo-NG",
+	"Name": "Yoruba (Nigeria)"
+}, {
+	"locale": "yo",
+	"Name": "Yoruba"
+}, {
+	"locale": "zu-ZA",
+	"Name": "Zulu (South Africa)"
+}, {
+	"locale": "zu",
+	"Name": "Zulu"
+}]

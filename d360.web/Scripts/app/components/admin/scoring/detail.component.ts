@@ -183,7 +183,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
         if (this.selectedAssetType && this.allocation) {
             this.setCommonItems(true, this.selectedAssetType.Name);
-            this.setCommonSecondaryNavTabs(false);
+            this.setCommonSecondaryNavTabs({ hasAudit: false });
             this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid, "Active", "scoretype", "asc")
                 .subscribe(res => {
                     var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);

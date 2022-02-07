@@ -61,9 +61,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
 import { DragDropModule } from 'primeng/dragdrop';
 import { IgColorPickerModule } from '../controls/color-picker/color-picker.module';
-import { ProcessDiagramAssetEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
+import { ProcessDiagramSidePanelComponent } from './process-diagram/process-diagram-side-panel.component';
 import { SharedRelationshipModule } from '../relationship/shared-relationship.module';
-import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module';
 import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-diagram-label-editor.component';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { ProcessDiagramListViewComponent } from './process-diagram/process-diagram-list-view.component';
@@ -75,6 +74,9 @@ import { SharedResponsibilitiesModule } from '../responsibilities/shared-respons
 import { AssetDetailModule } from '../asset-detail/asset-detail.module';
 import { SidePanelModule } from '../sidepanel/side-panel.module';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
+import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 
 @NgModule({
@@ -96,7 +98,8 @@ import { AssetEditorModule } from '../asset-editor/asset-editor.module';
         SiteModalModule,
         ScoreBadgeModule,
         IgColorPickerModule,
-        SharedDynamicGridEditorModuleV2,
+        SharedDynamicGridEditorModule,
+        AssetEditorModule,
         SiteModalModule,
         SharedRelationshipModule,
         SharedObjectDetailsModule,
@@ -104,6 +107,9 @@ import { AssetEditorModule } from '../asset-editor/asset-editor.module';
         AssetDetailModule,
         SidePanelModule,
         AssetEditorModule,
+        DirectivesModule,
+        AssetTypeDetailModule,
+        TaggedAssetDetailModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,
@@ -149,7 +155,7 @@ import { AssetEditorModule } from '../asset-editor/asset-editor.module';
         AssetBrowserComponent,
         ModelDiagramComponent,
         ProcessDiagramComponent,
-        ProcessDiagramAssetEditorComponent,
+        ProcessDiagramSidePanelComponent,
         ProcessDiagramLabelEditorComponent,
         ProcessDiagramListViewComponent
     ],

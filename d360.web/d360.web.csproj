@@ -661,6 +661,8 @@
     <Compile Include="Utilities\ApplicationUriProvider.cs" />
     <Compile Include="Utilities\IApplicationUriProvider.cs" />
     <Compile Include="Utilities\InternationalizationUtilities.cs" />
+    <Compile Include="Utilities\IRequestValidator.cs" />
+    <Compile Include="Utilities\RequestValidator.cs" />
     <Compile Include="Utilities\TracePrefixAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1178,6 +1180,7 @@
     <Content Include="Content\quill\v1.3.7\quill.min.js.map" />
     <Content Include="Content\json\fontawesome4x.json" />
     <Content Include="Content\styles\AssetBrowser.less" />
+    <Content Include="Content\json\locale.json" />
     <None Include="Content\styles\ContentFormatting.less" />
     <None Include="Content\styles\Diagrams.less" />
     <Content Include="Content\styles\img\alpha-horizontal.png" />
@@ -1247,7 +1250,7 @@
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
-    <TypeScriptCompile Include="Scripts\polyfills.ts" />    
+    <TypeScriptCompile Include="Scripts\polyfills.ts" />
     <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>

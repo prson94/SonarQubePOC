@@ -1,0 +1,82 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.CompanyDomainSetting-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyDomainSetting')
+BEGIN
+	create table [dbo].CompanyDomainSetting (
+		[CompanyID] [int] NOT NULL,
+		[DomainSettingID] [int] NOT NULL,
+		[AuthenticationType] [int] NOT NULL,
+		[AllowNewUserLogin] [bit] NOT NULL,
+		[UrlPrefix] [nvarchar](50) NOT NULL,
+		[IsPrimary] [bit] CONSTRAINT [DF_CompanyDomainSetting_IsPrimary] DEFAULT (0) NOT NULL,
+		CONSTRAINT PK_CompanyDomainSetting PRIMARY KEY CLUSTERED ( CompanyID ASC, DomainSettingID ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+drop table if exists [dbo].[CompanyDomainSetting]
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.CompanyDomainSetting-Constraints-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'U_Url')
+BEGIN
+	ALTER TABLE [dbo].[CompanyDomainSetting] ADD  CONSTRAINT [U_Url] UNIQUE NONCLUSTERED ( [UrlPrefix] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.CompanyDomainSetting-FK-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_CompanyDomainSetting_Company]') AND parent_object_id = OBJECT_ID(N'[dbo].[CompanyDomainSetting]'))
+begin
+	ALTER TABLE [dbo].[CompanyDomainSetting]  WITH CHECK ADD  CONSTRAINT [FK_CompanyDomainSetting_Company] FOREIGN KEY([CompanyID]) REFERENCES [dbo].[Company] ([ID])
+ON DELETE CASCADE;
+	ALTER TABLE [dbo].[CompanyDomainSetting] CHECK CONSTRAINT [FK_CompanyDomainSetting_Company];
+end
+
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_CompanyDomainSetting_DomainSetting]') AND parent_object_id = OBJECT_ID(N'[dbo].[CompanyDomainSetting]'))
+begin
+	ALTER TABLE [dbo].[CompanyDomainSetting]  WITH CHECK ADD  CONSTRAINT [FK_CompanyDomainSetting_DomainSetting] FOREIGN KEY([DomainSettingID]) REFERENCES [dbo].[DomainSetting] ([ID]) ON DELETE CASCADE;
+	ALTER TABLE [dbo].[CompanyDomainSetting] CHECK CONSTRAINT [FK_CompanyDomainSetting_DomainSetting];
+end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

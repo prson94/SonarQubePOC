@@ -1,9 +1,9 @@
 ﻿<div *ngIf="groupUid" class="group-members">
-    <div class="actions-header" *ngIf="!isLoading">
+    <div class="actions-header">
         <div class="search-input">
             <ig-search-field mode="Keypress"
                              [debounce]="600"
-                             (onSearch)="dt.filterGlobal($event, 'contains')"
+                             (onSearch)="loadGroupMembers()"
                              [(ngModel)]="simpleTextFilter"
                              [infoTooltip]="simpleSearchTooltipHTML">
             </ig-search-field>
@@ -27,6 +27,7 @@
              [paginator]="true"
              [rows]="20"
              [(selection)]="selectedRow"
+             [tableStyleClass]="readOnly ? 'side-panel-max-width' : ''"
              [loading]="isLoading"
              [loadingIcon]="'fa fa-spinner fa-spin'">
         <ng-template pTemplate="header">
@@ -35,11 +36,11 @@
                     Name
                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                 </th>
-                <th [pSortableColumn]="'Owner'" style="width: 25%">
+                <th [pSortableColumn]="'Owner'">
                     Owner
                     <d3s-sortIcon [field]="'Owner'"></d3s-sortIcon>
                 </th>
-                <th style="width: 3%" *ngIf="!readOnly"></th>
+                <th style="width: 35px;" *ngIf="!readOnly"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
                 <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
@@ -49,7 +50,14 @@
         </ng-template>
         <ng-template pTemplate="body" let-item>
             <tr [pSelectableRow]="item">
-                <td>{{item.Name}}</td>
+                <td>
+                    <ng-container *ngIf="interceptLinkClick">
+                        <a context-link (click)="memberClicked($event,item)">{{item.Name}}</a>
+                    </ng-container>
+                    <ng-container *ngIf="!interceptLinkClick">
+                        {{item.Name}}
+                    </ng-container>
+                </td>
                 <td>{{item.Owner}}</td>
                 <td *ngIf="!readOnly">
                     <div class="RowTools">
@@ -82,7 +90,7 @@
         Are you sure you want to remove <strong>{{selectedRow.FirstName + ' ' + selectedRow.LastName}}</strong> from <strong>{{groupName}}</strong>?
     </div>
     <div class="action-bar">
-        <button igButton label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
         <span class="grow"></span>
         <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
     </div>
@@ -95,7 +103,7 @@
            [isVisible]="showAddMembers">
     <div class="content">
         <div class="row">
-            <d3s-resource-multiselect-grid *ngIf="showAddMembers" [showToolTip]="false" [multiple]="field.MultiSelect" [(ngModel)]="field.Value" [showResourceType]="true" ngDefaultControl [field]="field"></d3s-resource-multiselect-grid>
+            <d3s-resource-multiselect-grid *ngIf="showAddMembers" [showToolTip]="false" [multiple]="field.MultiSelect" [(ngModel)]="field.Value" [showSelectedSummary]="false" [showResourceType]="true" ngDefaultControl [field]="field"></d3s-resource-multiselect-grid>
         </div>
     </div>
     <div class="action-bar">

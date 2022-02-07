@@ -42,7 +42,6 @@ import { Table } from 'primeng/table';
     providers: [FieldsObservableService, TagService, AssetService]
 
 })
-
 export class AssetEditorFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
     @Input() field: EditorField;
     @Input() form: FormGroup;
@@ -69,7 +68,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     keyFieldError: string = "";
 
-    private cascadeSub: any;
     private excludedRelationitems = {};
     private relationItemsLoading = false;
 
@@ -109,9 +107,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
 
-
     constructor(
-        private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
         private assetService: AssetService,
         private ref: ChangeDetectorRef,
@@ -124,13 +120,23 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         this.dynEditorService.formUpdate.subscribe((res) => {
             if (res) {
                 var assetUid = this.assetUid;
-                if (!assetUid)
+                if (!assetUid) {
                     assetUid = this.diagramNodeKey;
+                }
                 if (assetUid && assetUid === res.assetUid) {
                     if (this.field.FieldName === res.fieldName) {
                         this.form.controls[res.fieldName].patchValue(res.fieldValue);
                     }
                 }
+            }
+        });
+
+        this.dynEditorService.lookupFieldUpdated.subscribe((res) => {
+            if (this.field && this.field.ParentFieldTypeName && res.fieldName === this.field.ParentFieldTypeName) {
+                this.form.controls[this.field.FieldName].setValue(null);
+                this.field.Items = [];
+                this.lookupSelectedValue = [];
+                this.lookupValues = [];
             }
         });
         setInterval(() => {
@@ -195,48 +201,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         if (this.editorChange != null) {
             this.editorChangeSub = this.editorChange.subscribe((e) => this.onEditorChange(e));
         }
-
-        this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
-            (casc) => {
-                if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId === this.field.FieldTypeID) {
-                    if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
-                        //load the values for the list that is a child                    
-                        this.field.Items = [];
-
-                        return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).subscribe(
-                            (res) => {
-                                this.field.Items = res;
-
-                                if (((this.field.Items == null || this.field.Items.length === 0) && this.field.Value !== null) || this.hasCascadeLoaded) {
-                                    this.field.Value = null;
-                                }
-
-                                if (this.field.DelayedLoadType === 'FieldFilter') {
-                                    if (this.field.Items === null || this.field.Items.length === 0) {
-                                        this.form.controls[this.field.FieldName].disable();
-                                    } else if (!this.field.ReadOnly) {
-                                        this.form.controls[this.field.FieldName].enable();
-                                    }
-                                }
-
-                                this.hasCascadeLoaded = true;
-                                this.listItemChange.emit({ field: this.field, value: this.field.Value });
-                                this.ref.markForCheck();
-                            }
-                        );
-                    } else {
-                        this.field.Value = null;
-                        this.field.Items = [];
-                        this.form.controls[this.field.FieldName].setValue(null);
-
-                        if (this.field.DelayedLoadType === 'FieldFilter') {
-                            this.form.controls[this.field.FieldName].disable();
-                        }
-
-                        this.listItemChange.emit({ field: this.field, value: null });
-                    }
-                }
-            });
 
         if (this.field.DelayedLoadType === 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
@@ -313,7 +277,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
             else if (Array.isArray(this.field.Value) && (this.field.Value as []).length === 0) {
                 hasNoValue = true;
-
             }
 
             if (hasNoValue) {
@@ -334,6 +297,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             if (this.field.Value === null && this.field.Items.some((x) => x.Selected === true)) {
                 this.field.Value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
             }
+
             if (this.field?.MultiSelect && this.field.Value) {
                 this.lookupSelectedValue = [];
                 this.field.Items.filter((x) => x.Selected === true).forEach((item) => {
@@ -373,9 +337,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     ngOnDestroy() {
-        if (this.cascadeSub) {
-            this.cascadeSub.unsubscribe();
-        }
         if (this.fieldChangeSub != null) {
             this.fieldChangeSub.unsubscribe();
         }
@@ -618,13 +579,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
     }
 
-    multiselectLabel(): string {
-        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items === null || this.field.Items.length === 0)) {
-            return `Select a ${this.field.ParentFieldTypeName}`;
-        }
-        return "Choose";
-    }
-
     OnBlurTrim() {
         let value: string = this.form.controls[this.field.FieldName].value;
 
@@ -751,6 +705,42 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     lookupValues: any[] = [];
     lookupSub: Subscription;
 
+    get lookupSelectPlaceholder(): string {
+        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
+            return `Select a ${this.field.ParentFieldTypeName}`;
+        }
+        return this.field.Required ? 'Value Required' : 'Optional';
+    }
+
+    get isLookupFieldDisabled(): boolean {
+        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
+            return !this.lookupParentValue;
+        }
+        return false;
+    }
+
+    lookupFieldClicked($event) {
+        if (this.isLookupFieldDisabled) {
+            return;
+        }
+        this.overlayPanel.toggle($event);
+    }
+
+    get lookupParentValue(): string {
+        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
+            var pField = this.form.controls[this.field.ParentFieldTypeName];
+            if (pField && pField.value) {
+                if (Array.isArray(pField.value)) {
+                    return (pField.value as string[]).join(",");
+                }
+                else {
+                    return pField.value as string;
+                }
+            }
+        }
+        return null;
+    }
+
     lastParams: any;
     loadListLazy($params) {
         var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };
@@ -760,6 +750,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if ($params.globalFilter) {
             loadParams["filter"] = $params.globalFilter;
+        }
+
+        if (this.lookupParentValue) {
+            loadParams["lookupParentValue"] = this.lookupParentValue;
         }
 
         this.isLookupValuesLoading = true;
@@ -833,6 +827,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.form.controls[this.field.FieldName].setValue(this.lookupSelectedValue[0].value);
             this.overlayPanel.hide();
         }
+        if (event) {
+            this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
+        }
     }
 
     hexToRgb(hex: string): string {
@@ -868,6 +865,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         })
         this.lookupSelectedValue = newValues;
+
+        if (event) {
+            this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
+        }
     }
 
     setSelectionVirtualScrollHeight() {
@@ -932,6 +933,12 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         } catch (e) {
             return false;
         }
+
+        //number will pass as a json so need to handle that case
+        if (!isNaN(parseInt(str))) {
+            return false;
+        }
+
         return true;
     }
 }

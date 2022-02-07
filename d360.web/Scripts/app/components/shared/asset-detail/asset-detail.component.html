@@ -16,14 +16,14 @@
                     {{model?.AssetName}}
                 </div>
                 <div class="class-name" *ngIf="!hideClassName">
-                    {{model?.AssetTypeName}}
+                    {{subtitle}}
                 </div>
                 <div *ngIf="!hideLinks">
                     <a (click)="open();">Open</a> <span class="grey-delimiter">|</span> <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
                 </div>
             </div>
         </ng-container>
-        <ng-container *ngIf="isSidePanel">
+        <ng-container *ngIf="isSidePanel && showTabs">
             <div class="windowtabs">
                 <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">Details</button>
                 <button *ngIf="showOwnershipTab" [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading">Ownership</button>
@@ -107,7 +107,7 @@
 
                     <div class="user-assignments" *ngIf="objectType === 'Resource'">
                         <label nclass="ig-label">
-                            <span>{{model.AssetName}}'s Assignments</span>
+                            <span>{{model?.ResourceFirstName}}'s Assignments</span>
                         </label>
                         <d3s-assignments [resourceId]="objectID" [isSidePanel]="true"></d3s-assignments>
                     </div>
@@ -149,6 +149,7 @@
                                  [pageLinks]="3"
                                  [paginator]="true"
                                  paginatorDropdownAppendTo="body"
+                                 [tableStyleClass]="'side-panel-max-width'"
                                  [rows]="10"
                                  [globalFilterFields]="['Name']">
                             <ng-template pTemplate="header">
@@ -178,7 +179,7 @@
 
                 <ng-container *ngSwitchCase="'members'">
                     <div class="groups-tab" *ngIf="objectType === 'Group'">
-                        <d3s-group-members [groupUid]="objectUID" [readOnly]="groupMembersReadOnlyMode"></d3s-group-members>
+                        <d3s-group-members [groupUid]="objectUID" [readOnly]="groupMembersReadOnlyMode" [interceptLinkClick]="interceptLinkClick"></d3s-group-members>
                     </div>
                 </ng-container>
             </ng-container>
