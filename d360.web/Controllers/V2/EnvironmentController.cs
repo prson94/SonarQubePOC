@@ -568,7 +568,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("operators"),
-            SwaggerConsumes("application/json"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of operators.", typeof(List<OperatorInfo>))
         ]
         public async Task<IHttpActionResult> GetOperators(bool isForAdvancedFilters = false)
@@ -629,7 +629,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerConsumes("application/json"), 
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by eventDate.", DataType = "string", ParameterType = "query", Required = false),
@@ -943,7 +943,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("licensing"),
-            SwaggerConsumes("application/json"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "License info", typeof(LicenceDetailsModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
