@@ -22,6 +22,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class AdminArtifactsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
+    dataCyPrefix: string = 'AssetType_';
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     adminType: string = "Artifacts";
