@@ -481,11 +481,14 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 string multiSql = "";
                 var complexModels = complexRelationFieldHasAnyModels.Where(x => !string.IsNullOrEmpty(x.SQL)).ToList();
                 complexModels.ForEach(x => multiSql += x.SQL);
-                var relationLookupHasAnyReader = await Company.QueryMultipleAsync(multiSql, new { assetUid = details.UID });
-                foreach (var item in complexModels)
+                if (!string.IsNullOrEmpty(multiSql))
                 {
-                    var data = relationLookupHasAnyReader.Read<int>().FirstOrDefault();
-                    item.HasAny = data > 0;
+                    var relationLookupHasAnyReader = await Company.QueryMultipleAsync(multiSql, new { assetUid = details.UID });
+                    foreach (var item in complexModels)
+                    {
+                        var data = relationLookupHasAnyReader.Read<int>().FirstOrDefault();
+                        item.HasAny = data > 0;
+                    }
                 }
             }
             catch (Exception ex)
