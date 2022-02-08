@@ -62,7 +62,7 @@ namespace d360.web.Controllers.V2
            HttpGet,
            MapToApiVersion("2.0"),
            Route(""),
-           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
            SwaggerResponse(HttpStatusCode.OK, "Gets all actions.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.NotFound, "Uid {uid} not found."),
            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
