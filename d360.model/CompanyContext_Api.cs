@@ -10958,9 +10958,9 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
             create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
 
             drop table if exists #auditRecords
-			create table #auditRecords (uid uniqueidentifier, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
+			create table #auditRecords (ItemNumber int, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
 				;with cte as (
-				select G.uid, 
+				select EG.ItemNumber, 
 				G.Name as OldName, 
 				EG.Name as NewName, 
 				G.Description as OldDesc,
@@ -10973,12 +10973,17 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 				and EG.ItemNumber between @beginItemNumber and @endItemNumber
                 and EG.Success is null)
 			insert into #auditRecords
-			select uid, 'Name' as FieldName, OldName as OldValue, NewName as NewValue from cte
+			select ItemNumber, 'Name' as FieldName, OldName as OldValue, NewName as NewValue from cte
             union 
-			select uid, 'Description' as FieldName, OldDesc as OldValue, NewDesc as NewValue from cte
+			select ItemNumber, 'Description' as FieldName, OldDesc as OldValue, NewDesc as NewValue from cte
 			union
-			select uid, 'IsActiveDirectoryGroup' as FieldName, try_cast(OldIsActiveDirectoryGroup as nvarchar(10)) as OldValue, try_cast(NewIsActiveDirectoryGroup as nvarchar(10)) as NewValue from cte
-
+			select ItemNumber, 'IsActiveDirectoryGroup' as FieldName, try_cast(OldIsActiveDirectoryGroup as nvarchar(10)) as OldValue, try_cast(NewIsActiveDirectoryGroup as nvarchar(10)) as NewValue from cte
+            union
+			select EF.ItemNumber, ef.FieldName, f.FormattedValue as OldValue, ef.FieldValue as NewValue from api.ExecutionField ef 
+			inner join api.executiongroup eg on eg.executionid = ef.executionid and eg.itemnumber = ef.itemnumber
+			left join [Group] G on G.uid = eg.groupuid
+			left join [Field] F on F.ObjectType = 'Group' and F.ObjectID = G.ID and f.FieldTypeID = ef.FieldTypeID
+			where ef.ExecutionID = @executionid and isnull(ef.FieldValue,'') <> isnull(f.FormattedValue,'') and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.Success is null;
 
                                             
             merge into [Group] G
@@ -11086,14 +11091,17 @@ EG.GroupUid
 			    insert into reporting.Global_Audit
 			    OUTPUT INSERTED.ID
 			    INTO @audit
-			    select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Updated', 'Group', g.ID, 'Group', G.Name,'Group updated' from #auditRecords ar
-			    inner join [Group] G on G.uid = ar.uid
+			    select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Updated', 'Group', g.ID, 'Group', G.Name,'Group updated' 
+                from #auditRecords ar
+                inner join api.ExecutionGroup EF on EF.ExecutionID = @executionID and EF.ItemNumber = ar.ItemNumber
+			    inner join [Group] G on G.uid = ef.groupuid
 
 			    insert into reporting.global_fieldaudit
 			    select a.auditid,0, ar.fieldname, 1, ar.newvalue, ar.oldvalue from @audit a
 			    inner join reporting.Global_Audit ga on ga.id = a.auditid
 			    inner join [Group] G on G.Id = ga.ObjectId
-			    inner join #auditRecords ar on g.uid = ar.uid
+                inner join api.ExecutionGroup EF on EF.ExecutionID = @executionID and G.Uid = EF.GroupUid
+			    inner join #auditRecords ar on ar.ItemNumber = EF.ItemNumber
 			    where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')";
 
                                     Connection.Execute(insertSQL,
@@ -11227,22 +11235,22 @@ new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = Curren
             }
 
             //Convert GroupResponseResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
-            IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r =>
-            {
-                return new DatabaseBulkAssetResult
-                {
-                    ExecutionItemUid = r.ExecutionItemUid,
-                    ItemNumber = r.ItemNumber,
-                    uid = r.uid ?? Guid.Empty,
-                    Message = r.Message,
-                    Success = r.Success,
-                    Object = SystemObjects.Group.ToString()
-                };
-            }).AsEnumerable();
-            if (graphResults.Any())
-            {
-                SendAssetGraphEvents(graphResults);
-            }
+            //IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r =>
+            //{
+            //    return new DatabaseBulkAssetResult
+            //    {
+            //        ExecutionItemUid = r.ExecutionItemUid,
+            //        ItemNumber = r.ItemNumber,
+            //        uid = r.uid ?? Guid.Empty,
+            //        Message = r.Message,
+            //        Success = r.Success,
+            //        Object = SystemObjects.Group.ToString()
+            //    };
+            //}).AsEnumerable();
+            //if (graphResults.Any())
+            //{
+            //    SendAssetGraphEvents(graphResults);
+            //}
 
             return results;
         }
