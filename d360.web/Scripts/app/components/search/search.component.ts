@@ -117,7 +117,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         this.searchStateService.advancedFilters = [];
 
         this.searchTypes = this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).StringSetting.Value.split(',');
-        this.exportLimit = <number>this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows).ScalarValue;
+        this.exportLimit = Math.min(5000, <number>this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows).ScalarValue);
 
         this.sub = this.route.queryParams.subscribe((params) => {
             this.searchText = params['query'] ? params['query'] : '';
