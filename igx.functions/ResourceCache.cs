@@ -1,0 +1,272 @@
+﻿using d360.core;
+using d360.core.entities;
+using d360.utils.company;
+using Dapper;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace igx.functions.consumption
+{
+    public class ResourceCache
+    {
+        const string functionName = "ResourceCache_Generate";
+        private CoreFunction CoreFunction;
+
+#if DEBUG
+        const string timerSettings = "*/10 * * * * *";
+#else
+        const string timerSettings = "0 0 */6 * * *"; // every 6 hours
+#endif
+
+        [FunctionName(functionName)]
+        public async Task Run([TimerTrigger(timerSettings)] TimerInfo myTimer, ExecutionContext context, TextWriter log)
+        {
+            var config = new ConfigurationBuilder()
+                   .SetBasePath(context.FunctionAppDirectory)
+                   .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
+                   .AddEnvironmentVariables()
+                   .Build();
+
+            CoreFunction = new CoreFunction(config);
+
+            try
+            {
+#if DEBUG
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 2).ToList();
+#else
+                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+#endif
+
+                using (var cnn = new SqlConnection(CoreFunction.GetConnectionString("CommunityContext")))
+                {
+                    cnn.Open();
+
+                    foreach (var c in companies)
+                    {
+                        try
+                        {
+                            using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+                            {
+                                companyConnection.Open();
+
+                                #region Get updated resources
+
+                                var resources = cnn.Query<GlobalReportingResource>(@"
+select R.ID as ResourceID, 
+R.FirstName, 
+R.LastName, 
+C.LastLoggedInOn, 
+R.Email, 
+C.[State], 
+C.IsAdministrator,
+R.[uid],
+R.UpdatedOn
+from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new { c = c.CompanyID }).ToList();
+
+                                #endregion
+
+                                #region Insert/Update Logic
+
+                                using (var transaction = companyConnection.BeginTransaction())
+                                {
+
+                                    await companyConnection.ExecuteAsync(@"IF OBJECT_ID('tempdb..#users') IS NOT NULL
+			                                DROP TABLE #users;
+
+		                                create table #users (                                            			                                
+			                                ResourceID int not null primary key ,
+                                            FirstName nvarchar(250) not null,
+                                            LastName nvarchar(250) not null,
+                                            LastLoggedInOn datetime null,
+                                            Email nvarchar(500) not null,
+                                            [State] int not null,
+                                            IsAdministrator bit not null,
+                                            [uid] uniqueidentifier not null,
+                                            UpdatedOn datetime null
+		                                );
+                                ", transaction: transaction);
+
+                                    using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, transaction))
+                                    {
+                                        bulkCopy.BatchSize = resources.Count;
+                                        bulkCopy.DestinationTableName = "#users";
+                                        bulkCopy.BulkCopyTimeout = 300;
+
+                                        var table = new DataTable();
+
+                                        var columnName = "ResourceID";
+                                        table.Columns.Add(columnName, typeof(int));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "FirstName";
+                                        var dc = table.Columns.Add(columnName, typeof(string));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "LastName";
+                                        table.Columns.Add(columnName, typeof(string));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "LastLoggedInOn";
+                                        table.Columns.Add(columnName, typeof(DateTime));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "Email";
+                                        table.Columns.Add(columnName, typeof(string));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "State";
+                                        table.Columns.Add(columnName, typeof(int));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "IsAdministrator";
+                                        table.Columns.Add(columnName, typeof(bool));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "uid";
+                                        table.Columns.Add(columnName, typeof(Guid));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        columnName = "UpdatedOn";
+                                        table.Columns.Add(columnName, typeof(DateTime));
+                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                        foreach (var item in resources)
+                                        {
+                                            var row = table.NewRow();
+
+                                            row["ResourceID"] = item.ResourceID;
+                                            row["FirstName"] = item.FirstName;
+                                            row["LastName"] = item.LastName;
+                                            if (item.LastLoggedInOn.HasValue)
+                                                row["LastLoggedInOn"] = item.LastLoggedInOn.Value;
+                                            else
+                                                row["LastLoggedInOn"] = DBNull.Value;
+
+                                            row["Email"] = item.Email;
+                                            row["State"] = (int)item.State;
+                                            row["IsAdministrator"] = item.IsAdministrator;
+                                            row["uid"] = item.Uid;
+                                            if (item.UpdatedOn.HasValue)
+                                                row["UpdatedOn"] = item.UpdatedOn.Value;
+                                            else
+                                                row["UpdatedOn"] = DBNull.Value;
+
+
+                                            table.Rows.Add(row);
+                                        }
+
+                                        await bulkCopy.WriteToServerAsync(table);
+                                    }
+
+                                    int rowsAffected = await companyConnection.ExecuteAsync(@"
+declare @mergeResults table ([action] varchar(50));
+
+merge	reporting.Global_Resource as T
+using	(
+		select	ResourceID,
+				FirstName,
+				LastName,
+                LastLoggedInOn,
+                Email,
+                [State],
+                IsAdministrator,
+                [uid],
+                UpdatedOn
+        from	#users
+		) as S
+on		(T.ResourceID = S.ResourceID)
+when	matched and ((coalesce(T.UpdatedOn, '1/1/1900') < S.UpdatedOn) or (coalesce(T.LastLoggedInOn, '1/1/1900') < S.LastLoggedInOn)) then
+		update	
+		set		T.FirstName = S.FirstName,
+				T.LastName = S.LastName,
+                T.LastLoggedInOn = S.LastLoggedInOn,
+                T.Email = S.Email,
+                T.[State] = S.[State],
+                T.IsAdministrator = S.IsAdministrator,
+                T.[uid] = S.[uid],
+                T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end,
+                T.UpdatedOn = S.UpdatedOn
+when	not matched by target then
+		insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, [uid], CreatedOn, UpdatedOn)
+		values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, S.[uid], getutcdate(), getutcdate())
+output
+        $action into @mergeResults;
+
+select count(1) from @mergeResults;
+",
+                                    transaction: transaction,
+                                    commandTimeout: 300
+                                    );
+
+                                    log.WriteLine($"Found {resources.Count} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
+
+
+                                    transaction.Commit();
+                                }
+
+                                #endregion
+
+                                #region Delete Logic
+
+                                try
+                                {
+                                    var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
+                                    var updatedResourceIDs = resources.Select(i => i.ResourceID).ToList();
+                                    var deletedCount = 0;
+                                    currentResourceIDs.ForEach(cr =>
+                                    {
+                                        if (!updatedResourceIDs.Contains(cr))
+                                        {
+                                            companyConnection.Execute("delete reporting.Global_Resource where ResourceID = @r", new { r = cr });
+                                            deletedCount++;
+                                        }
+                                    });
+
+                                    if (deletedCount > 0)
+                                        log.WriteLine("Removed {0} users for company {1}.", deletedCount, c.CompanyID);
+                                }
+                                catch (Exception ex)
+                                {
+                                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                                }
+
+                                try
+                                {
+                                    companyConnection.Execute("delete ResponsibilityTypeRelationOverrideItem where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
+                                    companyConnection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
+                                }
+                                catch (Exception ex)
+                                {
+                                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                                }
+
+                                #endregion
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                            log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                        }
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex);
+                log.WriteLine($"General Exception: {ex.GetFullExceptionData()}");
+            }
+
+            CoreFunction.AIFlush();
+        }
+    }
+}
