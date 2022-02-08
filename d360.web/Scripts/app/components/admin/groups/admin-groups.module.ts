@@ -33,6 +33,8 @@ import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.com
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { AssetTypeDetailModule } from '../../shared/asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../../shared/tagged-assets/tagged-assets-detail.module';
 
 @NgModule({
     imports: [
@@ -66,7 +68,9 @@ import { TooltipModule } from 'primeng/tooltip';
         PropertyGroupModule,
         PopupMenuModule,
         SearchFieldModule,
-        DirectivesModule
+        DirectivesModule,
+        AssetTypeDetailModule,
+        TaggedAssetDetailModule
     ],
     declarations: [
         AdminGroupsComponent
