@@ -3649,7 +3649,8 @@ where	O.RowNum = 1";
                     {
                         bool success = true;
                         string error = "";
-                        var fieldTypes = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == assetType.ID).ToList();
+                                                
+                        var fieldTypes = CompanyContext.GetAssetTypeFieldTypesCore(assetType.Object, assetType.ObjectID);
 
                         if (nullifyEmptyFields)
                         {
