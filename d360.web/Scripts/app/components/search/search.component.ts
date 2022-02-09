@@ -21,6 +21,7 @@ import { Operator } from '../../models/operator.model';
 import { SelectItem } from '../../models/form.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { SemanticType } from '../../models/semantic-type.model';
 
 @Component({
     selector: 'd3s-search',
@@ -55,6 +56,8 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     public canExport: boolean = false;
 
     showEditor: boolean = false;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     public extraButtons: SidePanelButton[] = [new SidePanelButton({
         label: 'Filters',

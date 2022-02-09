@@ -2694,6 +2694,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.ConnectorLabel:
                     objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.SemanticType:
+                    objectId = Convert.ToInt32(Semantics.FirstOrDefault(x => x.Uid == objectUid).ID);
+                    break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
                     if (objectId <= 0)

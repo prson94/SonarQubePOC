@@ -26,6 +26,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
+import { SemanticType } from '../../models/semantic-type.model';
 
 declare var CurrentResourceID;
 
@@ -108,6 +109,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     readonly menuKey: string = '~menu';
     baseMenuItems: any[] = [
@@ -760,5 +763,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             return this.assetType?.Path + ' > ' + path;
         }
         return this.assetType?.Path;
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
     }
 }

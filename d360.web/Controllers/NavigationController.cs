@@ -1109,6 +1109,21 @@ namespace d360.web.Controllers
                 {
                     var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.uid == model.AssetUid);
                     FillResponseModelForResource(assetDetail);
+                }                
+            }
+
+            if (model.ObjectType == SystemObjects.SemanticType.ToString())
+            {
+                execProcedure = false;
+                responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
+                responseModel.ObjectID = model.ObjectId ?? 0;
+                responseModel.DisplayValue = "Semantic Types";
+                responseModel.MainTabTitle = "Semantic Types";
+                responseModel.Items.HasAudit = true;
+                if (model.AssetUid.HasValue)
+                {
+                    var semantic = Company.Semantics.FirstOrDefault(x => x.Uid == model.AssetUid);
+                    responseModel.Uid = semantic.Uid;
                 }
             }
 

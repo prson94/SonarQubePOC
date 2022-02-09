@@ -1,0 +1,108 @@
+﻿import { ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { DataProfileService } from '../../services/dataprofile.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
+import { CompanySettingsService } from '../../services/settings.service';
+import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
+import { SemanticType, SemanticTypeAsset } from '../../models/semantic-type.model';
+import { LazyLoadEvent } from 'primeng/api';
+import { forkJoin } from 'rxjs';
+
+declare var CurrentResourceID;
+
+@Component({
+    selector: 'd3s-semantic-asset-list',
+    templateUrl: './semantic-asset-list.component.html',
+    styleUrls: ["semanticTypes.less"],
+    providers: [DataProfileService],
+})
+
+export class SemanticTypeAssetListComponent extends AssetGridBaseComponent implements OnInit {
+
+    semanticType: SemanticType;
+    private sub: any;
+    selectedAsset: SemanticTypeAsset;
+    showSidePanel: boolean = true;
+    private sidePanelOpen: boolean = false;
+    sidePanelTab: string = 'detail';
+    rowsPerPage: number = this.defaultInitialItemsPerPage;
+    currentPageNumber: number = 1;    
+    dataProfile: any;
+    sidePanelLoading: boolean = false;
+    sidePanelStorageKey: string;
+    secondarySidePanelOpen: boolean = false;
+
+    constructor(private route: ActivatedRoute,
+        private router: Router,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private titleService: Title,
+        webAnalyticsService: WebAnalyticsService,
+        private dataProfileService: DataProfileService,
+        secondaryNavService: SecondaryNavService,
+        protected settingsService: CompanySettingsService,
+        private cdRef: ChangeDetectorRef) {
+        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+    }    
+
+    ngOnInit() {        
+        this.sub = this.route.params.subscribe((params) => {
+            let uid = params['semanticTypeUid'];
+
+            this.sidePanelStorageKey = 'SemanticTypes_' + uid + '_' + CurrentResourceID;
+            this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);
+            this.logAction('open', 'SemanticType', uid);            
+            this.getData(uid);
+        });
+    }
+
+    getData(uid: string) {
+        this.isLoading = true;
+        this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
+            this.semanticType = s.items[0];
+            this.isLoading = false;
+            this.cdRef.markForCheck();
+        });
+    }
+
+    selectAsset(asset: SemanticTypeAsset) {
+        this.selectedAsset = asset;
+        this.sidePanelLoading = true;
+        this.dataProfileService.getDataProfiles(this.selectedAsset.uid).subscribe(
+            (r) => {
+                if (r && r.items && r.items.length > 0) {
+                    this.dataProfile = r.items[0];
+
+                    forkJoin(
+                        this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                        this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                    ).subscribe((res) => {
+                        this.dataProfile['matches'] = {
+                            structure: res[0],
+                            data: res[1]
+                        };
+                    });
+
+                    this.sidePanelLoading = false;
+                }
+            });
+
+    }
+
+    lazyLoad(event: LazyLoadEvent) {
+        this.rowsPerPage = event.rows;
+        this.currentPageNumber = (event.first / event.rows) + 1;
+        this.getData(this.semanticType.uid);
+    }    
+
+    openSecondarySidePanel() {
+        if (this.dataProfile.typeQualifier) {
+            this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
+                this.semanticType = s.items[0];                
+            });
+        }
+    }
+
+}

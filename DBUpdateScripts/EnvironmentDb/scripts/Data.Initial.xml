@@ -94,7 +94,7 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Data.Initial.SiteNav-v1">
+  <changeSet author="bquinlivan" id="Data.Initial.SiteNav-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -139,6 +139,10 @@ end
 if not exists (select 1 from SiteNav where Name = '#Technical')
 begin
 	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Technical',3,'fa-database','Technical Assets')
+end
+if not exists (select 1 from SiteNav where Name = '#SemanticTypes')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#SemanticTypes',10,'fa-tags','Semantic Types')
 end
 		]]>
     </sql>
