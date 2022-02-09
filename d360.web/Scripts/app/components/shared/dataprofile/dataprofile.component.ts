@@ -6,6 +6,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { DataProfileService } from '../../../services/dataprofile.service';
+import { SemanticType } from '../../../models/semantic-type.model';
 
 @Component({
     selector: 'data-profile',
@@ -19,6 +20,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     @Input() assetData: any;
     @Output() linkClicked = new EventEmitter();
     @Output() showTimeSeries = new EventEmitter();
+    @Output() secondaryPanelLinkClicked = new EventEmitter();
+
     showMaxValueGraphIcon: boolean;
     showMinValueGraphIcon: boolean;
 
@@ -90,6 +93,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     sampleChartXLabel: string = '';
 
     matchAssetUid: string = "";
+    hasDefinedType: boolean = false;
+    semanticType: SemanticType;
 
     ngOnInit() { 
         this.initialize();
@@ -131,6 +136,13 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 }
             });
 
+        if (this.dataProfile.typeQualifier) {
+            this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
+                this.semanticType = s.items[0];
+                this.hasDefinedType = true;
+            });
+        }
+        
         if (localStorage.getItem(this.hideDataProfileInstructionMessageKey)) {
             this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === "true";            
         }
@@ -353,7 +365,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         var validColor: string = '#2e9b61';
         var invalidColor: string = '#d73961';
 
-        let dataProfileType: string = this.dataProfile.type.toLowerCase();
+        let dataProfileType: string = this.dataProfile.type?.toLowerCase();
         let categories: string[] = [];
         let data: any[] = [];
         let colors: string[] = [];
@@ -741,5 +753,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private openChart(chartType: string) {
         this.displayChart = true;
         this.chartType = chartType;       
-    }  
+    }
+
+    openSemanticTab() {
+        this.secondaryPanelLinkClicked.emit({ semanticType: this.semanticType });
+    }
 }

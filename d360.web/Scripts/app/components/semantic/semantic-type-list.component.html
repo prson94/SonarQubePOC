@@ -1,0 +1,99 @@
+<div class="row">
+    <div class="col s12" style="display: flex">
+        <div class="tile tile-detail main-panel">
+            <div class="grid-actions-header">
+                <div class="simple-search">
+                    <ig-search-field mode="Keypress"
+                                     [debounce]="600"
+                                     (onSearch)="onSimpleSearch($event)"
+                                     [(ngModel)]="simpleFilter"
+                                     [infoTooltip]="simpleSearchTooltipHTML">
+                    </ig-search-field>
+                </div>
+                <advanced-filtering [loadIdentifier]="'SemanticTypes'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+            </div>
+            <div class="row asset-grid-wrapper">
+                <div class="col s12">
+                    <p-table #dt [value]="semanticTypes"
+                             selectionMode="single"
+                             [(selection)]="selectedType"
+                             [paginator]="true"
+                             [pageLinks]="3"
+                             [rows]="defaultInitialItemsPerPage"
+                             [rowsPerPageOptions]="defaultPagingOptions"
+                             [totalRecords]="semanticsTotal"
+                             [scrollable]="true"
+                             scrollWidth="100%"
+                             [loading]="isLoading"
+                             [loadingIcon]="'fa fa-spinner fa-spin'"
+                             [lazy]="true"
+                             (onLazyLoad)="lazyLoad($event)"                             
+                             [style]="{ 'width': '100%' }"
+                             (onRowSelect)="selectRow($event.data)">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Name</th>
+                                <th>Qualifier</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Base Type</th>
+                                <th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selectSemanticType(item)"  [pSelectableRow]="item">
+                                <td>
+                                    <a (click)="selectSemanticType(item)"
+                                    class="link">
+                                    {{item.name}}
+                                    </a>
+                                </td>
+                                <td>
+                                    {{item.qualifier}}
+                                </td>
+                                <td>
+                                    <span class="ig-value ig-colorfield-item detail" style="display: inline-flex !important;">
+                                        <span class="ig-colorfield-swatch" [style.background-color]="getCertificationStatusColor(item.status)"></span>
+                                        <span class="ig-colorfield-item-label">
+                                            {{item.status}}
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{item.priority}}</td>
+                                <td>{{item.baseType}}</td>
+                                <td class="asset-grid-tools" style="width: 5%; " alignFrozen="right" pFrozenColumn>
+                                    <div style="display:inline-block">
+                                        <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
+                                        <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first"
+                                                  [rows]="dt.rows"
+                                                  [totalRecords]="semanticsTotal"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="showSidePanel && selectedType" class="tile tile-detail side-panel">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        [expanded]="sidePanelOpen"
+                        [storageKey]="sidePanelStorageKey"
+                        [selectedPanel]="sidePanelTab"
+                        [selectedItem]="selectedType"
+                        hasDetail="true">                
+                <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">   
+                    <ng-container *ngIf="selectedType">
+                        <semantic-detail [qualifier]="selectedType.qualifier"
+                                         [isSidePanel]="true"
+                                         [showHeader]="true"
+                                         [semanticType]="selectedType"></semantic-detail>
+                    </ng-container>
+                </ng-container>                
+            </side-panel>
+        </div>
+    </div>
+</div>            

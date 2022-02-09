@@ -19,6 +19,7 @@ import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
+import { SemanticType } from '../../models/semantic-type.model';
 
 declare var CurrentResourceID;
 
@@ -53,6 +54,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -225,5 +228,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         }
 
         this.clearSidebar();
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
     }
 }

@@ -53,9 +53,16 @@
                                     <label class="ig-label" style="margin-right:5px">Base Type: </label>
                                     <span class="ig-value">{{baseType}}</span>
                                 </div>
-                                <div *ngIf="hasValidCounts && dataProfile.typeQualifier" class="summaryRow">
+                                <div *ngIf="hasValidCounts" class="summaryRow">
                                     <label class="ig-label" style="margin-right:5px">Semantic Type: </label>
-                                    <span class="ig-value">{{dataProfile.typeQualifier}}</span>
+                                    <div *ngIf="!dataProfile.typeQualifier">
+                                        ---
+                                    </div>
+                                    <div *ngIf="dataProfile.typeQualifier">
+                                        <span *ngIf="!hasDefinedType" class="ig-value">{{dataProfile.typeQualifier}}</span>
+                                        <span *ngIf="hasDefinedType" class="ig-value"><a (click)='openSemanticTab()'>{{dataProfile.typeQualifier}}</a></span>
+                                        <ng-container *ngTemplateOutlet="semanticTooltip"></ng-container>
+                                    </div>
                                 </div>
                                 <div *ngIf="hasValidCounts && dataProfile.confidence!=null" class="summaryRow">
                                     <label class="ig-label" style="margin-right:5px;">Type Confidence: </label>
@@ -523,6 +530,17 @@
             {{capitaliseBoolean(dataProfile.trailingWhiteSpace)}}
         </div>
     </div>
+</ng-template>
+
+<ng-template #semanticTooltip>
+    <span *ngIf="hasDefinedType" class="tooltip-icon" style="margin-left:8px"
+          pTooltip="Name: {{semanticType.name}}<br/>Qualifier: {{semanticType.qualifier}}<br/><a (click)='alert()'>Click here for more info</a>"
+          [escape]="false"
+          [hideDelay]="1000" 
+          tooltipPosition="top" 
+          tooltipStyleClass="ig-tooltip ig-tooltip-medium">
+        <i class="fa fa-question-circle"></i>
+    </span>
 </ng-template>
 
 <ng-container *ngIf="dataProfile.matches!=null">
