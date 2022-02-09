@@ -9,11 +9,6 @@ namespace d360.web.Filters
 {
     public class RequireAdminPermissionsAttribute : System.Web.Http.Filters.ActionFilterAttribute
     {
-        public RequireAdminPermissionsAttribute()
-        {
-            
-        }
-
         public override Task OnActionExecutingAsync(HttpActionContext actionContext, CancellationToken cancellationToken)
         {
             using (var scope = actionContext.ControllerContext.Configuration.DependencyResolver.BeginScope())
