@@ -27,7 +27,7 @@
                              [loading]="isLoading"
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [lazy]="true"
-                             (onLazyLoad)="lazyLoad($event)"                             
+                             (onLazyLoad)="lazyLoad($event)"
                              [style]="{ 'width': '100%' }"
                              (onRowSelect)="selectRow($event.data)">
                         <ng-template pTemplate="header">
@@ -41,11 +41,11 @@
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
-                            <tr (dblclick)="selectSemanticType(item)"  [pSelectableRow]="item">
+                            <tr (dblclick)="selectSemanticType(item)" [pSelectableRow]="item">
                                 <td>
                                     <a (click)="selectSemanticType(item)"
-                                    class="link">
-                                    {{item.name}}
+                                       class="link">
+                                        {{item.name}}
                                     </a>
                                 </td>
                                 <td>
@@ -73,6 +73,9 @@
                             <d3s-grid-paging-info [first]="dt.first"
                                                   [rows]="dt.rows"
                                                   [totalRecords]="semanticsTotal"></d3s-grid-paging-info>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            No semantic types found
                         </ng-template>
                     </p-table>
                 </div>

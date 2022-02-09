@@ -161,7 +161,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter).subscribe((p) => {
             this.semanticTypes = p.items;
             this.semanticsTotal = p.total;
-            if (!this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {
+            if (this.semanticTypes && !this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {
                 this.selectRow(this.semanticTypes[0]);
             }            
             this.isLoading = false;
@@ -211,7 +211,9 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
 
     selectRow(row: any) {
         this.selectedType = row;
-        this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, null, null);
+        if (this.selectedType) {
+            this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, null, null);
+        }        
         this.selectedTypeChanged.emit(row);
     }
 
