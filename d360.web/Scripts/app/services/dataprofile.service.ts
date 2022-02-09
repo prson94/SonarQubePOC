@@ -171,8 +171,8 @@ export class DataProfileService extends BaseObservableService {
             .http
             .get(url, httpOptions)
             .pipe(
-                map(response => <SemanticTypeGetResponse>response),
-                catchError(err => this.handleError(err, false))
+                map((response) => <SemanticTypeGetResponse>response),
+                catchError((err) => this.handleError(err, false))
             )
             ;
     }
@@ -206,9 +206,8 @@ export class DataProfileService extends BaseObservableService {
             .http
             .get(url, httpOptions)
             .pipe(
-                map(response => <SemanticTypeGetAssetsResponse>response),
-                catchError(err => this.handleError(err, false))
-            )
-            ;
+                map((response) => <SemanticTypeGetAssetsResponse>response),
+                catchError((err) => this.handleError(err, false))
+            );
     }
 }

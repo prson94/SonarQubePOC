@@ -48,7 +48,7 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
 
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             let uid = params['semanticTypeUid'];
             this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);            
             this.logAction('open', 'SemanticType', uid);            

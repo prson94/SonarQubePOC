@@ -73,12 +73,12 @@ export class SemanticDetailComponent extends BaseComponent implements OnChanges 
         createdByUserParam["Uid"] = this.semanticDetails.createdBy.uid;
 
         this.resourcesService.getResourceLazy(createdByUserParam)
-            .subscribe(result => {
+            .subscribe((result) => {
                 if (result) {
                     this.creator = result.items[0];
                     this.semanticDetails.createdBy.id = this.creator.ResourceID;
                     if (this.semanticDetails.createdBy.uid === this.semanticDetails.updatedBy.uid) {
-                        this.semanticDetails.updatedBy.id = this.creator.ResourceID
+                        this.semanticDetails.updatedBy.id = this.creator.ResourceID;
                     }
                 }
             });
@@ -86,7 +86,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnChanges 
             let updatedByUserParam = {};
             updatedByUserParam["Uid"] = this.semanticDetails.updatedBy.uid;
             this.resourcesService.getResourceLazy(updatedByUserParam)
-                .subscribe(result => {
+                .subscribe((result) => {
                     if (result) {
                         this.creator = result.items[0];
                         this.semanticDetails.updatedBy.id = this.creator.ResourceID;

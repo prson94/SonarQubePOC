@@ -1,40 +1,4 @@
-﻿export class SemanticTypeGetResponse {
-    pageNum: number
-    pageSize: number
-    total: number;
-    items: SemanticType[];
-}
-
-export class SemanticType {
-    uid: string;
-    createdBy: SemanticUserModel;
-    updatedBy: SemanticUserModel;
-    createdOn: Date;
-    updatedOn: Date;
-    effectiveDate: Date;
-    source: SemanticSource;
-    baseType: SemanticBaseType;
-    description: string;
-    //headerRegExps:
-    headerRegExpConfidence: number;
-    invalidList: string[];
-    advanced: any;
-    matchType: SemanticMatchType;
-    maximum: number;
-    minimum: number;
-    minSamples: number;
-    minMaxPresent: number;
-    name: string;
-    priority: number;
-    qualifier: string;
-    regExReturned: string;
-    status: SemanticStatus;
-    threshold: number;
-    validLocales: string[];
-    validList: string[];    
-}
-
-export class SemanticUserModel{
+﻿export class SemanticUserModel{
     id: number;
     uid: string;
     fullName: string;
@@ -70,11 +34,46 @@ export enum SemanticStatus {
     Certified = 2
 }
 
+export class SemanticType {
+    uid: string;
+    createdBy: SemanticUserModel;
+    updatedBy: SemanticUserModel;
+    createdOn: Date;
+    updatedOn: Date;
+    effectiveDate: Date;
+    source: SemanticSource;
+    baseType: SemanticBaseType;
+    description: string;
+    headerRegExpConfidence: number;
+    invalidList: string[];
+    advanced: any;
+    matchType: SemanticMatchType;
+    maximum: number;
+    minimum: number;
+    minSamples: number;
+    minMaxPresent: number;
+    name: string;
+    priority: number;
+    qualifier: string;
+    regExReturned: string;
+    status: SemanticStatus;
+    threshold: number;
+    validLocales: string[];
+    validList: string[];
+}
+
 export class SemanticTypeAsset {
     uid: string;
     path: string;
     assetTypePath: string;
     confidence: number;
+}
+
+export class SemanticTypeGetResponse {
+    pageNum: number
+    pageSize: number
+    total: number;
+    items: SemanticType[];
 }
 
 export class SemanticTypeGetAssetsResponse {

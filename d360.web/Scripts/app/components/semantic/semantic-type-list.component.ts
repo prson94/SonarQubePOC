@@ -162,7 +162,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
             this.semanticTypes = p.items;
             this.semanticsTotal = p.total;
             if (!this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {
-                this.selectRow(this.semanticTypes[0])
+                this.selectRow(this.semanticTypes[0]);
             }            
             this.isLoading = false;
         });
@@ -240,10 +240,10 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     displayBreadCrumbs() {
         this.secondaryNavService.showHeader(true);
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.setBrowserTitle(this.titleService, 'SemanticTypes');
 
-            this.headerBreadcrumbService.getFolderTitle('#SemanticTypes').then(res => {
+            this.headerBreadcrumbService.getFolderTitle('#SemanticTypes').then((res) => {
                 this.folderTitle = res;
                 this.setBrowserTitle(this.titleService, res);
                 this.area = res;

@@ -3,13 +3,13 @@ import { CommonModule }       from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule }    from '@angular/forms';
 
-import { SemanticsComponent } from './semantics.component'
-import { SemanticDetailComponent } from "./semantic-detail.component"
+import { SemanticsComponent } from './semantics.component';
+import { SemanticDetailComponent } from "./semantic-detail.component";
 import { PopupMenuModule } from "../shared/controls/popup-menu/popup-menu.component";
 import { SemanticsRoutingModule } from './semantics.routes';
 import { SemanticTypeListComponent } from './semantic-type-list.component';
 import { SemanticDefinitionComponent } from './semantic-type-definition.component';
-import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module"
+import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 import { TableModule } from 'primeng/table';
 import { DirectivesModule } from '../../directives/directives.module';
@@ -21,7 +21,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SemanticAssetListGridComponent } from './semantic-asset-list-grid.component';
 import { SemanticTypeAssetListComponent } from './semantic-asset-list.component';
 import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
-import { DataProfileModule } from '../shared/dataprofile/dataprofile.module'
+import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 
 @NgModule({
     imports: [
