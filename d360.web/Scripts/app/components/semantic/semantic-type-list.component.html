@@ -60,7 +60,7 @@
                                     </span>
                                 </td>
                                 <td>{{item.priority}}</td>
-                                <td>{{item.baseType}}</td>
+                                <td>{{(item.baseType == 0 ? '' : item.baseType)}}</td>
                                 <td class="asset-grid-tools" style="width: 5%; " alignFrozen="right" pFrozenColumn>
                                     <div style="display:inline-block">
                                         <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
