@@ -145,9 +145,18 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
         {
+            await CreateTopicMessageAsync<T>(topicName, e);
+        }
+
+        public async Task CreateFilteredTopicMessageAsync(string topicName, IFilteredServiceBusMessage e)
+        {
             var eString = JsonConvert.SerializeObject(e);
             var eBytes = Encoding.UTF8.GetBytes(eString);
             var bm = new ServiceBusMessage(new BinaryData(eBytes));
+            if (!string.IsNullOrEmpty(e.EventType))
+            {
+                bm.ApplicationProperties.Add("EventType", e.EventType);
+            }
             bm.MessageId = Guid.NewGuid().ToString();
 
             var client = new ServiceBusClient(EventServiceBusConnectionString);
