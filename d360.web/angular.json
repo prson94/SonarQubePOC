@@ -44,7 +44,7 @@
                 }
               ],
               "optimization": true,
-              "outputHashing": "none",// all will hash files
+              "outputHashing": "all",// all will hash files
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
