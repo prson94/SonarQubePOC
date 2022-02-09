@@ -48,7 +48,7 @@ export class SemanticTypeAssetListComponent extends AssetGridBaseComponent imple
     }    
 
     ngOnInit() {        
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             let uid = params['semanticTypeUid'];
 
             this.sidePanelStorageKey = 'SemanticTypes_' + uid + '_' + CurrentResourceID;

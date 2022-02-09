@@ -1,7 +1,7 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { SemanticTypeListComponent } from './semantic-type-list.component';
-import { SemanticDefinitionComponent } from './semantic-type-definition.component'
+import { SemanticDefinitionComponent } from './semantic-type-definition.component';
 import { SemanticsComponent } from './semantics.component';
 import { SemanticTypeAssetListComponent } from './semantic-asset-list.component';
 

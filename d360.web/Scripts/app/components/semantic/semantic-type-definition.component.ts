@@ -73,7 +73,7 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
     }
 
     displayBreadCrumbs() {
-        this.headerBreadcrumbService.getFolderTitle('#SemanticTypes').then(res => {
+        this.headerBreadcrumbService.getFolderTitle('#SemanticTypes').then((res) => {
             this.folderTitle = res;
             this.area = res;
 
