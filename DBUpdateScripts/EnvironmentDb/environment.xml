@@ -283,6 +283,7 @@
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
 	<include file="scripts/View.workflow.ItemAsset.xml"/>
 	<include file="scripts/View.workflow.ItemIssue.xml"/>
+        <include file="scripts/View.dbo.AuditView.xml"/>
 
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->
@@ -379,7 +380,6 @@
 	<include file="scripts/Procedure.dbo.GetAssetHierarchy.xml"/>
 	<include file="scripts/Procedure.dbo.GetAttributeAndIntersectHierarchyByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetAverageScoreByObjectType.xml"/>
-	<include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.dbo.GetPageInformation.xml"/>
 	<include file="scripts/Procedure.dbo.GetReferenceItemValues.xml"/>

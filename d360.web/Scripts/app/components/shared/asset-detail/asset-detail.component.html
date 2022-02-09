@@ -23,7 +23,7 @@
                 </div>
             </div>
         </ng-container>
-        <ng-container *ngIf="isSidePanel">
+        <ng-container *ngIf="isSidePanel && showTabs">
             <div class="windowtabs">
                 <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">Details</button>
                 <button *ngIf="showOwnershipTab" [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading">Ownership</button>

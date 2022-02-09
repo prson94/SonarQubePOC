@@ -1851,6 +1851,11 @@ chart {
 
 .ql-tooltip {
   z-index: 1000;
+
+  /* quill editor - use important to contain hyperlink editor within ql editor bounds otherwise overflows will hide part of editing tooltip */
+  &.ql-editing {
+    left: 0 !important;
+  }
 }
 /* end quill editor */
 /* p-dataTable */

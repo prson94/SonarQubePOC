@@ -12,7 +12,16 @@
                 <div class="row">
                     <div class="col l6 m6 s12">
                         <div class="FieldNameRequired no-margin">Name</div>
-                        <input maxlength="250" pInputText name="name" [attr.data-cy]="'AssetType_Field_Name'" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.AssetType.Name" required />
+                        <input maxlength="250"
+                               pInputText
+                               name="name"
+                               [attr.data-cy]="'AssetType_Field_Name'"
+                               #name="ngModel"
+                               style="height:25px;width:100%;display:block;"
+                               type="text"
+                               [(ngModel)]="model.AssetType.Name"
+                               [igDataCy]="'AssetType_Field_Name'"
+                               required />
                         <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                     </div>
                     <div class="col l6 m6 s12" *ngIf="showParentPredicates">
@@ -24,6 +33,7 @@
                                     (ngModelChange)="model.AssetType.Hierarchy.PredicateUid=$event;updateParent(model.AssetType.Hierarchy.PredicateUid);"
                                     [style]="{'width':'100%'}"
                                     name="predicate"
+                                    [igDataCy]="'AssetType_Field_Predicate'"
                                     [required]="isPredicateRequired">
                         </p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
@@ -41,19 +51,34 @@
                 <div class="row" [hidden]="!showDisplayFormat">
                     <div class="col l6 m6 s12">
                         <div class="FieldNameRequired">Display Format</div>
-                        <input maxlength="250" pInputText name="displayFormat" [attr.data-cy]="'AssetType_Field_DisplayFormat'" #displayformat="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.AssetType.DisplayFormat" required />
+                        <input maxlength="250" 
+                               pInputText
+                               name="displayFormat"
+                               #displayformat="ngModel"
+                               style="height:25px;width:100%;display:block;"
+                               type="text"
+                               [(ngModel)]="model.AssetType.DisplayFormat"
+                               [igDataCy]="'AssetType_Field_DisplayFormat'"
+                               required/>
                         <div [hidden]="displayformat.valid || displayformat.pristine" class="validation-text">Display format is required</div>
                     </div>
                     <div class="col l6 m6 s12">
                         <div class="FieldName">Available Field Tokens</div>
-                        <p-dropdown [options]="model.Tokens" [attr.data-cy]="'AssetType_Field_Tokens'" (onChange)="selectToken($event)" [style]="{'width':'100%'}"></p-dropdown>
+                        <p-dropdown [options]="model.Tokens"
+                                    [igDataCy]="'AssetType_Field_Tokens'"
+                                    (onChange)="selectToken($event)"
+                                    [style]="{'width':'100%'}"></p-dropdown>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col s12">
                         <div class="FieldName">Description</div>
-                        <p-editor name="Description" [attr.data-cy]="'AssetType_Field_Description'" [(ngModel)]="model.AssetType.Description" [style]="{'height':'150px'}"></p-editor>
+                        <p-editor name="Description"
+                                  [igDataCy]="'AssetType_Field_Description'"
+                                  [(ngModel)]="model.AssetType.Description"
+                                  [style]="{'height':'150px'}">
+                        </p-editor>
                     </div>
                 </div>
 
@@ -169,8 +194,18 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px;">
-                    <button pButton label="Save" type="submit" [attr.data-cy]="'AssetType_Button_Save'" (click)="save()" [disabled]="!form.form.valid || isSaving || (model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor)"></button>
-                    <button pButton label="Cancel" (click)="cancel()" [attr.data-cy]="'AssetType_Button_Cancel'"></button>
+                    <button pButton
+                            label="Save"
+                            type="submit"
+                            (click)="save()"
+                            [igDataCy]="'AssetType_Button_Save'"
+                            [disabled]="!form.form.valid || isSaving || (model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor)">
+                    </button>
+                    <button pButton
+                            label="Cancel"
+                            (click)="cancel()"
+                            [igDataCy]="'AssetType_Button_Cancel'">
+                    </button>
                 </div>
             </div>
         </div>

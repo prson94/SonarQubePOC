@@ -1450,7 +1450,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("executions/{executionID:Guid}/status"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of relationships.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
@@ -1778,7 +1778,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("counts/{assetUid}"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship counts per relationship type for an asset.", typeof(List<AssetTypeCountModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),

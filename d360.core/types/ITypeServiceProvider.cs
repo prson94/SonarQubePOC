@@ -10,5 +10,7 @@
         IDecimalService DecimalService { get; }
 
         IInt64Service Int64Service { get; }
+
+        IInt32TypeService Int32 { get; }
     }
 }

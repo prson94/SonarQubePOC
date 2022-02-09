@@ -75,6 +75,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route(""),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(FieldTypesApiViewModel)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -183,6 +184,7 @@ namespace d360.web.Controllers.V2
             HttpPut,
             Route(""),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -382,6 +384,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route(""),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -487,6 +490,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route("batch"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "User is not an administrator.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
@@ -2491,16 +2495,17 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 {
                     query = $@"
                     drop table if exists #tempResults
-			            select *
+			            select V.*
 				        into #tempResults
                         from FieldLookupValue V
+                        {parentFieldJoins}
                         where @fieldTypeId = FieldTypeID {whereQuery}
                         order by text asc
 					    {pagingQuery};
 
 					 select {selectStatement} from #tempResults V {colorjoin};
 
-                    select count(1) from FieldLookupValue V
+                    select count(1) from FieldLookupValue V {parentFieldJoins}
                         where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
                 }

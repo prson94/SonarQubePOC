@@ -36,6 +36,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() filterMode: boolean = false;
     @Output() filterModeChange = new EventEmitter();
 
+    @Input() dataCyPrefix: string = '';
     @Input() hasAdd: boolean = false;
     @Input() addTooltip: string = "Add";
     @Input() hasExport: boolean = false;

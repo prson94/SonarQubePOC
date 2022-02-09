@@ -9,9 +9,9 @@ namespace d360.model
 {
     public static class JobDbContextCreator
     {
-        public static CompanyContext CreateCompanyContext(int companyId, int resourceId, string urlPrefix, bool isAdmin, 
+        public static CompanyContext CreateCompanyContext(int companyId, int resourceId, string urlPrefix, bool isAdmin,
             AzureQueueSource queue = null,
-            AzureStorageProvider storage = null, 
+            AzureStorageProvider storage = null,
             string connectionString = null)
         {
             var sec = new UriSecurityContextProvider()
@@ -26,10 +26,12 @@ namespace d360.model
             {
                 ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY)
             };
-            if (queue == null) 
+            if (queue == null)
             {
                 queue = new AzureQueueSource();
             }
+
+            var community = InitializeCommunityContext(connectionString, sec, cache, queue);
 
             if (storage == null)
             {
@@ -52,7 +54,11 @@ namespace d360.model
             };
             var cache = new DummyCachingProvider();
             var queue = new AzureQueueSource();
+            return InitializeCommunityContext(connectionString, sec, cache, queue);
+        }
 
+        private static CommunityContext InitializeCommunityContext(string connectionString, UriSecurityContextProvider sec, DummyCachingProvider cache, AzureQueueSource queue)
+        {
             if (string.IsNullOrEmpty(connectionString))
                 return new CommunityContext(cache, queue, sec);
 

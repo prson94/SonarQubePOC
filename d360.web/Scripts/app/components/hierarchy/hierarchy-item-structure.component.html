@@ -24,6 +24,7 @@
                             class="ig-button-primary"
                             icon="fa-plus"
                             [disabled]="isLoading"
+                            [igDataCy]="'Assets_Add'"
                             (click)="showAdd(0)">
                     </button>
 
@@ -34,6 +35,7 @@
                                 [disabled]="!canExportRecords() || isExportInProgress"
                                 icon="fa-download"
                                 [loading]="isExportInProgress"
+                                [igDataCy]="'Assets_Export'"
                                 (click)="exportExcel(0)">
                         </button>
                     </div>

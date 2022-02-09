@@ -69,7 +69,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
             delete this.loadParams['_filter'];
         }
 
-        if (changes.highlightUid && changes.highlightUid.currentValue !== changes.highlightUid.previousValue) {
+        if (changes.highlightUid && changes.highlightUid.currentValue !== changes.highlightUid.previousValue && this.highlightUid) {
             var highlightedAsset = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
             if (highlightedAsset && highlightedAsset[0]) {
                 this.selected = highlightedAsset[0];
@@ -128,13 +128,11 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
                 setTimeout(() => {
                     if (this.table) {
                         this.table.first = (+result.pageSize) * (+result.pageNum - 1);
+                        this.highlightUid = null;
+                        delete this.loadParams["_pageWithAsset"];
                         this.cdRef.markForCheck();
                     }
                 }, 100);
-
-                this.highlightUid = null;
-                delete this.loadParams["_pageWithAsset"];
-
             }
 
             if (this.totalRecords < 1000) {

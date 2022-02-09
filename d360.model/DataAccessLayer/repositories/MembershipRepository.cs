@@ -283,8 +283,8 @@ namespace d360.model.DataAccessLayer
             var executionID = execution.ExecutionID;
             var results = new List<UserApiUpsertResult>();
             var validationResults = new List<UserApiUpsertResult>();
-
-            var fieldTypes = CompanyContext.FieldTypes.Where(f => f.Object == "ResourceType").ToList();
+                        
+            var fieldTypes = CompanyContext.GetAssetTypeFieldTypesCore("ResourceType", 1);
 
             var hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
 

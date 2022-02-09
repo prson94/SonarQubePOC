@@ -7,12 +7,12 @@ namespace d360.model.helpers.filters
 {
     public class RelationshipComplexFieldToken : FilterBaseToken, IFilterToken
     {
-        readonly List<FieldType> fieldTypes = new List<FieldType>();
+        private IReadOnlyList<FieldType> FieldTypes { get; }
 
-        public RelationshipComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, List<FieldType> types)
+        public RelationshipComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, IReadOnlyList<FieldType> types)
         {
             this.dataProvider = fdp;
-            this.fieldTypes = types;
+            this.FieldTypes = types;
             this.field = field;
             @operator = op;
             this.value = value.ToString().Replace("'", "");
@@ -26,8 +26,8 @@ namespace d360.model.helpers.filters
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
             var intersectUid = this.EscapedValueAsString;
-            var ftRelationship = fieldTypes.Where(x => x.Name.ToLower() == this.Field.ToLower()).FirstOrDefault();
-            var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
+            var ftRelationship = FieldTypes.FirstOrDefault(x => x.Name.ToLower() == this.Field.ToLower());
+            var ftQueryName = FieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
             var relationshipFilterSQL = "";
             if (ftRelationship != null)
             {
