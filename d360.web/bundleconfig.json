@@ -55,19 +55,5 @@
     "inputFiles": [
       "Content/primeng/v11.1.0/default.css"
     ]
-  },
-  {
-    "outputFileName": "scripts/dist/angular.js",
-    "inputFiles": [
-      "scripts/dist/runtime*",
-      "scripts/dist/polyfills*",
-      "scripts/dist/vendor*",
-      "scripts/dist/main*"
-    ],
-    "minify": {
-      "enabled": false,
-      "renameLocals": false
-    },
-    "sourceMap": false
   }
 ]
