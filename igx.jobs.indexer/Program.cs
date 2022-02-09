@@ -30,7 +30,6 @@ namespace igx.jobs.indexer
             {
                 c.AddAzureStorageCoreServices()
                 .AddAzureStorage();
-                //.AddTimers(); //GOV-10646 No longer indexing on a schedule. Keeping schedule code in case decision is reversed.
             });
 
             using (var host = builder.Build())
@@ -70,34 +69,6 @@ namespace igx.jobs.indexer
     public static class Indexer
     {        
         const string functionName = "Indexing_ReIndex";
-#if DEBUG
-        const string timerSettings = "0 */15 * * * *";
-#else
-        const string timerSettings = "0 0 17 * * 6";
-#endif
-
-        public static void RunViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
-        {
-            try
-            {
-                CoreFunction.AITrackJobStart(functionName);
-                var companies = CoreFunction.UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken.SearchIndex);
-
-                var queue = new AzureQueueSource();
-                companies.ForEach(c =>
-                {
-                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c });
-                });
-
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-
-            CoreFunction.AIFlush();
-        }
-
         public static async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
             ReindexModel reindex = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);

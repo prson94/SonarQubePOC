@@ -220,19 +220,6 @@ namespace igx.jobs
             }
         }
 
-        public static List<int> UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken jobToken)
-        {
-            var lvl = GetEnvironmentLevelCurrentSlot();
-            try
-            {
-                return CompanyConnectionUtils.UpdateRebuildRequestForEnvironmentLevel(lvl, jobToken);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
         public static IHostBuilder JobHostConfigBuilder()
         {
             var builder = new HostBuilder();

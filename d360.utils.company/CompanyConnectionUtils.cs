@@ -109,50 +109,5 @@ namespace d360.utils.company
         {
             return GetCompaniesWithDatabaseServerSettings(constants.COMMUNITY_DATABASE_CONNECTION);
         }
-
-        public static List<int> UpdateRebuildRequestForEnvironmentLevel(EnvironmentLevel level, CompanyRebuildJobToken jobToken, string connectionString)
-        {
-            List<int> companies = null;
-            int timeoutInHours = 18;
-            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
-            {
-                timeoutInHours = timeout;
-            }
-
-            using (var cnn = new SqlConnection(connectionString))
-            {
-                cnn.Open();
-
-                companies = cnn.Query<int>(@"
-declare @ids table (CompanyID int)
-
-merge	CompanyRebuildJobStatus as T
-using	(
-		select  C.ID as CompanyID
-		from    Company C
-		where   C.EnvironmentLevel = @level
-				and C.[Status] = 'Active'
-		) as S
-on		(T.CompanyID = S.CompanyID and T.JobToken = @jobToken) 
-when	matched and (T.[State] = 2 OR T.LastStartedOn <= @timeoutOn) then
-update	set 
-		T.[State] = 1,
-		T.LastStartedOn = getutcdate(),
-		T.LastStartedBy = 0
-when	not matched by target then
-insert	(CompanyID, JobToken, LastStartedOn, LastStartedBy, [State])
-values	(S.CompanyID, @jobToken, getutcdate(), 0, 1)
-output inserted.CompanyID into @ids;
-
-select CompanyID from @ids", new { level = (int)level, jobToken = (int)jobToken, timeoutOn = DateTime.UtcNow.AddHours(-1 * timeoutInHours) }).ToList();
-            }
-
-            return companies;
-        }
-
-        public static List<int> UpdateRebuildRequestForEnvironmentLevel(EnvironmentLevel level, CompanyRebuildJobToken jobToken)
-        {
-            return UpdateRebuildRequestForEnvironmentLevel(level, jobToken, constants.COMMUNITY_DATABASE_CONNECTION);
-        }
     }
 }
