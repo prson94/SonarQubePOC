@@ -49,6 +49,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     @Input() supportsPrimaryFilterOption: boolean = false;
 
+    public dataCyPrefix: string = 'FieldType_';
     private fieldDefinitions = new Array<FieldTypeAPIModelField>();
     private fieldDisplayModel = new Array<FieldDisplayModel>();
     private selectedRow = new FieldDisplayModel();

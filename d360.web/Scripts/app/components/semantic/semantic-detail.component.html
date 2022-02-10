@@ -1,0 +1,199 @@
+﻿<div class="asset-detail">    
+    <div *ngIf="isLoading" style="width:100%; text-align:center;">
+        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+    </div>
+    <div *ngIf="!isLoading">
+        <ng-container *ngIf="showHeader">
+            <div class="asset-detail-header">
+                <div class="asset-name">
+                    {{semanticDetails.name}}
+                </div>
+                <div class="class-name">
+                    Semantic Type
+                </div>
+                <div>
+                    <a (click)="openSemanticType();">Open</a> <span class="grey-delimiter">|</span> <a (click)="openSemanticType(true);">Open in New Tab</a>
+                </div>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="isSidePanel">
+            <div class="windowtabs">
+                <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">Details</button>
+                <button [class]="(tab == 'assets') ? 'tab-selected' : 'tab'" (click)="clickTab('assets')"><div style="display:flex"><div>Assets</div> <div class="count-badge">{{assetCount}}</div></div></button>                
+            </div>
+        </ng-container>
+        <div class="asset-detail-tabs">
+            <ng-container [ngSwitch]="tab">
+                <ng-container *ngSwitchCase="'detail'">
+
+                    <ig-property-group [expanded]="true"
+                                       [title]="'General'"
+                                       [shouldBePadded]="true"
+                                       [showHeaderLine]="false">
+                        <div inputs>
+                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right:5px">Name</label>
+                                    <div class="ig-value">{{semanticDetails.name}}</div>
+                                </div>
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right: 5px">Qualifier</label>
+                                    <div class="ig-value">{{semanticDetails.qualifier}}</div>
+                                </div>
+                            </div>
+                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right: 5px">
+                                        Threshold
+                                        <span class="tooltip-icon">
+                                            <i class="fa fa-question-circle" pTooltip="Percentage of valid values in the sample data set needed in order to be classified with this Semantic Type." [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                                        </span>
+                                    </label>
+                                    <div class="ig-value">{{semanticDetails.threshold | percent : '1.0-2'}}</div>
+                                </div>
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right: 5px">
+                                        Priority
+                                        <span class="tooltip-icon">
+                                            <i class="fa fa-question-circle" pTooltip="When profiling data the priority determines the order in which the Semantic Type is considered against a data set.  Higher priority matches take precedence." [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                                        </span>
+                                    </label>
+                                    <div class="ig-value">{{semanticDetails.priority}}</div>
+                                </div>
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right:5px">Status</label>
+                                    <div class="ig-value">{{semanticDetails.status}}</div>
+                                </div>
+                            </div>
+                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right:5px">Semantic Source</label>
+                                    <div class="ig-value">{{semanticDetails.source}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </ig-property-group>
+                    <ig-property-group [expanded]="true"
+                                       [title]="'Asset Match Criteria'"
+                                       [shouldBePadded]="true"
+                                       [showHeaderLine]="false">
+                        <div inputs>
+                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right:5px">Match Type</label>
+                                    <div class="ig-value">{{semanticDetails.matchType}}</div>
+                                </div>
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right:5px">Base Type</label>
+                                    <div class="ig-value">{{semanticDetails.baseType}}</div>
+                                </div>
+                            </div>
+                            <div *ngIf="semanticDetails.matchType != 0">
+                                <div *ngIf="semanticDetails.matchType !== 'Advanced'">
+                                    <div class="row">
+                                        <div class="semantic-field">
+                                            <label class="ig-label" style="margin-right:5px">Valid Values</label>
+                                            <div class="ig-value">
+                                                <ul *ngFor="let v of semanticDetails.validList">
+                                                    <li>{{v}}</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="semantic-field">
+                                            <label class="ig-label" style="margin-right:5px">Invalid Values</label>
+                                            <div class="ig-value">
+                                                <ul *ngFor="let v of semanticDetails.invalidList">
+                                                    <li>{{v}}</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="semantic-field">
+                                            <label class="ig-label" style="margin-right:5px">Minimum Samples</label>
+                                            <div class="ig-value">{{semanticDetails.minSamples}}</div>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                                        <div class="semantic-field">
+                                            <label class="ig-label" style="margin-right:5px">Valid Locales</label>
+                                            <div class="ig-value">
+                                                <ul *ngFor="let v of semanticDetails.validLocales">
+                                                    <li>{{v}}</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="semantic-field">
+                                            <label class="ig-label" style="margin-right:5px">Header Filter</label>
+                                            <div class="ig-value">{{semanticDetails.matchType}}</div>
+                                        </div>
+                                    </div>
+                                </div>                                                 
+                                <div *ngIf="semanticDetails.matchType === 'Advanced'">
+                                    <div class="row">
+                                        <div>
+                                            <label class="ig-label" style="margin-right:5px">
+                                                Json
+                                                <span class="tooltip-icon">
+                                                    <i class="fa fa-question-circle" pTooltip="Json field tooltip" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                                                </span>
+                                            </label>
+                                            <codearea readonly="true" [(ngModel)]="advancedJson"></codearea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ig-property-group>
+                    <ig-property-group [expanded]="false"
+                                       [title]="'System Fields'"
+                                       [shouldBePadded]="true"
+                                       [showHeaderLine]="false">
+                        <div inputs>
+                            <div class="row">
+                                <div>
+                                    <label class="ig-label" style="margin-right:5px">Semantic Type UID</label>
+                                    <div class="ig-value">{{semanticDetails.uid}}</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="ig-label" style="margin-right:5px">
+                                    Date Created
+                                </label>
+                                <div class="ig-value">{{semanticDetails.createdOn | date:'d MMM yyyy'}}</div>
+                            </div>
+                            <div class="row">
+                                <label class="ig-label" style="margin-right:5px">
+                                    Date Last Modified
+                                </label>
+                                <div class="ig-value">{{semanticDetails.updatedOn | date:'d MMM yyyy'}}</div>
+                            </div>
+                            <div class="row">
+                                <label class="ig-label" style="margin-right:5px">
+                                    Created By
+                                </label>
+                                <div class="ig-value" *ngIf="semanticDetails.createdBy.id"><a (click)="navigateToUser(semanticDetails.createdBy.id)">{{semanticDetails.createdBy.fullName}}</a></div>
+                                <div class="ig-value" *ngIf="!semanticDetails.createdBy.id">{{semanticDetails.createdBy.fullName}}</div>
+                            </div>
+                            <div class="row">
+                                <label class="ig-label" style="margin-right:5px">Modified By</label>
+                                <div class="ig-value" *ngIf="semanticDetails.updatedBy.id"><a (click)="navigateToUser(semanticDetails.updatedBy.id)">{{semanticDetails.updatedBy.fullName}}</a></div>
+                                <div class="ig-value" *ngIf="!semanticDetails.updatedBy.id">{{semanticDetails.updatedBy.fullName}}</div>
+                            </div>
+
+                            <div class="row">
+                                <div>
+                                    <label class="ig-label" style="margin-right:5px">Semantic Source</label>
+                                    <div class="ig-value">{{semanticDetails.source}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </ig-property-group>
+                </ng-container>
+                <ng-container *ngSwitchCase="'assets'">
+                        <semantic-asset-list-grid [semanticType]="semanticDetails"
+                                             [isSidePanel]="true"
+                                             (assetCountUpdated)="assetCount=$event.assetCount"></semantic-asset-list-grid>
+                </ng-container>
+            </ng-container>
+</div>
+    </div>
+</div>

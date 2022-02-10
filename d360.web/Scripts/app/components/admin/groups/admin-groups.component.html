@@ -1,5 +1,5 @@
 ﻿<div class="row admin-group-list">
-    <div class="col s12" style="display: flex">
+    <div class="col s12 overflow-container" style="display: flex">
         <div class="tile tile-detail admin-group-details">
             <div class="actions-header">
                 <div class="simple-search">
@@ -32,6 +32,8 @@
                          [(selection)]="selectedRow"
                          [rows]="20"
                          [style]="{'width':'100%'}"
+                         [scrollable]="true"
+                         scrollWidth="100%"
                          [loading]="isLoading"
                          [loadingIcon]="'fa fa-spinner fa-spin'">
                     <ng-template pTemplate="colgroup">
@@ -106,18 +108,30 @@
                         [selectedPanel]="sidePanelTab">
                 <ng-container *ngIf="sidePanelOpen && selectedRow != null">
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail #assetDetail [objectUID]="selectedRow.Uid"
-                                         objectType="Group"
+                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
+                                         #assetDetail
+                                         [objectUID]="selectedAsset ? selectedAsset.uid : selectedRow.Uid"
+                                         [objectType]="selectedAsset ? selectedAsset.type : 'Group'"
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"
                                          [showHeader]="true"
                                          [showHeaderLine]="false"
                                          [spacerHeight]="'16px'"
+                                         [interceptLinkClick]="true"
                                          [tooltipAlign]="'left'"
                                          [isSidePanel]="true"
                                          [hideLinks]="true"
-                                         [hideClassName]="true"
+                                         [hideClassName]="selectedAsset ? false : true"
                                          [groupMembersReadOnlyMode]="false"></ig-asset-detail>
+                        <ng-container *ngIf="selectedReferenceItem">
+                            <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                  [highlightUid]="selectedReferenceItem.assetUid"
+                                                  [baseUrl]="selectedReferenceItem.url">
+                            </ig-asset-type-detail>
+                        </ng-container>
+                        <ng-container *ngIf="selectedTag">
+                            <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+                        </ng-container>
                     </ng-container>
                 </ng-container>
             </side-panel>

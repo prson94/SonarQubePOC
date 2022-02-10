@@ -2,7 +2,13 @@
     <div>
         <header>
             {{title}}
-            <d3s-tile-actions *ngIf="!isEditing && !isDeleting" [hasAdd]="showAddButton" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+            <d3s-tile-actions *ngIf="!isEditing && !isDeleting"
+                              [hasAdd]="showAddButton"
+                              [dataCyPrefix]="dataCyPrefix"
+                              (addClick)="add()"
+                              [hasFilterMode]="true"
+                              [(filterMode)]="showSimpleFilter">
+            </d3s-tile-actions>
         </header>
     </div>
     <div *ngIf="isEditing">
@@ -138,22 +144,30 @@
                     <td>{{item.SortOrder}}</td>
                     <td>
                         <div class="RowTools">
-                            <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;"><i class="fa fa-caret-up"></i></a>
+                            <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveUp'">
+                                <i class="fa fa-caret-up"></i>
+                            </a>
                         </div>
                     </td>
                     <td>
                         <div class="RowTools">
-                            <a (click)="moveDown(item)" style="cursor:pointer;margin:0px;"><i class="fa fa-caret-down"></i></a>
+                            <a (click)="moveDown(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveDown'">
+                                <i class="fa fa-caret-down"></i>
+                            </a>
                         </div>
                     </td>
                     <td>
                         <div class="RowTools" *ngIf="showEditButton">
-                            <a (click)="edit(item.Name)" style="cursor:pointer;margin:0px;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="edit(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Edit'">
+                                <i class="fa fa-pencil"></i>
+                            </a>
                         </div>
                     </td>
                     <td>
                         <div class="RowTools" *ngIf="showDeleteButton && showDeleteButtonByFieldType(item)">
-                            <a (click)="delete(item.Name)" style="cursor:pointer;margin:0px;"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="delete(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Remove'">
+                                <i class="fa fa-trash-o"></i>
+                            </a>
                         </div>
                     </td>
                 </tr>

@@ -19,6 +19,7 @@ import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
+import { SemanticType } from '../../models/semantic-type.model';
 
 declare var CurrentResourceID;
 
@@ -53,6 +54,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -152,7 +155,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                     });
 
                     var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
-                        this.setCommonSecondaryNavTabs(false, false, this.artifactType.HasDashboards);
+                        this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
                         this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
                         this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
                         if (this.artifactType.HasV2Workflows) {
@@ -225,5 +228,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         }
 
         this.clearSidebar();
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
     }
 }

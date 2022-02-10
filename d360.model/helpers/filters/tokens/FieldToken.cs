@@ -153,14 +153,14 @@ namespace d360.model.helpers.filters
             stringBuilder.Append(FilterHelpers.GetSQLNullOperator(@operator));
         }
 
-        public void LoadFieldType(FieldType ft, List<string> fieldColumns)
+        public void LoadFieldType(FieldType ft, IReadOnlyList<string> fieldColumns)
         {
             fieldType = ft;
             if (fieldColumns != null)
             {
                 fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
             }
-            if (fieldColumn == null)
+            if (fieldColumn == null && fieldColumns != null)
             {
                 fieldColumn = fieldColumns.FirstOrDefault(x => x.ToLowerInvariant().Contains($"[{fieldType.Name.ToLowerInvariant()}]"));
             }

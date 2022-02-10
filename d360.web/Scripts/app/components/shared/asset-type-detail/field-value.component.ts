@@ -2,7 +2,7 @@
 
 @Component({
     selector: 'ig-field-value',
-    template: `<div class="row">
+    template: `<div class="row" *ngIf="value">
                 <div class="row-header">
                         <label class="ig-label">
                             <span class="ng-star-inserted">{{field}}</span>

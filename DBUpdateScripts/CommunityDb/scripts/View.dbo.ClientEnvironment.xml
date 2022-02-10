@@ -1,0 +1,47 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.dbo.ClientEnvironment-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+execute dbo.sp_executesql @statement = N'create or alter view [dbo].[ClientEnvironment]
+as
+	select	E.ClientID,
+			C.Name as ClientName,
+			C.PublicID,
+			case C.State 
+				when 0 then ''PoC''
+				when 1 then ''Active''
+				else ''Inactive''
+			end as ClientState,
+			E.ID as EnvironmentID,
+			E.Status,
+			E.DatabaseServerID,
+			case E.EnvironmentLevel
+				when 0 then ''NIGHTLY''
+				when 1 then ''CLIENTDEV''
+				when 2 then ''UAT''
+				when 3 then ''PROD''
+				when 4 then ''LEGACYDEV''
+				when 5 then ''ALTERNATE''
+				when 6 then ''LEGACYPROD''
+			end as EnvironmentLevel
+	from	Client C
+			inner join Company E on E.ClientID = C.ID'
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

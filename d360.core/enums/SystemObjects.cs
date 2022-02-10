@@ -132,7 +132,9 @@ namespace d360.core
         [Description("Issue Type Relation"), IsType(true),
         ExcludeDataType(DataType.FieldFromRelationship |
         DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        IssueTypeRelation = 63
+        IssueTypeRelation = 63,
+        [Description("Semantic Type"), IsType(true)]
+        SemanticType = 64
     }
 
     public static class SystemObjectExtensions

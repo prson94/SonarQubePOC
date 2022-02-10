@@ -1056,7 +1056,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("executions/{uid:Guid}/status"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A scoring execution status.", typeof(ScoreExecution)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
         ]

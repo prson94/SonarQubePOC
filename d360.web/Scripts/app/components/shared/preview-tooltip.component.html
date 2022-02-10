@@ -3,6 +3,7 @@
       (mouseenter)="show(item, tip)"
       (mouseleave)="hideDebounce.next(); mouseIn = false"
       [ngClass]="{ 'd3s-tooltip-active': active, 'rightaligned': isRightAligned() }"
+      [igDataCy]="'AssetType_' + uid + '_Button_Info'"
       class="d3s-tooltip">
     <i *ngIf="icon && icon != ''"
        [ngClass]="['fa-' + this.icon, class ? class : '']"

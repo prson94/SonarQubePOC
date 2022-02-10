@@ -1,4 +1,12 @@
 ﻿.admin-group-list {
+  .overflow-container {
+    height: calc(100vh - 164px);
+
+    .admin-group-details {
+      overflow: auto;
+    }
+  }
+
   .actions-header {
     width: 100%;
     display: flex;
@@ -6,17 +14,20 @@
 
     .simple-search {
       flex-grow: 1;
+    }
 
-      ig-search-field {
-        min-width: unset;
-        flex: unset;
-        display: block;
-        padding-right: 16px;
+    ig-search-field {
+      padding-right: 16px;
+    }
+  }
 
-        .ig-search-field {
-          width: 100%;
-        }
-      }
+  ig-search-field {
+    min-width: unset;
+    flex: unset;
+    display: block;
+
+    .ig-search-field {
+      width: 100%;
     }
   }
 

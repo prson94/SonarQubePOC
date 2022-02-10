@@ -120,7 +120,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
                     if (this.isAdmin) {
 
-                        this.setCommonSecondaryNavTabs(false);
+                        this.setCommonSecondaryNavTabs({ hasAudit: false });
 
                         //Coming soon
                         //if (this.auditSidebar) {
@@ -128,7 +128,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
                         //}
                     }
                     else {
-                        this.setCommonSecondaryNavTabs(false);
+                        this.setCommonSecondaryNavTabs({ hasAudit: false });
 
                     }
                     this.setActions();

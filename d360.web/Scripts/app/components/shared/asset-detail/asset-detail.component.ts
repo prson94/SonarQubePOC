@@ -35,7 +35,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() shouldBePadded: boolean = true;
     @Input() tooltipAlign: string;
     @Input() showHeader: boolean = false;
-    @Input() showTabs: boolean = false;
+    @Input() showTabs: boolean = true;
     @Input() showHeaderLine: boolean = true;
     @Input() spacerHeight: string = '32px';
     @Input() isSidePanel: boolean = false;
@@ -408,7 +408,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     get showOwnershipTab(): boolean {
-        return this.objectType !== 'Resource' && this.objectType !== 'Group';
+        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task';
     }
 
     get showGroupTab(): boolean {

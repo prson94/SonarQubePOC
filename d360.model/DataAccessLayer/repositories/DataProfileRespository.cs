@@ -450,6 +450,10 @@ namespace d360.model.DataAccessLayer
             bool includeTotal = true;
             string orderDirection = "asc";
             string orderBy = "NDP.DisplayPath";
+            List<string> filters = new List<string>();
+
+            string filterSQL = "";
+
 
             if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
             {
@@ -486,6 +490,50 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.Any(q => q.Key == "_filter"))
+            {
+                var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                List<DefaultFilter> fieldList = new List<DefaultFilter>
+                {
+                new DefaultFilter("assetTypePath", "P.Path", SqlFieldType.Text),
+                new DefaultFilter("Path", "NDP.[Segments]", SqlFieldType.Xml),
+                };
+
+                if (!string.IsNullOrEmpty(filterValue))
+                {
+                    CompanyContext.ParseAdvancedFilterQueryParameter(queryParams, fieldList, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
+                    if (advFilterArgs != null && advFilterStatements != null)
+                    {
+                        dbArgs.AddDynamicParams(advFilterArgs);
+                        filters.AddRange(advFilterStatements);
+                    }
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+            {
+                var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+                if (!string.IsNullOrEmpty(simpleFilter))
+                {
+                    simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+
+                    dbArgs.Add("@simpleFilter", simpleFilter);
+
+                    filters.Add($@"(
+                                    NDP.DisplayPath like @simpleFilter 
+                                    or                                             
+                                    P.[Path] like @simpleFilter
+                                )");
+                }
+            }
+
+
+            if (filters.Any())
+            {
+                filterSQL = $"and {string.Join(" and ", filters)}";
+            }
+
+
             dbArgs.Add("@typeQualifier", typeQualifier);
             dbArgs.Add("@minConfidence", minConfidence);
 
@@ -500,7 +548,8 @@ namespace d360.model.DataAccessLayer
 				                AssetDataProfile 
 			                where 
 				                AssetID = ADP.AssetID
-			                ) maxProfileDate";
+			                ) maxProfileDate
+                            cross apply dbo.GetAssetTypeTextPathById(NDP.AssetTypeID, ' > ') P";
 
             if (!CompanyContext.CurrentResourceIsAdmin)
             {
@@ -524,10 +573,12 @@ namespace d360.model.DataAccessLayer
                                 distinct
 	                            NDP.uid, 
                                 NDP.DisplayPath as [path],
+                                P.[path] as assetTypePath,
                                 ADP.Confidence
                             FROM                                     
 	                            {sqlJoins}		                            
 	                            {whereConditions}
+                                {filterSQL}
 		                    order by {orderBy} {orderDirection}
                             {offset}";
 

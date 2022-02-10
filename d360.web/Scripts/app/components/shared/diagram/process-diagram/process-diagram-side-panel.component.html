@@ -1,0 +1,68 @@
+<div class="asset-editor">
+    <div class="editor">
+        <div *ngIf="showEmptyOverlay()">
+            <div class="empty-overlay">
+                <div class="content">
+                    <div class="icon-holder">
+                        <i class="fa fa-info-circle"></i>
+                    </div>
+                    <span>Select a single item from the {{(viewType == 'diagram' ? 'diagram' : 'list')}} to view its properties</span>
+                </div>
+            </div>
+        </div>
+
+        <ng-container *ngFor="let data of loadedNodes">
+            <div [hidden]="!nodeData || data.key !== nodeData.key || isReadOnly">
+                <asset-editor #dynamicEditor
+                              [assetUid]="data ? data.key : null"
+                              [objectType]="'TaskType'"
+                              [title]="data ? 'Edit Asset' : 'Create New Asset'"
+                              [selection]="nodeData"
+                              [rowID]="rowID"
+                              [objectTypeUid]="data?.assetTypeUid"
+                              [assetTypePath]="data.assetTypeName"
+                              [isV2API]="true"
+                              [showActions]="false"
+                              [useModelBinding]="true"
+                              (closeClick)="showEditor=false"
+                              (modelChanged)="onModelChange($event)"></asset-editor>
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="!isReadOnly && linkData">
+                <d3s-process-diagram-label-editor (linkDataChange)="linkDataChange.emit($event)" [linkData]="linkData" [assetUid]="assetUid"></d3s-process-diagram-label-editor>
+        </ng-container>
+
+        <ng-container *ngIf="isReadOnly">
+            <ng-container *ngIf="!selectedReferenceItem && !selectedTag">
+                <ig-asset-detail *ngIf="selectedAsset || nodeData"
+                                 [objectUID]="selectedAsset ? selectedAsset.uid : nodeData?.key"
+                                 [objectType]="selectedAsset ? selectedAsset.type : 'Task'"
+                                 [useAccordion]="true"
+                                 [shouldBePadded]="false"
+                                 [showHeader]="true"
+                                 [showHeaderLine]="false"
+                                 [spacerHeight]="'16px'"
+                                 [tooltipAlign]="'left'"
+                                 [isSidePanel]="true"
+                                 [showTabs]="selectedAsset ? true : false"
+                                 [hideLinks]="true"
+                                 [interceptLinkClick]="true"
+                                 [hasAddRelationshipsPermissions]="false"
+                                 [hasModifyRelationshipsPermissions]="false"
+                                 [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+            </ng-container>
+
+            <ng-container *ngIf="selectedReferenceItem">
+                <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                      [highlightUid]="selectedReferenceItem.assetUid"
+                                      [baseUrl]="selectedReferenceItem.url">
+                </ig-asset-type-detail>
+            </ng-container>
+            <ng-container *ngIf="selectedTag">
+                <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+            </ng-container>
+        </ng-container>
+    </div>
+
+</div>

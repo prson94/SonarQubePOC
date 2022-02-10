@@ -1131,7 +1131,7 @@ where	ExecutionID = @executionID
 
         }
 
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldTypeCore> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
         {
             var sw = Stopwatch.StartNew();
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
@@ -1460,7 +1460,7 @@ where T.ExecutionId = @executionid;
 
         public List<DataRow> ValidateFields(
             string ot, int otid, bool isInsert,
-            List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
+            List<FieldTypeCore> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
             DataTable fieldTable, out bool success, out string errorMessage,
             bool useFriendlyNames = false,
@@ -1475,7 +1475,7 @@ where T.ExecutionId = @executionid;
             string errorDelimiter = ". ";
             success = true;
             errorMessage = string.Empty;
-            FieldType fieldType = null;
+            FieldTypeCore fieldType = null;
 
             // Contains all required fields?
             var missingFields = requiredFieldTypeNames.Except(fields.Select(f => f.Key));
@@ -4176,8 +4176,8 @@ where   ExecutionID = @ExecutionID
                             row["ExecutionItemUid"] = item.ExecutionItemUid.Value;
                         row["SubjectCardinality"] = (int)item.SubjectCardinality;
                         row["ObjectCardinality"] = (int)item.ObjectCardinality;
-                        row["SubjectUid"] = item.SubjectUid;
-                        row["ObjectUid"] = item.ObjectUid;
+                        row["SubjectUid"] = item.SubjectUid.HasValue ? item.SubjectUid : DBNull.Value;
+                        row["ObjectUid"] = item.ObjectUid.HasValue ? item.ObjectUid : DBNull.Value;
                         row["PredicateUid"] = item.PredicateUid;
                         row["uid"] = item.Uid;
                         row["IsNew"] = false;
@@ -4581,8 +4581,8 @@ where   ExecutionID = @ExecutionID
                 #endregion
 
                 bool generalChecksCompleted = false;
-                List<FieldType> fieldTypes = null;
-                List<FieldType> jsonFieldTypes = null;
+                List<FieldTypeCore> fieldTypes = null;
+                List<FieldTypeCore> jsonFieldTypes = null;
                 List<string> requiredFieldTypeNames = null;
                 var predicateType = DeterminePredicateType(at.Object);
                 IntersectType it = null;
@@ -4614,10 +4614,9 @@ where   ExecutionID = @ExecutionID
 
                     sw.Restart();
 
-                    // Get field types.
-                    fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { @Object = new DbString { Value = at.Object, IsFixedLength = true, Length = 50, IsAnsi = true }, at.ObjectID }).ToList();
+                    fieldTypes = GetAssetTypeFieldTypesCore(at.Object, at.ObjectID);
                     jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
-                    requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
+                    requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && !f.HasDefaultValue && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
                     hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
                     hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
                     hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
@@ -5245,7 +5244,7 @@ create table #DeletedRelationships ([ID] int, ItemNumber int, Payload varchar(20
 insert into #DeletedRelationships
     select  I.ID,
             EA.ItemNumber,
-            '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar) + '""}' 
+            '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
     from    [Intersect] I
             inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
             inner join api.ExecutionAsset EA on
@@ -5582,9 +5581,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     // Get field types.
                     sw.Restart();
-                    var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
+                    
+                    var fieldTypes = GetAssetTypeFieldTypesCore("IntersectType", rt.ID);
                     AddMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);
-                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
+                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && !f.HasDefaultValue && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
                     relationshipTypeHasFieldTypes = fieldTypes.Any();
                     relationshipTypeHasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
 
@@ -6352,9 +6352,11 @@ end",
 
                     // Get field types.
                     sw.Restart();
-                    var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
+
+                    var fieldTypes = GetAssetTypeFieldTypesCore("IntersectType", rt.ID);
+
                     AddMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);
-                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
+                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && !f.HasDefaultValue && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
                     relationshipTypeHasFieldTypes = fieldTypes.Any();
                     relationshipTypeHasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
 
@@ -6839,6 +6841,26 @@ end",
             AddMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
             this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
             return results;
+        }
+
+        public List<FieldTypeCore> GetAssetTypeFieldTypesCore(string obj, int objectID)
+        {
+            var fieldTypeSql = @"
+SELECT [Type]
+	  ,[IsRequired]
+	  ,CASE WHEN [DefaultValue] IS NULL THEN 0 ELSE 1 END as [HasDefaultValue]
+      ,[Name]
+      ,[FriendlyName]
+	  ,[ID]
+	  ,[AllowMultipleValues]
+	  ,[Pattern]
+	  ,[Length]
+	  ,[MinimumLength]
+	  ,[MaximumLength]
+FROM [dbo].[FieldType]
+   where [Object] = @Obj and [ObjectID] = @ObjectID";
+
+            return Query<FieldTypeCore>(fieldTypeSql, new { @Obj = new DbString { Value = obj, IsFixedLength = true, Length = 50, IsAnsi = true }, objectID }).ToList();
         }
 
         public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true)
@@ -10818,15 +10840,15 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                     #endregion
 
                     #region Handle Custom Fields
-                    // Get field types.
-                    var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'GroupType' and ObjectID = 1").ToList();
-                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
+                    // Get field types.                    
+                    var fieldTypes = GetAssetTypeFieldTypesCore("GroupType", 1);
+
+                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && !f.HasDefaultValue && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
                     hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
 
                     int i = 1;
-                    foreach (var group in groups.Where(x => x.Fields.Any()))
+                    foreach (var group in groups)
                     {
-
                         bool success;
                         string errorMessage;
                         var fieldRows = ValidateFields("Group", 1, isInsert, fieldTypes, requiredFieldTypeNames, group.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);
@@ -10959,9 +10981,9 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
             create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
 
             drop table if exists #auditRecords
-			create table #auditRecords (uid uniqueidentifier, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
+			create table #auditRecords (ItemNumber int, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
 				;with cte as (
-				select G.uid, 
+				select EG.ItemNumber, 
 				G.Name as OldName, 
 				EG.Name as NewName, 
 				G.Description as OldDesc,
@@ -10974,12 +10996,17 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 				and EG.ItemNumber between @beginItemNumber and @endItemNumber
                 and EG.Success is null)
 			insert into #auditRecords
-			select uid, 'Name' as FieldName, OldName as OldValue, NewName as NewValue from cte
+			select ItemNumber, 'Name' as FieldName, OldName as OldValue, NewName as NewValue from cte
             union 
-			select uid, 'Description' as FieldName, OldDesc as OldValue, NewDesc as NewValue from cte
+			select ItemNumber, 'Description' as FieldName, OldDesc as OldValue, NewDesc as NewValue from cte
 			union
-			select uid, 'IsActiveDirectoryGroup' as FieldName, try_cast(OldIsActiveDirectoryGroup as nvarchar(10)) as OldValue, try_cast(NewIsActiveDirectoryGroup as nvarchar(10)) as NewValue from cte
-
+			select ItemNumber, 'IsActiveDirectoryGroup' as FieldName, try_cast(OldIsActiveDirectoryGroup as nvarchar(10)) as OldValue, try_cast(NewIsActiveDirectoryGroup as nvarchar(10)) as NewValue from cte
+            union
+			select EF.ItemNumber, ef.FieldName, f.FormattedValue as OldValue, ef.FieldValue as NewValue from api.ExecutionField ef 
+			inner join api.executiongroup eg on eg.executionid = ef.executionid and eg.itemnumber = ef.itemnumber
+			left join [Group] G on G.uid = eg.groupuid
+			left join [Field] F on F.ObjectType = 'Group' and F.ObjectID = G.ID and f.FieldTypeID = ef.FieldTypeID
+			where ef.ExecutionID = @executionid and isnull(ef.FieldValue,'') <> isnull(f.FormattedValue,'') and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.Success is null;
 
                                             
             merge into [Group] G
@@ -11087,14 +11114,17 @@ EG.GroupUid
 			    insert into reporting.Global_Audit
 			    OUTPUT INSERTED.ID
 			    INTO @audit
-			    select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Updated', 'Group', g.ID, 'Group', G.Name,'Group updated' from #auditRecords ar
-			    inner join [Group] G on G.uid = ar.uid
+			    select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Updated', 'Group', g.ID, 'Group', G.Name,'Group updated' 
+                from #auditRecords ar
+                inner join api.ExecutionGroup EF on EF.ExecutionID = @executionID and EF.ItemNumber = ar.ItemNumber
+			    inner join [Group] G on G.uid = ef.groupuid
 
 			    insert into reporting.global_fieldaudit
 			    select a.auditid,0, ar.fieldname, 1, ar.newvalue, ar.oldvalue from @audit a
 			    inner join reporting.Global_Audit ga on ga.id = a.auditid
 			    inner join [Group] G on G.Id = ga.ObjectId
-			    inner join #auditRecords ar on g.uid = ar.uid
+                inner join api.ExecutionGroup EF on EF.ExecutionID = @executionID and G.Uid = EF.GroupUid
+			    inner join #auditRecords ar on ar.ItemNumber = EF.ItemNumber
 			    where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')";
 
                                     Connection.Execute(insertSQL,

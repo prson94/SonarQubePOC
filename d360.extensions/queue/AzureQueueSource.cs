@@ -12,19 +12,72 @@ using System.Text;
 using Azure.Messaging.ServiceBus;
 using System.Collections.Concurrent;
 using System.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace d360.extensions.queue
 {
     public class AzureQueueSource : IQueueSource
     {
-        public string QueueStorageName { get { return ConfigurationManager.AppSettings["QueueStorageName"]; } }
-        public string QueueStorageKey { get { return ConfigurationManager.AppSettings["QueueStorageKey"]; } }
-        public string EventServiceBusConnectionString { get { return ConfigurationManager.AppSettings["EventServiceBus"]; } }
+        private string queueStorageName;
+        private string queueStorageKey;
+        private string eventServiceBusConnectionString;
+
+        public string QueueStorageName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(queueStorageName))
+                {
+                    queueStorageName = ConfigurationManager.AppSettings["QueueStorageName"];
+                }
+
+                return queueStorageName;
+            }
+        }
+
+        public string QueueStorageKey
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(queueStorageName))
+                {
+                    queueStorageKey = ConfigurationManager.AppSettings["QueueStorageKey"];
+                }
+
+                return queueStorageKey;
+            }
+        }
+
+        public string EventServiceBusConnectionString
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(eventServiceBusConnectionString))
+                {
+                    eventServiceBusConnectionString = ConfigurationManager.AppSettings["EventServiceBus"];
+                }
+
+                return eventServiceBusConnectionString;
+            }
+        }
+
 
         //keep service bus clients and senders static and reusable where possible
         //these clients are thread safe and designed to be used with DI or singleton patterns
         private static ServiceBusClient ServiceBusClient;
         private static ConcurrentDictionary<string, ServiceBusSender> ServiceBusSenders;
+
+        public AzureQueueSource()
+        {
+
+        }
+
+        public AzureQueueSource(IConfiguration config)
+        {
+            queueStorageName = config["QueueStorageName"];
+            queueStorageKey = config["QueueStorageKey"];
+            eventServiceBusConnectionString = config["EventServiceBus"];
+        }
 
         private CloudQueueClient cloudClient
         {
@@ -50,6 +103,18 @@ namespace d360.extensions.queue
 
                 return new QueueRequestOptions { RetryPolicy = expRetryPolicy };
             }
+        }
+
+        private ServiceBusMessage GetFilteredServiceBusMessage(IFilteredServiceBusMessage o)
+        {
+            var bm = GetServiceBusMessageFromObject(o);
+            
+            if (!string.IsNullOrEmpty(o.EventType))
+            {
+                bm.ApplicationProperties.Add("EventType", o.EventType);
+            }
+
+            return bm;
         }
 
         private ServiceBusMessage GetServiceBusMessageFromObject(object o)
@@ -311,7 +376,7 @@ namespace d360.extensions.queue
                 var partitionKey = Guid.NewGuid().ToString();
                 using (ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync())
                 {
-
+                    
                     while (messages.Count > 0)
                     {
                         var msg = messages.Peek();
@@ -341,6 +406,13 @@ namespace d360.extensions.queue
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
         {
             var bm = GetServiceBusMessageFromObject(e);
+            var sender = CreateServiceBusSender(topicName);
+            await sender.SendMessageAsync(bm);
+        }
+
+        public async Task CreateFilteredTopicMessageAsync(string topicName, IFilteredServiceBusMessage e)
+        {
+            var bm = GetFilteredServiceBusMessage(e);
             var sender = CreateServiceBusSender(topicName);
             await sender.SendMessageAsync(bm);
         }

@@ -1,0 +1,52 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.Drops-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop function if exists [dbo].[GenerateReadOnlyAccessToken]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+CREATE OR ALTER FUNCTION [dbo].[GenerateReadOnlyAccessToken]
+(
+)
+RETURNS varchar(50)
+AS
+BEGIN
+	declare @Length int = 50
+	declare @RandomID varchar(50) = ''''
+	declare @counter smallint = 1
+	declare @RandomNumber float = 0
+	declare @RandomNumberInt tinyint = 0
+	declare @CurrentCharacter varchar(1) = ''''
+	declare @ValidCharacters varchar(255) = ''ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789''
+	declare @ValidCharactersLength int = len(@ValidCharacters)
+
+	WHILE @counter <= (@Length)
+	BEGIN
+		SELECT @RandomNumber = r FROM RandomNumber
+		SET @RandomNumberInt = Convert(tinyint, ((@ValidCharactersLength - 1) * @RandomNumber + 1))
+
+		SELECT @CurrentCharacter = SUBSTRING(@ValidCharacters, @RandomNumberInt, 1)
+
+		SET @counter = @counter + 1
+
+		SET @RandomID = @RandomID + @CurrentCharacter
+	END
+	
+	RETURN @RandomID
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

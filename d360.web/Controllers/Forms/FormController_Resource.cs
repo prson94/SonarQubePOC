@@ -262,6 +262,7 @@ namespace d360.web.Controllers
                 {
                     group,
                     resourceList,
+                    Company.CurrentResourceIsAdmin
                 },
                 Formatting = Newtonsoft.Json.Formatting.None
             };

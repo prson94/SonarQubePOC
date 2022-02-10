@@ -26,6 +26,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
+import { SemanticType } from '../../models/semantic-type.model';
 
 declare var CurrentResourceID;
 
@@ -108,6 +109,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     readonly menuKey: string = '~menu';
     baseMenuItems: any[] = [
@@ -271,7 +274,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     load() {
         this.setObjectInfo(this.objectType, this.objectTypeId);
-        this.setCommonSecondaryNavTabs(true);
+        this.setCommonSecondaryNavTabs({ hasAudit: true });
         this.currentAreaNameSub = this.headerBreadcrumbService
             .getAreaName(this.objectType, this.objectTypeId)
             .subscribe((result) => { this.currentAreaName = result });
@@ -295,7 +298,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 .subscribe((icon) => {
                     this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
                     this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
-                    this.setCommonSecondaryNavTabs(true, false, this.assetType.HasDashboards);
+                    this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership:false, hasDashboard: this.assetType.HasDashboards });
 
                     if (this.showDiagram) {
                         this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
@@ -760,5 +763,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             return this.assetType?.Path + ' > ' + path;
         }
         return this.assetType?.Path;
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
     }
 }

@@ -217,7 +217,7 @@ namespace d360.web.Controllers
                 var fi = Company.GetById<SiteNav>(id);
                 if (fi == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
                 }
                 Company.Delete(fi);
                 Company.SaveChanges();
@@ -251,7 +251,7 @@ namespace d360.web.Controllers
                 var folder = Company.GetById<SiteNav>(id);
                 if (folder == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
                 }
                 string originalImage = folder.ImageIconUrl;
                 if (!string.IsNullOrEmpty(originalImage))
@@ -267,7 +267,7 @@ namespace d360.web.Controllers
                 Company.SiteNav.RemoveRange(subNavs);
                 Company.Delete(folder);
                 Company.SaveChanges();
-                message =FormControllerApiMessage.FolderRemoved;
+                message = FormControllerApiMessage.FolderRemoved;
             }
             catch (Exception ex)
             {
@@ -362,7 +362,7 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
                 }
                 if (siteNavAbove == null)
                 {
@@ -372,7 +372,7 @@ namespace d360.web.Controllers
                 siteNavAbove.SortOrder++;
                 siteNav.SortOrder--;
                 Company.SaveChanges();
-                message = string.Format(FormControllerApiMessage.FolderMovedUp,siteNav.Name);
+                message = string.Format(FormControllerApiMessage.FolderMovedUp, siteNav.Name);
             }
             catch (Exception ex)
             {
@@ -402,7 +402,7 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,id.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
                 }
 
                 if (siteNavBelow == null)
@@ -413,7 +413,7 @@ namespace d360.web.Controllers
                 siteNavBelow.SortOrder--;
                 siteNav.SortOrder++;
                 Company.SaveChanges();
-                message = string.Format(FormControllerApiMessage.FolderMovedDown,siteNav.Name);
+                message = string.Format(FormControllerApiMessage.FolderMovedDown, siteNav.Name);
             }
             catch (Exception ex)
             {
@@ -515,7 +515,7 @@ namespace d360.web.Controllers
 
                 if (siteNav == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound,targetFolderId.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, targetFolderId.ToString()));
                 }
                 if (siteNavBelow == null)
                 {
@@ -526,7 +526,7 @@ namespace d360.web.Controllers
                 siteNav.SortOrder = siteNavBelow.SortOrder;
                 siteNavBelow.SortOrder = tmpSortOrder;
                 Company.SaveChanges();
-                message = string.Format(FormControllerApiMessage.FolderMoved,siteNav.Name);
+                message = string.Format(FormControllerApiMessage.FolderMoved, siteNav.Name);
             }
             catch (Exception ex)
             {
@@ -1071,8 +1071,13 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Predicates";
                     responseModel.Items.HasAudit = true;
                 }
-            }
 
+                if (model.ObjectType == SystemObjects.Resource.ToString())
+                {
+                    var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
+                    FillResponseModelForResource(assetDetail);
+                }
+            }
 
             if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
             {
@@ -1089,15 +1094,36 @@ namespace d360.web.Controllers
             if (model.AssetUid != null)
             {
                 var asset = Company.Assets.FirstOrDefault(x => x.uid == model.AssetUid);
-                if (asset != null && (asset.Object == "Resource" || asset.Object == "Group"))
+                if (asset != null && (asset.Object == "Group"))
                 {
                     execProcedure = false;
                     responseModel.Object = asset.Object;
                     responseModel.ObjectID = asset.ObjectID;
-                    responseModel.DisplayValue = asset.Object == "Resource" ? "Users" : "Groups";
-                    responseModel.MainTabTitle = asset.Object == "Resource" ? "Users" : "Groups";
+                    responseModel.DisplayValue = "Groups";
+                    responseModel.MainTabTitle = "Groups";
                     responseModel.Items.HasAudit = true;
                     responseModel.Uid = asset.uid;
+                }
+
+                if (asset != null && (asset.Object == "Resource"))
+                {
+                    var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.uid == model.AssetUid);
+                    FillResponseModelForResource(assetDetail);
+                }                
+            }
+
+            if (model.ObjectType == SystemObjects.SemanticType.ToString())
+            {
+                execProcedure = false;
+                responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
+                responseModel.ObjectID = model.ObjectId ?? 0;
+                responseModel.DisplayValue = "Semantic Types";
+                responseModel.MainTabTitle = "Semantic Types";
+                responseModel.Items.HasAudit = true;
+                if (model.AssetUid.HasValue)
+                {
+                    var semantic = Company.Semantics.FirstOrDefault(x => x.Uid == model.AssetUid);
+                    responseModel.Uid = semantic.Uid;
                 }
             }
 
@@ -1212,6 +1238,20 @@ namespace d360.web.Controllers
                 Data = responseModel,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+
+            void FillResponseModelForResource(AssetDetail assetDetail)
+            {
+                execProcedure = false;
+                responseModel.Object = assetDetail.Object;
+                responseModel.ObjectID = assetDetail.ObjectID;
+                responseModel.DisplayValue = assetDetail.DisplayValue;
+                responseModel.MainTabTitle = "Profile";
+                responseModel.Items.HasItemOwn = true;
+                responseModel.Items.HasRelationship = true;
+                responseModel.Items.HasGroups = true;
+                responseModel.Items.HasFollowing = true;
+                responseModel.Uid = assetDetail.uid;
+            }
         }
     }
 }

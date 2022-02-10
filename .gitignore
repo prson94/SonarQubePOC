@@ -44,7 +44,6 @@
 \.nuget
 \packages\*
 !\packages\repositories.config
-!\packages\gudusoft.gsqlparser.dll
 !\packages\ComponentSpace.SAML2.dll
 
 # Ignore user settings
@@ -75,21 +74,13 @@
 /d360.web/Content/styles/angular.css
 /d360.web/Content/styles/ang.min.css
 /d360.web/Content/styles/ang.css
-/d360.web/package-lock.json
+
 
 /d360.database.company
 /packages
 
 /utilities/igx.CertificateManager/bin
 /utilities/igx.CertificateManager/obj
-/utilities/igx.GovernRestClient/bin
-/utilities/igx.GovernRestClient/governrestclient
-/utilities/igx.GovernRestClient/obj
-/utilities/igx.GovernRestClient/publish
-/utilities/igx.PostFusionJob/bin
-/utilities/igx.PostFusionJob/obj
-/utilities/igx.TrainingDatabaseManager/bin
-/utilities/igx.TrainingDatabaseManager/obj
 /utilities/igx.UpdateDatabases/bin
 /utilities/igx.UpdateDatabases/obj
 /d360.web/Content/styles/selectlistinfoitem.min.css
@@ -99,13 +90,13 @@
 /d360.web/Scripts/dist/*.map
 /d360.web/App_Data
 /d360.web/Content/quill/v1.3.7/quill.snow.min.css
-/d360.web/Content/primeng/v11.1.0/theme.min.css
-/d360.web/Content/primeng/v11.1.0/theme.css
-/d360.web/Content/primeng/v11.1.0/primeng.min.css
-/d360.web/Content/primeng/v11.1.0/default.min.css
-/d360.web/Content/primeng/v11.1.0/default.css
+/d360.web/Content/primeng/v12.0.2/theme.min.css
+/d360.web/Content/primeng/v12.0.2/theme.css
+/d360.web/Content/primeng/v12.0.2/primeng.min.css
+/d360.web/Content/primeng/v12.0.2/default.min.css
+/d360.web/Content/primeng/v12.0.2/default.css
 /d360.web/Scripts/lib
-/d360.web/lib
+
 
 #Mac Users
 .DS_Store

@@ -1575,17 +1575,6 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// This is temporary fix for validation .. probably need to be moved somewhere else and extended.
-        /// </summary>
-        private void ValidateParameters()
-        {
-            if (ModelState.IsValid == false)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE));
-            }
-        }
-
-        /// <summary>
         /// Gets the breakdown of responsibilities
         /// </summary>
         /// <param name="resourceUid">Resource UID</param>

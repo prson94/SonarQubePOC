@@ -145,9 +145,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     filterScoringTabHasNoValue = (tab: SecondaryNavItem) => {
-        if (tab.title === "Scoring")
-            if (this.searchDetails && this.searchDetails.Scores.length <= 0)
-                return false;
+        if (tab.title === "Scoring") {
+            return Boolean(this.searchDetails?.Scores.length);
+        }
         return true;
     }
 

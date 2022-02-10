@@ -96,7 +96,6 @@
   }
 }
 
-.groups-tab,
 .user-assignments {
   .search-input {
     padding-top: 8px;
@@ -118,6 +117,52 @@
 
     table {
       table-layout: auto !important;
+    }
+  }
+}
+
+.secondary-side-panel {
+  width: 400px;
+  height: 100%;
+  z-index: 20000;
+  position: absolute;
+  right: 415px;
+  float: right;
+  background: white;
+  top: 0px;
+  bottom: 40px;
+  box-shadow: rgb(0 0 0 / 33%) 0 5px 10px;
+  border-radius: 4px;
+
+  .panel-header {
+    padding: 16px 5px 6px 16px;
+  }
+
+  .details-container {
+    height: calc(100% - 80px);
+    overflow-y: auto;
+  }
+
+  .button-container {
+    float: right;
+    margin-top: 2px;
+
+    .close-button {
+      margin-bottom: 8px;
+      margin-right: 6px;
+      color: @ig-black;
+
+      &.selected {
+        background: @ig-purple-t4;
+
+        &:active {
+          background: @ig-purple-t4;
+        }
+      }
+
+      &.disabled {
+        opacity: 0.33;
+      }
     }
   }
 }

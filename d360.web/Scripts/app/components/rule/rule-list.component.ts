@@ -18,10 +18,12 @@ import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { DataProfileService } from '../../services/dataprofile.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { AssetGridComponent } from '../assets-grid/asset-grid.component';
+import { LinkClickInterceptor } from '../../services/href-click-service';
+import { SemanticType } from '../../models/semantic-type.model';
 
 declare var CurrentResourceID;
 
@@ -52,8 +54,12 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
     @ViewChild('grid', { static: false }) assetGrid: AssetGridComponent;
 
-
-
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+    selectedTag: any;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -68,10 +74,15 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         webAnalyticsService: WebAnalyticsService,
+        private linkClickInterceptor: LinkClickInterceptor,
     ) {
         super(settingsService);
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
+
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            this.linkClickInterceptor.handleEvent(this, ev);
+        });
     }
 
     ngOnInit() {
@@ -97,7 +108,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     this.setObjectInfo('RuleType', this.ruleType.ID);
 
                     this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + CurrentResourceID;
-                    
+
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res));
@@ -112,7 +123,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                         this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe((icon) => {
                             this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true, null, this.ruleType.AssetTypeUID));
-                            this.setCommonSecondaryNavTabs(false, false, this.ruleType.HasDashboards);
+                            this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.ruleType.HasDashboards });
                         });
                         this.secondaryNavService.showHeader(true);
                     });
@@ -124,6 +135,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
     selectAsset(event: any) {
         this.selection = event;
+        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
 
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
@@ -165,5 +177,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         if (this.routeParamsSubscription) {
             this.routeParamsSubscription.unsubscribe();
         }
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
     }
 }
