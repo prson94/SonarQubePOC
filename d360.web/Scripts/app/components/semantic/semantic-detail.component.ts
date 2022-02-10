@@ -29,7 +29,9 @@ export class SemanticDetailComponent extends BaseComponent implements OnChanges 
     advancedJson: string;
     creator: any;
     assetCount: number;
-
+    sourceMap = new Map([
+        ["BuiltIn", "Built-In"],
+        ["UserDefined", "User-Defined"]]);
 
     constructor(        
         private router: Router,
@@ -119,5 +121,27 @@ export class SemanticDetailComponent extends BaseComponent implements OnChanges 
 
     clickTab(key: string) {
         this.tab = key;
-    }   
+    }
+
+    getCertificationStatusColor(status: string) {
+        status = status?.toLowerCase().trim();
+        if (status) {
+            switch (status) {
+                case 'draft':
+                    return '#BBBBBB';
+                case 'certified':
+                    return '#3f9d40';
+                case 'under review':
+                    return '#e2792a';
+                default:
+                    //custom status, we need to generate a color
+                    let hash = 0;
+                    for (let i = 0; i < status.length; i++) {
+                        hash = status.charCodeAt(i) + ((hash << 5) - hash);
+                        hash = hash & hash;
+                    }
+                    return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
+            }
+        }
+    }
 }

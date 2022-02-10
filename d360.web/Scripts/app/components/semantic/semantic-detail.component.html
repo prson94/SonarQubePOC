@@ -28,7 +28,7 @@
 
                     <ig-property-group [expanded]="true"
                                        [title]="'General'"
-                                       [shouldBePadded]="true"
+                                       [shouldBePadded]="!isSidePanel"
                                        [showHeaderLine]="false">
                         <div inputs>
                             <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
@@ -40,6 +40,13 @@
                                     <label class="ig-label" style="margin-right: 5px">Qualifier</label>
                                     <div class="ig-value">{{semanticDetails.qualifier}}</div>
                                 </div>
+                            </div>
+                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                                <div class="semantic-field">
+                                    <label class="ig-label" style="margin-right:5px">Description</label>
+                                    <div *ngIf="!semanticDetails.description" class="ig-value">---</div>
+                                    <div *ngIf="semanticDetails.description" class="ig-value">{{semanticDetails.description}}</div>
+                                </div>                                
                             </div>
                             <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
                                 <div class="semantic-field">
@@ -62,20 +69,27 @@
                                 </div>
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right:5px">Status</label>
-                                    <div class="ig-value">{{semanticDetails.status}}</div>
+                                    <div class="ig-value">
+                                        <span class="ig-colorfield-item detail" style="display: inline-flex !important;">
+                                            <span class="ig-colorfield-swatch" [style.background-color]="getCertificationStatusColor(semanticDetails.status)"></span>
+                                            <span class="ig-colorfield-item-label">
+                                                {{semanticDetails.status}}
+                                            </span>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right:5px">Semantic Source</label>
-                                    <div class="ig-value">{{semanticDetails.source}}</div>
+                                    <div class="ig-value">{{sourceMap.get(semanticDetails.source)}}</div>
                                 </div>
                             </div>
                         </div>
                     </ig-property-group>
                     <ig-property-group [expanded]="true"
                                        [title]="'Asset Match Criteria'"
-                                       [shouldBePadded]="true"
+                                       [shouldBePadded]="!isSidePanel"
                                        [showHeaderLine]="false">
                         <div inputs>
                             <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
@@ -93,7 +107,10 @@
                                     <div class="row">
                                         <div class="semantic-field">
                                             <label class="ig-label" style="margin-right:5px">Valid Values</label>
-                                            <div class="ig-value">
+                                            <div *ngIf="!semanticDetails.validList || semanticDetails?.validList.Count==0">
+                                                ---
+                                            </div>
+                                            <div *ngIf="semanticDetails.validList && semanticDetails?.validList.Count > 0" class="ig-value">
                                                 <ul *ngFor="let v of semanticDetails.validList">
                                                     <li>{{v}}</li>
                                                 </ul>
@@ -101,7 +118,10 @@
                                         </div>
                                         <div class="semantic-field">
                                             <label class="ig-label" style="margin-right:5px">Invalid Values</label>
-                                            <div class="ig-value">
+                                            <div *ngIf="!semanticDetails.invalidList || semanticDetails?.invalidList.Count==0">
+                                                ---
+                                            </div>
+                                            <div *ngIf="semanticDetails.invalidList && semanticDetails?.invalidList.Count > 0" class="ig-value">
                                                 <ul *ngFor="let v of semanticDetails.invalidList">
                                                     <li>{{v}}</li>
                                                 </ul>
@@ -109,13 +129,17 @@
                                         </div>
                                         <div class="semantic-field">
                                             <label class="ig-label" style="margin-right:5px">Minimum Samples</label>
-                                            <div class="ig-value">{{semanticDetails.minSamples}}</div>
+                                            <div class="ig-value" *ngIf="!semanticDetails.minSamples">---</div>
+                                            <div class="ig-value" *ngIf="semanticDetails.minSamples">{{semanticDetails.minSamples}}</div>
                                         </div>
                                     </div>
                                     <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
                                         <div class="semantic-field">
                                             <label class="ig-label" style="margin-right:5px">Valid Locales</label>
-                                            <div class="ig-value">
+                                            <div *ngIf="!semanticDetails.validLocales || semanticDetails?.validLocales.Count==0">
+                                                ---
+                                            </div>
+                                            <div *ngIf="semanticDetails.validLocales && semanticDetails?.validLocales.Count > 0" class="ig-value">
                                                 <ul *ngFor="let v of semanticDetails.validLocales">
                                                     <li>{{v}}</li>
                                                 </ul>
@@ -145,7 +169,7 @@
                     </ig-property-group>
                     <ig-property-group [expanded]="false"
                                        [title]="'System Fields'"
-                                       [shouldBePadded]="true"
+                                       [shouldBePadded]="!isSidePanel"
                                        [showHeaderLine]="false">
                         <div inputs>
                             <div class="row">
@@ -174,17 +198,12 @@
                                 <div class="ig-value" *ngIf="!semanticDetails.createdBy.id">{{semanticDetails.createdBy.fullName}}</div>
                             </div>
                             <div class="row">
-                                <label class="ig-label" style="margin-right:5px">Modified By</label>
+                                <label class="ig-label" style="margin-right:5px">
+                                    Last Modified By
+                                </label>
                                 <div class="ig-value" *ngIf="semanticDetails.updatedBy.id"><a (click)="navigateToUser(semanticDetails.updatedBy.id)">{{semanticDetails.updatedBy.fullName}}</a></div>
                                 <div class="ig-value" *ngIf="!semanticDetails.updatedBy.id">{{semanticDetails.updatedBy.fullName}}</div>
-                            </div>
-
-                            <div class="row">
-                                <div>
-                                    <label class="ig-label" style="margin-right:5px">Semantic Source</label>
-                                    <div class="ig-value">{{semanticDetails.source}}</div>
-                                </div>
-                            </div>
+                            </div>                            
                         </div>
                     </ig-property-group>
                 </ng-container>
