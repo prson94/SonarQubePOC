@@ -33,6 +33,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using System.Xml;
+using d360.core;
 using Resources;
 using d360.extensions;
 
@@ -523,7 +524,7 @@ namespace d360.web.Controllers
         [AllowAnonymous, Route("sso")]
         public ActionResult Login()
         {
-            if (Request.Browser.Browser.ToLower() == "internetexplorer")
+            if (string.Equals(Request?.Browser?.Browser, "internetexplorer", StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("unsupported", "home");
             }
@@ -535,11 +536,10 @@ namespace d360.web.Controllers
 
             string returnUrl = Request.QueryString["ReturnUrl"];
 
-            Uri testUri;
-            Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out testUri);
-
-            if (testUri.IsAbsoluteUri)
+            if (Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out var testUri) == false || testUri.IsAbsoluteUri)
+            {
                 returnUrl = "/home";
+            }
 
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
             {
