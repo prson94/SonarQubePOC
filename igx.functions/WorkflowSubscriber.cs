@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities.Workflow;
 using d360.core.queue;
+using d360.extensions.queue;
 using d360.model;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
@@ -56,7 +57,9 @@ namespace igx.functions.consumption
 
             // Create EF connection
             companyId = info.CompanyID;
-            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true, null, null, CoreFunction.GetConnectionString("CommunityContext"));
+
+            var queueSource = new AzureQueueSource(config);
+            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true, queueSource, null, CoreFunction.GetConnectionString("CommunityContext"));
 
             try
             {
