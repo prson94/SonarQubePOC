@@ -38,8 +38,6 @@ namespace d360.model
                 storage = new AzureStorageProvider();
             }
 
-            var community = CreateCommunityContext(companyId, resourceId, urlPrefix, isAdmin, connectionString);
-
             return new CompanyContext(community, cache, queue, mail, sec, storage, true);
         }
 
