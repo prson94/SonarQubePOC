@@ -212,7 +212,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     selectRow(row: any) {
         this.selectedType = row;
         if (this.selectedType) {
-            this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, null, null);
+            this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, this.displayBreadCrumbs.bind(this), null);
         }        
         this.selectedTypeChanged.emit(row);
     }
@@ -240,28 +240,17 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     }    
 
     displayBreadCrumbs() {
-        this.secondaryNavService.showHeader(true);
-
         this.sub = this.route.params.subscribe((params) => {
-            this.setBrowserTitle(this.titleService, 'SemanticTypes');
-
             this.headerBreadcrumbService.getFolderTitle('#SemanticTypes').then((res) => {
                 this.folderTitle = res;
                 this.setBrowserTitle(this.titleService, res);
                 this.area = res;
-
                 this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.clearCurrentObjectInfo();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT));
 
-                var breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
-                    this.secondaryNavService.clearItems();
-                    this.secondaryNavService.clearCurrentObject();
-                    this.secondaryNavService.setCurrentArea(res, icon, StringConstants.Section_SemanticTypes);
-                    this.buildSecondaryNavigationForObject(0, 'SemanticType');
-                    this.secondaryNavService.showHeader(true);
-                });
-                this.navigationItemsSubs.push(breadCrumbsSub);
+                this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {                    
+                    this.secondaryNavService.setCurrentArea(res, icon, StringConstants.Section_SemanticTypes);                    
+                });                
             });
 
         });
