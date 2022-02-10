@@ -97,7 +97,7 @@ namespace d360.model.DataAccessLayer
                     if (bool.TryParse(hierarchicalString, out hierarchical))
                     {
 
-                        condition += " and A.Hierarchical=@hierarchical ";
+                        condition += " and HA.Hierarchical=@hierarchical ";
                         dbArgs.Add("hierarchical", hierarchical);
                     }
                     else
@@ -208,13 +208,25 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("assetTypeUid", assetTypeUid.Value);
             }
 
+            //in case of Reference List items, check if there is parent to calculate if it is Hierarchical
+            //otherwise take a value from Hierarchical column in AssetType table
+            extraJoins += @"outer apply(
+										select 
+										case when exists(select top 1 * from  
+												[IntersectType] IT
+												inner join [Predicate] P on P.ID = IT.PredicateID
+												where A.Class = 9 and P.Type in (3,4) and IT.Object = A.Object and IT.ObjectID = A.ObjectID)
+												then 1 
+										else A.Hierarchical
+										end as Hierarchical)HA";
+
             var sql = $@"
                         SELECT     A.[Name]
                                     ,ISNULL(A.[Description],'') as Description
                                     ,A.[Class] as ClassID
                                     ,ISNULL(A.[Notes],'') as Notes
                                     ,A.[uid]
-									,A.Hierarchical
+									,HA.Hierarchical
 									,A.HierarchyMaximumDepth
 									,A.DisplayFormat
 									,A.AutoDisplayDescription
