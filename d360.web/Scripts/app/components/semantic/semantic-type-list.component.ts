@@ -220,7 +220,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         this.advancedFilter = $event.filter;
         this.advancedFilterMap.forEach((value, key) => {
             this.advancedFilter = this.advancedFilter.replace(new RegExp(key, "g"), value);
-        })        
+        });
         this.getData();
     }
 
