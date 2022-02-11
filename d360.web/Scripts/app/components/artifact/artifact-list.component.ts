@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
@@ -29,6 +29,7 @@ declare var CurrentResourceID;
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+    @Output() tagsChanged = new EventEmitter<string>();
 
     gridObject: AssetGridObject;
     artifactType: ArtifactType;
@@ -225,5 +226,9 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         }
 
         this.clearSidebar();
+    }
+
+    onTagsChanged(assetUID: string) {
+        this.tagsChanged.emit(assetUID);
     }
 }

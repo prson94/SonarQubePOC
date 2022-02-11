@@ -31,7 +31,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     @Input() assetUIDList: string[];
     @Input() ignoreResizing: boolean = false;
     @Input() placeHolder: string = "Click to add...";
-    @Output() tagsChanged = new EventEmitter();
+    @Output() tagsChanged = new EventEmitter<string>();
     @Input() interceptLinkClick: boolean = false;
 
     showEditor: boolean = false;
@@ -256,7 +256,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                 this.searchResults = [];
                                 this.inputValue = "";
                                 this.savingTag = false;
-                                this.tagsChanged.emit();
+                                this.tagsChanged.emit(this.assetUID);
                                 this.EditingTagsLoading = false;
                                 this.ref.markForCheck();
                             });
@@ -288,7 +288,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                             this.inputValue = "";
                                             this.savingTag = false;
                                             this.EditingTagsLoading = false;
-                                            this.tagsChanged.emit();
+                                            this.tagsChanged.emit(this.assetUID);
                                             this.ref.markForCheck();
                                         });
                                 });
@@ -336,7 +336,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 if (result.type != 'error') {
                     this.tags = this.tags.filter((x) => x.Value !== selectedTag.Value);
                 }
-                this.tagsChanged.emit();
+                this.tagsChanged.emit(this.assetUID);
                 this.deletingTag = false;
                 this.ref.markForCheck();
             }, err => {

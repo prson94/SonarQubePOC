@@ -1,4 +1,4 @@
-﻿import { Input, Component } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { ObjectIdService } from '../../../services/object-id.service';
@@ -17,6 +17,7 @@ export class AssetDetailCategoryComponent {
     @Input() spacerHeight: string = '32px';
     @Input() isSidePanel: boolean = false;
     @Input() interceptLinkClick: boolean = false;
+    @Output() tagsChanged = new EventEmitter<string>();
 
     constructor(
         protected settingsService: CompanySettingsService,
@@ -46,5 +47,9 @@ export class AssetDetailCategoryComponent {
             return true;
         }
         return false;
+    }
+
+    private onTagsChanged(assetUID: string) {
+        this.tagsChanged.emit(assetUID);
     }
 }

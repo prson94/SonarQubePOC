@@ -1,4 +1,4 @@
-﻿import { Input, Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output, ElementRef } from '@angular/core';
 import { DetailField, DetailFieldType } from '../../../models/object-detail.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
@@ -18,6 +18,7 @@ export class AssetDetailFieldComponent {
     @Input() tooltipAlign: string;
     @Input() isSidePanel: boolean = false;
     @Input() interceptLinkClick: boolean = false;
+    @Output() tagsChanged = new EventEmitter<string>();
 
     readonly emptyValue: string = "---";
     readonly dateFormat: string = "d MMM yyyy";
@@ -30,7 +31,8 @@ export class AssetDetailFieldComponent {
     constructor(private router: Router,
         private assetService: AssetService,
         private ref: ChangeDetectorRef,
-        private linkClickInterceptor: LinkClickInterceptor
+        private linkClickInterceptor: LinkClickInterceptor,
+        private el: ElementRef,
     ) { }
 
     ngOnInit() {
@@ -143,6 +145,11 @@ export class AssetDetailFieldComponent {
         } catch (err) {
             return "Error";
         }
+    }
+
+    private onTagsChanged(assetUID: string) {
+        let event = new CustomEvent('tagsChangedBubbles', { bubbles: true, detail: assetUID });
+        this.el.nativeElement.dispatchEvent(event);
     }
 }
 
