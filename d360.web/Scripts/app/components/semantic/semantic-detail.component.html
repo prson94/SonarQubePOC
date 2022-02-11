@@ -56,7 +56,9 @@
                                             <i class="fa fa-question-circle" pTooltip="Percentage of valid values in the sample data set needed in order to be classified with this Semantic Type." [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
                                         </span>
                                     </label>
-                                    <div class="ig-value">{{semanticDetails.threshold | percent : '1.0-2'}}</div>
+                                    <div class="ig-value">
+                                        {{semanticDetails.threshold}}%
+                                    </div>
                                 </div>
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right: 5px">
@@ -73,7 +75,7 @@
                                         <span class="ig-colorfield-item detail" style="display: inline-flex !important;">
                                             <span class="ig-colorfield-swatch" [style.background-color]="getCertificationStatusColor(semanticDetails.status)"></span>
                                             <span class="ig-colorfield-item-label">
-                                                {{semanticDetails.status}}
+                                                {{(semanticDetails.status==="InReview" ? "Under Review" : semanticDetails.status)}}
                                             </span>
                                         </span>
                                     </div>

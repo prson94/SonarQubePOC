@@ -10,8 +10,8 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SemanticType } from '../../models/semantic-type.model';
-import { AdvancedFilterFieldType, Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
-import { Observable, ReplaySubject, Subscription } from 'rxjs';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import { Observable, of, ReplaySubject, Subscription } from 'rxjs';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { StringConstants } from '../../static/string-constants';
@@ -36,7 +36,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     simpleFilter: string = "";
     advancedFilter: string = "";
     semanticsTotal: number = 0;
-    rowsPerPage: number = this.defaultInitialItemsPerPage;
+    rowsPerPage: number = 25;
     currentPageNumber: number = 1;
     showSidePanel: boolean = true;
     private sidePanelOpen: boolean = false;
@@ -68,8 +68,10 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         {
             Name: 'Status',
             FriendlyName: 'Status',
-            Type: new FieldType("Text"),
-            Category: ""
+            Type: new FieldType("Lookup"),            
+            Category: "",
+            ValueLoader: this.getFilterValues.bind(this, "status"),
+            RemovePopulatedOperator: true
         },
         {
             Name: 'Priority',
@@ -80,13 +82,14 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         {
             Name: 'BaseType',
             FriendlyName: 'Base Type',
-            Type: new FieldType("Text"),
+            Type: new FieldType("Lookup"),
+            ValueLoader: this.getFilterValues.bind(this, "baseType"),
             Category: ""
         },
         {
             Name: 'Description',
             FriendlyName: 'Description',
-            Type: new FieldType("Text"),
+            Type: new FieldType("Html"),
             Category: ""
         },
         {
@@ -98,14 +101,18 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         {
             Name: 'MatchType',
             FriendlyName: 'Match Type',
-            Type: new FieldType("Text"),
-            Category: ""
+            Type: new FieldType("Lookup"),
+            Category: "",
+            ValueLoader: this.getFilterValues.bind(this, "matchType"),
+            RemovePopulatedOperator: true
         },
         {
             Name: 'Source',
             FriendlyName: 'Semantic Source',
-            Type: new FieldType("Text"),
-            Category: ""
+            Type: new FieldType("Lookup"),
+            Category: "",
+            ValueLoader: this.getFilterValues.bind(this, "source"),
+            RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedOn',
@@ -115,24 +122,33 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         },
         {
             Name: 'UpdatedOn',
-            FriendlyName: 'Date Modified',
+            FriendlyName: 'Date Last Modified',
             Type: new FieldType("DateTime"),
             Category: ""
         },
         {
             Name: 'CreatedBy',
             FriendlyName: 'Created By',
-            Type: new FieldType("Text"),
+            Type: new FieldType("OwnershipLookup"),
             Category: ""
         },
         {
             Name: 'UpdatedBy',
-            FriendlyName: 'Modified By',
-            Type: new FieldType("Text"),
+            FriendlyName: 'Last Modified By',
+            Type: new FieldType("OwnershipLookup"),
             Category: ""
         }
     ]
-    
+
+    sourceValues: string[] = ["Built-In", "User-Defined"];
+    statusValues: string[] = ["Certified", "Draft", "Under Review"];
+    matchTypeValues: string[] = ["Advanced", "List", "Number", "Pattern"];
+    baseTypeValues: string[] = ["Boolean", "Double", "Long", "String", "LocalDate", "LocalTime", "LocalDateTime", "OffsetDateTime", "ZonedDateTime",];
+
+    advancedFilterMap = new Map([
+        ["Built-In", "BuiltIn"],
+        ["User-Defined", "UserDefined"],
+        ["Under%20Review", "InReview"]]);
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -202,6 +218,9 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
 
     advancedFiltersChanged($event: Filters) {
         this.advancedFilter = $event.filter;
+        this.advancedFilterMap.forEach((value, key) => {
+            this.advancedFilter = this.advancedFilter.replace(new RegExp(key, "g"), value);
+        });
         this.getData();
     }
 
@@ -259,6 +278,40 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     ngOnDestroy() {
         if (this.sub) {
             this.sub.unsubscribe();
+        }
+    }
+
+    getFilterValues(params: LookupValuesAPIParameters, lookupType: string): Observable<LookupValuesAPIModel> {
+        if (params === "source") {
+            const values = this.sourceValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+            return of({
+                items: values,
+                count: values.length
+            });
+        }
+        
+        if (params === "status") {
+            const values = this.statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+            return of({
+                items: values,
+                count: values.length
+            });
+        }
+
+        if (params === "matchType") {
+            const values = this.matchTypeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+            return of({
+                items: values,
+                count: values.length
+            });
+        }
+
+        if (params === "baseType") {
+            const values = this.baseTypeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+            return of({
+                items: values,
+                count: values.length
+            });
         }
     }
 }

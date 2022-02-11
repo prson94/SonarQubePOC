@@ -22,6 +22,7 @@ import { SemanticAssetListGridComponent } from './semantic-asset-list-grid.compo
 import { SemanticTypeAssetListComponent } from './semantic-asset-list.component';
 import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 @NgModule({
     imports: [
@@ -40,7 +41,8 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
         CodeAreaModule,
         TooltipModule,
         AssetDetailModule,
-        DataProfileModule
+        DataProfileModule,
+        SharedGridPagingInfoModule
     ],
     declarations: [
         SemanticsComponent,
