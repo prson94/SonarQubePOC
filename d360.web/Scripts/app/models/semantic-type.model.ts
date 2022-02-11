@@ -16,9 +16,9 @@ export enum SemanticBaseType {
     String = 4,
     LocalDate = 5,
     LocalTime = 6,
-    LocalDateTime = 5,
-    OffsetDateTime = 6,
-    ZonedDateTime = 7
+    LocalDateTime = 7,
+    OffsetDateTime = 8,
+    ZonedDateTime = 9
 }
 
 export enum SemanticMatchType {
