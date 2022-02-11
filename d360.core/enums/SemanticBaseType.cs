@@ -20,11 +20,11 @@ namespace d360.core.enums
         [Name("Local Time"), Icon("fa-"), Color("")]
         LocalTime = 6,
         [Name("Local DateTime"), Icon("fa-"), Color("")]
-        LocalDateTime = 5,
+        LocalDateTime = 7,
         [Name("Offset DateTime"), Icon("fa-"), Color("")]
-        OffsetDateTime = 6,
+        OffsetDateTime = 8,
         [Name("Zoned DateTime"), Icon("fa-"), Color("")]
-        ZonedDateTime = 7
+        ZonedDateTime = 9
     }
 
     public class SemanticBaseTypeInfo
