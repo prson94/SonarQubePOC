@@ -96,13 +96,4 @@ export class SemanticTypeAssetListComponent extends AssetGridBaseComponent imple
         this.currentPageNumber = (event.first / event.rows) + 1;
         this.getData(this.semanticType.uid);
     }    
-
-    openSecondarySidePanel() {
-        if (this.dataProfile.typeQualifier) {
-            this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
-                this.semanticType = s.items[0];                
-            });
-        }
-    }
-
 }
