@@ -92,7 +92,7 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
                 this.secondaryNavService.clearItems();
                 this.secondaryNavService.clearCurrentObject();
                 this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, 'Definition');
-                let assetstab = new SecondaryNavItem(`Assets (${this.semanticAssetsCount})`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, null ,2);
+                let assetstab = new SecondaryNavItem(`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount ,2);
 
                 this.secondaryNavService.showItem(assetstab);
 
