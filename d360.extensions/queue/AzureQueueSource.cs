@@ -39,7 +39,7 @@ namespace d360.extensions.queue
         {
             get
             {
-                if (string.IsNullOrEmpty(queueStorageName))
+                if (string.IsNullOrEmpty(queueStorageKey))
                 {
                     queueStorageKey = ConfigurationManager.AppSettings["QueueStorageKey"];
                 }
