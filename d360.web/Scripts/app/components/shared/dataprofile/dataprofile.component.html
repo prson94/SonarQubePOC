@@ -58,9 +58,9 @@
                                     <div *ngIf="!dataProfile.typeQualifier">
                                         ---
                                     </div>
-                                    <div *ngIf="dataProfile.typeQualifier">
-                                        <span *ngIf="!hasDefinedType" class="ig-value">{{dataProfile.typeQualifier}}</span>
-                                        <span *ngIf="hasDefinedType" class="ig-value"><a (click)='openSemanticTab()'>{{semanticType.name}}</a></span>
+                                    <div *ngIf="dataProfile.typeQualifier" class="ig-value">
+                                        <span *ngIf="!hasDefinedType">{{dataProfile.typeQualifier}}</span>
+                                        <span *ngIf="hasDefinedType"><a (click)='openSemanticTab()'>{{semanticType.name}}</a></span>
                                         <ng-container *ngTemplateOutlet="semanticTooltip"></ng-container>
                                     </div>
                                 </div>
