@@ -13,6 +13,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { ProcessService } from '../../../services/process.service';
 import { Group } from '../../../models/group.model';
 import { StringConstants } from '../../../static/string-constants';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 declare var CurrentResourceID;
 
@@ -73,6 +74,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     loadedGroup: Group;
     simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
 
+    isAdmin: boolean = false;
+
     constructor(
         private router: Router,
         private objectDetailService: ObjectDetailService,
@@ -82,7 +85,10 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         private resourceService: ResourcesService,
         private groupService: GroupService,
         private linkClickInterceptor: LinkClickInterceptor,
-        private cdRef: ChangeDetectorRef) { }
+        private authService: AuthenticationService,
+        private cdRef: ChangeDetectorRef) {
+        this.authService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
+    }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
@@ -130,10 +136,13 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                 .subscribe((res) => {
                     this.userGroups = res.items;
                 });
+
+            this.hideLinks = !this.isAdmin;
         }
 
         if (this.objectType === 'Group' && updateTab) {
             this.tab = 'members';
+            this.hideLinks = !this.isAdmin;
         }
 
         if (detailSub) {

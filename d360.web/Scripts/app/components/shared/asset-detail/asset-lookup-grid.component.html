@@ -111,7 +111,7 @@
                                     <a (click)="navigate(item[column.urlfield], $event, column)" [innerText]="item[column.datafield]"></a>
                                 </ng-container>
                                 <ng-container *ngIf="interceptLinkClick">
-                                    <a context-link (click)="navigate(item[column.urlfield], $event, column)" [innerText]="item[column.datafield]"></a>
+                                    <a context-link (click)="navigate(item[column.urlfield], $event, column)" [innerText]="item[column.datafield]" [attr.data-link-type]="getDataLinkType(item)"></a>
                                 </ng-container>
                             </d3s-lookup-tooltip>
                         </span>
@@ -120,7 +120,7 @@
                                 <a (click)="navigate(item[column.urlfield], $event, {column,item})" [innerText]="item[column.datafield]"></a>
                             </ng-container>
                             <ng-container *ngIf="interceptLinkClick">
-                                <a context-link (click)="navigate(item[column.urlfield], $event, {column,item})" [innerText]="item[column.datafield]"></a>
+                                <a context-link (click)="navigate(item[column.urlfield], $event, {column,item})" [innerText]="item[column.datafield]" [attr.data-link-type]="getDataLinkType(item)"></a>
                             </ng-container>
                         </span>
                         <span *ngSwitchCase="'link'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>

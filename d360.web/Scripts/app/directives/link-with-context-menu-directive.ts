@@ -3,6 +3,7 @@ import { AfterViewChecked, OnDestroy } from '@angular/core';
 import { Inject, OnInit, Renderer2 } from '@angular/core';
 import { Directive, ElementRef, HostListener } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
+import { AuthenticationService } from '../services/authentication.service';
 
 @Directive({
     selector: '[context-link]'
@@ -13,6 +14,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     hoverTooltipWidth: number = 350;
 
     private isTagTooltip: boolean = false;
+    isAdmin: boolean = false;
 
     contextMenuItems: any[] = [
         { title: 'View Information', value: 'info' },
@@ -21,8 +23,11 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     ]
 
     constructor(private el: ElementRef,
+        private authService: AuthenticationService,
         @Inject(DOCUMENT) private document: Document,
-        private renderer: Renderer2) { }
+        private renderer: Renderer2) {
+        this.authService.checkCurrentUserAdmin().subscribe((res) => this.isAdmin = res);
+    }
 
     ngOnInit() {
         var htmlEl = this.el.nativeElement as HTMLElement;
@@ -67,7 +72,11 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
                 isInitialTag = true;
             }
         }
-        html += "Click the " + refElement + " to view information in the side panel or right-click for more options";
+        html += "Click the " + refElement + " to view information in the side panel";
+
+        if (!this.areOpenLinksHidden) {
+            html += " or right-click for more options";
+        }
 
         if (isInitialTag) {
             html = `<i style="margin-left: 44%;" class="fa fa-spinner fa-spin fa-2x"></i>`;
@@ -78,8 +87,16 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.hoverElement.appendChild(hoverItem);
     }
 
+    get areOpenLinksHidden(): boolean {
+        return this.el.nativeElement?.dataset?.linkType === "resource" && !this.isAdmin;
+    }
+
     @HostListener('contextmenu', ['$event.target'])
     onContextClick($event) {
+        if (this.areOpenLinksHidden) {
+            return;
+        }
+
         this.removeElement();
         var htmlEl = (this.el.nativeElement as HTMLElement);
         if (htmlEl.classList.contains('visible')) {
@@ -142,7 +159,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
 
         if (htmlEl && this.hoverElement) {
             box = htmlEl.getBoundingClientRect();
-            this.hoverElement.style.top = (box.top - 62) + "px";
+            this.hoverElement.style.top = (box.top - this.hoverElement.getBoundingClientRect().height) + "px";
 
             if (this.isTagTooltip) {
                 this.hoverElement.style.top = (box.top - 86) + "px";
