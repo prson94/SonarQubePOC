@@ -6848,7 +6848,7 @@ end",
             var fieldTypeSql = @"
 SELECT [Type]
 	  ,[IsRequired]
-	  ,CASE WHEN [DefaultValue] IS NULL THEN 0 ELSE 1 END as [HasDefaultValue]
+	  ,CASE WHEN ([DefaultValue] IS NULL or [DefaultValue] = '') THEN 0 ELSE 1 END as [HasDefaultValue]
       ,[Name]
       ,[FriendlyName]
 	  ,[ID]
