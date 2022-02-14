@@ -8,6 +8,7 @@ import { TagDetail, TagType } from '../../../models/tag.model';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { Router } from '@angular/router';
 import { StringConstants } from '../../../static/string-constants';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
     selector: 'ig-tagged-assets-detail',
@@ -24,6 +25,7 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
     @Input() uid: string;
     isLoading: boolean = false;
 
+    isAdmin: boolean = false;
     loadSub: Subscription;
     tab: string = 'items';
     tag: TagType;
@@ -37,7 +39,12 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
         private tagService: TagService,
         private router: Router,
         private linkClickInterceptor: LinkClickInterceptor,
-        private cdRef: ChangeDetectorRef) { }
+        private authService: AuthenticationService,
+        private cdRef: ChangeDetectorRef) {
+        this.authService.checkCurrentUserAdmin().subscribe((res) => {
+            this.isAdmin = res;
+        });
+    }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
