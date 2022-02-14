@@ -15,8 +15,8 @@ export class ResetSecondaryNavOnPageChangeService {
 
     initialize() {
         this.router.events.pipe(
-            filter(event => event instanceof NavigationEnd),
-            map(x => (x as NavigationEnd).urlAfterRedirects),
+            filter((event) => event instanceof NavigationEnd),
+            map((x) => (x as NavigationEnd).urlAfterRedirects),
             distinctUntilChanged()
         ).subscribe(() => this.onPageChanged());
     }
@@ -33,5 +33,5 @@ export class ResetSecondaryNavOnPageChangeService {
 export function resetSecondaryNavOnPageChangeServiceRunner(provider: ResetSecondaryNavOnPageChangeService) {
     return () => {
         provider.initialize();
-    }
+    };
 }

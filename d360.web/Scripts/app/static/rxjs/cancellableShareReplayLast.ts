@@ -22,14 +22,14 @@ import { MonoTypeOperatorFunction, Observable, Subscriber, Subscription } from "
             }
 
             innerSubscription = source.subscribe({
-                next: value => {
+                next: (value) => {
                     for (const subscriber of Array.from(outerSubscribers)) {
                         subscriber.next(value);
                     }
 
                     lastResult = { resultType: 'value', value };
                 },
-                error: error => {
+                error: (error) => {
                     for (const subscriber of Array.from(outerSubscribers)) {
                         subscriber.error(error);
                     }
@@ -44,7 +44,7 @@ import { MonoTypeOperatorFunction, Observable, Subscriber, Subscription } from "
                     isCompleted = true;
                 },
             });
-        }
+        };
 
         const tryDestroyInnerSubscription = () => {
             if (outerSubscribers.size > 0) {
@@ -74,7 +74,7 @@ import { MonoTypeOperatorFunction, Observable, Subscriber, Subscription } from "
         }
 
 
-        return new Observable<T>(subscriber => {
+        return new Observable<T>((subscriber) => {
             tryEmitLastValue(subscriber);
             outerSubscribers.add(subscriber);
             tryCreateInnerSubscription();

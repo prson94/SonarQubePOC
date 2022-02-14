@@ -6,9 +6,9 @@ import { MonoTypeOperatorFunction, Observable } from "rxjs";
  */
 export function takeUntilAndThrow<T>(notifier: Observable<any>, getError: () => any): MonoTypeOperatorFunction<T> {
     return (source: Observable<T>) => {
-        return new Observable<T>(subscriber => {
+        return new Observable<T>((subscriber) => {
             const sourceSub = source.subscribe(subscriber);
-            const notifierSub = notifier.subscribe(v => {
+            const notifierSub = notifier.subscribe(() => {
                 const error = getError();
                 subscriber.error(error);
                 sourceSub.unsubscribe();

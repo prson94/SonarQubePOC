@@ -11,11 +11,11 @@ import { takeUntilAndThrow } from "../static/rxjs";
 export class CancelOnPageChangeInterceptor implements HttpInterceptor {
     constructor(private router: Router) {
         this.router.events.pipe(
-            filter(event => event instanceof NavigationEnd),
-            map(x => (x as NavigationEnd).urlAfterRedirects),
+            filter((event) => event instanceof NavigationEnd),
+            map((x) => (x as NavigationEnd).urlAfterRedirects),
             distinctUntilChanged(),
             tap(() => { this.hasAtLeastOneNavigationEnd = true; })
-        ).subscribe(url => this.navigationEnd$.next(url))
+        ).subscribe((url) => this.navigationEnd$.next(url));
     }
 
     hasAtLeastOneNavigationEnd = false;
