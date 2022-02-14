@@ -3,7 +3,9 @@ import { AfterViewChecked, OnDestroy } from '@angular/core';
 import { Inject, OnInit, Renderer2 } from '@angular/core';
 import { Directive, ElementRef, HostListener } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
+import { CompanySettingEnum } from '../models/settings.model';
 import { AuthenticationService } from '../services/authentication.service';
+import { CompanySettingsService } from '../services/settings.service';
 
 @Directive({
     selector: '[context-link]'
@@ -22,23 +24,37 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         { title: 'Open in New Tab', value: 'new-tab' }
     ]
 
+    canViewUsers: boolean = true;
+
     constructor(private el: ElementRef,
-        private authService: AuthenticationService,
+        private authenticationService: AuthenticationService,
+        private settingsService: CompanySettingsService,
         @Inject(DOCUMENT) private document: Document,
         private renderer: Renderer2) {
-        this.authService.checkCurrentUserAdmin().subscribe((res) => this.isAdmin = res);
     }
 
     ngOnInit() {
         var htmlEl = this.el.nativeElement as HTMLElement;
-        htmlEl.onmouseenter = () => {
-            this.addTooltip();
-        };
+        this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
 
-        htmlEl.onmouseleave = () => {
-            this.removeTooltip();
-        };
-        DomHandler.addClass(htmlEl, 'has-context');
+        if (this.isLinkDisabled) {
+            htmlEl.style.pointerEvents = "none";
+            htmlEl.classList.add("disabled");
+        }
+        else {
+            htmlEl.onmouseenter = () => {
+                this.addTooltip();
+            };
+
+            htmlEl.onmouseleave = () => {
+                this.removeTooltip();
+            };
+            DomHandler.addClass(htmlEl, 'has-context');
+        }
+    }
+
+    get isLinkDisabled(): boolean {
+        return this.isLinkToResource && !this.canViewUsers;
     }
 
     addTooltip() {
@@ -72,11 +88,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
                 isInitialTag = true;
             }
         }
-        html += "Click the " + refElement + " to view information in the side panel";
-
-        if (!this.areOpenLinksHidden) {
-            html += " or right-click for more options";
-        }
+        html += "Click the " + refElement + " to view information in the side panel or right-click for more options";
 
         if (isInitialTag) {
             html = `<i style="margin-left: 44%;" class="fa fa-spinner fa-spin fa-2x"></i>`;
@@ -87,16 +99,12 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.hoverElement.appendChild(hoverItem);
     }
 
-    get areOpenLinksHidden(): boolean {
-        return this.el.nativeElement?.dataset?.linkType === "resource" && !this.isAdmin;
+    get isLinkToResource(): boolean {
+        return this.el.nativeElement?.dataset?.linkType === "resource";
     }
 
     @HostListener('contextmenu', ['$event.target'])
     onContextClick($event) {
-        if (this.areOpenLinksHidden) {
-            return;
-        }
-
         this.removeElement();
         var htmlEl = (this.el.nativeElement as HTMLElement);
         if (htmlEl.classList.contains('visible')) {
