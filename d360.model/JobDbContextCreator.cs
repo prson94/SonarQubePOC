@@ -12,7 +12,8 @@ namespace d360.model
         public static CompanyContext CreateCompanyContext(int companyId, int resourceId, string urlPrefix, bool isAdmin,
             AzureQueueSource queue = null,
             AzureStorageProvider storage = null,
-            string connectionString = null)
+            string connectionString = null,
+            string mandrillApiKey = null)
         {
             var sec = new UriSecurityContextProvider()
             {
@@ -24,7 +25,9 @@ namespace d360.model
             var cache = new DummyCachingProvider();
             var mail = new MandrillMailProvider
             {
-                ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY)
+                ApiKey = string.IsNullOrEmpty(mandrillApiKey) 
+                            ? Config.GetValue<string>(constants.MAIL_API_KEY) 
+                            : mandrillApiKey
             };
             if (queue == null)
             {
