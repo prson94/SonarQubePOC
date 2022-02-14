@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -713,14 +714,14 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
         private string buildStatusOrderSQL()
         {
-            var statusSQL = ", CASE";
+            StringBuilder statusSQL = new StringBuilder(", CASE");            
             foreach (int i in Enum.GetValues(typeof(SemanticStatus)))
             {
-                statusSQL += $@" WHEN status = {i} then '{Enum.GetName(typeof(SemanticStatus), i)}'";
+                statusSQL.Append($@" WHEN status = {i} then '{Enum.GetName(typeof(SemanticStatus), i)}'");
             }
-            statusSQL += " ELSE '' END as statusString";
+            statusSQL.Append(" ELSE '' END as statusString");
 
-            return statusSQL;
+            return statusSQL.ToString();
         }
     }
 }
