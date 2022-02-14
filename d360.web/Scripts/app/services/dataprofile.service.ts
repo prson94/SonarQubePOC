@@ -152,7 +152,7 @@ export class DataProfileService extends BaseObservableService {
         super.downloadFile(data, filename);
     }
 
-    getSemanticTypes(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = ""): Observable<SemanticTypeGetResponse> {
+    getSemanticTypes(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending): Observable<SemanticTypeGetResponse> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -165,6 +165,13 @@ export class DataProfileService extends BaseObservableService {
 
         if (advancedFilter) {
             url += `&_filter=${advancedFilter}`;
+        }
+
+        if (order) {
+            url += `&_order=${order}`;
+            if (direction && direction !== SortOrder.None) {
+                url += `&_direction=${direction === SortOrder.Ascending ? "asc" : "desc"}`;
+            }
         }
 
         return this

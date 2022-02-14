@@ -47,7 +47,7 @@ namespace d360.model.DataAccessLayer
             "validList"
         };
 
-        readonly Dictionary<string, string> orderFields = new Dictionary<string, string> 
+        readonly Dictionary<string, string> orderFields = new Dictionary<string, string> (StringComparer.InvariantCultureIgnoreCase)
         {
             { "baseType", "BaseType" },
             { "description", "Description" },
@@ -61,7 +61,7 @@ namespace d360.model.DataAccessLayer
             { "name", "Name" },
             { "priority", "Priority" },
             { "qualifier", "Qualifier" },
-            { "status", "Status" },
+            { "status", "StatusString" },
             { "threshold", "Threshold" }
         };
 
@@ -308,6 +308,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
             var direction = "asc";
             DateTime asOfEffectiveDate = DateTime.UtcNow;
             var whereStatements = new List<string>();
+            var statusSQL = "";
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
@@ -405,7 +406,12 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                     throw new GenericException(HttpStatusCode.BadRequest, "Invalid sort configuration", "You have provided an invalid field as an order parameter.");
                 }
 
-                order = orderFields[order]; // Get the appropriate column name.
+                if (order.Equals("status", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    statusSQL = buildStatusOrderSQL();
+                }
+
+                order = orderFields[order]; // Get the appropriate column name.                             
             }
             
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_direction"))
@@ -417,7 +423,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 }
             }
 
-            var tableQuery = @"(select	ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * from Semantic where EffectiveDate <= @asOfEffectiveDate) S where S.RowNum = 1";
+            var tableQuery = $@"(select	ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * {statusSQL} from Semantic where EffectiveDate <= @asOfEffectiveDate) S where S.RowNum = 1";
             var whereConjunction = whereStatements.Count > 0 ? "and" : "";
 
             var countSql = $"select count(1) as [Count] from {tableQuery} {whereConjunction} {string.Join(" and ", whereStatements)}";
@@ -460,6 +466,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
             var order = "EffectiveDate";
             var direction = "desc";
+            var statusSQL = "";
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_order"))
             {
@@ -474,7 +481,12 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                     throw new GenericException(HttpStatusCode.BadRequest, "You have provided an invalid field as an order parameter.");
                 }
 
-                order = orderFields[order]; // Get the appropriate column name.
+                if (order.Equals("status", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    statusSQL = buildStatusOrderSQL();
+                }                
+
+                order = orderFields[order]; // Get the appropriate column name.                
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_direction"))
@@ -486,7 +498,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 }
             }
 
-            var sql = $"select * from Semantic where Qualifier = @qualifier order by {order} {direction}";
+            var sql = $"select * from (select * {statusSQL} from Semantic where Qualifier = @qualifier) order by {order} {direction}";
 
             var repoModels = await CompanyContext.Database.Connection.QueryAsync<Semantic>(
                   new CommandDefinition(sql,
@@ -697,6 +709,18 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 throw ex;
                 // TODO: Should we do something else here?
             }
+        }
+
+        private string buildStatusOrderSQL()
+        {
+            var statusSQL = ", CASE";
+            foreach (int i in Enum.GetValues(typeof(SemanticStatus)))
+            {
+                statusSQL += $@" WHEN status = {i} then '{Enum.GetName(typeof(SemanticStatus), i)}'";
+            }
+            statusSQL += " ELSE '' END as statusString";
+
+            return statusSQL;
         }
     }
 }
