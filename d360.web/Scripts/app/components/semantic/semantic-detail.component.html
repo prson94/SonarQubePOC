@@ -203,8 +203,8 @@
                                 <label class="ig-label" style="margin-right:5px">
                                     Last Modified By
                                 </label>
-                                <div class="ig-value" *ngIf="semanticDetails.updatedBy.id"><a (click)="navigateToUser(semanticDetails.updatedBy.id)">{{semanticDetails.updatedBy.fullName}}</a></div>
-                                <div class="ig-value" *ngIf="!semanticDetails.updatedBy.id">{{semanticDetails.updatedBy.fullName}}</div>
+                                <div class="ig-value" *ngIf="semanticDetails.updatedBy.id && canViewUsers"><a (click)="navigateToUser(semanticDetails.updatedBy.id)">{{semanticDetails.updatedBy.fullName}}</a></div>
+                                <div class="ig-value" *ngIf="!semanticDetails.updatedBy.id || !canViewUsers">{{semanticDetails.updatedBy.fullName}}</div>
                             </div>                            
                         </div>
                     </ig-property-group>
