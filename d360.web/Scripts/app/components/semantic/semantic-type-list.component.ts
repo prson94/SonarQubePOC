@@ -192,7 +192,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
                     return '#BBBBBB';
                 case 'certified':
                     return '#3f9d40';
-                case 'under review':
+                case 'inreview':
                     return '#e2792a';
                 default:
                     //custom status, we need to generate a color
