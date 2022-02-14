@@ -236,7 +236,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.semanticType = event.semanticType;
     }
 
-    onTagsChanged(assetUID: string) {
-        this.tagsChanged.emit(assetUID);
+    onTagsChanged() {
+        this.tagsChanged.emit();
     }
 }

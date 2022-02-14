@@ -49,7 +49,7 @@ export class AssetDetailCategoryComponent {
         return false;
     }
 
-    private onTagsChanged(assetUID: string) {
-        this.tagsChanged.emit(assetUID);
+    private onTagsChanged() {
+        this.tagsChanged.emit();
     }
 }

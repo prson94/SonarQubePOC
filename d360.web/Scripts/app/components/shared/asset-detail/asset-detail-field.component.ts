@@ -147,8 +147,8 @@ export class AssetDetailFieldComponent {
         }
     }
 
-    private onTagsChanged(assetUID: string) {
-        let event = new CustomEvent('tagsChangedBubbles', { bubbles: true, detail: assetUID });
+    private onTagsChanged() {
+        let event = new CustomEvent('tagsChangedBubbles', { bubbles: true, detail: this.assetUid });
         this.el.nativeElement.dispatchEvent(event);
     }
 }
