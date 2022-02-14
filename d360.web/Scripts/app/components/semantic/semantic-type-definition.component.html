@@ -1,0 +1,15 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div>
+            <div class="col s12" style="display:flex;">
+                <div class="tile tile-detail main-panel">
+                    <div *ngIf="!isLoading" style="padding: 16px 11px 6px 11px">
+                        <semantic-detail [qualifier]="semanticType.qualifier"
+                                         [semanticType]="semanticType"></semantic-detail>
+                    </div>
+                </div>                
+            </div>    
+        </div>
+    </div>    
+</div>

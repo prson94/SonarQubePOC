@@ -1,0 +1,66 @@
+﻿<div *ngIf="!isSidePanel" class="grid-actions-header">
+    <div class="simple-search">
+        <ig-search-field mode="Keypress"
+                            [debounce]="600"
+                            (onSearch)="onSimpleSearch($event)"
+                            [(ngModel)]="simpleFilter"
+                            [infoTooltip]="simpleSearchTooltipHTML">
+        </ig-search-field>
+    </div>
+    <advanced-filtering [loadIdentifier]="'SemanticTypeAssets'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+</div>
+<div class="row {{(isSidePanel ? 'asset-grid-sidepanel-wrapper' : 'asset-grid-wrapper')}}">
+    <div class="col s12">
+        <p-table #dt [value]="assets"
+                    selectionMode="single"
+                    [(selection)]="selectedAsset"
+                    [paginator]="true"
+                    [pageLinks]="3"
+                    [rows]="rowsPerPage"
+                    [rowsPerPageOptions]="defaultPagingOptions"
+                    [totalRecords]="assetsTotal"
+                    [scrollable]="true"
+                    scrollWidth="100%"
+                    [loading]="isLoading"
+                    [loadingIcon]="'fa fa-spinner fa-spin'"
+                    [lazy]="true"
+                    (onLazyLoad)="lazyLoad($event)"
+                    (onRowSelect)="selectedAssetChanged.emit($event.data)"
+                    [style]="{ 'width': '100%' }">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Asset Path</th>
+                    <th *ngIf="!isSidePanel">Asset Type Path</th>
+                    <th *ngIf="!isSidePanel" style="width: 5%" alignFrozen="right" pFrozenColumn></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr (dblclick)="selectSemanticTypeAsset(item)" [pSelectableRow]="item">
+                    <td>
+                        <a (click)="selectSemanticTypeAsset(item)"
+                            class="link">
+                            {{item.path}}
+                        </a>
+                    </td>
+                    <td *ngIf="!isSidePanel">
+                        {{item.assetTypePath}}
+                    </td>
+                    <td *ngIf="!isSidePanel" class="asset-grid-tools" style="width: 5%; " alignFrozen="right" pFrozenColumn>
+                        <div style="display:inline-block">
+                            <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
+                            <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                No assets found
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first"
+                                        [rows]="dt.rows"
+                                        [totalRecords]="assetsTotal"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+    </div>
+</div> 

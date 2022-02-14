@@ -887,4 +887,47 @@ namespace d360.core.entities
         [DataMember]
         public string Direction { get; set; }
     }
+
+    /// <summary>
+    /// This class is used to load bare bones required field types for adding / updating / validating api requests.
+    /// </summary>
+    public class FieldTypeCore : BaseIntObject, IIntObject
+    {
+        [DataMember]
+        [StringLength(128)]
+        public string Name { get; set; }
+
+        [DataMember]
+        [StringLength(250)]
+        public string FriendlyName { get; set; }
+
+        [DataMember]
+        [Column(TypeName = "varchar"), StringLength(25)]
+        public string Type { get; set; }
+
+        [DataMember]
+        public bool AllowMultipleValues { get; set; }
+
+        [DataMember]
+        public decimal? MinimumLength { get; set; }
+
+        [DataMember]
+        public decimal? MaximumLength { get; set; }
+
+        [DataMember]
+        [Column(TypeName = "varchar"), StringLength(1000)]
+        public string Pattern { get; set; }
+
+        [DataMember]
+        public int? Length { get; set; }
+
+        [DataMember]
+        public bool HasDefaultValue { get; set; }
+
+        [DataMember]
+        public bool IsRequired { get; set; }
+
+        [DataMember]
+        public bool IsPartOfKey { get; set; }
+    }
 }

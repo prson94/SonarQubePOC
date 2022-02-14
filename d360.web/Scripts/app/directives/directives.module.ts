@@ -9,6 +9,7 @@ import { TextAreaDirective, TextAreaModule } from './ig-textarea-directive';
 import { AutoFocusDirective } from './ig-autofocus.directive';
 import { CheckboxDirective, IgCheckboxModule } from './ig-checkbox-directive';
 import { DropdownModule, DropdownDirective } from './ig-dropdown.directive';
+import { DataCyDirective, DataCyModule } from './ig-data-cy.directive';
 import { RadioButtonDirective, IgRadioButtonModule } from './ig-radio-button-directive';
 import { NgLetDirective } from './ng-let-directive';
 import { LinkWithContextDirective } from './link-with-context-menu-directive';
@@ -21,6 +22,7 @@ import { LinkWithContextDirective } from './link-with-context-menu-directive';
         TextAreaModule,
         AutocompleteModule,
         DropdownModule,
+        DataCyModule,
         IgCheckboxModule,
         IgRadioButtonModule
     ],
@@ -42,6 +44,7 @@ import { LinkWithContextDirective } from './link-with-context-menu-directive';
         AutocompleteDirective,
         AutoFocusDirective,        
         DropdownDirective,
+        DataCyDirective,
         RadioButtonDirective,
         CheckboxDirective,
         NgLetDirective,

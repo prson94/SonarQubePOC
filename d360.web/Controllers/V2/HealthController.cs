@@ -1,15 +1,16 @@
-﻿using d360.model;
-using d360.model.DataAccessLayer;
+﻿using d360.model.DataAccessLayer;
 using d360.web.Models;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
+using d360.web.Filters;
+using Newtonsoft.Json;
 
 namespace d360.web.Controllers.V2
 {
@@ -23,8 +24,11 @@ namespace d360.web.Controllers.V2
     ]
     public class HealthController : BaseV2ApiController
     {
-        public HealthController(CoreComponentSet set): base(set)
+        private IApplicationHealthDapperRepository ApplicationHealthDapperRepository { get; }
+
+        public HealthController(CoreComponentSet set, IApplicationHealthDapperRepository applicationHealthDapperRepository): base(set)
         {
+            ApplicationHealthDapperRepository = applicationHealthDapperRepository;
         }
 
         /// <summary>
@@ -63,5 +67,47 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.InternalServerError))).ConfigureAwait(false);
             }
         }
+
+        [HttpGet]
+        [Route("details")]
+        [SwaggerProduces("application/json")]
+        [SwaggerResponse(HttpStatusCode.OK, "Application health details", typeof(HealthDetailsResponse))]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, "API call was not successful.", typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden user is not an administrator.", typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))]
+        [Authorize]
+        [RequireAdminPermissions]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IHttpActionResult> GetDetailsAsync()
+        {
+            ValidateParameters();
+
+            var entity = await ApplicationHealthDapperRepository.GetDetailsAsync();
+
+            var result = new HealthDetailsResponse
+            {
+                ApiExecutionPendingCount = entity.ApiExecutionPendingCount,
+                QueueTaskCount = entity.QueueTaskCount,
+                WorkflowItemPendingCount = entity.WorkflowItemPendingCount
+            };
+
+            return Ok(result);
+        }
+
+        #region Request / Response models
+
+        public sealed class HealthDetailsResponse
+        {
+            [JsonProperty("queueTaskCount")]
+            public int QueueTaskCount { get; set; }
+
+            [JsonProperty("pendingApiCalls")]
+            public int ApiExecutionPendingCount { get; set; }
+
+            [JsonProperty("pendingWorkflowInstances")]
+            public int WorkflowItemPendingCount { get; set; }
+        }
+
+        #endregion
     }
 }

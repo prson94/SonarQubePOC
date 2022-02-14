@@ -831,7 +831,7 @@ from	CompanyResource CR
 
                                     if (parent != null)
                                     {
-                                        fld.ParentFieldTypeName = parent.FriendlyName;
+                                        fld.ParentFieldTypeName = parent.Name;
                                     }
                                 }
                                 else if (f.FilterFieldTypeID > 0 || f.FilterPredicateID > 0)

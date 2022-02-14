@@ -33,6 +33,7 @@
                 tooltipStyleClass="ig-tooltip"
                 class="ig-button-primary"
                 icon="fa-plus"
+                [igDataCy]="'Assets_Add'"
                 (click)="add()">
         </button>
 
@@ -41,7 +42,7 @@
              tooltipStyleClass="ig-tooltip">
             <button igButton
                     [disabled]="!canExportRecords() || isExportInProgress"
-                    [attr.data-cy]="'Assets_Export'"
+                    [igDataCy]="'Assets_Export'"
                     icon="fa-download"
                     [loading]="isExportInProgress"
                     (click)="export(false)">
@@ -74,6 +75,7 @@
                                   [owner]="stateService.artifactTypeFilters.owners"></d3s-asset-grid-custom-export>
     <div class="col s12" [hidden]="showCustomExport" *ngIf="isDefinitionLoaded && areFiltersLoaded">
         <p-table #dt
+                 [igDataCy]="'Assets_Page_'"
                  [value]="items"
                  selectionMode="single"
                  [metaKeySelection]="true"

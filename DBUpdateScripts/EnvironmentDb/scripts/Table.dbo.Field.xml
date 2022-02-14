@@ -105,8 +105,8 @@ END
 	</rollback>
   </changeSet> 
 
-  <changeSet author="Pappas" id="Table.dbo.Field-Field_AfterUpsert-v11">
-    <comment>GOV-16382</comment>
+  <changeSet author="TDuric" id="Table.dbo.Field-Field_AfterUpsert-v12">
+    <comment>GOV-17007</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -208,7 +208,7 @@ AS
 				) as [Custom],
 				coalesce(i.AssetID,0) as [AssetID]
 		from	inserted i 
-		where	i.[ObjectType] != 'Intersect';
+		where	i.[ObjectType] != 'Intersect' and i.[ObjectType] != 'Group';
 
 
 	-- handle relationships both sides need audit entries

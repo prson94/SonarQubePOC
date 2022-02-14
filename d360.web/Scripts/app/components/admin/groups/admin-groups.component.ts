@@ -17,6 +17,7 @@ import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.component';
 import { Table } from 'primeng/table';
 import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 declare var CurrentResourceID;
 @Component({
@@ -52,6 +53,11 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
     deleteInProgress: boolean = false;
 
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+    selectedTag: any;
+
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
     @ViewChild('dt', { static: false }) table: Table;
     @ViewChild('assetDetail', { static: false }) assetDetail: AssetDetailComponent;
@@ -70,7 +76,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         private gridDefinitionService: GridDefinitionService,
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Groups;
@@ -79,6 +86,10 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         this.buildSecondaryNavigationForObject(0, 'GroupType');
 
         this.sidePanelStorageKey = 'list_' + AssetTypeClass.Group + '_' + CurrentResourceID;
+
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            this.linkClickInterceptor.handleEvent(this, ev);
+        });
     }
 
     ngOnInit() {
@@ -133,6 +144,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     }
     selectRow(data) {
         this.selectedRow = data;
+        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
     }
 
     private groupUrl(id: number) {

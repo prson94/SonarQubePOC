@@ -93,6 +93,11 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(queryRequest.Term))
                 {
+                    if(queryRequest.Size > 5000)
+                    {
+                        queryRequest.Size = 5000;
+                    }
+
                     //Convert Tag filters to Tag UID filters
                     queryRequest.FieldFilters.Where(f => f.Field == "Tags").ToList().ForEach(f => {
                         FieldFilter taguids = new FieldFilter
@@ -649,7 +654,7 @@ namespace d360.web.Controllers.V2
 
             document.SetCellValue(1, index++, "Asset UID");
             document.SetCellValue(1, index++, "Asset Type UID");
-            document.SetCellValue(1, index++, "Url");
+            document.SetCellValue(1, index++, "URL");
 
             foreach (IndexResult res in results)
             {

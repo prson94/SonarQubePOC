@@ -26,10 +26,10 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag" 
+                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
                                          [objectUID]="selectedAsset ? selectedAsset.uid : selection.AssetUid"
                                          [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"
                                          [useAccordion]="true"
@@ -56,6 +56,24 @@
                             <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
                         </ng-container>
                     </ng-container>
+                </ng-container>
+                <ng-container *ngIf="secondarySidePanelOpen && semanticType">
+                    <div #semanticTile class="secondary-side-panel">
+                        <div class="panel-header">
+                            <span class="header-label">Information</span>
+                            <div class="button-container">
+                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                            </div>
+                        </div>
+                        <div class="details-container">
+                            <ng-container *ngIf="semanticType">
+                                <semantic-detail [qualifier]="semanticType.qualifier"
+                                                 [isSidePanel]="true"
+                                                 [showHeader]="true"
+                                                 [semanticType]="semanticType"></semantic-detail>
+                            </ng-container>
+                        </div>
+                    </div>
                 </ng-container>
             </side-panel>
         </div>

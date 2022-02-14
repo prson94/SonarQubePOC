@@ -3,6 +3,9 @@ import { AfterViewChecked, OnDestroy } from '@angular/core';
 import { Inject, OnInit, Renderer2 } from '@angular/core';
 import { Directive, ElementRef, HostListener } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
+import { CompanySettingEnum } from '../models/settings.model';
+import { AuthenticationService } from '../services/authentication.service';
+import { CompanySettingsService } from '../services/settings.service';
 
 @Directive({
     selector: '[context-link]'
@@ -13,6 +16,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     hoverTooltipWidth: number = 350;
 
     private isTagTooltip: boolean = false;
+    isAdmin: boolean = false;
 
     contextMenuItems: any[] = [
         { title: 'View Information', value: 'info' },
@@ -20,20 +24,37 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         { title: 'Open in New Tab', value: 'new-tab' }
     ]
 
+    canViewUsers: boolean = true;
+
     constructor(private el: ElementRef,
+        private authenticationService: AuthenticationService,
+        private settingsService: CompanySettingsService,
         @Inject(DOCUMENT) private document: Document,
-        private renderer: Renderer2) { }
+        private renderer: Renderer2) {
+    }
 
     ngOnInit() {
         var htmlEl = this.el.nativeElement as HTMLElement;
-        htmlEl.onmouseenter = () => {
-            this.addTooltip();
-        };
+        this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
 
-        htmlEl.onmouseleave = () => {
-            this.removeTooltip();
-        };
-        DomHandler.addClass(htmlEl, 'has-context');
+        if (this.isLinkDisabled) {
+            htmlEl.style.pointerEvents = "none";
+            htmlEl.classList.add("disabled");
+        }
+        else {
+            htmlEl.onmouseenter = () => {
+                this.addTooltip();
+            };
+
+            htmlEl.onmouseleave = () => {
+                this.removeTooltip();
+            };
+            DomHandler.addClass(htmlEl, 'has-context');
+        }
+    }
+
+    get isLinkDisabled(): boolean {
+        return this.isLinkToResource && !this.canViewUsers;
     }
 
     addTooltip() {
@@ -76,6 +97,10 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
 
         hoverItem.innerHTML = html;
         this.hoverElement.appendChild(hoverItem);
+    }
+
+    get isLinkToResource(): boolean {
+        return this.el.nativeElement?.dataset?.linkType === "resource";
     }
 
     @HostListener('contextmenu', ['$event.target'])
@@ -142,13 +167,24 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
 
         if (htmlEl && this.hoverElement) {
             box = htmlEl.getBoundingClientRect();
-            this.hoverElement.style.top = (box.top - 62) + "px";
+            this.hoverElement.style.top = (box.top - this.hoverElement.getBoundingClientRect().height) + "px";
 
             if (this.isTagTooltip) {
                 this.hoverElement.style.top = (box.top - 86) + "px";
             }
 
-            this.hoverElement.style.left = (box.left + (box.width / 2) - (this.hoverTooltipWidth / 2)) + "px";
+            //update leftPosition if its calculated value is outside bounds of the browser
+            var leftPosition = (box.left + (box.width / 2) - (this.hoverTooltipWidth / 2));
+            if (leftPosition < 5) {
+                leftPosition = 5;
+            }
+
+            var caluclatedRightPosition = leftPosition + this.hoverTooltipWidth;
+            if (caluclatedRightPosition > window.outerWidth) {
+                leftPosition = leftPosition - (caluclatedRightPosition - window.outerWidth) - 5;
+            }
+
+            this.hoverElement.style.left = leftPosition + "px";
         }
     }
 
