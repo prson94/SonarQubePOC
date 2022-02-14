@@ -116,6 +116,8 @@ namespace d360.model.helpers
                     SemanticStatus.Draft.GetSqlCaseFilterStatement("Status"), SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("source",
                     SemanticSource.BuiltIn.GetSqlCaseFilterStatement("[Source]"), SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("matchtype",
+                    SemanticMatchType.Advanced.GetSqlCaseFilterStatement("MatchType"), SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("threshold", "Threshold", SqlFieldType.Number));
                 allowedDefaultFields.Add(new DefaultFilter("priority", "Priority", SqlFieldType.Number));
                 allowedDefaultFields.Add(new DefaultFilter("baseType",

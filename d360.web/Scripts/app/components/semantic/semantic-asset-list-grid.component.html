@@ -9,14 +9,14 @@
     </div>
     <advanced-filtering [loadIdentifier]="'SemanticTypeAssets'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
 </div>
-<div class="row {{(isSidePanel ? '' : 'asset-grid-wrapper')}}">
+<div class="row {{(isSidePanel ? 'asset-grid-sidepanel-wrapper' : 'asset-grid-wrapper')}}">
     <div class="col s12">
         <p-table #dt [value]="assets"
                     selectionMode="single"
                     [(selection)]="selectedAsset"
                     [paginator]="true"
                     [pageLinks]="3"
-                    [rows]="defaultInitialItemsPerPage"
+                    [rows]="rowsPerPage"
                     [rowsPerPageOptions]="defaultPagingOptions"
                     [totalRecords]="assetsTotal"
                     [scrollable]="true"

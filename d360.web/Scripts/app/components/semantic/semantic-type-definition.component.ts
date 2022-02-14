@@ -30,6 +30,7 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
     showAssetsTab: boolean = true;
     tab: string = 'detail';
     navigationItemsSubs: Subscription[] = [];
+    semanticAssetsCount: number;
 
 
     constructor(
@@ -59,9 +60,12 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
     getData(uid: string) {
         this.isLoading = true;
         this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
-            this.semanticType = s.items[0];            
-            this.displayBreadCrumbs();
-            this.isLoading = false;
+            this.semanticType = s.items[0];
+            this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {
+                this.semanticAssetsCount = result.total;
+                this.displayBreadCrumbs();
+                this.isLoading = false;
+            });                        
             this.cdRef.markForCheck();
         });
     }
@@ -88,7 +92,7 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
                 this.secondaryNavService.clearItems();
                 this.secondaryNavService.clearCurrentObject();
                 this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, 'Definition');
-                let assetstab = new SecondaryNavItem("Assets", "abc", ["123"], `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, 10 ,2);
+                let assetstab = new SecondaryNavItem(`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount ,2);
 
                 this.secondaryNavService.showItem(assetstab);
 

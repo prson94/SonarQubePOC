@@ -26,7 +26,7 @@ export class SemanticAssetListGridComponent extends AssetGridBaseComponent imple
     @Output() assetCountUpdated = new EventEmitter();
     @Output() selectedAssetChanged = new EventEmitter();
 
-    rowsPerPage: number = this.defaultInitialItemsPerPage;
+    rowsPerPage: number = 25;
     currentPageNumber: number = 1;
     assets: SemanticTypeAsset[];
     assetsTotal: number;

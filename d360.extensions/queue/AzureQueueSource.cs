@@ -21,6 +21,7 @@ namespace d360.extensions.queue
         private string queueStorageName;
         private string queueStorageKey;
         private string eventServiceBusConnectionString;
+        private readonly string eventBusTopicName;
 
         public string QueueStorageName
         {
@@ -39,7 +40,7 @@ namespace d360.extensions.queue
         {
             get
             {
-                if (string.IsNullOrEmpty(queueStorageName))
+                if (string.IsNullOrEmpty(queueStorageKey))
                 {
                     queueStorageKey = ConfigurationManager.AppSettings["QueueStorageKey"];
                 }
@@ -61,7 +62,6 @@ namespace d360.extensions.queue
             }
         }
 
-
         //keep service bus clients and senders static and reusable where possible
         //these clients are thread safe and designed to be used with DI or singleton patterns
         private static ServiceBusClient ServiceBusClient;
@@ -77,6 +77,7 @@ namespace d360.extensions.queue
             queueStorageName = config["QueueStorageName"];
             queueStorageKey = config["QueueStorageKey"];
             eventServiceBusConnectionString = config["EventServiceBus"];
+            eventBusTopicName = config["EventBusTopicName"];
         }
 
         private CloudQueueClient cloudClient
@@ -332,6 +333,11 @@ namespace d360.extensions.queue
 
         private string getTopicName()
         {
+            if (!string.IsNullOrEmpty(eventBusTopicName))
+            {
+                return eventBusTopicName;
+            }
+
             return (GetTopicNameBySetting("EventBusTopicName") ?? "events-debug");
         }
 

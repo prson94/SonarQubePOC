@@ -139,7 +139,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         if (this.dataProfile.typeQualifier) {
             this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
                 this.semanticType = s.items[0];
-                this.hasDefinedType = true;
+                if (this.semanticType) {
+                    this.hasDefinedType = true;
+                }                
             });
         }
         

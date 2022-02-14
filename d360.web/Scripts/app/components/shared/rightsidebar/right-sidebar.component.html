@@ -79,6 +79,7 @@
                         (click)="itemClicked(item);">
                     {{item.title}}
                     <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
+                    <span *ngIf="!(item.count== null || item.count== undefined ) && item.title === 'Assets'" class="d3s-icon small-icon primary">{{item.count}}</span>
                     <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
                     <span *ngIf="item.warningMessage" class="sidebar-warning">
                         <d3s-info-tooltip [style]="'warning'">
