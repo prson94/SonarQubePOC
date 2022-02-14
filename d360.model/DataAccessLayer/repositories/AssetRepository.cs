@@ -210,7 +210,7 @@ namespace d360.model.DataAccessLayer
 
             //in case of Reference List items, check if there is parent to calculate if it is Hierarchical
             //otherwise take a value from Hierarchical column in AssetType table
-            extraJoins += @"outer apply(
+            extraJoins += @" outer apply(
 										select 
 										case when exists(select top 1 * from  
 												[IntersectType] IT
@@ -218,7 +218,7 @@ namespace d360.model.DataAccessLayer
 												where A.Class = 9 and P.Type in (3,4) and IT.Object = A.Object and IT.ObjectID = A.ObjectID)
 												then 1 
 										else A.Hierarchical
-										end as Hierarchical)HA";
+										end as Hierarchical)HA ";
 
             var sql = $@"
                         SELECT     A.[Name]
