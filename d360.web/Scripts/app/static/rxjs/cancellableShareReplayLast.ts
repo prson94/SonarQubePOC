@@ -57,7 +57,7 @@ import { MonoTypeOperatorFunction, Observable, Subscriber, Subscription } from "
 
             innerSubscription.unsubscribe();
             innerSubscription = null;
-        }
+        };
 
         const tryEmitLastValue = (subscriber: Subscriber<T>) => {
             if (lastResult != null && lastResult.resultType === 'value') {
