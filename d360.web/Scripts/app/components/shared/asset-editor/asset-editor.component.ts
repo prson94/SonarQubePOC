@@ -260,7 +260,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
             //this comes from process side panel
             if (this.selection.key) {
-                id = this.selection.key;
+                if (this.selection.isNew) {
+                    id = null;
+                }
+                else {
+                    id = this.selection.key;
+                }
                 this.isProcessSidePanel = true;
             }
 
