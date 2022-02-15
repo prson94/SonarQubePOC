@@ -66,7 +66,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         }
 
         if (SemanticType[this.semanticDetails.matchType] === SemanticType["Advanced"]) {
-            this.advancedJson = JSON.stringify(this.semanticDetails.advanced);
+            this.advancedJson = JSON.stringify(this.semanticDetails.advanced, null, 2);
         }
 
         this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {            
