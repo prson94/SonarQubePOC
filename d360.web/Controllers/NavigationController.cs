@@ -1181,7 +1181,7 @@ namespace d360.web.Controllers
                     }
                 }
             }
-            if (responseModel != null && !Company.CurrentResourceIsAdmin)
+            if (responseModel != null && !Company.CurrentResourceIsAdmin && model.ObjectType != SystemObjects.SemanticType.ToString())
             {
                 if (model.AssetUid != null)
                 {

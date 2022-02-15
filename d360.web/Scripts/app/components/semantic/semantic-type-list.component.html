@@ -14,7 +14,8 @@
             </div>
             <div class="row asset-grid-wrapper">
                 <div class="col s12">
-                    <p-table #dt [value]="semanticTypes"
+                    <p-table #dt                   
+                             [value]="semanticTypes"
                              selectionMode="single"
                              [(selection)]="selectedType"
                              [paginator]="true"
@@ -32,11 +33,26 @@
                              (onRowSelect)="selectRow($event.data)">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Name</th>
-                                <th>Qualifier</th>
-                                <th>Status</th>
-                                <th>Priority</th>
-                                <th>Base Type</th>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Qualifier'">
+                                    Qualifier
+                                    <d3s-sortIcon [field]="'Qualifier'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Status'">
+                                    Status
+                                    <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'Priority'">
+                                    Priority
+                                    <d3s-sortIcon [field]="'Priority'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'BaseType'">
+                                    Base Type
+                                    <d3s-sortIcon [field]="'BaseType'"></d3s-sortIcon>
+                                </th>
                                 <th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
                             </tr>
                         </ng-template>

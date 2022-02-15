@@ -170,7 +170,7 @@
                                                     <ng-container *ngIf="!selectedReferenceItem && !selectedTag">
                                                         <ig-asset-detail #assetDetailComponent 
                                                                          *ngIf="selectedAsset || selectedDiagramAsset"
-                                                                         [objectUID]="selectedAsset ? selectedAsset.uid : selectedDiagramAsset.ObjectId"
+                                                                         [objectUID]="selectedAsset ? selectedAsset.uid : selectedDiagramAsset.Uid"
                                                                          [objectType]="selectedAsset ? selectedAsset.type : selectedDiagramAsset.Object"
                                                                          [useAccordion]="true"
                                                                          [shouldBePadded]="false"

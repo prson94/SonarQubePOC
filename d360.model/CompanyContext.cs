@@ -1219,9 +1219,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
         public List<Predicate> GetPredicateOptions(Guid subjectUid, Guid? objectUid, Guid? predicateUid)
         {
-            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => 
+                p.AllowIntersectTypeAssignment 
+                && p.AllowEditFromRelationshipEditor
+                && p.ID != PredicateType.InterTypeHierarchy
+                && p.ID != PredicateType.IntraTypeHierarchy
+                ).ToList();
+            
             var isSubjectIntersectType = IntersectTypes.Any(i => i.uid == subjectUid);
-
             if (isSubjectIntersectType)
             {
                 allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
@@ -1236,27 +1241,8 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                 allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
             }
 
-            var sql = @"
-                select	P.*
-                from	[Predicate] P
-		                left join IntersectType I on I.PredicateID = P.ID 
-			                and I.SubjectUid = @subjectUid 
-			                and ( (@objectUid is null) or (@objectUid is not null and I.ObjectUid = @objectUid) )
-			                and ( (@predicateUid is null) or (@predicateUid is not null and I.PredicateID <> (select top 1 ID from [Predicate] where UID = @predicateUid) ) )
-                where	I.ID is null";
-
-            var predicates = Query<Predicate>(sql, new
-            {
-                subjectUid,
-                objectUid,
-                predicateUid
-            })
-                .ToList()
-                .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
-                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor
-                  );
-
-            predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
+            var allowedTypes = allowedFunctionalTypes.Select(p => p.ID).ToArray();
+            var predicates = Predicates.Where(i => allowedTypes.Contains(i.Type));
 
             return predicates.ToList();
         }
