@@ -1106,7 +1106,6 @@
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
     <Content Include="angular.json" />
     <Content Include="fonts\fontawesome-webfont.svg" />
-    <Content Include="Scripts\environments\workaround.js" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="Scripts\dist\*.js" />
