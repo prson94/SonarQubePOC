@@ -43,6 +43,8 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     sidePanelTab: string = 'detail';
     sidePanelStorageKey: string;
     navigationItemsSubs: Subscription[] = [];
+    sortField: string;
+    sortOrder: number;
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -129,13 +131,13 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         {
             Name: 'CreatedBy',
             FriendlyName: 'Created By',
-            Type: new FieldType("OwnershipLookup"),
+            Type: new FieldType("Text"),
             Category: ""
         },
         {
             Name: 'UpdatedBy',
             FriendlyName: 'Last Modified By',
-            Type: new FieldType("OwnershipLookup"),
+            Type: new FieldType("Text"),
             Category: ""
         }
     ]
@@ -148,7 +150,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     advancedFilterMap = new Map([
         ["Built-In", "BuiltIn"],
         ["User-Defined", "UserDefined"],
-        ["Under%20Review", "InReview"]]);
+        ["Under%20Review", "InReview"]]);    
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -174,7 +176,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
 
     getData() {
         this.isLoading = true;
-        this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter).subscribe((p) => {
+        this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((p) => {
             this.semanticTypes = p.items;
             this.semanticsTotal = p.total;
             if (this.semanticTypes && !this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {
@@ -208,6 +210,8 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
 
     lazyLoad(event: LazyLoadEvent) {
         this.rowsPerPage = event.rows;
+        this.sortField = event.sortField;
+        this.sortOrder = event.sortOrder;
         this.currentPageNumber = (event.first / event.rows) + 1;
         this.getData();
     }
