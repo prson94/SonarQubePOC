@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 using d360.model.DataAccessLayer;
 using d360.core.helpers;
 using d360.utils.excel;
+using MediatR;
 
 namespace d360.web.Controllers
 {
@@ -36,12 +37,15 @@ namespace d360.web.Controllers
 
         readonly IStorageProvider Storage;
         readonly IResponsibilityRepository ResponsibilityRepository;
+        readonly IMediator mediator;
 
-        public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
+        public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository,
+            IMediator mediator)
             : base(set)
         {
             Storage = storage;
             ResponsibilityRepository = responsibilityRepository;
+            this.mediator = mediator;
 #if DEBUG
             Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif

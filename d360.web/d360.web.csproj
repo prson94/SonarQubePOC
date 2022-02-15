@@ -631,6 +631,7 @@
     <Compile Include="Services\Favorites\GetFavoritesQuery.cs" />
     <Compile Include="Services\Favorites\FavoriteRouteMatchResult.cs" />
     <Compile Include="Services\Favorites\ToggleFavoriteOrHomePageCommand.cs" />
+    <Compile Include="Services\GetResponsibilityTypeRelationRule.cs" />
     <Compile Include="Services\Models\IsEntityExistsRequest.cs" />
     <Compile Include="Services\Models\IsEntityExistsResponse.cs" />
     <Compile Include="Services\Models\ResourceIsExistsRequest.cs" />

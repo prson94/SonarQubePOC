@@ -52,7 +52,7 @@ export class ResponsibilityTypeRelationPermission {
 
 export class ResponsibilityType {
     ID: number;
-    Name: string;    
+    Name: string;
     Description: string;
     UpdatedOn: string;
     UpdatedBy: number;
@@ -136,6 +136,7 @@ export class ResponsibilityTypeRelationRule {
     Context: string;
     IsVisible: boolean;
     ApplyToType: boolean;
+    AssetTypeUid: string;
 }
 
 export class ResponsibilityTypeRelationRuleDefinition {
@@ -152,6 +153,7 @@ export class ResponsibilityTypeRelationRuleDefinitionWhenItem {
     FieldTypeName: string;
     Value: string;
     ValueOptions: SelectItem[] = [];
+    IntersectTypeValueOptions: (SelectItem & { assetUid: string })[] = [];
     IsLookup: boolean = false;
     IsBool: boolean = false;
     IsloadValuesForIntersectType: boolean = false;
@@ -162,8 +164,7 @@ export class ResponsibilityTypeRelationRuleDefinitionWhenTestRow {
 }
 
 export class ResponsibilityTypeRelationRuleDefinitionThenTestRow {
-    ResourceName: string;
-    GroupName: string;
+    Name: string;
 }
 
 export class ResponsibilityTypeRelationRuleDefinitionThen {
@@ -182,12 +183,63 @@ export class ResponsibilityTypeRelationRuleDefinitionThenItem {
 
 export class ResponsibilityTypeRelationRuleFormData {
     FieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
-    IntersectTypes: SelectItem[] = [];
+    IntersectTypes: (SelectItem & { uid: string })[] = [];
 }
 export class ResponsibilityTypeRelationRuleFormDataFieldType {
     value: number;
     label: string;
     type: string;
     isLookup: boolean;
-    values: SelectItem[] = [];
+    values: (SelectItem & { assigneeUid?: string })[] = [];
+    assigneeTypeUid?: string;
+    fieldTypeName?: string;
+}
+
+export class ResponsibilityTypeRelationRuleV2 {
+    AssetTypeUid: string;
+    Definition: ResponsibilityTypeRelationRuleDefinitionV2
+}
+
+export class ResponsibilityTypeRelationRuleDefinitionV2 {
+    When: RuleWhenV2[];
+    Then: RuleThenWrapperV2[];
+}
+
+export interface RuleWhenV2 {
+    Field?: RuleFieldConditionV2;
+    Relation?: RuleRelationConditionV2;
+}
+
+export interface RuleFieldConditionV2 {
+    ApiName: string;
+    Value: string;
+}
+
+export interface RuleRelationConditionV2 {
+    IntersectTypeUid: string | undefined;
+    AssetUid: string | undefined;
+}
+
+export type ResponsibilityRuleTestResponseModel = {
+    pageNum?: number;
+    pageSize?: number;
+    items: {
+        uid: string;
+        path: string;
+    }[];
+}
+
+export interface RuleThenWrapperV2 {
+    AssigneeTypeUid?: string;
+    MatchType?: 'and' | 'or';
+    Conditions: RuleThenV2[];
+}
+
+export interface RuleThenV2 {
+    Field?: RuleFieldConditionV2;
+    Assignee?: RuleAsigneeConditionV2;
+}
+
+export interface RuleAsigneeConditionV2 {
+    Uid?: string;
 }
