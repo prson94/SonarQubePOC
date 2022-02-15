@@ -360,6 +360,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.showDescription = true;
         this.enableAllowMultipleValues = true;
         this.hasDisplayInColumn = true;
+        this.showIsRequired = true;
 
         if (value == null) {
             this.currentType = "Empty";
