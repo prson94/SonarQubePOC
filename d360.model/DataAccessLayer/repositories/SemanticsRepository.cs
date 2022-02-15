@@ -499,7 +499,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 }
             }
 
-            var sql = $"select * from (select * {statusSQL} from Semantic where Qualifier = @qualifier) order by {order} {direction}";
+            var sql = $"select * from (select * {statusSQL} from Semantic where Qualifier = @qualifier) S order by {order} {direction}";
 
             var repoModels = await CompanyContext.Database.Connection.QueryAsync<Semantic>(
                   new CommandDefinition(sql,
