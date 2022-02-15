@@ -127,18 +127,6 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
             FriendlyName: 'Date Last Modified',
             Type: new FieldType("DateTime"),
             Category: ""
-        },
-        {
-            Name: 'CreatedBy',
-            FriendlyName: 'Created By',
-            Type: new FieldType("Text"),
-            Category: ""
-        },
-        {
-            Name: 'UpdatedBy',
-            FriendlyName: 'Last Modified By',
-            Type: new FieldType("Text"),
-            Category: ""
         }
     ]
 
