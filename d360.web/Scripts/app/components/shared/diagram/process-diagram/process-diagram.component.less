@@ -271,4 +271,55 @@ d3s-process-diagram {
 
 .connector-label-form {
   padding-left: 16px;
+
+  .label-selector {
+    .clear-label {
+      position: absolute;
+      right: 50px;
+      height: 24px;
+      width: 24px;
+      margin-top: 4px;
+    }
+
+    .error-message {
+      background: #b21a3e;
+      padding: 4px 8px;
+      font-size: 12px;
+      color: white;
+      width: auto;
+      border-radius: 3px;
+      margin-top: 2px;
+      display: inline-block;
+    }
+
+    .p-autocomplete {
+      width: 100%;
+
+      input {
+        border-radius: 4px;
+        height: 32px;
+        width: 100%;
+        padding-right: 58px;
+      }
+
+      .p-button {
+        position: absolute;
+        right: 4px;
+        height: 24px;
+        width: 24px;
+        background: #eff2f6 !important;
+        top: 4px;
+        border: none !important;
+      }
+
+      .p-autocomplete-panel {
+        max-height: none;
+
+        .p-autocomplete-item {
+          border-bottom: none;
+          padding: 5px 4px;
+        }
+      }
+    }
+  }
 }
