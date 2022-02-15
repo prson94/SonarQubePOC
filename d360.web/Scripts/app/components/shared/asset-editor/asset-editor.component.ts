@@ -300,8 +300,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     this.handleEditor(result);
                 });
         }
+        else if (this.isProcessSidePanel) {
+            this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, id)
+                .subscribe((result) => {
+                    this.handleEditor(result);
+                });
+        }
         else {
-
             this.editorDefinitionService.getEditorDefinition(
                 id,
                 this.objectID,
