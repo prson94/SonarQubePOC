@@ -5,12 +5,11 @@ import {
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleDefinition,
     ResponsibilityTypeRelationRuleDefinitionWhenItem,
-    ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
     ResponsibilityTypeRelationRuleDefinitionThen,
     ResponsibilityTypeRelationRuleDefinitionThenItem,
-    ResponsibilityTypeRelationRuleDefinitionThenTestRow,
     ResponsibilityTypeRelationRuleFormDataFieldType,
-    RuleThenV2
+    RuleThenV2,
+    ResponsibilityRuleTestRow
 } from "../../../models/responsibility-type.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
 import { BaseComponent } from "../../shared/base.component";
@@ -74,8 +73,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     ];
     private whenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
     private whenIntersectTypes: (SelectItem<number> & { uid: string })[] = [];
-    WhenTestRows: ResponsibilityTypeRelationRuleDefinitionWhenTestRow[] = [];
-    ThenTestRows: ResponsibilityTypeRelationRuleDefinitionThenTestRow[] = [];
+    WhenTestRows: ResponsibilityRuleTestRow[] = [];
+    ThenTestRows: ResponsibilityRuleTestRow[] = [];
 
     thenObjectTypes: SelectItem<string>[] = [
         { label: "Choose...", value: null },
@@ -315,7 +314,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             })
             .subscribe((response) => {
                 if (response) {
-                    this.WhenTestRows = response.items.map(i => ({ Name: i.path }));
+                    this.WhenTestRows = response.items;
                 }
 
                 this.disableTestWhen = false;
@@ -428,7 +427,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             })
             .subscribe((response) => {
                 if (response) {
-                    this.ThenTestRows = response.items.map(i => ({ Name: i.path }));
+                    this.ThenTestRows = response.items;
                 }
                 this.disableTestThen = false;
                 this.isThenTestLoading = false;

@@ -8,8 +8,6 @@ import {
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleSummary,
     ResponsibilityTypeRelationRuleFormData,
-    ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
-    ResponsibilityTypeRelationRuleDefinitionThenTestRow,
     ResponsibilityTypeRelation_FormData,
     ResponsibilityTypeAllocation,
     ResponsibilityTypeAllocationPost,
@@ -278,26 +276,10 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    testWhen(rule: ResponsibilityTypeRelationRule): Observable<ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]> {
-        return this.http.post(`form/ResponsibilityTypeRelationRule_WhenTest`, rule)
-            .pipe(
-                map((response) => <ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
     testWhenV2(rule: ResponsibilityTypeRelationRuleV2): Observable<ResponsibilityRuleTestResponseModel> {
         return this.http.post(`api/v2/responsibilities/test/when`, rule)
             .pipe(
                 map((response) => <ResponsibilityRuleTestResponseModel[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
-    testThen(rule: ResponsibilityTypeRelationRule): Observable<ResponsibilityTypeRelationRuleDefinitionThenTestRow[]> {
-        return this.http.post(`form/ResponsibilityTypeRelationRule_ThenTest`, rule)
-            .pipe(
-                map((response) => <ResponsibilityTypeRelationRuleDefinitionThenTestRow[]>response),
                 catchError((err) => this.handleError(err))
             );
     }

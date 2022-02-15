@@ -146,15 +146,15 @@
                     <p-table #dt [value]="WhenTestRows" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="5">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th [pSortableColumn]="'Name'">
+                                <th [pSortableColumn]="'path'">
                                     Name
-                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                    <d3s-sortIcon [field]="'path'"></d3s-sortIcon>
                                 </th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td>{{item.Name}}</td>
+                                <td>{{item.path}}</td>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">
@@ -210,15 +210,15 @@
                     <p-table #dt2 [value]="ThenTestRows" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="5">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th [pSortableColumn]="'Name'">
+                                <th [pSortableColumn]="'path'">
                                     Security Asset
-                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                    <d3s-sortIcon [field]="'path'"></d3s-sortIcon>
                                 </th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td>{{item.Name}}</td>
+                                <td>{{item.path}}</td>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">

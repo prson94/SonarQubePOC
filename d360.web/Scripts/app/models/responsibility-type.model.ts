@@ -159,14 +159,6 @@ export class ResponsibilityTypeRelationRuleDefinitionWhenItem {
     IsloadValuesForIntersectType: boolean = false;
 }
 
-export class ResponsibilityTypeRelationRuleDefinitionWhenTestRow {
-    Name: string;
-}
-
-export class ResponsibilityTypeRelationRuleDefinitionThenTestRow {
-    Name: string;
-}
-
 export class ResponsibilityTypeRelationRuleDefinitionThen {
     Object: string;
     ObjectID: number;
@@ -223,10 +215,12 @@ export interface RuleRelationConditionV2 {
 export type ResponsibilityRuleTestResponseModel = {
     pageNum?: number;
     pageSize?: number;
-    items: {
-        uid: string;
-        path: string;
-    }[];
+    items: ResponsibilityRuleTestRow[];
+}
+
+export interface ResponsibilityRuleTestRow {
+    uid: string;
+    path: string;
 }
 
 export interface RuleThenWrapperV2 {
