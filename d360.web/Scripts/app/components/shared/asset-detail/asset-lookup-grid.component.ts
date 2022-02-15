@@ -312,7 +312,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     }
 
     getDataLinkType(data) {
-        if (data && data.ResourceUid) {
+        if (data && (data.ResourceUid || data.SecurityAssetUid)) {
             return "resource";
         }
         return "asset";

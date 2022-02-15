@@ -144,5 +144,12 @@ export class AssetDetailFieldComponent {
             return "Error";
         }
     }
+
+    getDataLinkType(data) {
+        if (data && data.TooltipType && data.TooltipType === "Resource") {
+            return "resource";
+        }
+        return "asset";
+    }
 }
 
