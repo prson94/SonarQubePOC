@@ -140,7 +140,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
                     return '#BBBBBB';
                 case 'certified':
                     return '#3f9d40';
-                case 'under review':
+                case 'inreview':
                     return '#e2792a';
                 default:
                     //custom status, we need to generate a color
