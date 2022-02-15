@@ -4,10 +4,9 @@ import { ResourcesService } from "../../../services/resources.service";
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 import { HelpResource } from "../../../models/resource.model";
 import { Observable } from "rxjs";
+import { environment } from '../../../../environments/environment';
 import { HelpMenu } from "../../../models/helpmenu.model";
 import { AuthenticationService } from "../../../services/authentication.service";
-declare var __BUILD_DATE: string;
-declare var VersionNumber: string;
 
 @Component({
     selector: 'd3s-header-help',
@@ -38,8 +37,10 @@ export class HeaderHelpComponent implements OnInit {
     customHelpResources: HelpResource[] = null;
     customHelpResources$: Observable<any>;
 
-    buildDate: string = __BUILD_DATE;
-    versionNumber: string = VersionNumber;
+    environment= environment;
+    
+    public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
+    
     isModalVisible: boolean = false;
     @ViewChild("popupBox", { static: false }) popupBox: ElementRef;
 
@@ -86,7 +87,6 @@ export class HeaderHelpComponent implements OnInit {
         });
     }
 
-
     show(item) {
         let panel = item.children[0].nextElementSibling;
         if (panel) {
@@ -128,4 +128,4 @@ export class HeaderHelpComponent implements OnInit {
                 this.closeAbout();
         }
     }
-}
+} 
