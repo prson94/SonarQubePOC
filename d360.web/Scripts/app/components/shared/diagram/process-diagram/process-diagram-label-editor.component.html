@@ -1,17 +1,15 @@
-    <div class="editor" *ngIf="linkData">
-        <div class="header">
-            <span class="asset-name">Connector</span>
-        </div>
-        <div class="connector-label-form">
-            <div class="row">
-                <span class="FieldName">Label</span>
-                <div class="col s12 label-selector">
-                    <p-autoComplete title="{{linkLabel}}" placeholder="Optional" [(ngModel)]="linkLabel" (onBlur)="onBlur($event)" (onSelect)="selected($event)" [suggestions]="labels" (completeMethod)="search($event)"
-                                    [dropdown]="true" (onKeyUp)="onKeyUp($event)">
-                    </p-autoComplete>
-                    <button *ngIf="linkLabel" (click)="clearLabel()" igButton class="clear-label" icon="fa-times" tooltip="Clear Label"></button>
-                    <div class="error-message" *ngIf="linkLabel && linkLabel.length > 40">Maximum length for labels is 40 characters</div>
-                </div>
-            </div>
+<div class="editor connector-label-form" *ngIf="linkData">
+    <div class="header">
+        <span class="asset-name">Connector</span>
+    </div>
+    <div class="row">
+        <span class="FieldName">Label</span>
+        <div class="col s12 label-selector">
+            <p-autoComplete title="{{linkLabel}}" placeholder="Optional" [(ngModel)]="linkLabel" (onBlur)="onBlur($event)" (onSelect)="selected($event)" [suggestions]="labels" (completeMethod)="search($event)"
+                            [dropdown]="true" (onKeyUp)="onKeyUp($event)">
+            </p-autoComplete>
+            <button *ngIf="linkLabel" (click)="clearLabel()" igButton class="clear-label" icon="fa-times" tooltip="Clear Label"></button>
+            <div class="error-message" *ngIf="linkLabel && linkLabel.length > 40">Maximum length for labels is 40 characters</div>
         </div>
     </div>
+</div>
