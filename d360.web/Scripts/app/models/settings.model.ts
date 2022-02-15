@@ -6,6 +6,7 @@ export class CompanySettings {
     AllowedOrigins: string;
     AssetDefinitionColumnWidth: number;
     BrowserTitlePrefix: string;
+    CertificationWorkflow: string = "Draft";
     ClearHomePageBackgroundImage: boolean = false;
     CompanyIcon: string;
     CompanyLogo: string;
