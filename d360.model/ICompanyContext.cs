@@ -207,12 +207,10 @@ namespace d360.model
         AssetType GetParentType(int id, SystemObjects obj);
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
-        Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");     
-        IEnumerable<SecurityResult> GetThenResults(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null);
+        Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");    
         string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true);
         List<PermissionInfo> GetTypePermissions(string type, int typeID);
         string GetUserHomePage();
-        Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null);
         Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);

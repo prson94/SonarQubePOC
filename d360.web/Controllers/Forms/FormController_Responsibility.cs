@@ -485,26 +485,6 @@ order by case Object
 
         #region JSON Feeds
 
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("ResponsibilityTypeRelationRule_WhenTest"), NonNullableParameters]
-        public async Task<JsonNetResult> ResponsibilityTypeRelationRule_WhenTest(ResponsibilityTypeRelationRule rule)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
-
-            var results = (await Company.GetWhenResults(rule)).OrderBy(i => i.Name);
-            return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("ResponsibilityTypeRelationRule_ThenTest"), NonNullableParameters]
-        public JsonNetResult ResponsibilityTypeRelationRule_ThenTest(ResponsibilityTypeRelationRule rule)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
-
-            var results = Company.GetThenResults(rule, this.HideData3SixtyUsers());
-            return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
         [HttpGet, ActionName("RelationsByResponsibilityType"), Route("RelationsByResponsibilityType"), NonNullableParameters]
         public JsonNetResult GetRelationsByResponsibilityType(int id)
         {
