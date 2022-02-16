@@ -541,7 +541,15 @@ namespace d360.core.enums
             Name("DiagramMaxAvoidNodesLinkCount_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
-        DiagramMaxAvoidNodesLinkCount = 84
+        DiagramMaxAvoidNodesLinkCount = 84,
+        [
+            DefaultValue(""),
+            Description("CertificationWorkflow_Desc", typeof(Settings)),
+            Locked(false),
+            Name("CertificationWorkflow_Name", typeof(Settings)),
+            Type(SettingType.Text)
+        ]
+        CertificationWorkflow = 85
     }
 
     public class SettingInfo

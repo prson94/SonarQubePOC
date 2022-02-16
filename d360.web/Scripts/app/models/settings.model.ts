@@ -151,7 +151,8 @@ export enum CompanySettingEnum {
     AssetDataProfileLifespan = 81,
     AssetDefinitionColumnWidth = 82,
     HideHeaderBarControls = 83,
-    DiagramMaxAvoidNodesLinkCount = 84
+    DiagramMaxAvoidNodesLinkCount = 84,
+    CertificationWorkflow = 85
 }
 
 export class StringSetting {

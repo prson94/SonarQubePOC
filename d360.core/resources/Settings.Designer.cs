@@ -223,6 +223,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Status that will enable the Request Certification button on assets where there is a Request Certification workflow configured.
+        /// </summary>
+        internal static string CertificationWorkflow_Desc {
+            get {
+                return ResourceManager.GetString("CertificationWorkflow_Desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certification Workflow Status.
+        /// </summary>
+        internal static string CertificationWorkflow_Name {
+            get {
+                return ResourceManager.GetString("CertificationWorkflow_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Upload your company icon..
         /// </summary>
         internal static string CompanyIcon_Desc {
