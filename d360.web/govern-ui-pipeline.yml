@@ -9,18 +9,18 @@ trigger:
     - '/DBUpdateScripts'
     - '/igx.*'
   batch: True
-pr:
-  autoCancel: false
-  drafts: false
-  branches:
-    include:
-    - '*sprint*'
-  paths:
-    include: 
-      - '/'
-    exclude:
-    - '/DBUpdateScripts'
-    - '/igx.*'
+pr: none
+#  autoCancel: false
+#  drafts: false
+#  branches:
+#    include:
+#    - '*sprint*'
+#  paths:
+#    include: 
+#      - '/'
+#    exclude:
+#    - '/DBUpdateScripts'
+#    - '/igx.*'
 name: $(SourceBranchName)-$(Date:MM-dd-yyyy)$(Rev:.r)
 resources:
   repositories:
