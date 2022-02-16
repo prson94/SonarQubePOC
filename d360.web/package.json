@@ -7,9 +7,9 @@
   },
   "scripts": {
     "build": "node_modules\\.bin\\ng build",
-    "buildProd": "node_modules\\.bin\\ng build --configuration=production",
-    "build-dev-ops-prod": "node ./replace.timestamp.js && node_modules\\.bin\\ng build --configuration=production && node ./remove-hash-angular.js",
-    "build-local-debug": "ng build --watch --progress",
+    "buildProd": "node_modules\\.bin\\ng build --configuration=production --localize",
+    "build-dev-ops-prod": "node ./replace.timestamp.js && node_modules\\.bin\\ng build --localize --configuration=production && node ./remove-hash-angular.js",
+    "build-local-debug": "ng build --localize --watch --progress",
     "updateBuild": "node ./replace.timestamp.js"
   },
   "license": "ISC",
