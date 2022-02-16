@@ -10,8 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Resources;
 
 namespace d360.web.Controllers.V2
@@ -908,6 +910,30 @@ namespace d360.web.Controllers.V2
             }
 
             return status;
+        }
+
+        protected IHttpActionResult Excel(SLDocument document, string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                fileName = $"{Guid.NewGuid():N}.xlsx";
+            }
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = fileName
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
         }
     }
 }

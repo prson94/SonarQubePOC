@@ -133,7 +133,7 @@ namespace d360.web.Controllers.V2
             if (isStreamResponse)
             {
                 var result = await AuditDapperRepository.AuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy);
-                return Excel(result, $"Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+                return Excel(GetExcelDocumentFromQuery(result), $"Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
             }
             else
             {
@@ -350,7 +350,7 @@ namespace d360.web.Controllers.V2
 
                 if (isStreamResponse)
                 {
-                    return Excel(query, $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+                    return Excel(GetExcelDocumentFromQuery(query), $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
                 }
                 else
                 {
@@ -591,33 +591,7 @@ namespace d360.web.Controllers.V2
 
             var query = Company.Query<dynamic>(sql, dbArgs, ApiTimeout);
 
-            return Excel(query, "audit.xlsx");
-        }
-
-        protected IHttpActionResult Excel(IEnumerable<dynamic> data, string fileName)
-        {
-            if (string.IsNullOrEmpty(fileName))
-            {
-                fileName = $"{Guid.NewGuid():N}.xlsx";
-            }
-
-            var document = GetExcelDocumentFromQuery(data);
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-
-            var result = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(stream.GetBuffer())
-            };
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = fileName
-            };
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-
-            return ResponseMessage(result);
+            return Excel(GetExcelDocumentFromQuery(query), "audit.xlsx");
         }
 
         private SLDocument GetExcelDocumentFromQuery(IEnumerable<dynamic> query)
