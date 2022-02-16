@@ -12,6 +12,7 @@ trigger:
     - '/igx.CertificateManager'
     - '/igx.UpdateDatabases'
     - '/DBUpdateScripts'
+  batch: true
 pr:
   autoCancel: false
   drafts: false
