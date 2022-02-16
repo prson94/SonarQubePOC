@@ -60,6 +60,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     levels: AssetTypeLevelApiModel[] = [];
     maxLevelAllowed: number = 1;
     hierarchy: any[] = [];
+    timeouthandle: any;
+    PermissionInterval: number;
 
     rowID: string = 'AssetUid';
     routeSub: any;
@@ -280,8 +282,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             .subscribe((result) => { this.currentAreaName = result });
 
         this.getFieldsDefinition();
-        this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId);
-        this.setObjectInfo(this.objectType, this.objectTypeId);
+        this.PermissionInterval = 500;
+        this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId).then((perms) => {
+            this.PermissionInterval = 100;
+        });        this.setObjectInfo(this.objectType, this.objectTypeId);
         this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId);
 
         this.searchValue = "";
@@ -675,22 +679,26 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.hierarchy = result.items;
 
                 if (this.hierarchy.length !== 0) {
-                    this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
-                    if (autoSelect) {
-                        if (this.treeNodeArray.length > 0) {
-                            this.selectAsset(this.treeNodeArray[0]);
-                        } else {
-                            this.selectAsset(null);
+                    clearTimeout(this.timeouthandle);
+                    this.timeouthandle = window.setTimeout(() => {
+                        this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+                        if (autoSelect) {
+                            if (this.treeNodeArray.length > 0) {
+                                this.selectAsset(this.treeNodeArray[0]);
+                            } else {
+                                this.selectAsset(null);
+                            }
                         }
-                    }
-                    this.buildScoreAllocationThresholds();
+                        this.buildScoreAllocationThresholds();
+                        this.isLoading = false;
+                    }, this.PermissionInterval);
                 }
                 else {
                     this.treeNodeArray = [];
                     this.selectAsset(null);
+                    this.isLoading = false;
                 }
 
-                this.isLoading = false;
             });
         }
     }
