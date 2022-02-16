@@ -16,6 +16,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1821,7 +1822,7 @@ where T.ExecutionId = @executionid;
 
         #endregion
 
-        public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
+        public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", string keyword = null)
         {
             var dbArgs = new DynamicParameters();
 
@@ -1891,8 +1892,25 @@ from	IntersectType I
 {whereClause} for json path";
 
             var models = await GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
+            // in-memory filter
+            if (string.IsNullOrEmpty(keyword) == false)
+            {
+                models = models.Where(x => FilterIntersectTypeApiViewModel(x, keyword)).ToList();
+            }
 
             return models;
+        }
+
+        private static bool FilterIntersectTypeApiViewModel(IntersectTypeApiViewModel item, string keyword)
+        {
+            if (item == null) return false;
+            if (string.IsNullOrEmpty(keyword)) return true;
+            return (item.Object?.Name ?? string.Empty).IndexOf(keyword, StringComparison.OrdinalIgnoreCase) > -1
+                   || (item.Object?.Class.ToString() ?? string.Empty).IndexOf(keyword, StringComparison.OrdinalIgnoreCase) > -1
+                   || (item.Predicate?.Name ?? string.Empty).IndexOf(keyword, StringComparison.OrdinalIgnoreCase) > -1
+                   || (item.Predicate?.Inverse ?? string.Empty).IndexOf(keyword, StringComparison.OrdinalIgnoreCase) > -1
+                   || (item.Subject?.Name ?? string.Empty).IndexOf(keyword, StringComparison.OrdinalIgnoreCase) > -1
+                   || (item.Subject?.Class.ToString() ?? string.Empty).IndexOf(keyword, StringComparison.OrdinalIgnoreCase) > -1;
         }
 
         public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)

@@ -1733,14 +1733,20 @@ namespace d360.web.Controllers.V2
             Route("export/types"),
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
-            SwaggerResponse(HttpStatusCode.OK, "Exported realtionship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "Exported relationship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> ExportTypesToExcel()
+        public async Task<IHttpActionResult> ExportTypesToExcel(string keyword = null)
         {
             var queryParams = new List<KeyValuePair<string, string>>();
             queryParams.Add(new KeyValuePair<string, string>("state", "1"));
-            var models = await Company.GetRelationshipTypes(queryParams);
+            var models = await Company.GetRelationshipTypes(queryParams, keyword: keyword);
+
+            return Excel(ItemsToExcel(models), $"Relationship Types {DateTime.Now.ToShortDateString()}.xlsx");
+        }
+
+        private SLDocument ItemsToExcel(IEnumerable<IntersectTypeApiViewModel> data)
+        {
             var document = new SLDocument();
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
@@ -1760,7 +1766,7 @@ namespace d360.web.Controllers.V2
             #endregion
 
             int rowNumber = 1;
-            foreach (var row in models)
+            foreach (var row in data)
             {
                 index = 1;
                 rowNumber++;
@@ -1775,21 +1781,7 @@ namespace d360.web.Controllers.V2
 
             #endregion
 
-            var stream = new System.IO.MemoryStream();
-            document.SaveAs(stream);
-
-            var result = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(stream.GetBuffer())
-            };
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString())
-            };
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-
-            return ResponseMessage(result);
+            return document;
         }
 
         /// <summary>
