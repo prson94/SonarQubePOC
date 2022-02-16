@@ -36,7 +36,6 @@
     "_exclude"
   ],
   "include": [
-    ".",
-    "../node_modules/gojs/extensionsTS/LinkLabelOnPathDraggingTool.ts"
+    "."
   ]
 }

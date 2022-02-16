@@ -1,10 +1,13 @@
 ﻿using System.Globalization;
 using System.Threading;
+using System.Linq;
 
 namespace d360.web.Utilities
 {
     public static class InternationalizationUtilities
     {
+        const string DefaultLocale = "en";
+        private static readonly string[] AllowedUILocales = new[] { "en", "de", "fr" };
 
         /// <summary>
         /// Sets the culture and UI culture to a specific culture. Allows overriding of currency
@@ -123,6 +126,16 @@ namespace d360.web.Utilities
             {
                 //surpress exception
             }
+        }
+
+        public static string GetUserLocaleCode()
+        {
+            var isoLangCode = Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
+            if (AllowedUILocales.Contains(isoLangCode))
+            {
+                return isoLangCode;
+            }
+            return DefaultLocale;
         }
     }
 }
