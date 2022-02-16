@@ -145,8 +145,8 @@ export class RelationshipsService extends BaseObservableService {
         this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship type items'));
     }
 
-    exportRelationshipTypes() {
-        this.http.get('api/v2/relationships/export/types', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));
+    exportRelationshipTypes(keyword: string) {
+        this.http.get(`api/v2/relationships/export/types?keyword=${keyword}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));
     }
 
     getRelation(id: number): Observable<RelationshipDetail> {

@@ -15,7 +15,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
     relationships: RelationshipType[] = [];
 
-    @Input() filterToName: string;
+    @Input() filterToName: string = "";
 
     @Input() objectType: string;
     @Input() objectID: number;
@@ -35,6 +35,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         private cdRef: ChangeDetectorRef
     ) {
         super(settingsService);
+        this.filterToName = '';
         this.theDeleteCallback = this.deleteRelationship.bind(this);
     }
 
@@ -54,8 +55,9 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         }
     }
 
-    private export() {
-        this.relationshipsService.exportRelationshipTypes();
+    private export() {        
+        var search = this.filterToName.toLowerCase();
+        this.relationshipsService.exportRelationshipTypes(search);
     }
 
     private filterResults() {
@@ -179,6 +181,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     onFilter($event) {
         if ($event && $event.filteredValue) {
             this.selected = $event.filteredValue[0];
+            this.filterToName = $event.filters.global.value;
             if (this.selected) {
                 this.selectedChange.emit(this.selected)
             }
