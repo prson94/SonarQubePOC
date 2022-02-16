@@ -285,7 +285,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.PermissionInterval = 500;
         this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId).then((perms) => {
             this.PermissionInterval = 100;
-        });        this.setObjectInfo(this.objectType, this.objectTypeId);
+        });
+        this.setObjectInfo(this.objectType, this.objectTypeId);
         this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId);
 
         this.searchValue = "";
