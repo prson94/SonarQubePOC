@@ -1,5 +1,6 @@
 ﻿import { Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
 import { MenuItem } from 'primeng/api';
+import { ReuseInterceptor } from '../../../http-interceptors/reuse.interceptor';
 
 @Component({
     selector: 'd3s-tile-actions',
@@ -71,6 +72,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     private dateMenuItems: MenuItem[] = [];
 
+    constructor(private reuseInterceptor: ReuseInterceptor) {
+    }
 
     ngOnInit() {
 
@@ -79,6 +82,11 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.buildMenu();
+    }
+
+    public forceRefresh() {
+        this.reuseInterceptor.forceRefresh();
+        this.refreshClick.emit();
     }
 
     private buildMenu() {
