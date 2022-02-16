@@ -1,102 +1,160 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="en-US" datatype="plaintext" original="ng2.template">
+  <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
-      <trans-unit id="4316033994660294100" datatype="html">
+      <trans-unit id="gallery-gender" datatype="html">
+        <source>Gender Example</source>
+		<target>Beispiel Geschlecht</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.html</context>
+          <context context-type="linenumber">41,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7151c2e67748b726f0864fc443861d45df21d706" datatype="html">
+        <source>{VAR_PLURAL, plural, =0 {just now} =1 {one minute ago} other {<x id="INTERPOLATION"/> minutes ago by {VAR_SELECT, select, male {male} female {female} other {other}}}}</source>
+		<target>{VAR_PLURAL, plural, =0 {soeben} =1 {vor einer Minute} other {il y a <x id="INTERPOLATION" equiv-text="{{minutes}}"/>  Minuten vorbei {VAR_SELECT, select, male {männlich} female {weiblich} other {andere} }} }</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.html</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="eff74b75ab7364b6fa888f1cbfae901aaaf02295" datatype="html">
+        <source>{VAR_SELECT, select, male {male} female {female} other {other}}</source>
+		<target>{VAR_SELECT, select, male {männlich} female {weiblich} other {andere} }</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.html</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="gallery-usage-gender" datatype="html">
+        <source>The author is <x id="ICU" equiv-text="{gender, select, male {male} female {female} other {other}}"/></source>
+		<target>Der Autor ist <x id="ICU" equiv-text="{gender, select, male {...} female {...} other {...}}"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.html</context>
+          <context context-type="linenumber">48,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ts-translation-id" datatype="html">
         <source>This text comes from .TS file.</source>
-        <target>Dieser Text stammt aus der .TS-Datei.</target>
+		<target>Dieser Text stammt aus der .TS-Datei.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">23,24</context>
+          <context context-type="linenumber">25,26</context>
         </context-group>
+        <note priority="1" from="description">Random translated text</note>
+        <note priority="1" from="meaning">attributes set in .ts file</note>
       </trans-unit>
-      <trans-unit id="5489128594802953194" datatype="html">
+      <trans-unit id="ts-translation-id-toolptip" datatype="html">
         <source>Localized tooltip text which must be set in ts file before binding to components attribute</source>
-        <target>Lokalisierter Tooltip-Text, der in der ts-Datei festgelegt werden muss, bevor er an das Komponentenattribut gebunden wird</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">24,25</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5866254605255506989" datatype="html">
-        <source>English</source>
-        <target>Englisch</target>
+		<target>Lokalisierter Tooltip-Text, der in der ts-Datei festgelegt werden muss, bevor er an das Komponentenattribut gebunden wird</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
           <context context-type="linenumber">26,27</context>
         </context-group>
+        <note priority="1" from="description">Localization Tooltip</note>
+        <note priority="1" from="meaning">attributes set in .ts file</note>
       </trans-unit>
-      <trans-unit id="1858110241312746425" datatype="html">
-        <source>German</source>
-        <target>Deutsch</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">27,28</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="7633754075223722162" datatype="html">
-        <source>French</source>
-        <target>Französisch</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">28,29</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="77dc3ee557de2154c6a2d338998f09d7d9ed6bf3" datatype="html">
+      <trans-unit id="gallery-main-title" datatype="html">
         <source>Locale Section</source>
-        <target>Locale-Abschnitt</target>
+		<target>Locale-Abschnitt</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">35,40</context>
+          <context context-type="linenumber">29,37</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="01ab5a73e6ef562db2df71ec5d2ab67bbc388881" datatype="html">
+      <trans-unit id="gallery-sub-title" datatype="html">
         <source>Angular setup for multi locale support.</source>
-        <target>Angular-Setup für die Unterstützung mehrerer Gebietsschemas.</target>
+		<target>Angular-Setup für die Unterstützung mehrerer Gebietsschemas.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="60a3620e64219321c8b50da502a404e9cef901ef" datatype="html">
+      <trans-unit id="how-to-change-lang" datatype="html">
         <source>Change language</source>
-        <target>Sprache ändern</target>
+		<target>Sprache ändern</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="11484c0fa1cab5ced51bcba7959ee833f21f16d9" datatype="html">
+      <trans-unit id="switch-lang" datatype="html">
+        <source> How to change language of your browser? (for Chrome) </source>
+		<target>Wie ändere ich die Sprache Ihres Browsers? (für Chrom)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+        <note priority="1" from="description">Link for language switch instructions</note>
+        <note priority="1" from="meaning">link</note>
+      </trans-unit>
+      <trans-unit id="gallery-title" datatype="html">
         <source>Html template example!</source>
-        <target>Beispiel für eine HTML-Vorlage!</target>
+		<target>Beispiel einer HTML-Vorlage!</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">37</context>
         </context-group>
+        <note priority="1" from="description">An introduction header for this sample</note>
+        <note priority="1" from="meaning">site header</note>
       </trans-unit>
-      <trans-unit id="06873ab78d134f39bf9db6a58c616b6f3249cbe8" datatype="html">
+      <trans-unit id="gallery-html-template" datatype="html">
         <source>This text comes from HTML template.</source>
-        <target>Dieser Text stammt aus einer HTML-Vorlage.</target>
+		<target>Dieser Text stammt aus einer HTML-Vorlage.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">37</context>
         </context-group>
+        <note priority="1" from="description">Text that comes from HTML template</note>
+        <note priority="1" from="meaning">html template</note>
       </trans-unit>
-      <trans-unit id="ba1bd18b0a9e7e61a0109e48dad94b15336c5e98" datatype="html">
+      <trans-unit id="gallery-ts-template" datatype="html">
         <source>Translation coming from .ts!</source>
-        <target>Übersetzung aus .ts</target>
+		<target>Übersetzung aus .ts!</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+        <note priority="1" from="description">Text that comes from Typescript template</note>
+        <note priority="1" from="meaning">ts template</note>
+      </trans-unit>
+      <trans-unit id="gallery-usage" datatype="html">
+        <source>Usage as components attributes</source>
+		<target>Verwendung als Komponentenattribute</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+        <note priority="1" from="description">Text that is used in tooltip text</note>
+        <note priority="1" from="meaning">tooltip usage</note>
+      </trans-unit>
+      <trans-unit id="gallery-pluralization-example" datatype="html">
+        <source>Pluralization Example</source>
+		<target>Beispiel Pluralisierung</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="eed1bf9a3fed83b70868f3b9369e630dc41536a5" datatype="html">
-        <source>Usage as components attributes</source>
-        <target>Verwendung als Komponentenattribute</target>
+      <trans-unit id="5a134dee893586d02bffc9611056b9cadf9abfad" datatype="html">
+        <source>{VAR_PLURAL, plural, =0 {just now} =1 {one minute ago} other {<x id="INTERPOLATION"/> minutes ago}}</source>
+		<target>{VAR_PLURAL, plural, =0 {soeben} =1 {vor einer Minute} other { vor <x id="INTERPOLATION" equiv-text="{{minutes}}"/> Minuten} }</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">37</context>
         </context-group>
+      </trans-unit>
+      <trans-unit id="gallery-usage-minutes" datatype="html">
+        <source> Updated <x id="ICU" equiv-text="{minutes, plural, =0 {just now} =1 {one minute ago} other { {{minutes}} minutes ago}}"/> </source>
+		<target> Aktualisiert <x id="ICU" equiv-text="{minutes, plural, =0 {just now} =1 {one minute ago} other { {{minutes}} minutes ago}}"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/gallery/gallery.locale.component.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+	  <trans-unit id="test-text-manually-added" datatype="html">
+        <source>Simple manually added translation (without generating xlf files)</source>
+		<target>Einfache manuell hinzugefügte Übersetzung (ohne Generierung von xlf-Dateien)</target>
       </trans-unit>
     </body>
   </file>
