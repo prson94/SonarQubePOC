@@ -514,6 +514,7 @@ order by case Object
             var fieldTypes = Company.Query<string>($@"
 select	FT.ID as value,
 		FriendlyName as label,
+        FT.Name as fieldTypeName,
 		FT.Type as [type],
 		case FT.Type
 			when 'Lookup' then cast(1 as bit)

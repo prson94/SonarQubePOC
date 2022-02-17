@@ -235,7 +235,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             let selectedFieldType = this.whenFieldTypes.find((f) => f.value === item.FieldTypeID);
             if (selectedFieldType) {
                 selectedFieldType = _.cloneDeep(selectedFieldType);
-                item.FieldTypeName = selectedFieldType.label;
+                item.FieldTypeName = selectedFieldType.fieldTypeName;
                 if (selectedFieldType.isLookup) {
                     let excluded = selectedFieldType.values.findIndex(a => a.label == "Choose...");
                     if (excluded < 0) {
@@ -474,7 +474,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         if (clearValue !== undefined && clearValue === true) item.Value = "";
         if (selectedFieldType) {
             item.IsBool = false;
-            item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
+            item.FieldTypeName = selectedFieldType.fieldTypeName;
             if (selectedFieldType.isLookup) {
                 let excluded = selectedFieldType.values.findIndex(a => a.label == "Choose...");
                 if (excluded < 0) {
