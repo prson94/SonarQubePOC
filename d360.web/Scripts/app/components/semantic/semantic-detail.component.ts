@@ -36,6 +36,13 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         ["BuiltIn", "Built-In"],
         ["UserDefined", "User-Defined"]]);
 
+    matchTypeMap = new Map([
+        ["Advanced", "Advanced (JSON)"],
+        ["List", "List of Values"],
+        ["Numbers", "Numbers"],
+        ["Pattern", "Pattern in Data"],
+    ])
+
     constructor(        
         private router: Router,
         private dataProfileService: DataProfileService,
@@ -66,7 +73,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         }
 
         if (SemanticType[this.semanticDetails.matchType] === SemanticType["Advanced"]) {
-            this.advancedJson = JSON.stringify(this.semanticDetails.advanced);
+            this.advancedJson = JSON.stringify(this.semanticDetails.advanced, null, 2);
         }
 
         this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {            
@@ -140,7 +147,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
                     return '#BBBBBB';
                 case 'certified':
                     return '#3f9d40';
-                case 'under review':
+                case 'inreview':
                     return '#e2792a';
                 default:
                     //custom status, we need to generate a color

@@ -28,7 +28,7 @@
         </ng-container>
         <ng-container *ngIf="interceptLinkClick">
             <a context-link
-               [attr.data-tooltip]="tooltipValue"               
+               [attr.data-tooltip]="tooltipValue"
                (mouseenter)="enter(tag, $event.target)"
                [attr.target]="'_blank'"
                class="link-button tagging">

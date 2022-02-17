@@ -151,5 +151,12 @@ export class AssetDetailFieldComponent {
         let event = new CustomEvent('tagsChangedBubbles', { bubbles: true, detail: this.assetUid });
         this.el.nativeElement.dispatchEvent(event);
     }
+
+    getDataLinkType(data) {
+        if (data && data.TooltipType && data.TooltipType === "Resource") {
+            return "resource";
+        }
+        return "asset";
+    }
 }
 

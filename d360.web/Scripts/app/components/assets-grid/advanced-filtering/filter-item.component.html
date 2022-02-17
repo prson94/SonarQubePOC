@@ -109,7 +109,7 @@
                             <p-table #dataTable
                                      tableStyleClass="ig-filter-table"
                                      selectionMode="multiple"
-                                     [metaKeySelection]="true"
+                                     [metaKeySelection]="false"
                                      [value]="currentField.Values"
                                      (onRowSelect)="onItemSelected($event)"
                                      (onRowUnselect)="onItemSelected($event)"
@@ -146,7 +146,8 @@
                                     <ng-template #elseBlock>
                                         <tr [pSelectableRow]="item" [pSelectableRowIndex]="rowIndex">
                                             <td class="first-col">
-                                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                                <p-tableCheckbox [value]="item" 
+                                                                 [pSelectableRow]="item"></p-tableCheckbox>
                                             </td>
                                             <td (click)="selectSingleItem($event,item);">
                                                 <span class="item-value" [innerHTML]="item.title"></span>

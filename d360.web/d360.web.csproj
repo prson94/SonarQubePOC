@@ -25,7 +25,8 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>443</IISExpressSSLPort>
+    <IISExpressSSLPort>
+    </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -1058,6 +1059,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.svg" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="index.html" />
+    <Content Include="replace.timestamp.js" />
     <Content Include="fonts\precisely\Precisely-Black.ttf" />
     <Content Include="fonts\precisely\Precisely-BlackIt.ttf" />
     <Content Include="fonts\precisely\Precisely-Bold.ttf" />
@@ -1104,7 +1106,6 @@
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
     <Content Include="angular.json" />
     <Content Include="fonts\fontawesome-webfont.svg" />
-    <Content Include="Scripts\environments\workaround.js" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="Scripts\dist\*.js" />

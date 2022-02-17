@@ -59,7 +59,7 @@ namespace igx.functions.consumption
             companyId = info.CompanyID;
 
             var queueSource = new AzureQueueSource(config);
-            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true, queueSource, null, CoreFunction.GetConnectionString("CommunityContext"));
+            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true, queueSource, null, CoreFunction.GetConnectionString("CommunityContext"), CoreFunction.GetConfigValueByKey<string>(constants.MAIL_API_KEY), CoreFunction.GetConfigValueByKey<string>(constants.MAIL_SUB_ACCOUNT));
 
             try
             {
