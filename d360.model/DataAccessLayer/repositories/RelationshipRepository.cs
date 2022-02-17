@@ -125,6 +125,11 @@ namespace d360.model.DataAccessLayer
             string _orderBy = "I.IntersectTypeID,I.ID";
             string _orderDirection = "asc";
 
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+
+            string filteredIntersectsTempTable = "";
+
             Guid objectUid;
             Guid relationshipTypeUid;
             bool isSubject = false;
@@ -228,9 +233,21 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     {
                         var asset = companyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 
-                        dbArgs.Add("@aobj", asset.Object);
-                        dbArgs.Add("@aobjid", asset.ObjectID);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ((I.Object = @aobj and I.ObjectID = @aobjid) or (I.Subject = @aobj and I.SubjectID = @aobjid))";
+                        dbArgs.Add("@assetObject", asset.Object);
+                        dbArgs.Add("@assetObjectId", asset.ObjectID);
+
+                        filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
+                            ;with assetIntersects as (select * from [Intersect] I
+                            where i.Object = @assetObject and i.ObjectID = @assetObjectId
+                            union
+                            select * from [Intersect] I
+                            where i.Subject = @assetObject and i.SubjectID = @assetObjectId)
+                            select ID 
+                            into #filteredIntersects
+                            from assetIntersects";
+
+                        //filter items by inner join
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (exists(select top 1 1 from #filteredIntersects fi where fi.id = i.ID))";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))
@@ -291,8 +308,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 }
             }
 
-            List<string> fieldColumns = new List<string>();
-            List<string> fieldJoins = new List<string>();
 
             if (fieldTypes != null)
             {
@@ -462,6 +477,8 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             string orderByClause = $"order by {_orderBy} {_orderDirection}";
 
             var sql = $@"
+{filteredIntersectsTempTable}
+
 declare @total int
 {(includeTotal ? countFullSql : "")}
 
