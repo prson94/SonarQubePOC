@@ -14,6 +14,7 @@
         <p-table #dt [value]="assets"
                     selectionMode="single"
                     [(selection)]="selectedAsset"
+                    [metaKeySelection]="true"
                     [paginator]="true"
                     [pageLinks]="3"
                     [rows]="rowsPerPage"
@@ -25,7 +26,7 @@
                     [loadingIcon]="'fa fa-spinner fa-spin'"
                     [lazy]="true"
                     (onLazyLoad)="lazyLoad($event)"
-                    (onRowSelect)="selectedAssetChanged.emit($event.data)"
+                    (selectionChange)="selectRow($event)"
                     [style]="{ 'width': '100%' }">
             <ng-template pTemplate="header">
                 <tr>
@@ -35,7 +36,7 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
-                <tr (dblclick)="selectSemanticTypeAsset(item)" [pSelectableRow]="item">
+                <tr (dblclick)="selectSemanticTypeAsset(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
                     <td>
                         <a (click)="selectSemanticTypeAsset(item)"
                             class="link">

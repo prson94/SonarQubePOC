@@ -18,6 +18,8 @@
                              [value]="semanticTypes"
                              selectionMode="single"
                              [(selection)]="selectedType"
+                             [metaKeySelection]="true"
+                             dataKey="uid"
                              [paginator]="true"
                              [pageLinks]="3"
                              [rows]="rowsPerPage"
@@ -29,8 +31,8 @@
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [lazy]="true"
                              (onLazyLoad)="lazyLoad($event)"
-                             [style]="{ 'width': '100%' }"
-                             (onRowSelect)="selectRow($event.data)">
+                             [style]="{ 'width': '100%' }"                             
+                             (selectionChange)="selectRow($event)">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
@@ -57,7 +59,7 @@
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
-                            <tr (dblclick)="selectSemanticType(item)" [pSelectableRow]="item">
+                            <tr (dblclick)="selectSemanticType(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
                                 <td>
                                     <a (click)="selectSemanticType(item)"
                                        class="link">
