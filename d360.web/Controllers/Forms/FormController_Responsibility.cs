@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
@@ -775,9 +776,11 @@ order by	case
         }
 
         [HttpGet, ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule"), NonNullableParameters]
-        public async Task<JsonNetResult> GetResponsibilityTypeRelationRule(int id)
+        public async Task<JsonNetResult> GetResponsibilityTypeRelationRule(int id, CancellationToken cancellationToken)
         {
-            var response = await this.mediator.Send(new GetResponsibilityTypeRelationRule.Argument { Id = id });
+            var response = await this.getResponsibilityTypeRelationRule.Handle(
+                new GetResponsibilityTypeRelationRule.Argument { Id = id }, 
+                cancellationToken);
 
             return new JsonNetResult
             {
