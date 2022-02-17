@@ -749,22 +749,31 @@ namespace d360.core.entities
     {
         [DataMember]
         public int ID { get; set; }
+
         [DataMember]
         public int ResponsibilityTypeID { get; set; }
+
         [DataMember]
         public string Object { get; set; }
+
         [DataMember]
         public int ObjectID { get; set; }
+
         [DataMember]
         public string Name { get; set; }
+
         [DataMember]
         public string Context { get; set; }
+
         [DataMember]
         public bool IsVisible { get; set; }
+
         [DataMember]
         public bool ApplyToType { get; set; }
+
         [DataMember]
         public Guid AssetTypeUid { get; set; }
+
         [DataMember]
         public ResponsibilityRuleDefinition StructuredDefinition { get; set; }
     }
@@ -789,7 +798,6 @@ namespace d360.core.entities
         [DataMember]
         public RuleDefinition Definition { get; set; }
     }
-
 
     [DataContract]
     public class RuleDefinition
