@@ -220,6 +220,19 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (O.Uid = @objectuid or (O.Uid is null and ot2.uid = @objectuid))";
                     }
                 }
+                if (queryParamsList.Any(q => q.Key.ToLower() == "assetuid"))
+                {
+                    Guid assetUid;
+                    var assetUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
+                    if (Guid.TryParse(assetUidString, out assetUid))
+                    {
+                        var asset = companyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+
+                        dbArgs.Add("@aobj", asset.Object);
+                        dbArgs.Add("@aobjid", asset.ObjectID);
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ((I.Object = @aobj and I.ObjectID = @aobjid) or (I.Subject = @aobj and I.SubjectID = @aobjid))";
+                    }
+                }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))
                 {
                     var pageNumberString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_pagenum").Value;

@@ -1,0 +1,30 @@
+﻿<div class="relationship-detail">
+
+    <div class="row">
+        <div class="col s12" *ngIf="isLoading">
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        </div>
+        <div class="col s12" style="display: flex" *ngIf="!isLoading">
+            <div class="tile tile-detail main-panel">
+                {{assetUid}}
+                relationship grid
+            </div>
+            <div class="tile tile-detail side-panel">
+                <side-panel (expandedChange)="sidePanelOpen=$event"
+                            (selectedPanelChange)="sidePanelTab=$event"
+                            [selectedItem]="selection"
+                            [panelApplies]="panelApplies"
+                            [hasProfiling]="hasProfiling"
+                            hasDetail="true"
+                            [storageKey]="sidePanelStorageKey"
+                            [selectedPanel]="sidePanelTab">
+                    <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
+                        <d3s-loading [isLoading]="true"></d3s-loading>
+                    </ng-container>
+                </side-panel>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -12,22 +12,19 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-relationships-wrapper',
     template: `
-        <div class="row">
-            <div class="col s12">
-                <div class="tile tile-detail">
-                    <d3s-object-relationships [objectType]="objectType"
+                    <d3s-object-relationships *ngIf="false" [objectType]="objectType"
                                               [objectID]="objectID"
                                               [objectName]="objectName"
                                               [objectPermissions]="permissions"></d3s-object-relationships>
-                </div>
-            </div>
-        </div>
+
+                    <gov-relationship-detail [assetUid]="assetUid"></gov-relationship-detail>
     `,
     providers: [PermissionsService, ObjectDetailService]
 })
 
 export class RelationshipsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
+    assetUid: string = '';
 
     constructor(
         private route: ActivatedRoute,
@@ -51,6 +48,7 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
             this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
                 res => {
                     this.objectName = res.Name ? res.Name : res.DisplayValue;
+                    this.assetUid = res["Uid"];
                 }
             );
             this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
