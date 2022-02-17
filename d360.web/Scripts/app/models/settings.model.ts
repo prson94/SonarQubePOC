@@ -6,7 +6,6 @@ export class CompanySettings {
     AllowedOrigins: string;
     AssetDefinitionColumnWidth: number;
     BrowserTitlePrefix: string;
-    CertificationWorkflow: string = "Draft";
     ClearHomePageBackgroundImage: boolean = false;
     CompanyIcon: string;
     CompanyLogo: string;
@@ -30,6 +29,7 @@ export class CompanySettings {
     IpRestrictions = new Array<IpRestriction>();
     MaxDropdownItems: number;
     MaxExcelExportRows: number;
+    RequestCertificationDraft: string = "Draft";
     SetIconToDefault = false;
     SetLogoToDefault = false;
     ShowAllUsersAPIKey: boolean;
@@ -151,8 +151,7 @@ export enum CompanySettingEnum {
     AssetDataProfileLifespan = 81,
     AssetDefinitionColumnWidth = 82,
     HideHeaderBarControls = 83,
-    DiagramMaxAvoidNodesLinkCount = 84,
-    CertificationWorkflow = 85
+    DiagramMaxAvoidNodesLinkCount = 84
 }
 
 export class StringSetting {
