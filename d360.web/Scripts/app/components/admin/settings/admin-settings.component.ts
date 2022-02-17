@@ -135,7 +135,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.WorkflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
         this.companySettings.WorkflowDigestEmailDays = this.getNumberSetting(CompanySettingEnum.WorkflowDigestEmailDays);
         this.companySettings.WriteActionDescription = this.getBooleanSetting(CompanySettingEnum.WriteActionDescription);
-        this.companySettings.CertificationWorkflow = this.getStringSetting(CompanySettingEnum.CertificationWorkflow);
 
         this.settingsService.getGroups()
             .subscribe(x => {
@@ -357,11 +356,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             SettingID: CompanySettingEnum.WorkflowDigestEmailDays,
             NumberSetting: { Value: this.companySettings.WorkflowDigestEmailDays },
             BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, StringSetting: null
-        });
-        settings.push({
-            SettingID: CompanySettingEnum.CertificationWorkflow,
-            StringSetting: { Value: this.companySettings.CertificationWorkflow },
-            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
         });
 
         //#endregion

@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Settings {
@@ -219,24 +219,6 @@ namespace d360.core.resources {
         internal static string BrowserTitlePrefix_Name {
             get {
                 return ResourceManager.GetString("BrowserTitlePrefix_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Status that will enable the Request Certification button on assets where there is a Request Certification workflow configured.
-        /// </summary>
-        internal static string CertificationWorkflow_Desc {
-            get {
-                return ResourceManager.GetString("CertificationWorkflow_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Certification Workflow Status.
-        /// </summary>
-        internal static string CertificationWorkflow_Name {
-            get {
-                return ResourceManager.GetString("CertificationWorkflow_Name", resourceCulture);
             }
         }
         

@@ -171,12 +171,6 @@
   <data name="BrowserTitlePrefix_Name" xml:space="preserve">
     <value>Browser Title Prefix</value>
   </data>
-  <data name="CertificationWorkflow_Desc" xml:space="preserve">
-    <value>Status that will enable the Request Certification button on assets where there is a Request Certification workflow configured</value>
-  </data>
-  <data name="CertificationWorkflow_Name" xml:space="preserve">
-    <value>Certification Workflow Status</value>
-  </data>
   <data name="CompanyIcon_Desc" xml:space="preserve">
     <value>Upload your company icon.</value>
   </data>
