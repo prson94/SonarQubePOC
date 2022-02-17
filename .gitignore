@@ -108,3 +108,4 @@
 /d360.web/Scripts/dist/3rdpartylicenses.txt
 /d360.web/Content/primeng/v11.1.0
 /DBUpdateScripts/EnvironmentDb/liquibase.properties
+/d360.web/.vscode/**
