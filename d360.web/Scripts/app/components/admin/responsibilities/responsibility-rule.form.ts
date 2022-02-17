@@ -338,7 +338,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                         AssetUid: this.mapToWhenRelationAssetUidForV2(when),
                         IntersectTypeUid: this.mapToWhenRelationIntersectTypeUidForV2(when)
                     }
-                })
+                });
         }
     }
 
@@ -448,7 +448,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                     Assignee: {
                         Uid: item.assigneeUid
                     }
-                }
+                };
             }
             else {
                 return {
@@ -456,15 +456,16 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                         ApiName: then.FieldTypeName,
                         Value: item.value
                     }
-                }
+                };
             }
         }
+
         return {
             Field: {
                 ApiName: then.FieldTypeName,
                 Value: then.Value
             }
-        }
+        };
     }
 
     private loadThenValuesForFieldType(item: any, clearValue?: boolean): Promise<void> {
