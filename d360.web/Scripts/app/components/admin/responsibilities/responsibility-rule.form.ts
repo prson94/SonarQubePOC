@@ -167,7 +167,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     mapObjectTypes(input: SelectItem<string>[]) {
-        let mapped = input.map(item => {
+        let mapped = input.map((item) => {
             const [object, objectID, assetTypeUid] = item.value.split("|");
             const mappedValue = `${object}|${objectID}|${assetTypeUid.toLowerCase()}`;
             return ({
@@ -302,13 +302,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             });
         }
 
-
-        console.log(whenTest);
         this.responsibilityTypeService
             .testWhenV2({
                 AssetTypeUid: this.model.AssetTypeUid,
                 Definition: {
-                    When: whenTest.StructuredDefinition.When.map(when => this.mapToWhenV2(when)),
+                    When: whenTest.StructuredDefinition.When.map((when) => this.mapToWhenV2(when)),
                     Then: []
                 }
             })
@@ -349,18 +347,18 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             return when.Value;
         }
 
-        const field = this.whenFieldTypes.find(field => field.value === when.FieldTypeID);
-        const item = field.values.find(item => item.value === when.Value);
+        const field = this.whenFieldTypes.find((field) => field.value === when.FieldTypeID);
+        const item = field.values.find((item) => item.value === when.Value);
         return item.label;
     }
 
     mapToWhenRelationIntersectTypeUidForV2(when: ResponsibilityTypeRelationRuleDefinitionWhenItem) {
-        const intersectType = this.whenIntersectTypes.find(i => i.value === when.IntersectTypeID);
+        const intersectType = this.whenIntersectTypes.find((i) => i.value === when.IntersectTypeID);
         return intersectType.uid;
     }
 
     mapToWhenRelationAssetUidForV2(when: ResponsibilityTypeRelationRuleDefinitionWhenItem) {
-        const item = when.IntersectTypeValueOptions.find(i => i.value === when.Value);
+        const item = when.IntersectTypeValueOptions.find((i) => i.value === when.Value);
         return item.assetUid;
     }
 
@@ -415,12 +413,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                     When: [],
                     Then: Object.values(groupBy(
                         thenTest.StructuredDefinition.Then.Conditions,
-                        then => this.getAssigneeTypeUid(then)
-                    )).map(conditions => (
+                        (then) => this.getAssigneeTypeUid(then)
+                    )).map((conditions) => (
                         {
                             AssigneeTypeUid: this.getAssigneeTypeUid(conditions[0]),
                             MatchType: thenTest.StructuredDefinition.Then.MatchType as ('and' | 'or'),
-                            Conditions: conditions.map(then => this.mapToThenV2(then))
+                            Conditions: conditions.map((then) => this.mapToThenV2(then))
                         }
                     ))
                 }
@@ -437,14 +435,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     getAssigneeTypeUid(then: ResponsibilityTypeRelationRuleDefinitionThenItem) {
-        const field = this.thenFieldTypes.find(field => field.value === then.FieldTypeID);
+        const field = this.thenFieldTypes.find((field) => field.value === then.FieldTypeID);
         return field.assigneeTypeUid;
     }
 
     mapToThenV2(then: ResponsibilityTypeRelationRuleDefinitionThenItem): RuleThenV2 {
-        const field = this.thenFieldTypes.find(field => field.value === then.FieldTypeID);
+        const field = this.thenFieldTypes.find((field) => field.value === then.FieldTypeID);
         if (field.isLookup) {
-            const item = field.values.find(item => item.value === then.Value);
+            const item = field.values.find((item) => item.value === then.Value);
             if (item.assigneeUid) {
                 return {
                     Assignee: {
