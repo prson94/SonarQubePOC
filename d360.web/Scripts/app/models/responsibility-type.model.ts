@@ -187,19 +187,9 @@ export class ResponsibilityTypeRelationRuleFormDataFieldType {
     fieldTypeName?: string;
 }
 
-export class ResponsibilityTypeRelationRuleV2 {
-    AssetTypeUid: string;
-    Definition: ResponsibilityTypeRelationRuleDefinitionV2
-}
-
-export class ResponsibilityTypeRelationRuleDefinitionV2 {
-    When: RuleWhenV2[];
-    Then: RuleThenWrapperV2[];
-}
-
-export interface RuleWhenV2 {
-    Field?: RuleFieldConditionV2;
-    Relation?: RuleRelationConditionV2;
+export interface RuleRelationConditionV2 {
+    IntersectTypeUid: string | undefined;
+    AssetUid: string | undefined;
 }
 
 export interface RuleFieldConditionV2 {
@@ -207,9 +197,14 @@ export interface RuleFieldConditionV2 {
     Value: string;
 }
 
-export interface RuleRelationConditionV2 {
-    IntersectTypeUid: string | undefined;
-    AssetUid: string | undefined;
+export interface RuleWhenV2 {
+    Field?: RuleFieldConditionV2;
+    Relation?: RuleRelationConditionV2;
+}
+
+export interface ResponsibilityRuleTestRow {
+    uid: string;
+    path: string;
 }
 
 export type ResponsibilityRuleTestResponseModel = {
@@ -218,9 +213,13 @@ export type ResponsibilityRuleTestResponseModel = {
     items: ResponsibilityRuleTestRow[];
 }
 
-export interface ResponsibilityRuleTestRow {
-    uid: string;
-    path: string;
+export interface RuleAsigneeConditionV2 {
+    Uid?: string;
+}
+
+export interface RuleThenV2 {
+    Field?: RuleFieldConditionV2;
+    Assignee?: RuleAsigneeConditionV2;
 }
 
 export interface RuleThenWrapperV2 {
@@ -229,11 +228,12 @@ export interface RuleThenWrapperV2 {
     Conditions: RuleThenV2[];
 }
 
-export interface RuleThenV2 {
-    Field?: RuleFieldConditionV2;
-    Assignee?: RuleAsigneeConditionV2;
+export class ResponsibilityTypeRelationRuleDefinitionV2 {
+    When: RuleWhenV2[];
+    Then: RuleThenWrapperV2[];
 }
 
-export interface RuleAsigneeConditionV2 {
-    Uid?: string;
+export class ResponsibilityTypeRelationRuleV2 {
+    AssetTypeUid: string;
+    Definition: ResponsibilityTypeRelationRuleDefinitionV2
 }
