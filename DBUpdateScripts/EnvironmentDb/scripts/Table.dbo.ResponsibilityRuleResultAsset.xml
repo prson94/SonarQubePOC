@@ -125,7 +125,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterInsert-v1">
+  <changeSet author="TKlok" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterInsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -144,9 +144,11 @@ BEGIN
 			A.Object, 
 			A.ObjectID,
 			A.ID
-	FROM inserted I INNER JOIN [dbo].[Asset] A
-	ON I.AssetID = A.ID
-		WHERE I.AssetTypeID = 0;
+	FROM inserted I
+	INNER JOIN [dbo].[Asset] A ON I.AssetID = A.ID
+	INNER JOIN [dbo].[ResponsibilityTypeRelationRule] R ON I.RuleID = R.ID
+	WHERE R.LastRunOn IS NOT NULL
+	AND I.AssetTypeID = 0;
 		
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
 	SELECT 'ObjectIndex', 
@@ -154,9 +156,11 @@ BEGIN
 			A.Object, 
 			A.ObjectID,
 			A.ID
-	FROM inserted I INNER JOIN [dbo].[Asset] A
-	ON I.AssetTypeID = A.AssetTypeID
-		WHERE I.AssetID = 0;
+	FROM inserted I
+	INNER JOIN [dbo].[Asset] A ON I.AssetID = A.ID
+	INNER JOIN [dbo].[ResponsibilityTypeRelationRule] R ON I.RuleID = R.ID
+	WHERE R.LastRunOn IS NOT NULL
+	AND I.AssetID = 0;
 END
 		]]>
     </sql>
