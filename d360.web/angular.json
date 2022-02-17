@@ -23,6 +23,10 @@
           "de": {
             "translation": "locale/messages.de.xlf",
             "baseHref": ""
+          },
+          "en-gb": {
+            "translation": "locale/messages.en-gb.xlf",
+            "baseHref": ""
           }
         }
       },
@@ -58,7 +62,7 @@
                 }
               ],
               "optimization": true,
-              "outputHashing": "all",// all will hash files
+              "outputHashing": "all", // all will hash files
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
@@ -80,6 +84,11 @@
             "de": {
               "localize": [
                 "de"
+              ]
+            },
+            "en-gb": {
+              "localize": [
+                "en-gb"
               ]
             }
           },

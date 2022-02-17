@@ -7,7 +7,7 @@ namespace d360.web.Utilities
     public static class InternationalizationUtilities
     {
         const string DefaultLocale = "en";
-        private static readonly string[] AllowedUILocales = new[] { "en", "de", "fr" };
+        private static readonly string[] AllowedUILocales = new[] { "en", "de", "fr", "en-gb" };
 
         /// <summary>
         /// Sets the culture and UI culture to a specific culture. Allows overriding of currency
@@ -130,12 +130,18 @@ namespace d360.web.Utilities
 
         public static string GetUserLocaleCode()
         {
-            var isoLangCode = Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
-            if (AllowedUILocales.Contains(isoLangCode))
+            if (AllowedUILocales.Select(x => x.ToLowerInvariant()).Contains(Thread.CurrentThread.CurrentUICulture.Name.ToLowerInvariant()))
             {
-                return isoLangCode;
+                return Thread.CurrentThread.CurrentUICulture.Name.ToLowerInvariant();
             }
-            return DefaultLocale;
+            else if (AllowedUILocales.Select(x => x.ToLowerInvariant()).Contains(Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName.ToLowerInvariant()))
+            {
+                return Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName.ToLowerInvariant();
+            }
+            else
+            {
+                return DefaultLocale;
+            }
         }
     }
 }
