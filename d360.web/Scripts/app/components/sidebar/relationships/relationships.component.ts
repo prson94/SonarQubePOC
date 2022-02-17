@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                               [objectName]="objectName"
                                               [objectPermissions]="permissions"></d3s-object-relationships>
 
-                    <gov-relationship-detail [assetUid]="assetUid"></gov-relationship-detail>
+                    <gov-relationship-detail [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-detail>
     `,
     providers: [PermissionsService, ObjectDetailService]
 })
@@ -25,6 +25,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class RelationshipsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     assetUid: string = '';
+    assetTypeUid: string = '';
 
     constructor(
         private route: ActivatedRoute,
@@ -49,6 +50,7 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
                 res => {
                     this.objectName = res.Name ? res.Name : res.DisplayValue;
                     this.assetUid = res["Uid"];
+                    this.assetTypeUid = res["AssetTypeUid"];
                 }
             );
             this.loadPermissions(this.permissionsService, this.objectType, this.objectID);

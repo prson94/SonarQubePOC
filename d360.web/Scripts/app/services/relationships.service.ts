@@ -194,7 +194,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     deleteRelationshipType(uid: string): Observable<any> {
-        return this.http.delete('api/v2/relationships/types', { body: [{ uid }]})
+        return this.http.delete('api/v2/relationships/types', { body: [{ uid }] })
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))
@@ -358,6 +358,26 @@ export class RelationshipsService extends BaseObservableService {
 
     getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipCount[]> {
         var url = 'api/v2/relationships/counts/' + assetUid;
+
+        return this.http.get(url)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getRelationshipsForAsset(assetUid: string, params: any): Observable<any[]> {
+        var url = `/api/v2/relationships?AssetUid=${assetUid}`
+        if (!params) {
+            params = {};
+        }
+        params["State"] = "Active";
+        params["_includeTotal"] = "true";
+        params["_includePath"] = "true";
+
+        if (params) {
+            url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+        }
 
         return this.http.get(url)
             .pipe(

@@ -32,7 +32,6 @@ begin
 			OD.DisplayValue,
 			T.Name as [TypeName],
 			T.Class,
-			T.Uid,
 			case 
 				when Dash.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)
