@@ -467,7 +467,7 @@ left join asset a on a.uid = ea.[uid]
 inner join api.Execution EX on ex.executionid = @executionId
 inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
 inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
-inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(EF.FieldValue AS INT) and a.id <> fcv.assetid
+inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(LEFT(EF.FieldValue, 50) AS INT) and a.id <> fcv.assetid
 where EA.ExecutionID = @executionId and EA.Success is null;
 
 update EA
@@ -478,7 +478,7 @@ left join asset a on a.uid = ea.[uid]
 inner join api.Execution EX on ex.executionid = @executionId
 inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
 inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
-inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(EF.FieldValue AS INT)
+inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(LEFT(EF.FieldValue, 50) AS INT)
 where EA.ExecutionID = @executionId and EA.Success is null and a.uid is null;
 ",
                 new { executionId }, commandTimeout: timeout);
