@@ -13,22 +13,22 @@ trigger:
     - '/igx.UpdateDatabases'
     - '/DBUpdateScripts'
   batch: true
-pr: none
-  # autoCancel: false
-  # drafts: false
-  # branches:
-  #   include:
-  #   - '*sprint*'
-  # paths:
-  #   include: 
-  #     - '/'
-  #   exclude:
-  #   - '/igx.functions'
-  #   - '/igx.jobs'
-  #   - '/igx.jobs.*'
-  #   - '/igx.CertificateManager'
-  #   - '/igx.UpdateDatabases'
-  #   - '/DBUpdateScripts'
+pr:
+  autoCancel: false
+  drafts: false
+  branches:
+    include:
+    - '*sprint*'
+  paths:
+    include: 
+      - '/'
+    exclude:
+    - '/igx.functions'
+    - '/igx.jobs'
+    - '/igx.jobs.*'
+    - '/igx.CertificateManager'
+    - '/igx.UpdateDatabases'
+    - '/DBUpdateScripts'
 name: $(SourceBranchName)-$(Date:MM-dd-yyyy)$(Rev:.r)
 resources:
   repositories:
