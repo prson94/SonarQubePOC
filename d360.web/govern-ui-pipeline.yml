@@ -6,21 +6,29 @@ trigger:
     include: 
       - '/'
     exclude:
+    - '/igx.functions'
+    - '/igx.jobs'
+    - '/igx.jobs.*'
+    - '/igx.CertificateManager'
+    - '/igx.UpdateDatabases'
     - '/DBUpdateScripts'
-    - '/igx.*'
-  batch: True
+  batch: true
 pr: none
-#  autoCancel: false
-#  drafts: false
-#  branches:
-#    include:
-#    - '*sprint*'
-#  paths:
-#    include: 
-#      - '/'
-#    exclude:
-#    - '/DBUpdateScripts'
-#    - '/igx.*'
+  # autoCancel: false
+  # drafts: false
+  # branches:
+  #   include:
+  #   - '*sprint*'
+  # paths:
+  #   include: 
+  #     - '/'
+  #   exclude:
+  #   - '/igx.functions'
+  #   - '/igx.jobs'
+  #   - '/igx.jobs.*'
+  #   - '/igx.CertificateManager'
+  #   - '/igx.UpdateDatabases'
+  #   - '/DBUpdateScripts'
 name: $(SourceBranchName)-$(Date:MM-dd-yyyy)$(Rev:.r)
 resources:
   repositories:
@@ -29,7 +37,7 @@ resources:
   - repository: templates
     type: github
     name: Infogix/govern-pipeline-templates
-    ref: refs/heads/GOV-16997---Create-Pipeline-templates-YAML
+    ref: refs/heads/main
     endpoint: 'govern-build - Service Endpoint'
 stages:
 - stage: BUILD_NAME
