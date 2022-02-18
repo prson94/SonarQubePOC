@@ -12926,7 +12926,6 @@ new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = Curren
                 {
                     Connection.Close();
                 }
-
             }
 
             return results;
