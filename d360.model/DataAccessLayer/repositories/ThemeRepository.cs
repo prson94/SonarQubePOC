@@ -62,7 +62,7 @@ namespace d360.model.DataAccessLayer
             {
                 AuditFields = new List<AuditField>(),
                 Date = current.UpdatedOn,
-                ActionDescription = "",
+                ActionDescription = $"Theme {action.ToLower()}.",
                 Action = action,
                 ActionObjectID = current.ID,
                 ActionObject = "Theme",
@@ -294,6 +294,10 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
 
                 await Task.Run(() => {
                     CompanyContext.Add(repoTheme);
+                    if (repoTheme.IsCurrent)
+                    {
+                        CompanyContext.Connection.Execute("update Theme set IsCurrent = 0 where Uid <> @Uid", new { repoTheme.Uid });
+                    }
                     addChangeLog(repoTheme, "C");
 
                     addStorageFile(repoTheme.Uid, "icon", repoTheme.BrowserIcon, repoTheme.BrowserIconExtension);

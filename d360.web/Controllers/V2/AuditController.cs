@@ -239,7 +239,8 @@ namespace d360.web.Controllers.V2
                     !Company.Any<Report>(i => i.uid == assetUid) &&
                     !Company.Any<MetricAllocation>(i => i.Uid == assetUid) &&
                     !Company.Any<Predicate>(i => i.UID == assetUid) &&
-                    !Company.Any<Semantic>(i => i.Uid == assetUid)
+                    !Company.Any<Semantic>(i => i.Uid == assetUid) &&
+                    !Company.Any<Theme>(i => i.Uid == assetUid)
                     )
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
@@ -798,6 +799,8 @@ namespace d360.web.Controllers.V2
 				select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Predicate] where uid = @uid
                 union 
 				select uid, name as DisplayName, 'Semantic' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Semantic] where uid = @uid 
+                union 
+				select uid, name as DisplayName, 'Theme' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Theme] where uid = @uid 
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;
