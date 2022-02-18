@@ -206,7 +206,7 @@ namespace d360.web.Controllers.V2
 
                 if (predicates.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
                 }
 
                 if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
@@ -306,7 +306,7 @@ namespace d360.web.Controllers.V2
 
             if (intersectType == null)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, string.Format(RelationshipsApiMessages.InvalidIntersectTypeUid, intersectTypeUid));
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(RelationshipsApiMessages.InvalidIntersectTypeUid, intersectTypeUid));
             }
 
             int id = intersectType.ID;
@@ -445,6 +445,7 @@ namespace d360.web.Controllers.V2
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
                 Guid RelationshipTypeUid = Guid.Empty;
+                Guid AssetUid = Guid.Empty;
 
                 if (queryParams.Any(x => x.Key.ToLower() == "relationshiptypeuid"))
                 {
@@ -525,11 +526,26 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
+                {
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value;
+                    Guid.TryParse(value, out AssetUid);
+
+                    if (!AssetRepository.DoesAssetExists(AssetUid))
+                    {
+                        var assetType = AssetRepository.GetAssetTypeByUID(AssetUid);
+                        if (assetType == null || assetType.Class != AssetTypeClass.Reference)
+                        {
+                            return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.SubjectUidNotFound, AssetUid.ToString()));
+                        }
+                    }
+                }
+
                 if (queryParams.Any(x => x.Key.ToLower() == "_direction"))
                 {
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
-                    if (RelationshipTypeUid == Guid.Empty)
+                    if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.DirectionAllowedForRelation);
                     }
@@ -542,7 +558,7 @@ namespace d360.web.Controllers.V2
 
                 if (queryParams.Any(x => x.Key.ToLower() == "_order"))
                 {
-                    if (RelationshipTypeUid == Guid.Empty)
+                    if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.OrderForRelation);
                     }
@@ -551,6 +567,11 @@ namespace d360.web.Controllers.V2
                     var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
                     fieldTypes.Add("object.[path]");
                     fieldTypes.Add("subject.[path]");
+                    if (AssetUid != Guid.Empty)
+                    {
+                        fieldTypes.Add("relationshiptypename");
+                        fieldTypes.Add("assetpath");
+                    }
 
                     if (!fieldTypes.Contains(orderValue))
                     {
@@ -699,7 +720,7 @@ namespace d360.web.Controllers.V2
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value;
                     if (!int.TryParse(value, out pageNum))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest,  ApiMessages.Invalid_PageNum);
+                        return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.Invalid_PageNum);
                     }
                 }
 
@@ -713,7 +734,7 @@ namespace d360.web.Controllers.V2
 
                     if (pageSize > 100000)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest,ApiMessages._PageSizeLimit);
+                        return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages._PageSizeLimit);
                     }
 
                     if (pageSize <= 0)
@@ -737,7 +758,7 @@ namespace d360.web.Controllers.V2
                     owner = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_owner").Value;
                     if (owner.Length > 100)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest,RelationshipsApiMessages.Invalid_owner);
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.Invalid_owner);
                     }
                 }
 
@@ -1097,9 +1118,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostRelationshipsAsync(
-            Guid intersectTypeUid, 
-            RelationshipInserts relationships, 
-            bool triggerWorkflow = false, 
+            Guid intersectTypeUid,
+            RelationshipInserts relationships,
+            bool triggerWorkflow = false,
             bool lookupFieldsPassedByValue = false,
             [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
@@ -1135,7 +1156,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(
-                    relationships.Count, 
+                    relationships.Count,
                     new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
                     applicationId: applicationId);
 
@@ -1206,7 +1227,7 @@ namespace d360.web.Controllers.V2
             RelationshipUpdates relationships,
             bool triggerWorkflow = false,
             bool lookupFieldsPassedByValue = false,
-            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))]  string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Relationships.PutRelationshipsAsync => ";
 
@@ -1305,7 +1326,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostBulkRelationshipsAsync(
             Guid intersectTypeUid,
-            RelationshipInserts relationships, 
+            RelationshipInserts relationships,
             bool triggerWorkflow = false,
             [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
@@ -1335,8 +1356,8 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(
-                    relationships.Count, 
-                    new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid }, 
+                    relationships.Count,
+                    new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
                     applicationId: applicationId);
 
                 ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
@@ -1386,7 +1407,7 @@ namespace d360.web.Controllers.V2
             Guid intersectTypeUid,
             RelationshipUpdates relationships,
             bool triggerWorkflow = false,
-            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))]  string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Relationships.PutBulkRelationshipsAsync => ";
             try
@@ -1509,7 +1530,7 @@ namespace d360.web.Controllers.V2
             }
             catch (ArgumentException)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound,ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1540,7 +1561,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteBulkRelationshipsAsync(
-            Guid intersectTypeUid, 
+            Guid intersectTypeUid,
             RelationshipDeletes relationships,
             bool triggerWorkflow = false,
             [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
@@ -1572,8 +1593,8 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(
-                    relationships.Count, 
-                    new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid }, 
+                    relationships.Count,
+                    new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid },
                     applicationId: applicationId);
 
                 ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
@@ -1625,8 +1646,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteRelationships(
-            Guid intersectTypeUid, 
-            RelationshipDeletes relationships, 
+            Guid intersectTypeUid,
+            RelationshipDeletes relationships,
             bool triggerWorkflow = false,
             [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {

@@ -82,6 +82,7 @@ export class BaseComponent {
 
     // default paging options
     defaultPagingOptions: number[] = [10, 25, 50, 100];
+    rowsPerPage: number = 25;
     defaultInitialItemsPerPage = 10;
 
     protected secondaryNavService: SecondaryNavService = null;

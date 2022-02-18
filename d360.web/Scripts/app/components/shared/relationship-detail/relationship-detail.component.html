@@ -1,27 +1,81 @@
 ﻿<div class="relationship-detail">
-
     <div class="row">
-        <div class="col s12" *ngIf="isLoading">
-            <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        </div>
-        <div class="col s12" style="display: flex" *ngIf="!isLoading">
+        <div class="col s12" style="display: flex">
             <div class="tile tile-detail main-panel">
-                {{assetUid}}
-                {{assetTypeUid}}
-                relationship grid
+
+                <div class="grid-actions-header">
+                    <div class="simple-search">
+                        <ig-search-field mode="Keypress"
+                                         [debounce]="600"
+                                         (onSearch)="onSimpleSearch($event)"
+                                         [(ngModel)]="simpleFilter"
+                                         [infoTooltip]="simpleSearchTooltipHTML">
+                        </ig-search-field>
+                    </div>
+                    <advanced-filtering [loadIdentifier]="'Relationships'"
+                                        [fieldsObserver]="filterFields$"
+                                        (onChange)="advancedFiltersChanged($event)">
+                    </advanced-filtering>
+                </div>
+
+                <p-table *ngIf="assetUid" #dt
+                         [metaKeySelection]="true"
+                         [value]="relationships"
+                         [(selection)]="selectedRelationship"
+                         [globalFilterFields]="['RelationshipTypeName']"
+                         dataKey="Uid"
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         paginatorDropdownAppendTo="body"
+                         [rows]="rowsPerPage"
+                         [rowsPerPageOptions]="defaultPagingOptions"
+                         [totalRecords]="totalRecords"
+                         [loading]="isLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'"
+                         [lazy]="true"
+                         (onLazyLoad)="loadRelationshipLazy($event)">
+                    <ng-template pTemplate="emptymessage" let-columns>
+                        <tr>
+                            <td [attr.colspan]="2">
+                                <span>&nbsp;&nbsp;No matches found</span>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'RelationshipTypeName'">
+                                Relationship Type <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr>
+                            <td>
+                                {{item.RelationshipTypeName}}
+                            </td>
+                            <td>
+                                {{item.AssetPath}}
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first"
+                                              [rows]="dt.rows"
+                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+
             </div>
             <div class="tile tile-detail side-panel">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
                             (selectedPanelChange)="sidePanelTab=$event"
-                            [selectedItem]="selection"
-                            [panelApplies]="panelApplies"
-                            [hasProfiling]="hasProfiling"
+                            [selectedItem]="selectedRelationship"
+                            [hasProfiling]="false"
                             hasDetail="true"
                             [storageKey]="sidePanelStorageKey"
                             [selectedPanel]="sidePanelTab">
-                    <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
-                        <d3s-loading [isLoading]="true"></d3s-loading>
-                    </ng-container>
+                    Side Panel
                 </side-panel>
             </div>
         </div>

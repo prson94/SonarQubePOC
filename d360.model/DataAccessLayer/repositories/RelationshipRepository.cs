@@ -130,6 +130,11 @@ namespace d360.model.DataAccessLayer
 
             string filteredIntersectsTempTable = "";
 
+            //if filtered by asset uid we will include relationship type name and asset name
+            //both relationship type name and asset name depends on which side of relationship are we on
+            //both fields are needed for filtering and ordering
+            bool isFilteredByAssetUID = false;
+
             Guid objectUid;
             Guid relationshipTypeUid;
             bool isSubject = false;
@@ -227,6 +232,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "assetuid"))
                 {
+                    isFilteredByAssetUID = true;
                     Guid assetUid;
                     var assetUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
                     if (Guid.TryParse(assetUidString, out assetUid))
@@ -331,6 +337,16 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 else if (orderValue == "subject.[path]")
                 {
                     _orderBy = "ISNULL(ANDP_Subject.DisplayPath,ST2.Name)";
+                    orderByAssetPath = true;
+                }
+                else if (orderValue == "relationshiptypename")
+                {
+                    _orderBy = "RelationshipSideData.RelationshipTypeName";
+                    orderByAssetPath = true;
+                }
+                else if (orderValue == "assetpath")
+                {
+                    _orderBy = "RelationshipSideData.AssetPath";
                     orderByAssetPath = true;
                 }
             }
@@ -461,7 +477,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             }
 
             if (isExport)
-            {                
+            {
                 fieldJoins.Add(" left join AssetDisplayValue ADVS on S.ID = ADVS.AssetID ");
                 fieldJoins.Add(" left join AssetDisplayValue ADVO on O.ID = ADVO.AssetID ");
                 fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ') PS ");
@@ -476,6 +492,18 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
             string orderByClause = $"order by {_orderBy} {_orderDirection}";
 
+            if (isFilteredByAssetUID)
+            {
+                //apply data to check which side on relationship are we
+                fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side");
+                //depending on relationship side reslove relationship type name and asset name
+                fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
+				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
+				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
+				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData");
+
+            }
+
             var sql = $@"
 {filteredIntersectsTempTable}
 
@@ -488,6 +516,8 @@ select	@pageSize as 'pageSize',
 		(
 		select	lower(I.Uid) as Uid,
 				lower(T.Uid) as RelationshipTypeUid,
+                {(isFilteredByAssetUID ? @"RelationshipSideData.RelationshipTypeName,
+				RelationshipSideData.AssetPath," : "")}
 				{stateSql}
 				{fieldColumnsSql}
 				lower(P.UID) as 'Predicate.Uid',
@@ -1006,7 +1036,7 @@ from	IntersectType I
             var apiInfo = results.Children().ToList();
 
             var excelDocument = new ExcelDocument(string.Format(ExcelExports.Relationships_DocumentName, DateTime.Now));
-                   
+
             var fields = new List<FieldType>();
 
             var headerRow = new ExcelRow();
@@ -1071,7 +1101,7 @@ from	IntersectType I
                     {
                         int customCount = 0;
                         foreach (var cus in customColumns)
-                        {                            
+                        {
                             var name = cus.Name;
                             var friendlyName = cus.FriendlyName;
                             var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
