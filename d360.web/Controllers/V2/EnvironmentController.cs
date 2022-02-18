@@ -35,7 +35,7 @@ namespace d360.web.Controllers.V2
     ]
     public class EnvironmentController : BaseV2ApiController
     {
-        IThemeRepository ThemeRepository;
+        readonly IThemeRepository ThemeRepository;
         IStorageProvider _storage;
 
         public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IStorageProvider storage) : base(set)
@@ -1345,9 +1345,9 @@ namespace d360.web.Controllers.V2
                 var apiModels = await ThemeRepository.GetThemesAsync(queryParams, cancellationToken);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
             }
-            catch (GenericException ex)
+            catch (GenericException)
             {
-                throw ex;
+                throw;
             }
             catch
             {

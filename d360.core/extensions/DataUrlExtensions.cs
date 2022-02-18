@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace d360.core
 {
-    public class MimeTypes 
+    public static class MimeTypes 
     {
         public static readonly string GIF = "image/gif";
         public static readonly string JPEG = "image/jpeg";

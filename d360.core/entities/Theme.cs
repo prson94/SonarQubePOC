@@ -301,7 +301,7 @@ namespace d360.core.entities
         {
             var errors = new List<string>();
 
-            model.Name = (model.Name += "").Trim();
+            model.Name = (model.Name + "").Trim();
 
 
             if (string.IsNullOrEmpty(model.Name))

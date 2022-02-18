@@ -62,7 +62,7 @@ namespace d360.model.DataAccessLayer
             {
                 AuditFields = new List<AuditField>(),
                 Date = current.UpdatedOn,
-                ActionDescription = $"Theme {action.ToLower()}.",
+                ActionDescription = $"Theme {action.ToLower(System.Globalization.CultureInfo.InvariantCulture)}.",
                 Action = action,
                 ActionObjectID = current.ID,
                 ActionObject = "Theme",
@@ -153,11 +153,11 @@ where   T.AuditID = @ID and T.[Version] = 0", new { audit.ID });
                 {
                     deleteStorageFile(uid, "icon", iconExt);
                 }
-                if (!string.IsNullOrEmpty(iconExt)) 
+                if (!string.IsNullOrEmpty(headerExt)) 
                 {
                     deleteStorageFile(uid, "logo", headerExt);
                 }
-                if (!string.IsNullOrEmpty(iconExt)) 
+                if (!string.IsNullOrEmpty(backExt)) 
                 {
                     deleteStorageFile(uid, "background", backExt);
                 }
@@ -165,9 +165,9 @@ where   T.AuditID = @ID and T.[Version] = 0", new { audit.ID });
 
                 return HttpStatusCode.OK;
             }
-            catch (GenericException ex)
+            catch (GenericException)
             {
-                throw ex;
+                throw;
             }
             catch (Exception ex)
             {
@@ -177,11 +177,6 @@ where   T.AuditID = @ID and T.[Version] = 0", new { audit.ID });
         
         public async Task<List<GetTheme>> GetThemesAsync(IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null)
         {
-            if (cancellationToken == null)
-            {
-                cancellationToken = CancellationToken.None;
-            }
-
             Guid themeUid = Guid.Empty;
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "uid"))
             {
