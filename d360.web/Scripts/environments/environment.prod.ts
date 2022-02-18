@@ -1,4 +1,8 @@
-﻿
+﻿declare var VersionNumber: string;
+
+
 export const environment = {
-    production: true
+    production: true,
+    version: VersionNumber,
+    timeStamp: "{BUILD_TIMESTAMP}"
 };

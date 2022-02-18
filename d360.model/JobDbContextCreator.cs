@@ -13,7 +13,8 @@ namespace d360.model
             AzureQueueSource queue = null,
             AzureStorageProvider storage = null,
             string connectionString = null,
-            string mandrillApiKey = null)
+            string mandrillApiKey = null,
+            string mandrillSubAccount = null)
         {
             var sec = new UriSecurityContextProvider()
             {
@@ -27,7 +28,11 @@ namespace d360.model
             {
                 ApiKey = string.IsNullOrEmpty(mandrillApiKey) 
                             ? Config.GetValue<string>(constants.MAIL_API_KEY) 
-                            : mandrillApiKey
+                            : mandrillApiKey,
+
+                SubAccount = string.IsNullOrEmpty(mandrillSubAccount)
+                                ? Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT)
+                                : mandrillSubAccount,
             };
             if (queue == null)
             {

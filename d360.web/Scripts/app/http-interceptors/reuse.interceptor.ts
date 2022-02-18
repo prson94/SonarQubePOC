@@ -10,6 +10,10 @@ const CacheEntryLifeTimeInMinutes = 10;
 export class ReuseInterceptor implements HttpInterceptor {
     cache = new Map<string, CacheEntry>();
 
+    public forceRefresh() {
+        this.cache.clear();
+    }
+
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         if (req.method === 'GET') {
             return this.reuseRequest(req, next);

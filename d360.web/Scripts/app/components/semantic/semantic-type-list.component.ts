@@ -132,13 +132,17 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
 
     sourceValues: string[] = ["Built-In", "User-Defined"];
     statusValues: string[] = ["Certified", "Draft", "Under Review"];
-    matchTypeValues: string[] = ["Advanced", "List", "Number", "Pattern"];
+    matchTypeValues: string[] = ["Advanced (JSON)", "List of Values", "Number", "Pattern in Data"];
     baseTypeValues: string[] = ["Boolean", "Double", "Long", "String", "LocalDate", "LocalTime", "LocalDateTime", "OffsetDateTime", "ZonedDateTime",];
 
     advancedFilterMap = new Map([
         ["Built-In", "BuiltIn"],
         ["User-Defined", "UserDefined"],
-        ["Under%20Review", "InReview"]]);    
+        ["Under%20Review", "InReview"],
+        ["Advanced%20\\(JSON\\)", "Advanced"],
+        ["List%20of%20Values", "List"],
+        ["Pattern%20in%20Data", "Pattern"],
+    ]);    
 
     constructor(private route: ActivatedRoute,
         private router: Router,

@@ -2933,7 +2933,22 @@ from    (
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = group.GetName(i => i.PrimaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.PrimaryOwnerResourceID.Value).FormatDisplayName() }
+                                    new ReadOnlyField {
+                                        Name = group.GetName(i => i.PrimaryOwnerResourceID),
+                                        FieldName = "GroupOwner",
+                                        FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID),
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value= groupOwners.Single(i => i.ID == group.PrimaryOwnerResourceID.Value).FormatDisplayName(),
+                                                TooltipType="Resource",
+                                                TooltipUrl="resource/"+group.PrimaryOwnerResourceID,
+                                                uid= group.PrimaryOwnerUid.Value,
+                                                HideTooltip = true
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
                                 }
                             };
 
@@ -2941,7 +2956,22 @@ from    (
                             {
                                 row.SecondColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = group.GetName(i => i.SecondaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.SecondaryOwnerResourceID.Value).FormatDisplayName() }
+                                    new ReadOnlyField { 
+                                        Name = group.GetName(i => i.SecondaryOwnerResourceID), 
+                                        FieldName = "GroupOwner", 
+                                        FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID),
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value= groupOwners.Single(i => i.ID == group.SecondaryOwnerResourceID.Value).FormatDisplayName(),
+                                                TooltipType="Resource",
+                                                TooltipUrl="resource/"+group.SecondaryOwnerResourceID,
+                                                uid= group.SecondaryOwnerUid.Value,
+                                                HideTooltip = true
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
                                 };
                             }
 
