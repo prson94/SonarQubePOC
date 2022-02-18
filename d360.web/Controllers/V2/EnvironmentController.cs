@@ -1774,7 +1774,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Helper endpoint to convert a CSS block to a UTF-8 Base64 string.
+        /// Helper endpoint to convert an image file to a DataUrl string block.
         /// </summary>
         [
             HttpPut,
