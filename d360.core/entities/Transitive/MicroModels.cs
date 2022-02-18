@@ -50,6 +50,14 @@ namespace d360.core.entities
         public SystemObjects @Object { get; set; }
     }
 
+    public class GetUserModel
+    {
+        [JsonProperty("uid")]
+        public Guid Uid { get; set; }
+
+        [JsonProperty("fullName")]
+        public string FullName { get; set; }
+    }
 
     [DataContract(Namespace = NAMESPACE), System.ComponentModel.DataAnnotations.Schema.Table("Global_Resource", Schema = "reporting")]
     public class GlobalReportingResource : BaseObject

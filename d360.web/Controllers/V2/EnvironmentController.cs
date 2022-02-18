@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.extensions;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
@@ -15,6 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -32,10 +35,12 @@ namespace d360.web.Controllers.V2
     ]
     public class EnvironmentController : BaseV2ApiController
     {
+        IThemeRepository ThemeRepository;
         IStorageProvider _storage;
 
-        public EnvironmentController(ICoreComponentSet set, IStorageProvider storage) : base(set)
+        public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IStorageProvider storage) : base(set)
         {
+            ThemeRepository = themeRepository;
             _storage = storage;
         }
 
@@ -239,41 +244,6 @@ namespace d360.web.Controllers.V2
 
         }
 
-        private static readonly Dictionary<string, byte[]> ValidImagefileHeaders = new Dictionary<string, byte[]>
-        {
-            { "image/jpeg", new byte[]{ 0xFF, 0xD8 }},
-            { "image/gif", new byte[]{ 0x47, 0x49, 0x46 }},
-            { "image/png", new byte[]{ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }},
-            { "image/x-icon", new byte[]{ 0x00, 0x00, 0x01, 0x00 }},
-            { "image/vnd.microsoft.icon", new byte[]{ 0x00, 0x00, 0x01, 0x00 }},
-        };
-
-        private bool IsValidImageData(string data)
-        {
-            if(string.IsNullOrEmpty(data))
-            {
-                return true;
-            }
-            var match = MimeTypeExtensionsMap.RegEx.Match(data);
-            var imgMime = match.Groups["mime"].Value;
-
-            if (ValidImagefileHeaders.ContainsKey(imgMime))
-            {
-                var imgByteArray = Convert.FromBase64String(match.Groups["data"].Value);
-
-                if (imgByteArray.Length >= ValidImagefileHeaders[imgMime].Length)
-                {
-                    var slice = imgByteArray.Take(ValidImagefileHeaders[imgMime].Length);
-                    if (slice.SequenceEqual(ValidImagefileHeaders[imgMime]))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
         private async Task<string> updateSingleSettingImageFile(string folder, string url, string data)
         {
             if (string.IsNullOrEmpty(data))
@@ -286,17 +256,10 @@ namespace d360.web.Controllers.V2
             }
             else
             {
-                var match = MimeTypeExtensionsMap.RegEx.Match(data);
-                var imgMime = match.Groups["mime"].Value;
-                var imgData = match.Groups["data"].Value;
-                var imgExtension = MimeTypeExtensionsMap.GetExtension(imgMime);
-                var imgByteArray = Convert.FromBase64String(imgData);
-                using (var imgStream = new MemoryStream(imgByteArray))
-                {
-                    var imgFileName = string.Format("{0}{1}", Company.CurrentCompanyID, imgExtension);
-                    await _storage.CreateFile(folder, imgFileName, imgStream).ConfigureAwait(false);
-                    data = $"{url}{imgFileName}";
-                }
+                var info = data.GetFileFromDataUrl();
+                var imgFileName = string.Format("{0}{1}", Company.CurrentCompanyID, info.Item1);
+                await _storage.CreateFile(folder, imgFileName, info.Item2).ConfigureAwait(false);
+                data = $"{url}{imgFileName}";
             }
 
             return data;
@@ -442,7 +405,7 @@ namespace d360.web.Controllers.V2
 
             if(setting.ID == Setting.CompanyLogo || setting.ID == Setting.CompanyIcon || setting.ID == Setting.HomePageBackgroundImage)
             {
-                if (!IsValidImageData(value))
+                if (!value.IsValidImageData())
                 {
                     throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
                 }
@@ -1037,6 +1000,8 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        #region Help Menu Endpoints
+
         /// <summary>
         /// Gets help menu items.
         /// </summary>
@@ -1351,5 +1316,518 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
             }
         }
+
+        #endregion
+
+
+        #region Theme Endpoints
+
+        /// <summary>
+        /// Gets a list of themes in an environment.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        /// <returns>A list of themes defined in your environment.</returns>
+        [
+            HttpGet,
+            Route("themes"),
+            SwaggerProduces("application/json"),
+            SwaggerParameter("uid", "An optional uid of the theme, to limit this list to a specific theme.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of themes.", typeof(GetSemantics)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetThemes(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+                var apiModels = await ThemeRepository.GetThemesAsync(queryParams, cancellationToken);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(
+                    HttpStatusCode.InternalServerError,
+                    "Error retrieving themes",
+                    ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the generated CSS stylesheet for the current theme that contains variables used by other stylesheets within Govern.
+        /// </summary>
+        [
+            HttpGet,
+            Route("themes/current.css"),
+            SwaggerProduces("text/css"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(GetSemantics)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetCurrentThemeCss()
+        {
+            try
+            {
+                var theme = await ThemeRepository.GetCurrentThemeByUserAsync();
+
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, "No theme currently active theme exists.");
+                }
+
+                var css = new StringBuilder();
+                css.AppendLine(":root {");
+                css.AppendCssVariable("backColor", theme.BackColor);
+                css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+                css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+                css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+                css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+                css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+                css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+                css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+                css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+                css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+                css.AppendLine("}");
+
+                var customCss = ThemeRepository.GetCurrentThemeCustomCssByUser();
+                css.AppendLine("");
+                css.Append(customCss);
+
+                return ResponseMessage(
+                    new HttpResponseMessage { 
+                        Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
+                        StatusCode = HttpStatusCode.OK
+                    });
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(
+                    HttpStatusCode.InternalServerError,
+                    "Error retrieving themes",
+                    ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the generated CSS stylesheet for the theme (based on the provided Uid) that contains variables used by other stylesheets within Govern.
+        /// </summary>
+        [
+            HttpGet,
+            Route("themes/{uid:Guid}.css"),
+            SwaggerProduces("text/css"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(GetSemantics)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult GetThemeCssByUid(Guid uid)
+        {
+            try
+            {
+                var theme = ThemeRepository.GetThemeByUid(uid);
+
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, "No theme exists with the provided Uid.");
+                }
+
+                var css = new StringBuilder();
+                css.AppendLine(":root {");
+                css.AppendCssVariable("backColor", theme.BackColor);
+                css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+                css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+                css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+                css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+                css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+                css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+                css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+                css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+                css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+                css.AppendLine("}");
+
+                css.AppendLine("");
+                css.Append(theme.CustomCss+"");
+
+                return ResponseMessage(
+                    new HttpResponseMessage
+                    {
+                        Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
+                        StatusCode = HttpStatusCode.OK
+                    });
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(
+                    HttpStatusCode.InternalServerError,
+                    "Error retrieving theme",
+                    ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the generated CSS stylesheet for the theme (based on the provided Uid) that contains variables used by other stylesheets within Govern.
+        /// </summary>
+        [
+            HttpGet,
+            Route("themes/{uid:Guid}/custom.css"),
+            SwaggerProduces("text/css"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(GetSemantics)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Theme does not exist, or does not contain custom Css.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Feature is not enabled.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult GetThemeCustomCssByUid(Guid uid)
+        {
+            try
+            {
+                // FeatureFlag Check
+                var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
+                if (!isCustomCssEnabled)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Your environment does not allow custom css to be defined within a theme.");
+                }
+
+
+                var theme = ThemeRepository.GetThemeByUid(uid);
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, "No theme exists with the provided Uid.");
+                }
+
+                if (string.IsNullOrEmpty(theme.CustomCss))
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, "Custom Css does not exists for the theme with the Uid provided.");
+                }
+
+                return ResponseMessage(
+                    new HttpResponseMessage
+                    {
+                        Content = new StringContent(theme.CustomCss, Encoding.UTF8, "text/css"),
+                        StatusCode = HttpStatusCode.OK
+                    });
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(
+                    HttpStatusCode.InternalServerError,
+                    "Error retrieving theme",
+                    ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Retrieves the generated SVG thumbnail for the theme based on the provided Uid.
+        /// </summary>
+        [
+            HttpGet,
+            Route("themes/{uid:Guid}.svg"),
+            SwaggerProduces("application/svg+xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(GetSemantics)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetThemeSvgByUid(Guid uid)
+        {
+            try
+            {
+                var theme = ThemeRepository.GetThemeByUid(uid);
+
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, "No theme exists with the provided Uid.");
+                }
+
+                var svg = new StringBuilder();
+                //svg.AppendLine(":root {");
+                //svg.AppendCssVariable("backColor", theme.BackColor);
+                //svg.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+                //svg.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+                //svg.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+                //svg.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+                //svg.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+                //svg.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+                //svg.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+                //svg.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+                //svg.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+                //svg.AppendLine("}");
+
+                svg.AppendLine(@"<svg height=""100"" width=""100"">");
+                svg.AppendLine($@" <circle cx=""50"" cy=""50"" r=""40"" stroke=""{theme.TabLinkColor}"" stroke-width=""3"" fill=""{theme.BackColor}"" />");
+                svg.AppendLine("</svg> ");
+
+                return ResponseMessage(
+                    new HttpResponseMessage
+                    {
+                        Content = new StringContent(svg.ToString(), Encoding.UTF8, "application/svg+xml"),
+                        StatusCode = HttpStatusCode.OK
+                    });
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(
+                    HttpStatusCode.InternalServerError,
+                    "Error retrieving theme",
+                    ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Creates a theme.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        /// <returns>The created theme.</returns>
+        [
+            HttpPost,
+            Route("themes"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding theme.", typeof(GetTheme)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostTheme(PostTheme requestModel)
+        {
+            const string ERROR_HEADING = "Error adding theme";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                if (!string.IsNullOrEmpty(requestModel.CustomCss))
+                {
+                    // FeatureFlag Check
+                    var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
+                    if (!isCustomCssEnabled)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, "Your environment does not allow custom css to be defined within a theme.");
+                    }
+                }
+
+                var responseModel = await ThemeRepository.PostThemeAsync(requestModel);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Updates a theme based on the provided Uid.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        /// <returns>The updated theme.</returns>
+        [
+            HttpPut,
+            Route("themes/{uid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the updated theme.", typeof(GetTheme)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "The theme was not found based on the provided Uid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutTheme(Guid uid, PutTheme requestModel)
+        {
+            const string ERROR_HEADING = "Error updating theme";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                if (!string.IsNullOrEmpty(requestModel.CustomCss))
+                {
+                    // FeatureFlag Check
+                    var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
+                    if (!isCustomCssEnabled)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, "Your environment does not allow custom css to be defined within a theme.");
+                    }
+                }
+
+                var reponseModel = await ThemeRepository.PutThemeAsync(uid, requestModel);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModel));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a theme, provided it is not set as the current theme of the environment.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        /// <returns>A confirmation response.</returns>
+        [
+            HttpDelete,
+            Route("themes/{uid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns a success message.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Your Theme was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this theme is invalid, possibly due to being set as the current theme.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public IHttpActionResult DeleteTheme(Guid uid)
+        {
+            const string ERROR_HEADING = "Error deleting theme";
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var status = ThemeRepository.Delete(uid);
+
+                return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Theme removed." }));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Helper endpoint to convert a CSS block to a UTF-8 Base64 string.
+        /// </summary>
+        [
+            HttpPut,
+            Route("themes/conversion/base64"),
+            SwaggerConsumes("text/css"), SwaggerProduces("text/plain"),
+            SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding theme.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ConvertCssToBase64(string css)
+        {
+            const string ERROR_HEADING = "Error converting css";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var cssBytes = System.Text.Encoding.UTF8.GetBytes(css);
+                var responseModel = Convert.ToBase64String(cssBytes);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Helper endpoint to convert a CSS block to a UTF-8 Base64 string.
+        /// </summary>
+        [
+            HttpPut,
+            Route("themes/conversion/dataurl"),
+            SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
+            SwaggerProduces("text/plain"),
+            SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding theme.", typeof(List<GetSemantic>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ConvertImageToDataUrl()
+        {
+            const string ERROR_HEADING = "Error converting css";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var c = await Request.Content.ReadAsMultipartAsync();
+                var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
+
+                if (file == null)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "You must provide an image file to convert.");
+                }
+
+                byte[] bytes = await file.ReadAsByteArrayAsync();
+                string extension = Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
+
+                var goodExtensions = new List<string> { ".gif", ".ico", ".jpg", ".png" };
+                if (!goodExtensions.Contains(extension))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "You must provide a valid image file.");
+                }
+
+                var dataUri = bytes.GetDataUrlFromStream(extension);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dataUri));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        #endregion
     }
 }
