@@ -484,14 +484,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ");
             }
 
-            string fieldColumnsSql = "";
-            if (fieldColumns.Count > 0)
-                fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
-
-            var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
-
-            string orderByClause = $"order by {_orderBy} {_orderDirection}";
-
             if (isFilteredByAssetUID)
             {
                 //apply data to check which side on relationship are we
@@ -501,8 +493,19 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
 				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
 				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData");
-
             }
+
+            string fieldColumnsSql = "";
+            if (fieldColumns.Count > 0)
+                fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
+
+            var countFullSql = $@"select	
+           @total = count(1) 
+                {countSql} 
+                {(filteringByFields ? string.Join("\n", fieldJoins) : "")} 
+                {whereClause}";
+
+            string orderByClause = $"order by {_orderBy} {_orderDirection}";
 
             var sql = $@"
 {filteredIntersectsTempTable}

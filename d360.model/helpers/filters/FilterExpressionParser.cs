@@ -103,6 +103,8 @@ namespace d360.model.helpers
 
                 allowedDefaultFields.Add(new DefaultFilter("Object.[Path]", "ANDP_Object.DisplayPath", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("Subject.[Path]", "ANDP_Subject.DisplayPath", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("relationshiptype", "RelationshipSideData.RelationshipTypeName", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("assetpath", "RelationshipSideData.AssetPath", SqlFieldType.Text));
             }
 
             if (parseType == FilterExpressionParseType.Semantics)

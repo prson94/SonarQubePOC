@@ -47,15 +47,22 @@
                                 Relationship Type <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
+                            <th width="40px"></th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
-                        <tr>
+                        <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
                             <td>
                                 {{item.RelationshipTypeName}}
                             </td>
                             <td>
                                 {{item.AssetPath}}
+                            </td>
+                            <td class="asset-grid-tools">
+                                <div style="display:inline-block">
+                                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                                </div>
                             </td>
                         </tr>
                     </ng-template>

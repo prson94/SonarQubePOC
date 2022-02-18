@@ -14,6 +14,7 @@ import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/adva
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
 import { PortalsModule } from "../portals/portals.module";
 import { SidePanelModule } from '../sidepanel/side-panel.module';
+import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 
 
 @NgModule({
@@ -31,7 +32,8 @@ import { SidePanelModule } from '../sidepanel/side-panel.module';
         AdvancedFiltersModule,
         SearchFieldModule,
         PortalsModule,
-        SidePanelModule
+        SidePanelModule,
+        PopupMenuModule
     ],
     declarations: [
         RelationshipDetailComponent
