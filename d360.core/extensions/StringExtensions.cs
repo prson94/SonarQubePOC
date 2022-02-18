@@ -92,5 +92,34 @@ namespace d360.core
             return inputString.Substring(0, 28) + "...";
         }
 
+        /// <summary>
+        /// Checks if a string is a valid RGB color value.
+        /// </summary>
+        /// <param name="value">The value to test.</param>
+        /// <returns>Returns true if valid RGB; otherwise false.</returns>
+        public static bool IsValidRgb(this string value)
+        {
+            if (value == null)
+            {
+                return true;
+            }
+            var colorRegex = new Regex("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
+            return colorRegex.IsMatch(value);
+        }
+
+        /// <summary>
+        /// Used by Themeing endpoints. Add a variable to generated CSS output.
+        /// </summary>
+        /// <param name="builder">The StringBuilder being used to generate the CSS text</param>
+        /// <param name="name">The property name, typially the JSON property name from the Theme.cs file.</param>
+        /// <param name="value">The property value stored in the Theme record.</param>
+        public static void AppendCssVariable(this StringBuilder builder, string name, string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                builder.AppendLine($" --{name}: {value};");
+            }
+        }
+
     }
 }
