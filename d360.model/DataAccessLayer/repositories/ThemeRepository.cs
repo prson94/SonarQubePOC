@@ -54,6 +54,9 @@ namespace d360.model.DataAccessLayer
                 case "R":
                     action = "Removed";
                     break;
+                default:
+                    // No action, leave the value as is.
+                    break;
             }
             var audit = new Audit
             {
@@ -209,7 +212,7 @@ where   T.AuditID = @ID and T.[Version] = 0", new { audit.ID });
                     .Select(m => m.t.ToGetModel(baseUri, m.c, m.u, CompanyContext.CurrentCompanyID))
                     .OrderBy(t => t.Name)
                     .ToList();
-            });
+            }).ConfigureAwait(false);
 
             return apiModels;
         }
@@ -297,14 +300,15 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
                     addStorageFile(repoTheme.Uid, "logo", repoTheme.HeaderLogo, repoTheme.HeaderLogoExtension);
                     addStorageFile(repoTheme.Uid, "background", repoTheme.HomePageBackground, repoTheme.HomePageBackgroundExtension);
 
-                });
+                }).ConfigureAwait(false);
+
                 var baseUri = StorageProvider.GetBaseUri("themes");
                 var resource = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == CompanyContext.CurrentResourceID).SingleOrDefault();
                 return repoTheme.ToGetModel(baseUri, resource, resource, CompanyContext.CurrentCompanyID);
             }
-            catch (GenericException ex)
+            catch (GenericException)
             {
-                throw ex;
+                throw;
             }
             catch (Exception ex)
             {
@@ -351,7 +355,7 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
                     addStorageFile(existingTheme.Uid, "icon", existingTheme.BrowserIcon, existingTheme.BrowserIconExtension);
                     addStorageFile(existingTheme.Uid, "logo", existingTheme.HeaderLogo, existingTheme.HeaderLogoExtension);
                     addStorageFile(existingTheme.Uid, "background", existingTheme.HomePageBackground, existingTheme.HomePageBackgroundExtension);
-                });
+                }).ConfigureAwait(false);
 
                 var createdBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.CreatedBy).SingleOrDefault();
                 var updatedBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.UpdatedBy).SingleOrDefault();

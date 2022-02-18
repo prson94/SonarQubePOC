@@ -7,11 +7,11 @@ namespace d360.core
 {
     public class MimeTypes 
     {
-        public const string GIF = "image/gif";
-        public const string JPEG = "image/jpeg";
-        public const string ICON = "image/x-icon";
-        public const string PNG = "image/png";
-        public const string VISIO = "image/vnd.microsoft.icon";
+        public static readonly string GIF = "image/gif";
+        public static readonly string JPEG = "image/jpeg";
+        public static readonly string ICON = "image/x-icon";
+        public static readonly string PNG = "image/png";
+        public static readonly string VISIO = "image/vnd.microsoft.icon";
     }
     public class MimeTypeExtensionsMap
     {

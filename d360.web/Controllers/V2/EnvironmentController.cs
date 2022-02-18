@@ -1552,19 +1552,6 @@ namespace d360.web.Controllers.V2
                 }
 
                 var svg = new StringBuilder();
-                //svg.AppendLine(":root {");
-                //svg.AppendCssVariable("backColor", theme.BackColor);
-                //svg.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
-                //svg.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
-                //svg.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
-                //svg.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
-                //svg.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
-                //svg.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
-                //svg.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
-                //svg.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
-                //svg.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
-                //svg.AppendLine("}");
-
                 svg.AppendLine(@"<svg height=""100"" width=""100"">");
                 svg.AppendLine($@" <circle cx=""50"" cy=""50"" r=""40"" stroke=""{theme.TabLinkColor}"" stroke-width=""3"" fill=""{theme.BackColor}"" />");
                 svg.AppendLine("</svg> ");
