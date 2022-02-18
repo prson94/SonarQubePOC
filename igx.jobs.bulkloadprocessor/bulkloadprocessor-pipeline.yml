@@ -1,0 +1,115 @@
+trigger:
+  branches:
+    include:
+    - '*sprint*'
+  paths:
+    include:
+    - /d360.core
+    - /d360.model
+    - /d360.extensions
+    - /d360.utils.company
+    - /igx.jobs
+    - /igx.jobs.bulkloadprocessor
+pr:
+  autoCancel: false
+  drafts: false
+  branches:
+    include:
+    - '*sprint*'
+  paths:
+    include:
+    - /d360.core
+    - /d360.model
+    - /d360.extensions
+    - /d360.utils.company
+    - /igx.jobs
+    - /igx.jobs.bulkloadprocessor
+name: WebJob-BulkLoadProcessor-$(SourceBranchName)-$(Date:MM-dd-yyyy)$(Rev:.r)
+resources:
+  repositories:
+  - repository: self
+    type: git
+  - repository: templates
+    type: github
+    name: Infogix/govern-pipeline-templates
+    ref: refs/heads/main
+    endpoint: 'govern-build - Service Endpoint'
+stages:
+- stage: BUILD_NAME
+  displayName: 'Set build name'
+  dependsOn: []
+  jobs:
+  - template: build/jobs/job-build-name.yml@templates
+- stage: BUILD_SOLUTION
+  displayName: 'Build BulkLoadProcessor'
+  dependsOn: []
+  jobs:
+  - job: BUILD
+    displayName: 'Build BulkLoadProcessor'
+    timeoutInMinutes: 0
+    cancelTimeoutInMinutes: 1
+    pool:
+      vmImage: windows-2019
+    steps:
+    - checkout: self
+    - template: build/seteps/step-azure-key-vault.yml@templates
+      parameters:
+        secretsFilter: 'whitesourceApiKey,blackduckApi'
+    - template: build/steps/step-t4-transform.yml@templates
+    - task: Cache@2
+      displayName: 'Cache NuGet packages'
+      inputs:
+        key: 'nuget-temp | "$(Agent.OS)" | $(Build.SourcesDirectory)/**/packages.config, !$(Build.SourcesDirectory)/igx.jobs.genericcommandprocessor/packages.config'
+        restoreKeys: |
+          nuget-temp | "$(Agent.OS)"
+          nuget-temp
+        path: $(UserProfile)/.nuget/packages/
+    - template: build/steps/step-dotnet-build.yml
+      parameters:
+        solutionToRestore: .
+        solutionToBuild: 'd360.core/d360.core.csproj'
+        nuGetCommand: 'restore -Project2ProjectTimeOut 20'
+        buildArguments: '/p:Configuration=Release /t:Rebuild'
+    - task: MSBuild@1
+      displayName: Build solution d360.extensions/d360.extensions.csproj
+      inputs:
+        solution: d360.extensions/d360.extensions.csproj
+        msbuildArguments: /p:Configuration=Release /t:Rebuild
+        clean: true
+        maximumCpuCount: true
+    - task: MSBuild@1
+      displayName: Build solution d360.model/d360.model.csproj
+      inputs:
+        solution: d360.model/d360.model.csproj
+        msbuildArguments: /p:Configuration=Release /t:Rebuild
+        maximumCpuCount: true
+    - task: MSBuild@1
+      displayName: Build solution d360.utils.company/d360.utils.company.csproj
+      inputs:
+        solution: d360.utils.company/d360.utils.company.csproj
+        msbuildArguments: /p:Configuration=Release /t:Rebuild
+        clean: true
+        maximumCpuCount: true
+    - task: MSBuild@1
+      displayName: Build solution igx.jobs/igx.jobs.csproj
+      inputs:
+        solution: igx.jobs/igx.jobs.csproj
+        msbuildArguments: /p:Configuration=Release /t:Rebuild
+    - task: MSBuild@1
+      displayName: Build and Publish WebJob Bulk Load Processor
+      inputs:
+        solution: igx.jobs.bulkloadprocessor/igx.jobs.bulkloadprocessor.csproj
+        msbuildArguments: /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.Repository.LocalPath)/bulkloadprocessor/"
+        clean: true
+        maximumCpuCount: true
+    - template: build/jobs/job-whitesource-blackduck-scan.yml@templates
+      parameters:
+        whitesourceApiKey: $(whitesourceApiKey)
+        blackduckApi: $(blackduckApi)
+        artifactName: BulkLoadProcessor
+        projectName: 'Bulk Load Processor'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: Bulk Load Processor'
+      inputs:
+        PathtoPublish: $(Build.Repository.LocalPath)/bulkloadprocessor/
+        ArtifactName: BulkLoadProcessor
