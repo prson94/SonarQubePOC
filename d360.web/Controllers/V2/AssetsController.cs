@@ -173,6 +173,48 @@ namespace d360.web.Controllers.V2
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        ///     
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     * Score is in band Poor -({fieldname} le '50')
+        ///     * Score is in band Average -({fieldname} gt '50' and {fieldname} le '90')
+        ///     * Score is in band Good -({fieldname} gt '90')
+        ///     * Date Is {DateFieldName} eq 'YYYY-MM-DD'
+        ///     * Date Is not {DateFieldName} ne 'YYYY-MM-DD'
+        ///     * Date Is Before {DateFieldName} lt 'YYYY-MM-DD'
+        ///     * Date Is After {DateFieldName} gt 'YYYY-MM-DD'
+        ///     * Date Is on or Before {DateFieldName} le 'YYYY-MM-DD'
+        ///     * Date Is on or After {DateFieldName} ge 'YYYY-MM-DD'
+        ///     * Date Is Between ({DateFieldName} ge 'YYYY-MM-DD' and {DateFieldName} le 'YYYY-MM-DD')
+        ///     * DateTime Is Before {DateTimeFieldName} lt 'YYYY-MM-DDTHH24:MI'
+        ///     * DateTime Is After {DateTimeFieldName} gt 'YYYY-MM-DDTHH24:MI'
+        ///     * DateTime Is Between ({DateTimeFieldName} ge 'YYYY-MM-DDTHH24:MI' and {DateTimeFieldName} le 'YYYY-MM-DDTHH24:MI')
+        ///     * Tag Contains Match Any (({TagFieldName} ct 'Data') or ({TagFieldName} ct 'Data1') or (...))
+        ///     * Tag Contains Match All (({TagFieldName} ct 'Data') and ({TagFieldName} ct 'Data1') and (...))
+        ///     * Tag Does not Contain Match Any (({TagFieldName} nct 'Data') or ({TagFieldName} nct 'Data1') or (...))
+        ///     * Tag Does not Contain Match All (({TagFieldName} nct 'Data') and ({TagFieldName} nct 'Data1') and (...))
+        ///     * AssetPath Contains (Match All)Operator (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
+        ///     * AssetPath Contains (Match Any)Operator (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
+        ///     * AssetPath Contains  Operator ({AssetPathFieldName} ct 'APValue1')
+        ///     * AssetPath Does not contain Operator ({AssetPathFieldName} nct 'APValue1')
+        ///     * AssetPath is Operator ({AssetPathFieldName} eq 'APValue1')
+        ///     * AssetPath is not Operator ({AssetPathFieldName} ne 'APValue1')
+        ///     * AssetPath Start with Operator {AssetPathFieldName} ct 'APValue1*'
+        ///     * AssetPath End with Operator {AssetPathFieldName} ct '*APValue1'
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// 
         /// Relationship filtering is done using _relationFilter parameter and filter expressions are specified using relationship type UID, operator and Asset UID. IE. {Relationship Type UID} eq {Asset UID}.
         /// *  For comparison operators you can use eq (equal), ne (not equal)
