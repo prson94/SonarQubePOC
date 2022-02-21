@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    public class BulkLoadGetLoadColumnsModel: List<BulkLoadGetLoadColumnModel>
+    public class BulkLoadGetLoadColumnsModel : List<BulkLoadGetLoadColumnModel>
     {
     }
 
@@ -17,7 +16,7 @@ namespace d360.core.entities
 
         public bool IsLookup { get; set; }
 
-        public int? FieldTypeId { get; set; }  
+        public int? FieldTypeId { get; set; }
 
         public bool AllowMultipleValues { get; set; }
 
@@ -29,6 +28,7 @@ namespace d360.core.entities
     public class BulkLoadGetLoadColumnModelValue
     {
         public string Value { get; set; }
+
         public string Label { get; set; }
     }
 }
