@@ -8,6 +8,7 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
 
 @Component({
     selector: 'd3s-dashboard',
@@ -30,6 +31,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         protected dashboardService: DashboardService,
         private route: ActivatedRoute,
         private headerBreadcrumbService: HeaderBreadcrumbService,
+        private titleAndTabsService: TitleAndTabsService,
         secondaryNavService: SecondaryNavService,
         private router: Router,
         breadcrumbService: HeaderBreadcrumbService,
@@ -41,6 +43,12 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnInit() {
+        console.log('this.titleAndTabsService.isInitialize');
+        console.log(this.titleAndTabsService.isInitialize);
+        if (!this.titleAndTabsService.isInitialize) {
+            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params);
+        }
+
         this.showSingle = false;
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
