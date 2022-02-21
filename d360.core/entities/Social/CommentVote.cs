@@ -1,9 +1,11 @@
-﻿using d360.core.entities.Contracts;
-using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations.Schema;
-using d360.core.enums;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
+using d360.core.enums;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -24,7 +26,6 @@ namespace d360.core.entities
         public Emoji Emoji { get; set; }
 
         #endregion
-
     }
 
     [DataContract(Namespace = NAMESPACE)]
