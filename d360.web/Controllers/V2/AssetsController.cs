@@ -186,6 +186,7 @@ namespace d360.web.Controllers.V2
         ///     * Less than or equal operator -{fieldname} le 99
         ///     * Not populated operator -{fieldname} eq null
         ///     * populated operator -{fieldname} ne null
+        ///     If Scoring Bands Define : Poor (0%-50%) Average (50%-90%) Good (90%-100%)
         ///     * Score is in band Poor -({fieldname} le '50')
         ///     * Score is in band Average -({fieldname} gt '50' and {fieldname} le '90')
         ///     * Score is in band Good -({fieldname} gt '90')
