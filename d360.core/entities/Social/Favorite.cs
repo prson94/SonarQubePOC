@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System;
-using System.Runtime.Serialization;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
@@ -30,8 +29,8 @@ namespace d360.core.entities
         public string Object { get; set; }
 
         [DataMember]
-        public int? ObjectID { get; set; }   
-        
+        public int? ObjectID { get; set; }
+
         [DataMember]
         public bool IsHomePage { get; set; }
 
