@@ -143,7 +143,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private genericMessageService: GenericMessageService
     ) {
         super(settingsService);
-        debugger;
 
         var me = this;
         this.route.queryParams.subscribe((params) => {

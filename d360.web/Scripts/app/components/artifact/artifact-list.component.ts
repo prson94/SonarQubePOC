@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
@@ -234,5 +234,4 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.secondarySidePanelOpen = true;
         this.semanticType = event.semanticType;
     }
-
 }

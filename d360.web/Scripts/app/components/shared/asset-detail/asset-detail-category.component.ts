@@ -1,4 +1,4 @@
-﻿import { Input, Component} from '@angular/core';
+﻿import { Input, Component } from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { ObjectIdService } from '../../../services/object-id.service';
