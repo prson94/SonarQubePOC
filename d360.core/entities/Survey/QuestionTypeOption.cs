@@ -1,8 +1,10 @@
 using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 using System.Xml.Serialization;
+
+using d360.core.entities.Contracts;
+
 using Newtonsoft.Json;
 
 namespace d360.core.entities
