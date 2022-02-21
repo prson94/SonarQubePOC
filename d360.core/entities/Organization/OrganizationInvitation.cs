@@ -1,5 +1,6 @@
-﻿using d360.core.entities.Contracts;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
@@ -11,7 +12,6 @@ namespace d360.core.entities
 
         [DataMember]
         public string Email { get; set; }
-
 
         [IgnoreDataMember]
         public virtual Organization Organization { get; set; }
