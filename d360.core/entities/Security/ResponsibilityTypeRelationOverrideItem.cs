@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
@@ -29,12 +28,10 @@ namespace d360.core.entities
         {
             get
             {
-                return this.updatedon.HasValue
-                   ? this.updatedon.Value
-                   : DateTime.UtcNow;
+                return updatedon ?? DateTime.UtcNow;
             }
 
-            set { this.updatedon = value; }
+            set { updatedon = value; }
         }
 
         private DateTime? updatedon = null;
