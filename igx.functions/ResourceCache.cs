@@ -19,9 +19,9 @@ namespace igx.functions.consumption
         private CoreFunction CoreFunction;
 
 #if DEBUG
-        const string timerSettings = "*/10 * * * * *";
+        const string timerSettings = "*/2 * * * * *";
 #else
-        const string timerSettings = "0 0 */6 * * *"; // every 6 hours
+        const string timerSettings = "0 */2 * * * *";
 #endif
 
         [FunctionName(functionName)]
