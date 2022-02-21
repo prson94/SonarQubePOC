@@ -30,7 +30,6 @@ declare var CurrentResourceID;
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
-    @Output() tagsChanged = new EventEmitter<string>();
 
     gridObject: AssetGridObject;
     artifactType: ArtifactType;
@@ -236,7 +235,4 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.semanticType = event.semanticType;
     }
 
-    onTagsChanged() {
-        this.tagsChanged.emit();
-    }
 }

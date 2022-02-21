@@ -1,4 +1,4 @@
-﻿import { Input, Component, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output, ElementRef } from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { DetailField, DetailFieldType } from '../../../models/object-detail.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
@@ -34,7 +34,6 @@ export class AssetDetailFieldComponent {
         private assetService: AssetService,
         private ref: ChangeDetectorRef,
         private linkClickInterceptor: LinkClickInterceptor,
-        private el: ElementRef,
         private genericMessageService: GenericMessageService
     ) { }
 
