@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
     public class AssetResponsibilitiesApiModel : BaseObject
-    {       
-
+    {
         [DataMember]
         public int pageSize { get; set; }
 
@@ -24,7 +19,6 @@ namespace d360.core.entities
         [DataMember]
         public List<AssetResponsibilityItemModel> items { get; set; }
     }
-
 
     [DataContract(Namespace = NAMESPACE)]
     public class ResponsibilityApiModel : BaseObject
@@ -54,10 +48,11 @@ namespace d360.core.entities
         public string SecurityAsset { get; set; }
 
         [DataMember]
-        public string AssigneeType {
+        public string AssigneeType
+        {
             get
             {
-                switch ((SecurityAsset ??"").ToUpper())
+                switch ((SecurityAsset ?? "").ToUpper())
                 {
                     case "R":
                         return "resource";
@@ -105,7 +100,6 @@ namespace d360.core.entities
         [DataMember]
         public bool IsVisible { get; set; }
     }
-
 
     [DataContract(Namespace = NAMESPACE)]
     public class AssetResponsibilityItemModel : BaseObject
