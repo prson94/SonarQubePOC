@@ -19,8 +19,7 @@
                         [hasProfiling]="hasProfiling"
                         hasDetail="true"
                         [storageKey]="sidePanelStorageKey"
-                        [selectedPanel]="sidePanelTab"
-                        (tagsChangedBubbles)="assetGrid.getData(false)">
+                        [selectedPanel]="sidePanelTab">
                 <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
                 </ng-container>

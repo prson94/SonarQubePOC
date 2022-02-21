@@ -4,6 +4,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { GenericMessageService } from '../../../services/generic-message.service';
+import { GenericMessageType } from '../../../models/generic-message.model';
 
 @Component({
     selector: 'ig-asset-detail-field',
@@ -33,6 +35,7 @@ export class AssetDetailFieldComponent {
         private ref: ChangeDetectorRef,
         private linkClickInterceptor: LinkClickInterceptor,
         private el: ElementRef,
+        private genericMessageService: GenericMessageService
     ) { }
 
     ngOnInit() {
@@ -148,8 +151,11 @@ export class AssetDetailFieldComponent {
     }
 
     private onTagsChanged() {
-        let event = new CustomEvent('tagsChangedBubbles', { bubbles: true, detail: this.assetUid });
-        this.el.nativeElement.dispatchEvent(event);
+        this.genericMessageService.sendMessage({
+            uid: this.assetUid,
+            messageType: GenericMessageType.Tags,
+            text: "Tags changed in asset-detail-field"
+        });
     }
 
     getDataLinkType(data) {
