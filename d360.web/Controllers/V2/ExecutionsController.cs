@@ -992,6 +992,10 @@ from	[Load] L
             }
 
             var load = Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
+            if (load == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidLoadUid, NOT_FOUND_GENERIC_MESSAGE)).ConfigureAwait(false);
+            }
             var useExecutionTable = false;
 
             if (v2ApiActions.Contains(load.Action) && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
