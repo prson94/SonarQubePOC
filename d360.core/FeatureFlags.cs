@@ -8,15 +8,14 @@ namespace d360.core
     {
         #region Permanent Feature Flags
 
-        // Naming is "TeamName-FeatureName-Perm
-
-        public static readonly string PERM_IS_DISTRIBUTED_CACHE = "govern-distributed-cache-perm";
+        public static readonly string PERM_BRANDING_CUSTOM_CSS = "GovernBrandingCustomCssPerm";
+        public static readonly string PERM_IS_DISTRIBUTED_CACHE = "GovernDistributedCachePerm";
 
         #endregion
 
         #region Temporary Feature Flags
 
-        // Naming is "TeamName-FeatureName-Temp-YYYYMMDD
+        public static readonly string TEMP_BRANDING_NEWUI_TEMP = "GovernBrandingUiTemp20220531";
 
         #endregion
     }

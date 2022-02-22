@@ -81,6 +81,8 @@ export class IconService extends BaseObservableService {
                 return 'check-square';
             case AssetTypeClass.User:
                 return 'user';
+            case AssetTypeClass.SemanticType:
+                return 'tags';
             default:
                 console.warn('No default icon defined for ' + AssetTypeClass[c]);
                 return '';

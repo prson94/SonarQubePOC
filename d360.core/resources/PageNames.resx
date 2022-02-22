@@ -207,6 +207,9 @@
   <data name="ScoringTab" xml:space="preserve">
     <value>Scoring</value>
   </data>
+  <data name="SemanticTypePage" xml:space="preserve">
+    <value>Semantic Types</value>
+  </data>
   <data name="TechnicalAssetsPage" xml:space="preserve">
     <value>Technical Assets</value>
   </data>

@@ -19,6 +19,12 @@
 				<ng-container *ngSwitchCase="FavoritePageType.WorkflowPage"></ng-container>
 				<ng-container *ngSwitchCase="FavoritePageType.ResourceListPage"></ng-container>
 				<ng-container *ngSwitchCase="FavoritePageType.CartPage"></ng-container>
+				<ng-container *ngSwitchCase="FavoritePageType.SemanticTypePage">
+					<ng-container [ngSwitch]="AssetTypeClass[favorite.AssetTypeClass]">
+						<ng-container *ngSwitchCase="AssetTypeClass.SemanticType">Semantic Type</ng-container>
+						<ng-container *ngSwitchDefault></ng-container>
+					</ng-container>
+				</ng-container>
 				<ng-container *ngSwitchCase="FavoritePageType.Artifact">
 					<ng-container [ngSwitch]="AssetTypeClass[favorite.AssetTypeClass]">
 						<ng-container *ngSwitchCase="AssetTypeClass.BusinessAsset">Business Assets</ng-container>
@@ -27,7 +33,7 @@
 						<ng-container *ngSwitchCase="AssetTypeClass.Policy">Policies</ng-container>
 						<ng-container *ngSwitchCase="AssetTypeClass.Model">Models</ng-container>
 						<ng-container *ngSwitchCase="AssetTypeClass.Rule">Rules</ng-container>
-						<ng-container *ngSwitchCase="AssetTypeClass.Reference">Reference Lists</ng-container>
+						<ng-container *ngSwitchCase="AssetTypeClass.Reference">Reference Lists</ng-container>						
 						<ng-container *ngSwitchDefault>Unknown</ng-container>
 					</ng-container>
 				</ng-container>

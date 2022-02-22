@@ -341,4 +341,9 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         this.showEditor = false;
         this.doSearch(true);
     }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
+    }
 }
