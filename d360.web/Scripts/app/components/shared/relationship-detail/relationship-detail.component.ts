@@ -1,10 +1,14 @@
 ﻿import { OnInit, ViewChild } from '@angular/core';
 import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { forEach } from 'lodash';
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subscription } from 'rxjs';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType } from '../../../models/fieldtype-api.model';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { RelationshipCount, RelationshipType } from '../../../models/relationship.model';
+import { FieldsObservableService } from '../../../services/fieldsObservable.service';
+import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
@@ -32,6 +36,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
     selectedRelationship: any;
 
     isLoading: boolean = false;
+    areTypesLoaded: boolean = false;
 
     sidePanelOpen: string = '';
     sidePanelTab: string = '';
@@ -43,12 +48,17 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
 
     simpleFilter: string = "";
     advancedFilter: string = "";
+    advancedFilterData: any;
     sortField: string = "relationshiptypename";
     sortOrder: string = "asc";
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
     readonly menuKey = '~menu';
+
+
+    fields: GridField[] = [];
+    columns: GridColumn[] = [];
 
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
@@ -78,15 +88,26 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
     constructor(
         private cdRef: ChangeDetectorRef,
         private relationshipService: RelationshipsService,
+        private fieldService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
+        private gridDefinitionService: GridDefinitionService,
     ) {
         super(settingsService);
         this.sidePanelStorageKey = "relationship-detail";
     }
+
+    get getAdvancedFilterFields(): AdvancedFilterFieldType[] {
+        return this.filterFieldList;
+    }
+
+    updateAdvancedFilters() {
+        this.filterFieldsSubject.next(this.getAdvancedFilterFields);
+        this.filterFieldsSubject.complete();
+    }
+
     ngOnInit() {
         this.filterFields$ = this.filterFieldsSubject.asObservable();
-        this.filterFieldsSubject.next(this.filterFieldList);
-        this.filterFieldsSubject.complete();
+        this.updateAdvancedFilters();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -134,6 +155,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
                     }
                 });
                 this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
+                this.areTypesLoaded = true;
                 this.cdRef.detectChanges();
             });
     }
@@ -143,6 +165,8 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
             return;
         }
         this.isLoading = true;
+
+
         if (this.loadRelationshipsSub) {
             this.loadRelationshipsSub.unsubscribe();
         }
@@ -151,25 +175,47 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
             this.sortField = $event["sortField"] ?? this.sortField;
             this.sortOrder = +$event["sortOrder"] === 1 ? "asc" : "desc";
         }
-
-        this.loadRelationshipsSub =
-            this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams())
-                .subscribe((result) => {
-                    this.relationships = result["items"];
-
-                    this.relationships.forEach((i) => {
-
-                        i[this.menuKey] = [
-                            { title: 'Edit Relationship' },
-                            { title: 'Delete Relationship' },
-                        ];
+        if (this.singleSelectedRelationship) {
+            this.loadRelationshipsSub =
+                forkJoin(
+                    this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams()),
+                    this.gridDefinitionService.getGridDefinition(this.singleSelectedRelationship.uid, "IntersectType"))
+                    .subscribe((result) => {
+                        this.processGetRelationshipResponse(result[0], result[1]);
                     });
-
-                    this.totalRecords = result["total"];
-                    this.isLoading = false;
-                    this.cdRef.detectChanges();
-                });
+        }
+        else {
+            this.loadRelationshipsSub =
+                this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams())
+                    .subscribe((result) => {
+                        this.processGetRelationshipResponse(result);
+                    });
+        }
     }
+
+    processGetRelationshipResponse(relationships: any, gridData: any = null) {
+        this.columns = [];
+        this.fields = [];
+
+        if (gridData) {
+            //Asset path is inlcuded in grid by default, to avoid duplication we need to filter it out
+            this.columns = gridData.Columns.filter((col) => col.datafield !== "Name");
+            this.fields = gridData.Fields;
+        }
+
+        this.relationships = relationships["items"];
+
+        this.relationships.forEach((i) => {
+            i[this.menuKey] = [
+                { title: 'Edit Relationship' },
+                { title: 'Delete Relationship' },
+            ];
+        });
+        this.totalRecords = relationships["total"];
+        this.isLoading = false;
+        this.cdRef.detectChanges();
+    }
+
     getParams(): V2ApiFilters {
         var params = new V2ApiFilters();
         params._pageSize = this.rowsPerPage;
@@ -185,8 +231,27 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
         if (this.advancedFilter) {
             params._filter = this.advancedFilter;
         }
+
+        if (this.singleSelectedRelationship) {
+            params["RelationshipTypeUid"] = this.singleSelectedRelationship.uid;
+        }
+
         return params;
     }
+
+    get singleSelectedRelationship(): any {
+        if (!this.advancedFilterData) {
+            return null;
+        }
+        var relFilter = this.advancedFilterData.filter(x => x.field === "relationshiptype");
+        if (relFilter && relFilter.length !== 0 && relFilter[0]["value"] && relFilter[0]["value"].length === 1) {
+            var value = relFilter[0]["value"][0]["value"];
+            var selected = this.relationshipTypesResolvedNames.filter((x) => x["name"].toLowerCase() === value.toLowerCase());
+            return selected[0];
+        }
+        return null;
+    }
+
     selectRow(row: any) {
         this.selectedRelationship = row;
     }
@@ -207,9 +272,18 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
 
     advancedFiltersChanged($event: Filters) {
         this.advancedFilter = $event.filter;
+        this.advancedFilterData = $event.data;
+
         if (this.dt) {
             this.dt.first = 0;
         }
         this.loadRelationshipLazy(null);
+        this.updateAdvancedFilters();
+        if (this.singleSelectedRelationship) {
+            this.fieldService.getFieldsV2(this.singleSelectedRelationship.uid, null, null)
+                .subscribe((res) => {
+
+                });
+        }
     }
 }

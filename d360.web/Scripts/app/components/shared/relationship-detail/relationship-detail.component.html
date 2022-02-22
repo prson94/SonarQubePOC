@@ -12,7 +12,8 @@
                                          [infoTooltip]="simpleSearchTooltipHTML">
                         </ig-search-field>
                     </div>
-                    <advanced-filtering [loadIdentifier]="'Relationships'"
+                    <advanced-filtering *ngIf="areTypesLoaded"
+                                        [loadIdentifier]="'Relationships'"
                                         [fieldsObserver]="filterFields$"
                                         (onChange)="advancedFiltersChanged($event)">
                     </advanced-filtering>
@@ -47,6 +48,10 @@
                                 Relationship Type <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
+                            <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.apiName : null ">
+                                {{column.text}}
+                                <d3s-sortIcon [field]="column.apiName"></d3s-sortIcon>
+                            </th>
                             <th width="40px"></th>
                         </tr>
                     </ng-template>
@@ -57,6 +62,9 @@
                             </td>
                             <td>
                                 {{item.AssetPath}}
+                            </td>
+                            <td *ngFor="let column of columns">
+                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                             </td>
                             <td class="asset-grid-tools">
                                 <div style="display:inline-block">

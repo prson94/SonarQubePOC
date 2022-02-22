@@ -334,7 +334,7 @@ export class AdvancedFilterFieldCondition {
                     let arr = value
                         .map((v: SelectItem) =>
                             _.escape(v.title.split(chevronHtml).join(placeholder)).split(placeholder).join(chevronHtml)
-                    );
+                        );
 
                     if (arr.length === 1) {
                         return arr[0];
@@ -499,6 +499,7 @@ export class AdvancedFilterFieldConditionCollection {
         this.allocations = allocations;
         var f = new Filters();
         f.filter = this.getQueryStringValue();
+        f.data = _.cloneDeep(this.filters);
         return f;
     }
 
@@ -654,6 +655,7 @@ export class AdvancedFilterFieldConditionCollection {
 
 export class Filters {
     filter: string = "";
+    data: any;
 
     public applyFilters(params: any) {
         delete params["_filter"];

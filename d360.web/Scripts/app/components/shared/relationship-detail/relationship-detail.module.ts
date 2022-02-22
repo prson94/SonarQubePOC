@@ -15,6 +15,7 @@ import { SearchFieldModule } from "../controls/search-field/search-field.compone
 import { PortalsModule } from "../portals/portals.module";
 import { SidePanelModule } from '../sidepanel/side-panel.module';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 
 @NgModule({
@@ -33,7 +34,8 @@ import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
         SearchFieldModule,
         PortalsModule,
         SidePanelModule,
-        PopupMenuModule
+        PopupMenuModule,
+        SharedDynamicGridEditorModule
     ],
     declarations: [
         RelationshipDetailComponent
