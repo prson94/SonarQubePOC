@@ -26,6 +26,13 @@ namespace d360.extensions.storage
             return container.GetBlobClient(fileName);
         }
 
+        public Uri GetBaseUri(string folderName)
+        {
+            var container = GetContainer(folderName);
+            var uri = container.Uri;
+            return uri;
+        }
+
         public async Task CreateFolder(string name)
         {
             var container = GetContainer(name);

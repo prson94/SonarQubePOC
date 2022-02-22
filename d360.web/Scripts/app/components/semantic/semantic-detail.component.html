@@ -31,7 +31,7 @@
                                        [shouldBePadded]="!isSidePanel"
                                        [showHeaderLine]="false">
                         <div inputs>
-                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                            <div class="row {{(isSidePanel ? '' : 'definition-panel')}}">
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right:5px">Name</label>
                                     <div class="ig-value">{{semanticDetails.name}}</div>
@@ -41,14 +41,14 @@
                                     <div class="ig-value">{{semanticDetails.qualifier}}</div>
                                 </div>
                             </div>
-                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
-                                <div class="semantic-field">
+                            <div class="row">
+                                <div>
                                     <label class="ig-label" style="margin-right:5px">Description</label>
                                     <div *ngIf="!semanticDetails.description" class="ig-value">---</div>
                                     <div *ngIf="semanticDetails.description" class="ig-value">{{semanticDetails.description}}</div>
                                 </div>                                
                             </div>
-                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                            <div class="row {{(isSidePanel ? '' : 'definition-panel')}}">
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right: 5px">
                                         Threshold
@@ -81,7 +81,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                            <div class="row {{(isSidePanel ? '' : 'definition-panel')}}">
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right:5px">Semantic Source</label>
                                     <div class="ig-value">{{sourceMap.get(semanticDetails.source)}}</div>
@@ -94,10 +94,12 @@
                                        [shouldBePadded]="!isSidePanel"
                                        [showHeaderLine]="false">
                         <div inputs>
-                            <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                            <div class="row {{(isSidePanel ? '' : 'definition-panel')}}">
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right:5px">Match Type</label>
-                                    <div class="ig-value">{{semanticDetails.matchType}}</div>
+                                    <div class="ig-value">
+                                        {{matchTypeMap.get(semanticDetails.matchType)}}
+                                    </div>
                                 </div>
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right:5px">Base Type</label>
@@ -135,7 +137,7 @@
                                             <div class="ig-value" *ngIf="semanticDetails.minSamples">{{semanticDetails.minSamples}}</div>
                                         </div>
                                     </div>
-                                    <div class="row" style="{{(isSidePanel ? '' : 'display:flex')}}">
+                                    <div class="row {{(isSidePanel ? '' : 'definition-panel')}}" >
                                         <div class="semantic-field">
                                             <label class="ig-label" style="margin-right:5px">Valid Locales</label>
                                             <div *ngIf="!semanticDetails.validLocales || semanticDetails?.validLocales.Count==0">
@@ -158,9 +160,9 @@
                                         <div>
                                             <label class="ig-label" style="margin-right:5px">
                                                 JSON
-                                                <span class="tooltip-icon">
+                                                <!--<span class="tooltip-icon">
                                                     <i class="fa fa-question-circle" pTooltip="Json field tooltip" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
-                                                </span>
+                                                </span>-->
                                             </label>
                                             <codearea readonly="true" [(ngModel)]="advancedJson"></codearea>
                                         </div>

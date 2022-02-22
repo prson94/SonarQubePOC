@@ -90,6 +90,11 @@ namespace d360.core.enums
             Obsolete("Use BusinessAsset instead", false),
             Description("Obsolete - do not use.")
         ]
+        SemanticType = 18,
+        [
+            Name("SemanticType"),
+            Description("Semantic Type.")
+        ]
         Glossary = 100,
     }
 

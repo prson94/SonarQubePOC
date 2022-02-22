@@ -36,6 +36,13 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         ["BuiltIn", "Built-In"],
         ["UserDefined", "User-Defined"]]);
 
+    matchTypeMap = new Map([
+        ["Advanced", "Advanced (JSON)"],
+        ["List", "List of Values"],
+        ["Numbers", "Numbers"],
+        ["Pattern", "Pattern in Data"],
+    ])
+
     constructor(        
         private router: Router,
         private dataProfileService: DataProfileService,

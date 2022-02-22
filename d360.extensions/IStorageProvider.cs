@@ -32,6 +32,8 @@ namespace d360.extensions
 
         string GetFileContentsAsString(string folderName, string fileName);
 
+        Uri GetBaseUri(string folderName);
+
         Task<string> GetFileContentsAsString(string folderName, string fileName, Encoding encoding);
         Task GetFileStream(string folderName, string fileName, Stream sr);
 

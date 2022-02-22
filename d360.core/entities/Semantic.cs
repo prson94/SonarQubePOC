@@ -24,15 +24,6 @@ namespace d360.core.entities
         public List<SemanticHeaderFilterValue> values { get; set; }
     }
 
-    public class SemanticUserModel
-    {
-        [JsonProperty("uid")] 
-        public Guid Uid { get; set; }
-        
-        [JsonProperty("fullName")]
-        public string FullName { get; set; }
-    }
-
     #endregion
 
     public abstract class SemanticBase : BaseObject
@@ -111,7 +102,7 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
 
         [JsonProperty("createdBy")]
-        public SemanticUserModel CreatedBy { get; set; }
+        public GetUserModel CreatedBy { get; set; }
 
         [JsonProperty("createdOn")]
         public DateTime CreatedOn { get; set; }
@@ -123,7 +114,7 @@ namespace d360.core.entities
         public SemanticSource Source { get; set; }
 
         [JsonProperty("updatedBy")]
-        public SemanticUserModel UpdatedBy { get; set; }
+        public GetUserModel UpdatedBy { get; set; }
 
         [JsonProperty("updatedOn")]
         public DateTime UpdatedOn { get; set; }
@@ -233,7 +224,7 @@ namespace d360.core.entities
             return new GetSemantic
             {
                 BaseType = model.BaseType,
-                CreatedBy = new SemanticUserModel
+                CreatedBy = new GetUserModel
                 {
                     FullName = createdBy.FullName,
                     Uid = createdBy.Uid
@@ -258,7 +249,7 @@ namespace d360.core.entities
                 Status = model.Status,
                 Threshold = model.Threshold,
                 Uid = model.Uid,
-                UpdatedBy = new SemanticUserModel
+                UpdatedBy = new GetUserModel
                 {
                     FullName = updatedBy.FullName,
                     Uid = updatedBy.Uid

@@ -592,6 +592,16 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
+        public IThemeRepository GetThemeRepository()
+        {
+            var mockRepo = new Mock<IThemeRepository>();
+ 
+            mockRepo.Setup(x => x.GetThemeByUid(It.IsAny<Guid>()))
+                            .Returns(new Theme());
+
+            return mockRepo.Object;
+        }
+
         public IMetricsRepository GetMetricsRepository()
         {
             var mock = new Mock<IMetricsRepository>();

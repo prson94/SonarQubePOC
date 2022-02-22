@@ -44,6 +44,7 @@ namespace d360.model
             builder.RegisterType<ConnectorLabelRepository>().As<IConnectorLabelRepository>().InstancePerRequest();
             builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
             builder.RegisterType<SemanticsRepository>().As<ISemanticsRepository>().InstancePerRequest();
+            builder.RegisterType<ThemeRepository>().As<IThemeRepository>().InstancePerRequest();
         }
     }
 }

@@ -560,6 +560,28 @@ namespace d360.web.Services.Favorites
                 RoutePattern = "search?query=:query",
                 PageType = FavoritePageType.SearchResultsPage,
                 GetName = (_, p) => $"“{p["query"]}”",
+            },
+
+            //Semantic Types
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "semantics",
+                PageType = FavoritePageType.SemanticTypePage,
+                GetName = FixedName(PageNames.SemanticTypePage),
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "semantics/:uid",                
+                PageType = FavoritePageType.SemanticTypePage,
+                GetName = WithTabName(PageNames.DefinitionTab),
+                ObjectType = SystemObjects.SemanticType,
+            },
+            new FavoriteRouteMatcher
+            {
+                RoutePattern = "semantics/:uid/assets",
+                PageType = FavoritePageType.SemanticTypePage,
+                GetName = WithTabName(PageNames.AssetsTab),
+                ObjectType = SystemObjects.SemanticType,
             }
         };
 

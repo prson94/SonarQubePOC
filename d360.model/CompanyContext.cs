@@ -185,6 +185,8 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
+        public DbSet<Theme> Themes { get; set; }
+
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<Tag> Tags { get; set; }

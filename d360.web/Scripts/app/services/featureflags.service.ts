@@ -7,7 +7,9 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 
 export enum FeatureFlags {
-    DistributedCacheFlag = "GovernDistributedCachePerm"
+    DistributedCacheFlag = "GovernDistributedCachePerm",
+    BrandingThemeCustomCss = "GovernBrandingCustomCssPerm",
+    BrandingThemeUiTemp = "GovernBrandingUiTemp20220531",
 }
 
 @Injectable({
@@ -23,7 +25,9 @@ export class FeatureFlagsService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) {
         super(messagesService);
         this.flags = {
-            "GovernDistributedCachePerm": false
+            "GovernDistributedCachePerm": false,
+            "GovernBrandingCustomCssPerm": false,
+            "GovernBrandingUiTemp20220531": false
         };
     }
 
@@ -45,8 +49,14 @@ export class FeatureFlagsService extends BaseObservableService {
         });
 
         this.ldClient.on('change', (flags) => {
-            if (flags['GovernDistributedCachePerm'] !== undefined) {
-                this.flags['GovernDistributedCachePerm'] = flags['GovernDistributedCachePerm'];
+            if (flags[FeatureFlags.DistributedCacheFlag] !== undefined) {
+                this.flags[FeatureFlags.DistributedCacheFlag] = flags[FeatureFlags.DistributedCacheFlag];
+            }
+            if (flags[FeatureFlags.BrandingThemeCustomCss] !== undefined) {
+                this.flags[FeatureFlags.BrandingThemeCustomCss] = flags[FeatureFlags.BrandingThemeCustomCss];
+            }
+            if (flags[FeatureFlags.BrandingThemeUiTemp] !== undefined) {
+                this.flags[FeatureFlags.BrandingThemeUiTemp] = flags[FeatureFlags.BrandingThemeUiTemp];
             }
             this.flagChange.next(this.flags);
         });
