@@ -1,9 +1,10 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using d360.core.enums.Workflow;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
+
+using d360.core.entities.Contracts;
+using d360.core.enums;
+using d360.core.enums.Workflow;
 
 namespace d360.core.entities.Workflow
 {
@@ -23,19 +24,19 @@ namespace d360.core.entities.Workflow
         public StepType StepType { get; set; }
 
         [DataMember]
-        public d360.core.enums.Workflow.WorkflowActivityType ActivityType { get; set; }
+        public WorkflowActivityType ActivityType { get; set; }
 
         [IgnoreDataMember]
         public string Settings { get; set; }
 
         [NotMapped, IgnoreDataMember]
-        public XElement SettingsDocument { get { return XElement.Parse(Settings); } }
+        public XElement SettingsDocument => XElement.Parse(Settings);
 
         [IgnoreDataMember]
         public string Fields { get; set; }
 
         [NotMapped, IgnoreDataMember]
-        public XElement FieldsDocument { get { return XElement.Parse(Fields); } }
+        public XElement FieldsDocument => XElement.Parse(Fields);
 
         [DataMember]
         public int XPosition { get; set; }
@@ -48,7 +49,5 @@ namespace d360.core.entities.Workflow
 
         [IgnoreDataMember, ForeignKey("VersionID")]
         public virtual WorkflowVersion Version { get; set; }
-
-
     }
 }
