@@ -231,6 +231,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.currentResouceID = +CurrentResourceID;
         this.subscription = this.secondaryNavService.rightSidebar$.subscribe(
             (item) => {
+                console.log('this.secondaryNavService.activeTabTitle');
+                console.log(this.secondaryNavService.activeTabTitle);
+                if (item.title === this.secondaryNavService.activeTabTitle) {
+                    item.active = true;
+                }
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
@@ -483,6 +488,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     itemClicked(item: SecondaryNavItem) {
+        // debugger;
         if (item.active == true)
             return;
 
@@ -494,6 +500,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         if (item.title == "homeClick") {
             this.secondaryNavService.clearLocalActiveItem();
             let home = this.homeUrl ? this.homeUrl : this.secondaryNavService.getLocalHomeUrl();
+            if (!home) {
+               // debugger;
+               home = `/artifact/${this.secondaryNavService.artifactTypeId}`;
+               this.secondaryNavService.activeTabTitle = null;
+               this.secondaryNavService.artifactTypeId = null;
+            }
             this.router.navigateByUrl(home);
             return;
         }

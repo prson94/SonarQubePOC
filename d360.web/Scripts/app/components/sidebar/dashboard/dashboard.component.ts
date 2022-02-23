@@ -46,7 +46,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         console.log('this.titleAndTabsService.isInitialize');
         console.log(this.titleAndTabsService.isInitialize);
         if (!this.titleAndTabsService.isInitialize) {
-            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params);
+            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params, 'Dashboards');
         }
 
         this.showSingle = false;

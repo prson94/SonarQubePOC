@@ -50,11 +50,14 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
     console.log(this.isInitialize);
   }
 
-  initializeTitleAndTabsInRightSidebar(routeParams: Observable<Params>) {
+  initializeTitleAndTabsInRightSidebar(routeParams: Observable<Params>, activeTabTitle?: string) {
+    this.secondaryNavService.activeTabTitle = activeTabTitle;
+    
     // debugger;
     this.sub = routeParams.subscribe(params => {
       // debugger;
-      this.getArtifactTypeIdFromRouteParams(params)
+      this.artifactTypeId = this.secondaryNavService.getArtifactTypeIdFromRouteParams(params);
+      this.secondaryNavService.artifactTypeId = this.artifactTypeId;
 
       this.isLoading = true;
       this.artifactTypeHierarchy = [];
@@ -92,15 +95,6 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
           });
         });
     });
-  }
-
-  getArtifactTypeIdFromRouteParams(params: Params) {
-    if (params.artifactTypeId) {
-      this.artifactTypeId = Number(params.artifactTypeId);
-    } else if (params.objectId) {
-      this.artifactTypeId = Number(params.objectId);
-    }
-    return this.artifactTypeId;
   }
 
   createBreadcrumbHierarchy(artifact: ArtifactType) {
