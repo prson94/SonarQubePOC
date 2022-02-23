@@ -423,6 +423,11 @@ namespace d360.web.Controllers.V2
                 result = Company.Query<dynamic>($@"select 'Report' as Object, ID as ObjectId, Name as DisplayValue from Report where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
             }
 
+            if (result == null)
+            {
+                result = Company.Query<dynamic>($@"select 'Semantic' as Object, ID as ObjectId, Name as DisplayValue from semantic where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            }
+
             return result;
         }
 

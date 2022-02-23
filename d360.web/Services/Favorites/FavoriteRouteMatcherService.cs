@@ -572,14 +572,14 @@ namespace d360.web.Services.Favorites
             new FavoriteRouteMatcher
             {
                 RoutePattern = "semantics/:uid",                
-                PageType = FavoritePageType.SemanticTypePage,
+                PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.DefinitionTab),
                 ObjectType = SystemObjects.SemanticType,
             },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "semantics/:uid/assets",
-                PageType = FavoritePageType.SemanticTypePage,
+                PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.AssetsTab),
                 ObjectType = SystemObjects.SemanticType,
             }
