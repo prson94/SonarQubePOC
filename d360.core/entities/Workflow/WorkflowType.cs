@@ -1,13 +1,14 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
+using d360.core.enums;
 
 namespace d360.core.entities.Workflow
 {
     [DataContract(Namespace = NAMESPACE), Table("Type", Schema = "workflow")]
-    public class Type : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata,IUIDMetadata
+    public class Type : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata, IUIDMetadata
     {
         [DataMember]
         public string Name { get; set; }
