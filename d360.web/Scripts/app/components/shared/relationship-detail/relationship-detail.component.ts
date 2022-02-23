@@ -227,15 +227,22 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
             this.fields = gridData.Fields;
         }
 
-        this.relationships = relationships["items"];
+        this.totalRecords = +relationships["total"];
 
-        this.relationships.forEach((i) => {
-            i[this.menuKey] = [
-                { title: 'Edit Relationship' },
-                { title: 'Delete Relationship' },
-            ];
-        });
-        this.totalRecords = relationships["total"];
+        if (this.totalRecords > 0) {
+            this.relationships = relationships["items"];
+
+            this.relationships.forEach((i) => {
+                i[this.menuKey] = [
+                    { title: 'Edit Relationship' },
+                    { title: 'Delete Relationship' },
+                ];
+            });
+        }
+        else {
+            this.relationships = [];
+        }
+
         this.isLoading = false;
         this.cdRef.detectChanges();
     }
