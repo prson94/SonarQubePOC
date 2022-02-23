@@ -4,13 +4,14 @@ import { forEach } from 'lodash';
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subscription } from 'rxjs';
 import { V2ApiFilters } from '../../../models/asset-search.model';
-import { FieldType } from '../../../models/fieldtype-api.model';
+import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { RelationshipCount, RelationshipType } from '../../../models/relationship.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
 
@@ -60,6 +61,8 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
     fields: GridField[] = [];
     columns: GridColumn[] = [];
 
+    loadedFilterFields: FieldTypeAPIModelField[] = [];
+
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
         data.count = this.relationshipTypesResolvedNames.length;
@@ -74,6 +77,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
             Category: "",
             ValueLoader: this.getRelationshipTypes.bind(this),
             RemovePopulatedOperator: true
+            
         },
         {
             Name: 'assetpath',
@@ -84,6 +88,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
     ]
 
     @ViewChild('dt', { static: false }) dt: Table;
+    @ViewChild('advFilterComponent', { static: false }) advFilterComponent: AdvancedFilteringComponent;
 
     constructor(
         private cdRef: ChangeDetectorRef,
@@ -94,15 +99,34 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
     ) {
         super(settingsService);
         this.sidePanelStorageKey = "relationship-detail";
+
+        this.filterFieldList.filter((x) => x.Name === 'relationshiptype').forEach((x) => x.Type.Lookup.IsPrimaryFilter = true);
+    }
+
+
+    //advanced filters component may change when only one relationship type is filtered
+    //we must check filter states on advanced filter updates to show correct fields
+    private loadedFiltersHash: string = '';
+    updateAdvancedFilters() {
+        if (this.loadedFiltersHash !== this.advancedFiltersHash) {
+            this.loadedFiltersHash = this.advancedFiltersHash;
+            this.filterFieldsSubject.next(this.getAdvancedFilterFields);
+            this.filterFieldsSubject.complete();
+            if (this.advFilterComponent) {
+                this.advFilterComponent.initializeData(true);
+            }
+        }
     }
 
     get getAdvancedFilterFields(): AdvancedFilterFieldType[] {
-        return this.filterFieldList;
+        let filters: AdvancedFilterFieldType[] = [];
+        this.filterFieldList.forEach((f) => filters.push(f));
+        this.loadedFilterFields.forEach((f) => filters.push(f));
+        return filters;
     }
 
-    updateAdvancedFilters() {
-        this.filterFieldsSubject.next(this.getAdvancedFilterFields);
-        this.filterFieldsSubject.complete();
+    get advancedFiltersHash(): string {
+        return JSON.stringify(this.getAdvancedFilterFields.map((f) => f.Name));
     }
 
     ngOnInit() {
@@ -278,12 +302,16 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
             this.dt.first = 0;
         }
         this.loadRelationshipLazy(null);
-        this.updateAdvancedFilters();
         if (this.singleSelectedRelationship) {
-            this.fieldService.getFieldsV2(this.singleSelectedRelationship.uid, null, null)
+            this.fieldService.getFieldsV2(null, null, this.singleSelectedRelationship.uid)
                 .subscribe((res) => {
-
+                    this.loadedFilterFields = res;
+                    this.updateAdvancedFilters();
                 });
+        }
+        else {
+            this.loadedFilterFields = [];
+            this.updateAdvancedFilters();
         }
     }
 }

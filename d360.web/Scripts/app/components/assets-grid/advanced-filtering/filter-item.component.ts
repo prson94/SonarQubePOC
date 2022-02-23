@@ -841,7 +841,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.resetLookupValues();
         this.stopUpdateDynamicWidths();
 
-        this.onChange.emit();
+        this.onChange.emit(this.condition);
     }
 
     cancel() {
@@ -928,7 +928,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             return;
         }
         this.condition.markForDeletion = true;
-        this.onChange.emit();
+        this.onChange.emit(this.condition);
     }
 
     private resetPersistedFilter() {
@@ -942,7 +942,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.uiFilterLabel = this.condition.getFilterLabel();
 
         this.isSelectingValue = false;
-        this.onChange.emit();
+        this.onChange.emit(this.condition);
         this.cdRef.markForCheck();
     }
 

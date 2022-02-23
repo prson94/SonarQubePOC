@@ -13,8 +13,11 @@
                         </ig-search-field>
                     </div>
                     <advanced-filtering *ngIf="areTypesLoaded"
+                                        #advFilterComponent
                                         [loadIdentifier]="'Relationships'"
                                         [fieldsObserver]="filterFields$"
+                                        [enableFilterSaving]="false"
+                                        [clearConditionsOnFilterField]="'relationshiptype'"
                                         (onChange)="advancedFiltersChanged($event)">
                     </advanced-filtering>
                 </div>
