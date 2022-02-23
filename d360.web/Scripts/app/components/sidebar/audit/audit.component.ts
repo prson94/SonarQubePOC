@@ -104,7 +104,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                         this.buildSecondaryNavigationForObject(objectID, this.objectType);
                     }
 
-                    if (!this.objectName && this.objectType.toLocaleLowerCase() == 'semantic') {
+                    if (!this.objectName && this.objectType.toLocaleLowerCase() === 'semantic') {
                         this.objectName = res.DisplayValue;
                     }
                 });
