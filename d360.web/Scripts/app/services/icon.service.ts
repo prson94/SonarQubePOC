@@ -1,11 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpContext } from "@angular/common/http";
 import { Observable, of } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { IconProperties } from '../models/icon-properties.model';
 import { AssetTypeClass } from '../models/asset.model';
+import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 
 @Injectable({
     providedIn: 'root'
@@ -30,7 +31,8 @@ export class IconService extends BaseObservableService {
             return this.observable;
         } else {
             this.observable = this.http.get('/content/json/fontawesome4x.json', {
-                observe: 'response'
+                observe: 'response',
+                context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) 
             }).pipe(
                 map((res: any) => {
                     this.observable = null;
@@ -46,7 +48,8 @@ export class IconService extends BaseObservableService {
 
     public getIconImages(): Observable<IconProperties[]> {
         this.observable = this.http.get('/content/json/governanceIcons.json', {
-            observe: 'response'
+            observe: 'response',
+            context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) 
         }).pipe(
             map((res: any) => {
                 this.observable = null;
