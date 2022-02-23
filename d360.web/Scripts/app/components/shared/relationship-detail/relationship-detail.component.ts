@@ -256,6 +256,10 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
             params._filter = this.advancedFilter;
         }
 
+        if (this.simpleFilter) {
+            params._simpleFilter = this.simpleFilter;
+        }
+
         if (this.singleSelectedRelationship) {
             params["RelationshipTypeUid"] = this.singleSelectedRelationship.uid;
         }
@@ -291,7 +295,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
     }
 
     onSimpleSearch($event) {
-        console.log("simple search");
+        this.loadRelationshipLazy(null);
     }
 
     advancedFiltersChanged($event: Filters) {
