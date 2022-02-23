@@ -595,7 +595,12 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
+        
         var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
+
+        if (fieldTypeUid === "00000000-0000-0000-0000-000000000000") {
+            fieldTypeUid = this.currentField.RelationshipTypeUid ?? "00000000-0000-0000-0000-000000000000";
+        }
 
         let lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
 
