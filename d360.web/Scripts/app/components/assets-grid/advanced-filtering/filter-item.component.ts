@@ -11,6 +11,7 @@ import { Subscription } from "rxjs";
 import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
 import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
+import { AdvancedFilteringService, AdvancedFilterUpdate } from "./advanced-filtering.service";
 
 @Component({
     selector: "filter-item",
@@ -85,7 +86,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         private fieldsService: FieldsObservableService,
         private assetTypeService: AssetTypeService,
         private tagService: TagService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        private advFilterService: AdvancedFilteringService
     ) {
         setInterval(() => {
             this.updateTopPosition();
@@ -95,6 +97,26 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.assetService.getAllColors().subscribe((x) => {
             this.defaultColorOptions = x;
             this.cdRef.markForCheck();
+        });
+
+
+        this.advFilterService.onFilterUpdate().subscribe((data) => {
+            if (data.source !== this.constructor.name) {
+                //this works only on default filters which are always present in advanced filter field
+                if (this.condition.isDefaultFilter === true && this.condition.field.toLowerCase() === data.fieldName.toLowerCase()) {
+                    var values = [];
+                    data.values.forEach((d) => {
+                        values.push({ title: d, value: d });
+                    });
+                    if (values.length === 0) {
+                        this.remove();
+                    }
+                    else {
+                        this.condition.value = values;
+                        this.confirmValue();
+                    }
+                }
+            }
         });
     }
 
@@ -595,7 +617,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
-        
+
         var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
 
         if (fieldTypeUid === "00000000-0000-0000-0000-000000000000") {
@@ -847,6 +869,12 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.stopUpdateDynamicWidths();
 
         this.onChange.emit(this.condition);
+
+        var event = new AdvancedFilterUpdate();
+        event.source = this.constructor.name;
+        event.fieldName = this.condition.field;
+        event.values = this.condition.value;
+        this.advFilterService.updateFilter(event);
     }
 
     cancel() {

@@ -175,7 +175,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
                         else {
                             name = type[0].Predicate.Inverse + " " + type[0].Subject.Name;
                         }
-                        this.relationshipTypesResolvedNames.push({ uid: rc.IntersectTypeUid, name: name, count: rc.Count, isSelected: true });
+                        this.relationshipTypesResolvedNames.push({ uid: rc.IntersectTypeUid, name: name, count: rc.Count, isSelected: false });
                     }
                 });
                 this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
