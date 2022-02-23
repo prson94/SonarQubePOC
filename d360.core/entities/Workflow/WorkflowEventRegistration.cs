@@ -1,10 +1,11 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using d360.core.enums.Workflow;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
+using d360.core.enums;
+using d360.core.enums.Workflow;
 
 namespace d360.core.entities.Workflow
 {
@@ -34,7 +35,7 @@ namespace d360.core.entities.Workflow
         public string Settings { get; set; }
 
         [DataMember]
-        public DateTime? LastExecuted{ get; set; }
+        public DateTime? LastExecuted { get; set; }
 
         [DataMember]
         public State State { get; set; } = State.Unknown;
