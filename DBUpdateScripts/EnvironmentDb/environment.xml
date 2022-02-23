@@ -157,6 +157,7 @@
 	<include file="scripts/Table.dbo.Theme.xml"/>
 	<include file="scripts/Table.dbo.ResourceTheme.xml"/>
 	<include file="scripts/Table.dbo.TooltipTemplate.xml"/>
+	<include file="scripts/Table.dbo.RebuildJobStatus.xml"/>
 	<include file="scripts/Table.graph.AssetNode.xml"/>
 	<include file="scripts/Table.graph.AssetEdge.xml"/>
 	<include file="scripts/Table.dbo.AssetResultEdge.xml"/>						<!-- Dependent on graph.AssetNode -->

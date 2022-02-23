@@ -185,19 +185,5 @@ namespace igx.functions
                 throw;
             }
         }
-
-        public List<int> UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken jobToken)
-        {
-            var lvl = GetEnvironmentLevelCurrentSlot();
-            try
-            {
-                return CompanyConnectionUtils.UpdateRebuildRequestForEnvironmentLevel(lvl, jobToken, GetConnectionString("CommunityContext"));
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
     }
 }
