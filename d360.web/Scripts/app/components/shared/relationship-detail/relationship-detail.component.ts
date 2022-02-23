@@ -40,7 +40,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
     areTypesLoaded: boolean = false;
 
     sidePanelOpen: string = '';
-    sidePanelTab: string = '';
+    sidePanelTab: string = 'filters';
     sidePanelStorageKey: string = '';
 
     loadTypesSub: Subscription;
@@ -77,7 +77,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
             Category: "",
             ValueLoader: this.getRelationshipTypes.bind(this),
             RemovePopulatedOperator: true
-            
+
         },
         {
             Name: 'assetpath',
@@ -175,7 +175,7 @@ export class RelationshipDetailComponent extends BaseComponent implements OnChan
                         else {
                             name = type[0].Predicate.Inverse + " " + type[0].Subject.Name;
                         }
-                        this.relationshipTypesResolvedNames.push({ uid: rc.IntersectTypeUid, name: name });
+                        this.relationshipTypesResolvedNames.push({ uid: rc.IntersectTypeUid, name: name, count: rc.Count, isSelected: true });
                     }
                 });
                 this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));

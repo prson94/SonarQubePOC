@@ -6,6 +6,7 @@ import { CoreModule } from "../core.module";
 import { IgColorPickerModule } from "../controls/color-picker/color-picker.module";
 import { TagViewModule } from "../tags/d3s-tag-view.module";
 import { RelationshipDetailComponent } from "./relationship-detail.component";
+import { RelationshipDetailFilterComponent } from "./relationship-detail-filter.component";
 import { SharedObjectDetailsModule } from "../objectdetails/shared-object-details.module";
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";
 import { TilesModule } from "../tiles/tiles.module";
@@ -16,6 +17,9 @@ import { PortalsModule } from "../portals/portals.module";
 import { SidePanelModule } from '../sidepanel/side-panel.module';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DirectivesModule } from '../directives/directives.module';
+import { IgBadgeModule } from '../controls/badge/badge.module';
 
 
 @NgModule({
@@ -35,10 +39,14 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         PortalsModule,
         SidePanelModule,
         PopupMenuModule,
-        SharedDynamicGridEditorModule
+        SharedDynamicGridEditorModule,
+        CheckboxModule,
+        DirectivesModule,
+        IgBadgeModule
     ],
     declarations: [
-        RelationshipDetailComponent
+        RelationshipDetailComponent,
+        RelationshipDetailFilterComponent
     ],
     exports: [
         RelationshipDetailComponent

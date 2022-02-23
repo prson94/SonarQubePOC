@@ -83,17 +83,19 @@
                                               [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
-
             </div>
             <div class="tile tile-detail side-panel">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
                             (selectedPanelChange)="sidePanelTab=$event"
                             [selectedItem]="selectedRelationship"
                             [hasProfiling]="false"
-                            hasDetail="true"
+                            [hasDetail]="true"
+                            [hasFilter]="true"
                             [storageKey]="sidePanelStorageKey"
                             [selectedPanel]="sidePanelTab">
-                    Side Panel
+                    <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'filters'">
+                        <gov-relationship-detail-filter [relationshipTypesResolvedNames]="relationshipTypesResolvedNames"></gov-relationship-detail-filter>
+                    </ng-container>
                 </side-panel>
             </div>
         </div>
