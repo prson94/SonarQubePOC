@@ -1,8 +1,10 @@
-﻿using d360.core.enums;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
@@ -14,26 +16,29 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid Uid { get; set; }
+
         [DataMember]
         public string Weight { get; set; }
+
         [DataMember]
         public float? Threshold { get; set; }
+
         [DataMember]
         public string MatchType { get; set; }
-        
+
         [DataMember]
         public string Position { get; set; }
-        
+
         [DataMember]
         public List<MetricAssetHierarchyConditionModel> ConditionItems { get; set; }
     }
 
     [DataContract]
-    public class MetricAssetHierarchyConditionModel 
+    public class MetricAssetHierarchyConditionModel
     {
         [DataMember]
         public string FieldName { get; set; }
-        
+
         [DataMember]
         public string Operator { get; set; }
 
@@ -96,8 +101,10 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime? EndDate { get; set; }
+
         [DataMember]
         public bool? MatchConditionsOnly { get; set; }
+
         [DataMember]
         public Guid? ConditionUid { get; set; }
 
@@ -116,7 +123,7 @@ namespace d360.core.entities
         public string ConditionsJson { get; set; }
 
         public string MeasuresJson { get; set; }
-        
+
         public string OtherConditionsJSON { get; set; }
 
         [DataMember]
@@ -124,7 +131,7 @@ namespace d360.core.entities
 
         [DataMember]
         public List<ChildMetricAssetHierarchyModel> Measures { get { return string.IsNullOrEmpty(MeasuresJson) ? null : JsonConvert.DeserializeObject<List<ChildMetricAssetHierarchyModel>>(MeasuresJson ?? "[]"); } }
-        
+
         [DataMember]
         public List<string> OtherConditions { get { return string.IsNullOrEmpty(OtherConditionsJSON) ? null : JsonConvert.DeserializeObject<List<string>>(OtherConditionsJSON ?? "[]"); } }
     }
@@ -144,10 +151,14 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid Uid { get; set; }
+
         public Guid? ParentUid { get; set; }
+
         public int Level { get; set; }
+
         [DataMember]
         public bool IsGroup { get; set; }
+
         [DataMember]
         public string Name { get; set; }
 
@@ -176,14 +187,9 @@ namespace d360.core.entities
         [DataMember]
         public string Operator { get; set; }
 
-        //public string ValueJson { get; set; }
-
         // Future use (mpappas) for when we start adding potentially multiple values that the JSON property above could store.
         [DataMember]
         public string Value { get; set; }
-
-        //[DataMember]
-        //public List<string> Values { get; set; }
     }
 
     #endregion
