@@ -1,13 +1,13 @@
 ﻿import { Input, Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AdvancedFilteringService, AdvancedFilterUpdate } from '../../assets-grid/advanced-filtering/advanced-filtering.service';
 @Component({
-    selector: 'gov-relationship-detail-filter',
-    templateUrl: './relationship-detail-filter.component.html',
+    selector: 'gov-relationship-filter',
+    templateUrl: './relationship-filter.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 
-export class RelationshipDetailFilterComponent {
+export class RelationshipFilterComponent {
     @Input() relationshipTypesResolvedNames: any[] = [];
 
     allSelected = true;

@@ -16,16 +16,16 @@ import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPI
 import { BaseComponent } from '../base.component';
 
 @Component({
-    selector: 'gov-relationship-detail',
-    templateUrl: './relationship-detail.component.html',
+    selector: 'gov-relationship-grid',
+    templateUrl: './relationship-grid.component.html',
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['relationship-detail.component.less'],
+    styleUrls: ['relationship-grid.component.less'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [RelationshipsService]
 })
 
 
-export class RelationshipDetailComponent extends BaseComponent implements OnChanges, OnDestroy, OnInit {
+export class RelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy, OnInit {
     @Input() assetUid: string = "";
     @Input() assetTypeUid: string = "";
 

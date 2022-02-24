@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                               [objectName]="objectName"
                                               [objectPermissions]="permissions"></d3s-object-relationships>
 
-                    <gov-relationship-detail [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-detail>
+                    <gov-relationship-grid [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
     `,
     providers: [PermissionsService, ObjectDetailService]
 })

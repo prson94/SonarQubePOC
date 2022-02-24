@@ -5,8 +5,8 @@ import { PipesModule } from "../../../pipes/pipes.module";
 import { CoreModule } from "../core.module";
 import { IgColorPickerModule } from "../controls/color-picker/color-picker.module";
 import { TagViewModule } from "../tags/d3s-tag-view.module";
-import { RelationshipDetailComponent } from "./relationship-detail.component";
-import { RelationshipDetailFilterComponent } from "./relationship-detail-filter.component";
+import { RelationshipGridComponent } from "./relationship-grid.component";
+import { RelationshipFilterComponent } from "./relationship-filter.component";
 import { SharedObjectDetailsModule } from "../objectdetails/shared-object-details.module";
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";
 import { TilesModule } from "../tiles/tiles.module";
@@ -45,12 +45,12 @@ import { IgBadgeModule } from '../controls/badge/badge.module';
         IgBadgeModule
     ],
     declarations: [
-        RelationshipDetailComponent,
-        RelationshipDetailFilterComponent
+        RelationshipGridComponent,
+        RelationshipFilterComponent
     ],
     exports: [
-        RelationshipDetailComponent
+        RelationshipGridComponent
     ],
     providers: []
 })
-export class RelationshipDetailModule { }
+export class RelationshipGridModule { }

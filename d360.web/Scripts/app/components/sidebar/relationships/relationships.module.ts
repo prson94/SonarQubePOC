@@ -8,7 +8,7 @@ import { SharedRelationshipModule } from '../../shared/relationship/shared-relat
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { RelationshipsRoutingModule } from './relationships.routes';
 import { RelationshipsComponent } from './relationships.component';
-import { RelationshipDetailModule } from '../../shared/relationship-detail/relationship-detail.module';
+import { RelationshipGridModule } from '../../shared/relationship-detail/relationship-grid.module';
 
 @NgModule({
     imports: [
@@ -27,7 +27,7 @@ import { RelationshipDetailModule } from '../../shared/relationship-detail/relat
 
         //prime        
         SharedModule,
-        RelationshipDetailModule
+        RelationshipGridModule
     ],
     declarations: [
         RelationshipsComponent,        

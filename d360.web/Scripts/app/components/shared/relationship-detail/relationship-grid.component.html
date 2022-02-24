@@ -94,7 +94,10 @@
                             [storageKey]="sidePanelStorageKey"
                             [selectedPanel]="sidePanelTab">
                     <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'filters'">
-                        <gov-relationship-detail-filter [relationshipTypesResolvedNames]="relationshipTypesResolvedNames"></gov-relationship-detail-filter>
+                        <gov-relationship-filter [relationshipTypesResolvedNames]="relationshipTypesResolvedNames"></gov-relationship-filter>
+                    </ng-container>
+                    <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
+                        {{selectedRelationship | json}}
                     </ng-container>
                 </side-panel>
             </div>
