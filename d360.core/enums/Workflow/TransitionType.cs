@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace d360.core.enums.Workflow
@@ -9,8 +8,10 @@ namespace d360.core.enums.Workflow
     {
         [Description("Always")]
         Always = 1,
+        
         [Description("Conditional")]
         Condition = 2,
+        
         [Description("Timer")]
         Timer = 3
     }
@@ -18,7 +19,9 @@ namespace d360.core.enums.Workflow
     public class TransitionTypeInfo
     {
         public TransitionType ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
 
@@ -40,6 +43,6 @@ namespace d360.core.enums.Workflow
             }
 
             return list;
-        }    
+        }
     }
 }
