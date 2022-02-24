@@ -20,6 +20,9 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 import { CheckboxModule } from 'primeng/checkbox';
 import { DirectivesModule } from '../directives/directives.module';
 import { IgBadgeModule } from '../controls/badge/badge.module';
+import { AssetDetailModule } from '../asset-detail/asset-detail.module';
+import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
 
 
 @NgModule({
@@ -42,7 +45,10 @@ import { IgBadgeModule } from '../controls/badge/badge.module';
         SharedDynamicGridEditorModule,
         CheckboxModule,
         DirectivesModule,
-        IgBadgeModule
+        IgBadgeModule,
+        AssetDetailModule,
+        AssetTypeDetailModule,
+        TaggedAssetDetailModule
     ],
     declarations: [
         RelationshipGridComponent,

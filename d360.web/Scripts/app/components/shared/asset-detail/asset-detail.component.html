@@ -25,7 +25,8 @@
         </ng-container>
         <ng-container *ngIf="isSidePanel && showTabs">
             <div class="windowtabs">
-                <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">Details</button>
+                <button *ngIf="relationshipUid" [class]="(tab == 'relationship') ? 'tab-selected' : 'tab'" (click)="clickTab('relationship')">Relationship</button>
+                <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">{{relationshipUid ? 'Asset' : 'Details'}}</button>
                 <button *ngIf="showOwnershipTab" [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading">Ownership</button>
                 <button *ngIf="showGroupTab" [class]="(tab == 'groups') ? 'tab-selected' : 'tab'" (click)="clickTab('groups')">Groups</button>
                 <button *ngIf="showMemberTab" [class]="(tab == 'members') ? 'tab-selected' : 'tab'" (click)="clickTab('members')">Members</button>
@@ -181,6 +182,25 @@
                     <div class="groups-tab" *ngIf="objectType === 'Group'">
                         <d3s-group-members [groupUid]="objectUID" [readOnly]="groupMembersReadOnlyMode" [interceptLinkClick]="interceptLinkClick"></d3s-group-members>
                     </div>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="'relationship'">
+                    <ig-asset-detail *ngIf="relationshipUid"
+                                     [objectUID]="relationshipUid"
+                                     [objectType]="'Intersect'"
+                                     [baseAssetUid]="objectUID"
+                                     [useAccordion]="true"
+                                     [shouldBePadded]="false"
+                                     [showHeader]="false"
+                                     [showTabs]="false"
+                                     [showHeaderLine]="false"
+                                     [spacerHeight]="'16px'"
+                                     [tooltipAlign]="'left'"
+                                     [isSidePanel]="true"
+                                     [interceptLinkClick]="true"
+                                     [hasAddRelationshipsPermissions]="false"
+                                     [hasModifyRelationshipsPermissions]="false"
+                                     [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
                 </ng-container>
             </ng-container>
         </div>

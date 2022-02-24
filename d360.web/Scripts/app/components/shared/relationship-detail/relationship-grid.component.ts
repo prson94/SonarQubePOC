@@ -7,6 +7,7 @@ import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { RelationshipCount, RelationshipType } from '../../../models/relationship.model';
+import { AssetService } from '../../../services/asset.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { RelationshipsService } from '../../../services/relationships.service';
@@ -35,6 +36,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     relationshipTypesResolvedNames: any[] = [];
 
     selectedRelationship: any;
+    selectedAsset: any;
 
     isLoading: boolean = false;
     areTypesLoaded: boolean = false;
@@ -258,7 +260,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
         params._order = this.sortField;
         params._direction = this.sortOrder;
-
+        params["includeLegacyData"] = true;
         if (this.advancedFilter) {
             params._filter = this.advancedFilter;
         }
@@ -289,6 +291,21 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     selectRow(row: any) {
         this.selectedRelationship = row;
+        var isSubject = this.selectedRelationship.Subject.Uid.toLowerCase() === this.assetUid.toLowerCase();
+        if (isSubject) {
+            this.selectedAsset = {
+                uid: this.selectedRelationship.Object.Uid,
+                type: this.selectedRelationship.Object.Type,
+                relUid: this.selectedRelationship.Uid
+            };
+        }
+        else {
+            this.selectedAsset = {
+                uid: this.selectedRelationship.Subject.Uid,
+                type: this.selectedRelationship.Subject.Type,
+                relUid: this.selectedRelationship.Uid
+            };
+        }
     }
 
     clickMenuItem(event: any, item: any) {

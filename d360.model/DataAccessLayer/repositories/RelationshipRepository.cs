@@ -121,6 +121,7 @@ namespace d360.model.DataAccessLayer
             bool includeAssetPath = false;
             bool orderByAssetPath = false;
             bool listColorsAsJSON = false;
+            bool includeLegacyData = false;
 
             string _orderBy = "I.IntersectTypeID,I.ID";
             string _orderDirection = "asc";
@@ -180,6 +181,10 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 if (queryParamsList.Any(k => k.Key.ToLower() == "_listcolorsasjson"))
                 {
                     bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
+                }
+                if (queryParamsList.Any(k => k.Key.ToLower() == "includelegacydata"))
+                {
+                    bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "includelegacydata").Value, out includeLegacyData);
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "state"))
                 {
@@ -532,6 +537,8 @@ select	@pageSize as 'pageSize',
                 {(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}
                 {(isExport ? ",PS.[Path] as 'Subject.AssetTypePath'" : "")}                
                 {(isExport ? ",ADVS.DisplayValue as 'Subject.DisplayName'" : "")}
+                {(includeLegacyData ? ",I.Subject as 'Subject.Type'" : "")}
+                {(includeLegacyData ? ",I.Object as 'Object.Type'" : "")}
 				,lower(O.Uid) as 'Object.Uid'
 				,ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
                 {(isExport ? ",ADVO.DisplayValue as 'Object.DisplayName'" : "")}

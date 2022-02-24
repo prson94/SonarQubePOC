@@ -2542,7 +2542,7 @@ from    (
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false, Guid? baseAssetUid = null)
         {
             int objectId = -1;
             switch (type)
@@ -2550,6 +2550,9 @@ from    (
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
                     return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
+                case SystemObjects.Intersect:
+                    objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
+                    return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
 
@@ -2560,7 +2563,7 @@ from    (
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false, Guid? baseAssetUid = null)
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
             model.Object = type.ToString();
@@ -2956,9 +2959,9 @@ from    (
                             {
                                 row.SecondColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { 
-                                        Name = group.GetName(i => i.SecondaryOwnerResourceID), 
-                                        FieldName = "GroupOwner", 
+                                    new ReadOnlyField {
+                                        Name = group.GetName(i => i.SecondaryOwnerResourceID),
+                                        FieldName = "GroupOwner",
                                         FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID),
                                         Value = "values",
                                         Values = new List<ReadOnlyFieldValue>{
@@ -3294,11 +3297,58 @@ from    (
                 case SystemObjects.Intersect:
                     #region Fields                    
                     var intersect = Company.GetById<Intersect>(id);
+
+                    if (baseAssetUid.HasValue)
+                    {
+                        string relationshipTypeName = Company.Query<string>(@"
+                            declare @isSubject bit = 0
+
+                            if exists(select 1 from [Intersect] I 
+                            left join [Asset] A on A.uid = @baseAssetUid
+                            where I.ID = @intersectId and I.Subject = A.Object and I.SubjectID = A.ObjectID)
+                            begin
+                              set @isSubject = 1
+                            end
+
+                            select 
+                            case when @isSubject = 0 then ITD.PredicateName + ' ' + ITD.ObjectAssetTypePath
+                            else ITD.PredicateInverse + ' ' + ITD.SubjectAssetTypePath
+                            end as RelationshipTypeName
+                            from [IntersectTypeDetail] ITD
+                            where ITD.ID = @intersectTypeId", 
+                            new { intersectTypeId = intersect.IntersectTypeID, intersectId = intersect.ID, baseAssetUid }).FirstOrDefault();
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField {
+                                    Name = FieldInfo.Relationship_Type_Name,
+                                    FieldName = "RelationshipType",
+                                    Value = relationshipTypeName,
+                                    DataType = "string" }
+                            }
+                        });
+                    }
+
                     if (intersect != null)
                     {
                         model.columns = 1;
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                        var relationshipProps = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+                        relationshipProps.ForEach((prop) => prop.Category = FieldInfo.RelationshipFieldCategory);
+                        model.rows.AddRange(relationshipProps);
                     }
+
+                    model.rows.Add(new DetailReadOnlyRowModel
+                    {
+                        columns = 1,
+                        FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = FieldInfo.Relationship_UID_Name, FieldName = "Uid", Value = intersect.uid.ToString(), DataType = "string" }
+                            },
+                        Category = FieldInfo.SystemFieldCategory
+                    });
                     intersect = null;
                     break;
                 #endregion

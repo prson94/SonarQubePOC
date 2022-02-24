@@ -204,4 +204,13 @@
   <data name="UpdatedBy_Name" xml:space="preserve">
     <value>Last Modified By</value>
   </data>
+  <data name="RelationshipFieldCategory" xml:space="preserve">
+    <value>Relationship Properties</value>
+  </data>
+  <data name="Relationship_Type_Name" xml:space="preserve">
+    <value>Relationship Type</value>
+  </data>
+  <data name="Relationship_UID_Name" xml:space="preserve">
+    <value>Relationship UID</value>
+  </data>
 </root>

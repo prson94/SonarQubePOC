@@ -97,7 +97,21 @@
                         <gov-relationship-filter [relationshipTypesResolvedNames]="relationshipTypesResolvedNames"></gov-relationship-filter>
                     </ng-container>
                     <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
-                        {{selectedRelationship | json}}
+                        <ig-asset-detail *ngIf="selectedAsset" 
+                                         [objectUID]="selectedAsset.uid"
+                                         [objectType]="selectedAsset.type"
+                                         [relationshipUid]="selectedAsset.relUid"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [interceptLinkClick]="true"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
                     </ng-container>
                 </side-panel>
             </div>
