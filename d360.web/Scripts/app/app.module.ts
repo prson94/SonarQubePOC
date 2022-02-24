@@ -38,7 +38,6 @@ import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
 import { FeatureFlagsService } from './services/featureflags.service';
 import { governHttpInterceptorProviders } from './http-interceptors';
-import { ResetSecondaryNavOnPageChangeService, resetSecondaryNavOnPageChangeServiceRunner } from './services/resetSecondaryNavOnPageChange.service';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -97,7 +96,7 @@ export function localeInitializer(localeId: string) {
         AppRoutingModule,
         BrowserAnimationsModule,
 
-        // prime
+        // prime 
         ToastModule,
         DialogModule,
 
@@ -146,14 +145,7 @@ export function localeInitializer(localeId: string) {
             deps: [CompanySettingsService]
         },
         ApplicationInsightsService,
-        SearchService,
-        ResetSecondaryNavOnPageChangeService,
-        {
-            provide: APP_INITIALIZER,
-            multi: true,
-            useFactory: resetSecondaryNavOnPageChangeServiceRunner,
-            deps: [ResetSecondaryNavOnPageChangeService]
-        },
+        SearchService
     ],
     entryComponents: [D3SModal],
 
