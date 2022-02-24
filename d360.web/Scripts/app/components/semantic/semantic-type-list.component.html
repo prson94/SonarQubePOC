@@ -14,7 +14,7 @@
             </div>
             <div class="row asset-grid-wrapper">
                 <div class="col s12">
-                    <p-table #dt                   
+                    <p-table #dt
                              [value]="semanticTypes"
                              selectionMode="single"
                              [(selection)]="selectedType"
@@ -31,7 +31,7 @@
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [lazy]="true"
                              (onLazyLoad)="lazyLoad($event)"
-                             [style]="{ 'width': '100%' }"                             
+                             [style]="{ 'width': '100%' }"
                              (selectionChange)="selectRow($event)">
                         <ng-template pTemplate="header">
                             <tr>
@@ -104,17 +104,17 @@
                         [expanded]="sidePanelOpen"
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="sidePanelTab"
-                        [selectedItem]="selectedType"
-                        hasDetail="true">                
-                <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">   
+                        [hasSelectedItem]="selectedType ? true : false"
+                        hasDetail="true">
+                <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
                     <ng-container *ngIf="selectedType">
                         <semantic-detail [qualifier]="selectedType.qualifier"
                                          [isSidePanel]="true"
                                          [showHeader]="true"
                                          [semanticType]="selectedType"></semantic-detail>
                     </ng-container>
-                </ng-container>                
+                </ng-container>
             </side-panel>
         </div>
     </div>
-</div>            
+</div>

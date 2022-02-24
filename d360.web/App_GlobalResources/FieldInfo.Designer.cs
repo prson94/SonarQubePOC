@@ -241,15 +241,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationship Properties.
-        /// </summary>
-        public static string RelationshipFieldCategory {
-            get {
-                return ResourceManager.GetString("RelationshipFieldCategory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Rule ID.
         /// </summary>
         public static string RuleID_Name {

@@ -14,9 +14,8 @@
                     </div>
                     <advanced-filtering *ngIf="areTypesLoaded"
                                         #advFilterComponent
-                                        [loadIdentifier]="'Relationships'"
+                                        [loadIdentifier]="advFilterIdentifier"
                                         [fieldsObserver]="filterFields$"
-                                        [enableFilterSaving]="false"
                                         [clearConditionsOnFilterField]="'relationshiptype'"
                                         (onChange)="advancedFiltersChanged($event)">
                     </advanced-filtering>
@@ -87,7 +86,7 @@
             <div class="tile tile-detail side-panel">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
                             (selectedPanelChange)="sidePanelTab=$event"
-                            [selectedItem]="selectedRelationship"
+                            [hasSelectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
                             [hasProfiling]="false"
                             [hasDetail]="true"
                             [hasFilter]="true"
@@ -97,10 +96,10 @@
                         <gov-relationship-filter [relationshipTypesResolvedNames]="relationshipTypesResolvedNames"></gov-relationship-filter>
                     </ng-container>
                     <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
-                        <ig-asset-detail *ngIf="selectedAsset" 
-                                         [objectUID]="selectedAsset.uid"
-                                         [objectType]="selectedAsset.type"
-                                         [relationshipUid]="selectedAsset.relUid"
+                        <ig-asset-detail *ngIf="(selectedAsset || selectedRelAsset) && !selectedReferenceItem && !selectedTag"
+                                         [objectUID]="selectedRelAsset ? selectedRelAsset.uid : selectedAsset.uid"
+                                         [objectType]="selectedRelAsset ? selectedRelAsset.type : selectedAsset.type"
+                                         [relationshipUid]="selectedRelAsset ? selectedRelAsset.relUid : ''"
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"
                                          [showHeader]="true"
@@ -112,6 +111,15 @@
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
                                          [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                        <ng-container *ngIf="selectedReferenceItem">
+                            <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                  [highlightUid]="selectedReferenceItem.assetUid"
+                                                  [baseUrl]="selectedReferenceItem.url">
+                            </ig-asset-type-detail>
+                        </ng-container>
+                        <ng-container *ngIf="selectedTag">
+                            <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+                        </ng-container>
                     </ng-container>
                 </side-panel>
             </div>

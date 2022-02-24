@@ -10,6 +10,7 @@ import { RelationshipCount, RelationshipType } from '../../../models/relationshi
 import { AssetService } from '../../../services/asset.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
@@ -36,7 +37,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     relationshipTypesResolvedNames: any[] = [];
 
     selectedRelationship: any;
-    selectedAsset: any;
+    selectedRelAsset: any;
+
+    advFilterIdentifier: string = '';
 
     isLoading: boolean = false;
     areTypesLoaded: boolean = false;
@@ -92,17 +95,28 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     @ViewChild('dt', { static: false }) dt: Table;
     @ViewChild('advFilterComponent', { static: false }) advFilterComponent: AdvancedFilteringComponent;
 
+    hrefSub: Subscription;
+    selectedAsset: any;
+    selectedReferenceItem: any;
+    selectedTag: any;
+
     constructor(
         private cdRef: ChangeDetectorRef,
         private relationshipService: RelationshipsService,
         private fieldService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
         private gridDefinitionService: GridDefinitionService,
+        private linkClickInterceptor: LinkClickInterceptor,
     ) {
         super(settingsService);
         this.sidePanelStorageKey = "relationship-detail";
 
         this.filterFieldList.filter((x) => x.Name === 'relationshiptype').forEach((x) => x.Type.Lookup.IsPrimaryFilter = true);
+
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            this.selectedRelAsset = this.selectedRelationship = null;
+            this.linkClickInterceptor.handleEvent(this, ev);
+        });
     }
 
 
@@ -139,6 +153,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p === 'assetUid' && this.assetUid) {
+                this.advFilterIdentifier = "Relationships_" + this.assetUid;
                 this.initialLoad();
             }
         }
@@ -291,16 +306,17 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     selectRow(row: any) {
         this.selectedRelationship = row;
+        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
         var isSubject = this.selectedRelationship.Subject.Uid.toLowerCase() === this.assetUid.toLowerCase();
         if (isSubject) {
-            this.selectedAsset = {
+            this.selectedRelAsset = {
                 uid: this.selectedRelationship.Object.Uid,
                 type: this.selectedRelationship.Object.Type,
                 relUid: this.selectedRelationship.Uid
             };
         }
         else {
-            this.selectedAsset = {
+            this.selectedRelAsset = {
                 uid: this.selectedRelationship.Subject.Uid,
                 type: this.selectedRelationship.Subject.Type,
                 relUid: this.selectedRelationship.Uid

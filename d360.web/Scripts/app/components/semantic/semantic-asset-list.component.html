@@ -12,7 +12,7 @@
         <div class="tile tile-detail side-panel" *ngIf="!isLoading && selectedAsset != null">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
-                        [selectedItem]="selectedAsset"
+                        [hasSelectedItem]="selectedAsset ? true : false"
                         [panelApplies]="'true'"
                         [hasProfiling]="'true'"
                         hasDetail="true"

@@ -3336,7 +3336,6 @@ from    (
                     {
                         model.columns = 1;
                         var relationshipProps = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
-                        relationshipProps.ForEach((prop) => prop.Category = FieldInfo.RelationshipFieldCategory);
                         model.rows.AddRange(relationshipProps);
                     }
 

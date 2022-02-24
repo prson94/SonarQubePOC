@@ -439,7 +439,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 var filter = f as AdvancedFilterFieldCondition;
 
                 //do not load from storage if field got removed in meantime
-                if (this.fields && filter.field) {
+                if (this.fields && filter.field && this.loadIdentifier.toLowerCase().indexOf("Relationships_") !== -1) {
                     if (!this.fields.some((f) => f.Name === filter.field)) {
                         return false;
                     }

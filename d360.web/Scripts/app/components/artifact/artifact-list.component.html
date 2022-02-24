@@ -14,7 +14,7 @@
         <div class="tile tile-detail side-panel" *ngIf="!gridLoading && !isLoading && definitionLoaded && (!showEditor || (showEditor && selection != null))">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
-                        [selectedItem]="selection"
+                        [hasSelectedItem]="selection ? true : false"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
                         hasDetail="true"
