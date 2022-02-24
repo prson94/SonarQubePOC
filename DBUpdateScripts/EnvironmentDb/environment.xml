@@ -243,6 +243,7 @@
 	<!-- Views (object-based naming) -->
 	<include file="scripts/Function.dbo.GetAssetDisplayValue.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetDisplayValueById.xml"/>			<!--Function used for computed column-->
+	<include file="scripts/Function.dbo.GetAssetDisplayValueByObjectId.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetUrlById.xml"/>					<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeUrlById.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectNames.xml"/>				<!--Function used for computed column-->
