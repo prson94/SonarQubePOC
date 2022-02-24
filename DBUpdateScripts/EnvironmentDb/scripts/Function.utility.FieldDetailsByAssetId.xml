@@ -1,0 +1,47 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Function.utility.FieldDetailsByAssetId-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [utility].[FieldDetailsByAssetId]
+(
+        @AssetID   		bigint,
+        @FieldTypeId    int
+        )
+        RETURNS TABLE 
+        AS
+        RETURN 
+        (
+            SELECT  CASE 
+                    WHEN T.AllowAllValue = 1 AND F.[Value] = '0' THEN CAST(T.AllowAllLabel AS nvarchar(MAX)) 
+                    WHEN F.FormattedValue IS NOT NULL THEN F.FormattedValue 
+                    WHEN T.DefaultFormattedValue IS NOT NULL THEN CAST(T .DefaultFormattedValue AS nvarchar(MAX)) 
+                    ELSE NULL 
+                END AS FormattedValue
+        FROM    dbo.FieldType AS T  
+                LEFT OUTER JOIN dbo.Field AS F 
+                ON F.AssetId = @AssetID
+                and F.FieldTypeID = T.ID 
+        WHERE    t.id = @FieldTypeId and ((F.FormattedValue IS NOT NULL AND F.FormattedValue <> '')
+				OR T.DefaultValue IS NOT NULL 
+                OR T.ShowIfEmpty = 1
+        )
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			drop function if exists [utility].[FieldDetailsByAssetId]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
