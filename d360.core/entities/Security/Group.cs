@@ -33,7 +33,7 @@ namespace d360.core.entities
         public Guid? PrimaryOwnerUid { get; set; }
 
         [DataMember, NotMapped]
-        public Nullable<Guid> SecondaryOwnerUid { get; set; }
+        public Guid? SecondaryOwnerUid { get; set; }
 
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "GroupIsActiveDirectory_Name", Description = "GroupIsActiveDirectory_Description")] 
@@ -53,8 +53,6 @@ namespace d360.core.entities
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
-        [DataMember]
-        public Guid Uid { get; set; }
                 
         public virtual ICollection<ResourceGroup> ResourceGroups { get; set; }
 
