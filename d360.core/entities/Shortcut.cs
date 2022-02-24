@@ -1,11 +1,7 @@
-﻿using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System;
-using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using d360.core.queue;
+using System.Runtime.Serialization;
+
 using d360.core.enums;
 
 namespace d360.core.entities
@@ -16,20 +12,23 @@ namespace d360.core.entities
         [DataMember]
         [Column(TypeName = "varchar"), StringLength(250)]
         public string Name { get; set; }
+        
         [DataMember]
         [Column(TypeName = "VARCHAR")]
         [StringLength(50)]
         public string Icon { get; set; }
+        
         [DataMember]
         [Column(TypeName = "VARCHAR")]
         [StringLength(250)]
         public string IconUrl { get; set; }
+        
         [DataMember]
         [Column(TypeName = "VARCHAR")]
         [StringLength(250)]
         public string Url { get; set; }
 
-        [DataMember]        
+        [DataMember]
         [StringLength(500)]
         public string Description { get; set; }
 
@@ -45,7 +44,7 @@ namespace d360.core.entities
         [StringLength(100)]
         public string BackgroundColor { get; set; }
 
-        [DataMember]        
+        [DataMember]
         public int DisplayOrder { get; set; }
 
         [DataMember]
@@ -54,18 +53,18 @@ namespace d360.core.entities
         [NotMapped, DataMember]
         public string IconPayload { get; set; }
 
-        [NotMapped,DataMember]
-        public string FullURL 
+        [NotMapped, DataMember]
+        public string FullURL
         {
             get
             {
-                if (string.IsNullOrEmpty(this.IconUrl))
+                if (string.IsNullOrEmpty(IconUrl))
                 {
                     return null;
                 }
                 else
                 {
-                    return constants.COMPANY_RESOURCES_URL + this.IconUrl;
+                    return constants.COMPANY_RESOURCES_URL + IconUrl;
                 }
             }
         }
