@@ -1,9 +1,9 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
@@ -53,25 +53,26 @@ namespace d360.core.entities
         {
             get
             {
-                if (string.IsNullOrEmpty(this.ImageIconUrl))
+                if (string.IsNullOrEmpty(ImageIconUrl))
                 {
                     return null;
                 }
                 else
                 {
-                    return constants.COMPANY_RESOURCES_URL + this.ImageIconUrl;
+                    return constants.COMPANY_RESOURCES_URL + ImageIconUrl;
                 }
             }
         }
-
     }
 
     public class SiteNavPermission : BaseObject
     {
         [Key, Column(Order = 1), DataMember]
         public int SiteNavID { get; set; }
+        
         [Key, Column(Order = 2), DataMember]
         public string Object { get; set; }
+        
         [Key, Column(Order = 3), DataMember]
         public int ObjectID { get; set; }
 
