@@ -2,8 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { Observable, of, Subject, Subscription } from 'rxjs';
-import { switchMap, takeUntil, tap } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../components/assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../components/assets-grid/asset-grid.model';
 import { ArtifactType } from '../models/artifact-type.model';
@@ -50,12 +49,10 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
     console.log(this.isInitialize);
   }
 
-  initializeTitleAndTabsInRightSidebar(routeParams: Observable<Params>, activeTabTitle?: string) {
+  initializeTitleAndTabsInRightSidebar(routeParams: Observable<Params>, activeTabTitle?: string): void {
     this.secondaryNavService.activeTabTitle = activeTabTitle;
     
-    // debugger;
     this.sub = routeParams.subscribe(params => {
-      // debugger;
       this.artifactTypeId = this.secondaryNavService.getArtifactTypeIdFromRouteParams(params);
       this.secondaryNavService.artifactTypeId = this.artifactTypeId;
 
@@ -92,6 +89,7 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
 
             this.setBrowserTitle(this.titleService, this.artifactType.Name);
             this.isLoading = false;
+            this.isInitialize = true;
           });
         });
     });

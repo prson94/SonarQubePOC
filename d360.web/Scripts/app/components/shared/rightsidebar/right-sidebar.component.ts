@@ -231,8 +231,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.currentResouceID = +CurrentResourceID;
         this.subscription = this.secondaryNavService.rightSidebar$.subscribe(
             (item) => {
-                console.log('this.secondaryNavService.activeTabTitle');
-                console.log(this.secondaryNavService.activeTabTitle);
                 if (item.title === this.secondaryNavService.activeTabTitle) {
                     item.active = true;
                 }
