@@ -9,6 +9,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
+import { TabTitle } from '../../../models/enums.model';
 
 @Component({
     selector: 'd3s-dashboard',
@@ -43,10 +44,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnInit() {
-        console.log('this.titleAndTabsService.isInitialize');
-        console.log(this.titleAndTabsService.isInitialize);
         if (!this.titleAndTabsService.isInitialize) {
-            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params, 'Dashboards');
+            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params, TabTitle.DASHBOARDS);
         }
 
         this.showSingle = false;

@@ -486,7 +486,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     itemClicked(item: SecondaryNavItem) {
-        // debugger;
         if (item.active == true)
             return;
 
@@ -499,7 +498,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.secondaryNavService.clearLocalActiveItem();
             let home = this.homeUrl ? this.homeUrl : this.secondaryNavService.getLocalHomeUrl();
             if (!home) {
-               // debugger;
                home = `/artifact/${this.secondaryNavService.artifactTypeId}`;
                this.secondaryNavService.activeTabTitle = null;
                this.secondaryNavService.artifactTypeId = null;

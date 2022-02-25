@@ -45,8 +45,6 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
     webAnalyticsService: WebAnalyticsService,
   ) {
     super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
-    console.log('this.isInitialize');
-    console.log(this.isInitialize);
   }
 
   initializeTitleAndTabsInRightSidebar(routeParams: Observable<Params>, activeTabTitle?: string): void {
