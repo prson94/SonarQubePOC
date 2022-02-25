@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { AssetGridBaseComponent } from '../components/assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../components/assets-grid/asset-grid.model';
 import { ArtifactType } from '../models/artifact-type.model';
@@ -24,7 +25,7 @@ declare var CurrentResourceID;
 export class TitleAndTabsService extends AssetGridBaseComponent {
   isInitialize: boolean = false;
   sub: any;
-  artifactTypeHierarchy: ArtifactType[];
+  artifactTypeBreadcrumbElements: ArtifactType[];
   sidePanelStorageKey: string;
   artifactType: ArtifactType;
   gridObject: AssetGridObject;
@@ -32,6 +33,7 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
   currentAreaNameSubscription: any;
   currentAreaName: string;
   artifactTypeId: number;
+  destroy = new Subject<void>();
 
   constructor(
     private http: HttpClient,
@@ -49,13 +51,13 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
 
   initializeTitleAndTabsInRightSidebar(routeParams: Observable<Params>, activeTabTitle?: string): void {
     this.secondaryNavService.activeTabTitle = activeTabTitle;
-    
+
     this.sub = routeParams.subscribe(params => {
       this.artifactTypeId = this.secondaryNavService.getArtifactTypeIdFromRouteParams(params);
       this.secondaryNavService.artifactTypeId = this.artifactTypeId;
 
       this.isLoading = true;
-      this.artifactTypeHierarchy = [];
+      this.artifactTypeBreadcrumbElements = [];
       this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', this.artifactTypeId);
       this.logAction('open', 'ArtifactType', this.artifactTypeId);
       this
@@ -82,7 +84,7 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
             this.gridObject = ArtifactType.AsGridObject(this.artifactType);
             this.setObjectInfo('ArtifactType', this.artifactType.ID);
 
-            this.artifactTypeHierarchy.push(this.artifactType);
+            this.artifactTypeBreadcrumbElements.push(this.artifactType);
             this.createBreadcrumbHierarchy(artifactType);
 
             this.setBrowserTitle(this.titleService, this.artifactType.Name);
@@ -96,7 +98,7 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
   createBreadcrumbHierarchy(artifact: ArtifactType) {
     if (artifact.ParentID) {
       var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentID).subscribe(parent => {
-        this.artifactTypeHierarchy.unshift(parent);
+        this.artifactTypeBreadcrumbElements.unshift(parent);
         if (parent.ParentID)
           this.createBreadcrumbHierarchy(parent);
         else
@@ -110,42 +112,51 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
 
   displayBreadcrumb() {
     this.headerBreadcrumbService.clearBreadcrumbs();
-    this.currentAreaNameSubscription =
-      this.headerBreadcrumbService
-        .getAreaName('ArtifactType', this.artifactTypeHierarchy[0].ID)
-        .subscribe(result => {
-          this.currentAreaName = result
-          this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
-          this.artifactTypeHierarchy.forEach(x => {
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
-              x.Name,
-              SiteUrlHelpers.getObjectUrl("ArtifactType", x.ID),
-              false,
-              "ArtifactType",
-              x.ID,
-              null,
-              null,
-              true,
-              x.ParentID > 0));
-
-          });
-
-          var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
-            this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
-            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
-            this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
-            if (this.artifactType.HasV2Workflows) {
-              this.secondaryNavService
-                .showItem(
-                  new SecondaryNavItem(
-                    'Workflow',
-                    'workflowmonitor',
-                    ['fa-usb'],
-                    `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`));
-            }
-          });
-          this.navigationItemsSubs.push(breadCrumbsSub);
-        });
+    this.headerBreadcrumbService.getAreaName('ArtifactType', this.artifactTypeBreadcrumbElements[0].ID).pipe(
+      takeUntil(this.destroy),
+      switchMap((areaName: string): Observable<string> => {
+        this.currentAreaName = areaName;
+        this.fillBreadcrumbWithElements();
+        return this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle);
+      }),
+    ).subscribe((iconName: string) => {
+      this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
+      this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
+      this.secondaryNavService.setCurrentArea(this.artifactType.Name, iconName, 'Assets');
+      if (this.artifactType.HasV2Workflows) {
+        this.secondaryNavService.showItem(
+          new SecondaryNavItem(
+            'Workflow',
+            'workflowmonitor',
+            ['fa-usb'],
+            `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`
+          )
+        );
+      }
+    });
   }
 
+  fillBreadcrumbWithElements(): void {
+    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
+    this.artifactTypeBreadcrumbElements.forEach((artifactTypeBreadcrumbElement: ArtifactType) => {
+      this.headerBreadcrumbService.showBreadcrumb(
+        new Breadcrumb(
+          artifactTypeBreadcrumbElement.Name,
+          SiteUrlHelpers.getObjectUrl("ArtifactType", artifactTypeBreadcrumbElement.ID),
+          false,
+          "ArtifactType",
+          artifactTypeBreadcrumbElement.ID,
+          null,
+          null,
+          true,
+          artifactTypeBreadcrumbElement.ParentID > 0
+        )
+      );
+    });
+  }
+
+  ngOnDestroy() {
+    this.destroy.next();
+    this.destroy.complete();
+  }
 }
