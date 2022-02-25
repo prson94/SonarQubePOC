@@ -419,6 +419,19 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
+                string lookupDataSelectSQL = @" from asset a
+                    inner join fieldtype ft on ft.assettypeid = a.AssetTypeID 
+                    left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID";
+
+                string lookupDataWhereSQL = "where a.uid = @uid ";
+                if (details.Type == SystemObjects.IntersectType.ToString())
+                {
+                    lookupDataSelectSQL = @"  from [Intersect] I
+                    inner join fieldtype ft on ft.Object = 'IntersectType' and ft.ObjectID = i.IntersectTypeID
+                    left join Field f on f.ObjectID = i.ID and f.FieldTypeID = ft.ID";
+                    lookupDataWhereSQL = "where I.ID = @assetId ";
+                }
+
                 var lookupDataSql = $@"  select ft.id as FieldTypeId, 
                         trim(Val.Value) as Value, 
                         od.AssetId, 
@@ -427,9 +440,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         flv.DisplayText, 
                         refAsset.uid,
                         refType.uid as assetTypeUid
-                    from asset a
-                    inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
-                    left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
+                    {lookupDataSelectSQL}
                     cross apply (
                         select * from STRING_SPLIT(f.Value,',')
                         union 
@@ -440,7 +451,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     left join AssetType refType on refType.ID = od.AssetTypeId
                     outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
                     left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
-                    where a.uid = @uid 
+                    {lookupDataWhereSQL}
                     and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
                     and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
                     and Val.Value is not null and Val.value <> '';";
@@ -451,7 +462,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         where ft.assettypeid = @AssetTypeID
                         and ft.type ='ComplexRelationLookup';";
 
-                var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID });
+                var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID, assetId = details.ID });
 
                 var lookupData = dataReader.Read<LookupDataReadOnlyModel>().ToList();
                 var fieldTypeLookups = dataReader.Read<FieldTypeLookup>().ToList();
@@ -3315,7 +3326,7 @@ from    (
                             else ITD.PredicateInverse + ' ' + ITD.SubjectAssetTypePath
                             end as RelationshipTypeName
                             from [IntersectTypeDetail] ITD
-                            where ITD.ID = @intersectTypeId", 
+                            where ITD.ID = @intersectTypeId",
                             new { intersectTypeId = intersect.IntersectTypeID, intersectId = intersect.ID, baseAssetUid }).FirstOrDefault();
 
                         model.rows.Add(new DetailReadOnlyRowModel
