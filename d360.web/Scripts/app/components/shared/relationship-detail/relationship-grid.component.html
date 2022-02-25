@@ -127,4 +127,23 @@
     </div>
 </div>
 
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <asset-editor #dynamicEditor
+                  *ngIf="showEditor"
+                  [objectID]="selectedRelationship ? selectedRelationship.Uid : null"
+                  [objectType]="'IntersectType'"
+                  [title]="selectedRelationship ? 'Edit '+selectedRelationship.RelationshipTypeName : 'Create New Group'"
+                  [selection]="selectedRelationship"
+                  [rowID]="rowID"
+                  [objectTypeUid]="selectedRelationship.RelationshipTypeUid"
+                  [hidePath]="true"
+                  (saveClick)="saveItem($event)"
+                  [showAsModal]="true"
+                  [isV2API]="true"
+                  (closeClick)="showEditor=false"></asset-editor>
+
+</d3s-modal>
 

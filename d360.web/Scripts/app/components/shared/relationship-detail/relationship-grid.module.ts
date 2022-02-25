@@ -23,6 +23,8 @@ import { IgBadgeModule } from '../controls/badge/badge.module';
 import { AssetDetailModule } from '../asset-detail/asset-detail.module';
 import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
+import { SiteModalModule } from '../modal/gov-modal.module';
+import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 
 
 @NgModule({
@@ -48,7 +50,9 @@ import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.m
         IgBadgeModule,
         AssetDetailModule,
         AssetTypeDetailModule,
-        TaggedAssetDetailModule
+        TaggedAssetDetailModule,
+        SiteModalModule,
+        AssetEditorModule
     ],
     declarations: [
         RelationshipGridComponent,

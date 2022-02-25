@@ -7,7 +7,6 @@ import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { RelationshipCount, RelationshipType } from '../../../models/relationship.model';
-import { AssetService } from '../../../services/asset.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
@@ -67,6 +66,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     columns: GridColumn[] = [];
 
     loadedFilterFields: FieldTypeAPIModelField[] = [];
+
+    showEditor: boolean = false;
 
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
@@ -327,7 +328,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
 
-        if (key === 'edit') {
+        if (key === 'edit relationship') {
+            this.showEditor = true;
             console.log("edit");
         } else if (key === 'delete') {
             console.log("delete");
@@ -357,5 +359,10 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.loadedFilterFields = [];
             this.updateAdvancedFilters();
         }
+    }
+
+    saveItem($event) {
+        this.showEditor = false;
+        this.loadRelationshipLazy(null);
     }
 }

@@ -14,7 +14,7 @@ namespace d360.core.entities
 
         [DataMember]
         public int IntersectTypeID { get; set; }
-        
+
         [DataMember]
         public Guid IntersectTypeUid { get; set; }
 
@@ -91,5 +91,11 @@ namespace d360.core.entities
 
         [DataMember]
         public PredicateType? PredicateType { get; set; }
+
+        [DataMember]
+        public Guid? ObjectUid { get; set; }
+
+        [DataMember]
+        public Guid? SubjectUid { get; set; }
     }
 }

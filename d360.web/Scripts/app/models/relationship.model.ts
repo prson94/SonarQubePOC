@@ -111,5 +111,5 @@ export class PredicateDropdown {
 export class RelationshipV2 {
     SubjectAssetUid: string;
     ObjectAssetUid: string;
-    Fields: [];
+    Fields: any = {};
 }

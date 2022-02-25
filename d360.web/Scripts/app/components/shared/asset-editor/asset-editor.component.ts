@@ -41,6 +41,8 @@ import { PropertyGroupComponent } from '../controls/property-group/property-grou
 import { AssetEditorFieldComponent } from './asset-editor-field.component';
 import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
+import { RelationshipsService } from '../../../services/relationships.service';
+import { RelationshipV2 } from '../../../models/relationship.model';
 
 @Component({
     selector: 'asset-editor',
@@ -132,6 +134,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         private assetService: AssetService,
         private groupsService: GroupService,
         private dynEditorService: DynEditorService,
+        private relationshipService: RelationshipsService,
         protected settingsService: CompanySettingsService,
         private elRef: ElementRef
     ) {
@@ -719,6 +722,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         if (this.objectType === "Group") {
             this.postToGroupsApiV2({ item: values, action: action, addAnother: addAnother });
         }
+        else if (this.objectType === "IntersectType") {
+            this.postToRelationshipApiV2({ item: values, action: action, addAnother: false });
+        }
         else {
             this.postToApiV2({ item: values, action: action, addAnother: addAnother });
         }
@@ -850,6 +856,58 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             }
 
         });
+    }
+
+    postToRelationshipApiV2(event) {
+        this.savingInProgress = true;
+        let values: any = {};
+        let relationship: RelationshipV2 = new RelationshipV2();
+        relationship.Fields = {};
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in event.item) {
+            if (event.item.hasOwnProperty(p)) {
+                if (Array.isArray(event.item[p])) {
+                    values[p] = event.item[p].join();
+                } else {
+                    values[p] = event.item[p];
+                }
+            }
+        }
+
+        //convert artifact to an asset
+        for (var p in values) {
+            if (p.toUpperCase() === "OBJECTUID") {
+                relationship.ObjectAssetUid = values[p];
+            }
+            else if (p.toUpperCase() === "SUBJECTUID") {
+                relationship.SubjectAssetUid = values[p];
+            }
+            else {
+                relationship.Fields[p] = values[p];
+            }
+        }
+
+        this.relationshipService.saveRelationships(this.objectTypeUid, [relationship])
+            .subscribe((result) => {
+                var res = result[0];
+                if (res.Success) {
+                    let msg = 'Successfully updated';
+                    this.showMessageForApiResult(this.messagesService, res, msg);
+                    if (res.uid) {
+                        event.relationshipUid = res.uid;
+                        event.relationshipTypeUid = this.objectTypeUid;
+                    }
+                    this.savingInProgress = false;
+                    this.saveClick.emit(event);
+                }
+                else {
+                    this.savingInProgress = false;
+
+                    this.ref.markForCheck();
+                    this.showMessageForApiResult(this.messagesService, res);
+                }
+            });
     }
 
     getUTCDate(date: Date): Date {

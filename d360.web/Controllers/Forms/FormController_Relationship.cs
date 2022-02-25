@@ -156,7 +156,7 @@ namespace d360.web.Controllers
         [Route("Relationship_EditFields"), NonNullableParameters]
         public JsonResult Relationship_EditFields(int id)
         {
-            var relationship = Company.GetById<Intersect>(id, i => i.IntersectType);
+            var relationship = Company.IntersectDetails.FirstOrDefault(x => x.ID == id);
             if (relationship == null)
             {
                 return jsonException(FormControllerApiMessage.RelationshipNotFound, HttpStatusCode.NotFound);
@@ -168,8 +168,19 @@ namespace d360.web.Controllers
             }
 
             var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list = loadDynamicFields(SystemObjects.Intersect.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1, false, false);
+            list.Add(new EditableField { FieldName = "SubjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.SubjectUid.ToString() });
+            list.Add(new EditableField { FieldName = "ObjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.ObjectUid.ToString() });
+            
+            list = loadDynamicFields(
+                SystemObjects.Intersect.ToString(),
+                id,
+                list,
+                Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(),
+                Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(),
+                1,
+                false,
+                useDefaultCategory: true,
+                loadOnlySelectedLookupValue: true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -226,8 +237,8 @@ namespace d360.web.Controllers
                 var items = rawItems.Split(',').ToList();
 
                 if ((targetCardinality == Cardinality.One && items.Count > 1))
-                { 
-                return jsonException(FormControllerApiMessage.InvalidrelationshipCardinality, HttpStatusCode.BadRequest);
+                {
+                    return jsonException(FormControllerApiMessage.InvalidrelationshipCardinality, HttpStatusCode.BadRequest);
                 }
                 List<Asset> assetToAddIntersect = new List<Asset>();
 
@@ -302,7 +313,7 @@ namespace d360.web.Controllers
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.Relationship), intersect.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.Relationship), intersect.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
             }
             catch (BaseException ex)
             {
@@ -394,7 +405,7 @@ namespace d360.web.Controllers
 
             var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
             if (targetAssetType == null)
-            { 
+            {
                 throw new NotFoundException(ApiMessages.TargetAssetType);
             }
 
@@ -431,7 +442,7 @@ where		I.ID is null
 ) C";
 
             switch (targetType)
-            {                
+            {
                 case "Group":
                 case "GroupType":
                     #region
