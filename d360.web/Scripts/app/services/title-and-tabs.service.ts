@@ -1,8 +1,7 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Params } from '@angular/router';
+import { Observable, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { AssetGridBaseComponent } from '../components/assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../components/assets-grid/asset-grid.model';
@@ -24,20 +23,14 @@ declare var CurrentResourceID;
 })
 export class TitleAndTabsService extends AssetGridBaseComponent {
   isInitialize: boolean = false;
-  sub: any;
   artifactTypeBreadcrumbElements: ArtifactType[];
   sidePanelStorageKey: string;
   artifactType: ArtifactType;
   gridObject: AssetGridObject;
-  navigationItemsSubs: Subscription[] = [];
-  currentAreaNameSubscription: any;
   artifactTypeId: number;
   destroy = new Subject<void>();
 
   constructor(
-    private http: HttpClient,
-    private router: Router,
-    private route: ActivatedRoute,
     private artifactTypeService: ArtifactTypeService,
     private titleService: Title,
     headerBreadcrumbService: HeaderBreadcrumbService,
@@ -50,47 +43,39 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
 
   initializeTitleAndTabsInRightSidebar(routeParams: Observable<Params>, activeTabTitle?: string): void {
     this.secondaryNavService.activeTabTitle = activeTabTitle;
-
-    this.sub = routeParams.subscribe(params => {
-      this.artifactTypeId = this.secondaryNavService.getArtifactTypeIdFromRouteParams(params);
-      this.secondaryNavService.artifactTypeId = this.artifactTypeId;
-
-      this.isLoading = true;
-      this.artifactTypeBreadcrumbElements = [];
-      this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', this.artifactTypeId);
-      this.logAction('open', 'ArtifactType', this.artifactTypeId);
-      this
-        .artifactTypeService
-        .getArtifactTypeDetails(this.artifactTypeId, true)
-        .subscribe((artifactType) => {
-          let folderName: string = '#Business';
-          this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
-
-          if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
-            folderName = '#Technical';
-            this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
-          }
-
-          this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
-
-          this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
-            this.headerBreadcrumbService.clearBreadcrumbs();
-
-            this.folderTitle = res;
-            this.area = res;
-
-            this.artifactType = artifactType;
-            this.gridObject = ArtifactType.AsGridObject(this.artifactType);
-            this.setObjectInfo('ArtifactType', this.artifactType.ID);
-
-            this.artifactTypeBreadcrumbElements.push(this.artifactType);
-            this.createBreadcrumbHierarchy(artifactType);
-
-            this.setBrowserTitle(this.titleService, this.artifactType.Name);
-            this.isLoading = false;
-            this.isInitialize = true;
-          });
-        });
+    routeParams.pipe(
+      takeUntil(this.destroy),
+      switchMap((params: Params): Observable<ArtifactType> => {
+        this.artifactTypeId = this.secondaryNavService.getArtifactTypeIdFromRouteParams(params);
+        this.secondaryNavService.artifactTypeId = this.artifactTypeId;
+        this.isLoading = true;
+        this.artifactTypeBreadcrumbElements = [];
+        this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', this.artifactTypeId);
+        this.logAction('open', 'ArtifactType', this.artifactTypeId);
+        return this.artifactTypeService.getArtifactTypeDetails(this.artifactTypeId, true);
+      }),
+      switchMap((artifactType: ArtifactType): Promise<string> => {
+        this.artifactType = artifactType;
+        let folderName: string = '#Business';
+        this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+        if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
+          folderName = '#Technical';
+          this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+        }
+        this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
+        return this.headerBreadcrumbService.getFolderTitle(folderName);
+      }),
+    ).subscribe((folderTitle: string) => {
+      this.headerBreadcrumbService.clearBreadcrumbs();
+      this.folderTitle = folderTitle;
+      this.area = folderTitle;
+      this.gridObject = ArtifactType.AsGridObject(this.artifactType);
+      this.setObjectInfo('ArtifactType', this.artifactType.ID);
+      this.artifactTypeBreadcrumbElements.push(this.artifactType);
+      this.createBreadcrumbHierarchy(this.artifactType);
+      this.setBrowserTitle(this.titleService, this.artifactType.Name);
+      this.isLoading = false;
+      this.isInitialize = true;
     });
   }
 
