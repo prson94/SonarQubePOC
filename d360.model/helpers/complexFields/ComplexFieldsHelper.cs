@@ -246,7 +246,7 @@ namespace d360.model.helpers
                     }
                     else
                     {
-                        joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                        joins.Add($"outer apply [utility].[FieldDetailsByAssetId](H{f.RelationIndex + 1}.ID, {f.FieldTypeID}) {fieldSelector}");
                     }
                 }
                 else
@@ -582,7 +582,7 @@ namespace d360.model.helpers
                             break;
                     }
 
-                    joins.Add($"left join FieldDetail F{ft.ID} on F{ft.ID}.AssetID = A.ID and F{ft.ID}.FieldTypeID = {ft.ID} and F{ft.ID}.FormattedValue <> ''");
+                    joins.Add($"outer apply [utility].[FieldDetailsByAssetId](A.ID, {ft.ID}) F{ft.ID}");
                 }
             }
 

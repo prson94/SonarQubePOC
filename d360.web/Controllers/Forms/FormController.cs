@@ -2063,13 +2063,15 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                         where g.id = @groupId
                         ", new { groupId }).FirstOrDefault();
 
-            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = group.Uid.ToString() });
+            var assetUid = Company.GetAssetUid(group.ID, SystemObjects.Group);
+
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = assetUid.ToString() });
 
             list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, Value = group.Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
             list.Add(new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = FieldInfo.IsActiveDirectoryGroup_Name, Value = group.IsActiveDirectoryGroup.ToString(), FieldType = DataType.Boolean.ToString() });
 
-            var primaryField = new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = FieldInfo.PrimaryOwner_Name, Value = group.PrimaryOwnerUid.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
-            var secondaryField = new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = FieldInfo.SecondaryOwner_Name, Value = group.SecondaryOwnerUid.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
+            var primaryField = new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = FieldInfo.PrimaryOwner_Name, Value = group?.PrimaryOwnerUid?.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
+            var secondaryField = new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = FieldInfo.SecondaryOwner_Name, Value = group?.SecondaryOwnerUid?.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
 
             if (group.PrimaryOwnerUid.HasValue)
             {

@@ -94,12 +94,14 @@ stages:
         msbuildArguments: /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.Repository.LocalPath)/databaseindexrebuilder/"
         clean: true
         maximumCpuCount: true
-    - template: build/steps/step-whitesource-blackduck-scan.yml@templates
+    - template: build/steps/step-whitesource-scan.yml@templates
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
+        projectName: 'Database Index Rebuilder'   
+    - template: build/steps/step-blackduck-detect.yml@templates
+      parameters:
         blackduckApi: $(blackduckApi)
         artifactName: DatabaseIndexRebuilder
-        projectName: 'Database Index Rebuilder'
         blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.databaseindexrebuilder
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Database Index Rebuilder'

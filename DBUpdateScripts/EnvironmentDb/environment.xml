@@ -157,6 +157,7 @@
 	<include file="scripts/Table.dbo.Theme.xml"/>
 	<include file="scripts/Table.dbo.ResourceTheme.xml"/>
 	<include file="scripts/Table.dbo.TooltipTemplate.xml"/>
+	<include file="scripts/Table.dbo.RebuildJobStatus.xml"/>
 	<include file="scripts/Table.graph.AssetNode.xml"/>
 	<include file="scripts/Table.graph.AssetEdge.xml"/>
 	<include file="scripts/Table.dbo.AssetResultEdge.xml"/>						<!-- Dependent on graph.AssetNode -->
@@ -353,6 +354,7 @@
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
     <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
     <include file="scripts/Function.utility.FieldDetails.xml"/>
+	<include file="scripts/Function.utility.FieldDetailsByAssetId.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
 	<include file="scripts/Function.utility.GetIntersectNames.xml"/>

@@ -82,7 +82,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-ResponsibilityRuleResultSecurityAsset_AfterInsert-v1">
+  <changeSet author="TKlok" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-ResponsibilityRuleResultSecurityAsset_AfterInsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -103,9 +103,10 @@ BEGIN
 			A.ID
 	FROM INSERTED R
 	INNER JOIN [dbo].[ResponsibilityRuleResultAsset] RA on R.RuleID = RA.RuleID
-	INNER JOIN [dbo].[Asset] A
-		ON RA.AssetID = A.ID
-			WHERE RA.AssetTypeID = 0;
+	INNER JOIN [dbo].[Asset] A ON RA.AssetID = A.ID
+	INNER JOIN [dbo].[ResponsibilityTypeRelationRule] RTR ON R.RuleID = RTR.ID
+	WHERE RTR.LastRunOn IS NOT NULL
+	AND RA.AssetTypeID = 0;
 	
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
 	SELECT 'ObjectIndex', 
@@ -115,9 +116,10 @@ BEGIN
 			A.ID
 	FROM INSERTED R
 	INNER JOIN [dbo].[ResponsibilityRuleResultAsset] RA on R.RuleID = RA.RuleID
-	INNER JOIN [dbo].[Asset] A
-	ON RA.AssetTypeID = A.AssetTypeID
-		WHERE RA.AssetID = 0;
+	INNER JOIN [dbo].[Asset] A ON RA.AssetTypeID = A.AssetTypeID
+	INNER JOIN [dbo].[ResponsibilityTypeRelationRule] RTR ON R.RuleID = RTR.ID
+	WHERE RTR.LastRunOn IS NOT NULL
+	AND RA.AssetID = 0;
 END
 		]]>
     </sql>

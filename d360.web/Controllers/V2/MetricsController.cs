@@ -902,6 +902,33 @@ namespace d360.web.Controllers.V2
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
         /// 
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     * Date Is {DateFieldName} eq 'YYYY-MM-DD'
+        ///     * Date Is not {DateFieldName} ne 'YYYY-MM-DD'
+        ///     * Date Is Before {DateFieldName} lt 'YYYY-MM-DD'
+        ///     * Date Is After {DateFieldName} gt 'YYYY-MM-DD'
+        ///     * Date Is on or Before {DateFieldName} le 'YYYY-MM-DD'
+        ///     * Date Is on or After {DateFieldName} ge 'YYYY-MM-DD'
+        ///     * Date Is Between ({DateFieldName} ge 'YYYY-MM-DD' and {DateFieldName} le 'YYYY-MM-DD')
+        ///     * DateTime Is Before {DateTimeFieldName} lt 'YYYY-MM-DDTHH24:MI'
+        ///     * DateTime Is After {DateTimeFieldName} gt 'YYYY-MM-DDTHH24:MI'
+        ///     * DateTime Is Between ({DateTimeFieldName} ge 'YYYY-MM-DDTHH24:MI' and {DateTimeFieldName} le 'YYYY-MM-DDTHH24:MI')
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+        /// 
         /// **Notes:** 
         /// * Read permissions on the rule are required.
         /// * Effective start and end and Run start and end dates can be used as additional parameters when a Rule or Asset ID is provided (OwningAssetUid or EvaluatedAssetUid)
