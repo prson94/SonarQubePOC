@@ -31,7 +31,6 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
   gridObject: AssetGridObject;
   navigationItemsSubs: Subscription[] = [];
   currentAreaNameSubscription: any;
-  currentAreaName: string;
   artifactTypeId: number;
   destroy = new Subject<void>();
 
@@ -97,17 +96,19 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
 
   createBreadcrumbHierarchy(artifact: ArtifactType) {
     if (artifact.ParentID) {
-      var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentID).subscribe(parent => {
+      this.artifactTypeService.getArtifactTypeDetails(artifact.ParentID).pipe(
+        takeUntil(this.destroy)
+      ).subscribe(parent => {
         this.artifactTypeBreadcrumbElements.unshift(parent);
-        if (parent.ParentID)
+        if (parent.ParentID) {
           this.createBreadcrumbHierarchy(parent);
-        else
+        } else {
           this.displayBreadcrumb();
+        }
       });
-
-      this.navigationItemsSubs.push(detailsSub);
-    } else
+    } else {
       this.displayBreadcrumb();
+    }
   }
 
   displayBreadcrumb() {
@@ -115,9 +116,8 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
     this.headerBreadcrumbService.getAreaName('ArtifactType', this.artifactTypeBreadcrumbElements[0].ID).pipe(
       takeUntil(this.destroy),
       switchMap((areaName: string): Observable<string> => {
-        this.currentAreaName = areaName;
-        this.fillBreadcrumbWithElements();
-        return this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle);
+        this.fillBreadcrumbWithElements(areaName);
+        return this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, areaName ? areaName : this.folderTitle);
       }),
     ).subscribe((iconName: string) => {
       this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
@@ -136,8 +136,8 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
     });
   }
 
-  fillBreadcrumbWithElements(): void {
-    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
+  fillBreadcrumbWithElements(areaName: string): void {
+    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(areaName ? areaName : this.folderTitle, this.areaLink));
     this.artifactTypeBreadcrumbElements.forEach((artifactTypeBreadcrumbElement: ArtifactType) => {
       this.headerBreadcrumbService.showBreadcrumb(
         new Breadcrumb(
