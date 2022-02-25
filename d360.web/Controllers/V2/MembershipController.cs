@@ -891,8 +891,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     insert into reporting.Global_Audit
                     select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member removed', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.'
                     from [group] g 
+                    inner join asset a on a.Object = 'Group' and a.ObjectID = g.id
                     inner join reporting.Global_Resource gr on gr.uid = @resourceUid
-                    where g.uid = @groupUid
+                    where a.uid = @groupUid
                     ", new { groupUid, resourceUid, Company.CurrentResourceID }).FirstOrDefault();
 
                 if (res > 0)
