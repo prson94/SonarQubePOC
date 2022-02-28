@@ -45,6 +45,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     navigationItemsSubs: Subscription[] = [];
     sortField: string;
     sortOrder: number;
+    isExportInProgress: boolean = false;
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -309,5 +310,14 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
                 count: values.length
             });
         }
+    }
+
+    canExportRecords() {
+        return this.semanticsTotal <= this.maxExportRows;
+    }
+
+    export() {
+        this.isExportInProgress = true;
+        this.dataProfileService.getSemanticTypes(1, this.maxExportRows, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, () => { this.isExportInProgress = false; });
     }
 }

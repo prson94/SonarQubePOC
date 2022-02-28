@@ -146,11 +146,23 @@
     <value>Url</value>
     <comment>Used for data profile match export</comment>
   </data>
+  <data name="BaseTypeColumn" xml:space="preserve">
+    <value>Base Type</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="DataProfileDeleteMaxLimit" xml:space="preserve">
     <value>You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint.</value>
   </data>
   <data name="DataProfileRecordsLimit" xml:space="preserve">
     <value>You may only provide a maximum of {0} Data Profile records in this request. Please call the BATCH API to submit more than {1} items.</value>
+  </data>
+  <data name="DescriptionColumn" xml:space="preserve">
+    <value>Description</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="DisabledColumn" xml:space="preserve">
+    <value>Disabled</value>
+    <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="Duplicate" xml:space="preserve">
     <value>Duplicate</value>
@@ -158,17 +170,41 @@
   <data name="DuplicateRecordBatchProfile" xml:space="preserve">
     <value>Duplicate Records: {0}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch.</value>
   </data>
+  <data name="EffectiveFromColumn" xml:space="preserve">
+    <value>Effective From</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="EffectiveThroughColumn" xml:space="preserve">
+    <value>Effective Through</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="ElementBottomKNotEmpty" xml:space="preserve">
     <value>Elements in bottomK cannot be Empty strings</value>
   </data>
   <data name="ElementTopKNotEmpty" xml:space="preserve">
     <value>Elements in topK cannot be Empty string</value>
   </data>
+  <data name="HeaderFilterColumn" xml:space="preserve">
+    <value>Header Filter</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="HeaderFilterConfidenceColumn" xml:space="preserve">
+    <value>Header Filter Confidence</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="InvalidOrder" xml:space="preserve">
     <value>Invalid value for parameter '_order'. Allowed values are 'path' and 'tags'.</value>
   </data>
   <data name="InvalidSimilarType" xml:space="preserve">
     <value>'{0}' is an invalid similar type.</value>
+  </data>
+  <data name="InvalidValuesColumn" xml:space="preserve">
+    <value>Invalid Values</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="JsonColumn" xml:space="preserve">
+    <value>JSON</value>
+    <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="MatchedAssetExportFileName" xml:space="preserve">
     <value>Filtered {0} {1} Fields List _{2}_.xlsx</value>
@@ -201,8 +237,28 @@
     <value>{0} Field Url</value>
     <comment>Used for data profile match export</comment>
   </data>
+  <data name="MatchTypeColumn" xml:space="preserve">
+    <value>Match Type</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MaximumColumn" xml:space="preserve">
+    <value>Maximum</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="MinConfidenceInvalid" xml:space="preserve">
     <value>Min Confidence Parameter is invalid</value>
+  </data>
+  <data name="MinimumColumn" xml:space="preserve">
+    <value>Minimum</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MinimumMaximumPresentColumn" xml:space="preserve">
+    <value>Minimum Maximum Present</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MinimumSamplesColumn" xml:space="preserve">
+    <value>Minimum Samples</value>
+    <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="NameColumn" xml:space="preserve">
     <value>Name</value>
@@ -214,17 +270,69 @@
   <data name="OrderInvalid" xml:space="preserve">
     <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
   </data>
+  <data name="PriorityColumn" xml:space="preserve">
+    <value>Priority</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="ProfileRecordAlreadyExists" xml:space="preserve">
     <value>Record already exists for AssetUid {0} and ProfileSetDate {1}</value>
   </data>
   <data name="ProfilingNotSupportAssetClass" xml:space="preserve">
     <value>The asset class {0} does not support data profiling. Profiling data can only be associated with Business or Technical Asset types.</value>
   </data>
+  <data name="QualifierColumn" xml:space="preserve">
+    <value>Qualifier</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="RegularExpressionColumn" xml:space="preserve">
+    <value>Regular Expression</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="RequiredSimilarType" xml:space="preserve">
     <value>similarType is a required field.</value>
   </data>
+  <data name="SemanticBaseTypeBoolean" xml:space="preserve">
+    <value>True/False (Boolean)</value>
+  </data>
+  <data name="SemanticBaseTypeNumber" xml:space="preserve">
+    <value>Number ({0})</value>
+  </data>
+  <data name="SemanticMatchTypeAdvanced" xml:space="preserve">
+    <value>Advanced (JSON)</value>
+  </data>
+  <data name="SemanticMatchTypeList" xml:space="preserve">
+    <value>List of Values</value>
+  </data>
+  <data name="SemanticMatchTypePattern" xml:space="preserve">
+    <value>Pattern in Data</value>
+  </data>
+  <data name="SemanticSourceBuiltIn" xml:space="preserve">
+    <value>Built-In</value>
+  </data>
+  <data name="SemanticSourceUserDefined" xml:space="preserve">
+    <value>User-Defined</value>
+  </data>
+  <data name="SemanticStatusUnderReview" xml:space="preserve">
+    <value>Under Review</value>
+  </data>
+  <data name="SemanticTypeUidColumn" xml:space="preserve">
+    <value>Semantic Type Uid</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeURLColumn" xml:space="preserve">
+    <value>Semantic Type URL</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="Similar" xml:space="preserve">
     <value>Similar</value>
+  </data>
+  <data name="SourceColumn" xml:space="preserve">
+    <value>Semantic Source</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="StatusColumn" xml:space="preserve">
+    <value>Status</value>
+    <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="TagFieldNotFound" xml:space="preserve">
     <value>Tag field not found</value>
@@ -234,7 +342,19 @@
     <value>Tags</value>
     <comment>Used for data profile match export</comment>
   </data>
+  <data name="ThresholdColumn" xml:space="preserve">
+    <value>Threshold</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="TypeQualifierInvalid" xml:space="preserve">
     <value>Type Qualifier Parameter is invalid</value>
+  </data>
+  <data name="ValidLocalesColumn" xml:space="preserve">
+    <value>Valid Locales</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ValidValuesColumn" xml:space="preserve">
+    <value>Valid Values</value>
+    <comment>Used for Semantic Types exports</comment>
   </data>
 </root>

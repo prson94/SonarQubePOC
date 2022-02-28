@@ -11,6 +11,19 @@
                     </ig-search-field>
                 </div>
                 <advanced-filtering [loadIdentifier]="'SemanticTypes'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                <div class="grid-action-buttons">
+                    <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                         tooltipPosition="left"
+                         tooltipStyleClass="ig-tooltip">
+                        <button igButton
+                                [disabled]="!canExportRecords() || isExportInProgress"
+                                [igDataCy]="'Assets_Export'"
+                                icon="fa-download"
+                                [loading]="isExportInProgress"
+                                (click)="export()">
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="row asset-grid-wrapper">
                 <div class="col s12">
