@@ -1095,7 +1095,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 var apiModels = await SemanticsRepository.GetSemanticsAsync(queryParams, cancellationToken);
@@ -1408,7 +1408,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Create the Excel document for export
         /// </summary>
-        /// <returns>A spreadsheet populated with the details of the data profile results</returns>
+        /// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
         private SLDocument CreateResponseDocumentForSemanticTypesExport(List<GetSemantic> semantics, int pageNum, int pageSize)
         {
             SLDocument doc = new SLDocument();
