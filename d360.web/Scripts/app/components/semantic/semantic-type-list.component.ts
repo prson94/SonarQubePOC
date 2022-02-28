@@ -310,4 +310,8 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
             });
         }
     }
+
+    getBaseTypeText(baseType: string) {
+        return SemanticType.getBaseTypeText(baseType);
+    }
 }
