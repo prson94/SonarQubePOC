@@ -588,6 +588,35 @@ namespace d360.extensions.search
             }
         }
 
+        public void RemoveByUids(int companyID, IEnumerable<Guid> assetUids)
+        {
+            var indexName = GetCompanyIndexName(companyID);
+            var client = GetElasticClient(companyID);
+
+            //No index, nothing to delete
+            if (!client.IndexExists(indexName).Exists)
+            {
+                return;
+            }
+
+            SearchRequest sReq = new SearchRequest
+            {
+                Query = new TermsQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                    Terms = assetUids.Select(u => u.ToString())
+                }
+            };
+
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(indexName, jsonString);
+
+            if (!deleteResponse.Success)
+            {
+                throw new ArgumentException(deleteResponse.OriginalException.Message);
+            }
+        }
+
         private bool IsElasticSearchSpecialChar(char ch)
         {
             if (ch == '\\' || ch == '/' || ch == ':' || ch == '^' || ch == '~' || ch == ')' || ch == '(' ||
@@ -1493,6 +1522,8 @@ namespace d360.extensions.search
                     return "Reference";
                 case "SYNONYM":
                     return "Grammatic Type";
+                case "SEMANTICTYPE":
+                    return "Semantic Type";
                 default:
                     return key;
             }

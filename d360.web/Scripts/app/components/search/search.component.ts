@@ -346,4 +346,9 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         this.secondarySidePanelOpen = true;
         this.semanticType = event.semanticType;
     }
+
+    getQualifier(selection: SearchSelecton): string {
+        const pipe = selection.ID.indexOf("|", 0) + 1;
+        return selection.ID.substring(pipe);
+    }
 }

@@ -271,7 +271,12 @@ namespace igx.functions.databasetaskprocessor
                                                                 queue.CreateMessage(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = company.CompanyID, RebuildAll = true });
                                                                 break;
                                                             case "SearchIndex":
-                                                                queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = company.CompanyID });
+                                                                ReindexModel model = new ReindexModel { CompanyID = company.CompanyID };
+                                                                if (!string.IsNullOrEmpty(q.Object) && SearchIndexer.IsIndexable(q.Object))
+                                                                {
+                                                                    model.Category = q.Object;
+                                                                }
+                                                                queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
                                                                 break;
                                                         }
                                                     }

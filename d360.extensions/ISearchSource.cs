@@ -336,6 +336,13 @@ namespace d360.extensions
         /// <param name="assetTypeUid">UID of Asset Type to remove/param>
         void ClearIndex(int companyID, Guid assetTypeUid);
 
+        /// <summary>
+        /// Removes search documents by UID
+        /// </summary>
+        /// <param name="companyID">The current company ID</param>
+        /// <param name="assetUids">IEnumerable of UIDs to remove. UIDs can be Asset UID or Semantic UID.</param>
+        void RemoveByUids(int companyID, IEnumerable<Guid> assetUids);
+
         IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories, QueryLimitation queryLimit);
 
         IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, QueryLimitation queryLimit, int size = 10, string type = "");
