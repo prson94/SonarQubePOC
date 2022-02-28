@@ -36,6 +36,33 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.dbo.SiteNav-v1">
+  <comment>GOV-17248</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[SiteNav]') AND name = N'IX_dbo_SiteNav_Object_ObjectID')
+begin
+	CREATE NONCLUSTERED INDEX [IX_dbo_SiteNav_Object_ObjectID] ON [dbo].[SiteNav]
+	(
+		[Object],[ObjectID] ASC
+	)
+end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[SiteNav]') AND name = N'IX_dbo_SiteNav_Object_ObjectID')
+BEGIN
+	DROP INDEX [IX_dbo_SiteNav_Object_ObjectID] ON [dbo].[SiteNav]
+END
+		]]>
+	</rollback>
+  </changeSet>  
+  
   <changeSet author="Core" id="Table.dbo.SiteNav-SiteNav_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
