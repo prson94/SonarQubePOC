@@ -72,7 +72,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
             this.semanticDetails = this.semanticType;            
         } else {
             this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.qualifier}'`).subscribe((s) => {
-                this.semanticDetails = s.items[0];
+                this.semanticDetails = s.items[0];                
             });
         }
 
@@ -169,5 +169,9 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         if (!(event.path.filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
             this.close.emit();
         }
+    }
+
+    getBaseTypeText(baseType: string) {
+        return SemanticType.getBaseTypeText(baseType);
     }
 }
