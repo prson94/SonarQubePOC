@@ -613,15 +613,29 @@ where	ExecutionID = @executionID
                                       and F.Value = ''", new { executionUid, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-        private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600, bool isInsert = false)
+        private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, AssetType at, int timeout = 3600, bool isInsert = false)
         {
+            string jointablesql = " ";
+            string DisplayValuesql;
+
+            if (at.Class == AssetTypeClass.Reference)
+            {
+                jointablesql = $@" left join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' ";
+                DisplayValuesql = $@" cross apply GetAssetDisplayValueByObjectID(@AssetTypeID,A.Object,A.ObjectID,C.FieldValue) ADV ";
+            }
+            else
+            {
+                DisplayValuesql = $@" cross apply GetAssetDisplayValueByObjectID(@AssetTypeID,A.Object,A.ObjectID,Null) ADV ";
+            }
+
             var fieldsSelectSql = $@"
                 select  A.AssetID as ID,
                             ADV.DisplayValue,
                             CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
                             SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
                     from    api.ExecutionAsset A
-                            cross apply GetAssetDisplayValueByID(A.AssetID) ADV
+                            {jointablesql}
+                            {DisplayValuesql}
                     where   A.ExecutionID = @executionID
                             and A.ItemNumber between @beginItemNumber and @endItemNumber 
                             and A.Success is null 
@@ -634,7 +648,7 @@ where	ExecutionID = @executionID
                     insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash,DisplayValuePrefix) 
                         {fieldsSelectSql}
                 ",
-                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
             }
             else
             {
@@ -653,7 +667,7 @@ where	ExecutionID = @executionID
     when		not matched by target then
     insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
     values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
-                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
             }
         }
 
@@ -5028,21 +5042,29 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
 CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
+drop table if exists #tempAssetData;
+
+select  A.ItemNumber,
+        CR.LookupValue as Color,
+        isnull(A.Uid,newid()) Uid
+into    #tempAssetData
+from    api.ExecutionAsset A
+        left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+where   A.ExecutionID = @ExecutionID
+        and A.Success is null
+        and A.ItemNumber between @beginItemNumber and @endItemNumber
+
 merge   [Asset] as T
 using   (
         select  A.ItemNumber,
-                CR.LookupValue as Color,
+                A.Color,
                 A.Uid
-        from    api.ExecutionAsset A
-                left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
-        where   A.ExecutionID = @ExecutionID
-                and A.Success is null
-                and A.ItemNumber between @beginItemNumber and @endItemNumber
+        from    #tempAssetData A
         ) S
 on      1 = 0
 when    not matched then
 insert  (Uid,AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-values  (isnull(S.Uid,newid()),@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
+values  (S.Uid,@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
 output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
 
@@ -5155,6 +5177,7 @@ where	{executionAssetWhereSql};",
                                         parentIntersectGuids = Connection.Query<Guid>(@"
 drop table if exists #ParentChildRelationships;
 create table #ParentChildRelationships([operation] varchar(10), [uid] uniqueidentifier, ItemNumber int);
+create index idx_parentchildrelationships on #ParentChildRelationships([uid]);
 
 -- Log the parent removals into Dependent Change table
 insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
@@ -5172,18 +5195,24 @@ insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, Dependent
             and EA.ObjectID is not null 
 		    and EA.ParentObjectID <> I.SubjectID;
 
+drop table if exists #tempintersectdata;
+	
+select  t.* 
+into #tempintersectdata 
+from    api.ExecutionAsset t
+where   ExecutionID = @ExecutionID 
+        and Success is null 
+        and ItemNumber between @beginItemNumber and @endItemNumber
+        and IntersectTypeID is not null
+        and ParentObject is not null 
+        and ParentObjectID is not null 
+        and Object is not null 
+        and ObjectID is not null;
+
 merge       [Intersect] as T
 using		(
 			select  * 
-            from    api.ExecutionAsset 
-            where   ExecutionID = @ExecutionID 
-                    and Success is null 
-                    and ItemNumber between @beginItemNumber and @endItemNumber
-                    and IntersectTypeID is not null
-                    and ParentObject is not null 
-                    and ParentObjectID is not null 
-                    and Object is not null 
-                    and ObjectID is not null 
+            from    #tempintersectdata 
             ) as S
 on          ( T.IntersectTypeID = S.IntersectTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID )
 when matched and (T.Subject <> S.ParentObject or T.SubjectID <> S.ParentObjectID) then
@@ -5305,7 +5334,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     // Must execute BEFORE the Success flag is updated below.
                                     sw.Restart();
-                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout, isInsert);
+                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, at, timeout, isInsert);
                                     AddMeasurement(metrics, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 
                                     //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
