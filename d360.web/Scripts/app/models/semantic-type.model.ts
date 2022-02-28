@@ -65,9 +65,8 @@ export class SemanticType {
         if (baseType) {
             switch (baseType.toString().toLocaleLowerCase()) {
                 case "long":
-                    return "Number (Long)";
                 case "double":
-                    return "Number (Double)";
+                    return `Number (${baseType})`;
                 case "boolean":
                     return "True/False (Boolean)";
                 default:
