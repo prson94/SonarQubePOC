@@ -62,16 +62,14 @@ export class SemanticType {
     validList: string[];
 
     public static getBaseTypeText(baseType: string): string {
-        if (baseType) {
-            switch (baseType.toString().toLocaleLowerCase()) {
-                case "long":
-                case "double":
-                    return `Number (${baseType})`;
-                case "boolean":
-                    return "True/False (Boolean)";
-                default:
-                    return baseType.toString();
-            }
+        switch (baseType.toString().toLocaleLowerCase()) {
+            case "long":
+            case "double":
+                return `Number (${baseType})`;
+            case "boolean":
+                return "True/False (Boolean)";
+            default:
+                return baseType.toString();
         }
     }
 }
