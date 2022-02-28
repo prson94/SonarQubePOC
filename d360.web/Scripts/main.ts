@@ -1,4 +1,4 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { platformBrowser } from '@angular/platform-browser';
 import { enableProdMode } from '@angular/core';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
@@ -16,6 +16,6 @@ console.log("Govern Build Date: " + environment.timeStamp);  // remove for ng bu
 console.log("Browser Language: " + navigator.language);
 
 
-platformBrowserDynamic().bootstrapModule(AppModule, { ngZoneEventCoalescing: true })
+platformBrowser().bootstrapModule(AppModule, { ngZoneEventCoalescing: true })
     .catch((err) => console.log(err));
 /* eslint-enable */
