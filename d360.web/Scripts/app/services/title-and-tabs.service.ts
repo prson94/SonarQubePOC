@@ -58,7 +58,7 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
         this.artifactType = artifactType;
         let folderName: string = '#Business';
         this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
-        if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
+        if (artifactType.Class === AssetTypeClass.TechnicalAsset) {
           folderName = '#Technical';
           this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
         }
@@ -83,7 +83,7 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
     if (artifact.ParentID) {
       this.artifactTypeService.getArtifactTypeDetails(artifact.ParentID).pipe(
         takeUntil(this.destroy)
-      ).subscribe(parent => {
+      ).subscribe((parent: ArtifactType) => {
         this.artifactTypeBreadcrumbElements.unshift(parent);
         if (parent.ParentID) {
           this.createBreadcrumbHierarchy(parent);
