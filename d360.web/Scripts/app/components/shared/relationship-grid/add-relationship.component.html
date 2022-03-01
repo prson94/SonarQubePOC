@@ -39,6 +39,7 @@
                         <td class="flex-grid">
                             <div class="flex-grow"></div>
                             <i *ngIf="item.disabledClass === 'disabled-predicate'" class="fa fa-question-circle" pTooltip="Parent-child relationship type cannot be manually created" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
+                            <i *ngIf="item.disabledClass === 'disabled-cardinality'" class="fa fa-question-circle" pTooltip="Many-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
                             <ig-badge *ngIf="item.count !== 0" [text]="item.count"></ig-badge>
                         </td>
                     </tr>

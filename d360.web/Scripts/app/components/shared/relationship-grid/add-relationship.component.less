@@ -30,11 +30,12 @@
     }
   }
 
-  .disabled-predicate {
+  .disabled-predicate,
+  .disabled-cardinality {
+    cursor: default;
+
     &:hover {
-      td {
-        background: white;
-      }
+      background: white !important;
     }
 
     .rel-name {

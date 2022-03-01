@@ -93,6 +93,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                 this.relationshipTypes.forEach((type) => {
                     var rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
                     let disabledClass = "";
+                    let targetCardinality = "";
 
                     if (rc.length > 0) {
                         count = rc[0].Count;
@@ -100,11 +101,16 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                     let name: string = "";
                     if (type["IsSubject"]) {
                         name = type.Predicate.Name + " " + type.Object.Name;
+                        targetCardinality = type.Subject.Cardinality;
                     }
                     else {
                         name = type.Predicate.Inverse + " " + type.Subject.Name;
+                        targetCardinality = type.Object.Cardinality;
                     }
 
+                    if (count > 0 && targetCardinality === "One") {
+                        disabledClass = 'disabled-cardinality';
+                    }
 
                     if (type.Predicate.Type === "InterTypeHierarchy"
                         || type.Predicate.Type === "IntraTypeHierarchy"
