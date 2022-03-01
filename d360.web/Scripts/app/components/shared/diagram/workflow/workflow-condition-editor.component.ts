@@ -144,8 +144,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     loadFormFields() {
         if (this.formFields.length > 0) {
             this.formFields.forEach((f) => {
-                if (f['@type'] == 'html')
-                    return;
                 this.fieldList.push({
                     value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
                     label: 'Form :: ' + f['@label']
@@ -377,6 +375,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 ops.push('!=');
                 break;
             case 'html':
+                ops.push('P');
+                ops.push('NP');
                 break;
             case 'decimal':
             case 'number':

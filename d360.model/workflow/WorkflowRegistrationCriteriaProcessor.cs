@@ -232,11 +232,19 @@ namespace d360.model.workflow
                                         //
                                         if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
                                     }
-                                    else
+                                    else if (item.Operator == CriteriaOperator.Equal)
                                     {
                                         //true operator
                                         if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
 
+                                    }
+                                    else if (item.Operator == CriteriaOperator.Populated)
+                                    {
+                                        return formValue.Length > 0;
+                                    }
+                                    else if (item.Operator == CriteriaOperator.NotPopulated)
+                                    {
+                                        return formValue.Length <= 0;
                                     }
                                     break;
                                 }
