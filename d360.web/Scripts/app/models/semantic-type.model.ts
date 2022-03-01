@@ -60,6 +60,18 @@ export class SemanticType {
     threshold: number;
     validLocales: string[];
     validList: string[];
+
+    public static getBaseTypeText(baseType: string): string {
+        switch (baseType.toString().toLocaleLowerCase()) {
+            case "long":
+            case "double":
+                return `Number (${baseType})`;
+            case "boolean":
+                return "True/False (Boolean)";
+            default:
+                return baseType.toString();
+        }
+    }
 }
 
 export class SemanticTypeAsset {

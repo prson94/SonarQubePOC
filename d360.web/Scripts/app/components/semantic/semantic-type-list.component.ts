@@ -320,4 +320,8 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         this.isExportInProgress = true;
         this.dataProfileService.getSemanticTypes(1, this.maxExportRows, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, () => { this.isExportInProgress = false; });
     }
+
+    getBaseTypeText(baseType: string) {
+        return SemanticType.getBaseTypeText(baseType);
+    }
 }
