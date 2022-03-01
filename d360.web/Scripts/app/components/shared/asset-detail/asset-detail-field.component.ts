@@ -149,11 +149,11 @@ export class AssetDetailFieldComponent {
         }
     }
 
-    private onTagsChanged() {
+    private onTagsChanged(tags) {
         this.genericMessageService.sendMessage({
             uid: this.assetUid,
             messageType: GenericMessageType.Tags,
-            text: "Tags changed in asset-detail-field"
+            data: tags
         });
     }
 

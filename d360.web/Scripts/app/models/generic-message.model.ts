@@ -1,7 +1,7 @@
 ﻿export class GenericMessageModel {
     uid: string;
     messageType: GenericMessageType;
-    text: string;
+    data: any;
 }
 
 export enum GenericMessageType {

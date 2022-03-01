@@ -40,8 +40,6 @@ import { AssetGridObject } from "./asset-grid.model";
 import { Filters } from "./advanced-filtering/advanced-filtering.models";
 import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
-import { GenericMessageService } from "../../services/generic-message.service";
-import { GenericMessageType } from "../../models/generic-message.model";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -118,7 +116,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     public simpleSearch = new Subject<any>();
     private assetSearchSub: Subscription;
-    private genericMessageServiceSub: Subscription;
 
     isExportInProgress = false;
     statusHasColor: boolean;
@@ -139,8 +136,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private gridDefinitionService: GridDefinitionService,
         private changeDetectorRef: ChangeDetectorRef,
         private assetService: AssetService,
-        private route: ActivatedRoute,
-        private genericMessageService: GenericMessageService
+        private route: ActivatedRoute
     ) {
         super(settingsService);
 
@@ -163,14 +159,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 data => {
                     this.doSimpleSearch(me.dt, me.isLoading);
                 }
-        );
-        this.genericMessageServiceSub = this.genericMessageService.getMessage().subscribe(
-            data => {
-                debugger;
-                if (data && data.messageType === GenericMessageType.Tags) {
-                    this.getData(false)
-                }
-            }
         );
     }
     canExportRecords() {
@@ -223,9 +211,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     ngOnDestroy() {
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
-        }
-        if (this.genericMessageServiceSub) {
-            this.genericMessageServiceSub.unsubscribe();
         }
     }
 
