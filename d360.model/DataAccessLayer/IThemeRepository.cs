@@ -14,6 +14,7 @@ namespace d360.model.DataAccessLayer
         Task<GetTheme> GetCurrentThemeByUserAsync();
         Theme GetThemeByUid(Guid uid);
         string GetCurrentThemeCustomCssByUser();
+        Task<bool> MarkThemeAsCurrentAsync(Guid uid);
         Task<GetTheme> PostThemeAsync(PostTheme theme);
         Task<GetTheme> PutThemeAsync(Guid uid, PutTheme theme);
     }
