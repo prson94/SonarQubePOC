@@ -1025,15 +1025,17 @@ namespace d360.model
                     if (requestSettings?.Headers?.Any() == true)
                     {
                         List<string> contentHeaderKeys = new List<string>() { "content-type", "content-md5", "content-length", "content-encoding" };
-                        requestSettings.Headers.ForEach(h =>
+                        requestSettings.Headers.ForEach(async h =>
                         {
+                            var value = await ProcessMessageTokens(h.Value, info, prefix, item, false);
+
                             if (contentHeaderKeys.Contains(h.Key.ToLower()) && request.Content != null)
                             {
                                 if (request.Content.Headers.Contains(h.Key))
                                 {
                                     request.Content.Headers.Remove(h.Key);
                                 }
-                                request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value);
+                                request.Content.Headers.TryAddWithoutValidation(h.Key, value);
                             }
                             else
                             {
@@ -1041,7 +1043,7 @@ namespace d360.model
                                 {
                                     request.Headers.Remove(h.Key);
                                 }
-                                request.Headers.TryAddWithoutValidation(h.Key, h.Value);
+                                request.Headers.TryAddWithoutValidation(h.Key, value);
                             }
                         });
                     }

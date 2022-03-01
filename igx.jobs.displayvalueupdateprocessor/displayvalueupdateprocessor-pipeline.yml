@@ -84,12 +84,14 @@ stages:
         msbuildArguments: /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.Repository.LocalPath)/displayvalueupdateprocessor/"
         clean: true
         maximumCpuCount: true
-    - template: build/steps/step-whitesource-blackduck-scan.yml@templates
+    - template: build/steps/step-whitesource-scan.yml@templates
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
+        projectName: 'Display Value Update Processor'   
+    - template: build/steps/step-blackduck-detect.yml@templates
+      parameters:
         blackduckApi: $(blackduckApi)
         artifactName: DisplayValueUpdateProcessor
-        projectName: 'Display Value Update Processor'
         blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.displayvalueupdateprocessor
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Display Value Update Processor'

@@ -128,7 +128,7 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 	insert into @semanticTypes
 	select 
 		favorite.FavoriteId,
-		favorite.ObjectType as ObjectType,
+		isnull(favorite.ObjectType, 'SemanticType') as ObjectType,
 		s.ID as ObjectId,
 		favorite.Uid as Uid,
 		null as TypeObjectId,
@@ -163,6 +163,9 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 	select favorite.FavoriteId, breadcrumbs.Level, breadcrumbs.TypeName as Name
 	from @assetTypes favorite
 	cross apply dbo.GetAssetTypeBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs	
+	union	
+	select favorite.FavoriteId, 0, favorite.Name as Name
+	from @semanticTypes favorite
 ", new { favorites = correctItems.AsUDTParameter() });
             var favorites = await grid.ReadListAsync<FavoriteItem>();
             var breadcrumbs = await grid.ReadListAsync<FavoriteBreadcrumbItem>();

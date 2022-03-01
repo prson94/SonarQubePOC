@@ -57,26 +57,22 @@ end
 ]]>
 	</rollback>
   </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.Group-v3">
+  <changeSet author="MDonato" id="Table.dbo.Group-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-<![CDATA[
-if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Group' and COLUMN_NAME = 'Uid')
-begin
-	alter table [Group] add Uid UniqueIdentifier null constraint DF_Group_Uid default(NewID());
-end
-
-]]>
-    </sql>
-	<rollback>
 <![CDATA[
 if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Group' and COLUMN_NAME = 'Uid')
 begin
 	alter table [Group] drop constraint DF_Group_Uid;
 	alter table [Group] drop column Uid;
 end
+
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
 
 ]]>
 	</rollback>
@@ -104,7 +100,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="bquinlivan" id="Table.dbo.Group-Group_AfterInsert-v4">
+  <changeSet author="MDonato" id="Table.dbo.Group-Group_AfterInsert-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -116,8 +112,8 @@ CREATE OR ALTER TRIGGER [dbo].[Group_AfterInsert]
 AS 
 BEGIN
 	SET NOCOUNT ON;	
-	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[uid],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
-		SELECT	T.ID, 1, O.ID, 'Group', O.ID, O.[Uid], O.UpdatedOn, coalesce(O.UpdatedBy, 0), O.UpdatedOn, coalesce(O.UpdatedBy, 0)
+	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+		SELECT	T.ID, 1, O.ID, 'Group', O.ID, O.UpdatedOn, coalesce(O.UpdatedBy, 0), O.UpdatedOn, coalesce(O.UpdatedBy, 0)
 		FROM	inserted O inner join  AssetType T on T.Object = 'GroupType' and T.ObjectID = 1;	
 	
 	INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)

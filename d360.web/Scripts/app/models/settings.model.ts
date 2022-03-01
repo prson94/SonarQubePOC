@@ -29,6 +29,7 @@ export class CompanySettings {
     IpRestrictions = new Array<IpRestriction>();
     MaxDropdownItems: number;
     MaxExcelExportRows: number;
+    RequestCertificationDraft: string = "Draft";
     SetIconToDefault = false;
     SetLogoToDefault = false;
     ShowAllUsersAPIKey: boolean;

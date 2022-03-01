@@ -14,7 +14,10 @@ import { BaseComponent } from '../shared/base.component';
     selector: 'semantic-detail',
     templateUrl: './semantic-detail.component.html',
     styleUrls: ["semanticTypes.less"],
-    providers: [DataProfileService]
+    providers: [DataProfileService],
+    host: {
+        "(document:click)": "clickedOutside($event)",
+    }, 
 })
 
 
@@ -23,6 +26,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     @Input() isSidePanel: boolean = false;
     @Input() showHeader: boolean = false;
     @Input() semanticType: SemanticType;
+    @Output() close = new EventEmitter();
 
     semanticDetails: SemanticType;
     semanticAssets: any[];
@@ -68,7 +72,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
             this.semanticDetails = this.semanticType;            
         } else {
             this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.qualifier}'`).subscribe((s) => {
-                this.semanticDetails = s.items[0];
+                this.semanticDetails = s.items[0];                
             });
         }
 
@@ -159,5 +163,15 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
                     return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
             }
         }
-    }    
+    }
+
+    clickedOutside(event: any) {
+        if (!(event.path.filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+            this.close.emit();
+        }
+    }
+
+    getBaseTypeText(baseType: string) {
+        return SemanticType.getBaseTypeText(baseType);
+    }
 }

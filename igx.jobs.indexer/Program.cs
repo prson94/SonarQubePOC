@@ -30,7 +30,6 @@ namespace igx.jobs.indexer
             {
                 c.AddAzureStorageCoreServices()
                 .AddAzureStorage();
-                //.AddTimers(); //GOV-10646 No longer indexing on a schedule. Keeping schedule code in case decision is reversed.
             });
 
             using (var host = builder.Build())
@@ -70,34 +69,6 @@ namespace igx.jobs.indexer
     public static class Indexer
     {        
         const string functionName = "Indexing_ReIndex";
-#if DEBUG
-        const string timerSettings = "0 */15 * * * *";
-#else
-        const string timerSettings = "0 0 17 * * 6";
-#endif
-
-        public static void RunViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
-        {
-            try
-            {
-                CoreFunction.AITrackJobStart(functionName);
-                var companies = CoreFunction.UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken.SearchIndex);
-
-                var queue = new AzureQueueSource();
-                companies.ForEach(c =>
-                {
-                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c });
-                });
-
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-
-            CoreFunction.AIFlush();
-        }
-
         public static async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
             ReindexModel reindex = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
@@ -228,28 +199,15 @@ namespace igx.jobs.indexer
 
         private static async Task UpdateRebuildJobStatus(int companyID, CompanyRebuildJobStatusState status)
         {
-            #region Create EF connection
-
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == companyID);
 
-            var sec = new UriSecurityContextProvider()
-            {
-                CompanyID = companyID,
-                ResourceID = 0,
-                CompanyPrefix = _c.UrlPrefix,
-                IsAdministrator = true
-            };
-            var cache = new DummyCachingProvider();
-            var queue = new AzureQueueSource();
-            var community = new CommunityContext(cache, queue, sec);
+            var companyContext = JobDbContextCreator.CreateCompanyContext(companyID, 0, _c.UrlPrefix, true);
 
-            #endregion
-
-            CompanyRebuildJobStatusState currentStatue = await community.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
+            CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
 
             if(currentStatue != status)
-                await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status);
+                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status);
 
         }
 

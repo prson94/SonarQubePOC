@@ -37,6 +37,6 @@ namespace d360.model.DataAccessLayer
         Task<IReadOnlyList<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRulesAsync(Guid responsibilityTypeUid, IReadOnlyList<Guid> rulesForDeletion);
 
         Task<ApiExecutionInfo> PostBatchResponsibilityOverride(List<BulkResponsibilityOverridePostModel> models, ApiExecution execution);
-        Task<ResponsibilityRuleTestResponseModel> GetResponsibilityRuleTestResults(ResponsibilityRuleUpsertModel test, bool hideD3SUsers, bool includeThen, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<ResponsibilityRuleTestResponseModel> GetResponsibilityRuleTestResults(ResponsibilityRuleUpsertModel test, bool hideD3SUsers, bool includeThen, IEnumerable<KeyValuePair<string, string>> queryParams, string testType);
     }
 }

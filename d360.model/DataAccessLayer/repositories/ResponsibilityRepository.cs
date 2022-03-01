@@ -1106,7 +1106,7 @@ where   Success is null", transaction: trans);
             return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
-        public async Task<ResponsibilityRuleTestResponseModel> GetResponsibilityRuleTestResults(ResponsibilityRuleUpsertModel test, bool hideD3SUsers, bool includeThen, IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<ResponsibilityRuleTestResponseModel> GetResponsibilityRuleTestResults(ResponsibilityRuleUpsertModel test, bool hideD3SUsers, bool includeThen, IEnumerable<KeyValuePair<string, string>> queryParams, string testType)
         {
             int pageSize, pageNum;
             bool includeTotal;
@@ -1134,6 +1134,12 @@ where   Success is null", transaction: trans);
             int.TryParse(queryValue, out pageNum);
 
             #endregion
+
+            //need to add a default Then if it was omitted even if the test is for When, since the parser expects the full rule model
+            if (testType == "when" && !test.Definition.Then.Any())
+            {
+                test.Definition.Then = new List<RuleThenWrapper>() { new RuleThenWrapper { AssigneeTypeUid = new Guid("00000001-0000-0000-0000-A00000000011") } };
+            }
 
             if (Company.Connection.State != ConnectionState.Open)
                 Company.Connection.Open();
