@@ -313,7 +313,7 @@ export class RelationshipsService extends BaseObservableService {
         if (cachedItem)
             return cachedItem.obs;
 
-        let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active`;
+        let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 
         var obs = this.http.get(url)
             .pipe(map(response => <RelationshipType[]>response),

@@ -83,13 +83,15 @@ namespace d360.core.entities
         [JsonConverter(typeof(StringEnumConverter))]
         public PredicateType Type { get; set; }
 
-        public string FriendlyTypeName {
-            get {
+        public string FriendlyTypeName
+        {
+            get
+            {
                 if (Type == 0)
                     return null;
                 else
                     return Type.GetName();
-            } 
+            }
         }
 
         public string Name { get; set; }
@@ -116,7 +118,7 @@ namespace d360.core.entities
         public string Name { get; set; }
     }
 
-    public class IntersectTypeApiViewModel: BaseObject
+    public class IntersectTypeApiViewModel : BaseObject
     {
         [DataMember]
         public int Id { get; set; }
@@ -138,5 +140,7 @@ namespace d360.core.entities
 
         [DataMember]
         public IntersectTypeApiEdgeViewModel Object { get; set; }
+        [DataMember]
+        public bool? HasFieldTypes { get; set; }
     }
 }

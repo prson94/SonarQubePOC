@@ -655,7 +655,7 @@ left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID
         public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
             var dbArgs = new DynamicParameters();
-
+            bool includeHasFieldTypes = false;
             if (queryParams != null)
             {
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "predicateuid"))
@@ -688,6 +688,11 @@ left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.State = @state";
                     }
                 }
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "includehasfieldtypes"))
+                {
+                    var hasFieldTypesString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehasfieldtypes").Value;
+                    bool.TryParse(hasFieldTypesString, out includeHasFieldTypes);
+                }
             }
 
 
@@ -708,12 +713,15 @@ select	I.Id,
 		coalesce(OP.[Path], O.Name)  as 'Object.Name',
 		coalesce(O.Class, 0) as 'Object.Class',
 		I.ObjectCardinality as 'Object.Cardinality'
+        {(includeHasFieldTypes ? @",case 
+                                when exists (select top 1 1 from FieldType where [Object] = 'IntersectType' and [ObjectId] = I.ID)
+                                    then 1
+                                    else 0
+                                end as 'HasFieldTypes'" : "")}
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
-
 		left join AssetType S on (S.Object = I.Subject and S.ObjectID = I.SubjectID)
         outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-		
 		left join AssetType O on (O.Object = I.Object and O.ObjectID = I.ObjectID)
         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
         {whereClause} for json path";

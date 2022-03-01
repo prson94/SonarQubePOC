@@ -8,7 +8,7 @@ import { SharedRelationshipModule } from '../../shared/relationship/shared-relat
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { RelationshipsRoutingModule } from './relationships.routes';
 import { RelationshipsComponent } from './relationships.component';
-import { RelationshipGridModule } from '../../shared/relationship-detail/relationship-grid.module';
+import { RelationshipGridModule } from '../../shared/relationship-grid/relationship-grid.module';
 
 @NgModule({
     imports: [

@@ -29,6 +29,7 @@ export class RelationshipType {
     Predicate: Predicate;
     Subject: RelationshipTypeEdge;
     Object: RelationshipTypeEdge;
+    HasFieldTypes?: boolean;
 }
 
 export class RelationshipTypeApiRequestModel {

@@ -1,0 +1,44 @@
+﻿@import "../../../../../Content/styles/_Variables.less";
+
+.add-relationship-editor {
+  padding: 0 24px 24px 24px;
+
+  ig-search-field {
+    width: 100%;
+    margin-bottom: 8px;
+
+    .ig-search-field.has-tooltip {
+      width: 100%;
+    }
+  }
+
+  h2 {
+    margin-bottom: 4px;
+  }
+
+  .ig-badge {
+    min-width: 30px;
+  }
+
+  table {
+    td {
+      i.fa {
+        line-height: 24px;
+        margin-right: 8px;
+        color: @ig-purple
+      }
+    }
+  }
+
+  .disabled-predicate {
+    &:hover {
+      td {
+        background: white;
+      }
+    }
+
+    .rel-name {
+      opacity: 0.33;
+    }
+  }
+}

@@ -2,7 +2,6 @@
     <div class="row">
         <div class="col s12" style="display: flex">
             <div class="tile tile-detail main-panel">
-
                 <div class="grid-actions-header">
                     <div class="simple-search">
                         <ig-search-field mode="Keypress"
@@ -19,6 +18,17 @@
                                         [clearConditionsOnFilterField]="'relationshiptype'"
                                         (onChange)="advancedFiltersChanged($event)">
                     </advanced-filtering>
+                    <div class="grid-action-buttons">
+                        <button 
+                                igButton
+                                pTooltip="Add new relationship"
+                                tooltipPosition="top"
+                                tooltipStyleClass="ig-tooltip"
+                                class="ig-button-primary"
+                                icon="fa-plus"
+                                (click)="isAddVisible=true">
+                        </button>
+                    </div>
                 </div>
 
                 <p-table *ngIf="assetUid" #dt
@@ -144,6 +154,6 @@
                   [showAsModal]="true"
                   [isV2API]="true"
                   (closeClick)="showEditor=false"></asset-editor>
-
 </d3s-modal>
 
+<add-relationship-editor [assetUid]="assetUid" [assetTypeUid]="assetTypeUid" [isVisible]="isAddVisible" (onClose)="isAddVisible=false"></add-relationship-editor>

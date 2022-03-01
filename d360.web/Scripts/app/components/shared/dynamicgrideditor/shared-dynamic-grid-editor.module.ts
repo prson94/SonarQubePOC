@@ -99,6 +99,7 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
         DynamicEditorComponent,
         DynamicFieldValueComponent,
         DynamicGridComponent,
+        MultiSelectGridComponent
     ],
     providers: [
 

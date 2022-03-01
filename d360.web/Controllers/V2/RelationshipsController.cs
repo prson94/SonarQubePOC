@@ -968,6 +968,7 @@ namespace d360.web.Controllers.V2
         /// <param name="AssetTypeUid">Allows for filtering by an asset type's unique identifier, looking at the subject or object type.</param>
         /// <param name="PredicateUid">Allows for filtering of relationship types by predicate unique identifier.</param>
         /// <param name="State">Allows for filtering by the relationship type's state.</param>
+        /// <param name="includeHasFieldTypes">Return a property "HasFieldTypes". If Relationship Type has defined custom fields value is true otherwise false.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -977,7 +978,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
        ]
-        public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, core.enums.State? State = null)
+        public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, core.enums.State? State = null, bool? includeHasFieldTypes = null)
         {
             var prefix = "Relationships.GetRelationshipTypesAsync => ";
             var errorMessage = "";
@@ -997,6 +998,10 @@ namespace d360.web.Controllers.V2
                 if (State.HasValue)
                 {
                     queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
+                }
+                if (includeHasFieldTypes.HasValue)
+                {
+                    queryParams.Add(new KeyValuePair<string, string>("includeHasFieldTypes", includeHasFieldTypes.ToString()));
                 }
 
                 var types = await RelationshipRepository.GetRelationshipTypes(queryParams);

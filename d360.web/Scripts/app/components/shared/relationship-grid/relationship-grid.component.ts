@@ -68,6 +68,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     loadedFilterFields: FieldTypeAPIModelField[] = [];
 
     showEditor: boolean = false;
+    isAddVisible: boolean = false;
 
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
