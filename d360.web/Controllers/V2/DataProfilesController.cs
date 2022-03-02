@@ -24,6 +24,8 @@ using SpreadsheetLight;
 using d360.model.helpers.filters;
 using d360.core.exceptions;
 using System.Threading;
+using d360.utils.excel;
+using d360.core.resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -1072,7 +1074,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("semantictypes"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default (and maximum) value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the semantic types are ordered by Qualifier.", DataType = "string", ParameterType = "query", Required = false),
@@ -1088,8 +1090,36 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
+
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+                string isValid = isPageSizeAndNumValid(queryParams, isStreamResponse);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+                }
+
                 var apiModels = await SemanticsRepository.GetSemanticsAsync(queryParams, cancellationToken);
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
+               
+                HttpResponseMessage response;
+
+                if (isStreamResponse)
+                {                               
+                    SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels);
+                    document.SelectWorksheet(ExcelExports.Common_ItemsSheetName);
+                    var stream = new MemoryStream();
+                    document.SaveAs(stream);
+                    byte[] bytes = stream.ToArray();                    
+
+                    response = createFileResponseMessage(HttpStatusCode.OK, string.Format(DataProfileAPIMessages.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+                }
+                else
+                {
+                    response = Request.CreateResponse(HttpStatusCode.OK, apiModels);
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);                
             }
             catch (GenericException ex)
             {
@@ -1099,7 +1129,7 @@ namespace d360.web.Controllers.V2
             {
                 throw new GenericException(HttpStatusCode.BadRequest, "Invalid Filter Configuration", ex.Message);
             }
-            catch
+            catch(Exception ex)
             {
                 return errorMessageResponse(
                     HttpStatusCode.InternalServerError,
@@ -1374,6 +1404,115 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Create the Excel document for export
+        /// </summary>
+        /// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
+        private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics)
+        {
+            var document = new ExcelDocument(string.Format(DataProfileAPIMessages.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")))
+            {
+                new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+                {
+                    HeaderRows = {
+                        new ExcelRow
+                        {
+                            DataProfileAPIMessages.NameColumn,
+                            DataProfileAPIMessages.QualifierColumn,
+                            DataProfileAPIMessages.DescriptionColumn,
+                            DataProfileAPIMessages.ThresholdColumn,
+                            DataProfileAPIMessages.PriorityColumn,
+                            DataProfileAPIMessages.StatusColumn,
+                            DataProfileAPIMessages.SourceColumn,
+                            DataProfileAPIMessages.MatchTypeColumn,
+                            DataProfileAPIMessages.BaseTypeColumn,
+                            DataProfileAPIMessages.JsonColumn,
+                            DataProfileAPIMessages.HeaderFilterColumn,
+                            DataProfileAPIMessages.HeaderFilterConfidenceColumn,
+                            DataProfileAPIMessages.RegularExpressionColumn,
+                            DataProfileAPIMessages.ValidValuesColumn,
+                            DataProfileAPIMessages.InvalidValuesColumn,
+                            DataProfileAPIMessages.MinimumSamplesColumn,
+                            DataProfileAPIMessages.ValidLocalesColumn,
+                            DataProfileAPIMessages.MinimumColumn,
+                            DataProfileAPIMessages.MaximumColumn,
+                            DataProfileAPIMessages.MinimumMaximumPresentColumn,
+                            DataProfileAPIMessages.SemanticTypeUidColumn,
+                            DataProfileAPIMessages.SemanticTypeURLColumn
+                        }
+                    },
+
+                    ValueRows = semantics.items.Select(row => new ExcelRow
+                    {
+                        row.Name,
+                        row.Qualifier,
+                        row.Description,
+                        row.Threshold + "%",
+                        row.Priority,
+                        row.Status == SemanticStatus.InReview ? DataProfileAPIMessages.SemanticStatusUnderReview : row.Status.ToString(),
+                        row.Source == SemanticSource.BuiltIn ? DataProfileAPIMessages.SemanticSourceBuiltIn : DataProfileAPIMessages.SemanticSourceUserDefined,
+                        parseMatchTypeForExport(row.MatchType),
+                        parseBaseTypeForExport(row.BaseType),
+                        row.JsonPayloadStructured != null ? JsonConvert.SerializeObject(row.JsonPayloadStructured, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }) : "",
+                        row.HeaderFilterStructured != null ? string.Join(" | ", row.HeaderFilterStructured.values.Select((v) => v.@operator + " '" + v.value + "'")) : "",
+                        row.HeaderFilterConfidence.HasValue ? row.HeaderFilterConfidence.ToString() + "%" : "",
+                        row.RegularExpression,
+                        row.ValidValuesStructured != null ? string.Join(" | ", row.ValidValuesStructured) : "",
+                        row.InvalidValuesStructured != null ? string.Join(" | ", row.InvalidValuesStructured) : "",
+                        row.MinimumSamples.HasValue ? row.MinimumSamples.ToString() : "",
+                        row.ValidLocalesStructured != null ? string.Join(" | ", row.ValidLocalesStructured) : "",
+                        row.Minimum.ToString(),
+                        row.Maximum.ToString(),
+                        row.MinMaxPresent.ToString(),
+                        row.Uid.ToString(),
+                        $"semantics/{row.Uid}"
+                    }).ToList(),                    
+                },
+
+                new ExcelSheet(ExcelExports.Common_ApiInfoSheetName)
+                {
+                    ValueRows =
+                    {
+                        new ExcelRow { ExcelExports.Common_PageSize, semantics.pageSize.ToString() },
+                        new ExcelRow { ExcelExports.Common_PageNum, semantics.pageNum.ToString() },
+                        new ExcelRow { ExcelExports.Common_Total, semantics.total.ToString() }
+                    }
+                }
+            };         
+            
+            return document.ToSLDocument();
+        }
+
+        private string parseMatchTypeForExport(SemanticMatchType matchType)
+        {
+            switch (matchType)
+            {
+                case SemanticMatchType.Advanced:
+                    return DataProfileAPIMessages.SemanticMatchTypeAdvanced;
+                case SemanticMatchType.List:
+                    return DataProfileAPIMessages.SemanticMatchTypeList;
+                case SemanticMatchType.Pattern:
+                    return DataProfileAPIMessages.SemanticMatchTypePattern;
+                default:
+                    return matchType.ToString();
+
+            }
+        }
+
+        private string parseBaseTypeForExport(SemanticBaseType baseType)
+        {
+            switch (baseType)
+            {
+                case SemanticBaseType.Double:
+                case SemanticBaseType.Long:
+                    return string.Format(DataProfileAPIMessages.SemanticBaseTypeNumber, baseType);
+                case SemanticBaseType.Boolean:
+                    return DataProfileAPIMessages.SemanticBaseTypeBoolean;
+                default:
+                    return baseType.ToString();
+
+            }
+        }
     }
+    #endregion
 }

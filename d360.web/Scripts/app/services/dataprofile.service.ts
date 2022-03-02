@@ -148,15 +148,11 @@ export class DataProfileService extends BaseObservableService {
 
     downloadFile(data: Blob, name: string) {
 
-        var filename = `${name} _${new Date().toDateString()}_.xlsx`;
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
         super.downloadFile(data, filename);
     }
 
-    getSemanticTypes(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending): Observable<SemanticTypeGetResponse> {
-        const httpOptions = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-        };
-
+    getSemanticTypes(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<SemanticTypeGetResponse> {
         let url = `api/v2/dataprofiles/semantictypes?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
         if (simpleFilter) {
@@ -173,15 +169,27 @@ export class DataProfileService extends BaseObservableService {
                 url += `&_direction=${direction === SortOrder.Ascending ? "asc" : "desc"}`;
             }
         }
+        if (isExport) {
+            this.
+                http
+                .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+                .subscribe((data) => {
+                    let filename = `Filtered Semantic Type List`;
+                    this.downloadFile(data, filename);
+                    if (callback) {
+                        callback();
+                    }
+                });
 
-        return this
-            .http
-            .get(url, httpOptions)
-            .pipe(
-                map((response) => <SemanticTypeGetResponse>response),
-                catchError((err) => this.handleError(err, false))
-            )
-            ;
+        } else {
+            return this
+                .http
+                .get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' })})
+                .pipe(
+                    map((response) => <SemanticTypeGetResponse>response),
+                    catchError((err) => this.handleError(err, false))
+                );
+        }        
     }
 
     getSemanticTypeMatchingAssets(typeQualifier: string, pageNum: number, pageSize: number, minConfidence: number = 0.01, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending): Observable<SemanticTypeGetAssetsResponse> {
