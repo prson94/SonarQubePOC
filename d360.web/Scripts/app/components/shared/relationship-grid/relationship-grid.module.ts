@@ -26,6 +26,7 @@ import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.m
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 import { AddRelationshipModule } from './add-relationship.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -53,7 +54,8 @@ import { AddRelationshipModule } from './add-relationship.module';
         TaggedAssetDetailModule,
         SiteModalModule,
         AssetEditorModule,
-        AddRelationshipModule
+        AddRelationshipModule,
+        TooltipModule
     ],
     declarations: [
         RelationshipGridComponent,

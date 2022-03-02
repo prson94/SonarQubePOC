@@ -57,6 +57,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() selection: any;
     @Input() rowID: string = 'ID';
     @Input() title: string;
+    @Input() subTitle: string;
     @Input() directions: string;
     @Input() objectID: number = 0;
     @Input() objectTypeUid: string;

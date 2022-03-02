@@ -204,7 +204,13 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                         else {
                             name = type[0].Predicate.Inverse + " " + type[0].Subject.Name;
                         }
-                        this.relationshipTypesResolvedNames.push({ uid: rc.IntersectTypeUid, name: name, count: rc.Count, isSelected: false });
+                        this.relationshipTypesResolvedNames.push(
+                            {
+                                uid: rc.IntersectTypeUid,
+                                name: name,
+                                count: rc.Count,
+                                isSelected: false
+                            });
                     }
                 });
                 this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
@@ -266,10 +272,19 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                     { title: 'Edit Relationship' },
                     { title: 'Delete Relationship' },
                 ];
+
+                var type = this.relationshipTypes.filter((rt) => rt.Uid.toLowerCase() === i.RelationshipTypeUid.toLowerCase());
+                if (type.length > 0) {
+                    i["isHierarchy"] = type[0].Predicate.Type === "InterTypeHierarchy" || type[0].Predicate.Type === "IntraTypeHierarchy"
+                }
             });
         }
         else {
             this.relationships = [];
+        }
+
+        if (this.relationships.length > 0) {
+            this.selectRow(this.relationships[0]);
         }
 
         this.isLoading = false;
@@ -407,5 +422,10 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 'Filtered ' + this.assetDetail.DisplayValue + ' Relationships',
                 () => { this.isExportInProgress = false; }
             );
+    }
+
+    get fullRelationshipNameAsHTML(): string {
+        return `${this.assetDetail.DisplayValue} - <strong>${this.selectedRelAsset.name}</strong> - ${this.selectedRelAsset.target}`;
+
     }
 }

@@ -88,9 +88,12 @@
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                             </td>
                             <td class="asset-grid-tools">
-                                <div style="display:inline-block">
+                                <div style="display:inline-block" *ngIf="!item.isHierarchy">
                                     <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                                </div>
+                                <div style="display:inline-block" *ngIf="item.isHierarchy">
+                                    <i class="fa fa-question-circle" pTooltip="This is a parent-child relationship which can neither be edited/deleted" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
                                 </div>
                             </td>
                         </tr>
@@ -154,7 +157,8 @@
                   *ngIf="showEditor"
                   [objectID]="selectedRelationship ? selectedRelationship.Uid : null"
                   [objectType]="'IntersectType'"
-                  [title]="selectedRelationship ? 'Edit '+selectedRelationship.RelationshipTypeName : 'Create New Group'"
+                  [title]="'Edit Relationship'"
+                  [subTitle]="fullRelationshipNameAsHTML"
                   [selection]="selectedRelationship"
                   [rowID]="rowID"
                   [objectTypeUid]="selectedRelationship.RelationshipTypeUid"
@@ -178,7 +182,7 @@
            [isVisible]="showDelete">
     <div class="content">
         Please confirm that you wish to remove the relationship:<br />
-        {{assetDetail.DisplayValue}} - <strong>{{selectedRelAsset.name}}</strong> - {{selectedRelAsset.target}} <br /><br />
+        <span [innerHTML]="fullRelationshipNameAsHTML"></span> <br /><br />
 
         Please note that this operation cannot be undone.
     </div>
