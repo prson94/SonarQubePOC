@@ -210,6 +210,9 @@
   <data name="ThemeIsLockedForRemoval" xml:space="preserve">
     <value>This theme is locked and may not be removed.</value>
   </data>
+  <data name="ThemeNameMustBeUnique" xml:space="preserve">
+    <value>An existing theme with this name already exists. Theme names must be unique.</value>
+  </data>
   <data name="ThemeWithUidNotFound" xml:space="preserve">
     <value>No theme exists with the provided Uid.</value>
   </data>
