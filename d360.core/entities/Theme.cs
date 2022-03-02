@@ -1,4 +1,5 @@
 ﻿using d360.core.exceptions;
+using d360.core.resources;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -124,6 +125,8 @@ namespace d360.core.entities
 
         public DateTime UpdatedOn { get; set; }
 
+        public bool Locked { get; set; }
+
         #region Transitive Properties
 
         [NotMapped]
@@ -142,20 +145,6 @@ namespace d360.core.entities
 
     public static class ThemeExtensions
     {
-        private static string ResolveIncomingProperty(this string incomingValue, string defaultValue)
-        {
-            if (string.IsNullOrEmpty(incomingValue))
-            {
-                incomingValue = (defaultValue ?? "").Trim();
-            }
-            else
-            {
-                incomingValue = incomingValue.Trim();
-            }
-
-            return incomingValue;
-        }
-
         public static GetTheme ToGetModel(this Theme model, Uri baseUri, GlobalReportingResource createdBy, GlobalReportingResource updatedBy, int environmentId)
         {
             return new GetTheme
@@ -207,6 +196,7 @@ namespace d360.core.entities
                 CreatedOn = date,
                 HeaderBackColor = model.HeaderBackColor,
                 IsCurrent = model.IsCurrent,
+                Locked = false,
                 NavBarBackColor = model.NavBarBackColor,
                 NavBarBackSelectedColor = model.NavBarBackSelectedColor,
                 PrimaryButtonBackColor = model.PrimaryButtonBackColor,
@@ -221,6 +211,13 @@ namespace d360.core.entities
 
             if (!string.IsNullOrEmpty(model.CustomCss))
             {
+                var remainder = model.CustomCss.Length % 4;
+                if (remainder != 0) {
+                    while (remainder > 0) {
+                        model.CustomCss += "=";
+                        remainder -= 1;
+                    }
+                }
                 var cssBytes = Convert.FromBase64String(model.CustomCss);
                 repoModel.CustomCss = System.Text.Encoding.UTF8.GetString(cssBytes);
             }
@@ -302,99 +299,97 @@ namespace d360.core.entities
             var errors = new List<string>();
 
             model.Name = (model.Name + "").Trim();
-
-
             if (string.IsNullOrEmpty(model.Name))
             {
-                errors.Add("icon may not be greater than 512K.");
+                errors.Add(ThemeErrors.NameNotEmpty);
             }
 
             if (model.BrowserIcon != null && model.BrowserIcon.Length > 512*1000)
             {
-                errors.Add("icon may not be greater than 512K.");
+                errors.Add(ThemeErrors.IconSize);
             }
 
             if (model.BrowserIconExtension != null && model.BrowserIconExtension != ".ico" && model.BrowserIconExtension != ".png")
             {
-                errors.Add("icon must be either a *.ico or *.png file.");
+                errors.Add(ThemeErrors.IconType);
             }
 
             if (model.HeaderLogo != null && model.HeaderLogo.Length > 1024 * 1000)
             {
-                errors.Add("headerLogo may not be greater than 1024K.");
+                errors.Add(ThemeErrors.LogoSize);
             }
 
             if (model.HeaderLogoExtension != null &&
                 model.HeaderLogoExtension != ".gif" && model.HeaderLogoExtension != ".jpg" && model.HeaderLogoExtension != ".png")
             {
-                errors.Add("headerLogo must be either a *.gif, *.jpg or *.png file.");
+                errors.Add(ThemeErrors.LogoType);
             }
 
             if (model.HomePageBackground != null && model.HomePageBackground.Length > 2048 * 1000)
             {
-                errors.Add("homeBackground may not be greater than 2048K.");
+                errors.Add(ThemeErrors.BackgroundSize);
             }
 
             if (model.HomePageBackgroundExtension != null && 
                 model.HomePageBackgroundExtension != ".gif" && model.HomePageBackgroundExtension != ".jpg" && model.HomePageBackgroundExtension != ".png")
             {
-                errors.Add("homeBackground must be either a *.gif, *jpg or *.png file.");
+                errors.Add(ThemeErrors.BackgroundType);
             }
 
             if (!model.BackColor.IsValidRgb())
             {
-                errors.Add("backColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.BackColorFormat);
             }
 
             if (!model.BreadcrumbLinkColor.IsValidRgb())
             {
-                errors.Add("breadcrumbLinkColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.BreadcrumbColorFormat);
             }
 
             if (!model.ButtonBackColor.IsValidRgb())
             {
-                errors.Add("buttonBackColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.ButtonColorFormat);
             }
 
             if (!model.HeaderBackColor.IsValidRgb())
             {
-                errors.Add("headerBackColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.HeaderColorFormat);
             }
 
             if (!model.NavBarBackColor.IsValidRgb())
             {
-                errors.Add("navbarBackColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.NavbarColorFormat);
             }
 
             if (!model.NavBarBackSelectedColor.IsValidRgb())
             {
-                errors.Add("navbarBackColorSelected is not a valid RGB color.");
+                errors.Add(ThemeErrors.NavbarSelectedColorFormat);
             }
 
             if (!model.PrimaryButtonBackColor.IsValidRgb())
             {
-                errors.Add("primaryButtonBackColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.PrimaryButtonColorFormat);
             }
 
             if (!model.TableHeaderBackColor.IsValidRgb())
             {
-                errors.Add("tableHeaderBackColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.TableHeaderColorFormat);
             }
 
             if (!model.TableRowBackSelectedColor.IsValidRgb())
             {
-                errors.Add("tableRowBackColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.TableRowColorFormat);
             }
 
             if (!model.TabLinkColor.IsValidRgb())
             {
-                errors.Add("tabLinkColor is not a valid RGB color.");
+                errors.Add(ThemeErrors.TabLinkColorFormat);
             }
 
             // Determine if we should throw an error.
             if (errors.Count > 0)
             {
-                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "This theme is invalid.", string.Join("; ", errors));
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, ThemeErrors.ThemeInvalid, string.Join("; ", errors));
             }
         }
     }

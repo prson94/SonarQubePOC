@@ -5198,8 +5198,8 @@ insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, Dependent
 drop table if exists #tempintersectdata;
 	
 select  t.* 
-into #tempintersectdata t
-from    api.ExecutionAsset 
+into #tempintersectdata 
+from    api.ExecutionAsset t
 where   ExecutionID = @ExecutionID 
         and Success is null 
         and ItemNumber between @beginItemNumber and @endItemNumber

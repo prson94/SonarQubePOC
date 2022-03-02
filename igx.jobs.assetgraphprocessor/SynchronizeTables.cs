@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.utils.company;
 using Dapper;
-using d360.extensions.info;
-using d360.extensions.caching;
-using d360.extensions.queue;
 using d360.model;
 using d360.core.enums;
 using System.Collections.Generic;
@@ -20,7 +17,7 @@ namespace igx.jobs.assetgraphprocessor
 #if DEBUG
         const string timerSettings = "*/2 * * * * *";
 #else        
-        const string timerSettings = "0 0 0 * * 6";
+        const string timerSettings = "0 0 5 * * SAT";  // 5AM UTC Saturday
 #endif
 
         public static async Task RunSyncTables([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)

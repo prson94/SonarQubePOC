@@ -229,17 +229,28 @@ namespace d360.model.workflow
 
                                     if (item.Operator == CriteriaOperator.NotEqual)
                                     {
-                                        //
-                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0)
+                                        {
+                                            return false;
+                                        }
                                     }
-                                    else
+                                    else if (item.Operator == CriteriaOperator.Equal)
                                     {
                                         //true operator
-                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
-
+                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0)
+                                        {
+                                            return false;
+                                        }
                                     }
-                                    break;
-                                }
+                                    else if (item.Operator == CriteriaOperator.Populated)
+                                    {
+                                        return formValue.Length > 0;
+                                    }
+                                    else if (item.Operator == CriteriaOperator.NotPopulated)
+                                    {
+                                        return formValue.Length <= 0;
+                                    }
+                                } break;
                             case FormResponseType.All:
                                 {
                                     // ALL USERS NEED TO RESPOND AND APPROVE
@@ -251,13 +262,33 @@ namespace d360.model.workflow
                                     {
                                         if (item.Operator == CriteriaOperator.NotEqual)
                                         {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0)
+                                            {
+                                                return false;
+                                            }
                                         }
-                                        else
+                                        else if (item.Operator == CriteriaOperator.Equal)
                                         {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
+                                            //true operator
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0)
+                                            {
+                                                return false;
+                                            }
                                         }
-
+                                        else if (item.Operator == CriteriaOperator.Populated)
+                                        {
+                                            if (val.Length <= 0)
+                                            {
+                                                return false;
+                                            }
+                                        }
+                                        else if (item.Operator == CriteriaOperator.NotPopulated)
+                                        {
+                                            if (val.Length > 0)
+                                            {
+                                                return false;
+                                            }
+                                        }
                                     }
                                     return true;
                                 }
@@ -271,13 +302,32 @@ namespace d360.model.workflow
                                     {
                                         if (item.Operator == CriteriaOperator.NotEqual)
                                         {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) matchCount++;
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0)
+                                            {
+                                                matchCount++;
+                                            }
                                         }
-                                        else
+                                        else if (item.Operator == CriteriaOperator.Equal)
                                         {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0)
+                                            {
+                                                matchCount++;
+                                            }
                                         }
-
+                                        else if (item.Operator == CriteriaOperator.Populated)
+                                        {
+                                            if (val.Length > 0)
+                                            {
+                                                matchCount++;
+                                            }
+                                        }
+                                        else if (item.Operator == CriteriaOperator.NotPopulated)
+                                        {
+                                            if (val.Length <= 0)
+                                            {
+                                                matchCount++;
+                                            }
+                                        }
                                     }
 
                                     return matchCount > (formValues.Count / 2);

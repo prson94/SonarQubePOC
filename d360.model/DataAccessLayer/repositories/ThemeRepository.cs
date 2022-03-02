@@ -2,6 +2,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.resources;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -136,12 +137,17 @@ where   T.AuditID = @ID and T.[Version] = 0", new { audit.ID });
 
                 if (theme == null)
                 {
-                    throw new GenericException(HttpStatusCode.NotFound, "No theme exists with the provided Uid.");
+                    throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ThemeWithUidNotFound);
+                }
+
+                if (theme.Locked)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ThemeIsLockedForRemoval);
                 }
 
                 if (theme.IsCurrent)
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, "This theme is set as the currently used theme in this environment and may not be removed.");
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ThemeInUseForRemoval);
                 }
 
                 var iconExt = theme.BrowserIconExtension;
@@ -183,6 +189,7 @@ where   T.AuditID = @ID and T.[Version] = 0", new { audit.ID });
                 if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "uid").Value, out themeUid))
                 {
                     themeUid = Guid.Empty;
+                    throw new GenericException(HttpStatusCode.BadRequest, ThemeErrors.ErrorOnGet, ThemeErrors.InvalidUidParameter);
                 }
             }
 
@@ -265,6 +272,10 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
             var dbCreatedBy = gridReader.Read<GlobalReportingResource>().FirstOrDefault();
             var dbUpdatedBy = gridReader.Read<GlobalReportingResource>().FirstOrDefault();
             var baseUri = StorageProvider.GetBaseUri("themes");
+            if (dbTheme == null)
+            {
+                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoCurrentThemes);
+            }
             return dbTheme.ToGetModel(baseUri, dbCreatedBy, dbUpdatedBy, CompanyContext.CurrentCompanyID);
         }
 
@@ -274,10 +285,41 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
 
             if (theme == null)
             {
-                throw new GenericException(HttpStatusCode.NotFound, "No theme exists with the provided Uid.");
+                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ThemeWithUidNotFound);
             }
 
             return theme;
+        }
+
+        public async Task<bool> MarkThemeAsCurrentAsync(Guid uid)
+        {
+            try
+            {
+                var theme = CompanyContext.Filter<Theme>(t => t.Uid == uid).SingleOrDefault();
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeWithUidNotFound);
+                }
+                var nowPreviousTheme = theme.CloneThis();
+                theme.IsCurrent = true;
+
+                await Task.Run(() => {
+                    CompanyContext.Update(theme);
+                    CompanyContext.Connection.Execute("update Theme set IsCurrent = 0 where Uid <> @Uid", new { theme.Uid });
+                    addChangeLog(theme, "U", nowPreviousTheme);
+                }).ConfigureAwait(false);
+
+                return true;
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+                // TODO: Should we do something else here?
+            }
         }
 
         public async Task<GetTheme> PostThemeAsync(PostTheme theme)
@@ -322,10 +364,15 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
                 var existingTheme = CompanyContext.Filter<Theme>(t => t.Uid == uid).SingleOrDefault();
                 if (existingTheme == null)
                 {
-                    throw new GenericException(HttpStatusCode.NotFound, "No theme exists with the provided Uid.");
+                    throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeWithUidNotFound);
                 }
 
                 var nowPreviousTheme = existingTheme.CloneThis();
+
+                if (existingTheme.Locked)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeIsLocked);
+                }
 
                 existingTheme = theme.ToRepositoryModel(existingTheme, CompanyContext.CurrentResourceID);
                 existingTheme.Validate();
@@ -371,7 +418,5 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
                 // TODO: Should we do something else here?
             }
         }
-
-
     }
 }
