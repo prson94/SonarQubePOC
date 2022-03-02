@@ -19,9 +19,7 @@
         </div>
         <ng-container *ngIf="fieldDataType == 'tag'">
             <div class="ig-value">
-                <d3s-tag-view [data]="field.Values" [assetUID]="assetUid" [isEditable]="true" 
-                              [allowAddTag]="true" (tagsChanged)="onTagsChanged($event)">
-                </d3s-tag-view>
+                <d3s-tag-view [data]="field.Values" [assetUID]="assetUid" [isEditable]="true" [allowAddTag]="true"></d3s-tag-view>
             </div>
         </ng-container>
     </ng-container>
@@ -41,11 +39,7 @@
         </div>
         <ng-container *ngIf="fieldDataType == 'tag'">
             <div class="ig-value">
-                <d3s-tag-view [data]="field.Values" [assetUID]="assetUid" 
-                              [isEditable]="true" [allowAddTag]="true" 
-                              [interceptLinkClick]="interceptLinkClick"
-                              (tagsChanged)="onTagsChanged($event)">
-                </d3s-tag-view>
+                <d3s-tag-view [data]="field.Values" [assetUID]="assetUid" [isEditable]="true" [allowAddTag]="true" [interceptLinkClick]="interceptLinkClick"></d3s-tag-view>
             </div>
         </ng-container>
     </ng-container>

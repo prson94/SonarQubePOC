@@ -4,8 +4,6 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
-import { GenericMessageService } from '../../../services/generic-message.service';
-import { GenericMessageType } from '../../../models/generic-message.model';
 
 @Component({
     selector: 'ig-asset-detail-field',
@@ -20,7 +18,6 @@ export class AssetDetailFieldComponent {
     @Input() tooltipAlign: string;
     @Input() isSidePanel: boolean = false;
     @Input() interceptLinkClick: boolean = false;
-    @Output() tagsChanged = new EventEmitter<string>();
 
     readonly emptyValue: string = "---";
     readonly dateFormat: string = "d MMM yyyy";
@@ -33,8 +30,7 @@ export class AssetDetailFieldComponent {
     constructor(private router: Router,
         private assetService: AssetService,
         private ref: ChangeDetectorRef,
-        private linkClickInterceptor: LinkClickInterceptor,
-        private genericMessageService: GenericMessageService
+        private linkClickInterceptor: LinkClickInterceptor
     ) { }
 
     ngOnInit() {
@@ -147,14 +143,6 @@ export class AssetDetailFieldComponent {
         } catch (err) {
             return "Error";
         }
-    }
-
-    private onTagsChanged(tags) {
-        this.genericMessageService.sendMessage({
-            uid: this.assetUid,
-            messageType: GenericMessageType.Tags,
-            data: tags
-        });
     }
 
     getDataLinkType(data) {

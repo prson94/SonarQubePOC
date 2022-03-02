@@ -159,7 +159,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 data => {
                     this.doSimpleSearch(me.dt, me.isLoading);
                 }
-        );
+            );
     }
     canExportRecords() {
         return this.totalRecords <= this.maxExportRows;

@@ -1,13 +1,10 @@
-﻿import { Component, Input, OnInit, ChangeDetectionStrategy, OnDestroy, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../../models/grid-definition.model';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { GenericMessageService } from '../../../services/generic-message.service';
-import { Subscription } from 'rxjs';
-import { GenericMessageType } from '../../../models/generic-message.model';
 
 @Component({
     selector: 'd3s-dynamic-field-value',
@@ -15,7 +12,7 @@ import { GenericMessageType } from '../../../models/generic-message.model';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DynamicFieldValueComponent extends BaseComponent implements OnInit, OnDestroy {
+export class DynamicFieldValueComponent extends BaseComponent implements OnInit {
     @Input() column: GridColumn;
     @Input() fields: GridField[] = [];
     @Input() item: any;
@@ -26,16 +23,13 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit,
     @Input() interceptLinkClick: boolean = false;
 
     public fieldType: string;
-    public fieldValue: any;
+    private fieldValue: any;
     private hasColor: boolean;
     private colorText: string;
-    private genericMessageServiceSub: Subscription;
 
     constructor(
         protected settingsService: CompanySettingsService,
-        private router: Router,
-        private genericMessageService: GenericMessageService,
-        protected cdRef: ChangeDetectorRef) {
+        private router: Router) {
         super(settingsService);
     }
 
@@ -108,18 +102,6 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit,
                 this.colorText = 'None';
             }
         }
-        if (this.fieldType == 'tag') {
-            this.genericMessageServiceSub = this.genericMessageService.getMessage().subscribe(
-                message => {
-                    if (message
-                        && message.messageType === GenericMessageType.Tags
-                        && message.uid === this.item.AssetUid) {
-                        this.fieldValue = message.data;
-                        this.cdRef.detectChanges();
-                    }
-                }
-            );
-        }
     }
 
     private formatAsNumber(): string {
@@ -152,11 +134,5 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit,
 
     private navigate(url: string) {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
-    }
-
-    ngOnDestroy() {
-        if (this.genericMessageServiceSub) {
-            this.genericMessageServiceSub.unsubscribe();
-        }
     }
 }
