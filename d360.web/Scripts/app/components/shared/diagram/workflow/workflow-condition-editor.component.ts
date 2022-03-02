@@ -338,7 +338,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     setOperators(field: any = null, fieldType: ConditionFieldType = null) {
         let type: string = '';
         let fieldId: string = '';
-        let ops = [];
+        let ops = new Set<string>();
 
         switch (fieldType) {
             case ConditionFieldType.Field:
@@ -371,12 +371,12 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'lookup':
             case 'list':
             case 'text':
-                ops.push('=');
-                ops.push('!=');
+                ops.add('=');
+                ops.add('!=');
                 break;
             case 'html':
-                ops.push('P');
-                ops.push('NP');
+                ops.add('P');
+                ops.add('NP');
                 break;
             case 'decimal':
             case 'number':
@@ -384,21 +384,21 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'date':
             case 'datetime':
             default:
-                ops.push('=');
-                ops.push('!=');
-                ops.push('>');
-                ops.push('<');
-                ops.push('>=');
-                ops.push('<=');
+                ops.add('=');
+                ops.add('!=');
+                ops.add('>');
+                ops.add('<');
+                ops.add('>=');
+                ops.add('<=');
                 break;
         }
 
         if (fieldType == ConditionFieldType.Field) {
             if (this.changeType == WorkflowChangeType.Update && !this.isForTransition) {
-                ops.push('C');
+                ops.add('C');
             }
-            ops.push('P');
-            ops.push('NP');
+            ops.add('P');
+            ops.add('NP');
         }
 
         if (fieldType == ConditionFieldType.Contextual) {
@@ -406,8 +406,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 if (this.changeType == WorkflowChangeType.Update
                     || this.changeType == WorkflowChangeType.RequestCertification
                     || this.changeType == WorkflowChangeType.Schedule) {
-                    ops.push('P');
-                    ops.push('NP');
+                    ops.add('P');
+                    ops.add('NP');
                 }
             }
         }
