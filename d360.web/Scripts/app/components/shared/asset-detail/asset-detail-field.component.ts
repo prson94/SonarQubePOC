@@ -1,4 +1,4 @@
-﻿import { Input, Component, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { DetailField, DetailFieldType } from '../../../models/object-detail.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
