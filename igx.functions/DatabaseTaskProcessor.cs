@@ -20,6 +20,8 @@ using Newtonsoft.Json;
 using System.Data.Entity;
 using Microsoft.Azure.ServiceBus;
 using System.Text;
+using d360.extensions.mail;
+using d360.core.resources;
 
 namespace igx.functions.databasetaskprocessor
 {
@@ -239,6 +241,96 @@ namespace igx.functions.databasetaskprocessor
                                                     }
                                                     #endregion
                                                     break;
+                                                case "Notify":
+                                                    #region Email Notification
+                                                    if (q.Object == "TaggedComment")
+                                                    {
+                                                        var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
+                                                        var mail = new MandrillMailProvider { ApiKey = config["MandrillApiKey"] };
+                                                        if (comment.AssetID > 0)
+                                                        {
+                                                            CommentNotification notification = JsonConvert.DeserializeObject<CommentNotification>(q.Custom);
+                                                            if (notification != null)
+                                                            {
+                                                                var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
+
+                                                                var rootUrl = $"https://{company.UrlPrefix}.data3sixty.com";
+
+                                                                string mailBody = $@"
+                                                                                        <html>
+                                                                                        <head>
+                                                                                            <style>
+                                                                                                body {{
+                                                                                                    margin-top: 20px;
+                                                                                                    margin-left: 50px;
+                                                                                                    margin-right: 50px;
+                                                                                                    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+                                                                                                }}
+                                                                                                .header {{
+                                                                                                    font-weight: bold;
+                                                                                                    padding-bottom: 10px;
+                                                                                                }}
+                                                                                                .content {{
+                                                                                                    padding-bottom: 20px;
+                                                                                                    padding-top: 20px;
+                                                                                                    border-top: 2px solid #d7d8dc;
+                                                                                                    border-bottom: 2px solid #d7d8dc;
+                                                                                                }}
+                                                                                                .footer {{
+                                                                                                    padding-top: 10px;
+                                                                                                    text-align: right;
+                                                                                                }}
+                                                                                                .button {{
+                                                                                                    display: inline-flex;
+                                                                                                    position: relative;
+                                                                                                    flex-direction: row;
+                                                                                                    justify-content: center;
+                                                                                                    align-items: center;
+                                                                                                    flex-shrink: 0;
+                                                                                                    background: #006fba;
+                                                                                                    color: #ffffff;
+                                                                                                    border: none;
+                                                                                                    border-radius: 4px;
+                                                                                                    line-height: 200%;
+                                                                                                    height:32px;
+                                                                                                }}
+                                                                                                a {{
+                                                                                                    text-decoration: none;
+                                                                                                }}
+                                                                                                a:link .link {{
+                                                                                                    color: #006fba;
+                                                                                                }}
+                                                                                                a:hover .link {{
+                                                                                                    text-decoration: underline;
+                                                                                                }}
+                                                                                                a:visited .link {{
+                                                                                                    color: #006fba;
+                                                                                                }}
+                                                                                                img {{ border-style: none; }}
+                                                                                            </style>
+                                                                                        </head>
+                                                                                        <body>
+                                                                                            <div class='header'>
+                                                                                                {string.Format(Notifications.TaggedCommentMailHeader, notification.CommenterName)}
+                                                                                            </div>
+                                                                                            <div class='content'>
+                                                                                                {string.Format(Notifications.TaggedCommentMailBody, notification.CommenterName, rootUrl, notification.AssetUrl, displayValue, comment.CommentDate.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy"))}                                                                                            
+                                                                                            <br />
+                                                                                            <br />
+                                                                                            <a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;{Notifications.TaggedCommentMailCommentLink}&nbsp;&nbsp;</a>
+                                                                                        </div>
+                                                                                            <div class='footer'>
+                                                                                                <img src ='{rootUrl}/Content/images/logo.mail.small.png' alt='D360 Govern' style='border-style:none;'> 
+                                                                                            </div>
+                                                                                        </body>
+                                                                                        </html>                                                                                        
+                                                                                        ";
+                                                                mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
+                                                            }
+                                                        }
+                                                    }
+                                                    break;
+                                                #endregion
                                                 case "ObjectIndex":
                                                     #region
                                                     resolveIndexItem(company, indexCollectionModel, companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
