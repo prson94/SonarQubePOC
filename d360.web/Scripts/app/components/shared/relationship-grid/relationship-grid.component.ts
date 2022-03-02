@@ -74,6 +74,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     isAddVisible: boolean = false;
     showDelete: boolean = false;
     deleteInProgress: boolean = false;
+    isExportInProgress: boolean = false;
 
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
@@ -396,5 +397,15 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 this.showDelete = false;
                 this.loadRelationshipLazy(null);
             });
+    }
+
+    export() {
+        this.isExportInProgress = true;
+        this.relationshipService
+            .getRelationshipsForAssetExcel(
+                this.assetUid, this.getParams(),
+                'Filtered ' + this.assetDetail.DisplayValue + ' Relationships',
+                () => { this.isExportInProgress = false; }
+            );
     }
 }

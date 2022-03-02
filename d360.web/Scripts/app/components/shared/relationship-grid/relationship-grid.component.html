@@ -27,6 +27,16 @@
                                 icon="fa-plus"
                                 (click)="isAddVisible=true">
                         </button>
+                        <div pTooltip="Export to Excel"
+                             tooltipPosition="left"
+                             tooltipStyleClass="ig-tooltip">
+                            <button igButton
+                                    [disabled]="isExportInProgress"
+                                    icon="fa-download"
+                                    [loading]="isExportInProgress"
+                                    (click)="export()">
+                            </button>
+                        </div>
                     </div>
                 </div>
 
