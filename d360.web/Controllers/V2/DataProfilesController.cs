@@ -1105,10 +1105,7 @@ namespace d360.web.Controllers.V2
                 HttpResponseMessage response;
 
                 if (isStreamResponse)
-                {                    
-                    int pageNum = Company.ParsePageNumber(queryParams, 1);
-                    int pageSize = Company.ParsePageSize(queryParams, 200000);                    
-
+                {                               
                     SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels);
                     document.SelectWorksheet(ExcelExports.Common_ItemsSheetName);
                     var stream = new MemoryStream();
@@ -1418,7 +1415,7 @@ namespace d360.web.Controllers.V2
                 new ExcelSheet(ExcelExports.Common_ItemsSheetName)
                 {
                     HeaderRows = {
-                        new ExcelRow()
+                        new ExcelRow
                         {
                             DataProfileAPIMessages.NameColumn,
                             DataProfileAPIMessages.QualifierColumn,
