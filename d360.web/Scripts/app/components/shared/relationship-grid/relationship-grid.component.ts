@@ -7,9 +7,11 @@ import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { RelationshipCount, RelationshipType } from '../../../models/relationship.model';
+import { AssetService } from '../../../services/asset.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
@@ -34,6 +36,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     relationshipCounts: RelationshipCount[] = [];
     relationships: any[] = [];
     relationshipTypesResolvedNames: any[] = [];
+    assetDetail: any = {};
 
     selectedRelationship: any;
     selectedRelAsset: any;
@@ -69,6 +72,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     showEditor: boolean = false;
     isAddVisible: boolean = false;
+    showDelete: boolean = false;
+    deleteInProgress: boolean = false;
 
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
@@ -105,10 +110,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     constructor(
         private cdRef: ChangeDetectorRef,
         private relationshipService: RelationshipsService,
+        private assetService: AssetService,
         private fieldService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
         private gridDefinitionService: GridDefinitionService,
         private linkClickInterceptor: LinkClickInterceptor,
+        private messagesService: MessagesObservableService
     ) {
         super(settingsService);
         this.sidePanelStorageKey = "relationship-detail";
@@ -178,10 +185,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
         this.loadTypesSub = forkJoin(
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
-            this.relationshipService.getRelationshipsCountsForAsset(this.assetUid))
+            this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
+            this.assetService.getUIDetailsForAssetUID(this.assetUid))
             .subscribe((data) => {
                 this.relationshipTypes = data[0];
                 this.relationshipCounts = data[1];
+                this.assetDetail = data[2];
 
                 this.relationshipTypesResolvedNames = [];
                 this.relationshipCounts.forEach((rc) => {
@@ -310,18 +319,23 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.selectedRelationship = row;
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
         var isSubject = this.selectedRelationship.Subject.Uid.toLowerCase() === this.assetUid.toLowerCase();
+
         if (isSubject) {
             this.selectedRelAsset = {
                 uid: this.selectedRelationship.Object.Uid,
                 type: this.selectedRelationship.Object.Type,
-                relUid: this.selectedRelationship.Uid
+                relUid: this.selectedRelationship.Uid,
+                name: this.selectedRelationship.RelationshipTypeName,
+                target: this.selectedRelationship.Object["[Path]"]
             };
         }
         else {
             this.selectedRelAsset = {
                 uid: this.selectedRelationship.Subject.Uid,
                 type: this.selectedRelationship.Subject.Type,
-                relUid: this.selectedRelationship.Uid
+                relUid: this.selectedRelationship.Uid,
+                name: this.selectedRelationship.RelationshipTypeName,
+                target: this.selectedRelationship.Subject["[Path]"]
             };
         }
     }
@@ -331,9 +345,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
         if (key === 'edit relationship') {
             this.showEditor = true;
-            console.log("edit");
-        } else if (key === 'delete') {
-            console.log("delete");
+        } else if (key === 'delete relationship') {
+            this.showDelete = true;
         }
     }
 
@@ -370,5 +383,18 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     onAddComplete($event) {
         this.isAddVisible = false;
         this.loadRelationshipLazy(null);
+    }
+
+    delete() {
+        this.deleteInProgress = true;
+        var item = { uid: this.selectedRelationship.Uid };
+        this.relationshipService.deleteRelationshipV2(this.selectedRelationship.RelationshipTypeUid, [item])
+            .subscribe((res) => {
+                let msg = 'Relationship Successfully deleted';
+                this.showMessageForApiResult(this.messagesService, res[0], msg);
+                this.deleteInProgress = false;
+                this.showDelete = false;
+                this.loadRelationshipLazy(null);
+            });
     }
 }
