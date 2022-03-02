@@ -240,6 +240,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
+        debugger;
         if (this.selection) {
             if (this.objectType === 'IntersectType' || this.objectType === 'Predicate') {
                 id = this.selection.Uid;
@@ -295,6 +296,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
             });
         }
+        debugger;
 
         if (this.parentID && this.parentID.toString().length === 36) {
             this.editorDefinitionService.getAssetEditorDefinition(this.objectTypeUid, this.assetUid, this.parentID.toString())
@@ -303,7 +305,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     this.handleEditor(result);
                 });
         }
-        else if (this.isProcessSidePanel) {
+        else if (this.isProcessSidePanel || (this.objectType === "IntersectType" && !id)) {
             this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, id)
                 .subscribe((result) => {
                     this.handleEditor(result);

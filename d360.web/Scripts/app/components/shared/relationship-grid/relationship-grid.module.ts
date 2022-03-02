@@ -27,7 +27,6 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 import { AddRelationshipModule } from './add-relationship.module';
 
-
 @NgModule({
     imports: [
         CommonModule,

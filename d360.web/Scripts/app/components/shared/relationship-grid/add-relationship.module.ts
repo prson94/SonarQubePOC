@@ -21,6 +21,7 @@ import { AddRelationshipComponent } from './add-relationship.component';
 import { IgBadgeModule } from '../controls/badge/badge.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 
 
 @NgModule({
@@ -46,7 +47,8 @@ import { TooltipModule } from 'primeng/tooltip';
         SiteModalModule,
         IgBadgeModule,
         SearchFieldModule,
-        TooltipModule
+        TooltipModule,
+        AssetEditorModule
     ],
     declarations: [
         AddRelationshipComponent

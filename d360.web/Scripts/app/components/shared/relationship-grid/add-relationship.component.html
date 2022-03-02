@@ -77,6 +77,17 @@
 
 
         <div *ngIf="currentStep === 'SetCustomFields'">
+            <asset-editor #dynamicEditor
+                          [objectID]="selectedType.Uid"
+                          [objectType]="'IntersectType'"
+                          [selection]="null"
+                          [rowID]="rowID"
+                          [objectTypeUid]="selectedType.Uid"
+                          [hidePath]="true"
+                          (saveClick)="saveItem($event)"
+                          [showAsModal]="true"
+                          [isV2API]="true"
+                          (closeClick)="showEditor=false"></asset-editor>
             <div class="action-bar no-padding">
                 <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetAssets'"></button>
                 <span class="grow"></span>
