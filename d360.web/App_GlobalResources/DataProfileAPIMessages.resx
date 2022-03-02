@@ -315,6 +315,10 @@
   <data name="SemanticStatusUnderReview" xml:space="preserve">
     <value>Under Review</value>
   </data>
+  <data name="SemanticTypeExportFilename" xml:space="preserve">
+    <value>Filtered Semantic Types List {0}.xlsx</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
   <data name="SemanticTypeUidColumn" xml:space="preserve">
     <value>Semantic Type Uid</value>
     <comment>Used for Semantic Types exports</comment>

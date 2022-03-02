@@ -565,6 +565,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filtered Semantic Types List {0}.xlsx.
+        /// </summary>
+        internal static string SemanticTypeExportFilename {
+            get {
+                return ResourceManager.GetString("SemanticTypeExportFilename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Semantic Type Uid.
         /// </summary>
         internal static string SemanticTypeUidColumn {

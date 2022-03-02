@@ -24,6 +24,8 @@ using SpreadsheetLight;
 using d360.model.helpers.filters;
 using d360.core.exceptions;
 using System.Threading;
+using d360.utils.excel;
+using d360.core.resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -1107,13 +1109,13 @@ namespace d360.web.Controllers.V2
                     int pageNum = Company.ParsePageNumber(queryParams, 1);
                     int pageSize = Company.ParsePageSize(queryParams, 200000);                    
 
-                    SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels.items, pageNum, pageSize);
+                    SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels);
+                    document.SelectWorksheet(ExcelExports.Common_ItemsSheetName);
                     var stream = new MemoryStream();
                     document.SaveAs(stream);
-                    byte[] bytes = stream.ToArray();
-                    var filename = $"Filtered Semantic Types List {DateTime.Now:ddd MMM dd yyyy}.xlsx";                    
+                    byte[] bytes = stream.ToArray();                    
 
-                    response = createFileResponseMessage(HttpStatusCode.OK, filename, bytes);
+                    response = createFileResponseMessage(HttpStatusCode.OK, string.Format(DataProfileAPIMessages.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
                 }
                 else
                 {
@@ -1409,88 +1411,79 @@ namespace d360.web.Controllers.V2
         /// Create the Excel document for export
         /// </summary>
         /// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
-        private SLDocument CreateResponseDocumentForSemanticTypesExport(List<GetSemantic> semantics, int pageNum, int pageSize)
+        private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics)
         {
-            SLDocument doc = new SLDocument();
-            string itemSheetName = "Items";
-            string apiSheetName = DataProfileAPIMessages.ApiSheetName;
-
-            doc.RenameWorksheet(SLDocument.DefaultFirstSheetName, itemSheetName);
-
-            doc.AddWorksheet(apiSheetName);
-            doc.SelectWorksheet(apiSheetName);
-
-            doc.SetCellValue(1, 1, "pageSize");
-            doc.SetCellValue(1, 2, pageSize);
-            doc.SetCellValue(2, 1, "pageNum");
-            doc.SetCellValue(2, 2, pageNum);
-
-            doc.SelectWorksheet(itemSheetName);
-
-            #region Create the list sheet
-
-            #region Header
-            int index = 1;
-            int rowNumber = 1;
-
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.NameColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.QualifierColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.DescriptionColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.ThresholdColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.PriorityColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.StatusColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.SourceColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.MatchTypeColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.BaseTypeColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.JsonColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.HeaderFilterColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.HeaderFilterConfidenceColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.RegularExpressionColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.ValidValuesColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.InvalidValuesColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.MinimumSamplesColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.ValidLocalesColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.MinimumColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.MaximumColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.MinimumMaximumPresentColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.SemanticTypeUidColumn);
-            doc.SetCellValue(rowNumber, index, DataProfileAPIMessages.SemanticTypeURLColumn);
-
-            #endregion
-            #region Body
-            foreach (var row in semantics)
+            var document = new ExcelDocument(string.Format(DataProfileAPIMessages.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")))
             {
-                index = 1;
-                rowNumber++;                
+                new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+                {
+                    HeaderRows = {
+                        new ExcelRow()
+                        {
+                            DataProfileAPIMessages.NameColumn,
+                            DataProfileAPIMessages.QualifierColumn,
+                            DataProfileAPIMessages.DescriptionColumn,
+                            DataProfileAPIMessages.ThresholdColumn,
+                            DataProfileAPIMessages.PriorityColumn,
+                            DataProfileAPIMessages.StatusColumn,
+                            DataProfileAPIMessages.SourceColumn,
+                            DataProfileAPIMessages.MatchTypeColumn,
+                            DataProfileAPIMessages.BaseTypeColumn,
+                            DataProfileAPIMessages.JsonColumn,
+                            DataProfileAPIMessages.HeaderFilterColumn,
+                            DataProfileAPIMessages.HeaderFilterConfidenceColumn,
+                            DataProfileAPIMessages.RegularExpressionColumn,
+                            DataProfileAPIMessages.ValidValuesColumn,
+                            DataProfileAPIMessages.InvalidValuesColumn,
+                            DataProfileAPIMessages.MinimumSamplesColumn,
+                            DataProfileAPIMessages.ValidLocalesColumn,
+                            DataProfileAPIMessages.MinimumColumn,
+                            DataProfileAPIMessages.MaximumColumn,
+                            DataProfileAPIMessages.MinimumMaximumPresentColumn,
+                            DataProfileAPIMessages.SemanticTypeUidColumn,
+                            DataProfileAPIMessages.SemanticTypeURLColumn
+                        }
+                    },
 
-                doc.SetCellValue(rowNumber, index++, row.Name);
-                doc.SetCellValue(rowNumber, index++, row.Qualifier);
-                doc.SetCellValue(rowNumber, index++, row.Description);
-                doc.SetCellValue(rowNumber, index++, row.Threshold+"%");
-                doc.SetCellValue(rowNumber, index++, row.Priority);               
-                doc.SetCellValue(rowNumber, index++, row.Status == SemanticStatus.InReview ? DataProfileAPIMessages.SemanticStatusUnderReview : row.Status.ToString());                
-                doc.SetCellValue(rowNumber, index++, row.Source == SemanticSource.BuiltIn ? DataProfileAPIMessages.SemanticSourceBuiltIn : DataProfileAPIMessages.SemanticSourceUserDefined);
-                doc.SetCellValue(rowNumber, index++, parseMatchTypeForExport(row.MatchType));
-                doc.SetCellValue(rowNumber, index++, parseBaseTypeForExport(row.BaseType));
-                doc.SetCellValue(rowNumber, index++, row.JsonPayloadStructured != null ? JsonConvert.SerializeObject(row.JsonPayloadStructured, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }) : "");
-                doc.SetCellValue(rowNumber, index++, row.HeaderFilterStructured != null ? string.Join(" | ", row.HeaderFilterStructured.values.Select((v)=> v.@operator + " '" + v.value + "'")) : "");
-                doc.SetCellValue(rowNumber, index++, row.HeaderFilterConfidence.HasValue ? row.HeaderFilterConfidence.ToString()+"%" : "");
-                doc.SetCellValue(rowNumber, index++, row.RegularExpression);
-                doc.SetCellValue(rowNumber, index++, row.ValidValuesStructured != null ? string.Join(" | ", row.ValidValuesStructured) : "");                
-                doc.SetCellValue(rowNumber, index++, row.InvalidValuesStructured != null ? string.Join(" | ", row.InvalidValuesStructured) : "");
-                doc.SetCellValue(rowNumber, index++, row.MinimumSamples.HasValue ? row.MinimumSamples.ToString() : "");
-                doc.SetCellValue(rowNumber, index++, row.ValidLocalesStructured != null ? string.Join(" | ", row.ValidLocalesStructured) : "");
-                doc.SetCellValue(rowNumber, index++, row.Minimum.ToString());
-                doc.SetCellValue(rowNumber, index++, row.Maximum.ToString());
-                doc.SetCellValue(rowNumber, index++, row.MinMaxPresent.ToString());                
-                doc.SetCellValue(rowNumber, index++, row.Uid.ToString());
-                doc.SetCellValue(rowNumber, index, $"semantics/{row.Uid}");
+                    ValueRows = semantics.items.Select(row => new ExcelRow
+                    {
+                        row.Name,
+                        row.Qualifier,
+                        row.Description,
+                        row.Threshold + "%",
+                        row.Priority,
+                        row.Status == SemanticStatus.InReview ? DataProfileAPIMessages.SemanticStatusUnderReview : row.Status.ToString(),
+                        row.Source == SemanticSource.BuiltIn ? DataProfileAPIMessages.SemanticSourceBuiltIn : DataProfileAPIMessages.SemanticSourceUserDefined,
+                        parseMatchTypeForExport(row.MatchType),
+                        parseBaseTypeForExport(row.BaseType),
+                        row.JsonPayloadStructured != null ? JsonConvert.SerializeObject(row.JsonPayloadStructured, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }) : "",
+                        row.HeaderFilterStructured != null ? string.Join(" | ", row.HeaderFilterStructured.values.Select((v) => v.@operator + " '" + v.value + "'")) : "",
+                        row.HeaderFilterConfidence.HasValue ? row.HeaderFilterConfidence.ToString() + "%" : "",
+                        row.RegularExpression,
+                        row.ValidValuesStructured != null ? string.Join(" | ", row.ValidValuesStructured) : "",
+                        row.InvalidValuesStructured != null ? string.Join(" | ", row.InvalidValuesStructured) : "",
+                        row.MinimumSamples.HasValue ? row.MinimumSamples.ToString() : "",
+                        row.ValidLocalesStructured != null ? string.Join(" | ", row.ValidLocalesStructured) : "",
+                        row.Minimum.ToString(),
+                        row.Maximum.ToString(),
+                        row.MinMaxPresent.ToString(),
+                        row.Uid.ToString(),
+                        $"semantics/{row.Uid}"
+                    }).ToList(),                    
+                },
 
-            }
-            doc.AutoFitColumn(1, 22);
-            #endregion
-            #endregion
-            return doc;
+                new ExcelSheet(ExcelExports.Common_ApiInfoSheetName)
+                {
+                    ValueRows =
+                    {
+                        new ExcelRow { ExcelExports.Common_PageSize, semantics.pageSize.ToString() },
+                        new ExcelRow { ExcelExports.Common_PageNum, semantics.pageNum.ToString() },
+                        new ExcelRow { ExcelExports.Common_Total, semantics.total.ToString() }
+                    }
+                }
+            };         
+            
+            return document.ToSLDocument();
         }
 
         private string parseMatchTypeForExport(SemanticMatchType matchType)
