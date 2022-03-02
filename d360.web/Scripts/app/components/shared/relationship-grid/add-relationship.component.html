@@ -71,27 +71,29 @@
                 <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetRelationshipType'"></button>
                 <span class="grow"></span>
                 <button *ngIf="selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="Set Relationship Properties > " (click)="confirmAssets();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
-                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="Add Relationships" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
+                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="Add Relationships" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress"></button>
             </div>
         </div>
 
 
         <div *ngIf="currentStep === 'SetCustomFields'">
-            <asset-editor #dynamicEditor
-                          [objectID]="selectedType.Uid"
-                          [objectType]="'IntersectType'"
-                          [selection]="null"
-                          [rowID]="rowID"
-                          [objectTypeUid]="selectedType.Uid"
-                          [hidePath]="true"
-                          (saveClick)="saveItem($event)"
-                          [showAsModal]="true"
-                          [isV2API]="true"
-                          (closeClick)="showEditor=false"></asset-editor>
+            <div class="relationship-fields-wrapper">
+                <asset-editor #dynamicEditor
+                              [objectID]="selectedType.Uid"
+                              [objectType]="'IntersectType'"
+                              [selection]="null"
+                              [rowID]="rowID"
+                              [objectTypeUid]="selectedType.Uid"
+                              [hidePath]="true"
+                              [showAsModal]="true"
+                              [isV2API]="true"
+                              [useModelBinding]="true"
+                              (modelChanged)="updateFields($event)"></asset-editor>
+            </div>
             <div class="action-bar no-padding">
                 <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetAssets'"></button>
                 <span class="grow"></span>
-                <button igButton class="ig-button-primary" label="Add Relationships" (click)="saveRelationships();"></button>
+                <button igButton class="ig-button-primary" label="Add Relationships" (click)="saveRelationships();" [disabled]="savingInProgress"></button>
             </div>
         </div>
     </div>

@@ -366,4 +366,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.showEditor = false;
         this.loadRelationshipLazy(null);
     }
+
+    onAddComplete($event) {
+        this.isAddVisible = false;
+        this.loadRelationshipLazy(null);
+    }
 }

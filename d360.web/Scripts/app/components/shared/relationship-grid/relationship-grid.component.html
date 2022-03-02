@@ -19,8 +19,7 @@
                                         (onChange)="advancedFiltersChanged($event)">
                     </advanced-filtering>
                     <div class="grid-action-buttons">
-                        <button 
-                                igButton
+                        <button igButton
                                 pTooltip="Add new relationship"
                                 tooltipPosition="top"
                                 tooltipStyleClass="ig-tooltip"
@@ -156,4 +155,9 @@
                   (closeClick)="showEditor=false"></asset-editor>
 </d3s-modal>
 
-<add-relationship-editor [assetUid]="assetUid" [assetTypeUid]="assetTypeUid" [isVisible]="isAddVisible" (onClose)="isAddVisible=false"></add-relationship-editor>
+<add-relationship-editor [assetUid]="assetUid"
+                         [assetTypeUid]="assetTypeUid"
+                         [isVisible]="isAddVisible"
+                         (onClose)="isAddVisible=false"
+                         (onAddComplete)="onAddComplete($event)">
+</add-relationship-editor>

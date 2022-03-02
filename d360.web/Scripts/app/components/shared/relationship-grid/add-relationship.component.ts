@@ -32,6 +32,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     @Input() isVisible: boolean = false;
 
     @Output() onClose = new EventEmitter();
+    @Output() onAddComplete = new EventEmitter();
 
     currentStep: AddRelationshipStep = AddRelationshipStep.Initial;
 
@@ -45,6 +46,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 
     selectedRelationshipType: any = {};
     selectedAssets: any[] = [];
+    fieldValues: any = {};
     assetDetail: any = {};
 
     savingInProgress: boolean = false;
@@ -149,7 +151,6 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 
     saveRelationships() {
         this.savingInProgress = true;
-        let values: any = {};
         let relationships: RelationshipV2[] = [];
 
         this.selectedAssets.forEach((asset) => {
@@ -165,22 +166,13 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             relationship.Fields = {};
 
             //convert artifact to an asset
-            for (var p in values) {
-                if (p.toUpperCase() === "OBJECTUID") {
-                    relationship.ObjectAssetUid = values[p];
-                }
-                else if (p.toUpperCase() === "SUBJECTUID") {
-                    relationship.SubjectAssetUid = values[p];
-                }
-                else {
-                    relationship.Fields[p] = values[p];
-                }
+            for (var p in this.fieldValues) {
+                relationship.Fields[p] = this.fieldValues[p];
             }
 
             relationships.push(relationship);
         })
 
-        console.log(relationships);
         this.relationshipService.saveRelationships(this.selectedType.Uid, relationships)
             .subscribe((result) => {
                 var res = result[0];
@@ -188,6 +180,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                     let msg = 'Successfully updated';
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     this.savingInProgress = false;
+                    this.onAddComplete.emit(null);
                 }
                 else {
                     this.savingInProgress = false;
@@ -196,5 +189,9 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                     this.showMessageForApiResult(this.messagesService, res);
                 }
             });
+    }
+
+    updateFields($event) {
+        this.fieldValues = $event.values;
     }
 }
