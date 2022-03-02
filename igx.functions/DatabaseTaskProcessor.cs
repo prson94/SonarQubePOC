@@ -27,7 +27,7 @@ namespace igx.functions.databasetaskprocessor
     {
         const string processorFunctionName = "DatabaseTask_Process";
         const string schedulerFunctionName = "DatabaseTask_Scheduler";
-        const string timerSettings = "*/10 * * * * *";
+        const string timerSettings = "*/1 * * * * *";
         const int DEFAULT_QUEUE_ITEMS = 1000;
         private CoreFunction CoreFunction;
 
