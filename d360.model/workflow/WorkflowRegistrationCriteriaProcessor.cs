@@ -229,14 +229,12 @@ namespace d360.model.workflow
 
                                     if (item.Operator == CriteriaOperator.NotEqual)
                                     {
-                                        //
                                         if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
                                     }
                                     else if (item.Operator == CriteriaOperator.Equal)
                                     {
                                         //true operator
                                         if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
-
                                     }
                                     else if (item.Operator == CriteriaOperator.Populated)
                                     {
@@ -246,8 +244,7 @@ namespace d360.model.workflow
                                     {
                                         return formValue.Length <= 0;
                                     }
-                                    break;
-                                }
+                                } break;
                             case FormResponseType.All:
                                 {
                                     // ALL USERS NEED TO RESPOND AND APPROVE
@@ -261,11 +258,19 @@ namespace d360.model.workflow
                                         {
                                             if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
                                         }
-                                        else
+                                        else if (item.Operator == CriteriaOperator.Equal)
                                         {
+                                            //true operator
                                             if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
                                         }
-
+                                        else if (item.Operator == CriteriaOperator.Populated)
+                                        {
+                                            if (val.Length <= 0) return false;
+                                        }
+                                        else if (item.Operator == CriteriaOperator.NotPopulated)
+                                        {
+                                            if (val.Length > 0) return false;
+                                        }
                                     }
                                     return true;
                                 }
@@ -281,11 +286,18 @@ namespace d360.model.workflow
                                         {
                                             if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) matchCount++;
                                         }
-                                        else
+                                        else if (item.Operator == CriteriaOperator.Equal)
                                         {
                                             if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;
                                         }
-
+                                        else if (item.Operator == CriteriaOperator.Populated)
+                                        {
+                                            if (val.Length > 0) matchCount++;
+                                        }
+                                        else if (item.Operator == CriteriaOperator.NotPopulated)
+                                        {
+                                            if (val.Length <= 0) matchCount++;
+                                        }
                                     }
 
                                     return matchCount > (formValues.Count / 2);
