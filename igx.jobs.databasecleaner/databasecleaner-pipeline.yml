@@ -10,7 +10,7 @@ trigger:
     - /igx.jobs.databasecleaner
 pr:
   autoCancel: false
-  drafts: false
+  drafts: true
   branches:
     include:
     - '*sprint*'
@@ -28,7 +28,7 @@ resources:
   - repository: templates
     type: github
     name: Infogix/govern-pipeline-templates
-    ref: refs/heads/GOV-16997---Create-Pipeline-templates-YAML
+    ref: refs/heads/main
     endpoint: 'govern-build - Service Endpoint'
 stages:
 - stage: BUILD_NAME

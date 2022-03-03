@@ -1177,20 +1177,6 @@ delete Comment where CommentType not in (1,2,5);
 ]]>
 		</sql>
 	</changeSet>
-	<changeSet author="bquinlivan" id="Data.Corrections.GOV-13585">
-			<sql dbms="mssql" splitStatements="false" stripComments="false">
-	<![CDATA[
-			UPDATE G
-				set G.[Uid] = A.Uid
-			from 
-				[Group] G
-				Inner Join Asset A on A.SourceID = G.ID and A.Object = 'Group'
-			Where 
-				G.[Uid] is null		
-	]]>
-		</sql>
-	</changeSet>
-
 	<changeSet author="Pappas" id="Data.Corrections.GOV-14463">
 			<sql dbms="mssql" splitStatements="false" stripComments="false">
 	<![CDATA[

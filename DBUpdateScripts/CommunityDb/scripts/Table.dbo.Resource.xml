@@ -64,4 +64,30 @@ end
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.dbo.Resource-v2">
+  <comment>GOV-17248</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_Email')
+begin
+	CREATE NONCLUSTERED INDEX [IX_Resource_Email] ON [dbo].[Resource]
+	(
+		[Email] ASC
+	)
+end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_Email')
+BEGIN
+	DROP INDEX [IX_Resource_Email] ON [api].[Resource]
+END
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

@@ -370,6 +370,11 @@ namespace d360.core.entities
         public string assetTypePath { get; set; }
         [DataMember]
         public Decimal confidence { get; set; }
+        [JsonIgnore]
+        public Guid assetTypeUid { get; set; }
+        [JsonIgnore]
+        public Guid semanticTypeUid { get; set; }
+
     }
 
     public class AssetDataProfileByTypeQualifierApiViewModel : PagedApiBaseViewModel
