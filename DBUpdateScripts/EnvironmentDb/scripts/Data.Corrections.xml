@@ -1401,4 +1401,13 @@ SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
 			]]>
 		</sql>
 	</changeSet>
+	<changeSet author="TKlok" id="Data.Corrections.GOV-16661">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+			<comment>Queue Elasticsearch index of Semantics, delayed 1 hour to allow for code deployment.</comment>
+			<![CDATA[
+			INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+			SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'SemanticType', 0;
+			]]>
+		</sql>
+	</changeSet>
 </databaseChangeLog>

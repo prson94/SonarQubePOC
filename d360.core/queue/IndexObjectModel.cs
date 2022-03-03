@@ -73,12 +73,19 @@ namespace d360.core.queue
         }
     }
 
+    public enum ReindexBatchOperation
+    {
+        Update,
+        Delete
+    }
+
     public class ReindexModel : QueueObject
     {
         public string Category { get; set; }
         public Guid? AssetTypeUid { get; set; }
         public Guid? AssetUid { get; set; }
-        //No additional properties
+        public List<Guid> BatchUids { get; set; }
+        public ReindexBatchOperation BatchOperation { get; set; } = ReindexBatchOperation.Update;
     }
 
     public class RebuildAssetGraphModel : QueueObject
