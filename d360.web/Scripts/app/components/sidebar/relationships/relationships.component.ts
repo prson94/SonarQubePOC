@@ -16,7 +16,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                               [objectID]="objectID"
                                               [objectName]="objectName"
                                               [objectPermissions]="permissions"></d3s-object-relationships>
-
                     <gov-relationship-grid [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
     `,
     providers: [PermissionsService, ObjectDetailService]
@@ -50,6 +49,9 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
                 res => {
                     this.objectName = res.Name ? res.Name : res.DisplayValue;
                     this.assetUid = res["Uid"];
+                    if (!this.assetUid) {
+                        this.assetUid = res["UID"];
+                    }
                     this.assetTypeUid = res["AssetTypeUid"];
                 }
             );

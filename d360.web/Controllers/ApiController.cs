@@ -3359,6 +3359,101 @@ from    (
                             },
                         Category = FieldInfo.SystemFieldCategory
                     });
+
+
+
+                    if (intersect.UpdatedOn.HasValue)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = intersect.CreatedOn.HasValue ? intersect.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                            SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = intersect.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                },
+                            Category = Resources.FieldInfo.SystemFieldCategory
+                        });
+                    }
+                    else
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = intersect.CreatedOn.HasValue ? intersect.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                            Category = FieldInfo.SystemFieldCategory
+                        });
+                    }
+
+                    var userData = Company.Query<dynamic>(@"select 
+                                u.uid as UpdatedBy,
+                                c.uid as CreatedBy,
+	                            u.LastName+', '+u.FirstName as UpdatedByName,
+	                            c.LastName+', '+c.FirstName as CreatedByName
+                            from [intersect] i
+                               left join reporting.global_resource u on u.resourceid = i.updatedby
+                               left join reporting.global_resource c on c.resourceid = i.createdby
+                            where i.id = @id
+                        ", new { id }).FirstOrDefault();
+
+                    if (userData != null)
+                    {
+                        if (!string.IsNullOrEmpty(userData.CreatedByName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Name = FieldInfo.CreatedBy_Name,
+                                        FieldName = FieldInfo.CreatedBy_Name,
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value=userData.CreatedByName.ToString(),
+                                                TooltipType="Resource",
+                                                TooltipUrl="resource/"+intersect.CreatedBy,
+                                                HideTooltip = true,
+                                                uid = userData.CreatedBy
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(userData.UpdatedByName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Name = FieldInfo.UpdatedBy_Name,
+                                        FieldName = FieldInfo.UpdatedBy_Name,
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value=userData.UpdatedByName.ToString(),
+                                                TooltipType="Resource",
+                                                TooltipUrl="resource/"+intersect.UpdatedBy,
+                                                HideTooltip = true,
+                                                uid = userData.UpdatedBy
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
+                            });
+                        }
+                    }
+
                     intersect = null;
                     break;
                 #endregion

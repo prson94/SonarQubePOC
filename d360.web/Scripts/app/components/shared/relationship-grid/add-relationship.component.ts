@@ -89,7 +89,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             this.assetService.getUIDetailsForAssetUID(this.assetUid)
         )
             .subscribe((data) => {
-                this.relationshipTypes = data[0].filter((type) => type.Predicate.Type !== 'Diagram' && type.Predicate.Type !== 'DiagramUse');
+                this.relationshipTypes = data[0].filter((type) => type.Predicate.Type !== 'Diagram');
                 this.relationshipCounts = data[1];
                 this.assetDetail = data[2];
                 this.relationshipTypesResolvedNames = [];
