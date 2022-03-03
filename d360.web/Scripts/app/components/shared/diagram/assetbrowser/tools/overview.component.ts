@@ -20,7 +20,7 @@ export class AssetBrowserOverviewComponent implements OnInit {
     @Output() enabledChanged: EventEmitter<boolean> = new EventEmitter();
 
     overview: go.Overview = undefined;
-    overviewElementId: string = undefined;
+    overviewElementId: string;
     overviewContainer: any | undefined;
 
     constructor(private renderer: Renderer2, private el: ElementRef) { }
@@ -44,7 +44,7 @@ export class AssetBrowserOverviewComponent implements OnInit {
     }
 
     private createOverview(): void {
-        if (this.overview === undefined) {            
+        if (this.overview === undefined || this.overview === null) {            
             
             this.createOverviewContainer();
             
@@ -86,7 +86,7 @@ export class AssetBrowserOverviewComponent implements OnInit {
         if (this.overview) {
             this.overview.observed = null;
         }
-        this.overview = undefined;
+        this.overview = null;
         this.renderer.removeChild(this.el.nativeElement, this.overviewContainer, true);
     }
 } 
