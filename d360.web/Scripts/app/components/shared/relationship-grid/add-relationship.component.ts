@@ -50,6 +50,8 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     assetDetail: any = {};
 
     savingInProgress: boolean = false;
+    previewAssetUid: string = "";
+    previewAssetType: string = "";
 
     simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
 
@@ -59,6 +61,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         private companySettingsService: CompanySettingsService,
         private messagesService: MessagesObservableService) {
         super(companySettingsService);
+        this.rowsPerPage = 10;
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -141,6 +144,10 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         return this.isSelectedRelationshipSubject ? this.selectedType.Object.Uid : this.selectedType.Subject.Uid;
     }
 
+    get targetType(): string {
+        return this.isSelectedRelationshipSubject ? this.selectedType.Object.Class : this.selectedType.Subject.Class;
+    }
+
     get isSelectedRelationshipSubject(): boolean {
         return this.selectedType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase();
     }
@@ -193,5 +200,19 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 
     updateFields($event) {
         this.fieldValues = $event.values;
+    }
+
+    get selectionScrollHeight(): string {
+        return (window.innerHeight - 380) + "px";
+    }
+
+    onInfoClick($event) {
+        this.previewAssetUid = $event.Value;
+        if (this.targetType === "BusinessAsset" || this.targetType === "TechnicalAsset") {
+            this.previewAssetType = "Artifact";
+        }
+        else {
+            this.previewAssetType = this.targetType;
+        }
     }
 }

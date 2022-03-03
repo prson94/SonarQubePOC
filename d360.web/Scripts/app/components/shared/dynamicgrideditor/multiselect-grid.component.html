@@ -32,7 +32,7 @@
              [rows]="defaultInitialItemsPerPage"
              [rowsPerPageOptions]="defaultPagingOptions"
              [scrollable]="true"
-             scrollWidth="100%">
+             [scrollHeight]="selectionScrollHeight">
         <ng-template pTemplate="header">
             <tr>
                 <th style="width: 38px">
@@ -43,12 +43,20 @@
         </ng-template>
         <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
             <tr [pSelectableRow]="item">
-                <td class="front-elide disable-pointer-events">
+                <td style="width: 38px" class="disable-pointer-events">
                     <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
                     <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                 </td>
-                <td class="front-elide">
-                    <bdi>{{item.Text}}</bdi>
+                <td>
+                    <div class="asset-selection">
+                        <div class="front-elide">
+                            <bdi>{{item.Text}}</bdi>
+                        </div>
+                        <div class="flex-grow"></div>
+                        <button (click)="onInfoClick.emit(item)" igButton icon="fa-info" pTooltip="View Information" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+
+                    </div>
+
                 </td>
             </tr>
         </ng-template>

@@ -22,6 +22,8 @@ import { IgBadgeModule } from '../controls/badge/badge.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
+import { AssetDetailModule } from '../asset-detail/asset-detail.module';
+import { AssetPreviewModule } from '../asset-preview/asset-preview.module';
 
 
 @NgModule({
@@ -48,7 +50,9 @@ import { AssetEditorModule } from '../asset-editor/asset-editor.module';
         IgBadgeModule,
         SearchFieldModule,
         TooltipModule,
-        AssetEditorModule
+        AssetEditorModule,
+        AssetDetailModule,
+        AssetPreviewModule
     ],
     declarations: [
         AddRelationshipComponent

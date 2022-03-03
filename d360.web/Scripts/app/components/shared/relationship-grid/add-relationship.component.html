@@ -1,4 +1,4 @@
-﻿<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+﻿<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor {{previewAssetUid ? 'modal-extended' : ''}}"
            (onClose)="close();"
            [title]="'Add Relationships'"
            [subtitle]="assetDetail.DisplayValue"
@@ -22,7 +22,9 @@
                      [paginator]="true"
                      paginatorDropdownAppendTo="body"
                      [rows]="rowsPerPage"
-                     [rowsPerPageOptions]="defaultPagingOptions">
+                     [rowsPerPageOptions]="defaultPagingOptions"
+                     [scrollable]="true"
+                     [scrollHeight]="selectionScrollHeight">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>
@@ -62,12 +64,25 @@
         </div>
 
         <div *ngIf="currentStep === 'SetAssets'">
+            <div class="modal-side-panel" *ngIf="previewAssetUid">
+                <div class="side-panel-container" style="margin: 0;">
+                    <div class="panel-header">
+                        <span class="header-label">Information</span>
+                        <div class="side-panel-button-container">
+                            <button igButton icon="fa-close" tooltip="Close side panel" (click)="previewAssetUid = ''"></button>
+                        </div>
+                    </div>
+                </div>
+                <asset-preview [assetUid]="previewAssetUid" [assetType]="previewAssetType"></asset-preview>
+            </div>
+
             <d3s-multiselect-grid [(ngModel)]="selectedAssets"
                                   [multiple]="true"
                                   [intersectTypeUid]="selectedType.Uid"
                                   [assetUid]="assetUid"
                                   [targetAssetTypeUid]="targetTypeUid"
-                                  [objectCardinality]="2"></d3s-multiselect-grid>
+                                  [objectCardinality]="2"
+                                  (onInfoClick)="onInfoClick($event)"></d3s-multiselect-grid>
             <div class="action-bar no-padding">
                 <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetRelationshipType'"></button>
                 <span class="grow"></span>

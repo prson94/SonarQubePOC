@@ -33,6 +33,9 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     @Input() targetAssetTypeUid: string;
     @Input() objectCardinality: string;
 
+    @Output() onInfoClick = new EventEmitter();
+
+
     relationshipType: RelationshipType;
     isSubject: boolean = true;
 
@@ -61,6 +64,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         protected settingsService: CompanySettingsService,
         private ref: ChangeDetectorRef) {
         super(settingsService);
+        this.rowsPerPage = 10;
     }
 
     get isLazyLoad() {
@@ -329,5 +333,8 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     onSimpleSearch($event) {
         this.simpleTextFilter = $event;
         this.loadAssetsLazy(null);
+    }
+    get selectionScrollHeight(): string {
+        return (window.innerHeight - 380) + "px";
     }
 }

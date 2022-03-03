@@ -12,7 +12,6 @@ import { ScoreTypeAllocation } from "../../../models/metrics.model";
 import { RelationshipsService } from "../../../services/relationships.service";
 import { RelationshipType } from "../../../models/relationship.model";
 import { Router } from "@angular/router";
-import { AdvancedFilteringService } from "./advanced-filtering.service";
 
 @Component({
     selector: "advanced-filtering",
