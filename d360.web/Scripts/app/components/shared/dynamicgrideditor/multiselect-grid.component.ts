@@ -1,6 +1,5 @@
 ﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { UriBasedService } from '../../../services/uri-based.service';
 import * as _ from 'lodash';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { LazyLoadEvent } from 'primeng/api';
@@ -10,9 +9,9 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
-import { EditorField } from '../../../models/editor-field.model';
 import { ResourcesService } from '../../../services/resources.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { StringConstants } from '../../../static/string-constants';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -39,8 +38,11 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     value: any; //stores the values array bound back to the ngform.
 
+    simpleSearchTooltipHTML = StringConstants.simpleSearchTooltipHTML;
     items: any[];
     selectedItems: any;
+    simpleTextFilter: string = "";
+    advancedFilters: string = "";
     private selectedRelationRowIndex: number = null;
 
     public onModelChange: Function = () => { };
@@ -198,8 +200,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     loadAssetsLazy($event: LazyLoadEvent) {
         var params = {};
-        params["_pageSize"] = $event.rows;
-        params["_pageNum"] = ($event.first / $event.rows) + 1;
+
         params["useTypeLevelDefaultSorts"] = "true";
 
         var targetClass = this.isSubject ? this.relationshipType.Object.Class : this.relationshipType.Subject.Class;
@@ -210,11 +211,20 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         }
 
         let filters: string[] = [];
-        if ($event.globalFilter) {
-            var value = ($event.globalFilter as string).replace(/'/g, "&apos;");
-            value = `${encodeURIComponent(value)}`;
-            filters.push(`[Path] ct '${value}'`);
+        if ($event) {
+            if ($event.globalFilter) {
+                var value = ($event.globalFilter as string).replace(/'/g, "&apos;");
+                value = `${encodeURIComponent(value)}`;
+                filters.push(`[Path] ct '${value}'`);
+            }
+            params["_pageSize"] = $event.rows;
+            params["_pageNum"] = ($event.first / $event.rows) + 1;
         }
+        else {
+            params["_pageSize"] = this.rowsPerPage;;
+            params["_pageNum"] = 1;
+        }
+
 
         filters.push(`($Related:${this.intersectTypeUid} ne ${this.assetUid})`);
 
@@ -222,6 +232,14 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             filters.push(`($Related:${this.intersectTypeUid} eq null)`);
         }
         params["_filter"] = `(${(filters.join(" and "))}) and (uid ne '${this.assetUid}')`;
+
+        if (this.advancedFilters) {
+            params["_filter"] += ` and (${this.advancedFilters})`;
+        }
+
+        if (this.simpleTextFilter) {
+            params["_filter"] += ` and ([Path] ct '${this.simpleTextFilter}')`;
+        }
 
         if (this.lazyLoadTotalCount) {
             params["_includeTotal"] = false;
@@ -233,7 +251,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             this.searchAssetSub.unsubscribe();
         }
 
-        this.searchAssetSub = this.assetService.getAssets(this.targetAssetTypeUid, params, true).subscribe((res) => {
+        this.searchAssetSub = this.assetService.getAssets(this.targetAssetTypeUid, params, true, false).subscribe((res) => {
             if (res.total) {
                 this.lazyLoadTotalCount = +res.total;
             }
@@ -302,5 +320,14 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     get targetClass() {
         return this.isSubject ? this.relationshipType.Object.Class : this.relationshipType.Subject.Class;
+    }
+
+    advancedFiltersChanged($event) {
+        this.advancedFilters = $event.filter;
+        this.loadAssetsLazy(null);
+    }
+    onSimpleSearch($event) {
+        this.simpleTextFilter = $event;
+        this.loadAssetsLazy(null);
     }
 }

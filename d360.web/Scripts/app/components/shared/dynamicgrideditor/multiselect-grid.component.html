@@ -1,5 +1,20 @@
 ﻿<ng-container *ngIf="relationshipType">
-    <input type="text" igInput igSize="full" pInputText (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <div class="multiselect-grid-header">
+        <div class="simple-search">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="onSimpleSearch($event)"
+                             [(ngModel)]="simpleTextFilter"
+                             [infoTooltip]="simpleSearchTooltipHTML">
+            </ig-search-field>
+        </div>
+        <advanced-filtering [loadIdentifier]="targetAssetTypeUid"
+                            (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+        <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">
+            <span *ngIf="selectedItems && selectedItems.length === 1">1 item selected</span>
+            <span *ngIf="selectedItems && selectedItems.length > 1">{{selectedItems.length}} items selected</span>
+        </div>
+    </div>
 
     <p-table #dt
              [columns]="cols"
@@ -15,13 +30,15 @@
              (selectionChange)="handleItemSelection($event);"
              [globalFilterFields]="['Text']"
              [rows]="defaultInitialItemsPerPage"
-             [rowsPerPageOptions]="defaultPagingOptions">
+             [rowsPerPageOptions]="defaultPagingOptions"
+             [scrollable]="true"
+             scrollWidth="100%">
         <ng-template pTemplate="header">
             <tr>
                 <th style="width: 38px">
                     <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
                 </th>
-                <th>Asset Path</th>
+                <th>Available Assets</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
@@ -31,17 +48,13 @@
                     <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                 </td>
                 <td class="front-elide">
-                    <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)"><bdi>{{item.Text}}</bdi></d3s-preview-tooltip>
+                    <bdi>{{item.Text}}</bdi>
                 </td>
             </tr>
         </ng-template>
 
         <ng-template pTemplate="summary">
             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-            <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">
-                Selected Items:
-                <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last">{{last?item.Text:item.Text +','}} </span></p>
-            </div>
         </ng-template>
     </p-table>
 </ng-container>

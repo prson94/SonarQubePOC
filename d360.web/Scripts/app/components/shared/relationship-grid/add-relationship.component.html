@@ -18,9 +18,11 @@
                      selectionMode="single"
                      [globalFilterFields]="['name']"
                      [(selection)]="selectedRelationshipType"
-                     [rows]="10"
+                     [pageLinks]="3"
                      [paginator]="true"
-                     [pageLinks]="3">
+                     paginatorDropdownAppendTo="body"
+                     [rows]="rowsPerPage"
+                     [rowsPerPageOptions]="defaultPagingOptions">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>
@@ -60,8 +62,7 @@
         </div>
 
         <div *ngIf="currentStep === 'SetAssets'">
-            <d3s-multiselect-grid *ngIf="selectedType"
-                                  [(ngModel)]="selectedAssets"
+            <d3s-multiselect-grid [(ngModel)]="selectedAssets"
                                   [multiple]="true"
                                   [intersectTypeUid]="selectedType.Uid"
                                   [assetUid]="assetUid"
