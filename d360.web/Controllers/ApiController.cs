@@ -2674,18 +2674,6 @@ where asset.Object = @type and asset.ObjectId = @id
 
                         if (asset != null)
                         {
-                            if (type == SystemObjects.Rule)
-                            {
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField> {
-                                        new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "AssetTypeName", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = asset.AssetType.Name }
-                                    },
-                                    Category = Resources.FieldInfo.SystemFieldCategory
-                                });
-                            }
-
                             var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
                             if (useAssetDetailColumnDefinition && fcMapper != null)
@@ -2740,16 +2728,6 @@ where asset.Object = @type and asset.ObjectId = @id
 
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
-                            },
-                                Category = FieldInfo.SystemFieldCategory
-                            });
-
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
@@ -2783,18 +2761,6 @@ where asset.Object = @type and asset.ObjectId = @id
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
-                                },
-                                    Category = Resources.FieldInfo.SystemFieldCategory
-                                });
-                            }
-
-                            if (type == SystemObjects.Rule)
-                            {
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 2,
-                                    FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = FieldInfo.RuleID_Name, FieldName = "RuleID", Value = $"{asset.ObjectID}" }
                                 },
                                     Category = Resources.FieldInfo.SystemFieldCategory
                                 });
