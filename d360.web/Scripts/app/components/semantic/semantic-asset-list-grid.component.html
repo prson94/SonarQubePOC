@@ -1,13 +1,26 @@
 ﻿<div *ngIf="!isSidePanel" class="grid-actions-header">
     <div class="simple-search">
         <ig-search-field mode="Keypress"
-                            [debounce]="600"
-                            (onSearch)="onSimpleSearch($event)"
-                            [(ngModel)]="simpleFilter"
-                            [infoTooltip]="simpleSearchTooltipHTML">
+                         [debounce]="600"
+                         (onSearch)="onSimpleSearch($event)"
+                         [(ngModel)]="simpleFilter"
+                         [infoTooltip]="simpleSearchTooltipHTML">
         </ig-search-field>
     </div>
     <advanced-filtering [loadIdentifier]="'SemanticTypeAssets'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <div class="grid-action-buttons">
+        <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+             tooltipPosition="left"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    [disabled]="!canExportRecords() || isExportInProgress"
+                    [igDataCy]="'Semantic_Assets_Export'"
+                    icon="fa-download"
+                    [loading]="isExportInProgress"
+                    (click)="export()">
+            </button>
+        </div>
+    </div>
 </div>
 <div class="row {{(isSidePanel ? 'asset-grid-sidepanel-wrapper' : 'asset-grid-wrapper')}}">
     <div class="col s12">
@@ -30,8 +43,14 @@
                     [style]="{ 'width': '100%' }">
             <ng-template pTemplate="header">
                 <tr>
-                    <th>Asset Path</th>
-                    <th *ngIf="!isSidePanel">Asset Type Path</th>
+                    <th [pSortableColumn]="'Path'">
+                        Asset Path
+                        <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
+                    </th>
+                    <th *ngIf="!isSidePanel" [pSortableColumn]="'AssetTypePath'">
+                        Asset Type Path
+                        <d3s-sortIcon [field]="'AssetTypePath'"></d3s-sortIcon>
+                    </th>
                     <th *ngIf="!isSidePanel" style="width: 5%" alignFrozen="right" pFrozenColumn></th>
                 </tr>
             </ng-template>
