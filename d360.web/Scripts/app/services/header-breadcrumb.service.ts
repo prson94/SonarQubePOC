@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 @Injectable()
 export class HeaderBreadcrumbService extends BaseObservableService {
     private sitenavservice: SiteMenuService;
+    breadcrumbIsSetToStorage: Subject<any> = new Subject();
 
     constructor(
         private http: HttpClient,
@@ -97,6 +98,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     }
     saveBreacrumbsToStorage(crumbs: Breadcrumb[]) {
         localStorage.setItem("Header_Breadcrumbs", JSON.stringify([...crumbs]));
+        this.breadcrumbIsSetToStorage.next();
     }
     getBreadcrumbsFromStorage(): Breadcrumb[] {
         return JSON.parse(localStorage.getItem("Header_Breadcrumbs"));

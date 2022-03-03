@@ -40,6 +40,19 @@ import { AssetGridObject } from "./asset-grid.model";
 import { Filters } from "./advanced-filtering/advanced-filtering.models";
 import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
+import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
+import { Breadcrumb } from "../../models/breadcrumb.model";
+import { LocalStorageKey } from "../../enums/general.enum";
+import { LocalStorageHelper } from "../../static/localstorage-helper";
+
+export interface OnPageEvent {
+    first: number;
+    rows: number;
+}
+
+export interface NumberOfItemsToViewByAssetType {
+    [key: string]: number;
+}
 
 @Component({
     selector: "d3s-asset-grid",
@@ -128,6 +141,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     constructor(
+        private headerBreadcrumbService: HeaderBreadcrumbService,
         private headerActionsService: HeaderActionsService,
         public stateService: StateService,
         private permissionsService: PermissionsService,
@@ -161,6 +175,46 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 }
             );
     }
+
+    ngOnInit() {
+        this.headerBreadcrumbService.breadcrumbIsSetToStorage.pipe().subscribe(() => {
+            this.setRowsPerPage();
+        });
+    }
+
+    onPage(event: OnPageEvent): void {
+        this.setNumberOfItemsToViewByAssetTypeToLocalStorage(event.rows);
+    }
+
+    setNumberOfItemsToViewByAssetTypeToLocalStorage(numberOfRows: number): void {
+        let numberOfItemsToViewByAssetType: NumberOfItemsToViewByAssetType;
+        let folderTitle: string = this.getFolderTitleFromBreadcrumbsInStorage();
+
+        if (LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfItemsToViewByAssetType)) {
+            numberOfItemsToViewByAssetType = JSON.parse(localStorage.getItem(LocalStorageKey.NumberOfItemsToViewByAssetType));
+        } else {
+            numberOfItemsToViewByAssetType = {}
+        }
+
+        numberOfItemsToViewByAssetType[folderTitle] = numberOfRows;
+        localStorage.setItem(LocalStorageKey.NumberOfItemsToViewByAssetType, JSON.stringify(numberOfItemsToViewByAssetType));
+    }
+
+    getFolderTitleFromBreadcrumbsInStorage(): string {
+        let breadcrumb: Breadcrumb[] = this.headerBreadcrumbService.getBreadcrumbsFromStorage();
+        return breadcrumb[0].text;
+    }
+
+    setRowsPerPage() {
+        let folderTitle: string = this.getFolderTitleFromBreadcrumbsInStorage();
+        if (LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfItemsToViewByAssetType)) {
+            let numberOfItemsToViewByAssetType = JSON.parse(localStorage.getItem(LocalStorageKey.NumberOfItemsToViewByAssetType));
+            if (numberOfItemsToViewByAssetType.hasOwnProperty(folderTitle)) {
+                this.rowsPerPage = numberOfItemsToViewByAssetType[folderTitle];
+            }
+        }
+    }
+
     canExportRecords() {
         return this.totalRecords <= this.maxExportRows;
     }
@@ -389,7 +443,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
         }
-
         this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, this.getParams(), true)
             .pipe(debounceTime(200))
             .subscribe(res => {
