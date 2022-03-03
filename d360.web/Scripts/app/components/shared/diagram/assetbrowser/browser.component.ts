@@ -1348,6 +1348,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (this.searchText !== '') {
                 this.search_Execute(this.searchText);
             }
+
             this.overviewControlRef.initialize(this.diagram);
         });
     }
