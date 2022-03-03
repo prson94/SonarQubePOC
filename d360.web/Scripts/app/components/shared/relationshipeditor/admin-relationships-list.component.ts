@@ -15,6 +15,11 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
     relationships: RelationshipType[] = [];
 
+    private id: number = null;
+    private subject: string = "";
+    private predicate: string = "";
+    private object: string = "";
+
     @Input() filterToName: string = "";
 
     @Input() objectType: string;
@@ -56,8 +61,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     private export() {        
-        var search = this.filterToName.toLowerCase();
-        this.relationshipsService.exportRelationshipTypes(search);
+        this.relationshipsService.exportRelationshipTypes(this.filterToName ?? "", this.id ?? null, this.subject ?? "", this.predicate ?? "", this.object ?? "");
     }
 
     private filterResults() {
@@ -179,9 +183,15 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     onFilter($event) {
+        this.id = $event.filters["Id"]?.value;
+        this.subject = $event.filters["Subject.Name"]?.value;
+        this.predicate = $event.filters["Predicate.Name"]?.value;
+        this.object = $event.filters["Object.Name"]?.value;
+
         if ($event && $event.filteredValue) {
             this.selected = $event.filteredValue[0];
-            this.filterToName = $event.filters.global.value;
+            this.filterToName = $event.filters?.global?.value;            
+
             if (this.selected) {
                 this.selectedChange.emit(this.selected)
             }

@@ -1736,11 +1736,16 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Exported relationship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> ExportTypesToExcel(string keyword = null)
+        public async Task<IHttpActionResult> ExportTypesToExcel(string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null)
         {
             var queryParams = new List<KeyValuePair<string, string>>();
             queryParams.Add(new KeyValuePair<string, string>("state", "1"));
-            var models = await Company.GetRelationshipTypes(queryParams, keyword: keyword);
+            var models = await Company.GetRelationshipTypes(queryParams, 
+                keyword: keyword, 
+                id: id, 
+                subject: subject, 
+                predicate: predicate, 
+                @object: @object);
 
             return Excel(ItemsToExcel(models), $"Relationship Types {DateTime.Now.ToShortDateString()}.xlsx");
         }
