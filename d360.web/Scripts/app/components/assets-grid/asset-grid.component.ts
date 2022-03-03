@@ -42,16 +42,17 @@ import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
 import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
 import { Breadcrumb } from "../../models/breadcrumb.model";
-import { LocalStorageKey } from "../../enums/general.enum";
+import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { LocalStorageHelper } from "../../static/localstorage-helper";
+import { AppConstants } from "../../static/constants";
 
 export interface OnPageEvent {
     first: number;
     rows: number;
 }
 
-export interface NumberOfItemsToViewByAssetType {
-    [key: string]: number;
+export interface NumberOfRowsByCategories {
+    [category: string]: number;
 }
 
 @Component({
@@ -73,7 +74,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     @Output() isDefinitionLoadedChange = new EventEmitter();
 
     @Input() titlePostfix: string = ''; // added to end of header title.
-    @Input() rowsPerPage: number = 25;
+    @Input() rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
     @ViewChild('dt', { static: false }) dt: Table;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 
@@ -177,42 +178,61 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     ngOnInit() {
+        this.setNumberOfRowsToCategory();
         this.headerBreadcrumbService.breadcrumbIsSetToStorage.pipe().subscribe(() => {
-            this.setRowsPerPage();
+            this.setNumberOfRowsToCategory();
         });
     }
 
     onPage(event: OnPageEvent): void {
-        this.setNumberOfItemsToViewByAssetTypeToLocalStorage(event.rows);
+        this.saveNumberOfRowsByCategoryToStorage(event.rows);
     }
 
-    setNumberOfItemsToViewByAssetTypeToLocalStorage(numberOfRows: number): void {
-        let numberOfItemsToViewByAssetType: NumberOfItemsToViewByAssetType;
-        let folderTitle: string = this.getFolderTitleFromBreadcrumbsInStorage();
+    saveNumberOfRowsByCategoryToStorage(numberOfRows: number): void {
+        let numberOfRowsByCategories: NumberOfRowsByCategories = this.defineNumberOfRowsByCategories();
+        let category: string = this.getCategoryFromBreadcrumbs();
+        numberOfRowsByCategories[category] = numberOfRows;
+        localStorage.setItem(LocalStorageKey.NumberOfRowsByCategories, JSON.stringify(numberOfRowsByCategories));
+    }
 
-        if (LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfItemsToViewByAssetType)) {
-            numberOfItemsToViewByAssetType = JSON.parse(localStorage.getItem(LocalStorageKey.NumberOfItemsToViewByAssetType));
+    defineNumberOfRowsByCategories(): NumberOfRowsByCategories {
+        if (LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfRowsByCategories)) {
+            return this.getNumberOfRowsByCategoriesFromStorage();
         } else {
-            numberOfItemsToViewByAssetType = {}
+            return {}
         }
-
-        numberOfItemsToViewByAssetType[folderTitle] = numberOfRows;
-        localStorage.setItem(LocalStorageKey.NumberOfItemsToViewByAssetType, JSON.stringify(numberOfItemsToViewByAssetType));
     }
 
-    getFolderTitleFromBreadcrumbsInStorage(): string {
+    getCategoryFromBreadcrumbs(): string {
         let breadcrumb: Breadcrumb[] = this.headerBreadcrumbService.getBreadcrumbsFromStorage();
-        return breadcrumb[0].text;
+        if (breadcrumb && breadcrumb[0]) {
+            return breadcrumb[0].text;
+        } else {
+            return undefined;
+        }
     }
 
-    setRowsPerPage() {
-        let folderTitle: string = this.getFolderTitleFromBreadcrumbsInStorage();
-        if (LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfItemsToViewByAssetType)) {
-            let numberOfItemsToViewByAssetType = JSON.parse(localStorage.getItem(LocalStorageKey.NumberOfItemsToViewByAssetType));
-            if (numberOfItemsToViewByAssetType.hasOwnProperty(folderTitle)) {
-                this.rowsPerPage = numberOfItemsToViewByAssetType[folderTitle];
-            }
+    setNumberOfRowsToCategory() {
+        let category: string = this.getCategoryFromBreadcrumbs();
+        let isLocalStorageKeyExist: boolean = LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfRowsByCategories);
+        if (category && isLocalStorageKeyExist) {
+            this.rowsPerPage = this.defineNumberOfRowsByCategory(category);
+        } else {
+            this.rowsPerPage = AppConstants.DEFAULT_ROWS_PER_PAGE;
         }
+    }
+
+    defineNumberOfRowsByCategory(category: string): number {
+        let numberOfRowsByCategories: NumberOfRowsByCategories = this.getNumberOfRowsByCategoriesFromStorage();
+        if (numberOfRowsByCategories.hasOwnProperty(category)) {
+            return numberOfRowsByCategories[category];
+        } else {
+            return AppConstants.DEFAULT_ROWS_PER_PAGE;
+        }
+    }
+
+    getNumberOfRowsByCategoriesFromStorage(): NumberOfRowsByCategories {
+        return JSON.parse(localStorage.getItem(LocalStorageKey.NumberOfRowsByCategories));
     }
 
     canExportRecords() {

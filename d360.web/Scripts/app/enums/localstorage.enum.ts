@@ -1,3 +1,3 @@
 export enum LocalStorageKey {
-    NumberOfItemsToViewByAssetType = "numberOfItemsToViewByAssetType"
+    NumberOfRowsByCategories = "numberOfRowsByCategories"
 }
