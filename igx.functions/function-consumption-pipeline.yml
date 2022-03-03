@@ -4,7 +4,7 @@ trigger:
     - '*sprint*'
 pr:
   autoCancel: false
-  drafts: false
+  drafts: true
   branches:
     include:
     - '*sprint*'

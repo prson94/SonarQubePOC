@@ -112,3 +112,4 @@
 /d360.web/Scripts/dist/de
 /d360.web/Scripts/dist/en
 /d360.web/Scripts/dist/en-gb
+/DBUpdateScripts/EnvironmentDb/liquibase.properties

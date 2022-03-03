@@ -71,7 +71,12 @@
                 <i class="fa fa-chevron-circle-left"></i>
             </button>
             <div #tabScroller class="tab-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 40 : 0,'margin-right.px': showScrollButtons ? 40 : 0}">
-                <button *ngIf="!isScoringScreen" class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.tabTitle}}</button>
+                <button *ngIf="!isScoringScreen"
+                        class="tab"
+                        [ngClass]="{'selected':AllClosed()}"
+                        (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">
+                    {{area.tabTitle}}
+                </button>
                 <button class="tab"
                         title="{{getTitle(item)}}"
                         [ngClass]="{'selected':item.active}"
