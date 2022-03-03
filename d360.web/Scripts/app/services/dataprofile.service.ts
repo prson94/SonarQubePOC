@@ -192,10 +192,8 @@ export class DataProfileService extends BaseObservableService {
         }        
     }
 
-    getSemanticTypeMatchingAssets(typeQualifier: string, pageNum: number, pageSize: number, minConfidence: number = 0.01, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending): Observable<SemanticTypeGetAssetsResponse> {
-        const httpOptions = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-        };
+    getSemanticTypeMatchingAssets(typeQualifier: string, pageNum: number, pageSize: number, minConfidence: number = 0.01, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, typeName: string = "",  callback: Function = null): Observable<SemanticTypeGetAssetsResponse> {
+
         if (minConfidence <= 0) {
             minConfidence = 1;
         }
@@ -216,13 +214,27 @@ export class DataProfileService extends BaseObservableService {
                 url += `&_direction=${direction === SortOrder.Ascending ? "asc" : "desc"}`;
             }
         }
+       
+        if (isExport) {
+            this.
+                http
+                .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+                .subscribe((data) => {
+                    let filename = `Filtered Asset list for ${typeName}`;
+                    this.downloadFile(data, filename);
+                    if (callback) {
+                        callback();
+                    }
+                });
 
-        return this
-            .http
-            .get(url, httpOptions)
-            .pipe(
-                map((response) => <SemanticTypeGetAssetsResponse>response),
-                catchError((err) => this.handleError(err, false))
-            );
+        } else {
+            return this
+                .http
+                .get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) })
+                .pipe(
+                    map((response) => <SemanticTypeGetAssetsResponse>response),
+                    catchError((err) => this.handleError(err, false))
+                );           
+        } 
     }
 }
