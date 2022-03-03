@@ -36,10 +36,8 @@ export class AssetBrowserOverviewComponent implements OnInit {
     private createOverviewContainer(): void {
         this.overviewContainer = this.renderer.createElement('div');
         this.renderer.addClass(this.overviewContainer, 'overview');
-        this.renderer.setStyle(this.overviewContainer, 'visibility', this.enabled ? 'visible' : 'hidden');
-        // Set the id of the div
-        this.renderer.setProperty(this.overviewContainer, 'id', this.overviewElementId);
-        // Append the created div to the body element
+        this.renderer.setStyle(this.overviewContainer, 'visibility', this.enabled ? 'visible' : 'hidden');        
+        this.renderer.setProperty(this.overviewContainer, 'id', this.overviewElementId);        
         this.renderer.appendChild(this.el.nativeElement, this.overviewContainer);
         
         return this.overviewContainer;
