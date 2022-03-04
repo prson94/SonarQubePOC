@@ -10,7 +10,7 @@ namespace d360.core.entities.Process
     {
         //other keys are custom fields
 
-        private readonly string[] systemFields = new string[] {
+        private readonly string[] systemFields = new [] {
             "key","assetTypeName", "assetTypeUid","category",
             "icon","key","loc","refItemColor",
             "isNew","Uid","AssetTypeUid",

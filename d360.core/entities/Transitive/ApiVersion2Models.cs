@@ -631,7 +631,10 @@ namespace d360.core.entities
             { 
                 return "Intersect"; 
             } 
-            set { }
+            set 
+            {
+                //it's just for interface satisfaction. should be empty.
+            }
         }
 
         public int ObjectID 
