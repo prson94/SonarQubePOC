@@ -47,7 +47,7 @@
         </div>
         <div class="side-panel-content" [style.height]="height">
             <ng-content></ng-content>
-            <ng-container *ngIf="(expanded && !hasSelectedItem && panelButton?.needsSelection && !multipleItemsSelected && selectedPanel !== 'filters') || showEmptyOverlay">
+            <ng-container *ngIf="(expanded && selectedItem == null && panelButton?.needsSelection && !multipleItemsSelected && selectedPanel !== 'filters') || showEmptyOverlay">
                 <div class="side-panel-empty-overlay">
                     <div class="content">
                         <div class="icon-holder">
@@ -57,7 +57,7 @@
                     </div>
                 </div>
             </ng-container>
-            <ng-container *ngIf="expanded && hasSelectedItem && !panelApplies">
+            <ng-container *ngIf="expanded && selectedItem != null && !panelApplies">
                 <div class="side-panel-empty-overlay">
                     <div class="content">
                         <div class="icon-holder">

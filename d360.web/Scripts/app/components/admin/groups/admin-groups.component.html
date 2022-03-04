@@ -100,7 +100,7 @@
         <div class="tile tile-detail side-panel">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
-                        [hasSelectedItem]="selectedRow ? true : false"
+                        [selectedItem]="selectedRow"
                         [panelApplies]="true"
                         [hasProfiling]="false"
                         hasDetail="true"

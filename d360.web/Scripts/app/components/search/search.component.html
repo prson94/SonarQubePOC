@@ -67,7 +67,7 @@
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [expanded]="sidePanelOpen"
-                        [hasSelectedItem]="selection ? true : false"
+                        [selectedItem]="selection"
                         [panelApplies]="panelApplies"
                         hasProfiling="true"
                         hasDetail="true"
