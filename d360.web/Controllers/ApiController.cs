@@ -4020,15 +4020,6 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = $"{taxonomy.AssetID}", DataType = "string" }
-                            },
-                            Category = Resources.FieldInfo.SystemFieldCategory
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
