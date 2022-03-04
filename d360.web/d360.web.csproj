@@ -592,6 +592,7 @@
     <Compile Include="Filters\SwaggerDescriptionAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
     <Compile Include="Filters\ApplicationExceptionFilterAttribute.cs" />
+    <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
@@ -1105,7 +1106,7 @@
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
-    <Content Include="Scripts\dist\*.js" />
+    <Content Include="Scripts\dist\**\*.js" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
     <Content Include="Content\styles\images\check_black.png" />
@@ -1313,7 +1314,7 @@
     <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Scripts\app\**\*.ts" />
+	<TypeScriptCompile Include="Scripts\app\**\*.ts" />
     <None Include="Scripts\app\**\*.html" />
     <None Include="Scripts\app\**\*.less" />
     <None Include="Scripts\app\**\*.css" />
@@ -1334,7 +1335,9 @@
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
