@@ -21,5 +21,4 @@ export class FieldValueComponent {
     @Input() value: string;
 
     constructor() { }
-
 }
