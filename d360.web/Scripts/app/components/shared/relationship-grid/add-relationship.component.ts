@@ -187,6 +187,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                     let msg = 'Successfully updated';
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     this.savingInProgress = false;
+                    this.currentStep = AddRelationshipStep.SetRelationshipType;
                     this.onAddComplete.emit(null);
                 }
                 else {

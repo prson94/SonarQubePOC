@@ -7,16 +7,19 @@ import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { RelationshipCount, RelationshipType } from '../../../models/relationship.model';
+import { Permission } from '../../../models/responsibility-type.model';
 import { AssetService } from '../../../services/asset.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { PermissionsService, Permissions } from '../../../services/permissions.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
+import { AddRelationshipComponent } from './add-relationship.component';
 
 @Component({
     selector: 'gov-relationship-grid',
@@ -31,6 +34,8 @@ import { BaseComponent } from '../base.component';
 export class RelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy, OnInit {
     @Input() assetUid: string = "";
     @Input() assetTypeUid: string = "";
+
+    assetPermissions: Permissions;
 
     relationshipTypes: RelationshipType[] = [];
     relationshipCounts: RelationshipCount[] = [];
@@ -76,6 +81,10 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     deleteInProgress: boolean = false;
     isExportInProgress: boolean = false;
 
+    loadPageNumberAfterDeletion: number = -1;
+    selectIndexAfterDeletion: number = -1;
+    @ViewChild('addRelationships', { static: false }) addRelationshipComponent: AddRelationshipComponent
+
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
         data.count = this.relationshipTypesResolvedNames.length;
@@ -116,7 +125,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         protected settingsService: CompanySettingsService,
         private gridDefinitionService: GridDefinitionService,
         private linkClickInterceptor: LinkClickInterceptor,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        private permissionService: PermissionsService
     ) {
         super(settingsService);
         this.sidePanelStorageKey = "relationship-detail";
@@ -187,36 +197,57 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.loadTypesSub = forkJoin(
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
             this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
-            this.assetService.getUIDetailsForAssetUID(this.assetUid))
+            this.assetService.getUIDetailsForAssetUID(this.assetUid),
+            this.permissionService.getAssetPermissions(this.assetUid)
+        )
             .subscribe((data) => {
                 this.relationshipTypes = data[0];
                 this.relationshipCounts = data[1];
                 this.assetDetail = data[2];
+                this.assetPermissions = data[3];
 
-                this.relationshipTypesResolvedNames = [];
-                this.relationshipCounts.forEach((rc) => {
-                    var type = this.relationshipTypes.filter((type) => type.Uid.toLocaleLowerCase() === rc.IntersectTypeUid.toLocaleLowerCase());
-                    if (type.length > 0) {
-                        let name: string = "";
-                        if (rc.IsSubject) {
-                            name = type[0].Predicate.Name + " " + type[0].Object.Name;
-                        }
-                        else {
-                            name = type[0].Predicate.Inverse + " " + type[0].Subject.Name;
-                        }
-                        this.relationshipTypesResolvedNames.push(
-                            {
-                                uid: rc.IntersectTypeUid,
-                                name: name,
-                                count: rc.Count,
-                                isSelected: false
-                            });
-                    }
-                });
-                this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
+                this.processCountData();
+
                 this.areTypesLoaded = true;
                 this.cdRef.detectChanges();
             });
+    }
+
+    updateCountData() {
+        this.relationshipService.getRelationshipsCountsForAsset(this.assetUid)
+            .subscribe((data) => {
+                this.relationshipCounts = data;
+                this.processCountData();
+                if (this.addRelationshipComponent) {
+                    //trigger count update in child
+                    this.addRelationshipComponent.initialLoad();
+                }
+                this.cdRef.detectChanges();
+            });
+    }
+
+    processCountData() {
+        this.relationshipTypesResolvedNames = [];
+        this.relationshipCounts.forEach((rc) => {
+            var type = this.relationshipTypes.filter((type) => type.Uid.toLocaleLowerCase() === rc.IntersectTypeUid.toLocaleLowerCase());
+            if (type.length > 0) {
+                let name: string = "";
+                if (rc.IsSubject) {
+                    name = type[0].Predicate.Name + " " + type[0].Object.Name;
+                }
+                else {
+                    name = type[0].Predicate.Inverse + " " + type[0].Subject.Name;
+                }
+                this.relationshipTypesResolvedNames.push(
+                    {
+                        uid: rc.IntersectTypeUid,
+                        name: name,
+                        count: rc.Count,
+                        isSelected: false
+                    });
+            }
+        });
+        this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
     }
 
     loadRelationshipLazy($event) {
@@ -267,11 +298,15 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         if (this.totalRecords > 0) {
             this.relationships = relationships["items"];
 
-            this.relationships.forEach((i) => {
-                i[this.menuKey] = [
-                    { title: 'Edit Relationship' },
-                    { title: 'Delete Relationship' },
-                ];
+            this.relationships.forEach((i, index) => {
+                i["index"] = index;
+                i[this.menuKey] = [];
+                if (this.assetPermissions.EditRelationships || this.assetPermissions.AddRelationships) {
+                    i[this.menuKey].push({ title: 'Edit Relationship' });
+                }
+                if (this.assetPermissions.DeleteRelationships) {
+                    i[this.menuKey].push({ title: 'Delete Relationship' });
+                }
 
                 var type = this.relationshipTypes.filter((rt) => rt.Uid.toLowerCase() === i.RelationshipTypeUid.toLowerCase());
                 if (type.length > 0) {
@@ -284,7 +319,13 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
 
         if (this.relationships.length > 0) {
-            this.selectRow(this.relationships[0]);
+            if (this.selectIndexAfterDeletion !== -1) {
+                this.selectRow(this.relationships[this.selectIndexAfterDeletion]);
+                this.selectIndexAfterDeletion = -1;
+            }
+            else {
+                this.selectRow(this.relationships[0]);
+            }
         }
 
         this.isLoading = false;
@@ -300,6 +341,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         else {
             params._pageNum = 1;
         }
+
+        if (this.loadPageNumberAfterDeletion !== -1) {
+            params._pageNum = this.loadPageNumberAfterDeletion;
+            this.loadPageNumberAfterDeletion = -1;
+        }
+
         params._order = this.sortField;
         params._direction = this.sortOrder;
         params["includeLegacyData"] = true;
@@ -394,16 +441,42 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     saveItem($event) {
         this.showEditor = false;
         this.loadRelationshipLazy(null);
+        this.updateCountData();
     }
 
     onAddComplete($event) {
         this.isAddVisible = false;
         this.loadRelationshipLazy(null);
+        this.updateCountData();
     }
+
 
     delete() {
         this.deleteInProgress = true;
         var item = { uid: this.selectedRelationship.Uid };
+
+        //previous item on the list needs to be selected after relationship deletion
+        var pageOfDeletedItem = (this.dt.first / this.dt.rows) + 1;
+        var indexOfDeletedItem = +this.selectedRelationship["index"];
+
+        if (indexOfDeletedItem !== 0) {
+            //if index is not 0 we should load same page and select previous item
+            this.loadPageNumberAfterDeletion = pageOfDeletedItem;
+            this.selectIndexAfterDeletion = indexOfDeletedItem - 1;
+        }
+
+        if (indexOfDeletedItem === 0) {
+            //if index is 0 we should load previous page and select last item
+            //if page is 1 we should stay on same page and select first item
+            this.loadPageNumberAfterDeletion = pageOfDeletedItem - 1;
+            if (this.loadPageNumberAfterDeletion === 0) {
+                this.loadPageNumberAfterDeletion = 1;
+                this.selectIndexAfterDeletion = 0;
+            }
+            else {
+                this.selectIndexAfterDeletion = this.dt.rows - 1;
+            }
+        }
         this.relationshipService.deleteRelationshipV2(this.selectedRelationship.RelationshipTypeUid, [item])
             .subscribe((res) => {
                 let msg = 'Relationship Successfully deleted';
@@ -411,7 +484,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 this.deleteInProgress = false;
                 this.showDelete = false;
                 this.loadRelationshipLazy(null);
+                this.updateCountData();
             });
+
     }
 
     export() {

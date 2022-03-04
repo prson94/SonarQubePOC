@@ -19,7 +19,8 @@
                                         (onChange)="advancedFiltersChanged($event)">
                     </advanced-filtering>
                     <div class="grid-action-buttons">
-                        <button igButton
+                        <button *ngIf="assetPermissions && assetPermissions.AddRelationships"
+                                igButton
                                 pTooltip="Add Relationships"
                                 tooltipPosition="top"
                                 tooltipStyleClass="ig-tooltip"
@@ -40,7 +41,7 @@
                     </div>
                 </div>
 
-                <p-table *ngIf="assetUid" #dt
+                <p-table *ngIf="assetUid && areTypesLoaded" #dt
                          [metaKeySelection]="true"
                          [value]="relationships"
                          [(selection)]="selectedRelationship"
@@ -88,11 +89,11 @@
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                             </td>
                             <td class="asset-grid-tools">
-                                <div style="display:inline-block" *ngIf="!item.isHierarchy">
+                                <div style="display:inline-block" *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
                                     <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
                                 </div>
-                                <div style="display:inline-block" *ngIf="item.isHierarchy">
+                                <div style="display:inline-block" *ngIf="item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
                                     <i class="fa fa-question-circle" pTooltip="This is a parent-child relationship which can neither be edited/deleted" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
                                 </div>
                             </td>
@@ -105,7 +106,7 @@
                     </ng-template>
                 </p-table>
             </div>
-            <div class="tile tile-detail side-panel">
+            <div *ngIf="areTypesLoaded && relationshipTypesResolvedNames.length !== 0" class="tile tile-detail side-panel">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
                             (selectedPanelChange)="sidePanelTab=$event"
                             [hasSelectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
@@ -169,7 +170,8 @@
                   (closeClick)="showEditor=false"></asset-editor>
 </d3s-modal>
 
-<add-relationship-editor [assetUid]="assetUid"
+<add-relationship-editor #addRelationships
+                         [assetUid]="assetUid"
                          [assetTypeUid]="assetTypeUid"
                          [isVisible]="isAddVisible"
                          (onClose)="isAddVisible=false"
