@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using d360.core;
 using d360.core.queue;
+using Newtonsoft.Json;
 
 namespace d360.extensions
 {
@@ -90,6 +91,7 @@ namespace d360.extensions
         public List<string> Aggregations { get; set; }
         public SearchConnector SearchConnector { get; set; } = SearchConnector.And;
         public bool Explain { get; set; } = false;
+        [JsonIgnore]
         public List<FieldBoost> FieldBoosters { get; set; }
     }
 
@@ -108,25 +110,19 @@ namespace d360.extensions
         public List<int> ResourceOrgIDs { get; set; }
     }
 
-    public class IndexTypeList
+    public class IndexAggregation
     {
 
-        public IndexTypeList()
+        public IndexAggregation()
         {
-            Categories = new List<IndexCategory>();
+            Items = new List<IndexAggregation>();
         }
 
         public string Name { get; set; }
         public string DisplayName { get; set; }
         public int ResultCount { get; set; }
 
-        public List<IndexCategory> Categories { get; set; }
-    }
-
-    public class IndexCategory
-    {
-        public string Name { get; set; }
-        public int ResultCount { get; set; }
+        public List<IndexAggregation> Items { get; set; }
     }
 
     public class IndexResults
@@ -134,11 +130,14 @@ namespace d360.extensions
         public IndexResults()
         {
             Results = new List<IndexResult>();
+            Aggregations = new Dictionary<string, List<IndexAggregation>>();
+            ElapsedMS = new Dictionary<string, int>();
         }
 
         public List<IndexResult> Results { get; set; }
+        public Dictionary<string, List<IndexAggregation>> Aggregations { get; set; }
         public int Matches { get; set; }
-        public int ElapsedMS { get; set; }
+        public Dictionary<string, int> ElapsedMS { get; set; }
     }
 
     public class IndexTag : IEqualityComparer<IndexTag>, IEquatable<IndexTag>
@@ -343,13 +342,13 @@ namespace d360.extensions
         /// <param name="assetUids">IEnumerable of UIDs to remove. UIDs can be Asset UID or Semantic UID.</param>
         void RemoveByUids(int companyID, IEnumerable<Guid> assetUids);
 
-        IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories, QueryLimitation queryLimit);
+        IndexResults GetSearchResultsWithAggregation(int companyID, QueryRequest queryRequest, QueryLimitation queryLimit);
 
-        IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, QueryLimitation queryLimit, int size = 10, string type = "");
+        IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, string phrase, QueryLimitation queryLimit, int size = 10, string type = "");
         
-        IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "");
+        IndexResults GetSearchResults(int companyID, string phrase, int size, int from, QueryLimitation queryLimit, string group = "");
 
-        IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories, bool withTypes = false);
+        IndexResults GetStatusSearch(int companyID, bool withTypes = false);
 
         List<IndexableCount> GetStatusList(int companyID);
 

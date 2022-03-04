@@ -9,7 +9,7 @@ export class SearchPathComponent {
     AssetType: string;
 }
 
-export class SearchSelecton {
+export class SearchSelection {
     ID: string;
     AssetUid: string;
     ObjectType: string;
@@ -62,17 +62,28 @@ export class SearchFullResult extends SearchResult {
     HasProfiling: boolean;
     Scores: AssetScore[];
 }
-export class SearchCategories {
+
+export interface SearchAggregations {
+    category: SearchAggregation[];
+}
+
+export interface SearchAggregation {
     Name: string;
     DisplayName: string;
     ResultCount: number;
-    Categories: any[];
+    Items: SearchAggregation[];
 }
 
-export class SearchResultInfo {
-    ElapsedMS: number;
-    Matches: number;
+export interface SearchTiming {
+    Query: number;
+    Augment: number;
+}
+
+export class SearchResults {
     Results: SearchFullResult[];
+    Aggregations: SearchAggregations;
+    Matches: number;
+    ElapsedMS: SearchTiming;
 }
 
 export class SearchResultFieldDisplay {
@@ -85,10 +96,7 @@ export class SearchResultFieldDisplay {
     Empty: boolean;
 }
 
-export class SearchResultsObject {
-    Categories: SearchCategories[];
-    Result: SearchResultInfo;
-}
+
 
 export class SearchAggregationFilter {
     Field: string;

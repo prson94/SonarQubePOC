@@ -1165,11 +1165,9 @@ namespace d360.extensions.search
                 string fieldname;
                 switch (aggFilter.Field)
                 {
-                    case "d3sCategory":
-                        fieldname = D3S_FIELD_PREFIX + "Category";
-                        break;
-                    case "d3sAssetType":
-                        fieldname = D3S_FIELD_PREFIX + "AssetType";
+                    case "Category":
+                    case "AssetType":
+                        fieldname = D3S_FIELD_PREFIX + aggFilter.Field;
                         break;
                     default:
                         fieldname = DYNAMIC_FIELD_PREFIX + aggFilter.Field;
@@ -1197,7 +1195,7 @@ namespace d360.extensions.search
             return aggFilters;
         }
 
-        public IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories, QueryLimitation queryLimit)
+        public IndexResults GetSearchResultsWithAggregation(int companyID, QueryRequest queryRequest, QueryLimitation queryLimit)
         {
             IndexResults result = new IndexResults();
 
@@ -1298,20 +1296,24 @@ namespace d360.extensions.search
 
             if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
             {
-                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
+                List<IndexAggregation> categories = new List<IndexAggregation>();
+                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexAggregation
                 {
                     Name = h.key,
                     DisplayName = MapCategoryToFriendlyName(h.key),
                     ResultCount = h.doc_count,
-                    Categories = h.category?.buckets.Select(c => new IndexCategory
+                    Items = h.category?.buckets.Select(c => new IndexAggregation
                     {
                         Name = c.key,
+                        DisplayName = c.key,
                         ResultCount = c.doc_count
                     }).OrderBy(x => x.Name).ToList()
                 }).OrderBy(x => x.DisplayName));
+
+                result.Aggregations.Add("category", categories);
             }
 
-            result.ElapsedMS = searchResults.took;
+            result.ElapsedMS.Add("Query", searchResults.took);
 
             if (searchResults.hits != null)
             {
@@ -1324,7 +1326,7 @@ namespace d360.extensions.search
         /**
          * Perform a search that counts total items in index and buckets categories
          */
-        public IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories, bool withTypes = false)
+        public IndexResults GetStatusSearch(int companyID, bool withTypes = false)
         {
             IndexResults result = new IndexResults();
 
@@ -1364,22 +1366,26 @@ namespace d360.extensions.search
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
-            if (searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
+            if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
             {
-                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
+                List<IndexAggregation> categories = new List<IndexAggregation>();
+                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexAggregation
                 {
                     Name = h.key,
                     DisplayName = MapCategoryToFriendlyName(h.key),
                     ResultCount = h.doc_count,
-                    Categories = h.category?.buckets.Select(c => new IndexCategory
+                    Items = h.category?.buckets.Select(c => new IndexAggregation
                     {
                         Name = c.key,
+                        DisplayName = c.key,
                         ResultCount = c.doc_count
                     }).OrderBy(x => x.Name).ToList()
                 }).OrderBy(x => x.DisplayName));
+
+                result.Aggregations.Add("category", categories);
             }
 
-            result.ElapsedMS = searchResults.took;
+            result.ElapsedMS.Add("Query", searchResults.took);
 
             if (searchResults.hits != null)
             {
@@ -1480,16 +1486,15 @@ namespace d360.extensions.search
                 string fieldname;
                 switch (limitAggFilter.Field)
                 {
-                    case "d3sCategory":
-                        fieldname = D3S_FIELD_PREFIX + "Category";
-                        break;
-                    case "d3sAssetType":
-                        fieldname = D3S_FIELD_PREFIX + "AssetType";
+                    case "Category":
+                    case "AssetType":
+                        fieldname = D3S_FIELD_PREFIX + limitAggFilter.Field;
                         break;
                     default:
                         fieldname = DYNAMIC_FIELD_PREFIX + limitAggFilter.Field;
                         break;
                 }
+
                 mustNotQueries.Add(new TermsQuery
                 {
                     Field = new Nest.Field(fieldname),
@@ -1544,7 +1549,7 @@ namespace d360.extensions.search
             return 0;
         }
 
-        public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, QueryLimitation queryLimit, int size = 10, string category = "")
+        public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, string phrase, QueryLimitation queryLimit, int size = 10, string category = "")
         {
             if (string.IsNullOrEmpty(phrase))
             {
@@ -1736,18 +1741,29 @@ namespace d360.extensions.search
         /// Gets the search results from elastic search and converts them to index results
         /// </summary>
         /// <param name="companyID"></param>
-        /// <param name="resourceID"></param>
         /// <param name="phrase"></param>
         /// <returns></returns>
-        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string type = "")
+        public IndexResults GetSearchResults(int companyID, string phrase, int size, int from, QueryLimitation queryLimit, string type = "")
         {
             IndexResults result = new IndexResults();
             CreateIndexIfNotExists(companyID);
 
             Nest.Field fldAssetType = new Nest.Field(D3S_FIELD_PREFIX + "AssetType");
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
+            List<QueryContainer> filterMustQueries = new List<QueryContainer>();
 
             phrase = EscapeSpecialCharacters(phrase);
+
+            if(!string.IsNullOrWhiteSpace(type))
+            {
+                filterMustQueries.Add(
+                    new TermQuery
+                    {
+                        Field = fldAssetType,
+                        Value = type
+                    }
+                );
+            }
 
             SearchRequest sReq = new SearchRequest
             {
@@ -1779,12 +1795,10 @@ namespace d360.extensions.search
                             }
                         }
                     },
-                    Filter = new QueryContainer[] {
-                        new TermQuery{
-                            Field = fldAssetType,
-                            Value = type
-                        }
-                    }
+                    Filter = new QueryContainer[] { new BoolQuery {
+                        Must = filterMustQueries,
+                        MustNot= FiltersFromLimit(queryLimit)
+                    } }
                 },
                 Size = size,
                 From = from,
@@ -1820,7 +1834,7 @@ namespace d360.extensions.search
                 Tags = GetTags(h)
             }).ToList();
 
-            result.ElapsedMS = searchResults.took;
+            result.ElapsedMS.Add("Query", searchResults.took);
 
             if (searchResults.hits != null)
                 result.Matches = searchResults.hits.total;

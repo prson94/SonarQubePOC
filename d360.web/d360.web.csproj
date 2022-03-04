@@ -476,6 +476,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ScoreApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\SearchApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SearchApiMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\SurverysApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -610,7 +615,6 @@
     <Compile Include="Models\FeatureFlagExtensions.cs" />
     <Compile Include="Models\Diagram Models.cs" />
     <Compile Include="Models\FeatureFlagUser.cs" />
-    <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
@@ -1025,6 +1029,11 @@
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>Swagger.designer.cs</LastGenOutput>
     </Content>
+    <EmbeddedResource Include="App_GlobalResources\SearchApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SearchApiMessages.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\WorkflowApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>WorkflowApiMessages.designer.cs</LastGenOutput>
@@ -1314,7 +1323,7 @@
     <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
-	<TypeScriptCompile Include="Scripts\app\**\*.ts" />
+    <TypeScriptCompile Include="Scripts\app\**\*.ts" />
     <None Include="Scripts\app\**\*.html" />
     <None Include="Scripts\app\**\*.less" />
     <None Include="Scripts\app\**\*.css" />
