@@ -111,7 +111,7 @@ namespace d360.web.Controllers.V2
 
                 if(!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 if (!string.IsNullOrEmpty(queryRequest.Term))
@@ -202,7 +202,11 @@ namespace d360.web.Controllers.V2
 
                     if(invalidCategories.Any())
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(SearchApiMessages.CategoryNotAvailable, string.Join(", ", invalidCategories))));
+                        return await Task.FromResult(errorMessageResponse(
+                            HttpStatusCode.BadRequest,
+                            ApiMessages.InvalidRequest,
+                            string.Format(SearchApiMessages.CategoryNotAvailable, string.Join(", ", invalidCategories))
+                        )).ConfigureAwait(false);
                     }
                 }
 

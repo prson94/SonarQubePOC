@@ -63,15 +63,15 @@ export class SearchFullResult extends SearchResult {
     Scores: AssetScore[];
 }
 
-export interface SearchAggregations {
-    category: SearchAggregation[];
-}
-
 export interface SearchAggregation {
     Name: string;
     DisplayName: string;
     ResultCount: number;
     Items: SearchAggregation[];
+}
+
+export interface SearchAggregations {
+    category: SearchAggregation[];
 }
 
 export interface SearchTiming {
