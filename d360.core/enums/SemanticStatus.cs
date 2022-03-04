@@ -9,8 +9,10 @@ namespace d360.core.enums
     {
         [Name("Draft"), Icon("fa-"), Color("")]
         Draft = 0,
+
         [Name("In Review"), Icon("fa-"), Color("")]
         InReview = 1,
+
         [Name("Certified"), Icon("fa-"), Color("")]
         Certified = 2
     }
@@ -18,9 +20,13 @@ namespace d360.core.enums
     public class SemanticStatusInfo
     {
         public SemanticStatus ID { get; set; }
+
         public string Value { get; set; }
+
         public string Name { get; set; }
+
         public string Icon { get; set; }
+
         public string Color { get; set; }
     }
 
