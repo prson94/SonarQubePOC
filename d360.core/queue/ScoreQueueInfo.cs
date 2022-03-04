@@ -1,7 +1,7 @@
-﻿using d360.core.enums;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
+using Newtonsoft.Json;
 
 namespace d360.core.queue
 {
@@ -48,6 +48,7 @@ namespace d360.core.queue
     public class RollupPathChangedModel
     {
         public int? IntersectTypeId { get; set; }
+        
         public int? AssetTypeId { get; set; }
     }
 
