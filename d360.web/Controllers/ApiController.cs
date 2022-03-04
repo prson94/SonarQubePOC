@@ -3464,16 +3464,6 @@ where asset.Object = @type and asset.ObjectId = @id
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
-                            },
-                                Category = Resources.FieldInfo.SystemFieldCategory
-                            });
-
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
@@ -3486,15 +3476,6 @@ where asset.Object = @type and asset.ObjectId = @id
                                 Category = Resources.FieldInfo.SystemFieldCategory
                             });
                         }
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = "ID", FieldName = "PolicyID", FieldDescription = Fields.Type_Description, Value = $"{policy.ObjectID}" }
-                                },
-                            Category = Resources.FieldInfo.SystemFieldCategory
-                        });
                     }
                     policy = null;
                     break;
