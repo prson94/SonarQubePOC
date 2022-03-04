@@ -1,15 +1,11 @@
-﻿using d360.core.entities;
+﻿using System;
+using System.Collections.Generic;
+
 using d360.core.enums;
 using d360.core.enums.Workflow;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.core.queue
 {
-
     public class EventObjectInfo
     {
         public SystemObjects Object { get; set; }
@@ -19,21 +15,21 @@ namespace d360.core.queue
         public SystemObjects ObjectType { get; set; }
 
         public int ObjectTypeID { get; set; }
-        
+
         public List<int> ChangedFieldIds { get; set; } = new List<int>();
 
         public int AssetTypeID { get; set; }
         public ScoreType? ScoreType { get; set; } = null;
     }
 
-    public class EventInfo: IServiceBusMessageType
+    public class EventInfo : IServiceBusMessageType
     {
         public string DomainPrefix { get; set; }
 
         public int CompanyID { get; set; }
 
         public int ResourceID { get; set; }
-                
+
         public ChangeType Action { get; set; }
 
         public EventObjectInfo Object { get; set; }
@@ -50,10 +46,15 @@ namespace d360.core.queue
     public class AssetEventInfo : IServiceBusMessageType
     {
         public int CompanyID { get; set; }
+        
         public AssetEventType Type { get; set; }
+        
         public List<string> ChangedFieldNames { get; set; }
+        
         public Guid Uid { get; set; }
+        
         public ApiExecutionInfo execution { get; set; }
+        
         public int MessageType { get { return (int)Type; } }
     }
 
