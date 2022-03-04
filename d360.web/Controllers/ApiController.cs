@@ -2765,6 +2765,16 @@ where asset.Object = @type and asset.ObjectId = @id
                                     Category = Resources.FieldInfo.SystemFieldCategory
                                 });
                             }
+
+                            if (asset.CreatedBy.HasValue)
+                            {
+                                model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy, FieldInfo.CreatedBy_Name, "John Doe"));
+                            }
+
+                            if (asset.UpdatedBy.HasValue)
+                            {
+                                model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy, FieldInfo.UpdatedBy_Name, "John Doe"));
+                            }
                         }
                     }
                     break;
@@ -3476,6 +3486,16 @@ where asset.Object = @type and asset.ObjectId = @id
                                 Category = Resources.FieldInfo.SystemFieldCategory
                             });
                         }
+
+                        if (asset.CreatedBy.HasValue)
+                        {
+                            model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy, FieldInfo.CreatedBy_Name, "John Doe"));
+                        }
+
+                        if (asset.UpdatedBy.HasValue)
+                        {
+                            model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy, FieldInfo.UpdatedBy_Name, "John Doe"));
+                        }
                     }
                     policy = null;
                     break;
@@ -4147,6 +4167,31 @@ where v.id = {0}", id)).FirstOrDefault();
             }
 
             return model;
+        }
+
+        private static DetailReadOnlyRowModel RowWithUserNameLinkAndLookup(int? resourceId, string fieldName, string fieldValue)
+        {
+            return new DetailReadOnlyRowModel
+            {
+                columns = 1,
+                FirstColumnFields = new List<ReadOnlyField> {
+                    new ReadOnlyField {
+                        Name = fieldName,
+                        FieldName = fieldName,
+                        Value = "values",
+                        Values = new List<ReadOnlyFieldValue>{
+                            new ReadOnlyFieldValue {
+                                Value=fieldValue,
+                                TooltipType="Resource",
+                                TooltipUrl=$"resource/{resourceId}",
+                                HideTooltip = true
+                            }
+                        },
+                        DataType = DataType.Lookup.ToString()
+                    }
+                },
+                Category = FieldInfo.SystemFieldCategory
+            };
         }
 
         private string GetPromotionStatusMessage(LoadDetail load)
