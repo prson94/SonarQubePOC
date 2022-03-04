@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
 
 namespace d360.core.enums
@@ -11,10 +10,13 @@ namespace d360.core.enums
     {
         [Name("Read asset"), Description("Read an asset and its properties."), Category("R")]
         ReadAsset = 1,
+        
         [Name("Create asset"), Description("Add an asset."), Category("A")]
         AddAsset = 2,
+        
         [Name("Remove asset"), Description("Remove an asset."), Category("D")]
         DeleteAsset = 4,
+        
         [Name("Modify asset"), Description("Update an asset's properties."), Category("E")]
         EditAsset = 8,
 
@@ -23,10 +25,13 @@ namespace d360.core.enums
 
         [Name("Read responsibilties"), Description("Read an asset's roles and responsibilities."), Category("R")]
         ReadResponsibilities = 32,
+        
         [Name("Create responsibilties"), Description("Add roles and responsibilities to an asset."), Category("A")]
         AddResponsibilities = 64,
+        
         [Name("Remove responsibilties"), Description("Remove an asset's roles and responsibilities."), Category("D")]
         DeleteResponsibilities = 128,
+        
         [Name("Modify responsibilties"), Description("Modify an asset's roles and responsibilities."), Category("E")]
         EditResponsibilities = 256,
 
@@ -35,10 +40,13 @@ namespace d360.core.enums
 
         [Name("Read relationships"), Description("Read an asset's relationships."), Category("R")]
         ReadRelationships = 1024,
+        
         [Name("Create relationships"), Description("Add relationships to an asset"), Category("A")]
         AddRelationships = 2048,
+        
         [Name("Remove relationships"), Description("Remove an asset's relationships."), Category("D")]
         DeleteRelationships = 4096,
+        
         [Name("Modify relationships"), Description("Modify an asset's relationships."), Category("E")]
         EditRelationships = 8192,
 
@@ -49,10 +57,15 @@ namespace d360.core.enums
     public class PermissionInfo
     {
         public int Value { get; set; }
+        
         public Permission ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Category { get; set; }
+        
         public string Description { get; set; }
+        
         public bool Selected { get; set; } = false;
     }
 
@@ -74,7 +87,7 @@ namespace d360.core.enums
                 };
 
                 //Add and Edit are available, so Modify is no longer in the category list
-                if (new List<string>{ "R", "D", "A", "E" }.Contains(info.Category))
+                if (new List<string> { "R", "D", "A", "E" }.Contains(info.Category))
                 {
                     list.Add(info);
                 }
@@ -86,7 +99,7 @@ namespace d360.core.enums
         public static PermissionInfo GetPermissionInfo(this Permission type)
         {
             MemberInfo[] tm = typeof(Permission).GetMember(type.ToString(), (BindingFlags.Public | BindingFlags.Static));
-            
+
             return new PermissionInfo
             {
                 Value = (int)(Permission)Enum.Parse(typeof(Permission), tm[0].Name),
