@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using d360.core.entities;
+
 using Newtonsoft.Json.Linq;
 
 namespace d360.core
@@ -84,14 +86,14 @@ namespace d360.core
                     properties.Add(new FieldJsonProperty
                     {
                         IsArray = false,
-                        Name = p.Name,                        
+                        Name = p.Name,
                         Path = p.Path,
                         Position = position,
                         Value = p.Value.ToString()
                     });
                 }
             }
-        
+
             return properties;
         }
     }
