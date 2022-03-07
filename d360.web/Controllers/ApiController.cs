@@ -2766,14 +2766,28 @@ where asset.Object = @type and asset.ObjectId = @id
                                 });
                             }
 
-                            if (asset.CreatedBy.HasValue)
+                            var users = Company.Query<GlobalReportingResource>(@"select 
+                                u.resourceid, u.LastName, u.FirstName
+                                from reporting.global_resource u 
+                                where u.resourceid = @createdBy or u.resourceid = @updatedBy
+                                ", 
+                                new { createdBy = asset.CreatedBy, updatedBy = asset.UpdatedBy });
+                            if (users != null)
                             {
-                                model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy, FieldInfo.CreatedBy_Name, "John Doe"));
-                            }
+                                if (asset.CreatedBy.HasValue)
+                                {
+                                    model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy, 
+                                        FieldInfo.CreatedBy_Name, 
+                                        users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)?.FullName));
+                                }
 
-                            if (asset.UpdatedBy.HasValue)
-                            {
-                                model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy, FieldInfo.UpdatedBy_Name, "John Doe"));
+
+                                if (asset.UpdatedBy.HasValue)
+                                {
+                                    model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy, 
+                                        FieldInfo.UpdatedBy_Name,
+                                        users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)?.FullName));
+                                }
                             }
                         }
                     }
@@ -4181,7 +4195,7 @@ where v.id = {0}", id)).FirstOrDefault();
                         Value = "values",
                         Values = new List<ReadOnlyFieldValue>{
                             new ReadOnlyFieldValue {
-                                Value=fieldValue,
+                                Value=fieldValue ?? "",
                                 TooltipType="Resource",
                                 TooltipUrl=$"resource/{resourceId}",
                                 HideTooltip = true
