@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
+
 using d360.core;
+
 using Newtonsoft.Json;
+
 using StackExchange.Redis;
 
 namespace d360.extensions.caching
