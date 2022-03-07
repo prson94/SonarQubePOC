@@ -97,6 +97,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnDestroy() {
+        this.secondaryNavService.resetSecondaryNavActiveItem();
+        
         if (this.sub) {
             this.sub.unsubscribe();
         }
