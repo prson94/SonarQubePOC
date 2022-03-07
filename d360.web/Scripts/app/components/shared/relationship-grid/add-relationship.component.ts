@@ -75,6 +75,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     close() {
         this.isVisible = false;
         this.selectedRelationshipType = null;
+        this.previewAssetUid = this.previewAssetType = "";
         this.onClose.emit();
     }
 
@@ -93,9 +94,10 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                 this.relationshipCounts = data[1];
                 this.assetDetail = data[2];
                 this.relationshipTypesResolvedNames = [];
-                let count: number = 0;
 
                 this.relationshipTypes.forEach((type) => {
+                    type["IsSubject"] = type.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase();
+                    let count: number = 0;
                     var rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
                     let disabledClass = "";
                     let targetCardinality = "";
@@ -104,17 +106,24 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                         count = rc[0].Count;
                     }
                     let name: string = "";
+                    var thisCardinality = "";
+
                     if (type["IsSubject"]) {
                         name = type.Predicate.Name + " " + type.Object.Name;
                         targetCardinality = type.Subject.Cardinality;
+                        thisCardinality = type.Object.Cardinality;
                     }
                     else {
                         name = type.Predicate.Inverse + " " + type.Subject.Name;
                         targetCardinality = type.Object.Cardinality;
+                        thisCardinality = type.Subject.Cardinality;
                     }
 
-                    if (count > 0 && targetCardinality === "One") {
-                        disabledClass = 'disabled-cardinality';
+                    if (count > 0 && targetCardinality === "One" && thisCardinality === "Many") {
+                        disabledClass = 'disabled-cardinality-many';
+                    }
+                    if (count > 0 && targetCardinality === "One" && thisCardinality === "One") {
+                        disabledClass = 'disabled-cardinality-one';
                     }
 
                     if (type.Predicate.Type === "InterTypeHierarchy"
@@ -142,6 +151,11 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 
     get targetTypeUid(): string {
         return this.isSelectedRelationshipSubject ? this.selectedType.Object.Uid : this.selectedType.Subject.Uid;
+    }
+
+    get targetTypeCardinality(): number {
+        var cardinality = this.isSelectedRelationshipSubject ? this.selectedType.Object.Cardinality : this.selectedType.Subject.Cardinality;
+        return cardinality === "One" ? 1 : 2;
     }
 
     get targetType(): string {
@@ -187,6 +201,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                     let msg = 'Successfully updated';
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     this.savingInProgress = false;
+                    this.previewAssetUid = this.previewAssetType = "";
                     this.currentStep = AddRelationshipStep.SetRelationshipType;
                     this.onAddComplete.emit(null);
                 }
@@ -211,6 +226,12 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         this.previewAssetUid = $event.Value;
         if (this.targetType === "BusinessAsset" || this.targetType === "TechnicalAsset") {
             this.previewAssetType = "Artifact";
+        }
+        else if (this.targetType === "Reference") {
+            this.previewAssetType = "ReferenceItem";
+        }
+        else if (this.targetType === "User") {
+            this.previewAssetType = "Resource";
         }
         else {
             this.previewAssetType = this.targetType;

@@ -28,7 +28,6 @@ export class AssetPreviewComponent implements OnChanges, OnDestroy {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        debugger;
         for (let p in changes) {
             if ((p === 'assetUid' || p === 'assetType') && this.assetType && this.assetUid) {
                 this.selectedAsset = { uid: this.assetUid, type: this.assetType };

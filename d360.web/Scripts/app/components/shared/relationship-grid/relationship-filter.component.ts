@@ -44,7 +44,7 @@ export class RelationshipFilterComponent {
         var ev = new AdvancedFilterUpdate();
         ev.source = this.constructor.name;
         ev.fieldName = "relationshiptype";
-        ev.values = this.relationshipTypesResolvedNames.filter((rt) => rt.isSelected).map((m) => m.name);
+        ev.values = this.relationshipTypesResolvedNames.filter((rt) => rt.isSelected);
         this.advFilterService.updateFilter(ev);
     }
 }

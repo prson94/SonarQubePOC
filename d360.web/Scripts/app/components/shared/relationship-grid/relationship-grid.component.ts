@@ -1,5 +1,6 @@
 ﻿import { OnInit, ViewChild } from '@angular/core';
 import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { forEach } from 'lodash';
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subscription } from 'rxjs';
@@ -88,7 +89,10 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
         data.count = this.relationshipTypesResolvedNames.length;
-        data.items = this.relationshipTypesResolvedNames.map((item) => item["name"]);
+        data.items = [];
+        this.relationshipTypesResolvedNames.forEach((item) => {
+            data.items.push({ value: item["uid"], name: item["name"] });
+        })
         return of(data);
     }
     filterFieldList: AdvancedFilterFieldType[] = [
@@ -369,10 +373,11 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         if (!this.advancedFilterData) {
             return null;
         }
+
         var relFilter = this.advancedFilterData.filter(x => x.field === "relationshiptype");
         if (relFilter && relFilter.length !== 0 && relFilter[0]["value"] && relFilter[0]["value"].length === 1) {
             var value = relFilter[0]["value"][0]["value"];
-            var selected = this.relationshipTypesResolvedNames.filter((x) => x["name"].toLowerCase() === value.toLowerCase());
+            var selected = this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === value.toLowerCase());
             return selected[0];
         }
         return null;

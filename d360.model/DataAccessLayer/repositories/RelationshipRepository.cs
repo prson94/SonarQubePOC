@@ -383,10 +383,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                             string ftformatted = companyContext.LookupFieldHasColorItem(ft) ? $@"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name')" : $@"F{ft.ID}.FormattedValue";
                             simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
                         }
-                        else if (ft.Type == DataType.Lookup.ToString() && companyContext.LookupFieldHasColorItem(ft))
-                        {
-                            simpleFilters.Add($"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name') like @simpleFilter");
-                        }
                         else
                         {
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");

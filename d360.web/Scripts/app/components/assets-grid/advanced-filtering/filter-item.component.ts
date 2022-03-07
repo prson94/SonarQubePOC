@@ -106,7 +106,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 if (this.condition.isDefaultFilter === true && this.condition.field.toLowerCase() === data.fieldName.toLowerCase()) {
                     var values = [];
                     data.values.forEach((d) => {
-                        values.push({ title: d, value: d });
+                        values.push({ title: d.name, value: d.uid });
                     });
                     if (values.length === 0) {
                         this.remove();
@@ -637,7 +637,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         let loadedData = [];
 
         res.items.forEach((str) => {
-            loadedData.push({ title: str, value: str });
+            console.log(typeof str);
+            if (typeof str === 'object' && str.value && str.name) {
+                loadedData.push({ title: str.name, value: str.value });
+            }
+            else {
+                loadedData.push({ title: str, value: str });
+            }
         });
 
         Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);

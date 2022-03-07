@@ -43,7 +43,8 @@
                         <td class="flex-grid">
                             <div class="flex-grow"></div>
                             <i *ngIf="item.disabledClass === 'disabled-predicate'" class="fa fa-question-circle" pTooltip="Parent-child relationship type cannot be manually created" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
-                            <i *ngIf="item.disabledClass === 'disabled-cardinality'" class="fa fa-question-circle" pTooltip="Many-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
+                            <i *ngIf="item.disabledClass === 'disabled-cardinality-many'" class="fa fa-question-circle" pTooltip="Many-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
+                            <i *ngIf="item.disabledClass === 'disabled-cardinality-one'" class="fa fa-question-circle" pTooltip="One-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
                             <ig-badge *ngIf="item.count !== 0" [text]="item.count"></ig-badge>
                         </td>
                     </tr>
@@ -77,11 +78,11 @@
             </div>
 
             <d3s-multiselect-grid [(ngModel)]="selectedAssets"
-                                  [multiple]="true"
+                                  [multiple]="targetTypeCardinality === 2"
                                   [intersectTypeUid]="selectedType.Uid"
                                   [assetUid]="assetUid"
                                   [targetAssetTypeUid]="targetTypeUid"
-                                  [objectCardinality]="2"
+                                  [objectCardinality]="targetTypeCardinality"
                                   (onInfoClick)="onInfoClick($event)"></d3s-multiselect-grid>
             <div class="action-bar no-padding">
                 <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetRelationshipType'"></button>
