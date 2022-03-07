@@ -1,12 +1,13 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { NumberOfRowsByCategories } from '../components/assets-grid/asset-grid.component';
+import { NumberOfRowsByCategories, OnPageEvent } from '../components/assets-grid/asset-grid.component';
 import { LocalStorageKey } from '../enums/localstorage.enum';
 import { Breadcrumb } from '../models/breadcrumb.model';
 import { AppConstants } from '../static/constants';
 import { LocalStorageHelper } from '../static/localstorage-helper';
 import { HeaderBreadcrumbService } from './header-breadcrumb.service';
+import { set, get } from "lodash";
 
 @Injectable({
   providedIn: 'root'
@@ -17,19 +18,23 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
 
   constructor(private headerBreadcrumbService: HeaderBreadcrumbService) {}
 
-  defineNumberOfRows(defaultNumberOfRows?: number): void {
-    this.setNumberOfRowsToCategory(defaultNumberOfRows);
+  defineNumberOfRows(defaultNumberOfRows?: number, area?: string): void {
+    this.setNumberOfRowsToCategory(defaultNumberOfRows, area);
     this.headerBreadcrumbService.breadcrumbIsSetToStorage.pipe(
       takeUntil(this.destroy)
     ).subscribe(() => {
-      this.setNumberOfRowsToCategory(defaultNumberOfRows);
+      this.setNumberOfRowsToCategory(defaultNumberOfRows, area);
     });
   }
 
-  saveNumberOfRowsByCategoryToStorage(numberOfRows: number): void {
+  saveNumberOfRowsByCategoryToStorage(numberOfRows: number, area?: string): void {
     let numberOfRowsByCategories: NumberOfRowsByCategories = this.defineNumberOfRowsByCategories();
     let category: string = this.getCategoryFromBreadcrumbs();
-    numberOfRowsByCategories[category] = numberOfRows;
+    if (area) {
+      set(numberOfRowsByCategories, `${category}.${area}`, numberOfRows);
+    } else {
+      numberOfRowsByCategories[category] = numberOfRows;
+    }
     localStorage.setItem(LocalStorageKey.NumberOfRowsByCategories, JSON.stringify(numberOfRowsByCategories));
   }
 
@@ -50,22 +55,26 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
     }
   }
 
-  setNumberOfRowsToCategory(defaultNumberOfRows?: number) {
+  setNumberOfRowsToCategory(defaultNumberOfRows?: number, area?: string) {
     let category: string = this.getCategoryFromBreadcrumbs();
     let isLocalStorageKeyExist: boolean = LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfRowsByCategories);
     if (category && isLocalStorageKeyExist) {
-      this.rowsPerPage.next(this.defineNumberOfRowsByCategory(category));
+      this.rowsPerPage.next(this.defineNumberOfRowsByCategory(category, area));
       console.log("this.rowsPerPage");
-      console.log(this.defineNumberOfRowsByCategory(category));
+      console.log(this.defineNumberOfRowsByCategory(category, area));
     } else {
       this.rowsPerPage.next(defaultNumberOfRows || AppConstants.DEFAULT_ROWS_PER_PAGE);
     }
   }
 
-  defineNumberOfRowsByCategory(category: string): number {
+  defineNumberOfRowsByCategory(category: string, area?: string): number {
     let numberOfRowsByCategories: NumberOfRowsByCategories = this.getNumberOfRowsByCategoriesFromStorage();
     if (numberOfRowsByCategories.hasOwnProperty(category)) {
-      return numberOfRowsByCategories[category];
+      if (area) {
+        return get(numberOfRowsByCategories, [category, area], AppConstants.DEFAULT_ROWS_PER_PAGE);
+      } else {
+        return numberOfRowsByCategories[category];
+      }
     } else {
       return AppConstants.DEFAULT_ROWS_PER_PAGE;
     }
@@ -73,6 +82,10 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
 
   getNumberOfRowsByCategoriesFromStorage(): NumberOfRowsByCategories {
     return JSON.parse(localStorage.getItem(LocalStorageKey.NumberOfRowsByCategories));
+  }
+
+  onPage(event: OnPageEvent, area?: string): void {
+    this.saveNumberOfRowsByCategoryToStorage(event.rows, area);
   }
 
   ngOnDestroy() {
