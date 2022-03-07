@@ -2,10 +2,9 @@ trigger:
   branches:
     include:
     - '*sprint*'
-  batch: True
 pr:
   autoCancel: false
-  drafts: false
+  drafts: true
   branches:
     include:
     - '*sprint*'

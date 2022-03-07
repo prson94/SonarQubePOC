@@ -14,5 +14,6 @@ namespace d360.model.DataAccessLayer
         Task<List<GetSemantic>> PatchSemanticsAsync(List<PatchSemantic> semantics);
         Task<List<GetSemantic>> PostSemanticsAsync(List<PostSemantic> semantics);
         Task<List<GetSemantic>> PutSemanticsAsync(List<PutSemantic> semantics);
+        List<Semantic> GetSemanticsByQualifiers(List<string> qualifiers);
     }
 }

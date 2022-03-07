@@ -1,0 +1,47 @@
+trigger:
+  branches:
+    include:
+    - '*sprint*'
+  paths:
+    include:
+    - /DBUpdateScripts/EnvironmentDb
+  batch: True
+pr:
+  branches:
+    include:
+    - '*sprint*'
+  paths:
+    include:
+    - /DBUpdateScripts/EnvironmentDb
+name: $(SourceBranchName)-$(Date:MM-dd-yyyy)$(Rev:.r)
+resources:
+  repositories:
+  - repository: self
+    type: git
+  - repository: templates
+    type: github
+    name: Infogix/govern-pipeline-templates
+    ref: refs/heads/main
+    endpoint: 'govern-build - Service Endpoint'
+stages:
+- stage: BUILD_NAME
+  displayName: 'Set build name'
+  dependsOn: []
+  jobs:
+  - template: build/jobs/job-build-name.yml@templates
+- stage: PUBLISH_DB_SCRIPTS
+  displayName: 'Publish DB Scripts'
+  dependsOn: []
+  jobs:
+  - job: PUBLISH_DB_SCRIPTS
+    displayName: 'Publish DB Scripts'
+    cancelTimeoutInMinutes: 1
+    pool:
+      vmImage: windows-2019
+    steps:
+    - checkout: self
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: DB-Environment-Scripts'
+      inputs:
+        PathtoPublish: DBUpdateScripts/EnvironmentDb
+        ArtifactName: DB-Environment-Scripts

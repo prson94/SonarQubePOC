@@ -124,6 +124,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>TagErrors.resx</DependentUpon>
     </Compile>
+    <Compile Update="resources\ThemeErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ThemeErrors.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\Types.Designer.cs">
       <DependentUpon>Types.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -225,6 +230,10 @@
     <EmbeddedResource Update="resources\TagErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>TagErrors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\ThemeErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ThemeErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Types.resx">
       <SubType>Designer</SubType>

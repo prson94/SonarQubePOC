@@ -11,7 +11,7 @@ trigger:
     - /igx.jobs.resourcecache
 pr:
   autoCancel: false
-  drafts: false
+  drafts: true
   branches:
     include:
     - '*sprint*'
@@ -30,7 +30,7 @@ resources:
   - repository: templates
     type: github
     name: Infogix/govern-pipeline-templates
-    ref: refs/heads/GOV-16997---Create-Pipeline-templates-YAML
+    ref: refs/heads/main
     endpoint: 'govern-build - Service Endpoint'
 stages:
 - stage: BUILD_NAME
@@ -84,12 +84,14 @@ stages:
         msbuildArguments: /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.Repository.LocalPath)/resourcecache/"
         clean: true
         maximumCpuCount: true
-    - template: build/steps/step-whitesource-blackduck-scan.yml@templates
+    - template: build/steps/step-whitesource-scan.yml@templates
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
+        projectName: 'Resource Cache Layer'      
+    - template: build/steps/step-blackduck-detect.yml@templates
+      parameters:
         blackduckApi: $(blackduckApi)
         artifactName: ResourceCache
-        projectName: 'Resource Cache Layer'
         blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.resourcecache
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Resource Cache'

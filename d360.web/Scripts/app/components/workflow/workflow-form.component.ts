@@ -5,6 +5,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Subscription, SubscriptionLike as ISubscription } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { CompanySettingEnum } from '../../models/settings.model';
+import { AuthenticationService } from '../../services/authentication.service';
 
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -64,6 +66,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private filteredAssetsSub: Subscription;
     private filteredAssets: WorkflowReassignmentAsset[] = [];
     private selectedReassignmentAsset: WorkflowReassignmentAsset;
+    private canViewUsers: boolean = true;
 
     @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent
 
@@ -77,13 +80,15 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         protected workflowService: WorkflowService,
         private route: ActivatedRoute,
         private location: Location,
-        private router: Router
+        private router: Router,
+        private authenticationService: AuthenticationService
     ) {
         super(settingsService);
     }
 
     ngOnInit() {
         this.headerBreadcrumbService.clearCurrentObjectInfo();
+        this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
 
         this.sub = this.route.params.subscribe(params => {
             this.workflowId = +params['workflowId'];
@@ -163,7 +168,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 }
                 if (res.AllowReassignResource) {
                     this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
-                    this.loadResources(); 
+                    if (this.canViewUsers) {
+                        this.loadResources();
+                    }
                 }
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
             }),map(() => {

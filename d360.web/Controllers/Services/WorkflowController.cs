@@ -2158,6 +2158,15 @@ order by wi.StartedOn desc";
                     {
                         settings.HTTPRequest.Url = FormatWorkflowProperty(settings.HTTPRequest.Url.ToString(), fieldTypes);
                     }
+                    if (settings.HTTPRequest.Headers != null)
+                    {
+                        dynamic headers = new JArray(settings.HTTPRequest.Headers);
+                        foreach (var header in headers)
+                        {
+                            header.value = FormatWorkflowProperty(header?.value?.ToString() ?? "", fieldTypes);
+                        }
+                        settings.HTTPRequest.Headers = headers;
+                    }
                 }
 
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
@@ -2191,6 +2200,15 @@ order by wi.StartedOn desc";
                     if (settings.HTTPRequest.Url != null)
                     {
                         settings.HTTPRequest.Url = DeFormatWorkflowProperty(settings.HTTPRequest.Url.ToString(), fieldTypes);
+                    }
+                    if (settings.HTTPRequest.Headers != null)
+                    {
+                        dynamic headers = new JArray(settings.HTTPRequest.Headers);
+                        foreach (var header in headers)
+                        {
+                            header.value = DeFormatWorkflowProperty(header?.value?.ToString() ?? "", fieldTypes);
+                        }
+                        settings.HTTPRequest.Headers = headers;
                     }
                 }
 

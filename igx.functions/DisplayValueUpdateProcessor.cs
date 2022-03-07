@@ -33,7 +33,7 @@ namespace igx.functions.consumption
             try
             {
                 var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
-                var community = JobDbContextCreator.CreateCommunityContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true, CoreFunction.GetConnectionString("CommunityContext"));
+                var company = JobDbContextCreator.CreateCompanyContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true, connectionString: CoreFunction.GetConnectionString("CommunityContext"));
 
                 using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, CoreFunction.GetConnectionString("CommunityContext")))
                 {
@@ -67,7 +67,7 @@ namespace igx.functions.consumption
                         }
                         finally
                         {
-                            await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                            await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
                         }
                     }
                 }

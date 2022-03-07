@@ -115,7 +115,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
             );
     }
 
-    getFolderTitle(menuID: string) {
+    getFolderTitle(menuID: string): Promise<string> {
         let folderName = menuID;
         let promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {

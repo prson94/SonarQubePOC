@@ -207,12 +207,6 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             this.isLoading = false;
         }
 
-        //this.measureHasThreshold = (this.model.Threshold && this.model.Threshold !== undefined && this.model.Threshold > 0);
-        //if (this.measureHasThreshold) {
-        //    this.displayThreshold = this.model.Threshold * 100;
-        //}
-
-
         if (this.model.Weight) {
             this.displayWeight = Math.round(this.model.Weight * 100);
         }
@@ -224,16 +218,14 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     onGroupChange(event: boolean) {
         if (this.metricForm) {
             if (this.model.IsGroup) {
-                this.metricForm.removeControl("ruleResultPath");
-                this.metricForm.removeControl("ruleResultOperation");
-                this.metricForm.removeControl("ruleResultMatchType");
-                this.metricForm.removeControl("matchType");
+                this.metricForm.controls["threshold"].clearValidators();
+                this.metricForm.controls["ruleResultPath"].clearValidators();
+                this.metricForm.controls["ruleResultOperation"].clearValidators();
                 this.conditionGroups = [];
             } else {
-                this.metricForm.addControl("ruleResultPath", new FormControl('', [Validators.required]));
-                this.metricForm.addControl("ruleResultOperation", new FormControl('', [Validators.required]));
-                this.metricForm.addControl("ruleResultMatchType", new FormControl(''));
-                this.metricForm.addControl("matchType", new FormControl(''));
+                this.metricForm.controls["threshold"].setValidators([this.isValidThreshold()]);
+                this.metricForm.controls["ruleResultPath"].setValidators([Validators.required]);
+                this.metricForm.controls["ruleResultOperation"].setValidators([Validators.required]);
                 this.loadConditions();
             }
         }
@@ -242,6 +234,15 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     }
 
     onThresholdChange(event: boolean) {
+        if (this.metricForm) {
+            if (event) {
+                this.metricForm.controls["threshold"].setValidators([this.isValidThreshold()]);
+            }
+            else {
+                this.metricForm.controls["threshold"].clearValidators();
+                this.metricForm.controls["threshold"].reset();
+            }
+        }
         this.metricForm.updateValueAndValidity();
         this.cdRef.markForCheck();
     }

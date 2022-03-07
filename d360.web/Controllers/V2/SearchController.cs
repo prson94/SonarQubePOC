@@ -37,11 +37,13 @@ namespace d360.web.Controllers.V2
     {
         private readonly ISearchSource SearchSource;
         private readonly IAssetRepository AssetRepository;
+        private readonly ISemanticsRepository SemanticsRepository;
 
-        public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository repository) : base(set)
+        public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository) : base(set)
         {
             SearchSource = searchSource;
-            AssetRepository = repository;
+            AssetRepository = assetRepository;
+            SemanticsRepository = semanticsRepository;
         }
 
         /// <summary>
@@ -196,6 +198,12 @@ namespace d360.web.Controllers.V2
         {
             List<string> visibleCategories = assetTypeClasses.Where(c => Company.AssetTypes.Any(at => at.Class == c)).Select(c => c.ToString()).ToList();
 
+            
+            if(Company.Semantics.Any()) // && GOV-16718 feature flag
+            {
+                visibleCategories.Add(AssetTypeClass.SemanticType.ToString());
+            }
+
             //We have Grammatic Types if we have Nyms or any intersects with predicate type 6
             if (Company.Nyms.Any())
             {
@@ -253,6 +261,10 @@ namespace d360.web.Controllers.V2
             types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
 
             List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
+
+            //if ( GOV-16718 feature flag) {
+            classes.Add(new IndexableType { Name = AssetTypeClass.SemanticType.ToString(), Class = (int)AssetTypeClass.SemanticType, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.SemanticType.ToString() });
+            //}
 
             //Overload "Predicate" class as a representation for synonyms
             classes.Add(new IndexableType { Name = "Synonym", Class = (int)AssetTypeClass.Predicate, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.Predicate.ToString() });
@@ -369,7 +381,8 @@ namespace d360.web.Controllers.V2
             { "Model", "#Models" },
             { "Reference", "#Reference" },
             { "Rule", "#Data Quality" },
-            { "Policy", "#Policy" }
+            { "Policy", "#Policy" },
+            { "Semantic Type", "#SemanticTypes" }
         };
 
         private async Task AppendIcons(IEnumerable<TypeaheadResult> results)
@@ -611,6 +624,60 @@ namespace d360.web.Controllers.V2
                 }
 
                 result.Scores = searchScores.Where(s => s.AssetUid == result.Uid).ToList();
+            }
+
+            List<string> qualifiers = results.Where(r => r.Group == "Semantic Type").Select(r => r.ID.Substring(r.ID.IndexOf("|") + 1)).ToList();
+            List<Semantic> semantics = SemanticsRepository.GetSemanticsByQualifiers(qualifiers);
+
+            if (semantics.Any())
+            {
+                foreach (var result in results.Where(r => r.Group == "Semantic Type"))
+                {
+                    result.Object = "Semantic Type";
+
+                    var semantic = semantics.Find(s => s.Uid == result.Uid);
+                    if (semantic != null)
+                    {
+                        result.AssetPath = new List<PathComponent> { new PathComponent {
+                            AssetType = null,
+                            Key = new string[] { semantic.Name }
+                        }};
+
+                        result.Status = semantic.Status.ToString();
+                        result.Fields = new List<IndexFieldDisplay>
+                        {
+                            new IndexFieldDisplay
+                            {
+                                Name = "Qualifier",
+                                Label = "Qualifier",
+                                Type = "Text",
+                                Value = semantic.Qualifier
+                            },
+                            new IndexFieldDisplay
+                            {
+                                Name = "Threshold",
+                                Label = "Threshold",
+                                Type = "Number",
+                                Value = semantic.Threshold.ToString(),
+                                Suffix = "%"
+                            },
+                            new IndexFieldDisplay
+                            {
+                                Name = "Priority",
+                                Label = "Priority",
+                                Type = "Text",
+                                Value = semantic.Priority.ToString()
+                            },
+                            new IndexFieldDisplay
+                            {
+                                Name = "BaseType",
+                                Label = "Base Type",
+                                Type = "Text",
+                                Value = semantic.BaseType.ToString()
+                            }
+                        };
+                    }
+                }
             }
         }
         #endregion

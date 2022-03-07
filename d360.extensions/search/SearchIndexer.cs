@@ -45,6 +45,7 @@ namespace d360.extensions.search
                 AssetTypeClass.ReferenceItemType.ToString(),
                 AssetTypeClass.User.ToString(),
                 AssetTypeClass.Group.ToString(),
+                AssetTypeClass.SemanticType.ToString(),
                 "Reference",
                 "Intersect",
                 "Synonym",
@@ -156,6 +157,11 @@ namespace d360.extensions.search
             INNER JOIN Asset a ON t.AssetUid = a.uid
             INNER JOIN AssetType at on a.AssetTypeID = at.ID;
 
+            UPDATE t
+            SET t.Class = {(int)AssetTypeClass.SemanticType}
+            FROM {batchTableName} t
+            INNER JOIN Semantic s ON t.AssetUid = s.uid;
+
             CREATE NONCLUSTERED INDEX IX_searcindexbatch_{batchUid} ON {batchTableName} (AssetID);
             ");
 
@@ -191,6 +197,16 @@ namespace d360.extensions.search
                 _source.AddToIndex(models);
             }
         }
+
+        public void RemoveAssets(ConcurrentBag<Guid> AssetGuids)
+        {
+            if (AssetGuids.Count == 0)
+            {
+                return;
+            }
+            _source.RemoveByUids(_companyID, AssetGuids);
+        }
+
 
         public void IndexAssetType(Guid AssetTypeUid, bool clearIndex = true)
         {
@@ -248,6 +264,20 @@ namespace d360.extensions.search
                 int assettypeclass = (int)assetClass;
 
                 long assetCount = CreatePendingDBLog(assetClass, null);
+
+                //Use count of assets in class to determine if the class contains a large number of assets
+                //and indexing by asset type is more performant. Only larger asset classes.
+                if( new List<AssetTypeClass> {
+                        AssetTypeClass.BusinessAsset,
+                        AssetTypeClass.TechnicalAsset,
+                        AssetTypeClass.Diagram,
+                        AssetTypeClass.Model,
+                        AssetTypeClass.Policy,
+                        AssetTypeClass.Rule
+                    }.Contains(assetClass))
+                {
+                    processByAssetType = assetCount > _indexClassAsTypesLimit;
+                }
 
                 if (processByAssetType)
                 {
@@ -402,6 +432,14 @@ namespace d360.extensions.search
                         from [dbo].[nym]
                     ) A", param);
             }
+            else if (assetClass == AssetTypeClass.SemanticType)
+            {
+                _context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
+                    SELECT @assetClass, @assetTypeUid, @status, sum(cnt) from (
+                        select count(distinct Qualifier) as cnt
+                        from [dbo].[semantic]
+                    ) A", param);
+            }
             else
             {
                 _context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
@@ -488,6 +526,11 @@ namespace d360.extensions.search
             if(assetClass == null && AssetUid.HasValue)
             {
                 assetClass = _context.QueryFirstOrDefault<AssetTypeClass>("SELECT [Class] FROM AssetType att INNER JOIN Asset a on att.ID = a.AssetTypeID WHERE a.uid = @AssetUid", new { AssetUid });
+
+                if(assetClass == AssetTypeClass.Generic)
+                {
+                    assetClass = _context.QueryFirstOrDefault<AssetTypeClass>($"SELECT {(int)AssetTypeClass.SemanticType} FROM Semantic WHERE uid = @AssetUid", new { AssetUid });
+                }
             } else if(assetClass == null && AssetTypeUid.HasValue)
             {
                 assetClass = _context.QueryFirstOrDefault<AssetTypeClass>("SELECT [Class] FROM AssetType att WHERE att.uid = @AssetTypeUid", new { AssetTypeUid });
@@ -728,6 +771,58 @@ namespace d360.extensions.search
                         };
                     };
                     break;
+                case AssetTypeClass.SemanticType:
+                    /* if(!GOV-16718 feature flag) {
+                        //If the Semantics feature is not enabled, return an empty list of models to index
+                        return new List<IndexObjectModel>();
+                    }*/
+
+                    if (AssetUid.HasValue && AssetUid != Guid.Empty)
+                    {
+                        where.Add("s.uid = @assetuid");
+                        parameters.Add("assetuid", AssetUid);
+                    } else if (!string.IsNullOrEmpty(batchTable))
+                    {
+                        joinBatchTable = $"inner join {batchTable} bt on bt.uid = s.uid and bt.class = {(int)AssetTypeClass.SemanticType}";
+                    }
+
+                    whereCondition = string.Join(" ", where.Select(w => " and " + w).ToArray());
+
+                    sql = $@"select
+                        Qualifier,
+                        Name,
+                        Description,
+                        Uid
+                    from (
+                        select ROW_NUMBER() OVER (PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum,
+                            Qualifier,
+                            Name,
+                            Description,
+                            uid
+                        from Semantic
+                    ) S
+                    {joinBatchTable}
+                    where S.RowNum = 1 {whereCondition}";
+                    shaper = (dynamic o) =>
+                    {
+                        return new IndexObjectModel
+                        {
+                            Category = GetCategoryFromClass(assetClass),
+                            CompanyID = companyID,
+                            AssetType = "Semantic Type",
+                            ItemUniqueID = o.Qualifier,
+                            RelativeUrl = $"semantics/{o.Uid.ToString().ToLower()}",
+                            Uid = o.Uid,
+                            Fields = new Dictionary<string, string>() {
+                                { "Name", o.Name },
+                                { "Description", o.Description },
+                                { "Qualifier", o.Qualifier},
+                            }
+                        };
+                    };
+                    break;
+                case AssetTypeClass.Generic:
+                    throw new Exception("AssetClass is generic and cannot be indexed");
                 default:
                     break;
             }

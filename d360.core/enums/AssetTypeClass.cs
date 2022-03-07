@@ -86,14 +86,14 @@ namespace d360.core.enums
         ]
         Predicate = 17,
         [
-            Name("Glossary-Obsolete"),
-            Obsolete("Use BusinessAsset instead", false),
-            Description("Obsolete - do not use.")
+            Name("SemanticType"),
+            Description("Semantic Type.")
         ]
         SemanticType = 18,
         [
-            Name("SemanticType"),
-            Description("Semantic Type.")
+            Name("Glossary-Obsolete"),
+            Obsolete("Use BusinessAsset instead", false),
+            Description("Obsolete - do not use.")
         ]
         Glossary = 100,
     }

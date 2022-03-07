@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.utils.company;
 using Dapper;
-using d360.extensions.info;
-using d360.extensions.caching;
-using d360.extensions.queue;
 using d360.model;
 using d360.core.enums;
 using System.Collections.Generic;
@@ -20,7 +17,7 @@ namespace igx.jobs.assetgraphprocessor
 #if DEBUG
         const string timerSettings = "*/2 * * * * *";
 #else        
-        const string timerSettings = "0 0 0 * * 6";
+        const string timerSettings = "0 0 5 * * SAT";  // 5AM UTC Saturday
 #endif
 
         public static async Task RunSyncTables([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
@@ -41,24 +38,11 @@ namespace igx.jobs.assetgraphprocessor
                     CoreFunction.AITrackEvent(functionName, "Graph Rebuild", new Dictionary<string, string>() { { "PopulatePaths", populatePaths.ToString() } }, company.CompanyID);
                     CoreFunction.AIFlush();
 
-                    #region Create EF connection
+                    var companyContext = JobDbContextCreator.CreateCompanyContext(company.CompanyID, 0, company.UrlPrefix, true);
 
-                    var sec = new UriSecurityContextProvider()
-                    {
-                        CompanyID = company.CompanyID,
-                        ResourceID = 0,
-                        CompanyPrefix = company.UrlPrefix,
-                        IsAdministrator = true
-                    };
-                    var cache = new DummyCachingProvider();
-                    var queue = new AzureQueueSource();
-                    var community = new CommunityContext(cache, queue, sec);
-
-                    #endregion
-
-                    var rs = await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
+                    var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)
-                    { 
+                    {
                         var conn = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, company.Server, company.Username, company.Password);
 
                         using (conn)
@@ -74,14 +58,14 @@ namespace igx.jobs.assetgraphprocessor
                             {
                                 CoreFunction.AITrackException(functionName, ex, company.CompanyID);
                             }
-                            finally 
+                            finally
                             {
-                                await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
+                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
                             }
                         }
                     }
-                    
-                    community.Dispose();
+
+                    companyContext.Dispose();
                 }
                 catch (Exception ex)
                 {

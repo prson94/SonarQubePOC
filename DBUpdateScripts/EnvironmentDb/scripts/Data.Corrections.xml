@@ -1177,20 +1177,6 @@ delete Comment where CommentType not in (1,2,5);
 ]]>
 		</sql>
 	</changeSet>
-	<changeSet author="bquinlivan" id="Data.Corrections.GOV-13585">
-			<sql dbms="mssql" splitStatements="false" stripComments="false">
-	<![CDATA[
-			UPDATE G
-				set G.[Uid] = A.Uid
-			from 
-				[Group] G
-				Inner Join Asset A on A.SourceID = G.ID and A.Object = 'Group'
-			Where 
-				G.[Uid] is null		
-	]]>
-		</sql>
-	</changeSet>
-
 	<changeSet author="Pappas" id="Data.Corrections.GOV-14463">
 			<sql dbms="mssql" splitStatements="false" stripComments="false">
 	<![CDATA[
@@ -1412,6 +1398,15 @@ SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
 						on IT.PredicateID = P.ID 
 							and (P.[Type] in (3 /*Inter-type Hierarchy*/, 4/*Intra-type Hierarchy*/))
 							and (IT.SubjectCardinality <> 1 or IT.ObjectCardinality <> 2)
+			]]>
+		</sql>
+	</changeSet>
+	<changeSet author="TKlok" id="Data.Corrections.GOV-16661">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+			<comment>Queue Elasticsearch index of Semantics, delayed 1 hour to allow for code deployment.</comment>
+			<![CDATA[
+			INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+			SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'SemanticType', 0;
 			]]>
 		</sql>
 	</changeSet>

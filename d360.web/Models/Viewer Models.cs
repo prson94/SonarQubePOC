@@ -420,4 +420,13 @@ namespace d360.web.Models
 
         public string AccessToken { get; set; }
     }
+
+    public class ObjectDetailsSimplified
+    {
+        public int AssetTypeID { get; set; }
+
+        public string Type { get; set; }
+
+        public int TypeID { get; set; }
+    }
 }

@@ -613,15 +613,29 @@ where	ExecutionID = @executionID
                                       and F.Value = ''", new { executionUid, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-        private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600, bool isInsert = false)
+        private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, AssetType at, int timeout = 3600, bool isInsert = false)
         {
+            string jointablesql = " ";
+            string DisplayValuesql;
+
+            if (at.Class == AssetTypeClass.Reference)
+            {
+                jointablesql = $@" left join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' ";
+                DisplayValuesql = $@" cross apply GetAssetDisplayValueByObjectID(@AssetTypeID,A.Object,A.ObjectID,C.FieldValue) ADV ";
+            }
+            else
+            {
+                DisplayValuesql = $@" cross apply GetAssetDisplayValueByObjectID(@AssetTypeID,A.Object,A.ObjectID,Null) ADV ";
+            }
+
             var fieldsSelectSql = $@"
                 select  A.AssetID as ID,
                             ADV.DisplayValue,
                             CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
                             SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
                     from    api.ExecutionAsset A
-                            cross apply GetAssetDisplayValueByID(A.AssetID) ADV
+                            {jointablesql}
+                            {DisplayValuesql}
                     where   A.ExecutionID = @executionID
                             and A.ItemNumber between @beginItemNumber and @endItemNumber 
                             and A.Success is null 
@@ -634,7 +648,7 @@ where	ExecutionID = @executionID
                     insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash,DisplayValuePrefix) 
                         {fieldsSelectSql}
                 ",
-                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
             }
             else
             {
@@ -653,7 +667,7 @@ where	ExecutionID = @executionID
     when		not matched by target then
     insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
     values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
-                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
             }
         }
 
@@ -665,8 +679,8 @@ where	ExecutionID = @executionID
                             CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
                             SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
                     from    api.ExecutionGroup EG
-                            inner join [Group] G on G.uid = EG.GroupUid
-                            inner join Asset A on A.Object = 'Group' and A.ObjectID = G.Id
+                            inner join Asset A on A.Object = 'Group' and A.uid = EG.GroupUid
+                            inner join [Group] G on G.id = A.ObjectID
                             cross apply GetAssetDisplayValueByID(A.ID) ADV
                     where   EG.ExecutionID = @executionID
                             and EG.ItemNumber between @beginItemNumber and @endItemNumber 
@@ -922,8 +936,8 @@ where	ExecutionID = @executionID
                             from api.executiongroup ea
                         inner join FieldType ft on ft.Object = 'GroupType' and ft.ObjectID = 1 and ft.Type = @dataType
                         inner join api.execution ex on ex.executionid = @executionid
-						inner join [group] g on g.uid = ea.groupuid
-						inner join [asset] a on a.Object = 'Group' and a.ObjectId = g.Id
+                        inner join [asset] a on a.Object = 'Group' and a.uid = ea.groupuid
+						inner join [group] g on g.id = a.objectid						
                         left join api.ExecutionField ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
                         left join dbo.FieldCounterValue FCV on FCV.AssetId = a.id and FCV.FieldTypeId = ft.id
                         where ea.ExecutionID = @executionID 
@@ -5028,21 +5042,29 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
 CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
+drop table if exists #tempAssetData;
+
+select  A.ItemNumber,
+        CR.LookupValue as Color,
+        isnull(A.Uid,newid()) Uid
+into    #tempAssetData
+from    api.ExecutionAsset A
+        left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+where   A.ExecutionID = @ExecutionID
+        and A.Success is null
+        and A.ItemNumber between @beginItemNumber and @endItemNumber
+
 merge   [Asset] as T
 using   (
         select  A.ItemNumber,
-                CR.LookupValue as Color,
+                A.Color,
                 A.Uid
-        from    api.ExecutionAsset A
-                left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
-        where   A.ExecutionID = @ExecutionID
-                and A.Success is null
-                and A.ItemNumber between @beginItemNumber and @endItemNumber
+        from    #tempAssetData A
         ) S
 on      1 = 0
 when    not matched then
 insert  (Uid,AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-values  (isnull(S.Uid,newid()),@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
+values  (S.Uid,@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
 output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
 
@@ -5155,6 +5177,7 @@ where	{executionAssetWhereSql};",
                                         parentIntersectGuids = Connection.Query<Guid>(@"
 drop table if exists #ParentChildRelationships;
 create table #ParentChildRelationships([operation] varchar(10), [uid] uniqueidentifier, ItemNumber int);
+create index idx_parentchildrelationships on #ParentChildRelationships([uid]);
 
 -- Log the parent removals into Dependent Change table
 insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
@@ -5172,18 +5195,24 @@ insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, Dependent
             and EA.ObjectID is not null 
 		    and EA.ParentObjectID <> I.SubjectID;
 
+drop table if exists #tempintersectdata;
+	
+select  t.* 
+into #tempintersectdata 
+from    api.ExecutionAsset t
+where   ExecutionID = @ExecutionID 
+        and Success is null 
+        and ItemNumber between @beginItemNumber and @endItemNumber
+        and IntersectTypeID is not null
+        and ParentObject is not null 
+        and ParentObjectID is not null 
+        and Object is not null 
+        and ObjectID is not null;
+
 merge       [Intersect] as T
 using		(
 			select  * 
-            from    api.ExecutionAsset 
-            where   ExecutionID = @ExecutionID 
-                    and Success is null 
-                    and ItemNumber between @beginItemNumber and @endItemNumber
-                    and IntersectTypeID is not null
-                    and ParentObject is not null 
-                    and ParentObjectID is not null 
-                    and Object is not null 
-                    and ObjectID is not null 
+            from    #tempintersectdata 
             ) as S
 on          ( T.IntersectTypeID = S.IntersectTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID )
 when matched and (T.Subject <> S.ParentObject or T.SubjectID <> S.ParentObjectID) then
@@ -5305,7 +5334,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     // Must execute BEFORE the Success flag is updated below.
                                     sw.Restart();
-                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout, isInsert);
+                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, at, timeout, isInsert);
                                     AddMeasurement(metrics, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 
                                     //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
@@ -10991,7 +11020,8 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
 				G.IsActiveDirectoryGroup as OldIsActiveDirectoryGroup,
 				eg.IsActiveDirectoryGroup as NewIsActiveDirectoryGroup
 				 from api.ExecutionGroup eg
-				inner join [Group] G on G.uid = eg.groupuid
+                inner join Asset AG on AG.uid = eg.GroupUid and AG.[Object] = 'Group'
+				inner join [Group] G on G.ID = AG.ObjectID
 				where EG.ExecutionID = @ExecutionID
 				and EG.ItemNumber between @beginItemNumber and @endItemNumber
                 and EG.Success is null)
@@ -11004,14 +11034,15 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
             union
 			select EF.ItemNumber, ef.FieldName, f.FormattedValue as OldValue, ef.FieldValue as NewValue from api.ExecutionField ef 
 			inner join api.executiongroup eg on eg.executionid = ef.executionid and eg.itemnumber = ef.itemnumber
-			left join [Group] G on G.uid = eg.groupuid
+            left join [Asset] AGR on AGR.uid = eg.GroupUid and AGR.[Object] = 'Group'
+			left join [Group] G on G.ID = AGR.ObjectID
 			left join [Field] F on F.ObjectType = 'Group' and F.ObjectID = G.ID and f.FieldTypeID = ef.FieldTypeID
 			where ef.ExecutionID = @executionid and isnull(ef.FieldValue,'') <> isnull(f.FormattedValue,'') and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.Success is null;
 
                                             
             merge into [Group] G
             using ( 
-select A.ObjectID as GroupID ,
+select AG.ObjectID as GroupID ,
 EG.Name,EG.Description,
 EG.ExecutionItemUid,
 EG.IsActiveDirectoryGroup,
@@ -11019,7 +11050,7 @@ PO.ObjectID as PrimaryID,
 SO.ObjectID as SecondaryID,
 EG.GroupUid
 	                from api.ExecutionGroup EG
-					left join Asset A on A.uid = EG.GroupUid and A.Object = 'Group'
+					left join Asset AG on AG.uid = EG.GroupUid and AG.Object = 'Group'
 					left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
 					left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
 		            where EG.ExecutionID = @ExecutionID
@@ -11037,8 +11068,8 @@ EG.GroupUid
                     G.UpdatedOn = GETUTCDATE(),
                     G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                 when not matched then
-	                insert ([Uid], Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
-	                values (ISNULL(S.GroupUid, NEWID()), TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
+	                insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
+	                values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
 	            output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
 
@@ -11103,11 +11134,11 @@ EG.GroupUid
                 END
 
                 update EG
-                set EG.GroupUid = A.uid
+                set EG.GroupUid = AG.uid
                 from api.ExecutionGroup EG
                 inner join #mergeResultTable Res on Res.ExecutionItemUid = EG.ExecutionItemUid
 				inner join [Group] G on G.Name = Res.GroupName
-		        inner join Asset A on A.ObjectID = G.ID and A.Object ='Group'
+		        inner join Asset AG on AG.ObjectID = G.ID and AG.[Object] ='Group'
                 where EG.ExecutionID = @ExecutionID and EG.Success is null
 
 			    declare @audit table (auditId int)
@@ -11117,13 +11148,15 @@ EG.GroupUid
 			    select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Updated', 'Group', g.ID, 'Group', G.Name,'Group updated' 
                 from #auditRecords ar
                 inner join api.ExecutionGroup EF on EF.ExecutionID = @executionID and EF.ItemNumber = ar.ItemNumber
-			    inner join [Group] G on G.uid = ef.groupuid
+                inner join [Asset] AG on AG.uid = ef.GroupUid and AG.[Object] = 'Group'
+			    inner join [Group] G on G.ID = AG.ObjectID
 
 			    insert into reporting.global_fieldaudit
 			    select a.auditid,0, ar.fieldname, 1, ar.newvalue, ar.oldvalue from @audit a
 			    inner join reporting.Global_Audit ga on ga.id = a.auditid
 			    inner join [Group] G on G.Id = ga.ObjectId
-                inner join api.ExecutionGroup EF on EF.ExecutionID = @executionID and G.Uid = EF.GroupUid
+                inner join [Asset] AG on AG.Object = 'Group' and AG.ObjectID = g.ID
+                inner join api.ExecutionGroup EF on EF.ExecutionID = @executionID and AG.uid = EF.GroupUid
 			    inner join #auditRecords ar on ar.ItemNumber = EF.ItemNumber
 			    where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')";
 
@@ -11152,8 +11185,8 @@ EG.GroupUid
                                         ,@resourceId as [UpdatedBy]
                                         ,A.Id as [AssetID]                                        
                                 from    api.ExecutionGroup EG
-										inner join [Group] G on g.uid = eg.GroupUid
-										inner join Asset A on a.Object = 'Group' and a.objectid = g.id
+                                        inner join Asset A on A.uid = eg.GroupUid and A.[Object] = 'Group'
+										inner join [Group] G on g.ID = A.ObjectID
                                         inner join api.executionfield F on F.ExecutionID = EG.ExecutionID
                                             and F.ItemNumber = EG.ItemNumber 
                                             and A.ObjectID is not null 
@@ -11183,8 +11216,8 @@ EG.GroupUid
                     DELETE Field
                     FROM Field F
                         inner join api.ExecutionGroup EG on EG.ExecutionID = @executionID 
-						inner join [Group] G on g.uid = eg.GroupUid
-						inner join Asset A on a.Object = 'Group' and a.objectid = g.id
+						inner join Asset A on A.uid = eg.GroupUid and A.[Object] = 'Group'
+                        inner join [Group] G on G.ID = A.ObjectID
                     	inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = EG.ExecutionId and EF.ItemNumber = EG.ItemNumber
                     WHERE EF.ItemNumber between @beginItemNumber and @endItemNumber
                      and EF.Ignore is null
@@ -11400,13 +11433,14 @@ new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = Curren
 			                                        SUBSTRING(G.Name,1,250), 
 			                                        'This group has been removed.'
 	                                        from [api].[ExecutionDeletedGroup] EDG
-                                            inner join [Group] G on G.Uid = EDG.GroupUid
+                                            inner join [Asset] A on A.Uid = EDG.GroupUid and A.[Object] = 'Group'
+                                            inner join [Group] G on G.ID = A.ObjectID 
                                             where	ExecutionID = @ExecutionID
 
                                         DELETE G
 	                                    FROM [Group] G
 		                                inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber
-		                                inner join Asset A on A .uid = EG.GroupUid
+		                                inner join Asset A on A.uid = EG.GroupUid and A.[Object] = 'Group'
 		                                where A.ObjectID = G.ID";
 
                                 Connection.Execute(deleteSQL,
