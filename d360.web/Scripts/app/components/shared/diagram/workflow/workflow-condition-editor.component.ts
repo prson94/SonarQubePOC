@@ -134,9 +134,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             .pipe(
                 map((r) => {
                     this.fields = [];
-                    this.fields = r.filter(function (x) {
-                        return x.Type != "JsonElement" && x.Type != 'Link';
-                    })//Exclude Json Element and Link Fields;
+                    this.fields = r.filter((x) => x.Type != "JsonElement"); //Exclude Json Elements
                 })
             );
     }
@@ -380,6 +378,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 ops.add('NP');
                 break;
             case 'html':
+            case 'link':
                 ops.add('P');
                 ops.add('NP');
                 break;
@@ -443,6 +442,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 return 'DT';
             case 'text':
             case 'html':
+            case 'link':
                 return 'T';
             default:
                 return 'U';

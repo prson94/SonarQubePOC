@@ -1,18 +1,22 @@
-﻿using d360.core.queue;
-using System;
-using Newtonsoft.Json;
-using System.Diagnostics;
-using System.Collections.Generic;
-using d360.core.enums.Workflow;
-using System.Threading.Tasks;
-using Microsoft.Azure.Storage.Queue;
-using Microsoft.Azure.Storage.Auth;
-using Microsoft.Azure.Storage.RetryPolicies;
-using System.Text;
-using Azure.Messaging.ServiceBus;
+﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
+using System.Text;
+using System.Threading.Tasks;
+
+using Azure.Messaging.ServiceBus;
+
+using d360.core.enums.Workflow;
+using d360.core.queue;
+
+using Microsoft.Azure.Storage.Auth;
+using Microsoft.Azure.Storage.Queue;
+using Microsoft.Azure.Storage.RetryPolicies;
 using Microsoft.Extensions.Configuration;
+
+using Newtonsoft.Json;
 
 namespace d360.extensions.queue
 {
@@ -109,7 +113,7 @@ namespace d360.extensions.queue
         private ServiceBusMessage GetFilteredServiceBusMessage(IFilteredServiceBusMessage o)
         {
             var bm = GetServiceBusMessageFromObject(o);
-            
+
             if (!string.IsNullOrEmpty(o.EventType))
             {
                 bm.ApplicationProperties.Add("EventType", o.EventType);
@@ -122,8 +126,10 @@ namespace d360.extensions.queue
         {
             var eString = JsonConvert.SerializeObject(o);
             var eBytes = Encoding.UTF8.GetBytes(eString);
-            var bm = new ServiceBusMessage(new BinaryData(eBytes));
-            bm.MessageId = Guid.NewGuid().ToString();
+            var bm = new ServiceBusMessage(new BinaryData(eBytes))
+            {
+                MessageId = Guid.NewGuid().ToString()
+            };
 
             return bm;
         }
@@ -160,7 +166,9 @@ namespace d360.extensions.queue
                 // per azure docs popreceipt should be present if sucess https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.storage.queue.cloudqueue.addmessage?view=azure-dotnet-legacy
                 // check added to ensure message was delivered.
                 if (string.IsNullOrEmpty(msg.PopReceipt))
+                {
                     throw new Exception("Queue message has no population receipt and appears to not have been added properly");
+                }
             }
             catch (Exception ex)
             {
@@ -185,7 +193,9 @@ namespace d360.extensions.queue
                 // per azure docs popreceipt should be present if sucess https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.storage.queue.cloudqueue.addmessage?view=azure-dotnet-legacy
                 // check added to ensure message was delivered.
                 if (string.IsNullOrEmpty(msg.PopReceipt))
+                {
                     throw new Exception("Queue message has no population receipt and appears to not have been added properly");
+                }
             }
             catch (Exception ex)
             {
@@ -227,7 +237,8 @@ namespace d360.extensions.queue
 
                 var queue = queueClient.GetQueueReference(queueName);
 
-                await Task.Run(() => {
+                await Task.Run(() =>
+                {
                     items.ForEach(item =>
                     {
                         var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
@@ -298,7 +309,9 @@ namespace d360.extensions.queue
                 msg.MessageId = GetMessageIdFromEventInfo(e);
 
                 if (e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
+                {
                     msg.ScheduledEnqueueTime = DateTime.UtcNow.AddSeconds(15);
+                }
             }
 
             while (messages.Count > 0)
@@ -382,7 +395,7 @@ namespace d360.extensions.queue
                 var partitionKey = Guid.NewGuid().ToString();
                 using (ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync())
                 {
-                    
+
                     while (messages.Count > 0)
                     {
                         var msg = messages.Peek();

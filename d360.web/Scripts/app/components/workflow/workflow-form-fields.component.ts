@@ -52,7 +52,8 @@ export class WorkflowFormFieldsComponent extends BaseComponent {
             if (x.FieldType === WorkflowFormFieldType.Link) {
                 const name = this.form.form.controls[`inputName_${i}`].value;
                 const url = this.form.form.controls[`inputUrl_${i}`].value;
-                x.Value = name + '|' + url;
+
+                x.Value = (name.length + url.length === 0) ? '' : name + '|' + url;
             } else if (Array.isArray(x.Value)) {
                 x.Value = x.Value.join();
             }

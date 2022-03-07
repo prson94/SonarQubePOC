@@ -42,6 +42,7 @@
 <html class="no-js" lang="en">
 <head>
     <base href="/" />
+    <meta name="netsparkerenterprise-site-verification" content="5d7757b2-e472-4569-c8a4-ae0703176d39">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8" />
     <title>@(title)</title>
@@ -60,7 +61,7 @@
             ); window[aiName] = aisdk;
         </script>
     }
-<script type="text/javascript">
+    <script type="text/javascript">
         var CurrentResourceID = @(CurrentResourceID);
         var ResourceHomePage = '@(ResourceHomePage)';
         var SingleSignOn = @(ViewData["SingleSignOn"].ToString().ToLower());
@@ -71,7 +72,7 @@
         var DataDogApplicationId = '@(DataDogApplicationId)';
         var DataDogClientToken = '@(DataDogClientToken)';
         var DataDogService = '@(DataDogService)';
-</script>
+    </script>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v12.0.2/primeng.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/4.1.0/primeicons.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v12.0.2/default.min.css", baseUrl)" />
@@ -81,7 +82,7 @@
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v12.0.2/theme.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />    
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
     @if (!string.IsNullOrEmpty(customStylesheetURL))
     {
         <link rel="stylesheet" type="text/css" href="@customStylesheetURL" />
