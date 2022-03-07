@@ -91,7 +91,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         data.count = this.relationshipTypesResolvedNames.length;
         data.items = [];
         this.relationshipTypesResolvedNames.forEach((item) => {
-            data.items.push({ value: item["uid"], name: item["name"] });
+            data.items.push({ value: item["uid"], name: item["name"], count: item.count });
         })
         return of(data);
     }
@@ -425,6 +425,20 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     advancedFiltersChanged($event: Filters) {
         this.advancedFilter = $event.filter;
         this.advancedFilterData = $event.data;
+
+        var typeFilters = this.advancedFilterData.filter((x) => x.field === 'relationshiptype') as any[];
+        if (typeFilters.length > 0) {
+            this.relationshipTypesResolvedNames.forEach((item) => item.isSelected = false);
+            typeFilters.forEach((f) => {
+                if (f.value) {
+                    f.value.forEach((item) => {
+                        var names = this.relationshipTypesResolvedNames.filter((x => x.uid.toLowerCase() === item.value.toLowerCase()));
+                        names.forEach((sel) => sel.isSelected = true);
+                    });
+                }
+            })
+            this.relationshipTypesResolvedNames = JSON.parse(JSON.stringify(this.relationshipTypesResolvedNames));
+        }
 
         if (this.dt) {
             this.dt.first = 0;

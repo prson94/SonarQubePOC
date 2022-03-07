@@ -637,9 +637,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         let loadedData = [];
 
         res.items.forEach((str) => {
-            console.log(typeof str);
-            if (typeof str === 'object' && str.value && str.name) {
-                loadedData.push({ title: str.name, value: str.value });
+            if (typeof str === 'object' && str.value && str.name && str.count) {
+                loadedData.push({ title: str.name, value: str.value, count:str.count });
             }
             else {
                 loadedData.push({ title: str, value: str });
@@ -1009,12 +1008,22 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.updateAllAnyData();
     }
 
+    removeSelectionDuplicates() {
+        if (this.condition && this.condition.value && Array.isArray(this.condition.value) && this.condition.value.length > 0) {
+            this.condition.value = this.condition.value.filter(function (elem, index, self) {
+                return index === self.indexOf(elem);
+            });
+        }
+    }
+
     private updateAllAnyData(event = null) {
         if (this.currentOperator === "Populated" || this.currentOperator === "NotPopulated") {
             return;
         }
 
         if (this.condition.fieldType === "Lookup") {
+            this.removeSelectionDuplicates();
+
             if (this.currentField.Type.Lookup.List.AllowMultipleValues !== true) {
                 if (this.currentOperator.toString() === "NotEquals") {
                     this.condition.connectingOperator = "and";
