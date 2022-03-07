@@ -1,9 +1,11 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { Router } from '@angular/router';
-import { map } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { CompanySettingsService } from '../../services/settings.service';
+import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-monitor-list',
@@ -12,7 +14,18 @@ import { CompanySettingsService } from '../../services/settings.service';
     <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
     <div *ngIf="!isLoading">
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-        <p-table #dt [value]="workflowItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','ObjectTypeName','Status','Version']" [pageLinks]="3" [paginator]="true" [rows]="15" [rowsPerPageOptions]="defaultPagingOptions" [selection]="selection" (selectionChange)="selection = $event; selectionChange.emit($event)">
+        <p-table #dt
+                 [value]="workflowItems"
+                 selectionMode="single"
+                 [metaKeySelection]="true"
+                 [globalFilterFields]="['Name','ObjectTypeName','Status','Version']"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="rowsPerPage"
+                 [rowsPerPageOptions]="defaultPagingOptions"
+                 [selection]="selection"
+                 (selectionChange)="selection = $event; selectionChange.emit($event)"
+                 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'Name'">
@@ -62,9 +75,10 @@ import { CompanySettingsService } from '../../services/settings.service';
     providers: [WorkflowService],
 })
 
-export class MonitorListComponent extends BaseComponent implements OnInit, OnChanges {
+export class MonitorListComponent extends BaseComponent implements OnInit, OnChanges, OnDestroy {
 
     @Input() workflowTypes: any[];
+    @Input() title: string;
     @Input() selection: any;
     @Input() showSimpleFilter: boolean;
     @Output() selectionChange = new EventEmitter();
@@ -75,8 +89,12 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     
     useFilteredObject: boolean = false;
     workflowItems: any[];
+    defaultInitialItemsPerPage: number = 15;
+    rowsPerPage: number;
+    private destroy = new Subject<void>();
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         protected settingsService: CompanySettingsService,
         protected workflowService: WorkflowService,
         protected router: Router) {
@@ -85,6 +103,16 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
 
     ngOnInit() {
         this.load();
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
+        })
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -152,5 +180,10 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
 
     openItem(url: string) {
         this.router.navigateByUrl(url);
+    }
+
+    ngOnDestroy(): void {
+        this.destroy.next();
+        this.destroy.complete();
     }
 }

@@ -18,12 +18,12 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
 
   constructor(private headerBreadcrumbService: HeaderBreadcrumbService) {}
 
-  defineNumberOfRows(defaultNumberOfRows?: number, area?: string): void {
-    this.setNumberOfRowsToCategory(defaultNumberOfRows, area);
+  defineNumberOfRows(defaultNumberOfRows?: number): void {
+    this.setNumberOfRowsToCategory(defaultNumberOfRows);
     this.headerBreadcrumbService.breadcrumbIsSetToStorage.pipe(
       takeUntil(this.destroy)
     ).subscribe(() => {
-      this.setNumberOfRowsToCategory(defaultNumberOfRows, area);
+      this.setNumberOfRowsToCategory(defaultNumberOfRows);
     });
   }
 
@@ -55,28 +55,22 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
     }
   }
 
-  setNumberOfRowsToCategory(defaultNumberOfRows?: number, area?: string) {
+  setNumberOfRowsToCategory(defaultNumberOfRows?: number) {
     let category: string = this.getCategoryFromBreadcrumbs();
     let isLocalStorageKeyExist: boolean = LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfRowsByCategories);
     if (category && isLocalStorageKeyExist) {
-      this.rowsPerPage.next(this.defineNumberOfRowsByCategory(category, area));
-      console.log("this.rowsPerPage");
-      console.log(this.defineNumberOfRowsByCategory(category, area));
+      this.rowsPerPage.next(this.defineNumberOfRowsByCategory(category, defaultNumberOfRows));
     } else {
       this.rowsPerPage.next(defaultNumberOfRows || AppConstants.DEFAULT_ROWS_PER_PAGE);
     }
   }
 
-  defineNumberOfRowsByCategory(category: string, area?: string): number {
+  defineNumberOfRowsByCategory(category: string, defaultNumberOfRows?: number): number {
     let numberOfRowsByCategories: NumberOfRowsByCategories = this.getNumberOfRowsByCategoriesFromStorage();
     if (numberOfRowsByCategories.hasOwnProperty(category)) {
-      if (area) {
-        return get(numberOfRowsByCategories, [category, area], AppConstants.DEFAULT_ROWS_PER_PAGE);
-      } else {
-        return numberOfRowsByCategories[category];
-      }
+      return numberOfRowsByCategories[category];
     } else {
-      return AppConstants.DEFAULT_ROWS_PER_PAGE;
+      return defaultNumberOfRows || AppConstants.DEFAULT_ROWS_PER_PAGE;
     }
   }
 
