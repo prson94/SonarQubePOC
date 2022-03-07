@@ -1,25 +1,28 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using Dapper;
+using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Xml.Linq;
+
+using d360.core;
 using d360.core.enums;
 using d360.core.queue;
-using d360.core;
-using System.Collections.Concurrent;
-using MoreLinq;
-using System.Data;
 using d360.extensions.queue;
-using System.Xml.Linq;
+
+using Dapper;
+
+using MoreLinq;
 
 namespace d360.extensions.search
 {
     public class SearchIndexer
     {
-        private static int _defaultQueryCommandTimeout = 180;
-        private static int _indexClassAsTypesLimit = 400000;
-        private SqlConnection _context;
-        private int _companyID;
+        private static readonly int _defaultQueryCommandTimeout = 180;
+        private static readonly int _indexClassAsTypesLimit = 400000;
+        private readonly SqlConnection _context;
+        private readonly int _companyID;
         private readonly ISearchSource _source;
         private readonly List<string> _messages;
 
@@ -58,13 +61,15 @@ namespace d360.extensions.search
 
         public static string GetCategoryFromObject(string obj)
         {
-            if(obj == SystemObjects.Taxonomy.ToString())
+            if (obj == SystemObjects.Taxonomy.ToString())
             {
                 return AssetTypeClass.Model.ToString();
-            } else if (obj == SystemObjects.Resource.ToString())
+            }
+            else if (obj == SystemObjects.Resource.ToString())
             {
                 return AssetTypeClass.User.ToString();
-            } else if(obj == AssetTypeClass.ReferenceItemType.ToString())
+            }
+            else if (obj == AssetTypeClass.ReferenceItemType.ToString())
             {
                 return "Reference";
             }
@@ -78,11 +83,11 @@ namespace d360.extensions.search
 
         public static string GetCategoryFromClass(AssetTypeClass? typeClass)
         {
-            if(typeClass == null || !Enum.IsDefined(typeof(AssetTypeClass), typeClass))
+            if (typeClass == null || !Enum.IsDefined(typeof(AssetTypeClass), typeClass))
             {
                 return "";
             }
-            switch(typeClass)
+            switch (typeClass)
             {
                 case AssetTypeClass.ReferenceItemType:
                     return "Reference";
@@ -93,17 +98,19 @@ namespace d360.extensions.search
 
         public static int GetClassFromCategory(string category)
         {
-            switch(category)
+            switch (category)
             {
                 case "Reference":
                     return (int)AssetTypeClass.ReferenceItemType;
                 case "Synonym":
                     return (int)AssetTypeClass.Predicate;
                 default:
-                    if(Enum.TryParse(category, out AssetTypeClass assetTypeClass))
+                    if (Enum.TryParse(category, out AssetTypeClass assetTypeClass))
                     {
                         return (int)assetTypeClass;
-                    } else {
+                    }
+                    else
+                    {
                         return (int)AssetTypeClass.Generic;
                     }
             }
@@ -207,7 +214,6 @@ namespace d360.extensions.search
             _source.RemoveByUids(_companyID, AssetGuids);
         }
 
-
         public void IndexAssetType(Guid AssetTypeUid, bool clearIndex = true)
         {
             if (_context.State != ConnectionState.Open)
@@ -229,7 +235,8 @@ namespace d360.extensions.search
                     //If clearIndex is not set, the method is being called from IndexAssetClass, so field query should use temp tables.
                     IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assettype.Class, AssetTypeUid, null, !clearIndex);
                     _source.AddToIndex(models);
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     UpdateDBLog(assettype.Class, AssetTypeUid, SearchJobStatus.Error, e.Message);
                     throw;
@@ -258,7 +265,8 @@ namespace d360.extensions.search
                 IndexObjectType("Intersect");
                 IndexObjectType("Synonym", false);
             }
-            else {
+            else
+            {
                 _source.ClearIndex(_companyID, assetClass.ToString());
                 bool processByAssetType = false;
                 int assettypeclass = (int)assetClass;
@@ -267,7 +275,7 @@ namespace d360.extensions.search
 
                 //Use count of assets in class to determine if the class contains a large number of assets
                 //and indexing by asset type is more performant. Only larger asset classes.
-                if( new List<AssetTypeClass> {
+                if (new List<AssetTypeClass> {
                         AssetTypeClass.BusinessAsset,
                         AssetTypeClass.TechnicalAsset,
                         AssetTypeClass.Diagram,
@@ -393,14 +401,14 @@ namespace d360.extensions.search
 
         public void QueueRebuildRequest(AssetTypeClass assetClass, Guid? assetTypeUid)
         {
-            if(assetTypeUid == Guid.Empty)
+            if (assetTypeUid == Guid.Empty)
             {
                 assetTypeUid = null;
             }
 
             var queue = new AzureQueueSource();
             ReindexModel model = new ReindexModel { CompanyID = _companyID, Category = assetClass.ToString() };
-            if(assetTypeUid != null)
+            if (assetTypeUid != null)
             {
                 model.AssetTypeUid = assetTypeUid;
             }
@@ -448,7 +456,7 @@ namespace d360.extensions.search
                     where at.class = @assetClass" + (assetTypeUid == null ? "" : " and at.uid = @assetTypeUid"), param);
             }
 
-            if(assetTypeUid == null)
+            if (assetTypeUid == null)
             {
                 //When pending a Class/Categroy, archive all asset types under that category
                 _context.Execute("UPDATE [queue].[Search] SET Active=0 WHERE Active=1 and Class = @assetClass and AssetTypeUid <> @AssetTypeUid", param);
@@ -484,7 +492,7 @@ namespace d360.extensions.search
 
         private string GenerateUrl(string type, int typeId, int objectId, string fallback = "")
         {
-            switch(type)
+            switch (type)
             {
                 case "Artifact":
                     return $"artifact/{typeId}/{objectId}";
@@ -523,15 +531,16 @@ namespace d360.extensions.search
             Func<dynamic, IndexObjectModel> shaper = null;
             DynamicParameters parameters = new DynamicParameters();
 
-            if(assetClass == null && AssetUid.HasValue)
+            if (assetClass == null && AssetUid.HasValue)
             {
                 assetClass = _context.QueryFirstOrDefault<AssetTypeClass>("SELECT [Class] FROM AssetType att INNER JOIN Asset a on att.ID = a.AssetTypeID WHERE a.uid = @AssetUid", new { AssetUid });
 
-                if(assetClass == AssetTypeClass.Generic)
+                if (assetClass == AssetTypeClass.Generic)
                 {
                     assetClass = _context.QueryFirstOrDefault<AssetTypeClass>($"SELECT {(int)AssetTypeClass.SemanticType} FROM Semantic WHERE uid = @AssetUid", new { AssetUid });
                 }
-            } else if(assetClass == null && AssetTypeUid.HasValue)
+            }
+            else if (assetClass == null && AssetTypeUid.HasValue)
             {
                 assetClass = _context.QueryFirstOrDefault<AssetTypeClass>("SELECT [Class] FROM AssetType att WHERE att.uid = @AssetTypeUid", new { AssetTypeUid });
             }
@@ -647,7 +656,7 @@ namespace d360.extensions.search
                             AssetType = "Reference List",
                             RelativeUrl = $"reference/{o.ID}",
                             AssetTypeUid = o.AssetTypeUid,
-                            AssetPath = o.Path.Split(new [] { pathSeperator }, StringSplitOptions.RemoveEmptyEntries),
+                            AssetPath = o.Path.Split(new[] { pathSeperator }, StringSplitOptions.RemoveEmptyEntries),
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }
@@ -772,16 +781,12 @@ namespace d360.extensions.search
                     };
                     break;
                 case AssetTypeClass.SemanticType:
-                    /* if(!GOV-16718 feature flag) {
-                        //If the Semantics feature is not enabled, return an empty list of models to index
-                        return new List<IndexObjectModel>();
-                    }*/
-
                     if (AssetUid.HasValue && AssetUid != Guid.Empty)
                     {
                         where.Add("s.uid = @assetuid");
                         parameters.Add("assetuid", AssetUid);
-                    } else if (!string.IsNullOrEmpty(batchTable))
+                    }
+                    else if (!string.IsNullOrEmpty(batchTable))
                     {
                         joinBatchTable = $"inner join {batchTable} bt on bt.uid = s.uid and bt.class = {(int)AssetTypeClass.SemanticType}";
                     }
@@ -840,7 +845,7 @@ namespace d360.extensions.search
             switch (Object)
             {
                 case "Intersect":
-                    if(ObjectID != null)
+                    if (ObjectID != null)
                     {
                         where = "WHERE I.ID = @ObjectID";
                         parameters.Add("ObjectID", ObjectID);
@@ -1016,29 +1021,35 @@ namespace d360.extensions.search
                     FieldQuery = new PagedQuery<FieldSqlModel>(context, GetFieldQuery(parameters), parameters);
                 }
             }
+
             if (mode.HasFlag(IndexMode.WithTags))
             {
                 TagsQuery = new PagedQuery<TagSqlModel>(context, GetTagQuery(parameters), parameters);
             }
+
             if (mode.HasFlag(IndexMode.WithResponsibility))
             {
                 ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetResponsibilityQuery(parameters), parameters);
             }
+            
             IEnumerable<IndexObjectModel> list = context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).Select<dynamic, IndexObjectModel>(a => convertToDictionary(a));
 
             foreach (var item in list)
             {
-                if (FieldQuery != null) {
+                if (FieldQuery != null)
+                {
                     var subset = FieldQuery.GetByAssetID(item.AssetID);
                     foreach (var f in subset)
                     {
                         item.Fields[f.Name] = f.FormattedValue;
                     }
                 }
+
                 if (TagsQuery != null && item.Uid.HasValue && item.Uid != Guid.Empty)
                 {
                     item.Tags = TagsQuery.GetByAssetID(item.AssetID).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                 }
+
                 if (ResponsibilityQuery != null)
                 {
                     var secset = ResponsibilityQuery.GetByAssetID(item.AssetID);
@@ -1048,6 +1059,7 @@ namespace d360.extensions.search
                         { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
                     };
                 }
+
                 item.IndexFlags = mode;
                 yield return item;
             }
@@ -1057,29 +1069,33 @@ namespace d360.extensions.search
         {
             List<string> fieldWhere = new List<string>();
             List<string> existsWhere = new List<string>();
-            List<string> fieldJoin = new List<string>();
-
-            fieldJoin.Add("inner join FieldType FT on FT.ID = F.FieldTypeID");
+            List<string> fieldJoin = new List<string>
+            {
+                "inner join FieldType FT on FT.ID = F.FieldTypeID"
+            };
 
             if (parameters.ParameterNames.Contains("assettypeclass"))
             {
                 existsWhere.Add("ATT.class = @assettypeclass");
             }
+
             if (parameters.ParameterNames.Contains("assettypeuid"))
             {
                 existsWhere.Add("att.uid = @assettypeuid");
             }
+
             if (parameters.ParameterNames.Contains("assetuid"))
             {
                 fieldJoin.Add("inner join Asset a on a.ID = F.AssetID");
                 fieldWhere.Add("a.uid = @assetuid");
             }
+
             if (parameters.ParameterNames.Contains("batchtable"))
             {
                 fieldJoin.Add($"inner join {parameters.Get<string>("batchtable")} bt on F.AssetID = bt.AssetID");
             }
 
-            if(existsWhere.Any())
+            if (existsWhere.Any())
             {
                 existsWhere.Add("ATT.ID = FT.AssetTypeID");
                 fieldWhere.Add($"exists (select 1 from AssetType ATT where {string.Join(Environment.NewLine + " and ", existsWhere.ToArray())})");
@@ -1093,6 +1109,7 @@ namespace d360.extensions.search
             {
                 fieldsSql += " and " + string.Join(Environment.NewLine + " and ", fieldWhere.ToArray());
             }
+
             return fieldsSql;
         }
 
@@ -1106,10 +1123,12 @@ namespace d360.extensions.search
                 tagWhere.Add("att.uid = @assettypeuid");
                 tagJoin.Add("INNER JOIN [dbo].[AssetType] att ON att.ID = a.AssetTypeID");
             }
+
             if (parameters.ParameterNames.Contains("assetuid"))
             {
                 tagWhere.Add("a.uid = @assetuid");
             }
+
             if (parameters.ParameterNames.Contains("batchtable"))
             {
                 tagJoin.Add($"inner join {parameters.Get<string>("batchtable")} bt on at.AssetID = bt.AssetID");
@@ -1117,10 +1136,12 @@ namespace d360.extensions.search
 
             string tagsSql = @"SELECT a.ID as AssetID, a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at " +
             "INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
+            
             if (tagJoin.Any())
             {
                 tagsSql += " " + string.Join(" " + Environment.NewLine, tagJoin.ToArray());
             }
+
             if (tagWhere.Any())
             {
                 tagsSql += " WHERE " + string.Join(" AND " + Environment.NewLine, tagWhere.ToArray());
@@ -1169,15 +1190,18 @@ namespace d360.extensions.search
                 joins.Add("INNER JOIN [dbo].AssetType att on a.AssetTypeID = att.id");
                 conditions.Add("att.uid = @assettypeuid");
             }
+
             if (parameters.ParameterNames.Contains("batchtable"))
             {
                 joins.Add($"INNER JOIN {parameters.Get<string>("batchtable")} bt on q.AssetID = bt.AssetID");
-                if(parameters.ParameterNames.Contains("assettypeclass"))
+                
+                if (parameters.ParameterNames.Contains("assettypeclass"))
                 {
                     conditions.Add("bt.Class = @assettypeclass");
                 }
             }
-            if(joins.Any())
+
+            if (joins.Any())
             {
                 sql = $@"SELECT q.* FROM ({sql}) q {string.Join(" ", joins)}";
                 if (conditions.Any())
@@ -1185,6 +1209,7 @@ namespace d360.extensions.search
                     sql += $" WHERE {string.Join(" AND ", conditions)}";
                 }
             }
+
             return sql;
         }
     }
@@ -1210,28 +1235,36 @@ namespace d360.extensions.search
     internal class AssetClassAndName
     {
         public AssetTypeClass Class { get; set; }
+        
         public string Name { get; set; }
     }
 
     internal class FieldSqlModel : IPagedQuerySqlModel
     {
         public long AssetID { get; set; }
+        
         public string Name { get; set; }
+        
         public string FormattedValue { get; set; }
     }
 
     internal class TagSqlModel : IPagedQuerySqlModel
     {
         public long AssetID { get; set; }
+        
         public Guid AssetUID { get; set; }
+        
         public Guid TagUID { get; set; }
+        
         public string Value { get; set; }
     }
 
     internal class ResponsibilitySqlModel : IPagedQuerySqlModel
     {
         public long AssetID { get; set; }
+        
         public string SecurityAsset { get; set; }
+        
         public int SecurityAssetID { get; set; }
     }
 
@@ -1322,7 +1355,8 @@ namespace d360.extensions.search
                         CurrentHighID = _data.Max(i => i.AssetID);
                     }
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 throw new PagedQueryException($"Failed paged query for {AssetID}, {_query}. Error: {e.Message}");
             }
@@ -1402,6 +1436,7 @@ namespace d360.extensions.search
                 throw new PagedQueryException($"TempTablePagedQuery failed to create temp table. Error: {e.Message}");
             }
         }
+
         ~TempTablePagedQuery()
         {
             OnLastPage();
@@ -1413,7 +1448,8 @@ namespace d360.extensions.search
             try
             {
                 _connection.Execute($"DROP TABLE IF EXISTS ##{_tableIdentifier}");
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 //If connection is closed, the temp table is automatically dropped
             }
