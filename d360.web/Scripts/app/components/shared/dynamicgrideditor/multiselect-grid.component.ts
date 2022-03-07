@@ -34,6 +34,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     @Input() objectCardinality: string;
 
     @Output() onInfoClick = new EventEmitter();
+    @Output() onSelected = new EventEmitter();
 
 
     relationshipType: RelationshipType;
@@ -307,6 +308,8 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                 this.selectedRelationRowIndex = this.items.findIndex((i) => (i.Value === this.value[0]));
             }
         }
+
+        this.onSelected.emit(event);
     }
 
     writeValue(value: any): void {

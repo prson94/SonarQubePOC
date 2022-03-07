@@ -19,7 +19,7 @@
                     {{subtitle}}
                 </div>
                 <div *ngIf="!hideLinks">
-                    <a (click)="open();">Open</a> <span class="grey-delimiter">|</span> <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
+                    <a *ngIf="hasOpenLink" (click)="open();">Open</a> <span *ngIf="hasOpenLink" class="grey-delimiter">|</span> <a (click)="open(true);">Open in New Tab</a> <ng-container *ngIf="isEditLinkVisible()"> | <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a></ng-container>
                 </div>
             </div>
         </ng-container>

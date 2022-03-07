@@ -1,6 +1,5 @@
 ﻿import { Input, Component, ViewEncapsulation, ChangeDetectionStrategy, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
 import { forkJoin, Subscription } from 'rxjs';
-import { Predicate, PredicateFriendlyType } from '../../../models/predicate.model';
 import { RelationshipCount, RelationshipType, RelationshipV2 } from '../../../models/relationship.model';
 import { AssetService } from '../../../services/asset.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -46,6 +45,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 
     selectedRelationshipType: any = {};
     selectedAssets: any[] = [];
+    selectedAssetsDetail: any[] = [];
     fieldValues: any = {};
     assetDetail: any = {};
 
@@ -158,19 +158,47 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         return cardinality === "One" ? 1 : 2;
     }
 
+    get subjectTypeCardinality(): number {
+        var cardinality = this.isSelectedRelationshipSubject ? this.selectedType.Subject.Cardinality : this.selectedType.Object.Cardinality;
+        return cardinality === "One" ? 1 : 2;
+    }
+
     get targetType(): string {
         return this.isSelectedRelationshipSubject ? this.selectedType.Object.Class : this.selectedType.Subject.Class;
+    }
+
+    get target(): any {
+        return this.isSelectedRelationshipSubject ? this.selectedType.Object : this.selectedType.Subject;
     }
 
     get isSelectedRelationshipSubject(): boolean {
         return this.selectedType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase();
     }
 
+    get modalSubtitle(): string {
+        let title: string = this.assetDetail.DisplayValue;
+        if (this.currentStep === AddRelationshipStep.SetAssets) {
+            title += " - " + `<strong>${this.selectedRelationshipType.name}</strong>`;
+        }
+        if (this.currentStep === AddRelationshipStep.SetCustomFields) {
+            title += " - " + `<strong>${this.selectedRelationshipType.name}</strong>`;
+            if (this.selectedAssetsDetail.length > 1) {
+                title += " - " + this.selectedAssetsDetail.length + " items";
+            }
+            else {
+                title += " - " + this.selectedAssetsDetail[0].Text;
+            }
+        }
+        return title;
+    }
+
     confirmAssets() {
+        this.previewAssetUid = '';
         this.currentStep = AddRelationshipStep.SetCustomFields;
     }
 
     saveRelationships() {
+        this.previewAssetUid = '';
         this.savingInProgress = true;
         let relationships: RelationshipV2[] = [];
 

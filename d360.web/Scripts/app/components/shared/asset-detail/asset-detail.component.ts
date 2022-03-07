@@ -43,6 +43,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() useAssetDetailColumnDefinition: boolean = false;
     @Input() synonymPermission: SynonymPermission;
     @Input() hasEditLink: boolean = false;
+    @Input() hasOpenLink: boolean = true;
     @Input() interceptLinkClick: boolean = false;
     @Input() assetDetail: any;
     @Input() hideLinks: boolean = false;

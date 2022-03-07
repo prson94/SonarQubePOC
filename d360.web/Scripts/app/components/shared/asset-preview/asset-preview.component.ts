@@ -12,6 +12,8 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 export class AssetPreviewComponent implements OnChanges, OnDestroy {
     @Input() assetUid: string = '';
     @Input() assetType: string = '';
+    @Input() hasOpenLink: boolean = true;
+    @Input() hasEditLink: boolean = false;
 
     selectedAsset: any;
     selectedReferenceItem: any;

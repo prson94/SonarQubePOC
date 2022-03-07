@@ -4,7 +4,7 @@
         <div *ngIf="showTitle" class="modal-title-bar">
             <div style="display:block">
                 <h1>{{title}}</h1>
-                <h2 *ngIf="subtitle">{{subtitle}}</h2>
+                <h2 *ngIf="subtitle" [innerHTML]="subtitle"></h2>
             </div>
             <span class="grow"></span>
         </div>

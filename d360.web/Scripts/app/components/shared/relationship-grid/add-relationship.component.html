@@ -1,7 +1,7 @@
 ﻿<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor {{previewAssetUid ? 'modal-extended' : ''}}"
            (onClose)="close();"
            [title]="'Add Relationships'"
-           [subtitle]="assetDetail.DisplayValue"
+           [subtitle]="modalSubtitle"
            [isVisible]="isVisible">
     <div class="add-relationship-editor">
         <div *ngIf="currentStep === 'SetRelationshipType'">
@@ -70,12 +70,19 @@
                     <div class="panel-header">
                         <span class="header-label">Information</span>
                         <div class="side-panel-button-container">
-                            <button igButton icon="fa-close" tooltip="Close side panel" (click)="previewAssetUid = ''"></button>
+                            <button igButton icon="fa-close" pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="previewAssetUid = ''"></button>
                         </div>
                     </div>
                 </div>
-                <asset-preview [assetUid]="previewAssetUid" [assetType]="previewAssetType"></asset-preview>
+                <asset-preview [assetUid]="previewAssetUid"
+                               [assetType]="previewAssetType"
+                               [hasEditLink]="false"
+                               [hasOpenLink]="false"></asset-preview>
             </div>
+
+            <h2 *ngIf="targetTypeCardinality === 1">
+                Only a single asset can be related for {{subjectTypeCardinality === 2 ? 'Many-To-One' : 'One-To-One'}} relationship types
+            </h2>
 
             <d3s-multiselect-grid [(ngModel)]="selectedAssets"
                                   [multiple]="targetTypeCardinality === 2"
@@ -83,12 +90,13 @@
                                   [assetUid]="assetUid"
                                   [targetAssetTypeUid]="targetTypeUid"
                                   [objectCardinality]="targetTypeCardinality"
-                                  (onInfoClick)="onInfoClick($event)"></d3s-multiselect-grid>
+                                  (onInfoClick)="onInfoClick($event)"
+                                  (onSelected)="selectedAssetsDetail = $event"></d3s-multiselect-grid>
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetRelationshipType'"></button>
+                <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetRelationshipType';previewAssetUid = ''"></button>
                 <span class="grow"></span>
                 <button *ngIf="selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="Set Relationship Properties > " (click)="confirmAssets();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
-                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="Add Relationships" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
+                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
             </div>
         </div>
 
@@ -110,7 +118,7 @@
             <div class="action-bar no-padding">
                 <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetAssets'"></button>
                 <span class="grow"></span>
-                <button igButton class="ig-button-primary" label="Add Relationships" (click)="saveRelationships();" [disabled]="savingInProgress" [loading]="savingInProgress"></button>
+                <button igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="savingInProgress" [loading]="savingInProgress"></button>
             </div>
         </div>
     </div>
