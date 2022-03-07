@@ -2766,27 +2766,21 @@ where asset.Object = @type and asset.ObjectId = @id
                                 });
                             }
 
-                            var users = Company.Query<GlobalReportingResource>(@"select 
-                                u.resourceid, u.LastName, u.FirstName
-                                from reporting.global_resource u 
-                                where u.resourceid = @createdBy or u.resourceid = @updatedBy
-                                ", 
-                                new { createdBy = asset.CreatedBy, updatedBy = asset.UpdatedBy });
+                            IEnumerable<GlobalReportingResource> users = GetUserNamesFromGloabResource(asset.CreatedBy, asset.UpdatedBy);
                             if (users != null)
                             {
                                 if (asset.CreatedBy.HasValue)
                                 {
-                                    model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy, 
-                                        FieldInfo.CreatedBy_Name, 
-                                        users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)?.FullName));
+                                    model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy,
+                                        FieldInfo.CreatedBy_Name,
+                                        users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
                                 }
-
 
                                 if (asset.UpdatedBy.HasValue)
                                 {
-                                    model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy, 
+                                    model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy,
                                         FieldInfo.UpdatedBy_Name,
-                                        users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)?.FullName));
+                                        users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
                                 }
                             }
                         }
@@ -3501,14 +3495,22 @@ where asset.Object = @type and asset.ObjectId = @id
                             });
                         }
 
-                        if (asset.CreatedBy.HasValue)
+                        IEnumerable<GlobalReportingResource> users = GetUserNamesFromGloabResource(asset.CreatedBy, asset.UpdatedBy);
+                        if (users != null)
                         {
-                            model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy, FieldInfo.CreatedBy_Name, "John Doe"));
-                        }
+                            if (asset.CreatedBy.HasValue)
+                            {
+                                model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy, 
+                                    FieldInfo.CreatedBy_Name, 
+                                    users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
+                            }
 
-                        if (asset.UpdatedBy.HasValue)
-                        {
-                            model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy, FieldInfo.UpdatedBy_Name, "John Doe"));
+                            if (asset.UpdatedBy.HasValue)
+                            {
+                                model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy, 
+                                    FieldInfo.UpdatedBy_Name, 
+                                    users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
+                            }
                         }
                     }
                     policy = null;
@@ -4183,7 +4185,17 @@ where v.id = {0}", id)).FirstOrDefault();
             return model;
         }
 
-        private static DetailReadOnlyRowModel RowWithUserNameLinkAndLookup(int? resourceId, string fieldName, string fieldValue)
+        private IEnumerable<GlobalReportingResource> GetUserNamesFromGloabResource(int? userId1, int? userId2)
+        {
+            return Company.Query<GlobalReportingResource>(@"select 
+                                u.resourceid, u.Uid, u.LastName, u.FirstName
+                                from reporting.global_resource u 
+                                where u.resourceid = @resourceId1 or u.resourceid = @resourceId2
+                                ",
+                new { resourceId1 = userId1, resourceId2 = userId2 });
+        }
+
+        private static DetailReadOnlyRowModel RowWithUserNameLinkAndLookup(int? resourceId, string fieldName, GlobalReportingResource resource)
         {
             return new DetailReadOnlyRowModel
             {
@@ -4191,17 +4203,18 @@ where v.id = {0}", id)).FirstOrDefault();
                 FirstColumnFields = new List<ReadOnlyField> {
                     new ReadOnlyField {
                         Name = fieldName,
-                        FieldName = fieldName,
+                        FieldName = "ReferenceList",
                         Value = "values",
                         Values = new List<ReadOnlyFieldValue>{
                             new ReadOnlyFieldValue {
-                                Value=fieldValue ?? "",
-                                TooltipType="Resource",
-                                TooltipUrl=$"resource/{resourceId}",
+                                Value = resource?.FullName ?? "",
+                                TooltipType = "Resource",
+                                TooltipUrl = $"resource/{resourceId}",
                                 HideTooltip = true
                             }
                         },
-                        DataType = DataType.Lookup.ToString()
+                        DataType = DataType.Lookup.ToString(),
+                        ResourceUid = resource?.Uid
                     }
                 },
                 Category = FieldInfo.SystemFieldCategory
