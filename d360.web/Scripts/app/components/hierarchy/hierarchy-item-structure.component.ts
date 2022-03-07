@@ -20,13 +20,17 @@ import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
+import { OnPageEvent } from '../assets-grid/asset-grid.component';
+import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { AppConstants } from '../../static/constants';
+import { takeUntil } from 'rxjs/operators';
 
 declare var CurrentResourceID;
 
@@ -46,7 +50,7 @@ declare var CurrentResourceID;
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
 
-    rowsPerPage: number = 25;
+    rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
 
     assetTypeClass: AssetTypeClass;
     assetTypeUid: string;
@@ -114,6 +118,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     semanticType: SemanticType;
     secondarySidePanelOpen: boolean;
 
+    destroy = new Subject<void>();
+
     readonly menuKey: string = '~menu';
     baseMenuItems: any[] = [
         { title: "Open" },
@@ -122,6 +128,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     constructor(
         private assetService: AssetService,
+        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetTypeService: AssetTypeService,
         private dataProfileService: DataProfileService,
         protected gridDefinitionService: GridDefinitionService,
@@ -207,6 +214,21 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 });
             });
         });
+
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows();
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage;
+        })
+    }
+
+    onPage(event: OnPageEvent): void {
+        this.numberOfRowsByCategoryService.saveNumberOfRowsByCategoryToStorage(event.rows);
     }
 
     ngOnDestroy() {
@@ -216,6 +238,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         if (this.hrefSub) {
             this.hrefSub.unsubscribe();
         }
+
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     selectAsset(event: any) {

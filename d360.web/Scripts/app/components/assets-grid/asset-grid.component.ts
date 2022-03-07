@@ -1,5 +1,5 @@
 import { of as observableOf, Subject, Subscription } from "rxjs";
-import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from "rxjs/operators";
+import { debounceTime, map, distinctUntilChanged, delay, mergeMap, takeUntil } from "rxjs/operators";
 import {
     Component,
     Input,
@@ -41,10 +41,8 @@ import { Filters } from "./advanced-filtering/advanced-filtering.models";
 import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
 import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
-import { Breadcrumb } from "../../models/breadcrumb.model";
-import { LocalStorageKey } from "../../enums/localstorage.enum";
-import { LocalStorageHelper } from "../../static/localstorage-helper";
 import { AppConstants } from "../../static/constants";
+import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
 
 export interface OnPageEvent {
     first: number;
@@ -136,6 +134,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     isDebugMode: boolean = false;
     initialLoadInterval: any;
+    destroy = new Subject<void>();
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -143,6 +142,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
+        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private headerActionsService: HeaderActionsService,
         public stateService: StateService,
         private permissionsService: PermissionsService,
@@ -178,61 +178,20 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     ngOnInit() {
-        this.setNumberOfRowsToCategory();
-        this.headerBreadcrumbService.breadcrumbIsSetToStorage.pipe().subscribe(() => {
-            this.setNumberOfRowsToCategory();
-        });
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows();
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage;
+        })
     }
 
     onPage(event: OnPageEvent): void {
-        this.saveNumberOfRowsByCategoryToStorage(event.rows);
-    }
-
-    saveNumberOfRowsByCategoryToStorage(numberOfRows: number): void {
-        let numberOfRowsByCategories: NumberOfRowsByCategories = this.defineNumberOfRowsByCategories();
-        let category: string = this.getCategoryFromBreadcrumbs();
-        numberOfRowsByCategories[category] = numberOfRows;
-        localStorage.setItem(LocalStorageKey.NumberOfRowsByCategories, JSON.stringify(numberOfRowsByCategories));
-    }
-
-    defineNumberOfRowsByCategories(): NumberOfRowsByCategories {
-        if (LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfRowsByCategories)) {
-            return this.getNumberOfRowsByCategoriesFromStorage();
-        } else {
-            return {}
-        }
-    }
-
-    getCategoryFromBreadcrumbs(): string {
-        let breadcrumb: Breadcrumb[] = this.headerBreadcrumbService.getBreadcrumbsFromStorage();
-        if (breadcrumb && breadcrumb[0]) {
-            return breadcrumb[0].text;
-        } else {
-            return undefined;
-        }
-    }
-
-    setNumberOfRowsToCategory() {
-        let category: string = this.getCategoryFromBreadcrumbs();
-        let isLocalStorageKeyExist: boolean = LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfRowsByCategories);
-        if (category && isLocalStorageKeyExist) {
-            this.rowsPerPage = this.defineNumberOfRowsByCategory(category);
-        } else {
-            this.rowsPerPage = AppConstants.DEFAULT_ROWS_PER_PAGE;
-        }
-    }
-
-    defineNumberOfRowsByCategory(category: string): number {
-        let numberOfRowsByCategories: NumberOfRowsByCategories = this.getNumberOfRowsByCategoriesFromStorage();
-        if (numberOfRowsByCategories.hasOwnProperty(category)) {
-            return numberOfRowsByCategories[category];
-        } else {
-            return AppConstants.DEFAULT_ROWS_PER_PAGE;
-        }
-    }
-
-    getNumberOfRowsByCategoriesFromStorage(): NumberOfRowsByCategories {
-        return JSON.parse(localStorage.getItem(LocalStorageKey.NumberOfRowsByCategories));
+        this.numberOfRowsByCategoryService.saveNumberOfRowsByCategoryToStorage(event.rows);
     }
 
     canExportRecords() {
@@ -286,6 +245,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
         }
+
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     load() {

@@ -26,6 +26,7 @@ import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
 import { ApplicationInsightsService } from './services/application-insights.service';
 import { SearchService } from './services/search.service';
+import { NumberOfRowsByCategoryService } from './services/number-of-rows-by-category.service';
 
 import { TooltipSingletonService } from './services/tooltip-singleton.service'
 import { PreviewpopupSingletonService } from './services/previewpopup-singleton.service'
@@ -118,6 +119,7 @@ export function localeInitializer(localeId: string) {
         SecondaryNavService,
         FavoritesService,
         FollowerService,
+        NumberOfRowsByCategoryService,
         AssetStyleService,
         WebAnalyticsService,
         TooltipSingletonService,

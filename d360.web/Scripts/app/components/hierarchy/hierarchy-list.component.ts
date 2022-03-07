@@ -12,6 +12,10 @@ import * as _ from 'lodash';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { takeUntil } from 'rxjs/operators';
+import { OnPageEvent } from '../assets-grid/asset-grid.component';
+import { Subject } from 'rxjs';
 
 
 
@@ -22,16 +26,19 @@ import { CompanySettingsService } from '../../services/settings.service';
 })
 
 export class HierarchyListComponent extends BaseComponent implements OnInit {
+    public rowsPerPage: number;
     private types: AssetTypeApiModel[] = [];
     private selected: AssetTypeApiModel;
     private type: string;
 
     private assetTypeClass: AssetTypeClass;
     private navFolderName: string;
+    private destroy = new Subject<void>();
     
 
     constructor(
         private assetTypeService: AssetTypeService,
+        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
@@ -70,10 +77,26 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
 
         this.setBrowserTitle(this.titleService, this.objectName);
 
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage;
+        })
+    }
+
+    onPage(event: OnPageEvent): void {
+        this.numberOfRowsByCategoryService.saveNumberOfRowsByCategoryToStorage(event.rows);
     }
 
     ngOnDestroy() {
         this.clearSidebar();
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     load() {
