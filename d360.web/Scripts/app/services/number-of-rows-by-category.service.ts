@@ -1,19 +1,27 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { NumberOfRowsByCategories, OnPageEvent } from '../components/assets-grid/asset-grid.component';
 import { LocalStorageKey } from '../enums/localstorage.enum';
 import { Breadcrumb } from '../models/breadcrumb.model';
 import { AppConstants } from '../static/constants';
 import { LocalStorageHelper } from '../static/localstorage-helper';
 import { HeaderBreadcrumbService } from './header-breadcrumb.service';
-import { set, get } from "lodash";
+import { set } from "lodash";
+
+export interface OnPageEvent {
+  first: number;
+  rows: number;
+}
+
+export interface NumberOfRowsByCategories {
+  [category: string]: NumberOfRowsByCategories | number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class NumberOfRowsByCategoryService implements OnDestroy {
-  rowsPerPage: Subject<number> = new Subject<number>();
+  rowsPerPage: Subject<number | NumberOfRowsByCategories> = new Subject();
   destroy = new Subject<void>();
 
   constructor(private headerBreadcrumbService: HeaderBreadcrumbService) {}
@@ -65,7 +73,7 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
     }
   }
 
-  defineNumberOfRowsByCategory(category: string, defaultNumberOfRows?: number): number {
+  defineNumberOfRowsByCategory(category: string, defaultNumberOfRows?: number): NumberOfRowsByCategories | number {
     let numberOfRowsByCategories: NumberOfRowsByCategories = this.getNumberOfRowsByCategoriesFromStorage();
     if (numberOfRowsByCategories.hasOwnProperty(category)) {
       return numberOfRowsByCategories[category];

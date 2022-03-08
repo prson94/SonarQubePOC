@@ -14,7 +14,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
-import { OnPageEvent } from '../assets-grid/asset-grid.component';
 import { Subject } from 'rxjs';
 
 
@@ -37,8 +36,8 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
     
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetTypeService: AssetTypeService,
-        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
@@ -85,12 +84,8 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage;
+            this.rowsPerPage = rowsPerPage as number;
         })
-    }
-
-    onPage(event: OnPageEvent): void {
-        this.numberOfRowsByCategoryService.saveNumberOfRowsByCategoryToStorage(event.rows);
     }
 
     ngOnDestroy() {

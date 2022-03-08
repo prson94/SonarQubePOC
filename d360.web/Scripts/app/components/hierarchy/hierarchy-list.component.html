@@ -26,7 +26,7 @@
                      [rows]="rowsPerPage || defaultInitialItemsPerPage"
                      [rowsPerPageOptions]="defaultPagingOptions"
                      [(selection)]="selected"
-                     (onPage)="onPage($event)">
+                     (onPage)="numberOfRowsByCategoryService.onPage($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Name'"

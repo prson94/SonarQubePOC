@@ -97,7 +97,7 @@
                  scrollWidth="100%"
                  [loading]="isLoading"
                  [loadingIcon]="'fa fa-spinner fa-spin'"
-                 (onPage)="onPage($event)">
+                 (onPage)="numberOfRowsByCategoryService.onPage($event)">
             <ng-template pTemplate="colgroup">
                 <colgroup>
                     <col *ngFor="let col of columns"

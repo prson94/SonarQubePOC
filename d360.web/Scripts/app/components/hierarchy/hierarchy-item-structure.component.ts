@@ -27,7 +27,6 @@ import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
-import { OnPageEvent } from '../assets-grid/asset-grid.component';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { AppConstants } from '../../static/constants';
 import { takeUntil } from 'rxjs/operators';
@@ -127,8 +126,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     ];
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetService: AssetService,
-        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetTypeService: AssetTypeService,
         private dataProfileService: DataProfileService,
         protected gridDefinitionService: GridDefinitionService,
@@ -223,12 +222,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage;
+            this.rowsPerPage = rowsPerPage as number;
         })
-    }
-
-    onPage(event: OnPageEvent): void {
-        this.numberOfRowsByCategoryService.saveNumberOfRowsByCategoryToStorage(event.rows);
     }
 
     ngOnDestroy() {

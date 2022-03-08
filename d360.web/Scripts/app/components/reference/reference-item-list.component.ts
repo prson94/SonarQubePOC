@@ -8,7 +8,7 @@ import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
 import { filter } from 'lodash';
 import { Table } from 'primeng/table';
-import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { NumberOfRowsByCategories, NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
@@ -36,7 +36,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     @Input() isForAssetDetailPage: boolean = false;
     @Input() highlightUid: string = '';
 
-    public rowsPerPage: number;
+    public rowsPerPage: NumberOfRowsByCategories;
     private sortField: string = 'Code';
     private items: any[] = [];
     private totalRecords: number = 10000;

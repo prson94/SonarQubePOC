@@ -40,18 +40,8 @@ import { AssetGridObject } from "./asset-grid.model";
 import { Filters } from "./advanced-filtering/advanced-filtering.models";
 import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
-import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
 import { AppConstants } from "../../static/constants";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
-
-export interface OnPageEvent {
-    first: number;
-    rows: number;
-}
-
-export interface NumberOfRowsByCategories {
-    [category: string]: number;
-}
 
 @Component({
     selector: "d3s-asset-grid",
@@ -141,8 +131,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     constructor(
-        private headerBreadcrumbService: HeaderBreadcrumbService,
-        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private headerActionsService: HeaderActionsService,
         public stateService: StateService,
         private permissionsService: PermissionsService,
@@ -186,12 +175,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage;
+            this.rowsPerPage = rowsPerPage as number;
         })
-    }
-
-    onPage(event: OnPageEvent): void {
-        this.numberOfRowsByCategoryService.saveNumberOfRowsByCategoryToStorage(event.rows);
     }
 
     canExportRecords() {
