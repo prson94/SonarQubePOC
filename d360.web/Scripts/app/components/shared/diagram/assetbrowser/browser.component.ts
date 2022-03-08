@@ -552,7 +552,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let direction = relation.direction;
 
                     let ancestryMode = (this.displayConfiguration.DiagramType == DiagramType.Impact) ? FilterAncestryMode.NoAncestor : this.displayConfiguration.AncestryMode;
-                    this.browserService.getImpactHop(ancestryMode, node.hierarchyKey, relation.predicateUid, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects, this.displayConfiguration.DisplayDescendantAssets)
+                    this.browserService.getImpactHop(ancestryMode, node.hierarchyKey, relation.predicateUid, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects, this.displayConfiguration.Descendancy)
                         .subscribe((response: AssetBrowserResponseModel) => {
 
                             // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
@@ -957,6 +957,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.saveFilter();
         switch (e.Type) {
             case AssetBrowserFilterChangeEventType.Ancestry:
+            case AssetBrowserFilterChangeEventType.Descendancy:
                 this.helper_RefreshDiagram(false);
                 break;
             case AssetBrowserFilterChangeEventType.AssetType:
@@ -1514,7 +1515,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             };
 
             if (isLineage) {
-                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.DisplayDescendantAssets).subscribe(subscriber);
+                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.Descendancy).subscribe(subscriber);
             }
             else {
                 this.browserService.getInitialImpact(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf).subscribe(subscriber);
@@ -1636,7 +1637,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let preloadedIntersects = this.helper_GetDiagramIntersectIds(null);
             let direction: AssetBrowserApiHopDirection = data.direction as AssetBrowserApiHopDirection;
 
-            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects, this.displayConfiguration.DisplayDescendantAssets)
+            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects, this.displayConfiguration.Descendancy)
                 .subscribe((response: AssetBrowserResponseModel) => {
 
                     if (response.hierarchy && response.hierarchy.length > 0) {

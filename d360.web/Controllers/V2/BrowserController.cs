@@ -45,7 +45,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf, @includeDescendantAssets";
+                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf, @descendancy";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -56,7 +56,7 @@ namespace d360.web.Controllers.V2
                         isAdmin = Company.CurrentResourceIsAdmin,
                         postModel.hopCount,
                         postModel.includeNonLeaf,
-                        postModel.includeDescendantAssets
+                        postModel.descendancy
                     },
                     timeout: 120
                 );
@@ -110,7 +110,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<HttpResponseMessage> GetInitialLineage(AssetBrowserLineageInitialModel model)
         {
-            var o = new AssetBrowserInitialModel { ancestry = model.ancestry, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf, includeDescendantAssets = model.includeDescendantAssets };
+            var o = new AssetBrowserInitialModel { ancestry = model.ancestry, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf, descendancy = model.descendancy };
             return await getInitial(o);
         }
 
@@ -157,7 +157,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_ImpactHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @predicateUid, @direction, @resourceId, @isAdmin, @includeNonLeaf, @includeDescendantAssets";
+                var sql = "exec graph.AssetBrowser_ImpactHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @predicateUid, @direction, @resourceId, @isAdmin, @includeNonLeaf, @descendancy";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -171,7 +171,7 @@ namespace d360.web.Controllers.V2
                         resourceId = Company.CurrentResourceID,
                         isAdmin = Company.CurrentResourceIsAdmin,
                         hopModel.includeNonLeaf,
-                        hopModel.includeDescendantAssets
+                        hopModel.descendancy
                     },
                     timeout: 60
                 );
@@ -205,7 +205,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin, @includeNonLeaf, @includeDescendantAssets";
+                var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin, @includeNonLeaf, @descendancy";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -218,7 +218,7 @@ namespace d360.web.Controllers.V2
                         resourceId = Company.CurrentResourceID,
                         isAdmin = Company.CurrentResourceIsAdmin,
                         hopModel.includeNonLeaf,
-                        hopModel.includeDescendantAssets
+                        hopModel.descendancy
                     },
                     timeout: 60
                 );

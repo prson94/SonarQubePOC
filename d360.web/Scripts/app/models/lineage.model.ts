@@ -296,6 +296,12 @@ export enum FilterAncestryMode {
     NoAncestor = 3
 }
 
+export enum FilterDescendancyMode {
+    None = 1,
+    Direct = 2,
+    All = 3
+}
+
 export class FilterAncestryOption {
     Mode: FilterAncestryMode;
     Text: string;
@@ -337,6 +343,7 @@ export class AssetBrowserFilterModel {
     SelectedPredicates: number[] = [];
     SelectedResponsibilityTypes: number[] = [];
     DisplayDescendantAssets: boolean = true;
+    Descendancy: FilterDescendancyMode = FilterDescendancyMode.None;
 }
 
 export enum AssetBrowserFilterChangeEventType {
@@ -351,6 +358,7 @@ export enum AssetBrowserFilterChangeEventType {
     Scores = 9,
     DiagramType = 10,
     LineageHopCount = 11,
+    Descendancy = 12 
 }
 
 export class AssetBrowserFilterChangeEvent {
@@ -386,6 +394,12 @@ export class FilterSelectionsModel {
     AncestryOptions: SelectItem[] = [
         { value: FilterAncestryMode.AllAncestors, label: 'Show all parents/owners' },
         { value: FilterAncestryMode.DirectAncestor, label: 'Show direct parent/owner' }
+    ];
+
+    DescendancyOptions: SelectItem[] = [
+        { value: FilterDescendancyMode.None, label: 'None' },
+        { value: FilterDescendancyMode.Direct, label: 'Direct children only' },
+        { value: FilterDescendancyMode.All, label: 'All descendants' }
     ];
 
     HopOptions: SelectItem[] = [
