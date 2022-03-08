@@ -24,7 +24,7 @@ export class RelationshipFilterComponent {
                             if (val === rt.name.toLowerCase()) {
                                 rt.isSelected = true;
                             }
-                        })
+                        });
                     });
                     this.cdRef.markForCheck();
                 }

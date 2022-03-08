@@ -328,7 +328,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                         var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
                         defaultFilter.field = field.Name;
                         defaultFilter.isDefaultFilter = true;
-                        if (!newFiltersPushed || !this.conditions.filters.some(x => x.field === field.Name && x.isDefaultFilter === true)) {
+                        if (!newFiltersPushed || !this.conditions.filters.some((x) => x.field === field.Name && x.isDefaultFilter === true)) {
                             this.conditions.filters.push(defaultFilter);
                         }
                     }

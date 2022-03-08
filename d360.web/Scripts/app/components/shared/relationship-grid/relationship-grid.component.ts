@@ -94,7 +94,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         data.items = [];
         this.relationshipTypesResolvedNames.forEach((item) => {
             data.items.push({ value: item["uid"], name: item["name"], count: item.count });
-        })
+        });
         return of(data);
     }
     filterFieldList: AdvancedFilterFieldType[] = [
@@ -316,7 +316,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
                 var type = this.relationshipTypes.filter((rt) => rt.Uid.toLowerCase() === i.RelationshipTypeUid.toLowerCase());
                 if (type.length > 0) {
-                    i["isHierarchy"] = type[0].Predicate.Type === "InterTypeHierarchy" || type[0].Predicate.Type === "IntraTypeHierarchy"
+                    i["isHierarchy"] = type[0].Predicate.Type === "InterTypeHierarchy" || type[0].Predicate.Type === "IntraTypeHierarchy";
                 }
             });
         }
@@ -376,7 +376,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             return null;
         }
 
-        var relFilter = this.advancedFilterData.filter(x => x.field === "relationshiptype");
+        var relFilter = this.advancedFilterData.filter((x) => x.field === "relationshiptype");
         if (relFilter && relFilter.length !== 0 && relFilter[0]["value"] && relFilter[0]["value"].length === 1) {
             var value = relFilter[0]["value"][0]["value"];
             var selected = this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === value.toLowerCase());
@@ -434,7 +434,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             typeFilters.forEach((f) => {
                 if (f.value) {
                     f.value.forEach((item) => {
-                        var names = this.relationshipTypesResolvedNames.filter((x => x.uid.toLowerCase() === item.value.toLowerCase()));
+                        var names = this.relationshipTypesResolvedNames.filter((x) => x.uid.toLowerCase() === item.value.toLowerCase());
                         names.forEach((sel) => sel.isSelected = true);
                     });
                 }

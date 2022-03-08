@@ -7,6 +7,21 @@ import { ResponsibilityTypeRelationPermission } from '../models/responsibility-t
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 
+export class Permissions {
+    ReadAsset: boolean;
+    AddAsset: boolean;
+    DeleteAsset: boolean;
+    EditAsset: boolean;
+    ReadResponsibilities: boolean;
+    AddResponsibilities: boolean;
+    DeleteResponsibilities: boolean;
+    EditResponsibilities: boolean;
+    ReadRelationships: boolean;
+    AddRelationships: boolean;
+    DeleteRelationships: boolean;
+    EditRelationships: boolean;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -37,23 +52,8 @@ export class PermissionsService extends BaseObservableService {
 
     getAssetPermissions(assetUid: string): Observable<Permissions> {
         return this.http.get(`api/v2/permissions/asset/${assetUid}`).pipe(
-            map(response => <Permissions>response),
+            map((response) => <Permissions>response),
             catchError(err => this.handleError(err))
         );
     }
-}
-
-export class Permissions {
-    ReadAsset: boolean;
-    AddAsset: boolean;
-    DeleteAsset: boolean;
-    EditAsset: boolean;
-    ReadResponsibilities: boolean;
-    AddResponsibilities: boolean;
-    DeleteResponsibilities: boolean;
-    EditResponsibilities: boolean;
-    ReadRelationships: boolean;
-    AddRelationships: boolean;
-    DeleteRelationships: boolean;
-    EditRelationships: boolean;
 }

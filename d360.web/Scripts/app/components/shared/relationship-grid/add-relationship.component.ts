@@ -220,7 +220,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             }
 
             relationships.push(relationship);
-        })
+        });
 
         this.relationshipService.saveRelationships(this.selectedType.Uid, relationships)
             .subscribe((result) => {

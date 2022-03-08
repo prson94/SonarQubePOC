@@ -226,7 +226,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             params["_pageNum"] = ($event.first / $event.rows) + 1;
         }
         else {
-            params["_pageSize"] = this.rowsPerPage;;
+            params["_pageSize"] = this.rowsPerPage;
             params["_pageNum"] = 1;
         }
 

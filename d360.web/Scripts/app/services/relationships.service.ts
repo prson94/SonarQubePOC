@@ -368,7 +368,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     getRelationshipsForAsset(assetUid: string, params: any): Observable<any[]> {
-        var url = `/api/v2/relationships?AssetUid=${assetUid}`
+        var url = `/api/v2/relationships?AssetUid=${assetUid}`;
         if (!params) {
             params = {};
         }
@@ -382,8 +382,8 @@ export class RelationshipsService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -405,7 +405,7 @@ export class RelationshipsService extends BaseObservableService {
         }
 
         return this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.downloadFile(data, fileName);
                 if (callback) {
                     callback();
