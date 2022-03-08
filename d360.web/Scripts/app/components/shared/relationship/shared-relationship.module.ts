@@ -26,6 +26,8 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { RelationshipsModalComponent } from './relationships-modal.component';
 import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 import { CheckboxModule } from 'primeng/checkbox';
+import { RelationshipGridModule } from '../relationship-grid/relationship-grid.module';
+import { AddRelationshipModule } from '../relationship-grid/add-relationship.module';
 
 @NgModule({
     imports: [
@@ -51,7 +53,9 @@ import { CheckboxModule } from 'primeng/checkbox';
         DirectivesModule,
         TooltipModule,
         SiteModalModule,
-        CheckboxModule
+        CheckboxModule,
+        RelationshipGridModule,
+        AddRelationshipModule
     ],
     declarations: [
         ObjectRelationshipsComponent,
