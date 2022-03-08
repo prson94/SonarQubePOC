@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 import { LocalStorageKey } from '../enums/localstorage.enum';
 import { Breadcrumb } from '../models/breadcrumb.model';
 import { AppConstants } from '../static/constants';
@@ -29,7 +29,7 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
   defineNumberOfRows(defaultNumberOfRows?: number): void {
     this.setNumberOfRowsToCategory(defaultNumberOfRows);
     this.headerBreadcrumbService.breadcrumbIsSetToStorage.pipe(
-      takeUntil(this.destroy)
+      take(1)
     ).subscribe(() => {
       this.setNumberOfRowsToCategory(defaultNumberOfRows);
     });
