@@ -110,6 +110,7 @@ export class CompanySettingsService extends BaseObservableService {
 
     private parseSettingChange(setting: SettingsPutModel): SettingsPutModel {
         let currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);
+
         if (currentSetting.BooleanSetting && setting.BooleanSetting && currentSetting.BooleanSetting.Value !== setting.BooleanSetting.Value) {
             currentSetting.BooleanSetting.Value = setting.BooleanSetting.Value;
             return setting;
@@ -134,7 +135,6 @@ export class CompanySettingsService extends BaseObservableService {
             currentSetting.StringSetting.Value = setting.StringSetting.Value;
             return setting;
         }
-
         return null;
     }
 
