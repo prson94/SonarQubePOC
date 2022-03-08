@@ -2771,14 +2771,14 @@ where asset.Object = @type and asset.ObjectId = @id
                             {
                                 if (asset.CreatedBy.HasValue)
                                 {
-                                    model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy,
+                                    model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
                                         FieldInfo.CreatedBy_Name,
                                         users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
                                 }
 
                                 if (asset.UpdatedBy.HasValue)
                                 {
-                                    model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy,
+                                    model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy,
                                         FieldInfo.UpdatedBy_Name,
                                         users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
                                 }
@@ -3493,6 +3493,37 @@ where asset.Object = @type and asset.ObjectId = @id
                             },
                                 Category = Resources.FieldInfo.SystemFieldCategory
                             });
+
+                            if (asset.UpdatedOn.HasValue)
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 2,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", 
+                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", 
+                                        DataType = "date" }
+                                },
+                                    SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", 
+                                        FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                },
+                                    Category = FieldInfo.SystemFieldCategory
+                                });
+                            }
+                            else
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", 
+                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", 
+                                        DataType = "date" }
+                                },
+                                    Category = FieldInfo.SystemFieldCategory
+                                });
+                            }
                         }
 
                         IEnumerable<GlobalReportingResource> users = GetUserNamesFromGloabResource(asset.CreatedBy, asset.UpdatedBy);
@@ -3500,14 +3531,14 @@ where asset.Object = @type and asset.ObjectId = @id
                         {
                             if (asset.CreatedBy.HasValue)
                             {
-                                model.rows.Add(RowWithUserNameLinkAndLookup(asset.CreatedBy, 
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
                                     FieldInfo.CreatedBy_Name, 
                                     users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
                             }
 
                             if (asset.UpdatedBy.HasValue)
                             {
-                                model.rows.Add(RowWithUserNameLinkAndLookup(asset.UpdatedBy, 
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy, 
                                     FieldInfo.UpdatedBy_Name, 
                                     users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
                             }
@@ -3998,6 +4029,10 @@ where asset.Object = @type and asset.ObjectId = @id
 select	A.ID as AssetID,
         A.UID as UID,
 		A.ObjectID,
+		A.CreatedOn,
+		A.CreatedBy,
+		A.UpdatedOn,
+		A.UpdatedBy,
 		T.ID as TypeID,
         T.uid as AssetTypeUid,
 		P.TextPath,
@@ -4065,8 +4100,28 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = taxonomy.AssetTypeUid.ToString(), DataType = "string" }
                             },
-                            Category = Resources.FieldInfo.SystemFieldCategory
+                            Category = FieldInfo.SystemFieldCategory
                         });
+
+                        model.rows.Add(SystemFieldsHelper.DetailRowInSystemFieldsForCreatedOnAndUpdatedOn(taxonomy));
+
+                        IEnumerable<GlobalReportingResource> users = GetUserNamesFromGloabResource(taxonomy.CreatedBy, taxonomy.UpdatedBy);
+                        if (users != null)
+                        {
+                            if (taxonomy.CreatedBy != null)
+                            {
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(taxonomy.CreatedBy,
+                                    FieldInfo.CreatedBy_Name,
+                                    users.FirstOrDefault(x => x.ResourceID == taxonomy.CreatedBy)));
+                            }
+
+                            if (taxonomy.UpdatedBy != null)
+                            {
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(taxonomy.UpdatedBy,
+                                    FieldInfo.UpdatedBy_Name,
+                                    users.FirstOrDefault(x => x.ResourceID == taxonomy.UpdatedBy)));
+                            }
+                        }
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
@@ -4193,32 +4248,6 @@ where v.id = {0}", id)).FirstOrDefault();
                                 where u.resourceid = @resourceId1 or u.resourceid = @resourceId2
                                 ",
                 new { resourceId1 = userId1, resourceId2 = userId2 });
-        }
-
-        private static DetailReadOnlyRowModel RowWithUserNameLinkAndLookup(int? resourceId, string fieldName, GlobalReportingResource resource)
-        {
-            return new DetailReadOnlyRowModel
-            {
-                columns = 1,
-                FirstColumnFields = new List<ReadOnlyField> {
-                    new ReadOnlyField {
-                        Name = fieldName,
-                        FieldName = "ReferenceList",
-                        Value = "values",
-                        Values = new List<ReadOnlyFieldValue>{
-                            new ReadOnlyFieldValue {
-                                Value = resource?.FullName ?? "",
-                                TooltipType = "Resource",
-                                TooltipUrl = $"resource/{resourceId}",
-                                HideTooltip = true
-                            }
-                        },
-                        DataType = DataType.Lookup.ToString(),
-                        ResourceUid = resource?.Uid
-                    }
-                },
-                Category = FieldInfo.SystemFieldCategory
-            };
         }
 
         private string GetPromotionStatusMessage(LoadDetail load)
