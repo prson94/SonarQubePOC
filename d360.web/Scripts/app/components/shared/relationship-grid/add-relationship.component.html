@@ -2,6 +2,7 @@
            (onClose)="close();"
            [title]="'Add Relationships'"
            [subtitle]="modalSubtitle"
+           [appendToBody]="true"
            [isVisible]="isVisible">
     <div class="add-relationship-editor">
         <div *ngIf="currentStep === 'SetRelationshipType'">

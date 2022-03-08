@@ -1,4 +1,4 @@
-﻿import { OnInit, ViewChild } from '@angular/core';
+﻿import { EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { forEach } from 'lodash';
@@ -35,6 +35,8 @@ import { AddRelationshipComponent } from './add-relationship.component';
 export class RelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy, OnInit {
     @Input() assetUid: string = "";
     @Input() assetTypeUid: string = "";
+    @Input() isInModal: boolean = false;
+    @Output() onClose = new EventEmitter();
 
     assetPermissions: Permissions;
 

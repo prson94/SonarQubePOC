@@ -6268,15 +6268,15 @@ end",
                     Connection.Close();
                     sw.Restart();
 
-                    //if (sendGraphEvents)
-                    //{
-                    //    SendAssetGraphEvents(results);
-                    //    AddMeasurement(metrics, "SendAssetGraphEvents", sw.ElapsedMilliseconds, ++step);
-                    //    sw.Restart();
-                    //}
+                    if (sendGraphEvents)
+                    {
+                        SendAssetGraphEvents(results);
+                        AddMeasurement(metrics, "SendAssetGraphEvents", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+                    }
 
-                    //if (sendWorkflowEvents)
-                    //    SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
+                    if (sendWorkflowEvents)
+                        SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
 
                     AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
 

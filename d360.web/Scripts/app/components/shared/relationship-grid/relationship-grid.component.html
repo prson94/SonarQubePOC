@@ -1,7 +1,11 @@
 ﻿<div class="relationship-detail">
     <div class="row">
         <div class="col s12" style="display: flex">
-            <div class="tile tile-detail main-panel">
+            <div class="main-panel {{isInModal ? 'modal-dialog-main-panel' : 'tile tile-detail '}}">
+                <div class="modal-title" *ngIf="isInModal">
+                    <h1>Relationships</h1>
+                    <h2 *ngIf="assetDetail">{{assetDetail.DisplayValue}}</h2>
+                </div>
                 <div class="grid-actions-header">
                     <div class="simple-search">
                         <ig-search-field mode="Keypress"
@@ -105,8 +109,14 @@
                                               [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
+
+                <div class="action-bar modal-action-bar" *ngIf="isInModal">
+                    <button igButton igAutoFocus label="Close" (click)="onClose.emit()"></button>
+                </div>
             </div>
-            <div *ngIf="areTypesLoaded && relationshipTypesResolvedNames.length !== 0" class="tile tile-detail side-panel">
+
+
+            <div *ngIf="areTypesLoaded && relationshipTypesResolvedNames.length !== 0" class="side-panel {{isInModal ? '' : 'tile tile-detail '}}">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
                             (selectedPanelChange)="sidePanelTab=$event"
                             [hasSelectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
@@ -152,6 +162,7 @@
 
 <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
            (onClose)="showEditor=false"
+           [appendToBody]="true"
            [showTitle]="false"
            [isVisible]="showEditor">
     <asset-editor #dynamicEditor
@@ -180,6 +191,7 @@
 
 <d3s-modal *ngIf="selectedRelationship" additionalClasses="modal-dyn-editor asset-editor"
            (onClose)="showDelete=false"
+           [appendToBody]="true"
            [title]="'Delete Relationship'"
            [isVisible]="showDelete">
     <div class="content">

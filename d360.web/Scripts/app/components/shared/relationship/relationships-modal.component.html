@@ -4,7 +4,7 @@
            [showConfirm]="false"
            (onClose)="cancel()"
            [isVisible]="isModalVisible">
-    <div class="content">
-        <gov-relationship-grid [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
-    </div> 
+    <div class="modal-with-side-panel">
+        <gov-relationship-grid (onClose)="cancel()" [assetUid]="assetUid" [assetTypeUid]="assetTypeUid" [isInModal]="true"></gov-relationship-grid>
+    </div>
 </d3s-modal>
