@@ -226,68 +226,19 @@ namespace d360.model.workflow
                                 {
                                     //check if the value matches
                                     var formValue = formModel.GetFormValueById(item.FormInputId);
-
-                                    if (item.Operator == CriteriaOperator.NotEqual)
-                                    {
-                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0)
-                                        {
-                                            return false;
-                                        }
-                                    }
-                                    else if (item.Operator == CriteriaOperator.Equal)
-                                    {
-                                        //true operator
-                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0)
-                                        {
-                                            return false;
-                                        }
-                                    }
-                                    else if (item.Operator == CriteriaOperator.Populated)
-                                    {
-                                        return formValue.Length > 0;
-                                    }
-                                    else if (item.Operator == CriteriaOperator.NotPopulated)
-                                    {
-                                        return formValue.Length <= 0;
-                                    }
-                                } break;
+                                    return item.IsValueMatch(formValue);
+                                }
                             case FormResponseType.All:
                                 {
                                     // ALL USERS NEED TO RESPOND AND APPROVE
-
                                     // GET RESPONSES FROM EACH FORM AND MAKE SURE THEY ARE THE SAME IF NOT RETURN FALSE
                                     var formValues = formModel.GetFormValuesById(item.FormInputId);
 
                                     foreach (var val in formValues)
                                     {
-                                        if (item.Operator == CriteriaOperator.NotEqual)
+                                        if (item.IsValueMatch(val) == false)
                                         {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0)
-                                            {
-                                                return false;
-                                            }
-                                        }
-                                        else if (item.Operator == CriteriaOperator.Equal)
-                                        {
-                                            //true operator
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0)
-                                            {
-                                                return false;
-                                            }
-                                        }
-                                        else if (item.Operator == CriteriaOperator.Populated)
-                                        {
-                                            if (val.Length <= 0)
-                                            {
-                                                return false;
-                                            }
-                                        }
-                                        else if (item.Operator == CriteriaOperator.NotPopulated)
-                                        {
-                                            if (val.Length > 0)
-                                            {
-                                                return false;
-                                            }
+                                            return false;
                                         }
                                     }
                                     return true;
@@ -295,38 +246,13 @@ namespace d360.model.workflow
                             case FormResponseType.Majority:
                                 {
                                     var formValues = formModel.GetFormValuesById(item.FormInputId);
-
                                     var matchCount = 0;
 
                                     foreach (var val in formValues)
                                     {
-                                        if (item.Operator == CriteriaOperator.NotEqual)
+                                        if (item.IsValueMatch(val))
                                         {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0)
-                                            {
-                                                matchCount++;
-                                            }
-                                        }
-                                        else if (item.Operator == CriteriaOperator.Equal)
-                                        {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0)
-                                            {
-                                                matchCount++;
-                                            }
-                                        }
-                                        else if (item.Operator == CriteriaOperator.Populated)
-                                        {
-                                            if (val.Length > 0)
-                                            {
-                                                matchCount++;
-                                            }
-                                        }
-                                        else if (item.Operator == CriteriaOperator.NotPopulated)
-                                        {
-                                            if (val.Length <= 0)
-                                            {
-                                                matchCount++;
-                                            }
+                                            matchCount++;
                                         }
                                     }
 
@@ -334,10 +260,8 @@ namespace d360.model.workflow
                                 }
                             default:
                                 Console.WriteLine("DEBUG - FORM HAS UNKNOWN OR UNSUPPORTED FORM RESPONSE TYPE");
-
                                 return false;
                         }
-                        break;
                     case WorkflowActivityType.HTTPRequest:
                         switch(item.FormInputId.ToUpper())
                         {
