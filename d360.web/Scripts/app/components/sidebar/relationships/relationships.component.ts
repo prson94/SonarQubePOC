@@ -12,11 +12,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-relationships-wrapper',
     template: `
-                    <d3s-object-relationships *ngIf="false" [objectType]="objectType"
-                                              [objectID]="objectID"
-                                              [objectName]="objectName"
-                                              [objectPermissions]="permissions"></d3s-object-relationships>
-                    <gov-relationship-grid [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
+     <gov-relationship-grid [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
     `,
     providers: [PermissionsService, ObjectDetailService]
 })

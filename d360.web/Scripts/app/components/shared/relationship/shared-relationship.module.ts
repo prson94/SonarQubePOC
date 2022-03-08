@@ -18,8 +18,6 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 
-import { ObjectRelationshipsComponent } from './object-relationships.component';
-import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { SiteModalModule } from '../modal/gov-modal.module';
@@ -58,12 +56,9 @@ import { AddRelationshipModule } from '../relationship-grid/add-relationship.mod
         AddRelationshipModule
     ],
     declarations: [
-        ObjectRelationshipsComponent,
-        DynamicRelationshipGridComponent,
         RelationshipsModalComponent,
     ],
     exports: [
-        ObjectRelationshipsComponent,
         RelationshipsModalComponent,
     ],
     providers: [

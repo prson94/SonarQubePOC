@@ -5,7 +5,6 @@ import { PermissionsService } from '../../../services/permissions.service';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 /* FIXME: Extract templates and styles to their own files
@@ -24,9 +23,6 @@ export class RelationshipsModalComponent extends BaseComponent implements OnDest
     @Input() isModalVisible: boolean = false;
     @Input() subtitle: string;
     @Output() onClose = new EventEmitter;
-
-
-    @ViewChild(ObjectRelationshipsComponent, { static: false }) private relationComponent: ObjectRelationshipsComponent;
 
     componentTitle: string = 'Relationships';
 
@@ -47,14 +43,7 @@ export class RelationshipsModalComponent extends BaseComponent implements OnDest
         this.cancel();
     }
 
-    closeRelationshipComponent() {
-        if (this.relationComponent) {
-            this.relationComponent.ngOnDestroy();
-        }
-    }
-
     cancel() {
-        this.closeRelationshipComponent();
         this.isModalVisible = false;
         this.onClose.emit(null);
     }
