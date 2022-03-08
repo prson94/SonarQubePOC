@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { SearchResultsObject, SearchQuery, SearchResultInfo } from '../models/search-result.model';
+import { SearchResults, SearchQuery } from '../models/search-result.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, takeUntil, shareReplay, delay } from 'rxjs/operators';
 import { Observable, Subject, of } from 'rxjs';
@@ -15,17 +15,16 @@ export class SearchService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    private getEmptyResult(): SearchResultsObject {
-        let result = new SearchResultsObject();
-        result.Categories = [];
-        result.Result = new SearchResultInfo();
-        result.Result.Results = [];
-        result.Result.ElapsedMS = 0;
-        result.Result.Matches = 0;
+    private getEmptyResult(): SearchResults {
+        let result = new SearchResults();
+        result.Results = [];
+        result.Aggregations = { category: []};
+        result.Matches = 0;
+        result.ElapsedMS = { Query: 0, Augment: 0 };
         return result;
     }
 
-    getSearchResultsByQuery(query: SearchQuery): Observable<SearchResultsObject> {
+    getSearchResultsByQuery(query: SearchQuery): Observable<SearchResults> {
         if (typeof query.Term === "undefined" || query.Term === "") {
             //No search term, no results, no need to call endpoint
             return of(this.getEmptyResult());
@@ -34,7 +33,7 @@ export class SearchService extends BaseObservableService  {
         return this.http
             .post('api/v2/search/results', query)
             .pipe(
-                map((res) => <SearchResultsObject>res),
+                map((res) => <SearchResults>res),
                 catchError((err) => {
                     let errorMessage = null;
                     if (Object.keys(err).indexOf("error") > -1) {

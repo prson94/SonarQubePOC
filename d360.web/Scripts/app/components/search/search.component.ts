@@ -6,7 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SearchStateService } from './search-state.service';
-import { SearchResultsObject, SearchCategories, SearchSelecton, SearchFieldFilter, SearchConnector, SearchOperator } from '../../models/search-result.model';
+import { SearchResults, SearchAggregation, SearchSelection, SearchFieldFilter, SearchConnector, SearchOperator } from '../../models/search-result.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { SidePanelButton } from "../../models/side-panel.model";
@@ -18,7 +18,6 @@ import { PopupMenuItem } from '../shared/controls/popup-menu/popup-menu.componen
 import { FieldType } from '../../models/fieldtype-api.model';
 import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/advanced-filtering.component';
 import { Operator } from '../../models/operator.model';
-import { SelectItem } from '../../models/form.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { SemanticType } from '../../models/semantic-type.model';
@@ -31,8 +30,8 @@ import { SemanticType } from '../../models/semantic-type.model';
 })
 
 export class SearchComponent extends BaseComponent implements OnInit, OnDestroy {
-    public searchResults: SearchResultsObject;
-    public categories: SearchCategories[] = [];
+    public searchResults: SearchResults;
+    public categories: SearchAggregation[] = [];
     public searchText: string;
     public searchTypes: string[] = [];
 
@@ -40,7 +39,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     public fromNumber: number = 0;
     public sub: any;
     public PageNumberSub: any;
-    public selection: SearchSelecton;
+    public selection: SearchSelection;
 
     public sidePanelOpen: boolean = true;
     public sidePanelLoading: boolean = false;
@@ -136,7 +135,8 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
 
         this.PageNumberSub = this.searchStateService.resultCount.subscribe((pageCount) => {
             this.canExport = pageCount > 0 && pageCount <= this.exportLimit;
-            this.searchExportTooltip = (pageCount <= this.exportLimit) ? "Export to Excel" : `No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;        });
+            this.searchExportTooltip = (pageCount <= this.exportLimit) ? "Export to Excel" : `No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;
+        });
     }
 
     ngOnDestroy() {
@@ -347,7 +347,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         this.semanticType = event.semanticType;
     }
 
-    getQualifier(selection: SearchSelecton): string {
+    getQualifier(selection: SearchSelection): string {
         const pipe = selection.ID.indexOf("|", 0) + 1;
         return selection.ID.substring(pipe);
     }
