@@ -61,7 +61,7 @@ namespace d360.web
                     host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
                 }
 
-                if (companyID.HasValue && !host.Contains("-d3s") && !host.Contains("-igx")) // If d3s url, automatically allow the user as they are a Data3Sixty employee.
+                if (companyID.HasValue && !host.Contains("-d3s") && !host.Contains("-igx") && !host.Contains("-pcy")) // If d3s url, automatically allow the user as they are a Data3Sixty/Precisely/Infogix employee.  Thrivent still has a d3s url
                 {
                     var ctx = CreateOwinCompanyContext(companyID.Value);
                     var ipXml = ctx.GetSettingValue<string>(Setting.IpRestriction);
