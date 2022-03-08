@@ -132,7 +132,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                         disabledClass = 'disabled-predicate';
                     }
 
-                    this.relationshipTypesResolvedNames.push({ uid: type.Uid, name: name, count: count, isSelected: false, disabledClass: disabledClass });
+                    this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass });
                 });
                 this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
                 this.cdRef.detectChanges();

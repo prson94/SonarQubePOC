@@ -388,7 +388,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     public getRelationshipsForAssetExcel(assetUid: string, params: any, fileName: string = '', callback: Function = null) {
-        var url = `/api/v2/relationships?AssetUid=${assetUid}`
+        var url = `/api/v2/relationships?AssetUid=${assetUid}`;
         if (!params) {
             params = {};
         }

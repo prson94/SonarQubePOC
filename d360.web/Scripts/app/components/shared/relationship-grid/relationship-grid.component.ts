@@ -247,7 +247,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 this.relationshipTypesResolvedNames.push(
                     {
                         uid: rc.IntersectTypeUid,
-                        name: name,
+                        name,
                         count: rc.Count,
                         isSelected: false
                     });
@@ -438,7 +438,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                         names.forEach((sel) => sel.isSelected = true);
                     });
                 }
-            })
+            });
             this.relationshipTypesResolvedNames = JSON.parse(JSON.stringify(this.relationshipTypesResolvedNames));
         }
 
