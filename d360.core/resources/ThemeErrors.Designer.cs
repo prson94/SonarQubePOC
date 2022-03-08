@@ -340,6 +340,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An existing theme with this name already exists. Theme names must be unique..
+        /// </summary>
+        public static string ThemeNameMustBeUnique {
+            get {
+                return ResourceManager.GetString("ThemeNameMustBeUnique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No theme exists with the provided Uid..
         /// </summary>
         public static string ThemeWithUidNotFound {

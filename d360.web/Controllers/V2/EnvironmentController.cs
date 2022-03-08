@@ -1323,20 +1323,20 @@ namespace d360.web.Controllers.V2
 
         #region Theme Endpoints
 
+        const string THEME_UID_FILTER_PARAMETER = "An optional unique identifier of the theme, to limit this list to a specific theme.";
+        const string THEME_NOT_FOUND = "The theme was not found based on the provided unique identifier.";
+
         /// <summary>
         /// Gets a list of themes in an environment.
         /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
         /// <returns>A list of themes defined in your environment.</returns>
         [
             HttpGet,
             Route("themes"),
             SwaggerProduces("application/json"),
-            SwaggerParameter("uid", "An optional uid of the theme, to limit this list to a specific theme.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("uid", THEME_UID_FILTER_PARAMETER, DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of themes.", typeof(List<GetTheme>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetThemes(CancellationToken cancellationToken)
         {
@@ -1364,7 +1364,8 @@ namespace d360.web.Controllers.V2
             Route("themes/current.css"),
             SwaggerProduces("text/css"),
             SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(string)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "No themes exist or none are set as the current theme.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetCurrentThemeCss()
         {
@@ -1414,12 +1415,14 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves the generated CSS stylesheet for the theme (based on the provided Uid) that contains variables used by other stylesheets within Govern.
         /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
         [
             HttpGet,
             Route("themes/{uid:Guid}.css"),
             SwaggerProduces("text/css"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(string)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the specified theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult GetThemeCssByUid(Guid uid)
         {
@@ -1469,14 +1472,15 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves the generated CSS stylesheet for the theme (based on the provided Uid) that contains variables used by other stylesheets within Govern.
         /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
         [
             HttpGet,
             Route("themes/{uid:Guid}/custom.css"),
             SwaggerProduces("text/css"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(string)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns custom CSS for the specified theme.", typeof(string)),
             SwaggerResponse(HttpStatusCode.NotFound, "Theme does not exist, or does not contain custom Css.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Conflict, "Feature is not enabled.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Conflict, "Feature is not enabled.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult GetThemeCustomCssByUid(Guid uid)
         {
@@ -1522,12 +1526,14 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves the generated SVG thumbnail for the theme based on the provided Uid.
         /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
         [
             HttpGet,
             Route("themes/{uid:Guid}.svg"),
             SwaggerProduces("application/svg+xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(string)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.OK, "Returns an SVG thumbnail for the specified theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetThemeSvgByUid(Guid uid)
         {
@@ -1573,8 +1579,9 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route("themes"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding theme.", typeof(GetTheme)),
+            SwaggerConsumes("application/json"), 
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Created, "Returns the created theme.", typeof(GetTheme)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -1615,17 +1622,16 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Updates a theme based on the provided Uid.
         /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
+        /// <param name="uid">The unique identifier of the theme.</param>
         /// <returns>The updated theme.</returns>
         [
             HttpPut,
             Route("themes/{uid:Guid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerConsumes("application/json"), 
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the updated theme.", typeof(GetTheme)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "The theme was not found based on the provided Uid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -1666,14 +1672,15 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Makes the selected theme the current one.
         /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
         /// <returns>An Http Status code.</returns>
         [
             HttpPatch,
             Route("themes/{uid:Guid}/current"),
             SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the status code.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "The theme was not found based on the provided Uid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -1709,17 +1716,15 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes a theme, provided it is not set as the current theme of the environment.
         /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
+        /// <param name="uid">The unique identifier of the theme.</param>
         /// <returns>A confirmation response.</returns>
         [
             HttpDelete,
             Route("themes/{uid:Guid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns a success message.", typeof(ConfirmResponse)),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Your Theme was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this theme is invalid, possibly due to being set as the current theme.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]

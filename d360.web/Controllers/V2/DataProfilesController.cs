@@ -1104,7 +1104,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("asOfEffectiveDate", "Assumed to be current UTC date if left empty, otherwise, gets semantic types as of the specified effective date, and nothing later. This is the parameter used to get prior versions.", DataType = "datetime", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic types.", typeof(GetSemantics)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetSemanticTypes(CancellationToken cancellationToken)
         {
@@ -1170,7 +1170,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the semantic types are ordered by Qualifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic types.", typeof(List<GetSemantic>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetSemanticTypeVersions(string qualifier, CancellationToken cancellationToken)
         {
@@ -1395,7 +1395,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route("semantictypes/{qualifier}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns a success message.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Your semantic type was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this semantic type is invalid, possibly due to being used on one or more data profiles.", typeof(ErrorResponse)),
