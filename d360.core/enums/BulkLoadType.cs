@@ -7,14 +7,19 @@ namespace d360.core.enums
     {
         [Name("P")]
         Promotion = 0,
+        
         [Name("R")]
         Relation = 1,
+        
         [Name("O")]
         Responsibilities = 2,
+        
         [Name("U")]
         Unrelation = 3,
+        
         [Name("M")]
         Users = 4,
+        
         [Name("M")]
         Groups = 5
     }
@@ -22,6 +27,7 @@ namespace d360.core.enums
     public class BulkLoadTypeInfo
     {
         public ScoreType ID { get; set; }
+        
         public string Name { get; set; }
     }
 

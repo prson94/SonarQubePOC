@@ -10,15 +10,20 @@ namespace d360.core.enums
     {
         [Name("Governance Score"), ReadOnly(false), Description("")]
         Governance = 1,
+        
         [Name("Data Quality Score"), ReadOnly(false), Description("")]
-        DataQuality = 2,        
+        DataQuality = 2,
     }
+
     public class ScoreTypeInfo
     {
         public ScoreType ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
+
     public static class ScoreTypeClassExtensions
     {
         public static string GetDisplayName(this ScoreType type)
@@ -54,6 +59,5 @@ namespace d360.core.enums
 
             return list.OrderBy(i => i.Name).ToList();
         }
-
     }
 }

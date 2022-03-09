@@ -1,11 +1,10 @@
-﻿using d360.core.enums;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
+using d360.core.enums;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
@@ -51,7 +50,9 @@ namespace d360.core.entities
     public class IssueInsertAPIModel
     {
         public Issue Issue { get; set; }
+
         public List<Field> fields = new List<Field>();
+
         public string Comment { get; set; }
     }
 
@@ -59,27 +60,33 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid AssetTypeUid { get; set; }
+
         [DataMember]
         public AssetTypeClass Class { get; set; }
+
         [DataMember]
         public string Name { get; set; }
+
         [DataMember]
         public string Path { get; set; }
+
         [IgnoreDataMember]
         protected string ResponsibilitiesJson { get; set; }
+
         [DataMember]
-        public List<IssueTypeAllocationsResponsibility> Responsibilities { 
+        public List<IssueTypeAllocationsResponsibility> Responsibilities
+        {
             get
             {
                 return JsonConvert.DeserializeObject<List<IssueTypeAllocationsResponsibility>>(string.IsNullOrEmpty(ResponsibilitiesJson) ? "[]" : ResponsibilitiesJson);
-            } 
+            }
         }
-
     }
 
     public class IssueTypeAllocationsResponsibility
     {
         public string Name { get; set; }
+
         public Guid Uid { get; set; }
     }
 
@@ -87,6 +94,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid assetTypeUid { get; set; }
+
         [DataMember]
         public IEnumerable<Guid> responsibilityTypeUid { get; set; }
     }

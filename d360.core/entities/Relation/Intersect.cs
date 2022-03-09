@@ -1,10 +1,10 @@
-﻿using d360.core.entities.Contracts;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 using d360.core.enums;
-using System;
 using d360.core.queue;
 
 namespace d360.core.entities

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -24,7 +23,7 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public int ResourceObjectID { get; set; }
-        
+
         [DataMember]
         public int CreatedBy { get; set; }
 

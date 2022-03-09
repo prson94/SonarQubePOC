@@ -1,10 +1,12 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
+using d360.core.enums;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
@@ -34,18 +36,20 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class CommentDetails: BaseObject
+    public class CommentDetails : BaseObject
     {
         [DataMember]
         public int count { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public int page { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public int pageSize { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public List<CommentDetail> comments { get; set; }
     }
-
 
     [DataContract]
     public class CommentDetail
@@ -117,30 +121,42 @@ namespace d360.core.entities
         List<Guid> Tags { get; set; }
     }
 
-    public class CommentApiPostModel: IApiComment
+    public class CommentApiPostModel : IApiComment
     {
         public Guid AssetUid { get; set; }
+
         public Guid? ParentUid { get; set; }
+
         public string Body { get; set; }
+
         public List<Guid> Tags { get; set; }
     }
 
-    public class CommentApiPutModel: IApiComment
+    public class CommentApiPutModel : IApiComment
     {
         public Guid Uid { get; set; }
+
         public string Body { get; set; }
+
         public List<Guid> Tags { get; set; }
     }
 
     public class CommentNotification
     {
         public string RecipientName { get; set; }
+
         public string RecipientEmail { get; set; }
+
         public string CommenterName { get; set; }
+
         public string Subject { get; set; }
+
         public string CommentUrl { get; set; }
+
         public string AssetUrl { get; set; }
+
         public long? CommentedOnAssetId { get; set; }
+
         public bool IsHtml { get; set; }
     }
 }

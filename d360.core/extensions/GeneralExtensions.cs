@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
+
 using Newtonsoft.Json;
 
 namespace d360.core
@@ -16,9 +17,14 @@ namespace d360.core
 
                 foreach (SqlError sqlError in sqlException.Errors)
                 {
-                    if (sb.Length > 0) sb.Append(" ");
+                    if (sb.Length > 0)
+                    {
+                        sb.Append(" ");
+                    }
+
                     sb.Append(sqlError.Message);
                 }
+                
                 if (characterLimit == -1)
                 {
                     return sb.ToString();
@@ -33,7 +39,10 @@ namespace d360.core
 
             string error = "";
 
-            if (!ex.Message.Contains("inner exception for details")) error += ex.Message;
+            if (!ex.Message.Contains("inner exception for details"))
+            {
+                error += ex.Message;
+            }
 
             var iex = ex.InnerException;
             while (iex != null)

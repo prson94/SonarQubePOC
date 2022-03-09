@@ -1,9 +1,4 @@
-﻿using d360.core.enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace d360.core.helpers
 {
@@ -20,7 +15,6 @@ namespace d360.core.helpers
                 DataType.RefListRelationship.ToString(),
                 DataType.Score.ToString(),
                 DataType.Tag.ToString()
-
             };
 
             return types;
@@ -105,7 +99,7 @@ namespace d360.core.helpers
                 DataType.Counter.ToString()
             };
 
-            return types;   
+            return types;
         }
 
         public static List<string> GetNonlistableFields(this DataType dt)

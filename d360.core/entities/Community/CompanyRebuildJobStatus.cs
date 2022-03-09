@@ -1,10 +1,11 @@
-﻿using d360.core.enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -33,14 +34,19 @@ namespace d360.core.entities
     {
         [DataMember(Name = "jobToken")]
         public CompanyRebuildJobToken JobToken { get; set; }
+
         [DataMember(Name = "jobTokenName")]
         public string JobTokenName { get; set; }
+
         [DataMember(Name = "jobTokenDescription")]
         public string JobTokenDescription { get; set; }
+
         [DataMember(Name = "state")]
         public CompanyRebuildJobStatusState State { get; set; }
+
         [DataMember(Name = "lastStartedOn")]
         public DateTime? LastStartedOn { get; set; }
+
         [DataMember(Name = "lastCompletedOn")]
         public DateTime? LastCompletedOn { get; set; }
 
@@ -59,9 +65,9 @@ namespace d360.core.entities
 
         public void SetCurrentJobStatusProperties(CompanyRebuildJobStatus current)
         {
-            this.LastCompletedOn = current.LastCompletedOn;
-            this.LastStartedOn = current.LastStartedOn;
-            this.State = current.State;
+            LastCompletedOn = current.LastCompletedOn;
+            LastStartedOn = current.LastStartedOn;
+            State = current.State;
         }
     }
 }

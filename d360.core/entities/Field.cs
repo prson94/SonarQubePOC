@@ -1,8 +1,7 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System;
-using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {

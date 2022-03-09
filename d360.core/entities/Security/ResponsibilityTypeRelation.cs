@@ -1,9 +1,9 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
 using d360.core.entities.Contracts;
-using System.Collections.Generic;
-using System;
 
 namespace d360.core.entities
 {
@@ -28,11 +28,11 @@ namespace d360.core.entities
         public virtual ResponsibilityType ResponsibilityType { get; set; }
 
         public DateTime? CreatedOn { get; set; }
+
         public int? CreatedBy { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
 
         public int? UpdatedBy { get; set; }
-
     }
 }

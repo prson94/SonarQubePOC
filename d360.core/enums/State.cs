@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
@@ -11,21 +9,26 @@ namespace d360.core.enums
     {
         [Name("Unknown")]
         Unknown = -1,
+        
         [Name("Pending Add")]
         PendingAdd = 0,
+        
         [Name("Active")]
         Active = 1,
+        
         [Name("Pending Delete")]
         PendingDelete = 2,
+        
         [Name("Deleted")]
         Deleted = 3,
+        
         [Name("InActive")]
-        InActive =4
+        InActive = 4
     }
 
     public class StateInfo
     {
-        public State ID { get; set;  }
+        public State ID { get; set; }
 
         public string Name { get; set; }
     }

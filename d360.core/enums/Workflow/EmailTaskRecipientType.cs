@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
 
 namespace d360.core.enums.Workflow
@@ -11,14 +8,19 @@ namespace d360.core.enums.Workflow
     {
         [Name("None")]
         None = 0,
+        
         [Name("Initiator")]
         Initiator,
+        
         [Name("Responsibility")]
         Responsibility,
+        
         [Name("Specific User")]
         SpecificUser,
+        
         [Name("Followers")]
         Followers,
+        
         [Name("Group")]
         Group
     }
@@ -27,6 +29,7 @@ namespace d360.core.enums.Workflow
     public class EmailTaskRecipientTypeInfo
     {
         public EmailTaskRecipientType ID { get; set; }
+        
         public string Name { get; set; }
     }
 

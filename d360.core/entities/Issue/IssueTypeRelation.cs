@@ -1,15 +1,14 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
     public class IssueTypeRelation : BaseObject
     {
-
         [Column(Order = 1), DataMember, Key]
         public int IssueTypeID { get; set; }
 
@@ -26,6 +25,5 @@ namespace d360.core.entities
 
         [NotMapped, DataMember]
         public string TypeName { get; set; }
-
     }
 }

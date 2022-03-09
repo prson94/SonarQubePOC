@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class FieldDetail: BaseObject
+    public class FieldDetail : BaseObject
     {
         [DataMember]
         public int FieldTypeID { get; set; }
@@ -30,6 +30,5 @@ namespace d360.core.entities
 
         [DataMember]
         public string FormattedValue { get; set; }
-
     }
 }

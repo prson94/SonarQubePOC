@@ -14,7 +14,6 @@ namespace d360.core.Models
         public static readonly string COLUMN_TYPE_COMBO = "combobox";
         public static readonly string COLUMN_TYPE_DATE = "datetimeinput";
         public static readonly string COLUMN_TYPE_STRING = "textbox";
-
         public static readonly string FILTER_TYPE_CHECKBOX = "bool";
         public static readonly string FILTER_TYPE_CHECKEDLIST = "checkedlist";
         public static readonly string FILTER_TYPE_LIST = "list";
