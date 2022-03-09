@@ -1834,14 +1834,16 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     list.Add("LastName", 0);
                     list.Add("Email", 0);
                     list.Add("LastLoggedInOn", 0);
-                    list.Add("DisplayValue", 0);
                 }
                 else
                 {
                     list.Add("DisplayValue", 0);
                 }
 
-                list.Add("_assetPath", 0);
+                if (type != SystemObjects.ResourceType)
+                {
+                    list.Add("_assetPath", 0);
+                }
 
                 var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
                     .Where(i => i.Type != DataType.Path.ToString())
