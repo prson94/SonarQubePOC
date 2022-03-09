@@ -678,17 +678,17 @@ namespace d360.core.enums
         public CompanySettingApiIpAddressModel(SettingInfo setting, string companyValue)
         {
             var value = string.IsNullOrEmpty(companyValue) ? setting.DefaultValue : companyValue;
-            Addresses = new List<Ip>();
+            Value = new List<Ip>();
 
             if (!string.IsNullOrEmpty(value))
             {
                 var xml = XElement.Parse(value);
                 var ips = xml.Elements("ip").Select(i => new Ip { Name = i.Element("name").Value, Start = i.Element("start").Value, End = i.Element("end").Value });
-                Addresses.AddRange(ips);
+                Value.AddRange(ips);
             }
         }
 
-        public List<Ip> Addresses { get; set; }
+        public List<Ip> Value { get; set; }
     }
 
     public class CompanySettingApiGuidModel
