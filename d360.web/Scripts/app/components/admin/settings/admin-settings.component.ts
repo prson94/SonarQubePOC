@@ -126,9 +126,9 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             ipCollection = [];
         }
         this.companySettings.IpRestrictions = [];
-        ipCollection.forEach(ip => {
+        ipCollection.forEach((ip) => {
             this.companySettings.IpRestrictions.push({ End: ip.End, Name: ip.Name, Start: ip.Start });
-        })
+        });
 
         this.companySettings.MaxDropdownItems = this.getNumberSetting(CompanySettingEnum.MaxDropdownItems);
         this.companySettings.MaxExcelExportRows = this.getNumberSetting(CompanySettingEnum.MaxExcelExportRows);
@@ -173,8 +173,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     }
 
     save(): void {
-        console.log("prior to save");
-        console.log(this.settingsService.getSettingById(CompanySettingEnum.IpRestriction));
         this.isLoading = true;
         this.companySettings.DefaultSearchTypes = SettingsHelper.searchTypeListToString(this.searchTypes);
         this.companySettings.CompanyIcon = this.companyIcon.dataUrl;
