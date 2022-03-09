@@ -10,6 +10,9 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { Table } from 'primeng/table';
+import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-reference-item-type-list',
@@ -17,12 +20,15 @@ import { Table } from 'primeng/table';
     providers: [ReferenceService, PermissionsService, AssetTypeService],
 })
 
-export class ReferenceItemTypeGridComponent extends BaseComponent implements OnInit {
+export class ReferenceItemTypeGridComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() selected: ReferenceItemType;
     @Output() selectedChange = new EventEmitter();
 
     @Input() initialSelectedListUid: string;
+    public rowsPerPage: number;
+    public title: string = 'Reference Lists'
 
+    private destroy = new Subject<void>();
     private referenceTypes: ReferenceItemType[];
     private _showEditor: boolean = false;
     private _showDelete: boolean = false;
@@ -67,6 +73,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     theDeleteCallback: Function;
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private referenceService: ReferenceService,
         private permissionsService: PermissionsService,
         private assetTypeService: AssetTypeService,
@@ -80,6 +87,16 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     ngOnInit() {
         this.load();
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title];
+        });
     }
 
     private load() {
@@ -178,5 +195,10 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                 this.showDelete = true;
             });
 
+    }
+
+    ngOnDestroy() {
+        this.destroy.next();
+        this.destroy.complete();
     }
 }

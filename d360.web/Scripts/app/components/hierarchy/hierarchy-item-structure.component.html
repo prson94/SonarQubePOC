@@ -61,6 +61,7 @@
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [showLoader]="true"
                              (onNodeExpand)="nodeExpanded($event)"
+                             (onPage)="numberOfRowsByCategoryService.onPage($event)"
                              (onNodeCollapse)="nodeCollapsed($event)">
                     <ng-template pTemplate="header">
                         <tr>

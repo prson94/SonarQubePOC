@@ -1,9 +1,12 @@
-﻿import { Component, Input, OnChanges } from '@angular/core';
+﻿import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { ResponsibilityDetailForResource } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
 import { Router } from '@angular/router';
 import { BaseComponent } from "../shared/base.component";
 import { CompanySettingsService } from '../../services/settings.service';
+import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-resource-responsibility-grid-component',
@@ -11,7 +14,16 @@ import { CompanySettingsService } from '../../services/settings.service';
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
     <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ObjectName','ResponsibilityTypeName','SecurityAssetName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+    <p-table #dt
+             [value]="items"
+             selectionMode="single"
+             [metaKeySelection]="true"
+             [globalFilterFields]="['ObjectName','ResponsibilityTypeName','SecurityAssetName']"
+             [pageLinks]="3"
+             [paginator]="true"
+             [rows]="rowsPerPage || defaultInitialItemsPerPage"
+             [rowsPerPageOptions]="defaultPagingOptions"
+             (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'ObjectName'">
@@ -51,7 +63,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 </div>
 `,
 })
-export class ResourceResponsibilityGridComponent extends BaseComponent implements OnChanges {
+export class ResourceResponsibilityGridComponent extends BaseComponent implements OnChanges, OnInit, OnDestroy {
     @Input() Id: number;
     @Input() objectId: number;
     @Input() objectType: string;
@@ -59,13 +71,30 @@ export class ResourceResponsibilityGridComponent extends BaseComponent implement
     @Input() type: string;
     @Input() simpleFilter: boolean = false;
     isLoading = false;
+    rowsPerPage: number = this.defaultInitialItemsPerPage;
+    title: string = 'Resource Responsibility'
     private items: ResponsibilityDetailForResource[] = new Array<ResponsibilityDetailForResource>();
+    private destroy = new Subject<void>();
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private resourcesService: ResourcesService,
         protected settingsService: CompanySettingsService,
         private router: Router) {
         super(settingsService);
+    }
+
+    ngOnInit(): void {
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
+        });
     }
     
     ngOnChanges() {
@@ -87,5 +116,10 @@ export class ResourceResponsibilityGridComponent extends BaseComponent implement
         //let url = e.data.ObjectUrl;
         //this.router.navigateByUrl(url);
 
+    }
+
+    ngOnDestroy(): void {
+        this.destroy.next();
+        this.destroy.complete();
     }
 }

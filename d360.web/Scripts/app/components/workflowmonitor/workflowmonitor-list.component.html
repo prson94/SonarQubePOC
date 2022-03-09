@@ -1,5 +1,5 @@
 ﻿<header *ngIf="showHeader">
-    WorkFlow Items
+    {{title}}
     <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
 </header>
 <div class="row"  [hidden]="showConfirmDelete">
@@ -9,10 +9,26 @@
         </d3s-workflowmonitor-list-filter>
     </div>
     <div class="col s12">
-        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [value]="items" selectionMode="multiple" [metaKeySelection]="true" [lazy]="true" [totalRecords]="totalRecords" [scrollable]="true" scrollWidth="100%" [metaKeySelection]="true"
-                 [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']" [pageLinks]="3" [paginator]="true"
-                 [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (onLazyLoad)="loadWorkflowMonitorItems($event)" [selection]="selection"
-                 (selectionChange)="gridSelectionChange($event)">
+        <p-table #dt
+                 [loading]="isLoading"
+                 loadingIcon="fa fa-spinner"
+                 [value]="items"
+                 selectionMode="multiple"
+                 [metaKeySelection]="true"
+                 [lazy]="true"
+                 [totalRecords]="totalRecords"
+                 [scrollable]="true"
+                 scrollWidth="100%"
+                 [metaKeySelection]="true"
+                 [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="rowsPerPage || defaultInitialItemsPerPage"
+                 [rowsPerPageOptions]="defaultPagingOptions"
+                 (onLazyLoad)="loadWorkflowMonitorItems($event)"
+                 [selection]="selection"
+                 (selectionChange)="gridSelectionChange($event)"
+                 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'WorkflowName'">
